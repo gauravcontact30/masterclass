@@ -6,4 +6,7 @@ export const CERTIFICATION_CONTENT: Record<string, () => Promise<{ default: unkn
   "n8n": () => import("./n8n.json"),
   "agentic-ai": () => import("./agentic-ai.json"),
   "langchain-python": () => import("./langchain-python.json"),
+  "devops": () => import("./devops.json"),
+  "cloud-architecture": () => import("./cloud-architecture.json"),
+  "ai-automation-langchain": () => import("./ai-automation-langchain.json"),
 };

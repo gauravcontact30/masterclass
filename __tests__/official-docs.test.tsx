@@ -9,7 +9,7 @@ describe("Official Documentation Hub", () => {
   });
 
   test("contains learning specifications for the expanded technology catalog", () => {
-    expect(OFFICIAL_DOCS.length).toBe(56);
+    expect(OFFICIAL_DOCS.length).toBe(54);
 
     const ids = OFFICIAL_DOCS.map((doc) => doc.id);
     expect(new Set(ids).size).toBe(OFFICIAL_DOCS.length);
@@ -17,7 +17,6 @@ describe("Official Documentation Hub", () => {
     const expectedTechnologies = [
       "nextjs",
       "react",
-      "tailwind",
       "zustand",
       "redux",
       "rtk",
@@ -38,7 +37,6 @@ describe("Official Documentation Hub", () => {
       "rust",
       "nodejs",
       "nestjs",
-      "mongoose",
       "langchain",
       "langgraph",
       "langsmith",

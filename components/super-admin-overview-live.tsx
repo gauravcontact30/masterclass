@@ -1,13 +1,14 @@
 "use client";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Activity, AlertTriangle, BookOpenText, Clock, Cpu, Database, Gauge, Globe2, Laptop, LogIn, MousePointerClick, Pause, Play, Radio, RefreshCw, Route, Server, Smartphone, Tablet, Timer, UserRound, Users, Zap, type LucideIcon } from "lucide-react";
+import { Activity, AlertTriangle, BookOpenText, Clock, Cpu, Database, Gauge, Globe2, Laptop, LogIn, MousePointerClick, Pause, Play, Radio, RefreshCw, Route, Server, Smartphone, Sparkles, Tablet, Timer, UserRound, Users, Zap, type LucideIcon } from "lucide-react";
 import { Flag, countryName } from "./super-admin-audience";
 import { Pager } from "./super-admin-table";
 import styles from "./super-admin-overview-live.module.css";
 import { VISIT_RETENTION_DAYS } from "@/lib/visit-retention";
+import { indexVisits, streamVisitors, type Presence } from "@/lib/live-visits";
 
 type Row = Record<string, unknown>;
-type Visit = { created_at: string; event: string; person?: string; email?: string | null; visitor_id: string; session_id: string; new_visitor?: boolean; path: string; title?: string | null; country?: string | null; city?: string | null; region?: string | null; device?: string | null; browser?: string | null; os?: string | null; duration_ms?: number | null; referrer_host?: string | null };
+type Visit = { id?: number; created_at: string; event: string; person?: string; email?: string | null; user_id?: string | null; visitor_id: string; session_id: string; new_visitor?: boolean; path: string; title?: string | null; country?: string | null; city?: string | null; region?: string | null; device?: string | null; browser?: string | null; os?: string | null; duration_ms?: number | null; referrer_host?: string | null; utm_source?: string | null };
 type Live = {
   generatedAt: string;
   totals: { liveNow: number; liveSignedIn: number; pageViews: number; visitors: number; bounceRate: number | null; avgSessionSeconds: number | null; people?: number; sessions?: number; signedInUsers?: number; newVisitors?: number; newAccounts?: number; pagesPerSession?: number | null; bots?: number };
@@ -15,8 +16,6 @@ type Live = {
   pages?: { path: string; views: number; visitors: number; avg_seconds: number | null }[]; referrers?: { referrer: string; views: number; visitors: number }[];
   countries?: { country: string; visitors: number; views: number }[]; devices?: { device: string; visitors: number }[];
 };
-/** One stream row per visitor: the signed-in person, or the anonymous browser. */
-const visitorKey = (v: Visit) => v.person || v.visitor_id;
 type Person = { person: string; sessions: number; engaged_seconds: number; first_seen: string };
 export type OverviewSnapshot = { generatedAt: string; events: Row[]; requests: { count: number; errors: number; p95: number | null }; health: { databaseMs: number; processUptime: number; processMemory: number; hostMemory: number; hostUsedMemory: number; cpuCores: number; cpuPercent?: number | null; environment?: string; nodeVersion?: string } };
 
@@ -40,12 +39,19 @@ const spent = (seconds: number) => {
 const dayOf = (iso: string | number) => new Intl.DateTimeFormat("en-IN", { day: "2-digit", month: "short", year: "numeric", timeZone: "Asia/Kolkata" }).format(new Date(iso));
 const clock = (iso: string | number) => new Intl.DateTimeFormat("en-IN", { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: true, timeZone: "Asia/Kolkata" }).format(new Date(iso));
 const weekday = (iso: string | number) => new Intl.DateTimeFormat("en-IN", { weekday: "long", timeZone: "Asia/Kolkata" }).format(new Date(iso));
-// A page still open (no leave beacon) counts as being read for at most the session's 30 idle minutes.
-const OPEN_MS = 30 * 60_000;
+type StreamFilter = "all" | "live" | "signed" | "new";
+// The stream's own feed, merged across refreshes: rows by id, page heartbeats by session and path.
+type StreamFeed = { rows: Map<string, Visit>; emails: Record<string, string>; presence: Map<string, Presence> | null; days: number; capped: boolean; generatedAt: string; loadedAt: number };
+// The whole window is read again every 10 minutes; in between, each refresh asks only for what is new.
+const FULL_RELOAD_MS = 10 * 60_000;
+const rowId = (v: Visit) => v.id != null ? String(v.id) : `${v.created_at}|${v.event}|${v.session_id}|${v.path}`;
 const bytes = (value: number) => value >= 1 << 30 ? `${(value / (1 << 30)).toFixed(1)} GB` : `${Math.round(value / (1 << 20))} MB`;
 const uptime = (seconds: number) => seconds >= 86400 ? `${Math.floor(seconds / 86400)}d ${Math.floor((seconds % 86400) / 3600)}h` : seconds >= 3600 ? `${Math.floor(seconds / 3600)}h ${Math.floor((seconds % 3600) / 60)}m` : `${Math.round(seconds / 60)}m`;
 const DEVICE_ICON: Record<string, LucideIcon> = { mobile: Smartphone, tablet: Tablet, desktop: Laptop };
 type TraceFilter = "all" | "client" | "server" | "slow";
+const STREAM_FILTERS: { id: StreamFilter; label: string; icon: LucideIcon }[] = [
+  { id: "all", label: "All", icon: Users }, { id: "live", label: "On the site now", icon: Radio }, { id: "signed", label: "Signed in", icon: UserRound }, { id: "new", label: "New visitors", icon: Sparkles },
+];
 const TRACE_FILTERS: { id: TraceFilter; label: string; icon: LucideIcon }[] = [
   { id: "all", label: "All", icon: Activity }, { id: "client", label: "4xx", icon: AlertTriangle }, { id: "server", label: "5xx", icon: Server }, { id: "slow", label: "Slow ≥1 s", icon: Clock },
 ];
@@ -69,20 +75,38 @@ export function OverviewLive({ snapshot, onRefreshSnapshot }: { snapshot: Overvi
   const [visitPage, setVisitPage] = useState(1);
   const [tracePage, setTracePage] = useState(1);
   const [readPage, setReadPage] = useState(1);
-  const [seen, setSeen] = useState<Set<string>>(new Set());
-  // The previous refresh, so visits that arrived since then can be highlighted.
-  const previous = useRef<Visit[] | null>(null);
+  const [streamFilter, setStreamFilter] = useState<StreamFilter>("all");
+  // The server's clock minus this browser's, so "reading for 1m 03s" is measured on the clock that stamped the rows.
+  const [offset, setOffset] = useState(0);
+  // When the previous refresh happened, so visitors who arrived since then can be highlighted.
+  const [freshSince, setFreshSince] = useState<number | null>(null);
   // The Live visitor stream's own feed: every visit of the last VISIT_RETENTION_DAYS days (the 24 h report above
-  // keeps only its newest 500 events).
-  const [stream, setStream] = useState<{ visits: Visit[]; days: number } | null>(null);
+  // keeps only its newest 500 events), kept in a ref between refreshes so each one only fetches what is new.
+  const [stream, setStream] = useState<StreamFeed | null>(null);
+  const feed = useRef<StreamFeed | null>(null);
 
   const loadStream = useCallback(async (signal?: AbortSignal) => {
     try {
-      const response = await fetch("/api/super-admin/activity/stream", { cache: "no-store", signal });
+      const prior = feed.current, startedAt = Date.now();
+      const incremental = prior && startedAt - prior.loadedAt < FULL_RELOAD_MS;
+      // A minute of overlap: a row stamped just before the last read can land just after it.
+      const query = incremental ? `?since=${encodeURIComponent(new Date(Date.parse(prior.generatedAt) - 60_000).toISOString())}` : "";
+      const response = await fetch(`/api/super-admin/activity/stream${query}`, { cache: "no-store", signal });
       const body = await response.json().catch(() => ({}));
       if (!response.ok || !Array.isArray(body?.visits)) return;
-      if (previous.current) setSeen(new Set(previous.current.map(visitorKey)));
-      previous.current = body.visits; setStream({ visits: body.visits, days: Number(body.days) || VISIT_RETENTION_DAYS });
+      const days = Number(body.days) || VISIT_RETENTION_DAYS, generatedAt = typeof body.generatedAt === "string" ? body.generatedAt : new Date().toISOString();
+      const windowStart = Date.parse(generatedAt) - days * 86_400_000;
+      const rows = new Map(incremental ? prior.rows : []);
+      for (const v of body.visits as Visit[]) rows.set(rowId(v), v);
+      for (const [id, v] of rows) if (Date.parse(v.created_at) < windowStart) rows.delete(id);
+      const presence = Array.isArray(body.presence) ? new Map(incremental && prior.presence ? prior.presence : []) : null;
+      if (presence) for (const p of body.presence as Presence[]) presence.set(`${p.session_id}|${p.path}`, p);
+      const next: StreamFeed = { rows, presence, days, generatedAt, emails: { ...(incremental ? prior.emails : {}), ...(body.emails ?? {}) },
+        capped: Boolean(body.capped) || Boolean(incremental && prior.capped), loadedAt: incremental ? prior.loadedAt : startedAt };
+      // Half the round trip is the best estimate of when the server stamped generatedAt.
+      setOffset(Date.parse(generatedAt) - (startedAt + Date.now()) / 2);
+      setFreshSince(prior ? Date.parse(prior.generatedAt) : null);
+      feed.current = next; setStream(next);
     } catch { /* the stream falls back to the 24 h report's recent visits */ }
   }, []);
   const load = useCallback(async (signal?: AbortSignal) => {
@@ -107,50 +131,27 @@ export function OverviewLive({ snapshot, onRefreshSnapshot }: { snapshot: Overvi
   // A one-second clock keeps the "x seconds ago" labels honest between refreshes.
   useEffect(() => { const t = setInterval(() => setNow(Date.now()), 1000); return () => clearInterval(t); }, []);
 
-  const streamRows = useMemo(() => stream?.visits ?? live?.recent ?? [], [stream, live]);
+  const streamRows = useMemo(() => stream ? [...stream.rows.values()] : live?.recent ?? [], [stream, live]);
   const streamDays = stream?.days ?? 1;
+  const clockNow = now + offset;
   const visits = useMemo(() => streamRows.filter(v => v.event === "page_view"), [streamRows]);
-  // Time spent per stream row: the page's own read time (its leave beacon, or a live clock while still open)
-  // and the person's total engaged time on the platform in the 24 h window.
-  const timing = useMemo(() => {
-    const recent = streamRows;
-    const leaves = new Map<string, number[]>(), latest = new Map<string, number>(), opened = new Map<string, number>();
-    for (const v of recent) {
-      const at = Date.parse(v.created_at);
-      if (v.event === "page_leave" && v.duration_ms != null) { const key = `${v.session_id}|${v.path}`; leaves.set(key, [...(leaves.get(key) ?? []), at]); }
-      if (v.event === "page_view") latest.set(v.session_id, Math.max(latest.get(v.session_id) ?? 0, at));
-    }
-    const durations = new Map(recent.filter(v => v.event === "page_leave").map(v => [`${v.session_id}|${v.path}|${Date.parse(v.created_at)}`, v.duration_ms ?? 0]));
-    const page = (v: Visit) => {
-      const at = Date.parse(v.created_at), key = `${v.session_id}|${v.path}`;
-      const left = (leaves.get(key) ?? []).filter(t => t >= at).sort((a, b) => a - b)[0];
-      if (left != null) return { ms: durations.get(`${key}|${left}`) ?? 0, open: false };
-      if (latest.get(v.session_id) === at && now - at < OPEN_MS) return { ms: now - at, open: true };
-      return null;
-    };
-    for (const v of recent) { const p = v.event === "page_view" && v.person ? page(v) : null; if (p?.open) opened.set(v.person!, (opened.get(v.person!) ?? 0) + p.ms); }
-    const people = new Map((live?.people ?? []).map(p => [p.person, p]));
-    const total = (v: Visit) => { const p = v.person ? people.get(v.person) : undefined; return p ? { seconds: Number(p.engaged_seconds) + (opened.get(p.person) ?? 0) / 1000, sessions: Number(p.sessions) } : null; };
-    return { page, total };
-  }, [streamRows, live, now]);
-  // The stream lists each visitor once: when they arrived (first page view in the window), the page they are on or
-  // left from, how many pages they opened, and when they left (their last leave beacon, else their last activity),
-  // or that they are still on the site while their latest page is open. Most recently active first.
-  const visitors = useMemo(() => {
-    const events = new Map<string, Visit[]>();
-    for (const v of streamRows) if (v.event === "page_view" || v.event === "page_leave") events.set(visitorKey(v), [...(events.get(visitorKey(v)) ?? []), v]);
-    return [...events].flatMap(([key, list]) => {
-      const views = list.filter(v => v.event === "page_view").sort((a, b) => Date.parse(a.created_at) - Date.parse(b.created_at));
-      if (!views.length) return [];
-      const first = views[0], last = views.at(-1)!, latest = list.reduce((a, b) => Date.parse(b.created_at) > Date.parse(a.created_at) ? b : a);
-      const lastAt = Date.parse(latest.created_at), open = timing.page(last)?.open ?? false;
-      return [{ key, first, last, views: views.length, paths: new Set(views.map(v => v.path)), email: list.find(v => v.email)?.email ?? null,
-        arrived: first.created_at, lastAt, left: open ? null : lastAt, beacon: latest.event === "page_leave" }];
-    }).sort((a, b) => (b.left ?? Infinity) - (a.left ?? Infinity) || b.lastAt - a.lastAt);
-  }, [streamRows, timing]);
-  const lastHour = useMemo(() => (live?.recent ?? []).filter(v => v.event === "page_view" && now - Date.parse(v.created_at) < 3600_000), [live, now]);
+  // Who each visitor is and what is known about every page they opened (lib/live-visits.ts); only the open pages'
+  // clocks move each second, so the grouping runs when the data changes and the timing pass on every tick.
+  const index = useMemo(() => indexVisits(streamRows, stream ? stream.presence && [...stream.presence.values()] : null), [streamRows, stream]);
+  const everyone = useMemo(() => streamVisitors(index, clockNow, stream?.emails), [index, clockNow, stream]);
+  const counts = useMemo(() => ({
+    all: everyone.length, live: everyone.filter(v => v.live).length, signed: everyone.filter(v => v.signedIn).length,
+    new: everyone.filter(v => v.first.new_visitor && !v.signedIn).length,
+    liveSigned: everyone.filter(v => v.live && v.signedIn).length,
+    recent: everyone.filter(v => clockNow - v.lastAt < 30 * 60_000).length,
+    engaged: everyone.length ? everyone.reduce((sum, v) => sum + v.engagedMs, 0) / everyone.length : null,
+    pages: everyone.length ? Math.round((visits.length / everyone.length) * 10) / 10 : null,
+  }), [everyone, clockNow, visits]);
+  const visitors = useMemo(() => everyone.filter(v => streamFilter === "all" || (streamFilter === "live" ? v.live : streamFilter === "signed" ? v.signedIn : v.first.new_visitor && !v.signedIn)), [everyone, streamFilter]);
+  const heartbeats = Boolean(stream?.presence);
+  const lastHour = useMemo(() => streamRows.filter(v => v.event === "page_view" && clockNow - Date.parse(v.created_at) < 3600_000), [streamRows, clockNow]);
   const reading = useMemo(() => {
-    const recent = (live?.recent ?? []).filter(v => now - Date.parse(v.created_at) < 30 * 60_000);
+    const recent = streamRows.filter(v => clockNow - Date.parse(v.created_at) < 30 * 60_000);
     const byPath = new Map<string, { views: number; visitors: Set<string>; readMs: number; reads: number }>();
     for (const v of recent) {
       const entry = byPath.get(v.path) ?? { views: 0, visitors: new Set(), readMs: 0, reads: 0 };
@@ -159,7 +160,7 @@ export function OverviewLive({ snapshot, onRefreshSnapshot }: { snapshot: Overvi
       byPath.set(v.path, entry);
     }
     return [...byPath].filter(([, e]) => e.views).sort((a, b) => b[1].visitors.size - a[1].visitors.size || b[1].views - a[1].views);
-  }, [live, now]);
+  }, [streamRows, clockNow]);
   const devices = useMemo(() => {
     const counts = new Map<string, Set<string>>();
     for (const v of lastHour) { const key = (v.device || "desktop").toLowerCase(); counts.set(key, (counts.get(key) ?? new Set()).add(v.visitor_id)); }
@@ -198,7 +199,9 @@ export function OverviewLive({ snapshot, onRefreshSnapshot }: { snapshot: Overvi
   const h = snapshot?.health;
 
   const kpis: { label: string; value: string; note: string; icon: LucideIcon; tone: string; pulse?: boolean }[] = [
-    { label: "On the site now", value: n(live?.totals.liveNow), note: `${n(live?.totals.liveSignedIn)} signed in · last 5 min`, icon: Radio, tone: "mint", pulse: true },
+    heartbeats
+      ? { label: "On the site now", value: n(counts.live), note: `${n(counts.liveSigned)} signed in · page open now`, icon: Radio, tone: "mint", pulse: true }
+      : { label: "On the site now", value: n(live?.totals.liveNow), note: `${n(live?.totals.liveSignedIn)} signed in · last 5 min`, icon: Radio, tone: "mint", pulse: true },
     { label: "Views, last hour", value: n(lastHour.length), note: `${n(new Set(lastHour.map(v => v.visitor_id)).size)} visitors`, icon: MousePointerClick, tone: "sky" },
     { label: "Views, 24 h", value: n(live?.totals.pageViews), note: `${n(live?.totals.visitors)} unique visitors`, icon: Users, tone: "lavender" },
     { label: "API requests, 15 min", value: n(recent15.length), note: `${n(snapshot?.requests.count)} in the reporting window`, icon: Route, tone: "peach" },
@@ -210,7 +213,7 @@ export function OverviewLive({ snapshot, onRefreshSnapshot }: { snapshot: Overvi
     <header className={styles.head}>
       <div><p className={styles.kicker}><span className={styles.dot} data-paused={paused || undefined} aria-hidden="true" />{paused ? "Live updates paused" : "Live · refreshes every 15 s"}</p><h2>Live command centre</h2></div>
       <div className={styles.actions}>
-        <span className={styles.updated} aria-live="polite">Updated {since(live?.generatedAt, now)}</span>
+        <span className={styles.updated} aria-live="polite">Updated {since(live?.generatedAt, clockNow)}</span>
         <button type="button" className={styles.button} onClick={() => { void load(); onRefreshSnapshot(); }}><RefreshCw size={14} aria-hidden="true" />Refresh</button>
         <button type="button" className={styles.button} aria-pressed={paused} onClick={() => setPaused(p => !p)}>{paused ? <Play size={14} aria-hidden="true" /> : <Pause size={14} aria-hidden="true" />}{paused ? "Resume" : "Pause"}</button>
       </div>
@@ -226,21 +229,33 @@ export function OverviewLive({ snapshot, onRefreshSnapshot }: { snapshot: Overvi
 
     <div className={styles.grid}>
       <article className={`${styles.panel} ${styles.full}`} data-tone="mint">
-        <h3><Radio size={16} aria-hidden="true" />Live visitor stream<span>{visitors.length ? `${n(visitors.length)} ${visitors.length === 1 ? "visitor" : "visitors"} · ${n(visits.length)} views in ${streamDays === 1 ? "24 h" : `the last ${streamDays} days`}` : ""}</span></h3>
-        {visitors.length ? <><div className={`${styles.listHead} ${styles.streamHead}`} aria-hidden="true"><span /><span>Visitor · location</span><span>Last page · device</span><span>Time spent</span><span>Date</span><span>Arrived (IST)</span><span>Left (IST)</span></div><ol className={styles.stream}>{visitRows.map(row => { const v = row.last; const Device = DEVICE_ICON[(v.device || "desktop").toLowerCase()] ?? Laptop; const code = v.country ?? row.first.country ?? ""; const p = timing.page(v), t = timing.total(v); return <li key={row.key} data-new={live && seen.size > 0 && !seen.has(row.key) || undefined}>
+        <h3><Radio size={16} aria-hidden="true" />Live visitor stream<span>{everyone.length ? `${n(everyone.length)} ${everyone.length === 1 ? "visitor" : "visitors"} · ${n(visits.length)} views in ${streamDays === 1 ? "24 h" : `the last ${streamDays} days`}` : ""}</span></h3>
+        {everyone.length > 0 && <div className={styles.streamBar}>
+          <dl className={styles.streamStats}>
+            <div data-live={counts.live > 0 || undefined}><dt>On the site now</dt><dd>{n(counts.live)}</dd><small>{counts.live ? `${n(counts.liveSigned)} signed in · ${heartbeats ? "page open now" : "page opened in the last 30 min"}` : "nobody has a page open"}</small></div>
+            <div><dt>Active, last 30 min</dt><dd>{n(counts.recent)}</dd><small>visitors with any activity</small></div>
+            <div><dt>Engaged time per visitor</dt><dd>{counts.engaged == null ? "—" : spent(counts.engaged / 1000)}</dd><small>visible time on pages</small></div>
+            <div><dt>Pages per visitor</dt><dd>{counts.pages ?? "—"}</dd><small>{n(counts.signed)} signed in · {n(counts.new)} new</small></div>
+          </dl>
+          <div className={styles.filters} role="group" aria-label="Show visitors">{STREAM_FILTERS.map(f => <button key={f.id} type="button" aria-pressed={streamFilter === f.id} onClick={() => { setStreamFilter(f.id); setVisitPage(1); }}><f.icon size={12} aria-hidden="true" />{f.label} <b>{n(counts[f.id])}</b></button>)}</div>
+        </div>}
+        {visitors.length ? <><div className={`${styles.listHead} ${styles.streamHead}`} aria-hidden="true"><span /><span>Visitor · location</span><span>Current page · journey</span><span>Time spent</span><span>Date</span><span>Arrived (IST)</span><span>Left (IST)</span></div><ol className={styles.stream}>{visitRows.map(row => { const v = row.current; const Device = DEVICE_ICON[(v.device || "desktop").toLowerCase()] ?? Laptop; const code = v.country ?? row.first.country ?? ""; const p = row.page; return <li key={row.key} data-live={row.live || undefined} data-new={freshSince != null && Date.parse(row.arrived) > freshSince || undefined}>
           <Flag code={code} />
-          <span className={styles.who}><b>{row.email ?? (row.first.new_visitor ? "New visitor" : "Returning visitor")}</b><small>{[v.city, code ? countryName(code) : ""].filter(Boolean).join(", ") || "Location unknown"}</small></span>
-          <span className={styles.what}><code title={v.title ?? v.path}>{v.path}</code><small><Device size={12} aria-hidden="true" />{[v.browser, v.os].filter(Boolean).join(" · ") || "Unknown device"} · {row.views} {row.views === 1 ? "page view" : "page views"}{row.paths.size > 1 ? ` · ${row.paths.size} pages` : ""}{row.first.referrer_host ? ` · from ${row.first.referrer_host}` : ""}</small></span>
-          <span className={styles.spent} title="Time on the last page · total time on the platform in the last 24 h">
+          <span className={styles.who}><b>{row.email ?? (row.first.new_visitor ? "New visitor" : "Returning visitor")}</b><small>{[v.city, code ? countryName(code) : ""].filter(Boolean).join(", ") || "Location unknown"}{row.signedIn ? " · signed in" : ""}</small></span>
+          <span className={styles.what}><code title={v.title ? `${v.title} (${v.path})` : v.path}>{v.path}</code><small><Device size={12} aria-hidden="true" />{[v.browser, v.os].filter(Boolean).join(" · ") || "Unknown device"} · {row.views} {row.views === 1 ? "page view" : "page views"}{row.pages > 1 ? ` · ${row.pages} pages` : ""}</small>
+            <small className={styles.trail} title={row.trail.join(" → ")}>{row.trail.length > 1 ? row.trail.join(" → ") : v.title || "Single page this visit"}{` · ${row.source ? `from ${row.source}` : "direct"}`}</small></span>
+          <span className={styles.spent} title="Time on the current page and in total, counted only while a page is visible (a background tab does not count)">
             <b data-open={p?.open || undefined}><Timer size={12} aria-hidden="true" />{p ? `${spent(p.ms / 1000)}${p.open ? " · reading" : ""}` : "—"}</b>
-            <small>{t ? `${spent(t.seconds)} on site · ${t.sessions} ${t.sessions === 1 ? "session" : "sessions"}` : `${spent(((row.left ?? now) - Date.parse(row.arrived)) / 1000)} on site`}</small>
+            <small>{`${spent(row.engagedMs / 1000)} engaged · ${row.sessions} ${row.sessions === 1 ? "session" : "sessions"}`}</small>
           </span>
           <time className={`${styles.at} ${styles.day}`} dateTime={row.arrived.slice(0, 10)}><b>{dayOf(row.arrived)}</b><small>{weekday(row.arrived)}</small></time>
-          <time className={`${styles.at} ${styles.arrived}`} dateTime={row.arrived}><b>{clock(row.arrived)}</b><small>{since(row.arrived, now)}</small></time>
-          {row.left == null ? <span className={`${styles.at} ${styles.left} ${styles.onSite}`}><b>On the site now</b><small>last seen {since(row.lastAt, now)}</small></span>
-            : <time className={`${styles.at} ${styles.left}`} dateTime={new Date(row.left).toISOString()} title={row.beacon ? "When the visitor's last page sent its leave beacon" : "No leave beacon arrived; this is the visitor's last recorded activity"}><b>{clock(row.left)}</b><small>{dayOf(row.left) !== dayOf(row.arrived) ? `${dayOf(row.left)} · ` : ""}{row.beacon ? since(row.left, now) : `last activity · ${since(row.left, now)}`}</small></time>}
-        </li>; })}</ol></> : <p className={styles.empty}>{live ? "No page views recorded in the last 24 hours yet." : "Connecting to live tracking…"}</p>}
+          <time className={`${styles.at} ${styles.arrived}`} dateTime={row.arrived}><b>{clock(row.arrived)}</b><small>{since(row.arrived, clockNow)}</small></time>
+          {row.left == null ? <span className={`${styles.at} ${styles.left} ${styles.onSite}`}><b>On the site now</b><small>{heartbeats ? `active ${since(row.lastAt, clockNow)}` : `last seen ${since(row.lastAt, clockNow)}`}</small></span>
+            : <time className={`${styles.at} ${styles.left}`} dateTime={new Date(row.left).toISOString()} title={row.beacon ? "When the visitor's last page sent its leave beacon" : "No leave beacon arrived; this is the visitor's last recorded activity"}><b>{clock(row.left)}</b><small>{dayOf(row.left) !== dayOf(row.arrived) ? `${dayOf(row.left)} · ` : ""}{row.beacon ? since(row.left, clockNow) : `last activity · ${since(row.left, clockNow)}`}</small></time>}
+        </li>; })}</ol></> : <p className={styles.empty}>{everyone.length ? "No visitors match this filter." : live || stream ? `No page views recorded in ${streamDays === 1 ? "the last 24 hours" : `the last ${streamDays} days`} yet.` : "Connecting to live tracking…"}</p>}
         <Pager page={Math.min(visitPage, pagesOf(visitors, STREAM_PAGE))} pages={pagesOf(visitors, STREAM_PAGE)} total={visitors.length} size={STREAM_PAGE} onPage={setVisitPage} />
+        {stream && !heartbeats && <p className={styles.streamNote}>Live status is estimated: apply migration 0034 (page heartbeats) so a visitor counts as on the site only while their page is open, timed to the second. Until then a page without a leave beacon counts as open for up to 30 minutes.</p>}
+        {stream?.capped && <p className={styles.streamNote}>Showing the newest 20,000 events of the window; older visitors are left out.</p>}
       </article>
 
       <article className={`${styles.panel} ${styles.wide}`} data-tone="lavender">

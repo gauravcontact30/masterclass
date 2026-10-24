@@ -6,7 +6,7 @@ import type { FreshDocTip } from "@/lib/landing-fresh-types";
 import { DailyCard } from "./landing-daily-card";
 import { Editable, useContentItem } from "./content-editing";
 import {
-  ArrowUpRight, Binary, BookOpen, Bot, Boxes, Braces, Building2, Check, ChevronLeft, ChevronRight, Cloud, Code2, FileCode2, GraduationCap,
+  Binary, BookOpen, Bot, Boxes, Braces, Building2, Check, ChevronLeft, ChevronRight, Cloud, Code2, FileCode2, GraduationCap,
   LayoutGrid, Megaphone, MonitorSmartphone, RotateCcw, Rocket, Search, Server, SlidersHorizontal, Sprout, TrendingUp, X, type LucideIcon,
 } from "lucide-react";
 import { MATERIAL_KINDS, MATERIAL_LEVELS, TECH_DOC_CATEGORIES, TECH_DOCS, type MaterialKind, type MaterialLevel, type TechConcept, type TechDoc, type TechDocCategory, type TechMaterial } from "@/lib/tech-docs";
@@ -18,6 +18,7 @@ import dynamic from "next/dynamic";
 import home from "./landing-home.module.css";
 import frame from "./landing-section.module.css";
 import styles from "./landing-tech-docs.module.css";
+import { ListenButton } from "./listen-button";
 /** The quick-start project files and editor (~28 KB) load as their own chunk, after the page. */
 const TechProjectPanel = dynamic(() => import("./tech-project-panel"), { ssr: false });
 
@@ -197,6 +198,8 @@ export function LandingTechDocs({ official, preview = false, locked = false, con
             <h3>{tech.name}</h3>
             <p className={styles.release}>{tech.release}</p>
           </div>
+          <ListenButton id={`tech-docs:${tech.id}`} title={tech.name} className={styles.listen} compact
+            text={() => [tech.name, docsPage?.complete && docsPage.description ? docsPage.description : tech.tagline, ...tech.features].join(". ")} />
         </div>
         <p className={styles.version} title={version ? `${text("Current release from", "वर्तमान संस्करण स्रोत")} ${version.source}` : undefined}>
           <span>{fundamental ? text("Covers", "विषय") : text("Current", "वर्तमान")}</span><b>{version?.version ?? tech.version}</b>{version?.date && <small>{shortDate(version.date)}</small>}
@@ -204,7 +207,6 @@ export function LandingTechDocs({ official, preview = false, locked = false, con
         <p className={styles.tagline}>{docsPage?.complete && docsPage.description ? docsPage.description : tech.tagline}</p>
         <ul className={styles.features} aria-label={text("Core features", "मुख्य विशेषताएँ")}>{tech.features.map(f => <li key={f}><Marked text={f} terms={terms} /></li>)}</ul>
         {showCode && <TechProjectPanel key={tech.id} techId={tech.id} />}
-        <a className={styles.docsLink} href={tech.docs} target="_blank" rel="noopener noreferrer">{fundamental ? text("Start the course", "कोर्स शुरू करें") : text("Open the official docs", "आधिकारिक डॉक्स खोलें")} · {host(tech.docs)}<ArrowUpRight size={15} aria-hidden="true" /></a>
       </div>
       <div className={styles.materials}>
         <p className={styles.materialsHead}><span>{text("Learning materials", "अध्ययन सामग्री")}</span><b>{items.length}</b>{pages > 1 && <small>{text(`Showing ${(at - 1) * MATERIAL_PAGE + 1}–${(at - 1) * MATERIAL_PAGE + shown.length}`, `${(at - 1) * MATERIAL_PAGE + 1}–${(at - 1) * MATERIAL_PAGE + shown.length} दिखाए गए`)}</small>}</p>
@@ -212,7 +214,7 @@ export function LandingTechDocs({ official, preview = false, locked = false, con
           const p = page(m.url); const KindIcon = KIND_ICON[m.kind]; const LevelIcon = LEVEL_ICON[m.level];
           const title = p?.complete ? p.title : m.title;
           return <li key={m.id}>
-            <a href={m.url} target="_blank" rel="noopener noreferrer" className={styles.material}>
+            <div className={styles.material}>
               <span className={styles.materialMeta}>
                 <span className={styles.kind}><KindIcon size={13} aria-hidden="true" />{MATERIAL_KINDS.find(k => k.id === m.kind)?.label.replace(/s$/, "")}</span>
                 <span className={styles.level} data-level={m.level}><LevelIcon size={12} aria-hidden="true" />{MATERIAL_LEVELS.find(l => l.id === m.level)?.label}</span>
@@ -224,9 +226,8 @@ export function LandingTechDocs({ official, preview = false, locked = false, con
               <span className={styles.source}>
                 {p?.complete ? <span className={styles.official}><Check size={12} aria-hidden="true" />{text("From", "स्रोत")} {host(m.url)}</span> : <span>{host(m.url)}</span>}
                 {p?.fetchedAt && <span>{text("Fetched", "प्राप्त")} {shortDate(p.fetchedAt)}</span>}
-                <ArrowUpRight size={14} aria-hidden="true" className={styles.out} />
               </span>
-            </a>
+            </div>
           </li>;
         })}</ol> : null}
         {!preview && pages > 1 && <div className={styles.materialPager} role="group" aria-label={text("Materials pages", "सामग्री पेज")}>
@@ -257,11 +258,11 @@ export function LandingTechDocs({ official, preview = false, locked = false, con
       </div>}
       {articles.length > 0 && <div className={styles.articles}>
         <p className={styles.materialsHead}><span>{text("Latest articles", "नवीनतम लेख")}</span><b>{articles.length}</b><small>{text("Official blog and Medium community, newest first", "आधिकारिक ब्लॉग और Medium समुदाय, नवीनतम पहले")}</small></p>
-        <ul>{articles.map(a => <li key={a.url}><a href={a.url} target="_blank" rel="noopener noreferrer">
+        <ul>{articles.map(a => <li key={a.url}><div className={styles.article}>
           <span className={styles.articleSource} data-source={a.source}>{a.source === "official" ? text("Official blog", "आधिकारिक ब्लॉग") : text("Community · Medium", "समुदाय · Medium")}</span>
           <b>{a.title}</b>
           <small>{[a.author, a.date && shortDate(a.date)].filter(Boolean).join(" · ")}</small>
-        </a></li>)}</ul>
+        </div></li>)}</ul>
       </div>}
     </article>;
   }

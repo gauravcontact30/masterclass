@@ -41,30 +41,43 @@
 .plan:hover:not(:disabled) { background: #f6cf6e; }
 .plan:active:not(:disabled) { transform: translateY(1px); }
 .plan:disabled { cursor: progress; opacity: .85; }
-.plan:focus-visible, .tries button:focus-visible, .reset:focus-visible, .start:focus-visible, .topics a:focus-visible { outline: 2px solid var(--signal); outline-offset: 2px; }
-.tries { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; font-size: 13px; color: #7fae9c; }
+.plan:focus-visible, .reset:focus-visible, .start:focus-visible, .topics a:focus-visible { outline: 2px solid var(--signal); outline-offset: 2px; }
+/* "Or try": goals grouped by line, like a transit map. The line chips pick a field; each pill carries its line's
+   colour (data-line, 0 = popular) and the technology's icon, and the pills of a newly chosen line arrive in turn. */
+.tries { display: grid; gap: 12px; }
+.triesHead { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 12px; }
+.triesHead span { font-size: 14px; font-weight: 650; color: var(--paper); }
+.triesHead small { font-size: 12.5px; color: var(--sage); }
+.lines { display: flex; flex-wrap: wrap; gap: 6px; }
+/* On a phone the lines become one swipeable row instead of four wrapped ones. */
+@media (max-width: 640px) { .lines { flex-wrap: nowrap; margin: 0 -4px; padding: 2px 4px 6px; overflow-x: auto; scrollbar-width: thin; scrollbar-color: var(--pine-3) transparent; } }
+.lines button { display: inline-flex; flex-shrink: 0; align-items: center; gap: 7px; min-height: 36px; padding: 0 12px; border: 1px solid var(--pine-3); border-radius: 999px; background: transparent; font: inherit; font-size: 13px; font-weight: 600; color: var(--sage); cursor: pointer; transition: background .15s ease, border-color .15s ease, color .15s ease; }
+.lines button i { width: 10px; height: 10px; border: 2px solid var(--line-ink, var(--signal)); border-radius: 50%; background: var(--pine); }
+.lines button b { min-width: 20px; padding: 1px 6px; border-radius: 999px; background: var(--pine-2); font-size: 11.5px; font-weight: 700; color: var(--paper); text-align: center; }
+.lines button:hover { border-color: var(--sage); color: var(--paper); }
+.lines button[aria-pressed="true"] { border-color: var(--line-tint, var(--signal)); background: var(--line-tint, var(--signal)); color: var(--line-ink, var(--ink)); }
+.lines button[aria-pressed="true"] i { background: var(--line-ink, var(--ink)); }
+.lines button[aria-pressed="true"] b { background: #ffffffb3; color: var(--line-ink, var(--ink)); }
 .tries ul { display: flex; flex-wrap: wrap; gap: 8px; margin: 0; padding: 0; list-style: none; }
-.tries button { min-height: 34px; padding: 4px 12px; border: 1px solid var(--pine-3); border-radius: 999px; background: transparent; font: inherit; font-size: 13px; color: var(--paper); cursor: pointer; }
-.tries button:hover:not(:disabled) { border-color: var(--sage); background: var(--pine-2); }
-.tries button:disabled { opacity: .5; cursor: progress; }
-.tries button[aria-pressed="true"] { border-color: var(--signal); background: var(--signal); color: var(--ink); font-weight: 650; }
-.tries button.more { border-style: dashed; color: var(--sage); }
-/* "Or try": every pill its own light tint with a matching ink (data-tint, set in the component). */
-.tries button[data-tint] { border-color: transparent; background: var(--pill); color: var(--pill-ink); font-weight: 600; }
-.tries button[data-tint]:hover:not(:disabled) { border-color: var(--pill-ink); background: var(--pill); filter: brightness(1.03); }
-.tries button[data-tint][aria-pressed="true"] { border-color: var(--signal); box-shadow: 0 0 0 2px var(--signal); background: var(--pill); color: var(--pill-ink); }
-.tries button[data-tint="0"] { --pill: #fde8e0; --pill-ink: #8f3f23; }
-.tries button[data-tint="1"] { --pill: #e3f1e6; --pill-ink: #2f5d3a; }
-.tries button[data-tint="2"] { --pill: #e3eefb; --pill-ink: #24507c; }
-.tries button[data-tint="3"] { --pill: #efe7fb; --pill-ink: #5a4683; }
-.tries button[data-tint="4"] { --pill: #fdf3d3; --pill-ink: #7a5d14; }
-.tries button[data-tint="5"] { --pill: #fbe4ee; --pill-ink: #8a2d55; }
-.tries button[data-tint="6"] { --pill: #ddf3f1; --pill-ink: #1f5f59; }
-.tries button[data-tint="7"] { --pill: #f3ecdf; --pill-ink: #6b5531; }
-.tries button[data-tint="8"] { --pill: #e8f0d8; --pill-ink: #4c5d1e; }
-.tries button[data-tint="9"] { --pill: #fde6d2; --pill-ink: #8a4317; }
-.tries button[data-tint="10"] { --pill: #e6e9fb; --pill-ink: #33418a; }
-.tries button[data-tint="11"] { --pill: #f9e3f7; --pill-ink: #7a2f76; }
+.tries li { animation: board .32s ease both; animation-delay: calc(var(--at, 0) * 35ms); }
+@keyframes board { from { opacity: 0; transform: translateY(6px); } }
+.tries ul button { display: inline-flex; align-items: center; gap: 7px; min-height: 36px; padding: 4px 13px 4px 6px; border: 1px solid transparent; border-radius: 999px; background: var(--line-tint, #fdf3d3); font: inherit; font-size: 13px; font-weight: 600; color: var(--line-ink, #7a5d14); cursor: pointer; transition: transform .15s ease, box-shadow .15s ease; }
+.tries ul button img { flex-shrink: 0; width: 22px; height: 22px; padding: 3px; border-radius: 50%; background: #fff; object-fit: contain; }
+.tries ul button .dot { flex-shrink: 0; width: 22px; height: 22px; border-radius: 50%; background: #fff; box-shadow: inset 0 0 0 6px #fff, inset 0 0 0 11px var(--line-ink, #7a5d14); }
+.tries ul button:hover:not(:disabled) { border-color: var(--line-ink, #7a5d14); transform: translateY(-1px); }
+.tries ul button:disabled { opacity: .55; cursor: progress; }
+.tries ul button[aria-pressed="true"] { border-color: var(--signal); box-shadow: 0 0 0 2px var(--signal); }
+.tries button:focus-visible { outline: 2px solid var(--signal); outline-offset: 2px; }
+/* Line colours: light tint with its ink. 0 is the popular mix; 1-8 follow LINES in the component. */
+.panel [data-line="0"] { --line-tint: #fdf3d3; --line-ink: #7a5d14; }
+.panel [data-line="1"] { --line-tint: #efe7fb; --line-ink: #5a4683; }
+.panel [data-line="2"] { --line-tint: #e3eefb; --line-ink: #24507c; }
+.panel [data-line="3"] { --line-tint: #e3f1e6; --line-ink: #2f5d3a; }
+.panel [data-line="4"] { --line-tint: #fde6d2; --line-ink: #8a4317; }
+.panel [data-line="5"] { --line-tint: #ddf3f1; --line-ink: #1f5f59; }
+.panel [data-line="6"] { --line-tint: #fbe4ee; --line-ink: #8a2d55; }
+.panel [data-line="7"] { --line-tint: #fde8e0; --line-ink: #8f3f23; }
+.panel [data-line="8"] { --line-tint: #e6e9fb; --line-ink: #33418a; }
 
 .length label:has(input:disabled) { cursor: progress; opacity: .6; }
 @media (max-width: 560px) { .controls { flex-direction: column; align-items: stretch; } .plan { justify-content: center; } .length { justify-content: space-between; } }
@@ -115,6 +128,16 @@
 /* Before the first plan the line is dashed: the cards are an example, not a route yet. */
 .route[data-mode="sample"] .stage:not(:last-child)::before { background: repeating-linear-gradient(90deg, var(--signal) 0 10px, transparent 10px 18px); }
 
+/* While planning: the three things the planner does, ticked off in turn. */
+.planning { display: flex; flex-wrap: wrap; gap: 8px 22px; margin: 0; padding: 0; list-style: none; }
+.planning li { display: inline-flex; align-items: center; gap: 8px; font-size: 13.5px; color: var(--sage); transition: color .2s ease; }
+.planning li i { width: 10px; height: 10px; border: 2px solid var(--pine-3); border-radius: 50%; }
+.planning li[data-state="now"] { color: var(--paper); font-weight: 600; }
+.planning li[data-state="now"] i { border-color: var(--signal); background: var(--signal); animation: beacon 1s ease-in-out infinite; }
+.planning li[data-state="done"] { color: var(--paper); }
+.planning li[data-state="done"] svg { color: var(--signal); }
+@keyframes beacon { 50% { box-shadow: 0 0 0 5px color-mix(in srgb, var(--signal) 30%, transparent); } }
+
 /* While planning: placeholder lines, and the markers light up in order along the route (the section's one motion). */
 .skeleton { display: grid; gap: 10px; padding-bottom: 20px; }
 .skeleton i { display: block; height: 14px; border-radius: 6px; background: var(--tint-strong, #ebe7da); }
@@ -122,9 +145,20 @@
 .skeleton i:last-child { width: 55%; }
 .route[data-mode="loading"] .marker { animation: arrive 1.6s ease-in-out infinite; animation-delay: calc(var(--i) * .22s); }
 @keyframes arrive { 0%, 100% { background: var(--pine); color: var(--signal); } 40% { background: var(--signal); color: var(--ink); } }
+/* A plan's arrival is the section's one orchestrated moment: each leg of the route draws from its stop to the
+   next, the stop lights up and its card arrives as the line reaches it. */
+.route[data-mode="result"] .stage:not(:last-child)::before { transform-origin: left center; animation: draw .5s cubic-bezier(.6, 0, .3, 1) both; animation-delay: calc(var(--i) * .5s + .25s); }
+.route[data-mode="result"] .marker { animation: reach .35s ease both; animation-delay: calc(var(--i) * .5s); }
+.route[data-mode="result"] .card { animation: arrive-card .45s ease both; animation-delay: calc(var(--i) * .5s + .1s); }
+@keyframes draw { from { transform: scaleX(0); } }
+@keyframes reach { from { transform: scale(.4); opacity: 0; } 60% { transform: scale(1.15); } }
+@keyframes arrive-card { from { opacity: 0; transform: translateY(14px); } }
+/* While planning, a light runs along each leg of the line. */
+.route[data-mode="loading"] .stage:not(:last-child)::before { background: linear-gradient(90deg, var(--pine-3) 0 35%, var(--signal) 50%, var(--pine-3) 65% 100%) 0 0 / 300% 100%; animation: scan 1.4s linear infinite; animation-delay: calc(var(--i) * .2s); }
+@keyframes scan { from { background-position: 100% 0; } to { background-position: 0 0; } }
 .spin { animation: spin 1s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
-@media (prefers-reduced-motion: reduce) { .route[data-mode="loading"] .marker, .spin { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .route .marker, .route .card, .route .stage::before, .spin, .tries li, .planning li i { animation: none !important; } }
 
 .finish { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px; padding-top: 4px; }
 /* .panel a.start outranks the landing sheet's `.page a { color: inherit }`, which had turned this label cream on cream. */
@@ -138,6 +172,9 @@
   .stage { grid-template-columns: 38px minmax(0, 1fr); grid-template-rows: none; gap: 14px; padding-bottom: 18px; }
   .stage:not(:last-child)::before { top: 38px; bottom: 0; left: 17.5px; right: auto; width: 3px; height: auto; }
   .route[data-mode="sample"] .stage:not(:last-child)::before { background: repeating-linear-gradient(180deg, var(--signal) 0 10px, transparent 10px 18px); }
+  .route[data-mode="result"] .stage:not(:last-child)::before { transform-origin: center top; animation-name: draw-down; }
+  .route[data-mode="loading"] .stage:not(:last-child)::before { background-size: 100% 300%; background-image: linear-gradient(180deg, var(--pine-3) 0 35%, var(--signal) 50%, var(--pine-3) 65% 100%); }
 }
 @media (max-width: 420px) { .card { padding: 16px 14px 0; } .outcome { margin-inline: -14px; padding-inline: 14px; } }
 .panel .topics a:focus-visible { outline: 2px solid var(--mint-ink); outline-offset: 2px; }
+@keyframes draw-down { from { transform: scaleY(0); } }

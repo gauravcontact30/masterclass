@@ -1,4 +1,5 @@
 import type { QuestionSet } from "@/lib/interview-questions";
+import { MORE_EXTRA } from "./questions-extra";
 
 /**
  * The longer interview list behind each Workflow blueprint. The base three-and-three in agentic.ts and
@@ -43,6 +44,7 @@ const MORE: Record<string, () => Promise<{ default: QuestionSet }>> = {
   "review-triage": () => import("./questions/review-triage"),
   "prompt-experiments": () => import("./questions/prompt-experiments"),
   "feedback-loop": () => import("./questions/feedback-loop"),
+  ...MORE_EXTRA,
 };
 
 export const hasMoreQuestions = (id: string) => id in MORE;

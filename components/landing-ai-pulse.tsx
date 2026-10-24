@@ -1,6 +1,6 @@
 "use client";
 import { useState, type ReactNode } from "react";
-import { ArrowUpRight, BookOpen, Bot, Boxes, Braces, ChevronLeft, ChevronRight, Cloud, Code2, Database, FlaskConical, GitBranch, Layers, Network, Pause, Play, Puzzle, Server, Sparkles, Workflow, Zap, type LucideIcon } from "lucide-react";
+import { BookOpen, Bot, Boxes, Braces, ChevronLeft, ChevronRight, Cloud, Code2, Database, FlaskConical, GitBranch, Layers, Network, Pause, Play, Puzzle, Server, Sparkles, Workflow, Zap, type LucideIcon } from "lucide-react";
 import { problemPoints } from "@/lib/problem-points";
 import type { LockedTeaser, PulseCard } from "@/lib/landing-daily-types";
 import { DashboardMore } from "./dashboard-more";
@@ -104,7 +104,7 @@ export function PulseCardItem({ card, index, total, hi, text, compact = false }:
             </>}
           {compact ? <p className={styles.more}>{text("Use cases and industry problems are in the full card on your dashboard.", "उपयोग और उद्योग की समस्याएँ डैशबोर्ड के पूरे कार्ड में हैं।")}</p> : <div className={styles.block}><span className={styles.label}>{text("Real problems it solves, by industry", "उद्योग के अनुसार हल की गई समस्याएँ")}</span>
             <dl className={styles.industries}>{card.industries.slice(0, 2).map(entry => <div key={entry.industry}><dt>{entry.industry}</dt><dd><ul>{problemPoints(entry.problem).map(point => <li key={point}>{point}</li>)}</ul></dd></div>)}</dl></div>}
-          <a className={styles.source} href={card.source.href} target="_blank" rel="noopener noreferrer"><span>{text("Learn from", "यहाँ सीखें:")} {card.source.label}</span><ArrowUpRight size={15} aria-hidden="true" /></a>
+          <p className={styles.source}><span>{text("Source:", "स्रोत:")} {card.source.label}</span></p>
         </div>
       </li>;
 }

@@ -576,22 +576,6 @@
   ]
  },
  {
-  "id": "mongoose",
-  "name": "Mongoose",
-  "icon": "🍃",
-  "focus": "Mongoose ODM for MongoDB",
-  "syllabus": [
-   "Schemas & models",
-   "Queries",
-   "Population",
-   "Validation",
-   "Middleware hooks",
-   "Indexes",
-   "Aggregation",
-   "Transactions"
-  ]
- },
- {
   "id": "drizzle",
   "name": "Drizzle ORM",
   "icon": "💧",

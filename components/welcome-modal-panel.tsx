@@ -14,13 +14,13 @@ const SLIDE_MS = 5000;
 type Pair = [string, string];
 type Slide = { src: string; focus: string; icon: LucideIcon; tone: string; title: Pair; text: Pair; points: Pair[] };
 const SLIDES: Slide[] = [
-  { src: "/images/landing/slide-classroom.webp", focus: "30% 45%", icon: GraduationCap, tone: "clay",
-    title: ["Every subject, one library", "हर विषय, एक लाइब्रेरी"],
-    text: ["School, competitive exams and technology courses, written as clear lessons you can finish.", "स्कूल, प्रतियोगी परीक्षाएँ और तकनीक: स्पष्ट पाठ जिन्हें आप पूरा कर सकें।"],
+  { src: "/images/landing/hero-build.webp", focus: "70% 45%", icon: GraduationCap, tone: "clay",
+    title: ["Every technology, one library", "हर तकनीक, एक लाइब्रेरी"],
+    text: ["AI agents, cloud, system design and full-stack courses, written as clear lessons you can finish.", "AI एजेंट, क्लाउड, सिस्टम डिज़ाइन और फ़ुल-स्टैक कोर्स: स्पष्ट पाठ जिन्हें आप पूरा कर सकें।"],
     points: [["Structured lessons", "क्रमबद्ध पाठ"], ["Diagrams and examples", "चित्र और उदाहरण"]] },
   { src: "/images/landing/slide-exams.webp", focus: "48% 40%", icon: Timer, tone: "sage",
-    title: ["Practice like the real paper", "असली परीक्षा जैसा अभ्यास"],
-    text: ["Timed tests with objective and subjective questions, full solutions and answer review.", "वस्तुनिष्ठ व विषयनिष्ठ प्रश्नों के समयबद्ध टेस्ट, पूरे हल और उत्तर समीक्षा।"],
+    title: ["Practise like the real interview", "असली इंटरव्यू जैसा अभ्यास"],
+    text: ["Timed quizzes and certification mock exams with objective and subjective questions, full solutions and answer review.", "वस्तुनिष्ठ व विषयनिष्ठ प्रश्नों वाले समयबद्ध क्विज़ और सर्टिफ़िकेशन मॉक परीक्षाएँ, पूरे हल और उत्तर समीक्षा के साथ।"],
     points: [["Timed practice", "समयबद्ध अभ्यास"], ["Worked solutions", "हल सहित"]] },
   { src: "/images/landing/slide-interview.webp", focus: "55% 40%", icon: Compass, tone: "violet",
     title: ["Interview-ready, topic by topic", "इंटरव्यू की तैयारी, विषयवार"],

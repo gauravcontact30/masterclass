@@ -18,7 +18,7 @@ type Mode = StudyChatRequest["mode"];
 type Message = { role: "user" | "assistant"; content: string; sources?: StudyChatReply["sources"]; notes?: boolean; streaming?: boolean };
 const starter = 'console.log("A");\nsetTimeout(() => console.log("B"), 0);\nPromise.resolve().then(() => console.log("C"));\nconsole.log("D");';
 const suggestions: Record<Mode, string[]> = {
-  study: ["Summarize JavaScript closures", "Explain SQL joins with an example", "Help me plan a week of exam revision"],
+  study: ["Summarize JavaScript closures", "Explain SQL joins with an example", "Help me plan a week of interview revision"],
   interview: ["How should I explain the event loop in an interview?", "What is the difference between an interface and a type alias?", "Ask me a React interview question"],
   javascript: ["Explain the difference between == and ===", "Give me a closure puzzle to solve"],
 };

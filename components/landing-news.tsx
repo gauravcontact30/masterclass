@@ -1,11 +1,13 @@
 "use client";
 
-import { useEffect, useState, type FocusEvent } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, type FocusEvent, type ReactNode } from "react";
 import { preload } from "react-dom";
-import { ArrowUpRight, Bot, Hammer, GraduationCap, Lightbulb, ListChecks, Boxes, BrainCircuit, ChevronLeft, ChevronRight, Cloud, Code2, MessagesSquare, Newspaper, Pause, Play, Rocket, ShoppingCart, Sparkles, Star, TrendingUp, type LucideIcon } from "lucide-react";
+import { ArrowUpRight, Bot, CircleHelp, Hammer, GraduationCap, Lightbulb, ListChecks, Boxes, BrainCircuit, ChevronLeft, ChevronRight, Cloud, Code2, MessagesSquare, Newspaper, Pause, Play, Rocket, ShoppingCart, Sparkles, Star, TrendingUp, type LucideIcon } from "lucide-react";
 import { NEWS_BASICS, NEWS_PER_SLIDE, NEWS_PRACTICE, NEWS_SLIDES, QUESTIONS_PER_SLIDE, type InterviewAsk, type LandingNews as LandingNewsData, type NewsLogo, type NewsSlideData, type NewsSlideId, type NewsSlideMeta, type NewsStory } from "@/lib/landing-news";
+import { NEWS_MORE_BASICS, NEWS_QUICK_CHECKS } from "@/lib/landing-news-study";
 import Image from "next/image";
 import Link from "next/link";
+import { ListenButton } from "./listen-button";
 import { useLanguage } from "./language-provider";
 import styles from "./landing-news.module.css";
 
@@ -35,7 +37,8 @@ const cardTone = (slide: number, card: number) => TONES[(slide + 1 + card) % TON
 /**
  * "Fresh in tech": ten slides under the hero, one subject each (AI labs, agentic AI, system design, Next.js and
  * React, AWS, Musk's ventures, Amazon's AI, two sets of most-asked interview questions, and what is trending).
- * Stories are searched live on the server (lib/server/landing-news.ts) and each links to its source. The carousel
+ * Stories are searched live on the server (lib/server/landing-news.ts) and each names its source. Both columns of a
+ * slide end level: each closes with study material (<Fit>) that shows as many items as the other column leaves room for. The carousel
  * moves on every 25 seconds, and previous / next move by hand; it waits while the pointer is over it or focus is inside it, and the pause control
  * stops it.
  */
@@ -95,7 +98,7 @@ export function LandingNews() {
           <p className={styles.eyebrow}><Newspaper size={14} aria-hidden="true" />{text("Fresh in tech", "टेक में नया")}
             {news?.updatedAt && <span>{text("Updated", "अपडेट")} {istTime(news.updatedAt)}</span>}</p>
           <h2 id="fresh-title">{text("What changed in tech this week", "इस हफ़्ते टेक में क्या बदला")}</h2>
-          <p className={styles.lede}>{text("Ten slides of real news with links to the source, plus the interview questions candidates are being asked right now.", "स्रोत के लिंक के साथ असली खबरों की दस स्लाइड, और वे इंटरव्यू प्रश्न जो अभी पूछे जा रहे हैं।")}</p>
+          <p className={styles.lede}>{text("Ten slides of real news explained for learners, the interview questions candidates are being asked right now, and a quick check on each subject.", "सीखने वालों के लिए समझाई गई असली खबरों की दस स्लाइड, वे इंटरव्यू प्रश्न जो अभी पूछे जा रहे हैं, और हर विषय पर एक त्वरित जाँच।")}</p>
         </header>
         <div className={styles.bar}>
           {(() => {
@@ -117,16 +120,18 @@ export function LandingNews() {
           {NEWS_SLIDES.map((meta, i) => {
             const data = news?.slides.find(slide => slide.id === meta.id);
             return <article key={meta.id} className={styles.slide} data-tone={TONES[i % TONES.length]} hidden={i !== index} aria-roledescription="slide" aria-label={`${i + 1} / ${total}: ${hi ? meta.hiTitle : meta.title}`}>
-              <Cover meta={meta} hi={hi} eager={i === 0} data={data} />
+              {/* Only the slide on show is built: the hidden ones were ~3,000 nodes to hydrate on every visit. */}
+              {i === index && <><Cover meta={meta} hi={hi} eager={i === 0} data={data} />
               <div className={styles.body}>
                 {data?.kind === "news" && data.stories.length > 0 && <Stories stories={data.stories.slice(0, NEWS_PER_SLIDE)} hi={hi} slide={i} />}
                 {data?.kind === "questions" && data.questions.length > 0 && <Questions questions={data.questions.slice(0, QUESTIONS_PER_SLIDE)} hi={hi} slide={i} />}
                 {data?.kind === "news" && data.stories.length > NEWS_PER_SLIDE && <Headlines stories={data.stories.slice(NEWS_PER_SLIDE)} hi={hi} />}
                 {data?.kind === "questions" && data.questions.length > QUESTIONS_PER_SLIDE && <AlsoAsked questions={data.questions.slice(QUESTIONS_PER_SLIDE)} hi={hi} />}
                 {news && <Practice id={meta.id} hi={hi} />}
+                {news && <QuickCheck id={meta.id} hi={hi} />}
                 {!news && <div className={styles.loading} role="status">{hi ? "ताज़ा खबरें लोड हो रही हैं…" : "Loading this week's stories…"}<span /><span /><span /></div>}
                 {news && !(data?.kind === "news" ? data.stories.length : data?.kind === "questions" ? data.questions.length : 0) && <Newsrooms meta={meta} hi={hi} />}
-              </div>
+              </div></>}
             </article>;
           })}
         </div>
@@ -136,9 +141,8 @@ export function LandingNews() {
 }
 
 function Cover({ meta, hi, eager, data }: { meta: NewsSlideMeta; hi: boolean; eager: boolean; data?: NewsSlideData }) {
-  // The cover is as tall as the stories beside it, so its lower half indexes what the slide holds, sums it up,
-  // points to the official newsrooms and ends with where to go deeper on MasterClass Buddy.
-  // Titles only: each one is already a link on its own card beside the cover.
+  // The cover's lower half indexes what the slide holds, sums it up, teaches the basics (as many as fit beside the
+  // stories) and ends with where to go deeper on MasterClass Buddy.
   const items: { title: string; source: string | null; date: string | null; logo: NewsLogo | null }[] = data?.kind === "news"
     ? data.stories.slice(0, NEWS_PER_SLIDE).map(story => ({ title: story.title, source: story.source, date: story.date, logo: story.logo }))
     : data?.kind === "questions" ? data.questions.slice(0, QUESTIONS_PER_SLIDE).map(ask => ({ title: ask.question, source: ask.source, date: null, logo: ask.companies[0] ?? null })) : [];
@@ -171,14 +175,10 @@ function Cover({ meta, hi, eager, data }: { meta: NewsSlideMeta; hi: boolean; ea
         {(item.source || item.date) && <small>{item.logo && <Logo logo={item.logo} />}{[item.source, item.date ? shortDate(item.date) : null].filter(Boolean).join(" · ")}</small>}
       </li>)}</ol>
     </div>}
-    {items.length > 0 && meta.newsrooms.some(room => !room.href.startsWith("#")) && <div className={styles.extra}>
-      <h5>{hi ? "आगे यहाँ पढ़ें" : "Read more at"}</h5>
-      <ul className={styles.rooms}>{meta.newsrooms.filter(room => !room.href.startsWith("#")).map(room => <li key={room.href}><a href={room.href} target="_blank" rel="noopener noreferrer"><Newspaper size={13} aria-hidden="true" />{room.label}<ArrowUpRight size={12} aria-hidden="true" /></a></li>)}</ul>
-    </div>}
-    <div className={`${styles.extra} ${styles.basics}`}>
-      <h5><Sparkles size={14} aria-hidden="true" />{hi ? "बुनियादी बातें समझें" : "Learn the basics"}</h5>
-      <dl>{NEWS_BASICS[meta.id].map(basic => <div key={basic.term}><dt>{basic.term}</dt><dd>{hi ? basic.hiExplain : basic.explain}</dd></div>)}</dl>
-    </div>
+    <Fit className={`${styles.extra} ${styles.basics}`} as="dl" keep={4} watch={hi}
+      heading={<h5><Sparkles size={14} aria-hidden="true" />{hi ? "बुनियादी बातें समझें" : "Learn the basics"}</h5>}>
+      {[...NEWS_BASICS[meta.id], ...NEWS_MORE_BASICS[meta.id]].map(basic => <div key={basic.term}><dt>{basic.term}</dt><dd>{hi ? basic.hiExplain : basic.explain}</dd></div>)}
+    </Fit>
     <div className={`${styles.extra} ${styles.deeper}`}>
       <h5><GraduationCap size={14} aria-hidden="true" />{hi ? "MasterClass Buddy पर आगे सीखें" : "Keep learning on MasterClass Buddy"}</h5>
       <ul>{meta.learn.map(link => <li key={link.href}><Link href={link.href}>{hi ? link.hiLabel : link.label}<ArrowUpRight size={13} aria-hidden="true" /></Link></li>)}</ul>
@@ -203,8 +203,9 @@ function Stories({ stories, hi, slide }: { stories: NewsStory[]; hi: boolean; sl
   const byline = (story: NewsStory) => <span className={styles.byline}>{story.logo && <Logo logo={story.logo} />}<span className={styles.source}>{story.source}</span><time dateTime={story.date}>{shortDate(story.date)}</time></span>;
   return <>
     <div className={styles.lead} data-tone={cardTone(slide, 0)}>
-      {byline(lead)}
-      <h4><a href={lead.url} target="_blank" rel="noopener noreferrer">{lead.title}</a></h4>
+      <div className={styles.leadHead}>{byline(lead)}<ListenButton id={`news:${lead.url}`} title={lead.title} compact
+        text={() => [lead.title, lead.summary, ...lead.points, lead.why ? `${hi ? "क्यों ज़रूरी है" : "Why it matters"}: ${lead.why}` : "", lead.concept ? `${lead.concept.term}: ${lead.concept.explain}` : ""].filter(Boolean).join(". ")} /></div>
+      <h4>{lead.title}</h4>
       <p>{lead.summary}</p>
       {lead.points.length > 0 && <div className={styles.facts}>
         <h5><ListChecks size={14} aria-hidden="true" />{hi ? "मुख्य बातें" : "Key facts"}</h5>
@@ -212,11 +213,10 @@ function Stories({ stories, hi, slide }: { stories: NewsStory[]; hi: boolean; sl
       </div>}
       {lead.why && <p className={styles.why}><Lightbulb size={14} aria-hidden="true" /><span><b>{hi ? "क्यों ज़रूरी है" : "Why it matters"}:</b> {lead.why}</span></p>}
       {lead.concept && <Concept concept={lead.concept} hi={hi} />}
-      <a className={styles.read} href={lead.url} target="_blank" rel="noopener noreferrer">{hi ? "पूरी खबर पढ़ें" : "Read the full story"}<ArrowUpRight size={14} aria-hidden="true" /></a>
     </div>
     {rest.length > 0 && <ul className={styles.more}>{rest.map((story, k) => <li key={story.url} data-tone={cardTone(slide, k + 1)}>
       {byline(story)}
-      <a href={story.url} target="_blank" rel="noopener noreferrer">{story.title}</a>
+      <b className={styles.storyTitle}>{story.title}</b>
       <p>{story.summary}</p>
       {story.points.length > 0 && <ul className={styles.points}>{story.points.slice(0, 2).map(point => <li key={point}>{point}</li>)}</ul>}
       {story.why && <p className={styles.why}><Lightbulb size={13} aria-hidden="true" /><span>{story.why}</span></p>}
@@ -225,17 +225,82 @@ function Stories({ stories, hi, slide }: { stories: NewsStory[]; hi: boolean; sl
   </>;
 }
 
-/** Stories beyond the slide's four cards: a compact two-column list, each linking to its source with its concept. */
+/** Stories beyond the slide's four cards: a compact two-column list, each naming its source, with its concept. */
 function Headlines({ stories, hi }: { stories: NewsStory[]; hi: boolean }) {
   return <section className={styles.headlines} aria-label={hi ? "और सुर्ख़ियाँ" : "More headlines"}>
     <h5><Newspaper size={14} aria-hidden="true" />{hi ? "और सुर्ख़ियाँ" : "More headlines"}</h5>
     <ol>{stories.map(story => <li key={story.url}>
       <small>{story.logo && <Logo logo={story.logo} />}{story.source} · <time dateTime={story.date}>{shortDate(story.date)}</time></small>
-      <a href={story.url} target="_blank" rel="noopener noreferrer">{story.title}</a>
+      <span>{story.title}</span>
       <p>{story.summary}</p>
       {story.concept && <p className={styles.headlineConcept}><GraduationCap size={13} aria-hidden="true" /><span><b>{story.concept.term}</b>: {story.concept.explain}</span></p>}
     </li>)}</ol>
   </section>;
+}
+
+/** Eight short questions with answers on the slide's subject, closing the stories column (as many as fit). */
+function QuickCheck({ id, hi }: { id: NewsSlideId; hi: boolean }) {
+  return <Fit className={styles.quick} as="ol" keep={2} watch={hi}
+    heading={<h5><CircleHelp size={14} aria-hidden="true" />{hi ? "त्वरित जाँच" : "Quick check"}</h5>}>
+    {NEWS_QUICK_CHECKS[id].map(check => <li key={check.q}><b>{hi ? check.hiQ : check.q}</b><p>{hi ? check.hiA : check.a}</p></li>)}
+  </Fit>;
+}
+
+const NARROW = "(max-width: 899px)";
+/**
+ * Study material that fills what is left of a slide column. On the two-column layout it takes the height the
+ * other column sets and shows only the items that fit whole (always at least `keep`, which also set its minimum
+ * height), stretching them slightly so the column ends level; on one column it shows `keep + 1`.
+ * Item heights are measured once per width (or language), then the count follows the space available.
+ */
+function Fit({ as: List, keep, watch, heading, className, children }: { as: "dl" | "ol"; keep: number; watch: unknown; heading: ReactNode; className?: string; children: ReactNode[] }) {
+  const box = useRef<HTMLDivElement>(null), list = useRef<HTMLElement>(null);
+  const sizes = useRef<{ heights: number[]; gap: number; head: number; pad: number; width: number }>({ heights: [], gap: 0, head: 0, pad: 0, width: -1 });
+  const [count, setCount] = useState<number | null>(null);
+  const [minHeight, setMinHeight] = useState<number | undefined>(undefined);
+  const total = children.length;
+
+  useLayoutEffect(() => {
+    const el = box.current;
+    if (!el) return;
+    const fit = () => {
+      if (window.matchMedia(NARROW).matches) { setMinHeight(undefined); setCount(Math.min(total, keep + 1)); return; }
+      const { heights, gap, head, pad } = sizes.current;
+      const room = el.clientHeight - head - pad;
+      let used = 0, n = 0;
+      for (const h of heights) { const next = used + (n ? gap : 0) + h; if (next > room) break; used = next; n++; }
+      setCount(Math.max(Math.min(keep, total), n));
+    };
+    const measure = () => {
+      const items = list.current ? [...list.current.children] as HTMLElement[] : [];
+      const style = list.current ? getComputedStyle(list.current) : null;
+      const gap = style ? parseFloat(style.rowGap) || 0 : 0;
+      const heights = items.map(item => item.getBoundingClientRect().height);
+      const head = el.clientHeight && list.current ? list.current.getBoundingClientRect().top - el.getBoundingClientRect().top : 0;
+      const pad = parseFloat(getComputedStyle(el).paddingBottom) || 0;
+      sizes.current = { heights, gap, head, pad, width: el.clientWidth };
+      const kept = heights.slice(0, keep);
+      setMinHeight(window.matchMedia(NARROW).matches || !kept.length ? undefined : Math.ceil(head + pad + kept.reduce((sum, h) => sum + h, 0) + gap * (kept.length - 1)));
+      fit();
+    };
+    if (count === null) { measure(); return; }
+    if (typeof ResizeObserver === "undefined") return;
+    const observer = new ResizeObserver(() => {
+      // A new width rewraps every item, so they are measured again; a new height only changes how many fit.
+      if (el.clientWidth !== sizes.current.width) setCount(null); else fit();
+    });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [count, keep, total]);
+  // A language switch changes every item's text: measure again (state adjusted while rendering, as React advises).
+  const [measuredFor, setMeasuredFor] = useState(watch);
+  if (measuredFor !== watch) { setMeasuredFor(watch); setCount(null); }
+
+  const shown = count === null ? children : children.slice(0, count);
+  return <div ref={box} className={`${styles.fit} ${className ?? ""}`} data-measuring={count === null || undefined} style={{ minHeight }}>
+    {heading}
+    <List ref={list as never}>{shown}</List>
+  </div>;
 }
 
 /** Three hands-on tasks for the slide's subject, so the week's news ends in something to practise. */
@@ -254,7 +319,7 @@ function AlsoAsked({ questions, hi }: { questions: InterviewAsk[]; hi: boolean }
   return <section className={styles.headlines} aria-label={hi ? "ये भी पूछे गए" : "Also asked"}>
     <h5><MessagesSquare size={14} aria-hidden="true" />{hi ? "ये भी पूछे गए" : "Also asked"}</h5>
     <ol>{questions.map(ask => <li key={ask.question}>
-      {ask.url && <small>{ask.companies[0] && <Logo logo={ask.companies[0]} />}<a href={ask.url} target="_blank" rel="noopener noreferrer">{ask.source}</a></small>}
+      {ask.url && <small>{ask.companies[0] && <Logo logo={ask.companies[0]} />}{ask.source}</small>}
       <span>{ask.question}</span>
       <p>{ask.answer}</p>
     </li>)}</ol>
@@ -275,16 +340,18 @@ function Questions({ questions, hi, slide }: { questions: InterviewAsk[]; hi: bo
       <p>{ask.answer}</p>
       <div className={styles.qMeta}>
         <Stars rating={ask.rating} hi={hi} />
+        <ListenButton id={`news-ask:${ask.question}`} title={ask.question} text={() => `${ask.question} ${ask.answer}`} compact className={styles.askListen} />
         {ask.companies.length > 0 && <span className={styles.companies}><span>{hi ? "पूछा गया:" : "Asked at"}</span>{ask.companies.map(company => <span key={company.name} className={styles.company}><Logo logo={company} />{company.name}</span>)}</span>}
-        {ask.url && <a href={ask.url} target="_blank" rel="noopener noreferrer">{ask.source}<ArrowUpRight size={12} aria-hidden="true" /></a>}
+        {ask.url && <span>{ask.source}</span>}
       </div>
     </div>
   </li>)}</ol>;
 }
 
 function Newsrooms({ meta, hi }: { meta: NewsSlideMeta; hi: boolean }) {
+  const inPage = meta.newsrooms.filter(room => room.href.startsWith("#"));
   return <div className={styles.empty}>
-    <p>{hi ? "ताज़ा खबरें अभी लोड हो रही हैं। तब तक यहाँ से पढ़ें:" : "Fresh stories are being refreshed. Until then, read the latest at:"}</p>
-    <ul>{meta.newsrooms.map(room => <li key={room.href}><a href={room.href} {...(room.href.startsWith("#") ? {} : { target: "_blank", rel: "noopener noreferrer" })}>{room.label}<ArrowUpRight size={13} aria-hidden="true" /></a></li>)}</ul>
+    <p>{hi ? "ताज़ा खबरें अभी लोड हो रही हैं। थोड़ी देर में फिर देखें।" : "Fresh stories are being refreshed. Check back in a moment."}</p>
+    {inPage.length > 0 && <ul>{inPage.map(room => <li key={room.href}><a href={room.href}>{room.label}<ArrowUpRight size={13} aria-hidden="true" /></a></li>)}</ul>}
   </div>;
 }

@@ -3,7 +3,7 @@
 import learningCard from "./learning-card.module.css";
 import { useState } from "react";
 import Image from "next/image";
-import { ExternalLink, Images, Maximize2 } from "lucide-react";
+import { Images, Maximize2 } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "./ui/dialog";
 import { Pager } from "./pager";
 import { learningResourcesFor, type LearningResource } from "@/lib/media/learning-resources";
@@ -29,20 +29,19 @@ function LearningResourceShelf({ technology }: { technology: string }) {
   return <section className={styles.resources} aria-label={`Visual resources for ${technology}`}>
     <header className={styles.header}><h3><Images size={16} aria-hidden="true" />Visual learning shelf</h3><span>{resources.length + links.length} resources</span></header>
     <div className={styles.grid}>{visibleLinks.map((resource, index) => <article key={`${resource.page}-${start + index}`} className={`${styles.card} ${learningCard.card}`}>
-      <a className={`${styles.preview} ${styles.brandPreview}`} href={resource.page} target="_blank" rel="noopener noreferrer" aria-label={`Visit ${resource.title} (opens in a new tab)`}>
+      <div className={`${styles.preview} ${styles.brandPreview}`}>
         <Image src={resource.src} alt="" width={240} height={160} sizes="112px" />
-        <span><ExternalLink size={12} aria-hidden="true" />Visit</span>
-      </a>
+      </div>
       <div className={styles.caption}><small>{resource.kind}</small><h4>{resource.title}</h4>
-        <a href={resource.page} target="_blank" rel="noopener noreferrer">{resource.credit}<ExternalLink size={12} aria-hidden="true" /></a>
+        <span className={styles.credit}>{resource.credit}</span>
       </div>
     </article>)}{visibleResources.map(resource => <article key={resource.page} className={`${styles.card} ${learningCard.card}`}>
-      <a className={styles.preview} href={resource.page} target="_blank" rel="noopener noreferrer" aria-label={`Visit ${resource.title} (opens in a new tab)`}>
+      <button type="button" className={styles.preview} onClick={() => setSelected(resource)} tabIndex={-1} aria-hidden="true">
         <Image src={resource.src} alt={`Screenshot of ${resource.title}`} width={1280} height={640} sizes="120px" />
-        <span><ExternalLink size={12} aria-hidden="true" />Visit</span>
-      </a>
+        <span><Maximize2 size={12} aria-hidden="true" />Enlarge</span>
+      </button>
       <div className={styles.caption}><small>{resource.kind}</small><h4>{resource.title}</h4>
-        <a href={resource.page} target="_blank" rel="noopener noreferrer">{resource.credit}<ExternalLink size={12} aria-hidden="true" /></a>
+        <span className={styles.credit}>{resource.credit}</span>
         <button type="button" className={styles.enlarge} onClick={() => setSelected(resource)} aria-label={`Enlarge screenshot: ${resource.title}`}><Maximize2 size={12} aria-hidden="true" />Preview screenshot</button>
       </div>
     </article>)}</div>
@@ -53,7 +52,7 @@ function LearningResourceShelf({ technology }: { technology: string }) {
         <DialogDescription>{selected.caption}</DialogDescription>
         <time className={styles.date} dateTime={selected.checkedAt}>Captured {selected.checkedAt}</time>
         <Image src={selected.src} alt={`Screenshot of ${selected.title}`} width={1280} height={640} unoptimized className={styles.large} />
-        <a href={selected.page} target="_blank" rel="noopener noreferrer">Open {selected.credit}<ExternalLink size={13} aria-hidden="true" /></a>
+        <p className={styles.credit}>{selected.credit}</p>
       </>}</DialogContent>
     </Dialog>
   </section>;

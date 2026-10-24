@@ -13,21 +13,28 @@ function send(body: Record<string, unknown>) {
   fetch("/api/track", { method: "POST", body: data, keepalive: true, headers: { "content-type": "application/json" } }).catch(() => {});
 }
 
+/** How often a visible page tells the Live visitor stream it is still being read (see app/api/track). */
+const HEARTBEAT_MS = 45_000;
+
 /**
  * Records page views and time on page for the super admin's User activities page (/api/track).
+ * Time on page counts only while the page is visible: hiding the tab sends a leave beacon for the stretch so far,
+ * and coming back starts a new stretch (with a heartbeat, so the visitor shows as reading again at once).
  * Kept tiny and dependency-free because it rides in the root layout on every page.
  */
 export function VisitTracker() {
   const pathname = usePathname();
-  const open = useRef<{ path: string; started: number } | null>(null);
+  // The open page and when its current visible stretch began (null while the tab is hidden).
+  const open = useRef<{ path: string; since: number | null } | null>(null);
 
   useEffect(() => {
     if (!pathname || pathname.startsWith("/dashboard/super-admin")) return;
-    const leave = () => {
-      const page = open.current; if (!page) return;
-      open.current = null;
-      send({ type: "leave", path: page.path, duration: Math.round(performance.now() - page.started) });
+    const pause = () => {
+      const page = open.current; if (page?.since == null) return;
+      send({ type: "leave", path: page.path, duration: Math.round(performance.now() - page.since) });
+      page.since = null;
     };
+    const leave = () => { pause(); open.current = null; };
     leave();
     // Wait a moment so document.title is the new page's, not the previous one's.
     const timer = setTimeout(() => {
@@ -39,9 +46,17 @@ export function VisitTracker() {
         language: navigator.language, timezone: Intl.DateTimeFormat().resolvedOptions().timeZone, screen: `${screen.width}x${screen.height}`,
       });
       referrerSent = true;
-      open.current = { path: pathname, started: performance.now() };
+      open.current = { path: pathname, since: document.visibilityState === "hidden" ? null : performance.now() };
     }, 400);
-    const onHide = () => { if (document.visibilityState === "hidden") leave(); };
+    const beat = () => {
+      const page = open.current;
+      if (page?.since != null && document.visibilityState === "visible") send({ type: "ping", path: page.path, duration: Math.round(performance.now() - page.since) });
+    };
+    const heartbeat = setInterval(beat, HEARTBEAT_MS);
+    const onVisibility = () => {
+      if (document.visibilityState === "hidden") return pause();
+      if (open.current && open.current.since == null) { open.current.since = performance.now(); beat(); }
+    };
     // Only UI labels and route paths: never typed text, form values or query strings.
     const onClick = (event: MouseEvent) => {
       if (pathname !== "/" && !pathname.startsWith("/dashboard")) return;
@@ -57,9 +72,9 @@ export function VisitTracker() {
       const topic = (container?.getAttribute("data-track-topic") || container?.querySelector("h2,h3,h1")?.textContent || container?.id || pathname.split("/").filter(Boolean).slice(1).join(" / ") || "General").trim().slice(0, 120);
       send({ type: "interaction", path: pathname, topic, option, target_path: targetPath });
     };
-    document.addEventListener("visibilitychange", onHide);
+    document.addEventListener("visibilitychange", onVisibility);
     document.addEventListener("click", onClick);
-    return () => { clearTimeout(timer); document.removeEventListener("visibilitychange", onHide); document.removeEventListener("click", onClick); leave(); };
+    return () => { clearTimeout(timer); clearInterval(heartbeat); document.removeEventListener("visibilitychange", onVisibility); document.removeEventListener("click", onClick); leave(); };
   }, [pathname]);
 
   return null;

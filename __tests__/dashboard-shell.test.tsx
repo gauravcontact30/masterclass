@@ -40,27 +40,28 @@ test("My Library owns All technology notes and dashboard Notes only shows its to
 test("sidebar has learning navigation only and keeps account access in the header",()=>{
   localStorage.clear();render(<Workspace authEnabled configured={false} billingEnabled={false} userEmail="student@example.test" initialStudyCourses={[]} initialAccount={{profile:{language:"en"},account:{tier:"monthly",used:0,limit:50,creditBalance:0,subscription:null},preparations:{isSuperAdmin:false,selections:["nda"]},documents:[],progress:[]}}/>);
   const sidebar=within(screen.getByRole("complementary"));expect(sidebar.queryByRole("button",{name:"Membership"})).not.toBeInTheDocument();expect(sidebar.queryByRole("button",{name:"Connections"})).not.toBeInTheDocument();
-  // The five preparation groups and Mentors were removed from the sidebar; Class Room took their place.
+  // The five preparation groups and Mentors were removed from the sidebar, and Class Room (school and exam
+  // catalogues) was removed on 2026-10-24.
   for(const gone of ["Govt. Exams","Entrance Exams","Board Exams","Language Preparation","Courses & Interviews"]) expect(sidebar.queryByRole("button",{name:gone})).not.toBeInTheDocument();
   expect(sidebar.queryByRole("link",{name:"Mentors"})).not.toBeInTheDocument();
-  expect(sidebar.getByRole("link",{name:"Class Room"})).toHaveAttribute("href","/dashboard/classroom");
+  expect(sidebar.queryByRole("link",{name:"Class Room"})).not.toBeInTheDocument();
   expect(sidebar.getByRole("button",{name:"Collapse sidebar"}).closest(".sidebar-brand-row")).not.toBeNull();
   expect(screen.getByRole("button",{name:"Your account"}).closest(".topbar")).not.toBeNull();
 });
 
 test("dashboard combines shared search and filters and clears the query from its chip",async()=>{
   const user=userEvent.setup();
-  render(<Workspace authEnabled configured={false} billingEnabled={false} initialStudyCourses={STUDY_COURSES} initialAccount={{profile:{language:"en"},account:{tier:"monthly",used:0,limit:50,creditBalance:0,subscription:null},preparations:{isSuperAdmin:false,selections:["cbse-10"]},documents:[],progress:[]}}/>);
+  render(<Workspace authEnabled configured={false} billingEnabled={false} initialStudyCourses={STUDY_COURSES} initialAccount={{profile:{language:"en"},account:{tier:"monthly",used:0,limit:50,creditBalance:0,subscription:null},preparations:{isSuperAdmin:false,selections:["system-design"]},documents:[],progress:[]}}/>);
   const panel=within(screen.getByRole("search",{name:"Learning search and filters"}));
   const search=panel.getByRole("searchbox",{name:"Search all your learning"});
-  expect(panel.getAllByRole("combobox")).toHaveLength(4);
+  expect(panel.getAllByRole("combobox")).toHaveLength(3);
   await user.keyboard("{Control>}k{/Control}");
   expect(search).toHaveFocus();
-  await user.type(search,"Physics");
+  await user.type(search,"WhatsApp");
   expect(panel.getByRole("status")).toHaveTextContent("1 guide found");
   await user.click(panel.getByRole("button",{name:"Remove search"}));
   expect(search).toHaveValue("");
-  expect(panel.getByRole("status")).toHaveTextContent("8 guides found");
+  expect(panel.getByRole("status")).toHaveTextContent("12 guides found");
 });
 
 describe("the sidebar Search item and its AI Mode switch", () => {

@@ -2,7 +2,7 @@
 import { AccordionSummary } from "@/components/ui/accordion-chevron";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Bell, ExternalLink, RefreshCw } from "lucide-react";
+import { Bell, RefreshCw } from "lucide-react";
 import { DOCS_CHECK_INTERVAL, type DocumentationUpdate, type SourceSnapshot } from "@/lib/documentation-updates";
 import { requestJson } from "@/lib/client";
 import { Button } from "./ui/button";
@@ -141,7 +141,6 @@ export function DocumentationRefresh() {
           <strong>{statusLabels[item.status]}</strong>
           {item.error && <p role="alert">{item.error}</p>}
           <span>Last checked: {date(item.checkedAt)}</span><span>Last imported: {date(item.importedAt)}</span>
-          <a href={item.officialUrl} target="_blank" rel="noopener noreferrer">Official website <ExternalLink size={12} aria-hidden="true" /></a>
         </div>}
         {loadingSource ? <p role="status">Loading source…</p> : snapshot?.pending ? <section className={styles.source} aria-label="Latest official source preview"><h3>{snapshot.pending.title}</h3><p>{snapshot.pending.text}</p></section> : <p className={styles.help}>Check this technology to fetch its official source. A first check creates a comparison baseline; future checks detect source changes.</p>}
       </DialogContent>
@@ -160,5 +159,5 @@ export function ImportedDocumentation({ technologyId }: { technologyId: string }
     return () => { controller.abort(); window.removeEventListener("documentation-updated", load); };
   }, [technologyId]);
   if (!source) return null;
-  return <details className={styles.imported}><AccordionSummary>Imported official documentation · fetched {date(source.retrievedAt)}</AccordionSummary><a href={source.url} target="_blank" rel="noopener noreferrer">Read original source <ExternalLink size={12} aria-hidden="true" /></a><section className={styles.source}><h3>{source.title}</h3><p>{source.text}</p></section></details>;
+  return <details className={styles.imported}><AccordionSummary>Imported official documentation · fetched {date(source.retrievedAt)}</AccordionSummary><section className={styles.source}><h3>{source.title}</h3><p>{source.text}</p></section></details>;
 }

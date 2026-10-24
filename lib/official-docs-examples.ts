@@ -16,9 +16,6 @@ const starters: Record<string, Starter> = {
   react: ["Pass a prop", "Greeting.jsx", `export default function Greeting({ name = 'Learner' }) {
   return <h1>Hello, {name}!</h1>;
 }`, "Render <Greeting name=\"Sam\" /> in a React app to personalize the heading."],
-  tailwind: ["Style a button", "button.html", `<button class="rounded-lg bg-blue-100 px-4 py-2 font-medium text-blue-900 hover:bg-blue-200">
-  Start learning
-</button>`, "Use in a page with Tailwind configured; hover to see the background change."],
   zustand: ["Update a store", "counter.js", `import { createStore } from 'zustand/vanilla';
 const counter = createStore(set => ({
   count: 0,
@@ -278,12 +275,6 @@ export class HealthController {
   @Get()
   check() { return { status: 'ok' }; }
 }`, "Register this controller in a Nest module, then request /health."],
-  mongoose: ["Validate a document", "lesson.mjs", `import mongoose from 'mongoose';
-const schema = new mongoose.Schema({ title: { type: String, required: true } });
-const Lesson = mongoose.model('StarterLesson', schema);
-const lesson = new Lesson({ title: 'Schemas' });
-await lesson.validate();
-console.log(lesson.title);`, "Validation runs locally without a database connection; saving requires connecting to MongoDB."],
 };
 
 export type DocsCodeExample = {

@@ -35,6 +35,9 @@ const L = {
   certAgentic: { label: "Agentic AI certification path", hiLabel: "एजेंटिक AI सर्टिफ़िकेशन रास्ता", href: cert("agentic-ai") },
   certLangchain: { label: "Python agents: LangChain, LangGraph, LangSmith", hiLabel: "Python एजेंट: LangChain, LangGraph, LangSmith", href: cert("langchain-python") },
   certN8n: { label: "n8n automation certification path", hiLabel: "n8n ऑटोमेशन सर्टिफ़िकेशन रास्ता", href: cert("n8n") },
+  certDevops: { label: "DevOps certification path", hiLabel: "DevOps सर्टिफ़िकेशन रास्ता", href: cert("devops") },
+  certCloud: { label: "Cloud Architecture & Infrastructure path", hiLabel: "क्लाउड आर्किटेक्चर व इन्फ्रास्ट्रक्चर रास्ता", href: cert("cloud-architecture") },
+  certAutomation: { label: "AI Automation with LangChain path", hiLabel: "LangChain के साथ AI ऑटोमेशन रास्ता", href: cert("ai-automation-langchain") },
 };
 
 /** A company named in a story or an interview report, with its simple-icons mark when there is one. */
@@ -64,14 +67,14 @@ export const NEWS_SLIDES: NewsSlideMeta[] = [
     blurb: "New releases and patterns from LangChain, LangGraph, n8n and the agent ecosystem.", hiBlurb: "LangChain, LangGraph, n8n और एजेंट इकोसिस्टम की नई रिलीज़ और पैटर्न।",
     topics: ["Agentic AI", "LangChain", "LangGraph", "n8n"],
     newsrooms: [{ label: "LangChain blog", href: "https://blog.langchain.com/" }, { label: "n8n blog", href: "https://blog.n8n.io/" }, { label: "MCP blog", href: "https://blog.modelcontextprotocol.io/" }],
-    learn: [L.certAgentic, L.certLangchain, L.certN8n, L.blueprints],
+    learn: [L.certAgentic, L.certLangchain, L.certAutomation, L.certN8n],
   },
   {
     id: "system-design", kind: "news", short: "System design", title: "System design in the real world", hiTitle: "असली दुनिया में सिस्टम डिज़ाइन",
     blurb: "Architecture write-ups, outages and scaling lessons engineering teams published.", hiBlurb: "इंजीनियरिंग टीमों के आर्किटेक्चर लेख, आउटेज और स्केलिंग से मिले सबक।",
     topics: ["Architecture", "Scaling", "Databases", "Postmortems"],
     newsrooms: [{ label: "InfoQ architecture", href: "https://www.infoq.com/architecture-design/" }, { label: "Netflix tech blog", href: "https://netflixtechblog.com/" }, { label: "Cloudflare blog", href: "https://blog.cloudflare.com/" }],
-    learn: [L.certSystem, L.blueprints, L.questions],
+    learn: [L.certSystem, L.certCloud, L.blueprints],
   },
   {
     id: "frontend", kind: "news", short: "Next.js & React", title: "Next.js, React & state", hiTitle: "Next.js, React और स्टेट",
@@ -85,7 +88,7 @@ export const NEWS_SLIDES: NewsSlideMeta[] = [
     blurb: "What changed in Lambda, S3, Bedrock, DynamoDB, ECS and other popular services.", hiBlurb: "Lambda, S3, Bedrock, DynamoDB, ECS और दूसरी लोकप्रिय सेवाओं में क्या बदला।",
     topics: ["Lambda", "S3", "Bedrock", "DynamoDB"],
     newsrooms: [{ label: "What's new with AWS", href: "https://aws.amazon.com/new/" }, { label: "AWS News Blog", href: "https://aws.amazon.com/blogs/aws/" }],
-    learn: [L.certAws, L.compare, L.blueprints],
+    learn: [L.certAws, L.certCloud, L.certDevops],
   },
   {
     id: "musk", kind: "news", short: "Musk, xAI & SpaceX", title: "Elon Musk: xAI, Tesla AI & SpaceX", hiTitle: "एलन मस्क: xAI, Tesla AI और SpaceX",

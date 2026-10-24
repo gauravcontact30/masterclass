@@ -157,3 +157,8 @@
   .flowArrow { top: auto; right: auto; bottom: -19px; left: 18px; transform: rotate(90deg); }
 }
 @media (prefers-reduced-motion: reduce) { .options button, .mockBar span { transition: none; } }
+
+/* "Listen to the lesson" above the lesson and revision pack; a model answer's Listen sits at its top right. */
+.listenRow { display: flex; align-items: center; gap: 8px; margin: 0 0 12px; font-size: 13px; font-weight: 600; color: #6b6a63; }
+.answer { position: relative; }
+.answerListen { float: right; margin: 0 0 6px 10px; }

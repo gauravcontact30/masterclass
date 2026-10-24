@@ -45,8 +45,7 @@
 .figure figcaption { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
 .figure figcaption strong { color: var(--heading, #2f4b5c); font-size: 13px; font-weight: 640; line-height: 1.5; }
 .figure figcaption > span { color: var(--muted, #73726c); font-size: 12.5px; line-height: 1.75; overflow-wrap: break-word; }
-.figure figcaption > a {
+.figure figcaption > .credit {
   display: inline-flex; align-items: center; gap: 5px; align-self: flex-start;
   color: #315f96; font-size: 11.5px; text-decoration: underline; text-underline-offset: 3px; overflow-wrap: anywhere;
 }
-.figure figcaption > a:hover { color: var(--accent, #c6613f); }

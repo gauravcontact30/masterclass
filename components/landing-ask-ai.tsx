@@ -10,7 +10,7 @@ const STARTERS: { en: string; hi: string; mode: StudyBuddyMode }[] = [
   { en: "Explain JavaScript closures like I am new to them", hi: "JavaScript closures को आसान भाषा में समझाइए", mode: "study" },
   { en: "Quiz me on SQL joins", hi: "SQL joins पर मुझसे क्विज़ पूछिए", mode: "study" },
   { en: "How do I answer “Tell me about a project” in an interview?", hi: "इंटरव्यू में “अपने प्रोजेक्ट के बारे में बताइए” का जवाब कैसे दूँ?", mode: "interview" },
-  { en: "Summarize photosynthesis for a Class 10 exam", hi: "कक्षा 10 की परीक्षा के लिए प्रकाश संश्लेषण का सार बताइए", mode: "study" },
+  { en: "Summarize how a RAG pipeline works before my AI interview", hi: "AI इंटरव्यू से पहले RAG पाइपलाइन कैसे काम करती है, इसका सार बताइए", mode: "study" },
 ];
 
 /**

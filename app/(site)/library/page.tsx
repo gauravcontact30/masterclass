@@ -16,8 +16,8 @@ export default function LibraryHub() {
     { href: "/workflows", title: "Workflow blueprints", body: "System design and AI agent architectures with diagrams, steps and interview questions.", count: `${workflows().length} blueprints` },
     { href: "/learn", title: "Technology handbooks", body: "Every topic explained with key points, syntax, a worked example and use cases.", count: `${handbooks().length} handbooks` },
     { href: "/api-reference", title: "API reference", body: "Hooks, classes, functions and CLI commands with syntax, parameters and examples.", count: `${apiPackages().length} technologies` },
-    { href: "/vocabulary", title: "English vocabulary", body: "Words for work and exams with Hindi meanings, sentences, synonyms and antonyms.", count: `${vocabulary.reduce((sum, group) => sum + group.words.length, 0).toLocaleString("en-IN")} words` },
-    { href: "/courses", title: "Courses & learning paths", body: "School, competitive exam and technology learning paths in English and Hindi.", count: "All paths" },
+    { href: "/vocabulary", title: "English vocabulary", body: "Words for work and interviews with Hindi meanings, sentences, synonyms and antonyms.", count: `${vocabulary.reduce((sum, group) => sum + group.words.length, 0).toLocaleString("en-IN")} words` },
+    { href: "/courses", title: "Courses & learning paths", body: "Technology, system design and language learning paths in English and Hindi.", count: "All paths" },
   ];
   return <>
     <PageIntro path="/library" eyebrow="Learn for free" />

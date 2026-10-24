@@ -42,7 +42,7 @@ export function LandingInterview({ expanded = false, preview = false, day = 0, f
   const visible = useVisibleContent(INTERVIEW_TECHS, techKey);
   const techs = preview ? takeDaily(visible, day, PREVIEW_COUNT) : visible;
   const section = useContentItem("section:interview-prep", "section");
-  const { track, nearViewport, page, pages, playing, setPlaying, running, goTo, holdProps } = usePagedCarousel<HTMLUListElement>(techs.length, 1, AUTOPLAY_MS);
+  const { track, nearViewport, page, pages, playing, setPlaying, running, goTo, holdProps } = usePagedCarousel<HTMLUListElement>(techs.length, 1, AUTOPLAY_MS, { fitHeight: true });
   const current = techs[page];
   // The open library tab per tabbed technology, shared by the navigator and the slide.
   const [tabs, setTabs] = useState<Record<string, number>>({});

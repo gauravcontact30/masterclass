@@ -85,11 +85,15 @@ describe("LandingNews carousel", () => {
     global.fetch = jest.fn().mockResolvedValue({ ok: true, json: () => Promise.resolve(many) }) as unknown as typeof fetch;
     await renderLoaded();
     const slide = within(shown()[0]);
-    expect(slide.getByRole("link", { name: "Story number 4" })).toBeInTheDocument();
+    expect(slide.getAllByText("Story number 4").length).toBeGreaterThan(0);
+    expect(slide.queryByRole("link", { name: /Story number/ })).toBeNull();
     const headlines = slide.getByText("More headlines").parentElement as HTMLElement;
-    expect(within(headlines).getAllByRole("link").map(link => link.textContent)).toEqual(["Story number 5", "Story number 6"]);
+    expect(within(headlines).getByText("Story number 5")).toBeInTheDocument();
+    expect(within(headlines).getByText("Story number 6")).toBeInTheDocument();
     expect(slide.getByText("Term 5")).toBeInTheDocument();
     expect(slide.getByText("Learn the basics")).toBeInTheDocument();
+    expect(slide.getByText("Quick check")).toBeInTheDocument();
+    expect(slide.getByText("Why does a longer prompt cost more?")).toBeInTheDocument();
     expect(slide.getByText("Context window")).toBeInTheDocument();
   });
 
@@ -100,7 +104,8 @@ describe("LandingNews carousel", () => {
     expect(within(shown()[0]).getByText("In this slide")).toBeInTheDocument();
     expect(screen.getByText("Updated 22 Oct, 8:50 am IST")).toBeInTheDocument();
     expect(shown()).toHaveLength(1);
-    expect(screen.getByRole("link", { name: "Claude Code ships a thing" })).toHaveAttribute("href", "https://www.anthropic.com/news/x");
+    expect(screen.getAllByText("Claude Code ships a thing").length).toBeGreaterThan(0);
+    expect(screen.queryByRole("link", { name: "Claude Code ships a thing" })).toBeNull();
     act(() => { jest.advanceTimersByTime(NEWS_AUTOPLAY_MS - 1); });
     expect(shown()[0]).toHaveAccessibleName(/^1 \/ 10/);
     act(() => { jest.advanceTimersByTime(1); });

@@ -14,3 +14,6 @@
 @media(prefers-reduced-motion:reduce){.root button,.root a{transition:none}}
 
 :global(.workspace) .topics, :global(.workspace) .stats { gap: var(--dashboard-card-gap, 24px); }
+
+/* Listen: at the top right of a revealed answer. */
+.answerListen { float: right; margin: 0 0 6px 10px; }

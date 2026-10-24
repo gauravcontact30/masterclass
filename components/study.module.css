@@ -22,3 +22,6 @@
 .empty>svg{margin:0 auto 12px}.empty h3{font-size:16px}.empty p{font-size:12px;line-height:1.7}.empty button{margin:12px auto 0}
 @media(max-width:650px){.browseFilters{padding:13px;gap:10px}.browseFilters label{min-width:calc(50% - 10px)}.browseFilters .browseSearch{min-width:100%}.courseRow{flex-wrap:wrap;gap:12px;padding:16px}.rowIcon{width:35px;height:40px}.rowContent{flex-basis:calc(100% - 50px)}.rowContent h3{font-size:13px}.openCourse{margin-left:47px;font-size:10px;padding:9px 12px}.catalog .sectionHeading h2{font-size:18px}}
 .optionList{list-style:none;padding-left:0;margin:14px 0;display:grid;gap:8px}.optionList li{display:flex;align-items:flex-start;gap:12px;line-height:1.9}.optionLetter{flex:none;display:grid;place-items:center;width:26px;height:26px;background:#f0eee6;border:1px solid #dedcd1;border-radius:7px;color:#4d4c48;font-size:12px;font-weight:700}
+/* The lesson's Listen and Bookmark buttons side by side; a question's Listen sits at the top right of its answer. */
+.lessonTools { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.answerListen { float: right; margin: 8px 0 6px 10px; }

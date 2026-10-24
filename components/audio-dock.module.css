@@ -18,6 +18,11 @@
 .icon:focus-visible, .play:focus-visible, .speeds button:focus-visible, .field select:focus-visible { outline: 3px solid #d97757; outline-offset: 2px; }
 .field { display: inline-flex; align-items: center; gap: 8px; font-size: 12px; color: #b9b7ae; }
 .field select { min-height: 34px; max-width: 190px; padding: 4px 8px; border: 1px solid #3a3936; border-radius: 9px; background: #2a2826; color: #f5f4ee; font: inherit; font-size: 13px; cursor: pointer; }
+.genders { display: inline-flex; padding: 3px; border: 1px solid #3a3936; border-radius: 11px; background: #2a2826; }
+.genders button { min-height: 28px; padding: 0 12px; border: 0; border-radius: 8px; background: transparent; color: #d3d1c7; font: inherit; font-size: 12px; font-weight: 600; cursor: pointer; }
+.genders button:hover { color: #fff; }
+.genders button[aria-checked="true"] { background: #f5f4ee; color: #1f1e1d; }
+.genders button:focus-visible { outline: 3px solid #d97757; outline-offset: 2px; }
 .speeds { display: inline-flex; flex-wrap: wrap; gap: 4px; }
 .speeds button { min-width: 40px; min-height: 30px; padding: 0 8px; border: 1px solid #3a3936; border-radius: 8px; background: transparent; color: #d3d1c7; font: inherit; font-size: 12px; font-weight: 600; cursor: pointer; }
 .speeds button[aria-checked="true"] { border-color: #d97757; background: #d97757; color: #fff; }

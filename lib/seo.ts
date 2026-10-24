@@ -17,11 +17,11 @@ export function isIndexable(): boolean {
 }
 
 export const siteName = "MasterClass";
-export const siteTitle = "MasterClass Buddy | Study Notes, Exam Prep & Coding Tutorials";
-export const siteDescription = "Learn in English and Hindi with an AI tutor and audio lectures: CBSE and NCERT notes, SSC, JEE and NEET practice, coding, AI agents and interview questions.";
+export const siteTitle = "MasterClass Buddy | Tech Learning, AI Agents & Interview Prep";
+export const siteDescription = "Technology learning for professionals in English and Hindi, with an AI tutor and audio lectures: coding, cloud, system design, AI agents, certifications and interview questions.";
 /**
- * Site-wide keywords, grouped by what MasterClass sells: bilingual learning, the AI tutor, school and competitive
- * exams, coding and interview preparation, and the membership. Google ignores the keywords tag; Bing and others
+ * Site-wide keywords, grouped by what MasterClass sells: bilingual learning, the AI tutor, coding and interview
+ * preparation, AI engineering, certifications and the membership. Google ignores the keywords tag; Bing and others
  * still read it, and the same terms are used in titles, descriptions and structured data, which do count.
  */
 export const siteKeywords = [
@@ -30,8 +30,8 @@ export const siteKeywords = [
   // Bilingual, AI-assisted learning
   "online learning platform India", "learn in Hindi and English", "Hindi medium study notes", "study notes in Hindi", "AI tutor", "AI study assistant", "ask doubts online", "personalised study plan",
   "audio lectures", "listen to lessons online", "learn by listening", "AI search for students", "online courses for international students",
-  // School and competitive exams
-  "CBSE", "NCERT", "NCERT solutions", "NCERT notes class 10", "NCERT notes class 12", "ICSE", "ISC", "SSC", "SSC CGL preparation", "UPSC preparation", "IBPS PO preparation", "banking exam preparation", "RRB NTPC preparation", "railway exam preparation", "CTET preparation", "defence exam preparation", "JEE", "NEET", "practice tests", "mock tests with solutions", "IELTS vocabulary",
+  // Certifications
+  "AWS certification preparation", "system design interview preparation", "Claude Code certification", "n8n certification", "agentic AI certification", "DevOps certification preparation",
   // Coding and careers
   "learn coding online", "learn coding in Hindi", "coding tutorials", "programming for beginners", "full stack developer course", "React tutorial", "Next.js tutorial", "Python tutorials", "JavaScript interview questions", "React interview questions", "technology interview preparation", "coding interview preparation", "frontend interview questions", "Node.js interview questions", "Python interview questions", "system design", "system design interview questions", "system design course",
   "Next.js 16 tutorial", "React hooks explained", "AWS tutorial", "AWS services explained", "AWS interview questions",
@@ -53,9 +53,9 @@ export const privateMetadata: Metadata = { robots: { index: false, follow: false
 export type PublicPage = { path: `/${string}`; title: string; label: string; description: string; changeFrequency: NonNullable<MetadataRoute.Sitemap[number]["changeFrequency"]>; priority: number };
 export const PUBLIC_PAGES: readonly PublicPage[] = [
   { path: "/", title: siteTitle, label: "Home", description: siteDescription, changeFrequency: "weekly", priority: 1 },
-  { path: "/courses", title: "Courses & learning paths", label: "Courses", description: "Browse every MasterClass learning path: CBSE, NCERT, ICSE and ISC school foundations, SSC, banking, railways, defence, JEE and NEET exam preparation, IELTS vocabulary, technology interviews and system design.", changeFrequency: "weekly", priority: 0.9 },
+  { path: "/courses", title: "Courses & learning paths", label: "Courses", description: "Browse every MasterClass learning path: technology handbooks and interviews, system design case studies, and IELTS and professional vocabulary.", changeFrequency: "weekly", priority: 0.9 },
   { path: "/library", title: "Free learning library", label: "Library", description: "Interview questions with answers for 31 technologies, system design and AI agent workflow blueprints, an API reference for 60 technologies, technology handbooks and English vocabulary with Hindi meanings, free to read.", changeFrequency: "weekly", priority: 0.9 },
-  { path: "/about", title: "About MasterClass", label: "About", description: "MasterClass is a bilingual English and Hindi learning space for school, competitive exams and technology careers, with study notes, worked answers and timed practice in one dashboard.", changeFrequency: "monthly", priority: 0.7 },
+  { path: "/about", title: "About MasterClass", label: "About", description: "MasterClass Buddy is a bilingual English and Hindi learning space for tech professionals: technology courses, AI agents, certifications and interview preparation, with study notes, worked answers and timed practice in one dashboard.", changeFrequency: "monthly", priority: 0.7 },
   { path: "/contact", title: "Contact & support", label: "Contact", description: "Get help with your MasterClass account, membership, billing or study content, and find answers to common questions.", changeFrequency: "yearly", priority: 0.5 },
   { path: "/privacy", title: "Privacy policy", label: "Privacy", description: "How MasterClass collects, uses and protects your account, payment and learning data, and what stays only in your browser.", changeFrequency: "yearly", priority: 0.3 },
   { path: "/terms", title: "Terms & conditions", label: "Terms", description: "The terms that apply when you create a MasterClass account, buy a membership and use study content and AI-assisted answers.", changeFrequency: "yearly", priority: 0.3 },
@@ -68,7 +68,7 @@ export function publicPage(path: PublicPage["path"]): PublicPage {
   return page;
 }
 
-const ogImage = { url: "/opengraph-image", width: 1200, height: 630, alt: `${siteName} — School, exam and technology learning in English and Hindi` };
+const ogImage = { url: "/opengraph-image", width: 1200, height: 630, alt: `${siteName} — Technology learning for professionals in English and Hindi` };
 
 /**
  * Complete metadata for a public page. Next.js replaces (not merges) nested
@@ -76,9 +76,9 @@ const ogImage = { url: "/opengraph-image", width: 1200, height: 630, alt: `${sit
  */
 /** Keywords for each public page, matched to what that page actually offers. */
 const PAGE_KEYWORDS: Partial<Record<PublicPage["path"], string[]>> = {
-  "/courses": ["online courses India", "CBSE study notes", "NCERT solutions", "ICSE and ISC notes", "SSC exam preparation", "banking exam preparation", "railway exam preparation", "defence exam preparation", "JEE preparation", "NEET preparation", "IELTS vocabulary", "technology learning paths", "learning paths in Hindi"],
+  "/courses": ["online courses India", "technology learning paths", "system design course", "technology interview preparation", "IELTS vocabulary", "learning paths in Hindi"],
   "/library": ["free learning library", "free programming tutorials", "interview questions with answers", "React interview questions", "system design blueprints", "AI agent workflows", "API reference", "technology handbooks", "English vocabulary with Hindi meanings"],
-  "/about": ["about MasterClass", "bilingual learning platform", "Hindi and English education", "online learning India", "AI tutor for students"],
+  "/about": ["about MasterClass", "bilingual learning platform", "Hindi and English education", "online learning India", "AI tutor for developers"],
   "/contact": ["MasterClass support", "membership help", "billing support", "contact MasterClass"],
 };
 
@@ -137,7 +137,7 @@ export function organizationSchema() {
   return {
     "@context": "https://schema.org", "@type": "EducationalOrganization", "@id": `${url}#organization`, name: siteName, alternateName: "MasterClass Buddy", url,
     logo: new URL("/icon.svg", url).href, description: siteDescription, slogan: "Learn in English and Hindi, with an AI tutor beside you.", areaServed: "IN", knowsLanguage: ["en", "hi"],
-    knowsAbout: ["CBSE", "NCERT", "ICSE", "SSC exams", "JEE", "NEET", "IELTS vocabulary", "JavaScript", "TypeScript", "React", "Next.js", "Python", "Node.js", "System design", "AWS", "Git", "AI agents", "Agentic AI", "Generative AI", "LangChain", "LangGraph", "LangSmith", "LangFlow", "n8n", "English vocabulary"],
+    knowsAbout: ["IELTS vocabulary", "JavaScript", "TypeScript", "React", "Next.js", "Python", "Node.js", "System design", "AWS", "Git", "AI agents", "Agentic AI", "Generative AI", "LangChain", "LangGraph", "LangSmith", "LangFlow", "n8n", "English vocabulary"],
     hasOfferCatalog: { "@type": "OfferCatalog", name: "MasterClass membership", itemListElement: [
       offer("Monthly membership", Number(process.env.PRO_MONTHLY_PRICE_INR ?? 299), "MON"),
       offer("Yearly membership", Number(process.env.PRO_YEARLY_PRICE_INR ?? 2999), "ANN"),

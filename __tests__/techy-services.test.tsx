@@ -21,7 +21,7 @@ test("service filters, answer reveal and no-result recovery work", async () => {
   await user.type(screen.getByRole("searchbox", { name: "Find a service" }), "CodeCommit");
   expect(screen.getByRole("heading", { name: "AWS CodeCommit" })).toBeVisible();
   await user.click(screen.getByRole("button", { name: "Reveal service notes" }));
-  expect(screen.getByRole("link", { name: /Official service reference/ })).toHaveAttribute("href", expect.stringMatching(/^https:/));
+  expect(screen.queryByRole("link", { name: /Official service reference/ })).toBeNull();
   await user.type(screen.getByRole("searchbox", { name: "Find a service" }), " no-match");
   expect(screen.getByText("No services match.")).toBeVisible();
   await user.click(screen.getByRole("button", { name: "Clear service filters" }));

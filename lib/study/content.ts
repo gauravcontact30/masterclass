@@ -3,18 +3,14 @@ import { STUDY_UNITS } from "./units";
 import type { Language, Tier } from "@/lib/domain";
 import type { StudyCourse, StudyPack, StudyQuestion, StudyLesson } from "./types";
 import { buildSystemDesignPack } from "./system-design";
-import { addVerifiedHistory } from "./history";
 
-/** Shared concepts are deliberately labelled as foundation coverage, never a full board syllabus. */
+/** Shared concepts are deliberately labelled as foundation coverage, never a full exam syllabus. */
 export function buildStudyPack(course: StudyCourse, language: Language, tier: Tier, viewerKey: string, admin = false): StudyPack {
   if (course.category === "course") return buildSystemDesignPack(course, language, tier, viewerKey, admin);
   const hi = language === "hi";
   const say = (en: string, hindi: string) => hi ? hindi : en;
   const units = course.subjects.flatMap(subject => {
-    const pool = STUDY_UNITS.filter(unit => unit.subject === subject);
-    if (course.grade) return pool.filter(unit => unit.minGrade <= course.grade! && unit.maxGrade >= course.grade!);
-    const advanced = ["jee-main", "jee-advanced", "neet", "nda"].includes(course.id);
-    return pool.filter(unit => advanced ? unit.maxGrade === 12 : unit.minGrade <= 10).slice(-6);
+    return STUDY_UNITS.filter(unit => unit.subject === subject).slice(-6);
   });
   const lessons: StudyLesson[] = units.map(unit => ({ id: unit.id, title: unit.title[language], keyPoints: [
     { tone: "key", title: say("Core idea", "मुख्य विचार"), text: unit.idea[language] },
@@ -46,5 +42,5 @@ export function buildStudyPack(course: StudyCourse, language: Language, tier: Ti
     coverage: say(`${lessons.length} foundation lessons and ${questions.length} original questions. ${course.scope.en} Full syllabus coverage and a verified past-paper archive are not yet available.`, `${lessons.length} आधारभूत पाठ और ${questions.length} मौलिक प्रश्न। ${course.scope.hi} पूर्ण पाठ्यक्रम और सत्यापित पुराने प्रश्न पत्रों का संग्रह अभी उपलब्ध नहीं है।`),
     sources: [{ title: say("Official syllabus / examination resources", "आधिकारिक पाठ्यक्रम / परीक्षा संसाधन"), url: course.sourceUrl }],
   };
-  return addVerifiedHistory(pack);
+  return pack;
 }

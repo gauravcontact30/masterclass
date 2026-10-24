@@ -31,7 +31,7 @@ test("every technology has concise concepts, objectives, rated questions and ans
     expect(within(notes).getByRole("figure", { name: `${doc.title} codebase` })).toBeVisible();
     expect(within(notes).queryByText("Answer criteria:")).not.toBeInTheDocument();
     expect(within(notes).queryByText("Set up & run")).not.toBeInTheDocument();
-    expect(within(notes).getByRole("link", { name: "Official documentation" })).toHaveAttribute("href", doc.officialUrl);
+    expect(within(notes).queryByRole("link", { name: "Official documentation" })).toBeNull();
     const questions = within(notes).getByRole("region", { name: "Objective questions" });
     for (const question of questions.querySelectorAll("details")) {
       const answer = question.querySelector("mark")!.textContent;
@@ -41,14 +41,12 @@ test("every technology has concise concepts, objectives, rated questions and ans
   }
 });
 
-test("technology selection switches the inline lesson and website together", async () => {
+test("technology selection switches the inline lesson", async () => {
   const user = userEvent.setup();
   render(<OfficialDocs />);
   await user.selectOptions(screen.getByRole("combobox", { name: "Technology" }), "python");
   expect(screen.getByRole("article", { name: "Python (3.12 / 3.13+) learning notes" })).toBeInTheDocument();
   expect(screen.queryByRole("article", { name: "React 19+ learning notes" })).not.toBeInTheDocument();
-  await user.click(screen.getByRole("button", { name: "Browse official website" }));
-  expect(screen.getByTitle("Python (3.12 / 3.13+) official website")).toHaveAttribute("src", "https://docs.python.org/3/");
 });
 
 test("answers can be revealed and hidden", async () => {

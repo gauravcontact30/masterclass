@@ -26,6 +26,7 @@ const DashboardLessons = dynamic(() => import("./dashboard-lessons").then(module
 import home from "./landing-home.module.css";
 import interview from "./landing-interview.module.css";
 import styles from "./landing-comparisons.module.css";
+import { ListenButton } from "./listen-button";
 
 type Text = (en: string, hindi: string) => string;
 /** Eight light tones the slides cycle through, shared with the interview carousel's stylesheet. */
@@ -49,7 +50,7 @@ export function LandingComparisons({ expanded = false, preview = false, locked =
   const { language } = useLanguage(); const hi = language === "hi"; const text: Text = (en, hindi) => hi ? hindi : en;
   const items = useVisibleContent(COMPARISONS, compareKey);
   const section = useContentItem("section:tech-comparisons", "section");
-  const { track, nearViewport, page, pages, playing, setPlaying, running, goTo, holdProps } = usePagedCarousel<HTMLUListElement>(preview ? 1 : items.length, 1, AUTOPLAY_MS);
+  const { track, nearViewport, page, pages, playing, setPlaying, running, goTo, holdProps } = usePagedCarousel<HTMLUListElement>(preview ? 1 : items.length, 1, AUTOPLAY_MS, { fitHeight: true });
   const shown = preview ? (items.length ? [pickDaily(items, day)] : []) : items;
   const groups = [...new Set(items.map(item => item.group))];
   const pickerPage = Math.floor(page / 5) + 1;
@@ -124,6 +125,7 @@ function ComparisonSlide({ item, index, total, near, text, official, preview = f
       </ChainPicture>
       <div className={interview.coverBody}>
         <h3><Editable k={k} f="question">{item.question}</Editable></h3>
+        <ListenButton id={`comparison:${item.id}`} title={question} text={() => [question, summary, ...item.techs.map(tech => `${tech.name}: ${tech.definition} ${tech.description}`)].join(". ")} />
         <p className={interview.tagline}><Editable k={k} f="summary" multiline>{item.summary}</Editable></p>
         <ul className={styles.techs}>{item.techs.map((tech, k) => <li key={tech.name} data-tint={(index + k) % 6}>
           <TechThumb id={techPicture(tech.name)} name={tech.name} />
@@ -189,13 +191,13 @@ function OfficialDocs({ item, official, text }: Readonly<{ item: Comparison; off
   return <div className={styles.officialDocs}>
     <h4>{text("Official documentation", "आधिकारिक दस्तावेज़")}</h4>
     <ul>{docs.map(({ tech, url }, k) => { const page = official?.pages[url]; return <li key={tech.name} data-tint={k % 6}>
-      <a href={url} target="_blank" rel="noopener noreferrer">
+      <div className={styles.docCard}>
         <b>{tech.name}</b>
         <span className={styles.docTitle}>{page?.complete ? page.title : text("Official docs", "आधिकारिक डॉक्स")}</span>
         <span className={styles.docText}>{page?.description || tech.definition}</span>
         {!!page?.sections.length && <span className={styles.docSections}>{page.sections.slice(0, 3).map(s => <i key={s}>{s}</i>)}</span>}
-        <small>{host(url)} ↗</small>
-      </a>
+        <small>{host(url)}</small>
+      </div>
     </li>; })}</ul>
   </div>;
 }

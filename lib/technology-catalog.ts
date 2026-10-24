@@ -9,7 +9,6 @@ export type TechnologyInfo = {
   topicsCount: number;
   keyFeatures: { en: string; hi: string }[];
   interviewTopics: { en: string; hi: string }[];
-  officialDocUrl: string;
 };
 
 export const TECHNOLOGIES_CATALOG: Record<string, TechnologyInfo> = {
@@ -39,7 +38,6 @@ export const TECHNOLOGIES_CATALOG: Record<string, TechnologyInfo> = {
       { en: "Client vs Server components boundary & data serialization", hi: "क्लाइंट बनाम सर्वर कॉम्पोनेंट सीमा और डेटा सीरियलाइज़ेशन" },
       { en: "useEffect vs useLayoutEffect vs useInsertionEffect execution order", hi: "useEffect बनाम useLayoutEffect निष्पादन क्रम" },
     ],
-    officialDocUrl: "https://react.dev",
   },
   nextjs: {
     id: "nextjs",
@@ -67,7 +65,6 @@ export const TECHNOLOGIES_CATALOG: Record<string, TechnologyInfo> = {
       { en: "Caching layers: Data Cache, Full Route Cache, Router Cache", hi: "Next.js के 4 कैशिंग लेयर्स और रीवैलिडेशन रणनीतियाँ" },
       { en: "Parallel routes (@slot) & Intercepting routes ((.))", hi: "पैरेलल रूट्स और इंटरसेप्टिंग रूट्स का उपयोग" },
     ],
-    officialDocUrl: "https://nextjs.org",
   },
   typescript: {
     id: "typescript",
@@ -95,7 +92,6 @@ export const TECHNOLOGIES_CATALOG: Record<string, TechnologyInfo> = {
       { en: "Unknown vs Any vs Never vs Void differences and use cases", hi: "Unknown, Any, Never और Void में अंतर और उपयोग" },
       { en: "Declaration merging, ambient modules, and declaration files (.d.ts)", hi: "डिक्लेरेशन मर्जिंग और .d.ts फ़ाइलों की संरचना" },
     ],
-    officialDocUrl: "https://www.typescriptlang.org",
   },
   python: {
     id: "python",
@@ -123,7 +119,6 @@ export const TECHNOLOGIES_CATALOG: Record<string, TechnologyInfo> = {
       { en: "Memory management: reference counting and generational garbage collection", hi: "रेफ़रेंस काउंटिंग और जेनरेशनल गारबेज कलेक्शन" },
       { en: "Decorators with arguments and functools.wraps preservation", hi: "आर्ग्यूमेंट्स के साथ डेकोरेटर्स और functools.wraps का महत्व" },
     ],
-    officialDocUrl: "https://python.org",
   },
   docker: {
     id: "docker",
@@ -151,7 +146,6 @@ export const TECHNOLOGIES_CATALOG: Record<string, TechnologyInfo> = {
       { en: "Optimizing Dockerfile layer ordering for maximum build caching", hi: "बिल्ड कैशिंग के लिए Dockerfile लेयर्स का सही क्रम" },
       { en: "Bridge vs Host vs Overlay networking and volume drivers", hi: "ब्रिज बनाम होस्ट बनाम ओवरले नेटवर्किंग" },
     ],
-    officialDocUrl: "https://www.docker.com",
   },
   aws: {
     id: "aws",
@@ -179,12 +173,11 @@ export const TECHNOLOGIES_CATALOG: Record<string, TechnologyInfo> = {
       { en: "S3 consistency model, multipart uploads, and presigned URLs", hi: "S3 कंसिस्टेंसी मॉडल और प्री-साइन्ड URLs" },
       { en: "Lambda cold starts, VPC networking latency, and provisioned concurrency", hi: "Lambda कोल्ड स्टार्ट्स और प्रोविज़न्ड कनकूरेंसी" },
     ],
-    officialDocUrl: "https://aws.amazon.com",
   },
   "agentic-ai": {
     id: "agentic-ai",
     name: "Agentic AI & Claude",
-    icon: "claude",
+    icon: "agentic-ai",
     category: { en: "Artificial Intelligence", hi: "आर्टिफ़िशियल इंटेलिजेंस" },
     tagline: {
       en: "Autonomous AI agents, tool orchestration, and prompt engineering",
@@ -207,7 +200,6 @@ export const TECHNOLOGIES_CATALOG: Record<string, TechnologyInfo> = {
       { en: "Handling non-deterministic agent tool loops and hallucination guards", hi: "एजेंट टूल लूप्स में हॉलीयुसिनेशन की रोकथाम" },
       { en: "Prompt caching mechanics and latency reduction strategies", hi: "प्रॉम्प्ट कैशिंग और लेटेंसी में कमी की रणनीतियाँ" },
     ],
-    officialDocUrl: "https://docs.anthropic.com",
   },
   javascript: {
     id: "javascript",
@@ -235,35 +227,6 @@ export const TECHNOLOGIES_CATALOG: Record<string, TechnologyInfo> = {
       { en: "Debounce vs Throttle implementation from scratch", hi: "स्क्रैच से डिबाउंस और थ्रॉटल का निर्माण" },
       { en: "Shallow vs deep clone and structuredClone limitations", hi: "शैलो बनाम डीप क्लोन और structuredClone की सीमाएं" },
     ],
-    officialDocUrl: "https://developer.mozilla.org/en-US/docs/Web/JavaScript",
-  },
-  tailwind: {
-    id: "tailwind",
-    name: "Tailwind CSS",
-    icon: "tailwind",
-    category: { en: "Styling & Design System", hi: "स्टाइलिंग और डिज़ाइन सिस्टम" },
-    tagline: {
-      en: "Utility-first CSS framework for rapid and consistent UI development",
-      hi: "तेज़ और सुसंगत UI निर्माण के लिए यूटिलिटी-फ़र्स्ट CSS फ़्रेमवर्क",
-    },
-    summary: {
-      en: "Tailwind CSS v4 introduces a unified CSS engine, container queries, 3D transforms, CSS variables theming, and zero-runtime overhead.",
-      hi: "Tailwind CSS v4 तेज़ बिल्ड इंजन, कंटेनर क्वेरीज़, डार्क मोड और शून्य रनटाइम ओवरहेड प्रदान करता है।",
-    },
-    command: "npm install tailwindcss @tailwindcss/postcss",
-    topicsCount: 36,
-    keyFeatures: [
-      { en: "Utility-first workflow without leaving markup", hi: "मार्कअप छोड़े बिना तीव्र यूटिलिटी-फ़र्स्ट स्टाइलिंग" },
-      { en: "Built-in dark mode and CSS variable token integration", hi: "इन-बिल्ट डार्क मोड और CSS वेरिएबल इंटीग्रेशन" },
-      { en: "Responsive variants and container query utilities", hi: "रिस्पॉन्सिव वेरिएंट्स और कंटेनर क्वेरीज़" },
-      { en: "Arbitrary values, variants, and peer/group modifiers", hi: "ग्रुप और पीयर मॉडिफ़ायर्स के साथ इंटरेक्टिव स्टेट्स" },
-    ],
-    interviewTopics: [
-      { en: "Just-In-Time (JIT) compilation mechanism and purger logic", hi: "JIT कंपाइलर कैसे अनयूज्ड CSS को हटाता है" },
-      { en: "Managing design tokens and overriding theme palettes", hi: "डिज़ाइन टोकन्स और कस्टम थीम पैलेट्स का प्रबंधन" },
-      { en: "Class collision resolution with tailwind-merge in component libraries", hi: "कॉम्पोनेंट लाइब्रेरीज़ में क्लास कोलिशन का समाधान" },
-    ],
-    officialDocUrl: "https://tailwindcss.com",
   },
   nodejs: {
     id: "nodejs",
@@ -291,7 +254,6 @@ export const TECHNOLOGIES_CATALOG: Record<string, TechnologyInfo> = {
       { en: "Memory leak diagnosis using heap snapshots and profiler", hi: "हीप स्नैपशॉट से मेमोरी लीक का पता लगाना" },
       { en: "Backpressure handling in high-volume stream pipes", hi: "स्ट्रीम पाइप्स में बैकप्रेशर का प्रबंधन" },
     ],
-    officialDocUrl: "https://nodejs.org",
   },
   postgresql: {
     id: "postgresql",
@@ -319,7 +281,6 @@ export const TECHNOLOGIES_CATALOG: Record<string, TechnologyInfo> = {
       { en: "EXPLAIN ANALYZE interpretation: sequential scan vs index scan costs", hi: "EXPLAIN ANALYZE से स्लो क्वेरीज़ की जांच" },
       { en: "MVCC (Multi-Version Concurrency Control) and VACUUM operation", hi: "MVCC और VACUUM का डेटाबेस में महत्व" },
     ],
-    officialDocUrl: "https://www.postgresql.org",
   },
   zustand: {
     id: "zustand",
@@ -347,7 +308,6 @@ export const TECHNOLOGIES_CATALOG: Record<string, TechnologyInfo> = {
       { en: "Transient updates (subscribing without re-rendering)", hi: "बिना री-रेंडर के ट्रांज़िएंट स्टेट अपडेट्स" },
       { en: "Persist middleware with custom storage engines & migrations", hi: "कस्टम स्टोरेज और माइग्रेशन के साथ persist मिडलवेयर" },
     ],
-    officialDocUrl: "https://zustand.docs.pmnd.rs",
   },
   tanstack: {
     id: "tanstack",
@@ -375,7 +335,6 @@ export const TECHNOLOGIES_CATALOG: Record<string, TechnologyInfo> = {
       { en: "Query invalidation vs optimistic updates implementation", hi: "क्वेरी इनवैलिडेशन बनाम ऑप्टिमिस्टिक अपडेट्स" },
       { en: "Prefetching data on hover/route change for zero-latency UX", hi: "होवर पर प्रीफ़ेचिंग से शून्य-विलंबता यूज़र अनुभव" },
     ],
-    officialDocUrl: "https://tanstack.com/query",
   },
   vitest: {
     id: "vitest",
@@ -403,7 +362,6 @@ export const TECHNOLOGIES_CATALOG: Record<string, TechnologyInfo> = {
       { en: "Snapshot testing best practices and avoiding fragile tests", hi: "स्नैपशॉट टेस्टिंग के सर्वोत्तम अभ्यास" },
       { en: "Testing custom React hooks with renderHook and act()", hi: "renderHook और act() से कस्टम React हुक्स का परीक्षण" },
     ],
-    officialDocUrl: "https://vitest.dev",
   },
   playwright: {
     id: "playwright",
@@ -431,7 +389,6 @@ export const TECHNOLOGIES_CATALOG: Record<string, TechnologyInfo> = {
       { en: "Page Object Model (POM) architecture for scalable test suites", hi: "Page Object Model (POM) डिज़ाइन पैटर्न" },
       { en: "Authentication state reuse via storageState to avoid repeated logins", hi: "storageState से बार-बार लॉगिन से बचना" },
     ],
-    officialDocUrl: "https://playwright.dev",
   },
   graphql: {
     id: "graphql",
@@ -459,7 +416,6 @@ export const TECHNOLOGIES_CATALOG: Record<string, TechnologyInfo> = {
       { en: "GraphQL vs REST trade-offs: caching, security, and complexity", hi: "GraphQL बनाम REST: कैशिंग और सुरक्षा में तुलना" },
       { en: "Query depth limiting and complexity cost analysis for protection", hi: "क्वेरी कॉम्प्लेक्सिटी लिमिट्स से सर्वर सुरक्षा" },
     ],
-    officialDocUrl: "https://graphql.org",
   },
   redis: {
     id: "redis",
@@ -487,7 +443,6 @@ export const TECHNOLOGIES_CATALOG: Record<string, TechnologyInfo> = {
       { en: "Preventing Cache Avalanche, Cache Stampede, and Cache Penetration", hi: "कैश स्टैम्पीड और पेनेट्रेशन की रोकथाम" },
       { en: "Redis persistence mechanisms: RDB snapshots vs AOF logs", hi: "RDB स्नैपशॉट बनाम AOF लॉग्स में अंतर" },
     ],
-    officialDocUrl: "https://redis.io",
   },
   git: {
     id: "git",
@@ -515,7 +470,6 @@ export const TECHNOLOGIES_CATALOG: Record<string, TechnologyInfo> = {
       { en: "How Git stores data internally: blobs, trees, commits, and refs", hi: "Git का आंतरिक डेटा मॉडल: Blobs, Trees, और Commits" },
       { en: "Resolving complex merge conflicts and avoiding detached HEAD states", hi: "मर्ज कॉन्फ़्लिक्ट्स सुलझाना और डिटैच्ड HEAD से बचना" },
     ],
-    officialDocUrl: "https://git-scm.com",
   },
   kubernetes: {
     id: "kubernetes",
@@ -543,7 +497,6 @@ export const TECHNOLOGIES_CATALOG: Record<string, TechnologyInfo> = {
       { en: "Liveness probe vs Readiness probe vs Startup probe differences", hi: "Liveness बनाम Readiness प्रोब्स में अंतर" },
       { en: "CrashLoopBackOff debugging step-by-step diagnostic workflow", hi: "CrashLoopBackOff एरर को डीबग करने के तरीके" },
     ],
-    officialDocUrl: "https://kubernetes.io",
   },
   fastapi: {
     id: "fastapi",
@@ -571,35 +524,6 @@ export const TECHNOLOGIES_CATALOG: Record<string, TechnologyInfo> = {
       { en: "BackgroundTasks vs Celery for offloading async workloads", hi: "BackgroundTasks बनाम Celery का सही चयन" },
       { en: "Pydantic request body validation error handling custom overrides", hi: "Pydantic वैलिडेशन एरर्स को कस्टमाइज़ करना" },
     ],
-    officialDocUrl: "https://fastapi.tiangolo.com",
-  },
-  mongodb: {
-    id: "mongodb",
-    name: "MongoDB",
-    icon: "mongodb",
-    category: { en: "NoSQL Database", hi: "NoSQL डेटाबेस" },
-    tagline: {
-      en: "Document-oriented database designed for developer agility and scale",
-      hi: "डेवलपर्स के लिए फ्लेक्सिबल स्कीमा वाला स्केलेबल डॉक्यूमेंट डेटाबेस",
-    },
-    summary: {
-      en: "MongoDB stores JSON-like BSON documents, offering dynamic schemas, horizontal sharding, flexible aggregation pipelines, and secondary indexing.",
-      hi: "MongoDB BSON फॉर्मेट में दस्तावेज़ स्टोर करता है, जो एग्रीगेशन पाइपलाइन्स और हॉरिजॉन्टल स्केलिंग में अग्रणी है।",
-    },
-    command: "mongosh --host localhost:27017",
-    topicsCount: 40,
-    keyFeatures: [
-      { en: "Flexible document data model with nested sub-documents and arrays", hi: "नेस्टेड ऑब्जेक्ट्स और एरेज़ के साथ फ्लेक्सिबल डेटा मॉडल" },
-      { en: "Aggregation pipeline stages ($match, $group, $lookup, $facet)", hi: "जटिल एनालिटिक्स के लिए एग्रीगेशन पाइपलाइन्स" },
-      { en: "Horizontal scale-out using sharded clusters and replica sets", hi: "शार्डेड क्लस्टर्स के साथ हॉरिजॉन्टल स्केलेबिलिटी" },
-      { en: "Time-series collections and full-text Atlas search integration", hi: "टाइम-सीरीज़ कलेक्शन्स और फ़ुल-टेक्स्ट सर्च" },
-    ],
-    interviewTopics: [
-      { en: "Embedding vs Referencing data modeling decision tree", hi: "डॉक्यूमेंट एम्बेडिंग बनाम रेफ़रेंसिंग कब चुनें" },
-      { en: "Optimizing Aggregation pipelines with index-covered stages", hi: "इंडेक्स-कवर्ड स्टेजेस से एग्रीगेशन को ऑप्टिमाइज़ करना" },
-      { en: "Replica Set election protocols, write concerns, and read preferences", hi: "राइट कंसर्न और रीड प्रेफ़रेंस के नियम" },
-    ],
-    officialDocUrl: "https://www.mongodb.com",
   },
   supabase: {
     id: "supabase",
@@ -627,7 +551,6 @@ export const TECHNOLOGIES_CATALOG: Record<string, TechnologyInfo> = {
       { en: "Supabase Vector (pgvector) for embedding similarity search in RAG", hi: "pgvector के साथ RAG और AI सिमिलैरिटी सर्च" },
       { en: "Database webhooks triggering serverless Edge Functions", hi: "डेटाबेस वेबहुक्स से एज फंक्शन्स को ट्रिगर करना" },
     ],
-    officialDocUrl: "https://supabase.com",
   },
   rust: {
     id: "rust",
@@ -655,7 +578,6 @@ export const TECHNOLOGIES_CATALOG: Record<string, TechnologyInfo> = {
       { en: "Lifetimes ('a): why they exist and how elision rules work", hi: "लाइफ़टाइम्स का उद्देश्य और एलिज़न रूल्स" },
       { en: "Smart pointers: Box<T>, Rc<T>, Arc<T>, and RefCell<T>", hi: "Box, Rc, Arc और RefCell स्मार्ट पॉइंटर्स में अंतर" },
     ],
-    officialDocUrl: "https://www.rust-lang.org",
   },
   go: {
     id: "go",
@@ -683,7 +605,6 @@ export const TECHNOLOGIES_CATALOG: Record<string, TechnologyInfo> = {
       { en: "Buffered vs unbuffered channels and deadlock prevention", hi: "बफ़र्ड बनाम अनबफ़र्ड चैनल्स और डेडलॉक से बचाव" },
       { en: "Context package propagation for cancellation and timeouts across goroutines", hi: "कंटेक्स्ट पैकेज से कैंसिलेशन और टाइमआउट हैंडलिंग" },
     ],
-    officialDocUrl: "https://go.dev",
   },
   linux: {
     id: "linux",
@@ -711,7 +632,6 @@ export const TECHNOLOGIES_CATALOG: Record<string, TechnologyInfo> = {
       { en: "File descriptors, standard streams (0, 1, 2), and redirection", hi: "फ़ाइल डिस्क्रिप्टर्स और स्ट्रीम रीडायरेक्शन (2>&1)" },
       { en: "Debugging memory and CPU bottlenecks using free, top, vmstat, iostat", hi: "top, vmstat और iostat से सर्वर बॉटलनेक पकड़ना" },
     ],
-    officialDocUrl: "https://www.kernel.org",
   },
   angular: {
     id: "angular",
@@ -739,7 +659,6 @@ export const TECHNOLOGIES_CATALOG: Record<string, TechnologyInfo> = {
       { en: "Dependency Injection hierarchy (root vs component vs factory)", hi: "Angular में डिपेंडेंसी इंजेक्शन हायरार्की" },
       { en: "OnPush change detection strategy optimization mechanics", hi: "OnPush चेंज डिटेक्शन से परफ़ॉर्मेंस सुधारना" },
     ],
-    officialDocUrl: "https://angular.dev",
   },
   vue: {
     id: "vue",
@@ -767,7 +686,6 @@ export const TECHNOLOGIES_CATALOG: Record<string, TechnologyInfo> = {
       { en: "Watch vs WatchEffect evaluation and cleanup functions", hi: "Watch बनाम WatchEffect में मुख्य अंतर" },
       { en: "Custom directives lifecycle hooks and real-world implementations", hi: "कस्टम डायरेक्टिव्स के लाइफ़साइकिल हुक्स" },
     ],
-    officialDocUrl: "https://vuejs.org",
   },
   flutter: {
     id: "flutter",
@@ -795,7 +713,6 @@ export const TECHNOLOGIES_CATALOG: Record<string, TechnologyInfo> = {
       { en: "State management comparison: Riverpod vs Bloc vs Provider", hi: "Riverpod बनाम Bloc स्टेट मैनेजमेंट की तुलना" },
       { en: "Platform Channels: communicating between Flutter and Native Swift/Kotlin", hi: "प्लेटफ़ॉर्म चैनल्स से नेटिव कोड के साथ संचार" },
     ],
-    officialDocUrl: "https://flutter.dev",
   },
   django: {
     id: "django",
@@ -823,7 +740,6 @@ export const TECHNOLOGIES_CATALOG: Record<string, TechnologyInfo> = {
       { en: "Django middleware request/response lifecycle pipeline", hi: "Django मिडलवेयर का निष्पादन पाइपलाइन" },
       { en: "Custom User models with AbstractBaseUser and migration strategy", hi: "कस्टम यूज़र मॉडल का सही माइग्रेशन" },
     ],
-    officialDocUrl: "https://www.djangoproject.com",
   },
   express: {
     id: "express",
@@ -851,7 +767,6 @@ export const TECHNOLOGIES_CATALOG: Record<string, TechnologyInfo> = {
       { en: "Handling unhandled promise rejections in async route handlers", hi: "async रूट हैंडलर्स में प्रॉमिस एरर हैंडलिंग" },
       { en: "Security hardening best practices: Helmet headers, rate limiting, and CORS", hi: "Express ऐप्स को Helmet और CORS से सुरक्षित करना" },
     ],
-    officialDocUrl: "https://expressjs.com",
   },
   nestjs: {
     id: "nestjs",
@@ -879,6 +794,147 @@ export const TECHNOLOGIES_CATALOG: Record<string, TechnologyInfo> = {
       { en: "Custom parameter decorators and metadata reflection with Reflector", hi: "कस्टम डेकोरेटर्स और रिफ़्लेक्टर का उपयोग" },
       { en: "Microservices communication with TCP, Redis, or Kafka transport", hi: "Kafka और Redis ट्रांसपोर्ट के साथ माइक्रोसर्विसेज" },
     ],
-    officialDocUrl: "https://nestjs.com",
+  },
+  // LangChain, LangGraph and LangSmith facts checked against the LangChain docs (docs.langchain.com, via MCP).
+  langchain: {
+    id: "langchain",
+    name: "LangChain",
+    icon: "langchain",
+    category: { en: "AI Agent Framework", hi: "AI एजेंट फ़्रेमवर्क" },
+    tagline: { en: "The agent framework: models, tools and agent loops behind one interface", hi: "एजेंट फ़्रेमवर्क: मॉडल, टूल और एजेंट लूप एक ही इंटरफ़ेस में" },
+    summary: {
+      en: "LangChain gives you standard building blocks for LLM apps: chat models from any provider, tools, retrieval and a prebuilt createAgent loop that runs on LangGraph, so you can start high-level and drop down when you need control.",
+      hi: "LangChain LLM ऐप्स के मानक हिस्से देता है: किसी भी प्रोवाइडर के चैट मॉडल, टूल, रिट्रीवल और LangGraph पर चलने वाला तैयार createAgent लूप, ताकि आप आसान शुरुआत करके ज़रूरत पड़ने पर गहराई में जा सकें।",
+    },
+    command: "pip install -U langchain",
+    topicsCount: 40,
+    keyFeatures: [
+      { en: "createAgent: a ready tool-calling agent loop built on LangGraph", hi: "createAgent: LangGraph पर बना तैयार टूल-कॉलिंग एजेंट लूप" },
+      { en: "One chat-model interface across OpenAI, Anthropic, Google and more", hi: "OpenAI, Anthropic, Google आदि के लिए एक ही चैट-मॉडल इंटरफ़ेस" },
+      { en: "Tools, structured output and middleware around model calls", hi: "टूल, स्ट्रक्चर्ड आउटपुट और मॉडल कॉल के आसपास मिडलवेयर" },
+      { en: "Retrieval: loaders, splitters, embeddings and vector stores for RAG", hi: "रिट्रीवल: RAG के लिए लोडर, स्प्लिटर, एम्बेडिंग और वेक्टर स्टोर" },
+    ],
+    interviewTopics: [
+      { en: "When to use createAgent and when to drop down to LangGraph", hi: "createAgent कब और LangGraph पर कब जाएँ" },
+      { en: "Designing a RAG pipeline: chunking, embeddings and retrieval quality", hi: "RAG पाइपलाइन डिज़ाइन: चंकिंग, एम्बेडिंग और रिट्रीवल गुणवत्ता" },
+      { en: "Keeping tool calls safe: validation, limits and human approval", hi: "टूल कॉल सुरक्षित रखना: वैलिडेशन, सीमाएँ और मानव अनुमोदन" },
+    ],
+  },
+  langgraph: {
+    id: "langgraph",
+    name: "LangGraph",
+    icon: "langgraph",
+    category: { en: "Agent Orchestration Runtime", hi: "एजेंट ऑर्केस्ट्रेशन रनटाइम" },
+    tagline: { en: "Low-level orchestration for long-running, stateful agents", hi: "लंबे चलने वाले, स्टेटफ़ुल एजेंट्स के लिए लो-लेवल ऑर्केस्ट्रेशन" },
+    summary: {
+      en: "LangGraph models an agent as a graph of nodes and edges over shared state, mixing deterministic steps with LLM-driven ones. It adds durable execution, streaming, human-in-the-loop interrupts and persistence through checkpointers and stores.",
+      hi: "LangGraph एजेंट को साझा स्टेट पर नोड और एज के ग्राफ़ के रूप में बनाता है, जिसमें तय कदम और LLM-चालित कदम साथ चलते हैं। इसमें ड्यूरेबल एक्ज़िक्यूशन, स्ट्रीमिंग, ह्यूमन-इन-द-लूप और चेकपॉइंटर व स्टोर से पर्सिस्टेंस मिलता है।",
+    },
+    command: "pip install -U langgraph",
+    topicsCount: 36,
+    keyFeatures: [
+      { en: "StateGraph: typed state, nodes, edges and conditional routing", hi: "StateGraph: टाइप्ड स्टेट, नोड, एज और कंडीशनल रूटिंग" },
+      { en: "Checkpointers for thread memory, time travel and fault tolerance", hi: "थ्रेड मेमोरी, टाइम ट्रैवल और फ़ॉल्ट टॉलरेंस के लिए चेकपॉइंटर" },
+      { en: "Interrupts that pause a run for human approval and resume later", hi: "इंटरप्ट जो मानव अनुमोदन के लिए रन रोककर बाद में फिर चलाते हैं" },
+      { en: "Stores for long-term memory shared across threads", hi: "थ्रेड्स में साझा लंबी अवधि की मेमोरी के लिए स्टोर" },
+    ],
+    interviewTopics: [
+      { en: "Checkpointer vs store: short-term and long-term memory", hi: "चेकपॉइंटर बनाम स्टोर: छोटी और लंबी अवधि की मेमोरी" },
+      { en: "Durability modes (exit, async, sync) and their trade-offs", hi: "ड्यूरेबिलिटी मोड (exit, async, sync) और उनके समझौते" },
+      { en: "Designing a supervisor with subagents as a graph", hi: "सबएजेंट्स वाले सुपरवाइज़र को ग्राफ़ के रूप में डिज़ाइन करना" },
+    ],
+  },
+  langflow: {
+    id: "langflow",
+    name: "Langflow",
+    icon: "langflow",
+    category: { en: "Visual AI Builder", hi: "विज़ुअल AI बिल्डर" },
+    tagline: { en: "Build agents and RAG flows by wiring components on a canvas", hi: "कैनवास पर कंपोनेंट जोड़कर एजेंट और RAG फ़्लो बनाइए" },
+    summary: {
+      en: "Langflow is an open-source, Python-based visual builder: drag models, prompts, vector stores and tools onto a canvas, connect them into a flow, test it in the playground and serve it as an API endpoint.",
+      hi: "Langflow एक ओपन-सोर्स, Python-आधारित विज़ुअल बिल्डर है: मॉडल, प्रॉम्प्ट, वेक्टर स्टोर और टूल कैनवास पर रखें, उन्हें फ़्लो में जोड़ें, प्लेग्राउंड में परखें और API एंडपॉइंट के रूप में चलाएँ।",
+    },
+    command: "uv pip install langflow && uv run langflow run",
+    topicsCount: 24,
+    keyFeatures: [
+      { en: "Drag-and-drop canvas of models, prompts, tools and vector stores", hi: "मॉडल, प्रॉम्प्ट, टूल और वेक्टर स्टोर का ड्रैग-एंड-ड्रॉप कैनवास" },
+      { en: "Playground to chat with a flow and inspect each component's output", hi: "फ़्लो से चैट करने और हर कंपोनेंट का आउटपुट देखने के लिए प्लेग्राउंड" },
+      { en: "Every flow served as an API endpoint for your app", hi: "हर फ़्लो आपके ऐप के लिए API एंडपॉइंट के रूप में" },
+      { en: "Custom components written in Python", hi: "Python में लिखे कस्टम कंपोनेंट" },
+    ],
+    interviewTopics: [
+      { en: "When a visual builder fits and when to move a flow into code", hi: "विज़ुअल बिल्डर कब ठीक है और फ़्लो को कोड में कब ले जाएँ" },
+      { en: "Versioning, testing and securing flows exposed as APIs", hi: "API के रूप में खुले फ़्लो का वर्ज़निंग, टेस्टिंग और सुरक्षा" },
+    ],
+  },
+  langsmith: {
+    id: "langsmith",
+    name: "LangSmith",
+    icon: "langsmith",
+    category: { en: "LLM Observability & Evaluation", hi: "LLM ऑब्ज़र्वेबिलिटी और इवैल्युएशन" },
+    tagline: { en: "Trace, evaluate and monitor LLM apps and agents in production", hi: "प्रोडक्शन में LLM ऐप और एजेंट को ट्रेस, इवैल्युएट और मॉनिटर कीजिए" },
+    summary: {
+      en: "LangSmith is the platform for tracing, evaluation, prompts and deployment across frameworks. Traces record what an agent did step by step; datasets and evaluators turn them into offline and online quality checks.",
+      hi: "LangSmith फ़्रेमवर्क्स के पार ट्रेसिंग, इवैल्युएशन, प्रॉम्प्ट और डिप्लॉयमेंट का प्लेटफ़ॉर्म है। ट्रेस बताते हैं कि एजेंट ने हर कदम पर क्या किया; डेटासेट और इवैल्युएटर उन्हें ऑफ़लाइन और ऑनलाइन गुणवत्ता जाँच में बदलते हैं।",
+    },
+    command: "export LANGSMITH_TRACING=true",
+    topicsCount: 28,
+    keyFeatures: [
+      { en: "Tracing switched on with two environment variables", hi: "दो एनवायरनमेंट वेरिएबल से ट्रेसिंग चालू" },
+      { en: "Datasets and evaluators for offline experiments", hi: "ऑफ़लाइन प्रयोगों के लिए डेटासेट और इवैल्युएटर" },
+      { en: "Online evaluations, dashboards and alerts on live traffic", hi: "लाइव ट्रैफ़िक पर ऑनलाइन इवैल्युएशन, डैशबोर्ड और अलर्ट" },
+      { en: "Works with LangChain, LangGraph, the Vercel AI SDK and other frameworks", hi: "LangChain, LangGraph, Vercel AI SDK और दूसरे फ़्रेमवर्क्स के साथ" },
+    ],
+    interviewTopics: [
+      { en: "Offline vs online evaluation and LLM-as-judge pitfalls", hi: "ऑफ़लाइन बनाम ऑनलाइन इवैल्युएशन और LLM-as-judge की कमियाँ" },
+      { en: "Building a regression dataset from production traces", hi: "प्रोडक्शन ट्रेस से रिग्रेशन डेटासेट बनाना" },
+    ],
+  },
+  n8n: {
+    id: "n8n",
+    name: "n8n",
+    icon: "n8n",
+    category: { en: "Workflow Automation", hi: "वर्कफ़्लो ऑटोमेशन" },
+    tagline: { en: "Fair-code workflow automation with AI agents and hundreds of integrations", hi: "AI एजेंट और सैकड़ों इंटीग्रेशन के साथ फ़ेयर-कोड वर्कफ़्लो ऑटोमेशन" },
+    summary: {
+      en: "n8n connects apps and APIs as node-based workflows that start from a trigger (webhook, schedule or app event), transform data with expressions or code, and call AI agent nodes with tools and memory. Run it in the cloud or self-host it.",
+      hi: "n8n ऐप और API को नोड-आधारित वर्कफ़्लो में जोड़ता है, जो ट्रिगर (वेबहुक, शेड्यूल या ऐप इवेंट) से शुरू होते हैं, एक्सप्रेशन या कोड से डेटा बदलते हैं और टूल व मेमोरी वाले AI एजेंट नोड चलाते हैं। इसे क्लाउड में चलाएँ या खुद होस्ट करें।",
+    },
+    command: "npx n8n",
+    topicsCount: 30,
+    keyFeatures: [
+      { en: "Triggers: webhooks, schedules and app events", hi: "ट्रिगर: वेबहुक, शेड्यूल और ऐप इवेंट" },
+      { en: "AI Agent node with chat models, tools and memory", hi: "चैट मॉडल, टूल और मेमोरी वाला AI एजेंट नोड" },
+      { en: "Expressions and Code nodes for data transformation", hi: "डेटा बदलने के लिए एक्सप्रेशन और कोड नोड" },
+      { en: "Error workflows, retries and self-hosting with queue mode", hi: "एरर वर्कफ़्लो, रीट्राई और क्यू मोड के साथ सेल्फ़-होस्टिंग" },
+    ],
+    interviewTopics: [
+      { en: "Making a webhook workflow idempotent and safe to retry", hi: "वेबहुक वर्कफ़्लो को idempotent और रीट्राई के लिए सुरक्षित बनाना" },
+      { en: "Scaling self-hosted n8n with queue mode and workers", hi: "क्यू मोड और वर्कर्स से सेल्फ़-होस्टेड n8n को स्केल करना" },
+    ],
+  },
+  "system-design": {
+    id: "system-design",
+    name: "System Design",
+    icon: "system-design",
+    category: { en: "Software Architecture", hi: "सॉफ़्टवेयर आर्किटेक्चर" },
+    tagline: { en: "Design systems that scale, stay up and stay consistent", hi: "ऐसे सिस्टम डिज़ाइन कीजिए जो स्केल करें, चालू रहें और सुसंगत रहें" },
+    summary: {
+      en: "System design is choosing the parts of a large system and how they talk: load balancers, caches, databases, queues and services, sized with back-of-the-envelope numbers and weighed by trade-offs in latency, consistency, availability and cost.",
+      hi: "सिस्टम डिज़ाइन यानी बड़े सिस्टम के हिस्से चुनना और तय करना कि वे कैसे बात करें: लोड बैलेंसर, कैश, डेटाबेस, क्यू और सर्विसेज़, अनुमानित संख्याओं से आकार देकर और लेटेंसी, सुसंगतता, उपलब्धता और लागत के समझौतों को तौलकर।",
+    },
+    command: "QPS = daily users × requests per user ÷ 86,400",
+    topicsCount: 45,
+    keyFeatures: [
+      { en: "Estimating traffic, storage and bandwidth before drawing boxes", hi: "बॉक्स बनाने से पहले ट्रैफ़िक, स्टोरेज और बैंडविड्थ का अनुमान" },
+      { en: "Caching, replication, sharding and consistent hashing", hi: "कैशिंग, रेप्लिकेशन, शार्डिंग और कंसिस्टेंट हैशिंग" },
+      { en: "Queues and events for decoupled, resilient services", hi: "अलग और मज़बूत सर्विसेज़ के लिए क्यू और इवेंट" },
+      { en: "CAP and PACELC trade-offs, idempotency and rate limiting", hi: "CAP और PACELC समझौते, idempotency और रेट लिमिटिंग" },
+    ],
+    interviewTopics: [
+      { en: "Design a URL shortener, a feed or a ride-hailing backend", hi: "URL शॉर्टनर, फ़ीड या राइड-हेलिंग बैकएंड डिज़ाइन करें" },
+      { en: "Where to cache and how to keep the cache consistent", hi: "कहाँ कैश करें और कैश को सुसंगत कैसे रखें" },
+      { en: "Choosing SQL or NoSQL for a given access pattern", hi: "किसी एक्सेस पैटर्न के लिए SQL या NoSQL चुनना" },
+    ],
   },
 };

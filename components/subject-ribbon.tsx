@@ -22,9 +22,14 @@ const TECH_PILLS: TechPill[] = [
   { id: "python", label: "Python", icon: "python" },
   { id: "docker", label: "Docker", icon: "docker" },
   { id: "aws", label: "AWS", icon: "aws" },
-  { id: "agentic-ai", label: "Agentic AI", hi: "एजेंटिक AI", icon: "claude" },
+  { id: "agentic-ai", label: "Agentic AI", hi: "एजेंटिक AI", icon: "agentic-ai" },
+  { id: "langchain", label: "LangChain", icon: "langchain" },
+  { id: "langgraph", label: "LangGraph", icon: "langgraph" },
+  { id: "langflow", label: "LangFlow", icon: "langflow" },
+  { id: "langsmith", label: "LangSmith", icon: "langsmith" },
+  { id: "n8n", label: "n8n", icon: "n8n" },
+  { id: "system-design", label: "System Design", hi: "सिस्टम डिज़ाइन", icon: "system-design" },
   { id: "javascript", label: "JavaScript", icon: "javascript" },
-  { id: "tailwind", label: "Tailwind CSS", icon: "tailwind" },
   { id: "nodejs", label: "Node.js", icon: "nodejs" },
   { id: "postgresql", label: "PostgreSQL", icon: "postgresql" },
   { id: "zustand", label: "Zustand", icon: "zustand" },
@@ -36,7 +41,6 @@ const TECH_PILLS: TechPill[] = [
   { id: "git", label: "Git", icon: "git" },
   { id: "kubernetes", label: "Kubernetes", icon: "kubernetes" },
   { id: "fastapi", label: "FastAPI", icon: "fastapi" },
-  { id: "mongodb", label: "MongoDB", icon: "mongodb" },
   { id: "supabase", label: "Supabase", icon: "supabase" },
   { id: "rust", label: "Rust", icon: "rust" },
   { id: "go", label: "Go", icon: "go" },
@@ -60,7 +64,7 @@ export function SubjectRibbon({ entries }: { entries?: LibraryEntry[] }) {
   const hi = language === "hi";
   const [activeTech, setActiveTech] = useState<TechnologyInfo | null>(null);
   // The second copy only makes the marquee loop seamlessly. It is aria-hidden and decorative, so it is added after
-  // hydration instead of doubling the ribbon's server HTML (31 pills and 31 images).
+  // hydration instead of doubling the ribbon's server HTML (35 pills and 35 images).
   const hydrated = useSyncExternalStore(noSubscribe, () => true, () => false);
 
   const handlePillClick = async (techId: string, label: string) => {
@@ -95,7 +99,6 @@ export function SubjectRibbon({ entries }: { entries?: LibraryEntry[] }) {
           { en: `Key architectural trade-offs in ${label}`, hi: `${label} में मुख्य आर्किटेक्चरल समझौते` },
           { en: "Debugging common production bottlenecks", hi: "प्रोडक्शन की समस्याओं को डीबग करना" },
         ],
-        officialDocUrl: "https://courses#technology",
       });
     }
   };

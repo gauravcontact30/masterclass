@@ -141,3 +141,19 @@
 .traces time small { display: block; font-size: 10px; color: #6c6b63; overflow: hidden; text-overflow: ellipsis; }
 .facts dd { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 @media (max-width: 640px) { .routesHead { display: none; } .routes li { grid-template-columns: minmax(0, 1fr) auto; } .routes li > span:nth-child(n + 4) { display: none; } }
+
+/* Live visitor stream: what the window says at a glance, and who to show. Visitors on the site now carry the
+   tone's stripe on the left, so they stand apart from those who have left without another badge. */
+.streamBar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 16px; }
+.streamStats { display: grid; grid-template-columns: repeat(4, minmax(120px, auto)); gap: 8px 22px; margin: 0; }
+.streamStats div { display: grid; gap: 1px; }
+.streamStats dt { font-size: 11.5px; font-weight: 600; color: var(--soft); }
+.streamStats dd { margin: 0; font-family: Georgia, "Times New Roman", serif; font-size: 21px; line-height: 1.15; color: var(--ink); font-variant-numeric: tabular-nums; }
+.streamStats div[data-live] dd { color: var(--c); }
+.streamStats small { font-size: 11px; color: var(--soft); }
+.streamBar .filters { margin-left: 0; flex-wrap: wrap; border-radius: 14px; }
+.streamBar .filters b { font-weight: 700; font-variant-numeric: tabular-nums; opacity: .75; }
+.stream li[data-live] { border-color: color-mix(in srgb, var(--c) 30%, var(--rule)); box-shadow: inset 3px 0 0 var(--c); }
+.what small.trail { display: block; font-family: var(--font-geist-mono, ui-monospace), monospace; font-size: 11px; }
+.streamNote { font-size: 12px; color: var(--soft); }
+@media (max-width: 900px) { .streamStats { grid-template-columns: repeat(2, minmax(0, 1fr)); width: 100%; } }

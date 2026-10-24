@@ -1,4 +1,4 @@
-import { STUDY_COURSES, SCHOOL_COURSES, EXAM_COURSES } from "@/lib/study/catalog";
+import { STUDY_COURSES, LANGUAGE_COURSES } from "@/lib/study/catalog";
 import { SYSTEM_DESIGN_COURSES } from "@/lib/study/system-design-catalog";
 import { buildStudyPack } from "@/lib/study/content";
 import { STUDY_UNITS } from "@/lib/study/units";
@@ -7,7 +7,9 @@ import { canReadStudy, canReadTechnology, isSuperAdminUser, PREPARATIONS, course
 import { preparationSchema } from "@/lib/study/preparation-schema";
 
 test("every catalog course has bilingual lessons, answer keys, review rubrics and honest coverage", () => {
-  expect(SCHOOL_COURSES).toHaveLength(168); expect(EXAM_COURSES).toHaveLength(20); expect(SYSTEM_DESIGN_COURSES).toHaveLength(12);
+  // School (Class 6–12) and government and entrance exam courses were removed on 2026-10-24: tech professionals only.
+  expect(LANGUAGE_COURSES.map(course => course.id)).toEqual(["ielts"]); expect(SYSTEM_DESIGN_COURSES).toHaveLength(12);
+  expect(STUDY_COURSES).toHaveLength(13);
   expect(new Set(STUDY_COURSES.map(course => course.id)).size).toBe(STUDY_COURSES.length);
   expect(new Set(STUDY_UNITS.map(unit => unit.id)).size).toBe(STUDY_UNITS.length);
   for (const language of ["en", "hi"] as const) for (const course of STUDY_COURSES) {
@@ -43,19 +45,21 @@ test("unsubscribed accounts have no preview and paid members receive complete pu
 });
 
 test("study and technology access follows explicit choices; role requires a verified exact email", () => {
-  const access = { selections: ["cbse-10", "nda", "system-design", "tech:react"], isSuperAdmin: false };
+  const access = { selections: ["ielts", "system-design", "tech:react"], isSuperAdmin: false };
   const visible = STUDY_COURSES.filter(course => canReadStudy(access, course));
-  expect(visible).toHaveLength(8 + 1 + 12);
-  expect(visible.every(course => course.board === "cbse" && course.grade === 10 || course.id === "nda" || course.category === "course")).toBe(true);
+  expect(visible).toHaveLength(1 + 12);
+  expect(STUDY_COURSES.filter(course => canReadStudy({ selections: ["system-design"], isSuperAdmin: false }, course)).every(course => course.category === "course")).toBe(true);
   expect(canReadTechnology(access, "react")).toBe(true); expect(canReadTechnology(access, "python")).toBe(false);
   expect(isSuperAdminUser({ email: "garvcontact30@gmail.com" })).toBe(false);
   expect(isSuperAdminUser({ email: "garvcontact30@gmail.com.evil", email_confirmed_at: "2026-01-01" })).toBe(false);
   expect(isSuperAdminUser({ email: "GARVCONTACT30@GMAIL.COM", email_confirmed_at: "2026-01-01" })).toBe(true);
   expect(preparationSchema.safeParse([]).success).toBe(false);
-  expect(preparationSchema.safeParse(["nda", "nda"]).success).toBe(false);
+  expect(preparationSchema.safeParse(["ielts", "ielts"]).success).toBe(false);
+  // Removed school and exam paths are no longer valid choices.
+  expect(preparationSchema.safeParse(["cbse-10"]).success).toBe(false); expect(preparationSchema.safeParse(["nda"]).success).toBe(false);
   expect(preparationSchema.safeParse(["isSuperAdmin"]).success).toBe(false);
   expect(preparationSchema.safeParse(PREPARATIONS.map(item => item.id)).success).toBe(true);
-  expect(courseCategory(EXAM_COURSES.find(course => course.id === "nda")!)).toBe("defence");
+  expect(courseCategory(LANGUAGE_COURSES[0])).toBe("languages");
 });
 test("ask ratings never invent a denominator or predict a future examination", () => {
   expect(askRating([], [])).toEqual({ occurrences: 0, reviewed: 0, percent: null });

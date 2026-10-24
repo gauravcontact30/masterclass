@@ -27,12 +27,13 @@ test("matches catalogue and lesson titles without borrowing unrelated product sc
   expect(screensFor("AWS", "Compute", "AWS Lambda").some(s => s.credit.includes("Medium"))).toBe(true);
 });
 
-test("offers an accessible enlarged preview and a link to the credited source", () => {
+test("offers an accessible enlarged preview that credits its source without linking out", () => {
   render(<LearningResources technology="Next.js 16+" />);
   fireEvent.click(screen.getByRole("button", { name: "Next page" }));
   fireEvent.click(screen.getByRole("button", { name: "Enlarge screenshot: Build a project with Next.js Learn" }));
   expect(screen.getByRole("dialog")).toBeInTheDocument();
-  expect(screen.getByRole("link", { name: "Open Next.js · Vercel" })).toHaveAttribute("href", "https://nextjs.org/learn");
+  expect(within(screen.getByRole("dialog")).getByText("Next.js · Vercel")).toBeInTheDocument();
+  expect(within(screen.getByRole("dialog")).queryByRole("link")).toBeNull();
 });
 
 test("does not add an empty gallery for an unrelated subject", () => {

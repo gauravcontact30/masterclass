@@ -90,12 +90,12 @@ function Item({ k, n, stars, question, text, children }: Readonly<{ k: string; n
   </details>;
 }
 
-/** The companies a question is reported at, each linking to the page that reports it. */
+/** The companies a question is reported at. */
 function Companies({ list, text }: Readonly<{ list?: CompanyReport[]; text: Text }>) {
   if (!list?.length) return null;
   return <p className={styles.companies}>
     <Building2 size={13} aria-hidden="true" /><span>{text("Reported at", "यहाँ पूछा गया")}</span>
-    {list.map(c => <a key={c.company + c.url} href={c.url} target="_blank" rel="noopener noreferrer">{c.company}</a>)}
+    {list.map(c => <span key={c.company + c.url} className={styles.company}>{c.company}</span>)}
   </p>;
 }
 

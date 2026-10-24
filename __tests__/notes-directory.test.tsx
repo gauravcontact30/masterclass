@@ -21,7 +21,7 @@ test("search finds nested APIs and vocabulary and combines technology and type f
 });
 
 test("existing service cards can hide references while retaining their points", () => {
-  render(<ServiceCatalog hi={false} showReferences={false} services={[{ name: "EC2", category: "Compute", summary: "Virtual machines", points: ["Choose an instance type", "Configure networking"], sourceUrl: "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ec2.html" }]} />);
+  render(<ServiceCatalog hi={false} services={[{ name: "EC2", category: "Compute", summary: "Virtual machines", points: ["Choose an instance type", "Configure networking"], sourceUrl: "https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/ec2.html" }]} />);
   expect(screen.getByText("Choose an instance type")).toBeVisible();
   expect(screen.queryByRole("link", { name: /Official reference/ })).not.toBeInTheDocument();
 });

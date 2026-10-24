@@ -249,24 +249,23 @@ export const COMPARISONS: Comparison[] = [
   },
   {
     id: "sql-nosql", group: "Data & storage",
-    question: "What is the difference between SQL and NoSQL databases (PostgreSQL vs MongoDB)?",
-    summary: "SQL databases store related tables with a fixed schema, joins and strong transactions; NoSQL databases such as MongoDB store flexible documents and scale out easily, trading some relational power.",
+    question: "What is the difference between SQL and NoSQL databases?",
+    summary: "SQL databases store related tables with a fixed schema, joins and strong transactions; NoSQL databases such as DynamoDB and Firestore store documents or key-value items modelled around access patterns and scale out easily, trading some relational power.",
     techs: [
       { name: "PostgreSQL", definition: "An open-source relational database with SQL, ACID transactions and rich types.", description: "Joins, constraints, JSONB, full-text search and extensions such as pgvector make it a strong default." },
-      { name: "MongoDB", definition: "A document database storing JSON-like documents in collections.", description: "Flexible schemas, nested documents and built-in sharding; data modelled around access patterns." },
+      { name: "NoSQL databases", definition: "Document and key-value stores such as Amazon DynamoDB and Google Firestore.", description: "Flexible items, nested data and horizontal scaling; data modelled around the queries the app makes." },
     ],
-    aspects: [["Data model", "Tables and rows", "Documents"], ["Schema", "Defined up front", "Flexible"], ["Joins", "Native, powerful", "$lookup, usually embed instead"], ["Transactions", "Full ACID", "Multi-document supported"], ["Best for", "Relational data, reporting, money", "Varied documents, fast iteration"]],
+    aspects: [["Data model", "Tables and rows", "Documents or key-value items"], ["Schema", "Defined up front", "Flexible"], ["Joins", "Native, powerful", "Rare; data is denormalised instead"], ["Transactions", "Full ACID", "Supported, usually with limits"], ["Best for", "Relational data, reporting, money", "Known access patterns at large scale"]],
   },
   {
     id: "prisma-drizzle-mongoose", group: "Data & storage",
-    question: "What is the difference among Prisma, Drizzle and Mongoose?",
-    summary: "Prisma and Drizzle are type-safe ORMs for SQL databases (Prisma with its own schema language, Drizzle with SQL-like TypeScript); Mongoose is the object modelling library for MongoDB.",
+    question: "What is the difference between Prisma and Drizzle?",
+    summary: "Both are type-safe TypeScript ORMs for SQL databases: Prisma uses its own schema language and a generated client, while Drizzle defines schemas in TypeScript and writes queries that read like SQL.",
     techs: [
       { name: "Prisma", definition: "A TypeScript ORM with a schema file, generated client and migrations.", description: "Readable queries and strong types from schema.prisma; adds a generation step and its own query engine layer." },
       { name: "Drizzle", definition: "A lightweight TypeScript ORM whose queries look like SQL.", description: "Schemas are TypeScript, queries are close to SQL, and it stays small for serverless and edge use." },
-      { name: "Mongoose", definition: "An ODM for MongoDB with schemas, validation and middleware.", description: "Adds structure, casting and hooks to MongoDB documents in Node.js." },
     ],
-    aspects: [["Database", "SQL (and MongoDB)", "SQL", "MongoDB"], ["Schema defined in", "schema.prisma", "TypeScript", "JavaScript / TS schemas"], ["Query style", "Object API", "SQL-like builder", "Model methods"], ["Migrations", "Prisma Migrate", "drizzle-kit", "Not applicable"], ["Best for", "Productivity, readable data access", "Lean, SQL-minded teams", "Node apps on MongoDB"]],
+    aspects: [["Database", "PostgreSQL, MySQL, SQLite, SQL Server", "PostgreSQL, MySQL, SQLite"], ["Schema defined in", "schema.prisma", "TypeScript"], ["Query style", "Object API", "SQL-like builder"], ["Migrations", "Prisma Migrate", "drizzle-kit"], ["Best for", "Productivity, readable data access", "Lean, SQL-minded teams"]],
   },
   {
     id: "redis-postgres-cache", group: "Data & storage",
@@ -431,14 +430,14 @@ const TECH_PICTURE: Record<string, string> = {
   "Server Components": "nextjs", "Client Components": "react", SSG: "nextjs", ISR: "nextjs", SSR: "nextjs", PPR: "nextjs",
   JavaScript: "javascript", TypeScript: "typescript", "Node.js": "nodejs", Express: "express", NestJS: "nestjs", REST: "system-design", GraphQL: "graphql",
   FastAPI: "python", Zod: "typescript", Pydantic: "python", Jest: "jest", Vitest: "vitest", Playwright: "playwright", Cypress: "cypress",
-  "Unit tests": "jest", "Integration tests": "rtl", "End-to-end tests": "playwright", Redis: "redis", PostgreSQL: "system-design", MongoDB: "system-design",
+  "Unit tests": "jest", "Integration tests": "rtl", "End-to-end tests": "playwright", Redis: "redis", PostgreSQL: "system-design", "NoSQL databases": "system-design",
   Python: "python", NumPy: "python", pandas: "python", Polars: "python", PyTorch: "python", "TensorFlow + Keras": "python",
   "AWS Lambda": "aws", "Amazon EC2": "aws", "Amazon ECS": "aws", "Amazon SQS": "aws", "Amazon SNS": "aws", "Apache Kafka": "system-design",
   Docker: "github-actions", Kubernetes: "system-design", Git: "git", GitHub: "git", "GitHub Actions": "github-actions", "git merge": "git", "git rebase": "git",
   Monolith: "system-design", Microservices: "system-design", "Cron job": "system-design", "Job queue": "redis", Inngest: "system-design",
   "Prompt engineering": "agentic-terms", RAG: "agentic-terms", "Fine-tuning": "agentic-terms", Chatbot: "agentic-ai", "AI workflow": "agentic-ai", "AI agent": "agentic-ai",
   "Function calling": "agentic-terms", MCP: "agentic-terms", A2A: "agentic-terms", "Vercel AI SDK": "agentic-ai",
-  Prisma: "nodejs", Drizzle: "nodejs", Mongoose: "nodejs", Supabase: "system-design", Neon: "system-design", Firebase: "system-design",
+  Prisma: "nodejs", Drizzle: "nodejs", Supabase: "system-design", Neon: "system-design", Firebase: "system-design",
   Clerk: "nextjs", "Auth.js": "nextjs", "Better Auth": "nextjs",
 };
 /** The Interview prep picture id for a compared technology, if one fits. */

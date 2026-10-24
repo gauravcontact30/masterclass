@@ -49,6 +49,22 @@ export const ICON_CHOICES: Record<string, string[]> = {
     "brand:langchain", "brand:langgraph", "brand:python", "brand:pydantic", "brand:fastapi", "brand:datastax", "brand:anthropic",
     "brand:huggingface", "brand:ollama", "brand:postgresql", "brand:redis", "brand:jupyter", "brand:docker", "brand:streamlit",
   ],
+  devops: [
+    "brand:linux", "brand:gnubash", "brand:git", "brand:github", "brand:githubactions", "brand:gitlab", "brand:jenkins", "brand:docker",
+    "brand:kubernetes", "brand:helm", "brand:terraform", "brand:ansible", "brand:argo", "brand:prometheus", "brand:grafana",
+    "brand:opentelemetry", "brand:vault", "brand:trivy", "brand:nginx",
+    aws("AWS CodePipeline", "DevOps & CI/CD"), aws("Amazon EKS", "Containers"), aws("Amazon CloudWatch", "Monitoring & Reliability"),
+  ],
+  "cloud-architecture": [
+    ...AWS_CORE,
+    "brand:googlecloud", "brand:kubernetes", "brand:terraform", "brand:hashicorp", "brand:vault", "brand:packer", "brand:cloudflare",
+    "brand:docker", "brand:istio", "brand:linux", aws("AWS Cost Explorer", "Cost & Billing"),
+  ],
+  "ai-automation-langchain": [
+    "brand:langchain", "brand:langgraph", "brand:langflow", "brand:python", "brand:pydantic", "brand:fastapi", "brand:anthropic",
+    "brand:modelcontextprotocol", "brand:gmail", "brand:googlesheets", "brand:notion", "brand:jira", "brand:postgresql", "brand:redis",
+    "brand:docker", "brand:github",
+  ],
 };
 
 export const BRAND_SLUGS = [...new Set(Object.values(ICON_CHOICES).flat().filter(key => key.startsWith("brand:")).map(key => key.slice(6)))];

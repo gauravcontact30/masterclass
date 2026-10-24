@@ -14,13 +14,13 @@ const SUGGESTIONS = 6;
 /** Shelves whose `meta` is a real category, so it can be offered as a group filter. */
 const GROUPED: LibraryKind[] = ["course", "word"];
 /** Offered as "try" chips; only those that match a real entry are shown. */
-const EXAMPLES = ["react", "succinct", "SSC CGL", "boto3", "git"];
+const EXAMPLES = ["react", "succinct", "System Design", "boto3", "git"];
 
 /** Where each kind of entry opens inside the dashboard, in both languages. */
 const OPENS_IN: Record<LibraryKind, [string, string]> = {
-  technology: ["On The Go · Class Room", "On The Go · क्लास रूम"],
+  technology: ["On The Go · Search", "On The Go · खोज"],
   api: ["API Docs", "API Docs"],
-  course: ["Your exam & class space", "आपका परीक्षा व कक्षा क्षेत्र"],
+  course: ["Your courses & preparation", "आपके कोर्स और तैयारी"],
   word: ["Vocabulary", "शब्दावली"],
   techy: ["Techy code lab", "Techy कोड लैब"],
 };
@@ -84,7 +84,7 @@ export function LibraryLedger({ library: initial }: { library: LandingLibrary })
     { id: "all", label: text("Everything", "सब कुछ"), count: library.total },
     { id: "technology", label: text("Technologies", "तकनीकें"), count: library.counts.technology },
     { id: "api", label: text("API reference", "API संदर्भ"), count: library.counts.api },
-    { id: "course", label: text("Exams & classes", "परीक्षा व कक्षाएँ"), count: library.counts.course },
+    { id: "course", label: text("Courses", "कोर्स"), count: library.counts.course },
     { id: "word", label: text("Words", "शब्द"), count: library.counts.word },
     { id: "techy", label: "Techy", count: library.counts.techy },
   ];
@@ -140,7 +140,7 @@ export function LibraryLedger({ library: initial }: { library: LandingLibrary })
             <input ref={inputRef} id={`${ids}-q`} type="text" role="combobox" value={query} autoComplete="off" spellCheck={false}
               aria-autocomplete="list" aria-expanded={showSuggestions} aria-controls={`${ids}-suggest`}
               aria-activedescendant={showSuggestions && cursor >= 0 ? `${ids}-s-${cursor}` : undefined}
-              placeholder={text("Search topics, exams, packages or words", "विषय, परीक्षा, पैकेज या शब्द खोजें")}
+              placeholder={text("Search topics, courses, packages or words", "विषय, कोर्स, पैकेज या शब्द खोजें")}
               onChange={event => { setQuery(event.target.value); setSelectedId(null); setSuggestOpen(true); setCursor(-1); }}
               onFocus={() => setSuggestOpen(true)} onBlur={() => setSuggestOpen(false)} onKeyDown={onKey} />
             {query && <button type="button" className={styles.clear} onClick={() => { setQuery(""); setSelectedId(null); }} aria-label={text("Clear search", "खोज साफ़ करें")}>

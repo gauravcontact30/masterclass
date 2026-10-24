@@ -417,7 +417,7 @@ function WordDialog({ item, onClose }: { item: CatalogItem | null; onClose: () =
  */
 export function CatalogBrowser({
   id, title, description, noun, items, categories, itemIcon, itemImage, categoryIcon, question, onAsk, onExplain,
-  cover = <TopicCover label={title} catalogueId={id} />,
+  cover = <TopicCover label={title} />,
   technology = title,
 }: {
   id: string;

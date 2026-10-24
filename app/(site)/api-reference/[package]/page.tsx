@@ -50,7 +50,6 @@ async function PackageReference({ params }: Props) {
         </tr>)}</tbody>
       </table></div>
     </section>)}
-    <p className={styles.meta}>Official documentation: <a href={pkg.docs} rel="noopener">{pkg.docs}</a></p>
     <div className={styles.cta}><p>Search across every package and filter by type in your dashboard.</p><Link href="/sign-up">Start learning</Link></div>
   </>;
 }

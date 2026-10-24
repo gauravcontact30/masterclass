@@ -5,10 +5,9 @@ export type { Appearance } from "./schemas";
 export type Bilingual = { en: string; hi: string };
 export const bi = (en: string, hi: string): Bilingual => ({ en, hi });
 export const localize = (text: Bilingual, language: Language) => text[language];
-export const BOARDS = ["cbse", "ncert", "icse", "isc"] as const;
-export type Board = typeof BOARDS[number];
-export type StudySubject = "maths" | "english" | "physics" | "chemistry" | "vocabulary" | "ielts" | "synonyms" | "antonyms" | "biology" | "reasoning" | "general-studies" | "system-design";
-export type StudyCourse = { id: string; title: Bilingual; category: "school" | "exam" | "course"; board?: Board; grade?: number; subject?: StudySubject; subjects: StudySubject[]; aliases: string[]; sourceUrl: string; scope: Bilingual };
+// School boards and their classes, and the government and entrance exams, were removed on 2026-10-24 (see ./catalog.ts).
+export type StudySubject = "english" | "vocabulary" | "ielts" | "synonyms" | "antonyms" | "system-design";
+export type StudyCourse = { id: string; title: Bilingual; category: "exam" | "course"; subject?: StudySubject; subjects: StudySubject[]; aliases: string[]; sourceUrl: string; scope: Bilingual };
 export type StudyUnit = {
   id: string; subject: StudySubject; minGrade: number; maxGrade: number; title: Bilingual;
   idea: Bilingual; rule: Bilingual; example: Bilingual; solution: Bilingual; mistake: Bilingual;

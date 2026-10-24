@@ -25,9 +25,8 @@ const GROUPS: { title: [string, string]; areas: Area[] }[] = [
     { icon: Search, name: ["Search with AI mode", "AI मोड के साथ खोज"], note: ["Answers from the notes, or from a model", "नोट्स से या मॉडल से उत्तर"] },
     { icon: ListOrdered, name: ["On The Go", "On The Go"], note: ["Step-by-step build guides with every command", "हर कमांड के साथ चरण-दर-चरण गाइड"] },
     { icon: NotebookPen, name: ["Notes", "नोट्स"], note: ["Revision notes for every technology", "हर तकनीक के रिवीज़न नोट्स"] },
-    { icon: BookA, name: ["Vocabulary", "शब्दावली"], note: ["Exam words with Hindi meanings and examples", "हिन्दी अर्थ और उदाहरण सहित परीक्षा शब्द"] },
+    { icon: BookA, name: ["Vocabulary", "शब्दावली"], note: ["Workplace English words with Hindi meanings and examples", "हिन्दी अर्थ और उदाहरण सहित कामकाजी अंग्रेज़ी शब्द"] },
     { icon: Coffee, name: ["Coffee & Code", "Coffee & Code"], note: ["Short engineering articles: real code, then interview questions", "छोटे इंजीनियरिंग लेख: असली कोड, फिर इंटरव्यू प्रश्न"] },
-    { icon: GraduationCap, name: ["Class Room", "क्लास रूम"], note: ["School and exam courses in one place", "स्कूल और परीक्षा कोर्स एक जगह"] },
     { icon: Bookmark, name: ["Bookmark", "बुकमार्क"], note: ["Save anything to revise later", "बाद में दोहराने के लिए सहेजें"] },
   ] },
   { title: ["Professional Learn", "Professional Learn"], areas: [

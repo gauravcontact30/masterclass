@@ -1,5 +1,6 @@
 "use client";
-import { useId, useRef, useState, useSyncExternalStore, type CSSProperties, type FormEvent } from "react";
+import { useEffect, useId, useMemo, useRef, useState, useSyncExternalStore, type CSSProperties, type FormEvent } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { Check, Flag, Hammer, Layers, Loader2, RotateCcw, Sparkles, type LucideIcon } from "lucide-react";
 import type { LearningPath, PathStage } from "@/lib/learning-path";
@@ -12,25 +13,69 @@ import { stageWeeks } from "./learning-path-view";
 import home from "./landing-home.module.css";
 import styles from "./landing-path-finder.module.css";
 
-/** Ready-made goals, each named by its technology; the first SHOWN are always visible, the rest behind "More ideas".
- *  Today's AI-written goals (lib/server/landing-fresh.ts) replace them when the nightly job has run. */
-const GOALS: [label: string, labelHi: string, goal: string, goalHi: string][] = [
-  ["Next.js", "Next.js", "get a frontend developer job with React and Next.js", "React और Next.js से फ्रंटएंड डेवलपर की नौकरी पाना"],
-  ["LangChain", "LangChain", "build AI agents with Python and LangChain", "Python और LangChain से AI एजेंट बनाना"],
-  ["Node.js", "Node.js", "become a backend developer with Node.js", "Node.js के साथ बैकएंड डेवलपर बनना"],
-  ["AWS", "AWS", "move into DevOps and AWS", "DevOps और AWS में जाना"],
-  ["TypeScript", "TypeScript", "become a full-stack developer with TypeScript, React and Node.js", "TypeScript, React और Node.js से फ़ुल-स्टैक डेवलपर बनना"],
-  ["SQL", "SQL", "start a career in data engineering with Python and SQL", "Python और SQL से डेटा इंजीनियरिंग में करियर शुरू करना"],
-  ["Playwright", "Playwright", "become a QA automation engineer with Playwright", "Playwright से QA ऑटोमेशन इंजीनियर बनना"],
-  ["React", "React", "crack a React interview", "React इंटरव्यू पास करना"],
-  ["Python", "Python", "learn Python from scratch", "शुरू से Python सीखना"],
-  ["OWASP security", "OWASP सुरक्षा", "learn web app security with the OWASP Top 10", "OWASP Top 10 से वेब ऐप सुरक्षा सीखना"],
-  ["Claude", "Claude", "build generative AI apps with Claude", "Claude से जनरेटिव AI ऐप बनाना"],
-  ["Flutter", "Flutter", "build mobile apps with Flutter", "Flutter से मोबाइल ऐप बनाना"],
+/** The lines the ready-made goals are grouped by, like lines on a transit map; "popular" is today's mix. */
+type Line = "ai" | "frontend" | "backend" | "cloud" | "data" | "mobile" | "quality" | "interview";
+const LINES: { id: Line; en: string; hi: string }[] = [
+  { id: "ai", en: "AI & agents", hi: "AI और एजेंट" },
+  { id: "frontend", en: "Frontend", hi: "फ्रंटएंड" },
+  { id: "backend", en: "Backend", hi: "बैकएंड" },
+  { id: "cloud", en: "Cloud & DevOps", hi: "क्लाउड और DevOps" },
+  { id: "data", en: "Data & ML", hi: "डेटा और ML" },
+  { id: "mobile", en: "Mobile", hi: "मोबाइल" },
+  { id: "quality", en: "Testing & security", hi: "टेस्टिंग और सुरक्षा" },
+  { id: "interview", en: "Interviews", hi: "इंटरव्यू" },
 ];
-const SHOWN = 7;
-/** Light tints the pills cycle through (landing-path-finder.module.css). */
-const PILL_TINTS = 12;
+type Goal = [label: string, labelHi: string, goal: string, goalHi: string, line?: Line, icon?: string];
+/** Ready-made goals, each named by its technology and filed under a line; `icon` names a picture in /images/tech.
+ *  Today's AI-written goals (lib/server/landing-fresh.ts) lead the popular mix when the nightly job has run. */
+const GOALS: Goal[] = [
+  ["Next.js", "Next.js", "get a frontend developer job with React and Next.js", "React और Next.js से फ्रंटएंड डेवलपर की नौकरी पाना", "frontend", "nextjs"],
+  ["LangChain", "LangChain", "build AI agents with Python and LangChain", "Python और LangChain से AI एजेंट बनाना", "ai", "langchain"],
+  ["Node.js", "Node.js", "become a backend developer with Node.js", "Node.js के साथ बैकएंड डेवलपर बनना", "backend", "nodejs"],
+  ["AWS", "AWS", "move into DevOps and AWS", "DevOps और AWS में जाना", "cloud", "aws"],
+  ["TypeScript", "TypeScript", "become a full-stack developer with TypeScript, React and Node.js", "TypeScript, React और Node.js से फ़ुल-स्टैक डेवलपर बनना", "frontend", "typescript"],
+  ["SQL", "SQL", "start a career in data engineering with Python and SQL", "Python और SQL से डेटा इंजीनियरिंग में करियर शुरू करना", "data", "postgresql"],
+  ["Playwright", "Playwright", "become a QA automation engineer with Playwright", "Playwright से QA ऑटोमेशन इंजीनियर बनना", "quality", "playwright"],
+  ["React", "React", "crack a React interview", "React इंटरव्यू पास करना", "interview", "react"],
+  ["Python", "Python", "learn Python from scratch", "शुरू से Python सीखना", "backend", "python"],
+  ["OWASP security", "OWASP सुरक्षा", "learn web app security with the OWASP Top 10", "OWASP Top 10 से वेब ऐप सुरक्षा सीखना", "quality"],
+  ["Claude", "Claude", "build generative AI apps with Claude", "Claude से जनरेटिव AI ऐप बनाना", "ai", "claude"],
+  ["Flutter", "Flutter", "build mobile apps with Flutter", "Flutter से मोबाइल ऐप बनाना", "mobile", "flutter"],
+  ["LangGraph", "LangGraph", "build stateful multi-agent workflows with LangGraph", "LangGraph से स्टेटफ़ुल मल्टी-एजेंट वर्कफ़्लो बनाना", "ai", "langgraph"],
+  ["LangSmith", "LangSmith", "trace and evaluate LLM apps with LangSmith", "LangSmith से LLM ऐप्स को ट्रेस और इवैल्युएट करना", "ai", "langsmith"],
+  ["Langflow", "Langflow", "prototype AI agents visually with Langflow", "Langflow से AI एजेंट का विज़ुअल प्रोटोटाइप बनाना", "ai", "langflow"],
+  ["n8n", "n8n", "automate business workflows with n8n and AI agents", "n8n और AI एजेंट से बिज़नेस वर्कफ़्लो ऑटोमेट करना", "ai", "n8n"],
+  ["Agentic AI", "एजेंटिक AI", "become an agentic AI engineer", "एजेंटिक AI इंजीनियर बनना", "ai", "agentic-ai"],
+  ["RAG", "RAG", "build a RAG chatbot over my own documents", "अपने दस्तावेज़ों पर RAG चैटबॉट बनाना", "ai"],
+  ["Angular", "Angular", "become an Angular developer", "Angular डेवलपर बनना", "frontend", "angular"],
+  ["Vue.js", "Vue.js", "build modern frontends with Vue.js", "Vue.js से आधुनिक फ्रंटएंड बनाना", "frontend", "vue"],
+  ["Zustand", "Zustand", "manage React state cleanly with Zustand and TanStack Query", "Zustand और TanStack Query से React स्टेट साफ़ ढंग से संभालना", "frontend", "zustand"],
+  ["FastAPI", "FastAPI", "build Python APIs with FastAPI", "FastAPI से Python API बनाना", "backend", "fastapi"],
+  ["Django", "Django", "build web apps with Python and Django", "Python और Django से वेब ऐप बनाना", "backend", "django"],
+  ["NestJS", "NestJS", "build structured Node.js backends with NestJS", "NestJS से व्यवस्थित Node.js बैकएंड बनाना", "backend", "nestjs"],
+  ["Go", "Go", "build fast backend services with Go", "Go से तेज़ बैकएंड सर्विसेज़ बनाना", "backend", "go"],
+  ["Rust", "Rust", "learn systems programming with Rust", "Rust से सिस्टम प्रोग्रामिंग सीखना", "backend", "rust"],
+  ["Java", "Java", "become a Java backend developer with Spring Boot", "Spring Boot से Java बैकएंड डेवलपर बनना", "backend"],
+  ["GraphQL", "GraphQL", "build a GraphQL API", "GraphQL API बनाना", "backend", "graphql"],
+  ["Docker", "Docker", "containerise my apps with Docker", "Docker से अपने ऐप कंटेनर में चलाना", "cloud", "docker"],
+  ["Kubernetes", "Kubernetes", "deploy and scale apps on Kubernetes", "Kubernetes पर ऐप डिप्लॉय और स्केल करना", "cloud", "kubernetes"],
+  ["Terraform", "Terraform", "manage cloud infrastructure as code with Terraform", "Terraform से क्लाउड इंफ्रास्ट्रक्चर को कोड की तरह संभालना", "cloud"],
+  ["GitHub Actions", "GitHub Actions", "set up CI/CD with GitHub Actions", "GitHub Actions से CI/CD सेट करना", "cloud", "git"],
+  ["Azure", "Azure", "become a cloud engineer on Microsoft Azure", "Microsoft Azure पर क्लाउड इंजीनियर बनना", "cloud"],
+  ["Linux", "Linux", "learn Linux and shell scripting", "Linux और शेल स्क्रिप्टिंग सीखना", "cloud", "linux"],
+  ["PostgreSQL", "PostgreSQL", "master PostgreSQL and database design", "PostgreSQL और डेटाबेस डिज़ाइन में महारत पाना", "data", "postgresql"],
+  ["Redis", "Redis", "speed up apps with Redis caching", "Redis कैशिंग से ऐप तेज़ करना", "data", "redis"],
+  ["pandas", "pandas", "become a data analyst with Python and pandas", "Python और pandas से डेटा एनालिस्ट बनना", "data", "python"],
+  ["PyTorch", "PyTorch", "start in machine learning with PyTorch", "PyTorch से मशीन लर्निंग शुरू करना", "data"],
+  ["Kafka", "Kafka", "build event-driven systems with Kafka", "Kafka से इवेंट-ड्रिवन सिस्टम बनाना", "data"],
+  ["React Native", "React Native", "build cross-platform mobile apps with React Native", "React Native से क्रॉस-प्लेटफ़ॉर्म मोबाइल ऐप बनाना", "mobile", "react"],
+  ["Vitest", "Vitest", "write reliable unit tests with Vitest and Testing Library", "Vitest और Testing Library से भरोसेमंद यूनिट टेस्ट लिखना", "quality", "vitest"],
+  ["System Design", "सिस्टम डिज़ाइन", "crack a system design interview", "सिस्टम डिज़ाइन इंटरव्यू पास करना", "interview", "system-design"],
+  ["DSA", "DSA", "prepare for coding interviews with data structures and algorithms", "डेटा स्ट्रक्चर और एल्गोरिद्म से कोडिंग इंटरव्यू की तैयारी करना", "interview"],
+  ["JavaScript", "JavaScript", "crack a JavaScript interview", "JavaScript इंटरव्यू पास करना", "interview", "javascript"],
+];
+/** How many goals the popular mix shows. */
+const POPULAR = 8;
 /** What each of the three stages is for; the model and the rules both plan to this shape. */
 const STAGES: { icon: LucideIcon; en: string; hi: string }[] = [
   { icon: Layers, en: "Foundation", hi: "बुनियाद" },
@@ -97,6 +142,33 @@ const THEMES: { panel: string; tints: [string, string, string] }[] = [
   { panel: "olive", tints: ["butter", "aqua", "peach"] },
 ];
 const noSubscribe = () => () => {};
+const motionQuery = "(prefers-reduced-motion: reduce)";
+const subscribeMotion = (update: () => void) => { const query = window.matchMedia?.(motionQuery); query?.addEventListener("change", update); return () => query?.removeEventListener("change", update); };
+/** What the planner does while it works, ticked off in turn (about a second each) until the plan arrives. */
+const PLANNING: [string, string][] = [["Reading your goal", "आपका लक्ष्य पढ़ रहे हैं"], ["Picking topics from MasterClass", "MasterClass से विषय चुन रहे हैं"], ["Ordering the three stages", "तीन चरण क्रम में लगा रहे हैं"]];
+
+/**
+ * The goal box's placeholder types out one example goal after another while the box is empty and unfocused, so a
+ * visitor sees the kind of sentence to write. Still for reduced motion: the first example stays.
+ */
+function useTypedExample(examples: string[], run: boolean) {
+  const [text, setText] = useState(examples[0] ?? "");
+  useEffect(() => {
+    if (!run || examples.length < 2) return;
+    let goal = 0, shown = examples[0].length, erasing = true, timer = 0;
+    const tick = () => {
+      const target = examples[goal];
+      if (erasing) { shown -= 1; if (shown <= 0) { erasing = false; goal = (goal + 1) % examples.length; } }
+      else if (shown < examples[goal].length) shown += 1;
+      else { erasing = true; timer = window.setTimeout(tick, 2200); return; }
+      setText((erasing ? target : examples[goal]).slice(0, Math.max(0, shown)));
+      timer = window.setTimeout(tick, erasing ? 28 : 55);
+    };
+    timer = window.setTimeout(tick, 2200);
+    return () => window.clearTimeout(timer);
+  }, [examples, run]);
+  return run ? text : examples[0] ?? "";
+}
 
 /**
  * The landing page's route planner: the visitor completes "I want to ___ in N weeks" and gets a three-stage plan
@@ -107,21 +179,37 @@ const noSubscribe = () => () => {};
 export function LandingPathFinder({ day = 0, fresh }: { day?: number; fresh?: FreshGoal[] }) {
   const { language } = useLanguage(); const hi = language === "hi"; const text = (en: string, hindi: string) => hi ? hindi : en;
   const id = useId();
-  const sample = pickDaily(SAMPLES, day); const theme = pickDaily(THEMES, day); const goals = fresh?.length ? fresh.map(goal => [goal.tech, goal.hiTech, goal.goal, goal.hiGoal] as (typeof GOALS)[number]) : rotateDaily(GOALS, day);
+  const sample = pickDaily(SAMPLES, day); const theme = pickDaily(THEMES, day);
+  // Today's mix: the AI-written goals first (when the nightly job has run), then the ready-made ones in today's order.
+  const popular = useMemo(() => {
+    const today: Goal[] = [...(fresh ?? []).map((goal): Goal => [goal.tech, goal.hiTech, goal.goal, goal.hiGoal]), ...rotateDaily(GOALS, day)];
+    return today.filter((goal, at) => today.findIndex(other => other[0].toLowerCase() === goal[0].toLowerCase()) === at).slice(0, POPULAR);
+  }, [fresh, day]);
+  const [line, setLine] = useState<Line | "popular">("popular");
+  const goals = line === "popular" ? popular : GOALS.filter(goal => goal[4] === line);
+  const reduced = useSyncExternalStore(subscribeMotion, () => window.matchMedia?.(motionQuery).matches ?? false, () => true);
+  const [focused, setFocused] = useState(false);
+  const examples = useMemo(() => popular.map(goal => hi ? goal[3] : goal[2]), [popular, hi]);
   // False in the server HTML: until React hydrates, a click would fall through to a native submit that reloads the page.
   const hydrated = useSyncExternalStore(noSubscribe, () => true, () => false);
   const [goal, setGoal] = useState("");
   const [weeks, setWeeks] = useState<number>(4);
   const [path, setPath] = useState<LearningPath | null>(null);
   const [state, setState] = useState<"idle" | "loading" | "error" | "limited">("idle");
-  const [moreGoals, setMoreGoals] = useState(false);
+  const [phase, setPhase] = useState(0);
   const request = useRef<AbortController | null>(null);
   const input = useRef<HTMLInputElement>(null);
+  const placeholder = useTypedExample(examples, hydrated && !reduced && !focused && !goal);
+  useEffect(() => {
+    if (state !== "loading") return;
+    const timer = window.setInterval(() => setPhase(at => Math.min(at + 1, PLANNING.length - 1)), 1100);
+    return () => window.clearInterval(timer);
+  }, [state]);
 
   async function plan(value: string, length = weeks) {
     if (value.trim().length < 3) { input.current?.focus(); return; }
     request.current?.abort(); const controller = new AbortController(); request.current = controller;
-    setGoal(value); setState("loading");
+    setGoal(value); setState("loading"); setPhase(0);
     try {
       const result = await requestJson<LearningPath>("/api/learning-path", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ goal: value.trim(), weeks: length, language }), signal: controller.signal });
       if (!controller.signal.aborted) { setPath(result); setState("idle"); }
@@ -154,7 +242,7 @@ export function LandingPathFinder({ day = 0, fresh }: { day?: number; fresh?: Fr
         <p className={styles.sentence}>
           <label htmlFor={`${id}-goal`}>{text("I want to", "मैं चाहता/चाहती हूँ")}</label>
           <input ref={input} id={`${id}-goal`} className={styles.goal} value={goal} onChange={e => setGoal(e.target.value)} minLength={3} maxLength={300} autoComplete="off"
-            placeholder={text("crack a React interview", "React इंटरव्यू पास करना")} />
+            onFocus={() => setFocused(true)} onBlur={() => setFocused(false)} placeholder={placeholder || text("crack a React interview", "React इंटरव्यू पास करना")} />
         </p>
         <div className={styles.controls}>
           <fieldset className={styles.length}>
@@ -171,16 +259,24 @@ export function LandingPathFinder({ day = 0, fresh }: { day?: number; fresh?: Fr
           </button>
         </div>
         <div className={styles.tries}>
-          <span>{text("Or try", "या आज़माएँ")}</span>
-          <ul id={`${id}-goals`}>
-            {(moreGoals ? goals : goals.slice(0, SHOWN)).map(([label, labelHi, en, hindi], at) => {
+          <div className={styles.triesHead}>
+            <span id={`${id}-try`}>{text("Or try a ready-made goal", "या कोई तैयार लक्ष्य आज़माएँ")}</span>
+            <small>{text(`${GOALS.length} goals on ${LINES.length} lines`, `${LINES.length} लाइनों पर ${GOALS.length} लक्ष्य`)}</small>
+          </div>
+          {/* The goals are grouped by line, like a transit map: today's popular mix, then one line per field. */}
+          <div className={styles.lines} role="group" aria-label={text("Goal lines", "लक्ष्य की लाइनें")}>
+            {[{ id: "popular" as const, en: "Popular today", hi: "आज लोकप्रिय" }, ...LINES].map((option, at) => <button key={option.id} type="button" data-line={at} aria-pressed={line === option.id} aria-controls={`${id}-goals`} onClick={() => setLine(option.id)}>
+              <i aria-hidden="true" />{hi ? option.hi : option.en}<b>{option.id === "popular" ? popular.length : GOALS.filter(goal => goal[4] === option.id).length}</b>
+            </button>)}
+          </div>
+          <ul id={`${id}-goals`} key={line} aria-labelledby={`${id}-try`}>
+            {goals.map(([label, labelHi, en, hindi, goalLine, icon], at) => {
               const value = hi ? hindi : en;
-              // Each pill its own light tint; the goal it plans is its tooltip.
-              return <li key={label}><button type="button" data-tint={at % PILL_TINTS} title={value} aria-pressed={path?.goal === value} disabled={loading || !hydrated} onClick={() => void plan(value)}>{hi ? labelHi : label}</button></li>;
+              // Each pill carries its line's colour and the technology's icon; the goal it plans is its tooltip.
+              return <li key={label} style={{ "--at": at } as CSSProperties}><button type="button" data-line={goalLine ? LINES.findIndex(option => option.id === goalLine) + 1 : 0} title={value} aria-pressed={path?.goal === value} disabled={loading || !hydrated} onClick={() => void plan(value)}>
+                {icon ? <Image src={`/images/tech/${icon}.png`} alt="" width={16} height={16} /> : <span className={styles.dot} aria-hidden="true" />}{hi ? labelHi : label}
+              </button></li>;
             })}
-            <li><button type="button" className={styles.more} aria-expanded={moreGoals} aria-controls={`${id}-goals`} onClick={() => setMoreGoals(open => !open)}>
-              {moreGoals ? text("Fewer ideas", "कम विचार") : text(`More ideas (${goals.length - SHOWN})`, `और विचार (${goals.length - SHOWN})`)}
-            </button></li>
           </ul>
         </div>
       </form>
@@ -193,9 +289,13 @@ export function LandingPathFinder({ day = 0, fresh }: { day?: number; fresh?: Fr
           </div>
           {path && <button type="button" className={styles.reset} onClick={reset}><RotateCcw size={14} aria-hidden="true" />{text("New goal", "नया लक्ष्य")}</button>}
         </div>
+        {loading && <ol className={styles.planning}>{PLANNING.map(([en, hindi], at) => <li key={en} data-state={at < phase ? "done" : at === phase ? "now" : "next"}>
+          {at < phase ? <Check size={14} aria-hidden="true" /> : <i aria-hidden="true" />}{hi ? hindi : en}
+        </li>)}</ol>}
         {state === "error" && <p className={styles.problem}>{text("The route could not be planned just now. Press Plan my route again in a moment.", "अभी रास्ता नहीं बन सका। थोड़ी देर बाद फिर से 'रास्ता बनाइए' दबाएँ।")}</p>}
         {state === "limited" && <p className={styles.problem}>{text("That is the hourly limit for visitors. Create a free account to keep planning.", "विज़िटर के लिए यह घंटे की सीमा है। आगे के लिए मुफ़्त खाता बनाइए।")}</p>}
-        <ol className={styles.stages}>
+        {/* A new plan remounts the route, so the line draws again stop by stop and each card arrives as it is reached. */}
+        <ol className={styles.stages} key={path ? `${path.goal}:${path.weeks}` : mode}>
           {stages.map((stage, i) => {
             const meta = STAGES[i]; const Icon = meta.icon;
             return <li key={stage.stage} className={styles.stage} style={{ "--i": i } as CSSProperties} data-stage={stage.stage} data-tint={theme.tints[i]}>

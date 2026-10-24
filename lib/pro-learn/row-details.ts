@@ -3462,13 +3462,6 @@ export const ROW_DETAILS: Record<string, Record<string, RowDetail>> = {
         "Synchronize is convenient in development and dangerous in production.",
       ],
     },
-    "@nestjs/mongoose": {
-      points: [
-        "Mongoose schemas and models are provided through modules.",
-        "Models are injected by name, which keeps them testable.",
-        "Schema changes are not migrations; documents vary in shape.",
-      ],
-    },
     "@nestjs/sequelize": {
       points: [
         "Sequelize models integrate with the injection container.",
@@ -4239,13 +4232,6 @@ export const ROW_DETAILS: Record<string, Record<string, RowDetail>> = {
         "A query builder without an object mapping layer.",
         "It generates SQL while leaving the data model to you.",
         "Results are untyped unless types are declared separately.",
-      ],
-    },
-    "mongoose": {
-      points: [
-        "Schemas, models and validation sit over MongoDB.",
-        "A schema imposes structure the database does not enforce.",
-        "Documents written outside it can violate the schema.",
       ],
     },
     "pg": {

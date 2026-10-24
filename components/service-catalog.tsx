@@ -6,7 +6,7 @@ import { ExpandedText } from "@/components/expanded-text";
 
 
 import { useDeferredValue, useEffect, useId, useMemo, useRef, useState, type ReactNode } from "react";
-import { ChevronLeft, ChevronRight, Layers, Search, X, ExternalLink } from "lucide-react";
+import { ChevronLeft, ChevronRight, Layers, Search, X } from "lucide-react";
 import type { ServiceEntry } from "@/lib/domain";
 import { serviceDepth } from "@/lib/generation/guides/aws-service-depth";
 import { KnowledgeCheck } from "./knowledge-check";
@@ -50,7 +50,7 @@ function matches(service: ServiceEntry, terms: string[]) {
   return terms.every(term => haystack.includes(term));
 }
 
-export function ServiceCatalog({ services, hi, grouped = false, topics = false, showReferences = true, renderDetails }: { services: ServiceEntry[]; hi: boolean; grouped?: boolean; topics?: boolean; showReferences?: boolean; renderDetails?: (entry: ServiceEntry) => ReactNode }) {
+export function ServiceCatalog({ services, hi, grouped = false, topics = false, renderDetails }: { services: ServiceEntry[]; hi: boolean; grouped?: boolean; topics?: boolean; renderDetails?: (entry: ServiceEntry) => ReactNode }) {
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("all");
   const [open, setOpen] = useState(false);
@@ -145,8 +145,8 @@ export function ServiceCatalog({ services, hi, grouped = false, topics = false, 
     {!filtered.length ? <p className={styles.empty}><ExpandedText text={topics ? (hi ? "कोई विषय नहीं मिला। खोज हटाकर फिर देखें।" : "No topic matches that search. Clear the search to see them all.") : hi ? "कोई सेवा नहीं मिली। खोज हटाकर फिर देखें।" : "No service matches that search. Clear the search to see them all."} /></p>
       : grouped ? categories.map(title => {
         const entries = filtered.filter(service => service.category === title);
-        return entries.length ? <ServicePage key={`${title}:${deferred}:${category}`} title={title} services={entries} hi={hi} topics={topics} showReferences={showReferences} renderDetails={renderDetails} /> : null;
-      }) : <ServicePage key={`${deferred}:${category}`} services={filtered} hi={hi} topics={topics} showReferences={showReferences} renderDetails={renderDetails} />}
+        return entries.length ? <ServicePage key={`${title}:${deferred}:${category}`} title={title} services={entries} hi={hi} topics={topics} renderDetails={renderDetails} /> : null;
+      }) : <ServicePage key={`${deferred}:${category}`} services={filtered} hi={hi} topics={topics} renderDetails={renderDetails} />}
   </section>;
 }
 
@@ -171,7 +171,7 @@ function ServiceDepthSections({ name, hi }: { name: string; hi: boolean }) {
   </>;
 }
 
-function ServicePage({ services, hi, title, topics, showReferences, renderDetails }: { services: ServiceEntry[]; hi: boolean; title?: string; topics?: boolean; showReferences?: boolean; renderDetails?: (entry: ServiceEntry) => ReactNode }) {
+function ServicePage({ services, hi, title, topics, renderDetails }: { services: ServiceEntry[]; hi: boolean; title?: string; topics?: boolean; renderDetails?: (entry: ServiceEntry) => ReactNode }) {
   const [page, setPage] = useState(0);
   const id = useId();
   const section = useRef<HTMLElement>(null);
@@ -189,7 +189,7 @@ function ServicePage({ services, hi, title, topics, showReferences, renderDetail
           <BookmarkButton points={[service.summary, ...service.points]} /><ul className={`${styles.points} learning-key-points pointwise`}>{service.points.map((point, index) => <li key={index}><BookmarkPoint text={point}><ExpandedText text={point} /></BookmarkPoint></li>)}</ul>
         </div>
         <ServiceDepthSections name={service.name} hi={hi} />
-        {showReferences && service.sourceUrl && <a className={styles.source} href={service.sourceUrl} target="_blank" rel="noreferrer"><ExpandedText text={hi ? "आधिकारिक संदर्भ" : "Official reference"} /><ExternalLink size={12} aria-hidden="true" /></a>}
+        
         {renderDetails?.(service)}
       </article></BookmarkSection>)}
     </div>

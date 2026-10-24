@@ -1,24 +1,26 @@
 "use client";
-import { DEFAULT_VOICE, SPEEDS, isVoice, lectureParts } from "./audio-voices";
+import { DEFAULT_VOICE, DEFAULT_VOICES, SPEEDS, genderOf, isVoice, lectureParts, type VoiceGender } from "./audio-voices";
 
 /*
  * The one audio lecture playing on the page. Any Listen button starts a lecture (pressing it again pauses or
  * resumes); the dock (components/audio-dock) shows it with voice, speed and part controls. A lecture is read part
  * by part: each part's MP3 comes from /api/audio, the next part is fetched while the current one plays, and the
- * voice and speed are remembered in this browser. Speed is the audio element's playback rate, so changing it is
+ * voice and speed are remembered in this browser, with the last voice of each gender so the Female/Male switch
+ * returns to it. Speed is the audio element's playback rate, so changing it is
  * instant and needs no new audio.
  */
 export type LectureStatus = "idle" | "loading" | "playing" | "paused" | "error";
-export type AudioState = { id: string | null; title: string; parts: string[]; index: number; status: LectureStatus; voice: string; speed: number; error: string | null };
+export type AudioState = { id: string | null; title: string; parts: string[]; index: number; status: LectureStatus; voice: string; speed: number; error: string | null; picked: Record<VoiceGender, string> };
 
 const PREFS = "masterclass:audio";
-function saved(): Pick<AudioState, "voice" | "speed"> {
+function saved(): Pick<AudioState, "voice" | "speed" | "picked"> {
   try {
-    const value = JSON.parse(localStorage.getItem(PREFS) ?? "{}") as { voice?: unknown; speed?: unknown };
-    return { voice: isVoice(value.voice) ? value.voice : DEFAULT_VOICE, speed: SPEEDS.includes(value.speed as never) ? value.speed as number : 1 };
-  } catch { return { voice: DEFAULT_VOICE, speed: 1 }; }
+    const value = JSON.parse(localStorage.getItem(PREFS) ?? "{}") as { voice?: unknown; speed?: unknown; picked?: Partial<Record<VoiceGender, unknown>> };
+    const pick = (gender: VoiceGender) => { const id = value.picked?.[gender]; return isVoice(id) && genderOf(id) === gender ? id : DEFAULT_VOICES[gender]; };
+    return { voice: isVoice(value.voice) ? value.voice : DEFAULT_VOICE, speed: SPEEDS.includes(value.speed as never) ? value.speed as number : 1, picked: { female: pick("female"), male: pick("male") } };
+  } catch { return { voice: DEFAULT_VOICE, speed: 1, picked: DEFAULT_VOICES }; }
 }
-const IDLE: AudioState = { id: null, title: "", parts: [], index: 0, status: "idle", voice: DEFAULT_VOICE, speed: 1, error: null };
+const IDLE: AudioState = { id: null, title: "", parts: [], index: 0, status: "idle", voice: DEFAULT_VOICE, speed: 1, error: null, picked: DEFAULT_VOICES };
 let state: AudioState = IDLE;
 let loadedPrefs = false;
 const listeners = new Set<() => void>();
@@ -97,12 +99,14 @@ export function seekPart(step: number) {
   const next = Math.min(Math.max(state.index + step, 0), state.parts.length - 1);
   if (state.id) void playPart(next);
 }
-export function stop() { ticket++; element?.pause(); set({ ...IDLE, voice: state.voice, speed: state.speed }); }
-function remember() { try { localStorage.setItem(PREFS, JSON.stringify({ voice: state.voice, speed: state.speed })); } catch { /* storage unavailable */ } }
+export function stop() { ticket++; element?.pause(); set({ ...IDLE, voice: state.voice, speed: state.speed, picked: state.picked }); }
+function remember() { try { localStorage.setItem(PREFS, JSON.stringify({ voice: state.voice, speed: state.speed, picked: state.picked })); } catch { /* storage unavailable */ } }
 export function setSpeed(speed: number) { set({ speed }); if (element) element.playbackRate = speed; remember(); }
 /** A new voice re-reads the current part in that voice. */
 export function setVoice(voice: string) {
-  if (!isVoice(voice)) return;
-  set({ voice }); remember();
+  if (!isVoice(voice) || voice === state.voice) return;
+  set({ voice, picked: { ...state.picked, [genderOf(voice)]: voice } }); remember();
   if (state.id && state.status !== "idle") void playPart(state.index);
 }
+/** The Female/Male switch: the last voice used of that gender, or its default narrator. */
+export function setGender(gender: VoiceGender) { setVoice(state.picked[gender] ?? DEFAULT_VOICES[gender]); }

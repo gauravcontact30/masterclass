@@ -4,7 +4,7 @@ import { currentUser } from '@/lib/server/auth';
 import { isUntrackedEmail } from '@/lib/server/tracking-exclusions';
 import { db, check } from '@/lib/server/db';
 import { rateLimit } from '@/lib/server/rate-limit';
-import { recordEvent } from '@/lib/server/monitoring';
+import { recordEventLater } from '@/lib/server/monitoring';
 import { presenceInput } from '@/lib/monitoring-input';
 let schemaRetryAt = 0;
 export async function POST(request: Request) { return api(async () => {
@@ -27,6 +27,6 @@ export async function POST(request: Request) { return api(async () => {
     return Response.json({ok:false,enabled:false,reason:'monitoring_setup_required'});
   }
   check(result);
-  if (input.view) await recordEvent({kind:'page',action:'view',resource:input.path,actor_id:id,duration_ms:input.loadMs});
+  if (input.view) recordEventLater({kind:'page',action:'view',resource:input.path,actor_id:id,duration_ms:input.loadMs});
   return Response.json({ok:true});
 }, request); }

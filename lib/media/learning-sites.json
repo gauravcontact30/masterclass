@@ -64,14 +64,6 @@
     "thumbnail": "/images/brands/javascript.svg"
   },
   {
-    "name": "Tailwind CSS",
-    "url": "https://tailwindcss.com",
-    "aliases": [
-      "tailwind"
-    ],
-    "thumbnail": "/images/brands/tailwind.svg"
-  },
-  {
     "name": "Node.js",
     "url": "https://nodejs.org",
     "aliases": [

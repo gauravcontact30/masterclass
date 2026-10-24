@@ -9,6 +9,7 @@ import { clientIp, geo, geoPoint, hashIp, maskIp, parseUserAgent } from "@/lib/s
 import { isUntrackedEmail, UNTRACKED_COOKIE } from "@/lib/server/tracking-exclusions";
 import { HttpError, jsonBody, sameOrigin } from "@/lib/server/http";
 import { recordEvent } from "@/lib/server/monitoring";
+import { isLocalAddress, looksAutomated } from "@/lib/visit-quality";
 
 /*
  * Page-view beacon for the super admin's User activities page (components/visit-tracker.tsx sends it).
@@ -19,7 +20,7 @@ const VISITOR = "mc_vid", SESSION = "mc_sid";
 const SESSION_SECONDS = 30 * 60;
 const text = (max: number) => z.string().trim().max(max).optional().nullable().transform(value => value || null);
 const bodySchema = z.object({
-  type: z.enum(["view", "leave", "interaction"]),
+  type: z.enum(["view", "leave", "ping", "interaction"]),
   path: z.string().trim().min(1).max(300).regex(/^\/(?!\/)[^?#]*$/),
   topic: text(120), option: text(100), target_path: z.string().max(300).regex(/^\/(?!\/)[^?]*$/).optional().nullable(),
   title: text(200), referrer: text(500), language: text(35), timezone: text(60), screen: text(20),
@@ -46,6 +47,8 @@ export async function POST(request: Request) {
   if (input.path.startsWith("/dashboard/super-admin") || input.path.startsWith("/api/")) return noContent();
 
   const ip = clientIp(request.headers);
+  // The site's own development server is not audience (it shares the production database); TRACK_LOCAL=1 records it.
+  if (isLocalAddress(ip) && process.env.TRACK_LOCAL !== "1") return noContent();
   const ipHash = ip ? hashIp(ip) : null;
   if (!allowed(ipHash ?? "unknown")) return new Response(null, { status: 429 });
 
@@ -85,6 +88,24 @@ export async function POST(request: Request) {
     : prior || { source: null, medium: null, campaign: null, referrer: null };
   store.set("mc_attribution", JSON.stringify(attribution), { httpOnly: true, sameSite: "lax", secure, path: "/", maxAge: SESSION_SECONDS });
 
+  // A heartbeat from a visible page (components/visit-tracker.tsx): one presence row per open page, so the Live
+  // visitor stream knows who is still reading and since when. `duration` is how long the page has been visible in
+  // its current stretch, which the browser measures; the server only records it against its own clock.
+  if (input.type === "ping") {
+    if (ua.isBot) return noContent();
+    const seen = Date.now();
+    const presence = { session_id: sessionId, path: input.path, visitor_id: visitorId, user_id: userId,
+      started_at: new Date(seen - (input.duration ?? 0)).toISOString(), seen_at: new Date(seen).toISOString() };
+    after(async () => {
+      try {
+        const { error } = await db().from("site_presence").upsert(presence, { onConflict: "session_id,path" });
+        // Before migration 0034 the table does not exist: the stream falls back to the leave beacons alone.
+        if (error && error.code !== "42P01" && error.code !== "PGRST205") console.error("presence_write_failed", error.code);
+      } catch { console.error("presence_write_unavailable"); }
+    });
+    return noContent();
+  }
+
   if (input.type === "interaction") {
     if (!input.option || ua.isBot) return noContent();
     after(() => recordEvent({ kind: "site_interaction", action: "click", actor_id: userId, resource: input.path, details: {
@@ -101,7 +122,8 @@ export async function POST(request: Request) {
     path: input.path, title: input.title, referrer_host: attribution.referrer,
     utm_source: attribution.source, utm_medium: attribution.medium, utm_campaign: attribution.campaign,
     ...geo(request.headers), ip_masked: ip ? maskIp(ip) : null, ip_hash: ipHash,
-    browser: ua.browser, os: ua.os, device: ua.device, is_bot: ua.isBot,
+    browser: ua.browser, os: ua.os, device: ua.device,
+    is_bot: ua.isBot || looksAutomated({ timezone: input.timezone, language: input.language, screen: input.screen, device: ua.device }),
     language: input.language, timezone: input.timezone, screen: input.screen,
     duration_ms: input.type === "leave" ? input.duration ?? null : null,
   };

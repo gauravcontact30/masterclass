@@ -13,10 +13,12 @@ import { providerConfigured } from "./ai-providers";
  */
 const MODEL = process.env.AUDIO_TTS_MODEL || "google/gemini-3.8-flash-tts";
 const BUCKET = "learning-audio";
-const READING = "Read this aloud as a warm, patient teacher giving a clear lecture to a student: natural pace, gentle emphasis on key terms, short pauses between ideas.";
+const READING = "Narrate this as an elegant, polished voiceover for a premium learning course: a calm, confident and warm teacher, unhurried natural pace, crisp diction, gentle emphasis on key terms and technical names, a brief pause between ideas, and a friendly, encouraging tone. Read code identifiers and acronyms clearly; never sound robotic or rushed.";
+/** Part of the stored file's key, so a change of reading style re-voices parts instead of serving the old delivery. */
+const STYLE = "elegant-1";
 
 export const audioConfigured = () => providerConfigured("gateway");
-const keyOf = (voice: string, text: string) => createHash("sha256").update(`${MODEL}\n${voice}\n${text}`).digest("hex");
+const keyOf = (voice: string, text: string) => createHash("sha256").update(`${MODEL}\n${STYLE}\n${voice}\n${text}`).digest("hex");
 const pathOf = (key: string) => `tts/${key.slice(0, 2)}/${key}.mp3`;
 const publicUrl = (path: string) => db().storage.from(BUCKET).getPublicUrl(path).data.publicUrl;
 

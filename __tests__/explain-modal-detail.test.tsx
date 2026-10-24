@@ -3,8 +3,6 @@ import type { AnchorHTMLAttributes } from "react";
 import { AnswerSearch } from "@/components/answer-search";
 import { TECHNOLOGY_HANDBOOKS } from "@/lib/pro-learn/technology-handbooks";
 import { awsHighlights } from "@/lib/pro-learn/aws-highlights";
-import { CLASSROOM_CATALOGUES } from "@/lib/pro-learn/classroom";
-import { classroomExplanation } from "@/lib/pro-learn/classroom/lessons";
 import { TECHNOLOGY_ESSENTIALS, ESSENTIAL_TECHNOLOGIES, essentialPoints } from "@/lib/pro-learn/essentials";
 import { ALL_OFFICIAL_SCREENS, SCREEN_TECHNOLOGIES, screensFor } from "@/lib/media/official-screens";
 
@@ -189,10 +187,10 @@ test("real screens from the official docs are shown, each linked to the page it 
   // Hotlinked: no referrer is sent, and the picture is not fetched until it scrolls in.
   expect(image).toHaveAttribute("referrerpolicy", "no-referrer");
   expect(image).toHaveAttribute("loading", "lazy");
-  expect(within(figure).getAllByRole("link")[0]).toHaveAttribute("href", expect.stringContaining("docs.docker.com"));
+  expect(within(figure).queryByRole("link")).toBeNull();
 });
 
-test("a screenshot that no longer resolves leaves the caption and the official link", async () => {
+test("a screenshot that no longer resolves leaves the caption", async () => {
   openTopic("Docker", "Images, containers and layers");
   const dialog = await screen.findByRole("dialog");
   const figure = within(dialog).getAllByRole("figure")[0];
@@ -200,7 +198,7 @@ test("a screenshot that no longer resolves leaves the caption and the official l
 
   expect(within(figure).queryByRole("img")).toBeNull();
   expect(figure).toHaveTextContent(/This preview could not be loaded/);
-  expect(within(figure).getByRole("link")).toHaveAttribute("href", expect.stringContaining("docs.docker.com"));
+  expect(within(figure).queryByRole("link")).toBeNull();
 });
 
 // ---- Related topics ----
@@ -228,54 +226,3 @@ test("the answer lists the rest of the group, and opening one swaps the answer",
   expect(screen.queryByRole("heading", { name: "Relations" })).toBeNull();
 });
 
-/**
- * Class Room mounts the same browser with school catalogues, so the group and
- * the modal's title come from the same code. Pinned because the page passes
- * different props — no question box, `catalogues` instead of handbooks — and a
- * change that only checked the Search page would not notice it regressing.
- */
-test("Class Room answers carry the same group and titled header", async () => {
-  const subject = CLASSROOM_CATALOGUES[0];
-  const topic = subject.topics[0];
-  render(<AnswerSearch search={false} heading="Class Room" catalogues={[subject]} />);
-
-  const card = screen.getAllByRole("listitem").find(row => row.textContent?.includes(topic.name))!;
-
-  fireEvent.click(within(card).getByRole("button", { name: new RegExp(`Explain this: ${topic.name}`) }));
-  const dialog = await screen.findByRole("dialog");
-  const heading = within(dialog).getByRole("heading", { name: topic.name, level: 2 });
-  expect(heading.className).toContain("answerTitle");
-  expect(within(heading.closest("header")!).getByText(`${subject.id} · ${topic.category}`)).toBeVisible();
-  expect(within(dialog).getByRole("region", { name: new RegExp(`Core features in ${topic.category}`) })).toBeInTheDocument();
-});
-
-/**
- * A prepared explanation draws nothing. The boxed statements joined by arrows
- * that these used to carry only restated the working steps printed directly
- * below them, so the answer says it once, in words.
- */
-test("a prepared classroom explanation carries no drawn diagram", () => {
-  for (const subject of CLASSROOM_CATALOGUES) {
-    for (const topic of subject.topics.slice(0, 12)) {
-      expect(classroomExplanation(subject.id, topic).answer.diagrams).toEqual([]);
-    }
-  }
-});
-
-/**
- * The working is a numbered list, so a heading that only repeats the number is
- * furniture. Matched at render time as well as at the source, because answers
- * also arrive from the model and from localStorage.
- */
-test("a step is never headed by its own number", async () => {
-  const subject = CLASSROOM_CATALOGUES.find(entry => entry.id === "maths")!;
-  const topic = subject.topics.find(item => /round/i.test(item.name)) ?? subject.topics[0];
-  render(<AnswerSearch search={false} heading="Class Room" catalogues={[subject]} />);
-  fireEvent.click(screen.getAllByRole("button", { name: new RegExp(`Explain this: ${topic.name}`) })[0]);
-
-  const steps = within(await screen.findByRole("dialog")).getByRole("region", { name: "Step by step" });
-  expect(within(steps).getAllByRole("listitem").length).toBeGreaterThan(0);
-  expect(within(steps).queryByRole("heading", { name: /^Step \d+$/ })).toBeNull();
-  expect(within(steps).queryByRole("heading", { name: /^Key idea \d+$/ })).toBeNull();
-  for (const heading of within(steps).queryAllByRole("heading")) expect(heading.textContent?.trim()).not.toBe("");
-});

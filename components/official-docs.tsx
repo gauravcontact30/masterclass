@@ -15,7 +15,6 @@ import {
   ChevronRight,
   ChevronUp,
   Code2,
-  ExternalLink,
   Layers,
   Search,
   Sparkles,
@@ -852,7 +851,7 @@ export function OfficialDocs() {
                     type="button"
                     size="sm"
                     variant="outline"
-                    aria-label={`Read ${doc.title} website here`}
+                    aria-label={`Study ${doc.title} in the reader`}
                     onClick={(event) => {
                       event.stopPropagation();
                       setWebsiteId(doc.id);
@@ -861,7 +860,7 @@ export function OfficialDocs() {
                       reader?.scrollIntoView?.({ block: "start" });
                     }}
                   >
-                    <BookOpen size={13} aria-hidden="true" /> Learn &amp; browse
+                    <BookOpen size={13} aria-hidden="true" /> Learn here
                   </Button>
                   <Button
                     type="button"
@@ -876,17 +875,6 @@ export function OfficialDocs() {
                     <span>Open study guide</span>
                     <ArrowRight size={13} className={styles.arrowIcon} aria-hidden="true" />
                   </Button>
-                  <a
-                    href={doc.officialUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className={styles.cardExtLink}
-                    title={`Visit ${doc.title} official documentation website`}
-                    onClick={(e) => e.stopPropagation()}
-                    aria-label={`Visit ${doc.title} official website`}
-                  >
-                    <ExternalLink size={13} aria-hidden="true" />
-                  </a>
                 </CardFooter>
               </Card>
             );
@@ -958,28 +946,6 @@ export function OfficialDocs() {
                 </DialogDescription>
 
                 <LearningPicture src={learningImageUrl("docs", [selectedModalDoc.id])} alt={`Illustration of how ${selectedModalDoc.title} works`} />
-
-                {/* External Links */}
-                <div className={styles.modalLinksRow}>
-                  <a
-                    href={selectedModalDoc.officialUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className={`${styles.modalLinkBtn} ${styles.modalLinkPrimary}`}
-                  >
-                    Official Documentation <ExternalLink size={13} aria-hidden="true" />
-                  </a>
-                  {selectedModalDoc.githubUrl && (
-                    <a
-                      href={selectedModalDoc.githubUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className={styles.modalLinkBtn}
-                    >
-                      GitHub Repository <ExternalLink size={13} aria-hidden="true" />
-                    </a>
-                  )}
-                </div>
               </DialogHeader>
 
               <OfficialDocsLearning key={selectedModalDoc.id} doc={selectedModalDoc} idPrefix={`modal-learning-${selectedModalDoc.id}`} />
@@ -995,14 +961,6 @@ export function OfficialDocs() {
                 >
                   Close guide
                 </Button>
-                <a
-                  href={selectedModalDoc.officialUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={styles.modalFooterExtLink}
-                >
-                  Visit Official Website <ExternalLink size={13} aria-hidden="true" />
-                </a>
               </div>
             </div>
           )}

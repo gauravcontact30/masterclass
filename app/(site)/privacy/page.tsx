@@ -41,7 +41,7 @@ export default function PrivacyPage() {
         <li>You can clear locally stored notes and bookmarks from your browser settings.</li>
       </ul>
       <h2>Children</h2>
-      <p>Some paths are designed for school students. If you are under 18, use MasterClass with the involvement of a parent or guardian, who should review this policy with you.</p>
+      <p>MasterClass is designed for professionals and adult learners. If you are under 18, use MasterClass with the involvement of a parent or guardian, who should review this policy with you.</p>
       <h2>Changes and contact</h2>
       <p>If we change this policy we will update the date above. For privacy requests, see <Link href="/contact">contact &amp; support</Link>.</p>
     </div>

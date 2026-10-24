@@ -7,20 +7,25 @@ const goals: FreshGoal[] = ["React", "Node.js", "AWS Lambda", "LangGraph", "Apac
   .map(tech => ({ tech, hiTech: tech, goal: `learn ${tech} for a job`, hiGoal: `${tech} सीखना` }));
 
 describe("daily landing additions", () => {
-  it("names every Or-try pill by technology, each in its own tint, using today's goals", () => {
+  const pills = () => within(screen.getByRole("list", { name: /Or try a ready-made goal/ })).getAllByRole("button");
+
+  it("leads the popular mix with today's goals, each pill named by technology with its goal as the tooltip", () => {
     render(<LandingPathFinder day={3} fresh={goals} />);
-    const pills = within(screen.getByText("Or try").parentElement as HTMLElement).getAllByRole("button").filter(button => button.hasAttribute("data-tint"));
-    expect(pills.map(pill => pill.textContent)).toEqual(goals.slice(0, 7).map(goal => goal.tech));
-    expect(new Set(pills.map(pill => pill.getAttribute("data-tint"))).size).toBe(7);
-    expect(pills[0]).toHaveAttribute("title", "learn React for a job");
-    fireEvent.click(screen.getByRole("button", { name: /More ideas \(5\)/ }));
+    expect(pills().map(pill => pill.textContent)).toEqual(goals.slice(0, 8).map(goal => goal.tech));
+    expect(pills()[0]).toHaveAttribute("title", "learn React for a job");
+    expect(screen.getByRole("button", { name: /Popular today/ })).toHaveAttribute("aria-pressed", "true");
   });
 
-  it("falls back to the built-in goals, also named by technology", () => {
+  it("groups the built-in goals by line, with icons, and switches lines", () => {
     render(<LandingPathFinder day={0} />);
-    const labels = within(screen.getByText("Or try").parentElement as HTMLElement).getAllByRole("button").filter(button => button.hasAttribute("data-tint")).map(pill => pill.textContent);
-    expect(labels).toContain("Next.js");
-    expect(labels).not.toContain("Frontend job");
+    expect(screen.getByText("44 goals on 8 lines")).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: /^AI & agents/ }));
+    const labels = pills().map(pill => pill.textContent);
+    expect(labels).toEqual(expect.arrayContaining(["LangChain", "LangGraph", "LangSmith", "Langflow", "n8n", "Agentic AI"]));
+    expect(labels).not.toContain("Next.js");
+    expect(pills()[0].querySelector("img")).toHaveAttribute("alt", "");
+    fireEvent.click(screen.getByRole("button", { name: /^Interviews/ }));
+    expect(pills().map(pill => pill.textContent)).toContain("System Design");
   });
 
   it("shows a New today card with its picture, answer and checked option", () => {

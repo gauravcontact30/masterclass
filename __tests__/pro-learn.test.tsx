@@ -19,7 +19,7 @@ const json = (body: unknown, ok = true) => ({ ok, json: async () => body });
 beforeEach(() => { window.scrollTo = jest.fn(); Element.prototype.scrollIntoView = jest.fn(); mockParams = new URLSearchParams(); localStorage.clear(); push.mockClear(); });
 
 test("curated data covers every track without external links", () => {
-  expect(PRO_TRACKS).toHaveLength(54);
+  expect(PRO_TRACKS).toHaveLength(53);
   expect(new Set(PRO_TRACKS.map(track => track.id)).size).toBe(PRO_TRACKS.length);
   for (const lesson of lessons) {
     expect(PRO_TRACKS.some(track => track.id === lesson.track)).toBe(true);

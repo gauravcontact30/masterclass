@@ -21,33 +21,27 @@ import { LearningFilters, type LearningFilter } from "./learning-filters";
 export function StudyCatalog({beforeLibrary,category,preparations,onPlans,initialPreparation="",initialCourse,searchQuery,onSearchChange,initialCourses}: {category?:string;preparations:PreparationAccess;onPlans:()=>void;initialPreparation?:string;initialCourse?:string;searchQuery?:string;onSearchChange?:(value:string)=>void;initialCourses?:StudyCourse[];beforeLibrary?:ReactNode}) {
   const {language,t}=useLanguage(); const headingId=useId(); const sectionRef=useRef<HTMLElement>(null); const hi=language==="hi";
   const [courses,setCourses]=useState<StudyCourse[]>(initialCourses??[]);const [localSearch,setSearch]=useState("");const search=searchQuery??localSearch;
-  const [path,setPath]=useState(initialPreparation);const [grade,setGrade]=useState("");const [subject,setSubject]=useState("");const [sort,setSort]=useState("curriculum");
+  const [path,setPath]=useState(initialPreparation);const [subject,setSubject]=useState("");const [sort,setSort]=useState("curriculum");
   const [loading,setLoading]=useState(!initialCourses);const [error,setError]=useState(false);const [retry,setRetry]=useState(0);
   const [selected,setSelected]=useState<string|null>(initialCourse??null);const [pack,setPack]=useState<StudyPack|null>(null);const [opening,setOpening]=useState(!!initialCourse);
   const selectionKey=preparations.selections.join(",");
   useEffect(()=>{if(initialCourses)return;let active=true;requestJson<{courses:StudyCourse[]}>("/api/study").then(data=>{if(active){setCourses(data.courses);setError(false);}}).catch(()=>{if(active)setError(true);}).finally(()=>{if(active)setLoading(false);});return()=>{active=false;};},[selectionKey,preparations.isSuperAdmin,retry,initialCourses]);
   useEffect(()=>{if(!selected)return;let active=true;requestJson<{pack:StudyPack}>(`/api/study/${encodeURIComponent(selected)}?language=${language}`).then(data=>{if(active){setPack(data.pack);setError(false);}}).catch(()=>{if(active){setError(true);setSelected(null);}}).finally(()=>{if(active)setOpening(false);});return()=>{active=false;};},[selected,language]);
   const available=courses.filter(course=>canReadStudy(preparations,course)&&(!category||courseCategory(course)===category));
-  const pathId=(course:StudyCourse)=>course.category==="course"?"system-design":course.board?`${course.board}-${course.grade}`:course.id;
+  const pathId=(course:StudyCourse)=>course.category==="course"?"system-design":course.id;
   const pathOptions=PREPARATIONS.filter(option=>available.some(course=>pathId(course)===option.id));
   const scoped=available.filter(course=>!path||pathId(course)===path);
-  const grades=[...new Set(scoped.flatMap(course=>course.grade?[course.grade]:[]))].sort((a,b)=>a-b);
-  const subjects=[...new Set(scoped.filter(course=>!grade||course.grade===Number(grade)).flatMap(course=>course.subjects))];
-  const visible=scoped.filter(course=>(!grade||course.grade===Number(grade))&&(!subject||course.subjects.includes(subject as keyof typeof SUBJECTS))&&`${course.title.en} ${course.title.hi} ${course.aliases.join(" ")} ${course.subjects.map(id=>SUBJECTS[id].en+" "+SUBJECTS[id].hi).join(" ")}`.toLocaleLowerCase().includes(search.trim().toLocaleLowerCase())).sort((a,b)=>sort==="curriculum"?0:sort==="class"?(a.grade??99)-(b.grade??99)||a.title[language].localeCompare(b.title[language],language):a.title[language].localeCompare(b.title[language],language)*(sort==="za"?-1:1));
-  const pagingKey=JSON.stringify([category,path,grade,subject,search,sort,language,selectionKey]);
-  const classGrades=[...new Set(visible.flatMap(course=>course.grade?[course.grade]:[]))].sort((a,b)=>a-b);
-  const groups=[
-    ...classGrades.map(value=>({id:`class-${value}`,title:`${hi?"कक्षा":"Class"} ${value}`,courses:visible.filter(course=>course.grade===value)})),
-    ... (visible.some(course=>!course.grade)?[{id:"other",title:classGrades.length?(hi?"परीक्षाएँ और कोर्स":"Exams & courses"):undefined,courses:visible.filter(course=>!course.grade)}]:[]),
-  ];
-  const filtered=!!(path||grade||subject||search||sort!=="curriculum");
+  const subjects=[...new Set(scoped.flatMap(course=>course.subjects))];
+  const visible=scoped.filter(course=>(!subject||course.subjects.includes(subject as keyof typeof SUBJECTS))&&`${course.title.en} ${course.title.hi} ${course.aliases.join(" ")} ${course.subjects.map(id=>SUBJECTS[id].en+" "+SUBJECTS[id].hi).join(" ")}`.toLocaleLowerCase().includes(search.trim().toLocaleLowerCase())).sort((a,b)=>sort==="curriculum"?0:a.title[language].localeCompare(b.title[language],language)*(sort==="za"?-1:1));
+  const pagingKey=JSON.stringify([category,path,subject,search,sort,language,selectionKey]);
+  const groups:{id:string;title?:string;courses:StudyCourse[]}[]=visible.length?[{id:"all",courses:visible}]:[];
+  const filtered=!!(path||subject||search||sort!=="curriculum");
   const updateSearch=onSearchChange??setSearch;
-  function reset(){setPath("");setGrade("");setSubject("");updateSearch("");setSort("curriculum");}
+  function reset(){setPath("");setSubject("");updateSearch("");setSort("curriculum");}
   const filters:LearningFilter[]=[
-    {id:"preparation",label:hi?"तैयारी":"Preparation",icon:Compass,value:path,defaultValue:"",options:[{value:"",label:hi?"सभी चयनित पथ":"All selected paths"},...pathOptions.map(option=>({value:option.id,label:option.label[language]}))],onChange:value=>{setPath(value);setGrade("");setSubject("");}},
-    ...(grades.length?[{id:"class",label:hi?"कक्षा":"Class",icon:GraduationCap,value:grade,defaultValue:"",options:[{value:"",label:hi?"सभी कक्षाएँ":"All classes"},...grades.map(value=>({value:String(value),label:`${hi?"कक्षा":"Class"} ${value}`}))],onChange:(value:string)=>{setGrade(value);setSubject("");}}]:[]),
+    {id:"preparation",label:hi?"तैयारी":"Preparation",icon:Compass,value:path,defaultValue:"",options:[{value:"",label:hi?"सभी चयनित पथ":"All selected paths"},...pathOptions.map(option=>({value:option.id,label:option.label[language]}))],onChange:value=>{setPath(value);setSubject("");}},
     {id:"subject",label:hi?"विषय":"Subject",icon:BookOpen,value:subject,defaultValue:"",options:[{value:"",label:hi?"सभी विषय":"All subjects"},...subjects.map(id=>({value:id,label:SUBJECTS[id][language]}))],onChange:setSubject},
-    {id:"sort",label:hi?"क्रम":"Sort by",icon:ArrowDownUp,value:sort,defaultValue:"curriculum",options:[{value:"curriculum",label:hi?"पाठ्य क्रम":"Learning order"},{value:"az",label:hi?"नाम: अ–ज्ञ":"Name: A–Z"},{value:"za",label:hi?"नाम: ज्ञ–अ":"Name: Z–A"},{value:"class",label:hi?"कक्षा: छोटी से बड़ी":"Class: low to high"}],onChange:setSort},
+    {id:"sort",label:hi?"क्रम":"Sort by",icon:ArrowDownUp,value:sort,defaultValue:"curriculum",options:[{value:"curriculum",label:hi?"पाठ्य क्रम":"Learning order"},{value:"az",label:hi?"नाम: अ–ज्ञ":"Name: A–Z"},{value:"za",label:hi?"नाम: ज्ञ–अ":"Name: Z–A"}],onChange:setSort},
   ];
   return <>
     <LearningFilters search={search} onSearchChange={updateSearch} searchLabel={searchQuery===undefined?(hi?"नोट्स खोजें":"Search notes"):(hi?"अपने सभी नोट्स खोजें":"Search all your learning")} filters={filters} loading={loading} total={visible.length} size={hi?`${available.length} गाइड`:`${available.length} ${available.length===1?"guide":"guides"}`} onReset={reset}/>
@@ -60,7 +54,7 @@ export function StudyCatalog({beforeLibrary,category,preparations,onPlans,initia
     {error&&<p role="alert" className={styles.notice}><ExpandedText text={hi?"सामग्री नहीं खुली। सदस्यता और चयन जाँचें।":"Could not open the content. Check your membership and selections."} /><button onClick={()=>setRetry(value=>value+1)}><ExpandedText text={hi?"फिर प्रयास करें":"Retry"} /></button><button onClick={onPlans}><ExpandedText text={hi?"सदस्यता":"Membership"} /></button></p>}
     {loading&&<ul className={libraryStyles.grid} aria-hidden="true">{[0,1,2].map(i=><li key={i} className={libraryStyles.skeleton}><span/><span/><span/></li>)}</ul>}
     {!loading&&<>{groups.map(group=><StudyCourseSection key={`${pagingKey}:${group.id}`} title={group.title} courses={group.courses} renderCourse={(course, dragProps)=>{
-      const title=course.grade&&course.subject?SUBJECTS[course.subject][language]:course.title[language];
+      const title=course.title[language];
       const CardHeading=group.title?"h4":"h3";
       const titleId=`${headingId}-${course.id}`;
       const categoryLabel=CATEGORY_LABELS[courseCategory(course)][language];

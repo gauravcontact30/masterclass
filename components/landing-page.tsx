@@ -76,7 +76,7 @@ export function LandingPage({ pro, library, prices: initialPrices, daily, techDo
     <LandingNavbar links={navigation as [string, string, string][]} prices={priceState === "ready" ? prices : null} onCurrency={reprice} />
     <WelcomeModal prices={priceState === "ready" ? prices : null} onCurrency={reprice} />
     <main id="main-content" tabIndex={-1}>
-    <h1 className={home.srOnly}>{text("MasterClass: school, exam and technology learning in English and Hindi", "MasterClass: अंग्रेज़ी और हिन्दी में स्कूल, परीक्षा और तकनीक की पढ़ाई")}</h1>
+    <h1 className={home.srOnly}>{text("MasterClass Buddy: technology learning for professionals, in English and Hindi", "MasterClass Buddy: प्रोफ़ेशनल्स के लिए तकनीकी पढ़ाई, अंग्रेज़ी और हिन्दी में")}</h1>
     {/* Order (2026-10-20): the promise (slider, what you get), something to try at once (Study Buddy), the highest-intent
         sections (interview prep, the daily pulse, blueprints, certification paths), a section each for AI Search, featured lessons and notes, proof of depth (library, comparisons,
         docs), then social proof straight before the ask (reviews, membership). */}
@@ -99,7 +99,7 @@ export function LandingPage({ pro, library, prices: initialPrices, daily, techDo
         <h2 id="library-title">{text("Explore the dashboard library ", "जुड़ने से पहले ")}<em>{text("before you join.", "डैशबोर्ड लाइब्रेरी देखें।")}</em></h2>
         </div>
         <div>
-          <p className={frame.lede}>{text("Every row below is a real entry from the dashboard: technology handbooks, API references, exam and class courses, vocabulary and Techy topics. Search for your subject and see exactly where it opens once you sign up.", "नीचे की हर पंक्ति डैशबोर्ड की असली प्रविष्टि है: तकनीकी हैंडबुक, API संदर्भ, परीक्षा व कक्षा कोर्स, शब्दावली और Techy विषय। अपना विषय खोजें और देखें कि साइन अप के बाद वह कहाँ खुलता है।")}</p>
+          <p className={frame.lede}>{text("Every row below is a real entry from the dashboard: technology handbooks, API references, System Design courses, vocabulary and Techy topics. Search for your subject and see exactly where it opens once you sign up.", "नीचे की हर पंक्ति डैशबोर्ड की असली प्रविष्टि है: तकनीकी हैंडबुक, API संदर्भ, सिस्टम डिज़ाइन कोर्स, शब्दावली और Techy विषय। अपना विषय खोजें और देखें कि साइन अप के बाद वह कहाँ खुलता है।")}</p>
           <dl className={frame.facts}>
             <div><dt>{text("Handbook topics", "हैंडबुक विषय")}</dt><dd>{format(library.counts.handbookTopics)}</dd></div>
             <div><dt>{text("API references", "API संदर्भ")}</dt><dd>{format(library.counts.apiIdentifiers)}</dd></div>

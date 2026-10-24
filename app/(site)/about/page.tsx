@@ -10,13 +10,13 @@ export default function AboutPage() {
     <PageIntro path="/about" eyebrow="Our story" extraSchema={organizationSchema()} />
     <div className={styles.prose}>
       <h2>Why MasterClass exists</h2>
-      <p>Preparation is scattered: a textbook here, a video there, practice questions somewhere else. MasterClass brings the pieces you need for your next goal into one dashboard, so each study session starts with a clear next step instead of a search.</p>
+      <p>Learning a technology is scattered: official docs here, a video there, interview questions somewhere else. MasterClass Buddy brings what a tech professional needs for the next role or certification into one dashboard, so each study session starts with a clear next step instead of a search.</p>
       <h2>What you can learn</h2>
       <ul>
-        <li><strong>School foundations</strong> for CBSE, NCERT, ICSE and ISC students from Class 6 to Class 12.</li>
-        <li><strong>Competitive exams</strong> including SSC, banking, railways, defence, teaching, state exams, JEE and NEET.</li>
-        <li><strong>Language skills</strong>: IELTS practice and English vocabulary with Hindi meanings.</li>
-        <li><strong>Technology careers</strong>: handbooks, coding labs, interview practice and system-design case studies.</li>
+        <li><strong>Technology careers</strong>: handbooks, official docs explained, API references, coding labs and step-by-step build guides.</li>
+        <li><strong>AI and agents</strong>: LangChain, LangGraph, LangSmith, LangFlow and n8n workflow blueprints, plus the agentic AI pulse.</li>
+        <li><strong>Interviews and certifications</strong>: interview question banks, system-design case studies, quizzes and certification paths with mock exams.</li>
+        <li><strong>Workplace English</strong>: IELTS practice and professional vocabulary with Hindi meanings.</li>
       </ul>
       <p>See every path on the <Link href="/courses">courses page</Link>.</p>
       <h2>How we teach</h2>

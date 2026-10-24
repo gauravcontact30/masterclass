@@ -29,6 +29,9 @@ export const VOICES: Voice[] = [
   { id: "Puck", gender: "male", style: ["Upbeat", "उत्साही"] },
 ];
 export const DEFAULT_VOICE = "Sulafat";
+/** The voice each gender switch starts on: the warmest female and the smoothest male narrator. */
+export const DEFAULT_VOICES: Record<VoiceGender, string> = { female: "Sulafat", male: "Algieba" };
+export const genderOf = (id: string): VoiceGender => VOICES.find(voice => voice.id === id)?.gender ?? "female";
 export const isVoice = (id: unknown): id is string => typeof id === "string" && VOICES.some(voice => voice.id === id);
 export const SPEEDS = [0.75, 1, 1.25, 1.5, 1.75, 2] as const;
 

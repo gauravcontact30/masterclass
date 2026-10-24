@@ -6,6 +6,7 @@ import { CERTIFICATION_BRANDS } from "@/lib/certification-brands";
 import type { Difficulty, ObjectiveQuestion, QuestionCode, StepContent, StepRevision, SubjectiveQuestion, TrackContent } from "@/lib/certification-content-types";
 import { AwsServiceIcon } from "./aws-service-icon";
 import { CodeFiles } from "./code-files";
+import { ListenButton } from "./listen-button";
 import styles from "./certification-study.module.css";
 
 /*
@@ -45,7 +46,18 @@ export function ServiceIcon({ id }: { id: string }) {
 
 type StepTab = "lesson" | "revision" | "objective" | "subjective";
 
-export function StepStudy({ step, number }: { step: StepContent; number: number }) {
+/** The lesson read aloud: overview, objectives, concepts, workflow, must-remember facts and traps. */
+const lessonLecture = (step: StepContent, number: number) => [step.overview, `By the end of step ${number} you can: ${step.objectives.join(". ")}`,
+  `Key concepts. ${step.concepts.map(concept => `${concept.term}: ${concept.explanation}`).join(". ")}`,
+  `Workflow, ${step.workflow.title}. ${step.workflow.steps.map((item, at) => `${at + 1}. ${item.label}: ${item.detail}`).join(". ")}`,
+  `Must remember for the exam. ${step.keyFacts.join(". ")}`, `Common mistakes and traps. ${step.pitfalls.join(". ")}`].join(". ");
+const revisionLecture = (revision: StepRevision, number: number) => [`How the exam tests step ${number}. ${revision.examFocus}`,
+  `Which one to choose. ${revision.compare.map(row => `${row.a} or ${row.b}: ${row.difference} Pick ${row.a} when ${row.chooseA} Pick ${row.b} when ${row.chooseB}`).join(". ")}`,
+  `If the question says. ${revision.cues.map(cue => `${cue.cue}: pick ${cue.pick}, because ${cue.why}`).join(". ")}`,
+  `Worked exam scenario. ${revision.scenario.situation} ${revision.scenario.reasoning.join(" ")} Best answer: ${revision.scenario.answer}`,
+  `Memory aids. ${revision.memoryAids.join(". ")}`, `Cheat sheet. ${revision.cheatSheet.join(". ")}`].join(". ");
+
+export function StepStudy({ step, number, listenId }: { step: StepContent; number: number; listenId: string }) {
   const [tab, setTab] = useState<StepTab>("lesson");
   const tabs: { id: StepTab; label: string; icon: typeof BookOpenCheck; count?: number }[] = [
     { id: "lesson", label: "Lesson", icon: BookOpenCheck },
@@ -58,10 +70,14 @@ export function StepStudy({ step, number }: { step: StepContent; number: number 
       {tabs.map(({ id, label, icon, count }) => <button key={id} type="button" role="tab" aria-selected={tab === id} onClick={() => setTab(id)}>{createElement(icon, { size: 14, "aria-hidden": true })}{label}{count != null && <b>{count}</b>}</button>)}
     </div>
     <div role="tabpanel" aria-label={tabs.find(item => item.id === tab)!.label}>
+      {(tab === "lesson" || tab === "revision") && <p className={styles.listenRow}>
+        {tab === "lesson" ? <ListenButton id={`${listenId}:lesson`} title={`Step ${number} lesson`} text={() => lessonLecture(step, number)} compact />
+          : <ListenButton id={`${listenId}:revision`} title={`Step ${number} exam revision`} text={() => revisionLecture(step.revision!, number)} compact />}
+        {tab === "lesson" ? "Listen to the lesson" : "Listen to the revision pack"}</p>}
       {tab === "lesson" && <Lesson step={step} number={number} />}
       {tab === "revision" && step.revision && <Revision revision={step.revision} number={number} />}
       {tab === "objective" && <ObjectiveList questions={step.objective} />}
-      {tab === "subjective" && <SubjectiveList questions={step.subjective} />}
+      {tab === "subjective" && <SubjectiveList questions={step.subjective} listenId={listenId} />}
     </div>
   </div>;
 }
@@ -213,7 +229,7 @@ function ObjectiveList({ questions }: { questions: ObjectiveQuestion[] }) {
   </div>;
 }
 
-function SubjectiveList({ questions }: { questions: SubjectiveQuestion[] }) {
+function SubjectiveList({ questions, listenId }: { questions: SubjectiveQuestion[]; listenId: string }) {
   const [page, setPage] = useState(1);
   const [open, setOpen] = useState<Set<number>>(new Set());
   const pages = Math.ceil(questions.length / PAGE);
@@ -225,7 +241,7 @@ function SubjectiveList({ questions }: { questions: SubjectiveQuestion[] }) {
         <p className={styles.q}><span className={styles.qNumber}>Q{index + 1}</span>{question.question}<span className={styles.level} data-level={question.difficulty}>{DIFFICULTY[question.difficulty]}</span></p>
         <QuestionSnippet code={question.code} />
         <button type="button" className={styles.reveal} aria-expanded={shown} onClick={() => setOpen(current => { const next = new Set(current); if (next.has(index)) next.delete(index); else next.add(index); return next; })}>{shown ? <EyeOff size={14} aria-hidden="true" /> : <Eye size={14} aria-hidden="true" />}{shown ? "Hide model answer" : "Show model answer"}</button>
-        {shown && <div className={styles.answer}><p>{question.answer}</p><h6>Key points to hit</h6><ul>{question.keyPoints.map((point, at) => <li key={at}>{point}</li>)}</ul></div>}
+        {shown && <div className={styles.answer}><ListenButton className={styles.answerListen} id={`${listenId}:answer:${index}`} title={`Model answer, question ${index + 1}`} text={() => [question.question, `Model answer. ${question.answer}`, `Key points to hit. ${question.keyPoints.join(". ")}`].join(" ")} compact /><p>{question.answer}</p><h6>Key points to hit</h6><ul>{question.keyPoints.map((point, at) => <li key={at}>{point}</li>)}</ul></div>}
       </li>;
     })}</ol>
     <Pages page={page} pages={pages} onPage={setPage} />

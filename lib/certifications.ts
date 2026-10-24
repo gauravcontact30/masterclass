@@ -1,18 +1,19 @@
 /**
- * The Learning Dashboard's Certifications page (components/certifications.tsx): six certification tracks, each with
- * the certificates worth earning and a step-by-step path from the first lesson to exam day. Plain data, no zod.
+ * The Learning Dashboard's Certifications page (components/certifications.tsx): nine certification tracks in three
+ * groups (cloud and infrastructure, AI and automation, software architecture), each with the certificates worth earning and a step-by-step path from the first lesson to exam day. Plain data, no zod.
  * The landing cards live in lib/certifications-landing.ts so the landing page does not ship these paths.
  *
- * Exam facts (questions, minutes, fee, passing score) are the providers' published figures as of 2026; every
- * certificate links to its official page, which wins when they change. The LangChain-family track was written
- * from the official LangChain docs (docs.langchain.com, via the docs-langchain MCP server).
+ * Exam facts (questions, minutes, fee, passing score) are the providers' published figures as of 2026; the page shows them
+ * without linking out to the providers' sites, so they need re-checking when an exam version changes. The LangChain-family track was written
+ * from the official LangChain docs (docs.langchain.com, via the docs-langchain MCP server), and so was the AI
+ * Automation track's LangGraph cron, Agent Server and LangSmith automation-rule material.
  */
 export type CertLevel = "Foundational" | "Associate" | "Professional" | "Specialty" | "Course certificate";
 
 export type Certificate = {
   name: string; provider: string; code?: string; level: CertLevel;
   /** Questions, time, fee and passing score, or how the certificate is earned. */
-  format: string; url: string; note?: string;
+  format: string; note?: string;
 };
 
 export type CertStep = {
@@ -25,22 +26,27 @@ export type CertStep = {
   checkpoint: string;
 };
 
+export type CertCategory = "Cloud & Infrastructure" | "AI & Automation" | "Software Architecture";
+export const CERT_CATEGORIES: CertCategory[] = ["Cloud & Infrastructure", "AI & Automation", "Software Architecture"];
+
 export type CertTrack = {
-  id: string; title: string; tagline: string; who: string; duration: string;
+  id: string; title: string; tagline: string; who: string; duration: string; category: CertCategory;
+  /** Shows a "New" mark on the track card. */
+  isNew?: boolean;
   certificates: Certificate[]; steps: CertStep[]; examTips: string[];
   source?: string;
 };
 
 export const CERTIFICATION_TRACKS: CertTrack[] = [
   {
-    id: "system-design", title: "System Design",
+    id: "system-design", category: "Software Architecture", title: "System Design",
     tagline: "Design systems that scale, from one server to millions of users, and explain every trade-off in an interview.",
     who: "Backend and full-stack developers preparing for senior or system design rounds.",
     duration: "10 to 12 weeks at 6 to 8 hours a week",
     certificates: [
-      { name: "AWS Certified Solutions Architect – Associate", provider: "Amazon Web Services", code: "SAA-C03", level: "Associate", format: "65 questions · 130 minutes · USD 150 · pass 720/1000", url: "https://aws.amazon.com/certification/certified-solutions-architect-associate/", note: "There is no vendor-neutral system design exam; this is the most recognised certificate that tests the same architecture decisions." },
-      { name: "Google Cloud Professional Cloud Architect", provider: "Google Cloud", level: "Professional", format: "50–60 questions · 2 hours · USD 200 · case-study based", url: "https://cloud.google.com/learn/certification/cloud-architect" },
-      { name: "Microsoft Azure Solutions Architect Expert", provider: "Microsoft", code: "AZ-305", level: "Professional", format: "About 40–60 questions · 120 minutes · requires AZ-104", url: "https://learn.microsoft.com/credentials/certifications/azure-solutions-architect/" },
+      { name: "AWS Certified Solutions Architect – Associate", provider: "Amazon Web Services", code: "SAA-C03", level: "Associate", format: "65 questions · 130 minutes · USD 150 · pass 720/1000", note: "There is no vendor-neutral system design exam; this is the most recognised certificate that tests the same architecture decisions." },
+      { name: "Google Cloud Professional Cloud Architect", provider: "Google Cloud", level: "Professional", format: "50–60 questions · 2 hours · USD 200 · case-study based" },
+      { name: "Microsoft Azure Solutions Architect Expert", provider: "Microsoft", code: "AZ-305", level: "Professional", format: "About 40–60 questions · 120 minutes · requires AZ-104" },
     ],
     steps: [
       { title: "Foundations: how the web moves a request", weeks: "Week 1", learn: ["Client–server model, DNS lookup, TCP vs UDP, TLS handshake", "HTTP/1.1, HTTP/2 and HTTP/3; status codes; keep-alive", "Latency numbers every engineer should know", "Back-of-the-envelope estimates: QPS, storage per day, bandwidth"], practice: "Estimate the daily storage and peak QPS of a photo-sharing app with 10 million daily users.", checkpoint: "You can trace what happens when you type a URL, from DNS to the rendered page, in under three minutes." },
@@ -56,14 +62,14 @@ export const CERTIFICATION_TRACKS: CertTrack[] = [
     examTips: ["Always ask for scale and read/write ratio before drawing anything.", "Name the trade-off you are making; interviewers grade reasoning, not the final box diagram.", "For SAA-C03, the 'most cost-effective' and 'least operational overhead' wording decides between two correct answers."],
   },
   {
-    id: "claude-code", title: "Claude Code",
+    id: "claude-code", category: "AI & Automation", title: "Claude Code",
     tagline: "Use Anthropic's agentic coding tool in the terminal and IDE: from the first prompt to hooks, MCP servers, subagents and CI.",
     who: "Developers who want to ship faster with an AI pair programmer and understand how to steer it.",
     duration: "3 to 4 weeks at 4 to 5 hours a week",
     certificates: [
-      { name: "Claude Code in Action", provider: "Anthropic Academy", level: "Course certificate", format: "Free online course · certificate of completion", url: "https://anthropic.skilljar.com/" },
-      { name: "Introduction to Model Context Protocol", provider: "Anthropic Academy", level: "Course certificate", format: "Free online course · certificate of completion", url: "https://anthropic.skilljar.com/" },
-      { name: "Building with the Claude API", provider: "Anthropic Academy", level: "Course certificate", format: "Free online course · certificate of completion", url: "https://anthropic.skilljar.com/" },
+      { name: "Claude Code in Action", provider: "Anthropic Academy", level: "Course certificate", format: "Free online course · certificate of completion" },
+      { name: "Introduction to Model Context Protocol", provider: "Anthropic Academy", level: "Course certificate", format: "Free online course · certificate of completion" },
+      { name: "Building with the Claude API", provider: "Anthropic Academy", level: "Course certificate", format: "Free online course · certificate of completion" },
     ],
     steps: [
       { title: "Install and first session", weeks: "Week 1", learn: ["Install Claude Code (native installer or npm) and sign in", "Start `claude` in a project folder; ask it to explain the codebase", "How it reads files, runs commands and asks for permission", "The VS Code and JetBrains extensions, the desktop app and the web"], practice: "Ask Claude Code to explain an unfamiliar repository and list its entry points.", checkpoint: "You can start a session, approve or deny a tool call and undo a change." },
@@ -78,19 +84,19 @@ export const CERTIFICATION_TRACKS: CertTrack[] = [
     examTips: ["Keep a small demo repository with your CLAUDE.md, hooks and commands; it says more than the certificate.", "Learn the permission model well: most real-world mistakes come from approving too much too fast.", "Course content is updated with the product, so check the course page for the current lesson list."],
   },
   {
-    id: "aws", title: "AWS certifications",
+    id: "aws", category: "Cloud & Infrastructure", title: "AWS certifications",
     tagline: "The most popular AWS certificates, in the order most people take them: Cloud Practitioner, AI Practitioner, the Associates, then Professional.",
     who: "Students, developers and DevOps engineers starting or growing a cloud career.",
     duration: "4 weeks per Foundational exam, 6 to 8 per Associate, 10 to 12 per Professional",
     certificates: [
-      { name: "AWS Certified Cloud Practitioner", provider: "Amazon Web Services", code: "CLF-C02", level: "Foundational", format: "65 questions · 90 minutes · USD 100 · pass 700/1000", url: "https://aws.amazon.com/certification/certified-cloud-practitioner/" },
-      { name: "AWS Certified AI Practitioner", provider: "Amazon Web Services", code: "AIF-C01", level: "Foundational", format: "65 questions · 90 minutes · USD 100 · pass 700/1000", url: "https://aws.amazon.com/certification/certified-ai-practitioner/" },
-      { name: "AWS Certified Solutions Architect – Associate", provider: "Amazon Web Services", code: "SAA-C03", level: "Associate", format: "65 questions · 130 minutes · USD 150 · pass 720/1000", url: "https://aws.amazon.com/certification/certified-solutions-architect-associate/" },
-      { name: "AWS Certified Developer – Associate", provider: "Amazon Web Services", code: "DVA-C02", level: "Associate", format: "65 questions · 130 minutes · USD 150 · pass 720/1000", url: "https://aws.amazon.com/certification/certified-developer-associate/" },
-      { name: "AWS Certified Machine Learning Engineer – Associate", provider: "Amazon Web Services", code: "MLA-C01", level: "Associate", format: "65 questions · 130 minutes · USD 150 · pass 720/1000", url: "https://aws.amazon.com/certification/certified-machine-learning-engineer-associate/" },
-      { name: "AWS Certified Data Engineer – Associate", provider: "Amazon Web Services", code: "DEA-C01", level: "Associate", format: "65 questions · 130 minutes · USD 150 · pass 720/1000", url: "https://aws.amazon.com/certification/certified-data-engineer-associate/" },
-      { name: "AWS Certified Solutions Architect – Professional", provider: "Amazon Web Services", code: "SAP-C02", level: "Professional", format: "75 questions · 180 minutes · USD 300 · pass 750/1000", url: "https://aws.amazon.com/certification/certified-solutions-architect-professional/" },
-      { name: "AWS Certified DevOps Engineer – Professional", provider: "Amazon Web Services", code: "DOP-C02", level: "Professional", format: "75 questions · 180 minutes · USD 300 · pass 750/1000", url: "https://aws.amazon.com/certification/certified-devops-engineer-professional/" },
+      { name: "AWS Certified Cloud Practitioner", provider: "Amazon Web Services", code: "CLF-C02", level: "Foundational", format: "65 questions · 90 minutes · USD 100 · pass 700/1000" },
+      { name: "AWS Certified AI Practitioner", provider: "Amazon Web Services", code: "AIF-C01", level: "Foundational", format: "65 questions · 90 minutes · USD 100 · pass 700/1000" },
+      { name: "AWS Certified Solutions Architect – Associate", provider: "Amazon Web Services", code: "SAA-C03", level: "Associate", format: "65 questions · 130 minutes · USD 150 · pass 720/1000" },
+      { name: "AWS Certified Developer – Associate", provider: "Amazon Web Services", code: "DVA-C02", level: "Associate", format: "65 questions · 130 minutes · USD 150 · pass 720/1000" },
+      { name: "AWS Certified Machine Learning Engineer – Associate", provider: "Amazon Web Services", code: "MLA-C01", level: "Associate", format: "65 questions · 130 minutes · USD 150 · pass 720/1000" },
+      { name: "AWS Certified Data Engineer – Associate", provider: "Amazon Web Services", code: "DEA-C01", level: "Associate", format: "65 questions · 130 minutes · USD 150 · pass 720/1000" },
+      { name: "AWS Certified Solutions Architect – Professional", provider: "Amazon Web Services", code: "SAP-C02", level: "Professional", format: "75 questions · 180 minutes · USD 300 · pass 750/1000" },
+      { name: "AWS Certified DevOps Engineer – Professional", provider: "Amazon Web Services", code: "DOP-C02", level: "Professional", format: "75 questions · 180 minutes · USD 300 · pass 750/1000" },
     ],
     steps: [
       { title: "Set up safely", weeks: "Week 1", learn: ["Create an AWS account; turn on MFA for the root user", "IAM Identity Center or an IAM admin user for daily work", "AWS Budgets alerts and the Free Tier limits", "Regions, Availability Zones and edge locations"], practice: "Set a USD 5 budget alert and log in with a non-root user.", checkpoint: "You never use the root user again after this step." },
@@ -104,13 +110,13 @@ export const CERTIFICATION_TRACKS: CertTrack[] = [
     examTips: ["Read the last line of the question first: it tells you whether they want cheapest, fastest or most resilient.", "Eliminate two answers, then compare the remaining two on the exact requirement.", "Flag and move on; unanswered questions score zero and there is no penalty for guessing."],
   },
   {
-    id: "n8n", title: "n8n automation",
+    id: "n8n", category: "AI & Automation", title: "n8n automation",
     tagline: "Automate real work with n8n: triggers, nodes, expressions, error handling and AI agent workflows, self-hosted or in the cloud.",
     who: "Developers, analysts and founders who want to automate workflows and build AI agents without a large codebase.",
     duration: "4 to 5 weeks at 4 hours a week",
     certificates: [
-      { name: "n8n Course Level 1", provider: "n8n", level: "Course certificate", format: "Free official text course · badge after the final knowledge check", url: "https://docs.n8n.io/courses/level-one/" },
-      { name: "n8n Course Level 2", provider: "n8n", level: "Course certificate", format: "Free official text course · badge after the final knowledge check", url: "https://docs.n8n.io/courses/level-two/" },
+      { name: "n8n Course Level 1", provider: "n8n", level: "Course certificate", format: "Free official text course · badge after the final knowledge check" },
+      { name: "n8n Course Level 2", provider: "n8n", level: "Course certificate", format: "Free official text course · badge after the final knowledge check" },
     ],
     steps: [
       { title: "Run n8n", weeks: "Week 1", learn: ["n8n Cloud trial vs self-hosting", "Run locally with `npx n8n` or Docker", "The editor: canvas, nodes, connections, executions", "Credentials and how n8n stores them"], practice: "Run n8n in Docker with a persistent volume.", checkpoint: "Your workflows survive a container restart." },
@@ -124,15 +130,15 @@ export const CERTIFICATION_TRACKS: CertTrack[] = [
     examTips: ["n8n's badges come from its official courses; check the course pages for the current process.", "Export your best workflows as JSON into a portfolio repository.", "Describe each automation by the hours it saves; that is what clients and employers ask about."],
   },
   {
-    id: "agentic-ai", title: "Agentic AI",
+    id: "agentic-ai", category: "AI & Automation", title: "Agentic AI",
     tagline: "How AI agents plan, use tools, remember and check their own work, with the certificates that prove you can build them.",
     who: "Developers and ML engineers moving from chat apps to autonomous, tool-using agents.",
     duration: "8 to 10 weeks at 5 to 6 hours a week",
     certificates: [
-      { name: "Hugging Face AI Agents Course", provider: "Hugging Face", level: "Course certificate", format: "Free · fundamentals certificate and a completion certificate for the final assignment", url: "https://huggingface.co/learn/agents-course" },
-      { name: "Agentic AI", provider: "DeepLearning.AI (Andrew Ng)", level: "Course certificate", format: "Self-paced course · certificate of completion", url: "https://www.deeplearning.ai/courses/agentic-ai/" },
-      { name: "NVIDIA-Certified Professional: Agentic AI", provider: "NVIDIA", code: "NCP-AAI", level: "Professional", format: "Proctored exam · scenario questions on building, evaluating and deploying agents", url: "https://www.nvidia.com/en-us/learn/certification/" },
-      { name: "AWS Certified Generative AI Developer – Professional", provider: "Amazon Web Services", level: "Professional", format: "Proctored exam on Bedrock, RAG, agents and guardrails", url: "https://aws.amazon.com/certification/", note: "Newer exam; check the page for the current code and format." },
+      { name: "Hugging Face AI Agents Course", provider: "Hugging Face", level: "Course certificate", format: "Free · fundamentals certificate and a completion certificate for the final assignment" },
+      { name: "Agentic AI", provider: "DeepLearning.AI (Andrew Ng)", level: "Course certificate", format: "Self-paced course · certificate of completion" },
+      { name: "NVIDIA-Certified Professional: Agentic AI", provider: "NVIDIA", code: "NCP-AAI", level: "Professional", format: "Proctored exam · scenario questions on building, evaluating and deploying agents" },
+      { name: "AWS Certified Generative AI Developer – Professional", provider: "Amazon Web Services", level: "Professional", format: "Proctored exam on Bedrock, RAG, agents and guardrails", note: "Newer exam; confirm the current code and format when you book." },
     ],
     steps: [
       { title: "LLM foundations", weeks: "Week 1", learn: ["Tokens, context windows, temperature", "Chat messages and system prompts", "Structured output with JSON schemas", "Prompting: instructions, examples, chain of thought"], practice: "Get a model to return valid JSON for 20 different inputs.", checkpoint: "You can explain why a model's output changes between runs and how to constrain it." },
@@ -146,14 +152,14 @@ export const CERTIFICATION_TRACKS: CertTrack[] = [
     examTips: ["Vendor exams test their own stack: study NVIDIA NIM/NeMo for NCP-AAI and Bedrock Agents for AWS.", "Keep an evaluation table in your project README; it is the strongest proof of skill.", "Agentic AI certificates are new and change often; confirm the current format on the provider page before booking."],
   },
   {
-    id: "langchain-python", title: "Agentic AI with Python: LangChain, LangGraph, LangSmith and LangFlow",
+    id: "langchain-python", category: "AI & Automation", title: "Agentic AI with Python: LangChain, LangGraph, LangSmith and LangFlow",
     tagline: "Build, trace, evaluate and ship Python agents with the LangChain ecosystem, and prototype them visually in LangFlow.",
     who: "Python developers who want production agent skills on the most widely used open-source stack.",
     duration: "8 to 10 weeks at 6 hours a week",
     source: "Written from the official LangChain documentation (docs.langchain.com).",
     certificates: [
-      { name: "LangChain Academy courses (LangChain, LangGraph, LangSmith)", provider: "LangChain", level: "Course certificate", format: "Free self-paced courses with notebooks and videos", url: "https://academy.langchain.com/" },
-      { name: "Langflow", provider: "Langflow (open source)", level: "Course certificate", format: "No formal certification yet; learn from the official docs and tutorials and show a published flow", url: "https://docs.langflow.org/" },
+      { name: "LangChain Academy courses (LangChain, LangGraph, LangSmith)", provider: "LangChain", level: "Course certificate", format: "Free self-paced courses with notebooks and videos" },
+      { name: "Langflow", provider: "Langflow (open source)", level: "Course certificate", format: "No formal certification yet; learn from the official docs and tutorials and show a published flow" },
     ],
     steps: [
       { title: "Python setup for AI work", weeks: "Week 1", learn: ["Python 3.10+, a virtual environment (venv or uv)", "Environment variables and API keys in a .env file", "`pip install langchain` plus a provider package (for example langchain-anthropic or langchain-openai)", "Async basics with asyncio"], practice: "Call a chat model from a script and print the response.", checkpoint: "Keys are loaded from the environment, never hard-coded." },
@@ -167,6 +173,89 @@ export const CERTIFICATION_TRACKS: CertTrack[] = [
       { title: "Capstone and certificates", weeks: "Week 10", learn: ["Finish the LangChain Academy courses for LangGraph and LangSmith", "Write a README with the architecture diagram, evaluation results and a demo link"], practice: "Ship one capstone: a multi-step agent with RAG, human approval, tracing and an evaluation set.", checkpoint: "Academy courses complete and a capstone you can demo in an interview." },
     ],
     examTips: ["LangChain moves fast: always check docs.langchain.com for the current API before copying older tutorials.", "Interviewers ask about LangGraph state, checkpointers and interrupts more than about chains.", "Show LangSmith traces and an evaluation table in your portfolio; they prove you can debug an agent."],
+  },
+  {
+    id: "devops", category: "Cloud & Infrastructure", isNew: true, title: "DevOps engineering",
+    tagline: "Ship software continuously and safely: Linux, Git, CI/CD, containers, Kubernetes, Terraform, GitOps and observability, ending with the exams hiring managers recognise.",
+    who: "Developers, system administrators and fresh graduates aiming for DevOps, platform or site reliability roles.",
+    duration: "12 to 14 weeks at 6 to 8 hours a week",
+    certificates: [
+      { name: "HashiCorp Certified: Terraform Associate", provider: "HashiCorp", level: "Associate", format: "Online proctored multiple choice · 1 hour · about USD 70", note: "The exam version changes with Terraform releases; confirm the current version when you book." },
+      { name: "GitHub Actions", provider: "GitHub", level: "Associate", format: "Online proctored multiple choice · about 2 hours · USD 99" },
+      { name: "Certified Kubernetes Application Developer", provider: "The Linux Foundation · CNCF", code: "CKAD", level: "Associate", format: "Performance-based, in a live cluster · 2 hours · pass 66% · one free retake" },
+      { name: "Certified Kubernetes Administrator", provider: "The Linux Foundation · CNCF", code: "CKA", level: "Professional", format: "Performance-based, in a live cluster · 2 hours · pass 66% · one free retake" },
+      { name: "Prometheus Certified Associate", provider: "The Linux Foundation · CNCF", code: "PCA", level: "Associate", format: "Online proctored multiple choice · 90 minutes" },
+      { name: "AWS Certified DevOps Engineer – Professional", provider: "Amazon Web Services", code: "DOP-C02", level: "Professional", format: "75 questions · 180 minutes · USD 300 · pass 750/1000" },
+      { name: "Microsoft Certified: DevOps Engineer Expert", provider: "Microsoft", code: "AZ-400", level: "Professional", format: "About 40–60 questions · 100 minutes · requires AZ-104 or AZ-204 · fee varies by country" },
+    ],
+    steps: [
+      { title: "Linux, the shell and networking", weeks: "Weeks 1–2", learn: ["Files, permissions, users and groups; processes and signals", "systemd services and journalctl logs", "Bash scripting: variables, loops, exit codes, `set -euo pipefail`", "Networking for operators: IP, ports, DNS, curl, ss, dig, SSH keys"], practice: "Write a Bash script that checks disk, memory and a service's health and exits non-zero on failure.", checkpoint: "You can debug a service that will not start using only the terminal." },
+      { title: "Git and team workflows", weeks: "Week 3", learn: ["Commits, branches, merge vs rebase, resolving conflicts", "Trunk-based development vs GitFlow", "Pull requests, code review and branch protection", "Semantic versioning, tags and changelogs"], practice: "Set up a repository with a protected main branch, required reviews and status checks.", checkpoint: "Nothing reaches main without a review and a green pipeline." },
+      { title: "Continuous integration with GitHub Actions", weeks: "Week 4", learn: ["Workflows, jobs, steps, runners and triggers", "Matrix builds, caching and artifacts", "Secrets, environments and OIDC to a cloud account instead of long-lived keys", "Reusable workflows and composite actions"], practice: "Build a pipeline that lints, tests and builds an app on every pull request across two Node or Python versions.", checkpoint: "A broken test blocks the merge, and the cache makes the second run faster." },
+      { title: "Containers with Docker", weeks: "Week 5", learn: ["Images, layers, containers and registries", "Small, secure Dockerfiles: multi-stage builds, non-root users, .dockerignore", "Docker Compose for local multi-service apps", "Image scanning and signing basics"], practice: "Containerise an API and its database with Compose and shrink the image below 150 MB.", checkpoint: "The app starts with one command on a fresh machine." },
+      { title: "Kubernetes for developers (CKAD)", weeks: "Weeks 6–7", learn: ["Pods, Deployments, ReplicaSets and Services", "ConfigMaps, Secrets, probes, resource requests and limits", "Jobs, CronJobs, Ingress and NetworkPolicies", "kubectl speed: imperative commands, `--dry-run=client -o yaml`, aliases"], practice: "Deploy your container to a local cluster (kind or minikube) with probes, limits and an Ingress.", checkpoint: "You finish a 15-task timed CKAD practice set inside two hours." },
+      { title: "Kubernetes administration (CKA)", weeks: "Weeks 8–9", learn: ["Cluster architecture: control plane, etcd, kubelet, kube-proxy", "kubeadm install and upgrade; etcd backup and restore", "RBAC, service accounts and storage (PV, PVC, StorageClass)", "Troubleshooting nodes, networking and failing workloads"], practice: "Build a kubeadm cluster, back up etcd, break a node and recover it.", checkpoint: "You can restore etcd from a snapshot without notes." },
+      { title: "Infrastructure as code with Terraform", weeks: "Week 10", learn: ["Providers, resources, variables, outputs and data sources", "State, remote backends and locking", "Modules, workspaces and environments", "plan, apply, import and drift"], practice: "Provision a network, a container service and a database with reusable modules and remote state.", checkpoint: "`terraform plan` shows no changes after a clean apply, and the stack is destroyed in one command." },
+      { title: "Configuration, Helm and GitOps", weeks: "Week 11", learn: ["Ansible playbooks, inventories and idempotency", "Helm charts, values and releases", "GitOps with Argo CD or Flux: the cluster follows the repository", "Promotion from dev to staging to production"], practice: "Package your app as a Helm chart and let Argo CD deploy it from Git.", checkpoint: "A merged pull request changes production without a kubectl command." },
+      { title: "Observability and SRE", weeks: "Week 12", learn: ["Metrics, logs and traces; OpenTelemetry instrumentation", "Prometheus scraping, PromQL and alerting rules; Grafana dashboards", "SLIs, SLOs and error budgets", "Incident response, on-call and blameless postmortems"], practice: "Add request-rate, error and duration metrics and an SLO alert to your service, then fire it with a load test.", checkpoint: "Your alert names the symptom and links a runbook, and nobody is paged for noise." },
+      { title: "DevSecOps and release strategies", weeks: "Week 13", learn: ["Shift-left security: SAST, dependency and image scanning in CI", "Secrets management with Vault or a cloud secrets manager", "Blue/green, canary and feature flags; automatic rollback", "Supply-chain basics: SBOMs and signed artifacts"], practice: "Add a canary release that rolls back automatically when the error rate rises.", checkpoint: "A bad release rolls itself back before users notice." },
+      { title: "Certify and build the portfolio", weeks: "Week 14", learn: ["A sensible order: Terraform Associate, then CKAD or CKA, then a cloud DevOps exam", "Practise under exam conditions; the Kubernetes exams include simulator sessions", "Write up your pipeline with a diagram and the DORA metrics it improves"], practice: "Book the first exam and publish your end-to-end pipeline repository.", checkpoint: "One certificate earned and a repository that shows code going from commit to production." },
+    ],
+    examTips: ["CKA and CKAD are hands-on: speed with kubectl and the official Kubernetes docs (allowed in the exam) matters more than memorising YAML.", "Switch to the right cluster context at the start of every Kubernetes task; it is the most common way to lose marks.", "For Terraform Associate, know what state is for and what each CLI command does to it."],
+  },
+  {
+    id: "cloud-architecture", category: "Cloud & Infrastructure", isNew: true, title: "Cloud Architecture & Infrastructure",
+    tagline: "Design secure, resilient and cost-aware cloud platforms across AWS, Azure and Google Cloud: landing zones, networking, disaster recovery and FinOps.",
+    who: "Developers, DevOps engineers and system administrators moving into cloud architect or infrastructure lead roles.",
+    duration: "14 to 16 weeks at 6 to 8 hours a week",
+    certificates: [
+      { name: "Google Cloud Associate Cloud Engineer", provider: "Google Cloud", level: "Associate", format: "50–60 questions · 2 hours · USD 125" },
+      { name: "Microsoft Certified: Azure Administrator Associate", provider: "Microsoft", code: "AZ-104", level: "Associate", format: "About 40–60 questions · 100 minutes · fee varies by country" },
+      { name: "AWS Certified Solutions Architect – Associate", provider: "Amazon Web Services", code: "SAA-C03", level: "Associate", format: "65 questions · 130 minutes · USD 150 · pass 720/1000" },
+      { name: "AWS Certified Solutions Architect – Professional", provider: "Amazon Web Services", code: "SAP-C02", level: "Professional", format: "75 questions · 180 minutes · USD 300 · pass 750/1000" },
+      { name: "Google Cloud Professional Cloud Architect", provider: "Google Cloud", level: "Professional", format: "50–60 questions · 2 hours · USD 200 · case-study based" },
+      { name: "Microsoft Certified: Azure Solutions Architect Expert", provider: "Microsoft", code: "AZ-305", level: "Professional", format: "About 40–60 questions · 120 minutes · requires AZ-104" },
+    ],
+    steps: [
+      { title: "Cloud fundamentals across three providers", weeks: "Week 1", learn: ["IaaS, PaaS, SaaS and serverless; the shared responsibility model", "Regions, zones and edge locations on AWS, Azure and Google Cloud", "How the three map: EC2 / Virtual Machines / Compute Engine, S3 / Blob Storage / Cloud Storage", "Pricing models: on-demand, reserved or committed use, spot"], practice: "Build a one-page service map comparing the three providers for compute, storage, database and networking.", checkpoint: "You can name the equivalent service on each cloud without looking it up." },
+      { title: "Well-Architected thinking", weeks: "Week 2", learn: ["AWS Well-Architected (six pillars), the Azure Well-Architected Framework and the Google Cloud Architecture Framework", "Turning non-functional requirements into numbers", "Architecture decision records (ADRs)", "Reading and drawing reference architectures"], practice: "Review an existing app against the six pillars and write three ADRs for its biggest risks.", checkpoint: "Every design choice you make has a written reason and a trade-off." },
+      { title: "Identity, organisations and landing zones", weeks: "Weeks 3–4", learn: ["IAM in each cloud: users, roles, managed identities, service accounts", "Least privilege, permission boundaries and just-in-time access", "Account and subscription design: AWS Organizations and Control Tower, Azure management groups, Google Cloud folders", "Guardrails with SCPs, Azure Policy and Organization Policy"], practice: "Design a landing zone with separate security, shared-services, dev and prod accounts and the guardrails between them.", checkpoint: "A developer cannot turn off logging or create resources outside approved regions." },
+      { title: "Network architecture", weeks: "Weeks 5–6", learn: ["VPC and VNet design: CIDR planning, public and private subnets, NAT", "Hub-and-spoke with Transit Gateway, Virtual WAN or Network Connectivity Center", "Hybrid links: site-to-site VPN vs Direct Connect, ExpressRoute or Cloud Interconnect", "Private endpoints, DNS across networks, load balancers and CDNs"], practice: "Plan non-overlapping CIDRs for 10 VPCs across two regions and an office, connected hub-and-spoke.", checkpoint: "You can trace a packet from an office laptop to a private database and name every hop." },
+      { title: "Compute and application platforms", weeks: "Week 7", learn: ["Virtual machines, scaling groups and images", "Containers: ECS, EKS, AKS, GKE and serverless containers (Fargate, Cloud Run, Container Apps)", "Functions: Lambda, Azure Functions, Cloud Run functions", "Choosing by control, scaling behaviour, cost and team skills"], practice: "Choose and justify a compute platform for a batch job, a public API and a legacy Windows app.", checkpoint: "You can explain when serverless costs more than containers." },
+      { title: "Storage, databases and data movement", weeks: "Week 8", learn: ["Object, block and file storage; tiers and lifecycle rules", "Relational, NoSQL and globally distributed databases (Aurora, Cosmos DB, Spanner)", "Caching, read replicas and data residency", "Moving data: online vs offline transfer, database migration services"], practice: "Design storage tiers and a lifecycle policy for 200 TB of logs kept for seven years.", checkpoint: "Your design meets the retention rule at the lowest storage cost." },
+      { title: "Resilience and disaster recovery", weeks: "Week 9", learn: ["RPO and RTO, and how they set the budget", "Backup and restore, pilot light, warm standby, multi-site active/active", "Multi-zone vs multi-region; health checks and DNS failover", "Chaos testing and game days"], practice: "Write a DR plan for an e-commerce app with a 15-minute RPO and a one-hour RTO, then test a failover.", checkpoint: "You can pick the cheapest DR strategy that still meets a stated RPO and RTO." },
+      { title: "Security architecture and compliance", weeks: "Week 10", learn: ["Encryption at rest and in transit; KMS, Key Vault and Cloud KMS; customer-managed keys", "Zero trust, WAF, DDoS protection and private access to services", "Central logging, threat detection and security posture tools", "Compliance mapping at a high level: ISO 27001, SOC 2, PCI DSS and India's DPDP Act"], practice: "Add encryption, a WAF, central audit logs and a posture dashboard to your landing zone.", checkpoint: "Every data store is encrypted and every admin action is logged where developers cannot change it." },
+      { title: "Infrastructure as code and platform engineering", weeks: "Week 11", learn: ["Terraform, CloudFormation or CDK, and Bicep; state and module design", "Policy as code: OPA, Sentinel or cloud-native policy", "Golden paths and internal developer platforms", "CI/CD for infrastructure with plan reviews"], practice: "Turn your landing zone into Terraform modules with a pipeline that posts the plan on each pull request.", checkpoint: "A new environment is created from code in under an hour." },
+      { title: "Cost optimisation and FinOps", weeks: "Week 12", learn: ["Tagging and cost allocation; budgets and anomaly alerts", "Right-sizing, autoscaling and switching non-production off after hours", "Savings Plans, reservations and committed use discounts; spot for interruptible work", "Data transfer costs, the line most designs forget"], practice: "Cut a sample monthly bill by 30% with a written plan and the saving from each change.", checkpoint: "You can say what a design costs per month before it is built." },
+      { title: "Migration and modernisation", weeks: "Week 13", learn: ["The 7 Rs: retire, retain, rehost, relocate, replatform, repurchase, refactor", "Discovery, wave planning and cut-over", "Strangler-fig modernisation of a monolith", "Hybrid and multi-cloud: when they help and when they only add cost"], practice: "Plan a three-wave migration for 40 on-premises servers with a rollback for each wave.", checkpoint: "Each server has a chosen R and a reason." },
+      { title: "Case studies and certification", weeks: "Weeks 14–16", learn: ["Work through the official case studies for Google Professional Cloud Architect", "SAP-C02 scenario practice: multi-account, hybrid networking and migrations", "AZ-305 design areas: identity, data, business continuity and infrastructure", "Presenting an architecture to stakeholders"], practice: "Present one full architecture (diagram, ADRs, cost and DR plan) to a peer in 20 minutes.", checkpoint: "Practice exams above 80% for your first chosen certificate, then book it." },
+    ],
+    examTips: ["Start with the Associate exam of the cloud you use at work, then go Professional; architecture skills carry across clouds.", "Scenario questions hinge on one phrase such as 'least operational overhead', 'lowest cost' or 'minimum downtime'. Find it before reading the options.", "For Google's Professional Cloud Architect, read the published case studies first; some questions are built on them."],
+  },
+  {
+    id: "ai-automation-langchain", category: "AI & Automation", isNew: true, title: "AI Automation with LangChain, LangGraph, LangSmith and LangFlow",
+    tagline: "Automate real business work with AI: document pipelines, approval flows, scheduled and event-driven agents, monitored in production and prototyped visually.",
+    who: "Developers, automation engineers and analysts who want AI to run business processes reliably, not only answer chat messages.",
+    duration: "9 to 10 weeks at 5 to 6 hours a week",
+    source: "Written from the official LangChain documentation (docs.langchain.com).",
+    certificates: [
+      { name: "LangChain Academy: Introduction to LangGraph", provider: "LangChain", level: "Course certificate", format: "Free self-paced course with notebooks and videos" },
+      { name: "LangChain Academy: Ambient Agents with LangGraph", provider: "LangChain", level: "Course certificate", format: "Free self-paced course: an email assistant that runs in the background with human review" },
+      { name: "LangChain Academy: Introduction to LangSmith", provider: "LangChain", level: "Course certificate", format: "Free self-paced course on tracing, evaluation and online monitoring" },
+      { name: "Langflow", provider: "Langflow (open source)", level: "Course certificate", format: "No formal certification yet; learn from the official docs and show a published flow" },
+    ],
+    steps: [
+      { title: "Choose what to automate", weeks: "Week 1", learn: ["Workflows (fixed steps) vs agents (the model decides the steps)", "Splitting a process into plain-code steps and LLM steps: classify, extract, draft, decide", "Measuring value: time saved, error rate, volume", "Where a human must stay in the loop"], practice: "Map one real process (invoice handling or support email triage) into steps and mark which need an LLM.", checkpoint: "You can say which steps stay plain code and why." },
+      { title: "LangChain for automation tasks", weeks: "Week 2", learn: ["Chat models, messages and prompt templates", "Structured output with Pydantic for extraction and classification", "Document loaders and text splitters for PDFs, emails and web pages", "Batch processing with `batch` and a concurrency limit"], practice: "Extract vendor, amount, due date and GSTIN from 50 invoices into validated Pydantic objects.", checkpoint: "Every record validates, and failures are logged with their source file." },
+      { title: "LangGraph pipelines", weeks: "Week 3", learn: ["StateGraph, state schemas and reducers", "Conditional edges to route by classification", "Fan-out over many items and merging the results", "Retrying failing nodes and durable execution with a checkpointer"], practice: "Build an email-triage graph: classify, route to reply, escalate or ignore, then draft a response.", checkpoint: "A failed model call retries, and the run resumes from its last checkpoint, not from the start." },
+      { title: "Human approval in the loop", weeks: "Week 4", learn: ["`interrupt()` pauses a node; `Command(resume=...)` on the same thread_id continues it", "HumanInTheLoopMiddleware with approve, edit and reject decisions on sensitive tools", "Pausing needs a checkpointer; in multi-agent setups only the top-level agent gets one", "Designing the review screen: what an approver needs to see"], practice: "Make the triage graph pause before sending any email and resume with the reviewer's edits.", checkpoint: "No email leaves without approval, and an edited draft is the one that is sent." },
+      { title: "Tools and integrations", weeks: "Week 5", learn: ["Defining tools with the @tool decorator and clear descriptions", "Calling business APIs: email, spreadsheets, CRM and ticketing", "Model Context Protocol servers as ready-made tools", "Least-privilege credentials and idempotent tool calls"], practice: "Give your agent tools to read a Google Sheet, create a ticket and post a summary to a chat channel.", checkpoint: "Re-running the same input never creates a duplicate ticket." },
+      { title: "Ambient agents: schedules and events", weeks: "Week 6", learn: ["Ambient agents that react to events instead of chat messages", "Agent Server assistants, threads, runs and background runs", "Cron jobs: a schedule, an assistant and an input; schedules run in UTC unless you set a timezone", "Webhooks: start runs from outside, and get called back when a run finishes"], practice: "Schedule a daily 8 AM IST report with a cron job and start the triage graph from an incoming-email webhook.", checkpoint: "Both automations run without you opening anything, and you can list and disable the cron." },
+      { title: "LangSmith: monitor automations in production", weeks: "Week 7", learn: ["Tracing with LANGSMITH_TRACING and LANGSMITH_API_KEY; reading a trace", "Online evaluators (LLM-as-judge and code) that score live runs", "Automation rules: a filter, a sampling rate and an action (add to a dataset, an annotation queue or a webhook)", "Alerts on errors, latency and feedback scores to Slack or a webhook"], practice: "Add an online evaluator, a rule that sends low-scoring runs to an annotation queue, and an error-rate alert.", checkpoint: "A bad run is scored, queued for review and alerted on without anyone watching a dashboard." },
+      { title: "LangFlow: visual automations", weeks: "Week 8", learn: ["Install Langflow and build flows from components", "Agents, tools and vector stores on the canvas; the Playground", "Triggering a flow through its API or a webhook", "When to stay visual and when to move a flow into LangGraph code"], practice: "Rebuild the invoice extractor in Langflow and trigger it with an HTTP call.", checkpoint: "The visual flow and the coded pipeline agree on the same 10 invoices." },
+      { title: "Deploy, measure and certify", weeks: "Weeks 9–10", learn: ["langgraph.json, the LangGraph CLI (`langgraph dev`) and LangSmith Deployment", "Cost, latency and error budgets for automations", "Finish the LangChain Academy courses on LangGraph, ambient agents and LangSmith", "Write the case study: hours saved, accuracy and approval rate"], practice: "Ship one end-to-end automation with approval, schedules, tracing and alerts, and record a demo.", checkpoint: "Academy courses complete and a case study with real numbers you can show in an interview." },
+    ],
+    examTips: ["Lead every automation story with the business number it moved: hours saved a week, error rate, turnaround time.", "Cron schedules run in UTC unless you set a timezone; India is UTC+5:30, so 8 AM IST is 02:30 UTC.", "Show the LangSmith trace of one failure you caught and fixed; it proves you can run automations, not only build them."],
   },
 ];
 

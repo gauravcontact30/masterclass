@@ -47,3 +47,20 @@ test("the selected hour's card switches between page views, visitors, signed-in 
   fireEvent.click(detail.getByRole("tab", { name: /Routes visited/ }));
   expect(detail.getByText("No routes visited in this hour yet.")).toBeInTheDocument();
 });
+
+test("visit paths show eight visitors a page", async () => {
+  // Eleven visitors in the 11:00 IST hour (05:30–06:30 UTC).
+  const visits = Array.from({ length: 11 }, (_, n) => ({ created_at: `2026-10-19T06:${String(n + 10).padStart(2, "0")}:00Z`, visitor_id: `v${n}`, session_id: "s", user_id: null, path: "/" }));
+  global.fetch = jest.fn(async (url: RequestInfo | URL) => {
+    const date = new URL(String(url), "https://example.com").searchParams.get("date")!;
+    return { ok: true, json: async () => ({ ...activityHours(visits, date), generatedAt: new Date().toISOString(), capped: false }) } as Response;
+  });
+  await act(async () => { render(<SuperAdminHourly />); });
+  const detail = within(screen.getByRole("region", { name: "Selected hour details" }));
+  const paths = () => detail.getAllByText(/^(New|Returning) visitor$/);
+  expect(paths()).toHaveLength(8);
+  expect(detail.getByText("Showing 1–8 of 11")).toBeInTheDocument();
+  fireEvent.click(detail.getByRole("button", { name: "Next page" }));
+  expect(paths()).toHaveLength(3);
+  expect(detail.getByText("Showing 9–11 of 11")).toBeInTheDocument();
+});

@@ -91,11 +91,9 @@
 .news .headlines h5 { display: flex; align-items: center; gap: 6px; margin: 0 0 12px; font-size: 12.5px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--nw-graphite); }
 .headlines ol { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: 10px; margin: 0; padding: 0; list-style: none; }
 .headlines li { display: flex; flex-direction: column; gap: 5px; padding: 12px 14px; border-radius: 10px; background: #fff; border: 1px solid var(--nw-line, #ece9df); }
-.headlines li > a, .headlines li > span { font-size: 14.5px; font-weight: 650; line-height: 1.35; color: var(--nw-graphite); text-decoration: none; }
-.headlines li > a:hover { color: var(--nw-clay-deep); text-decoration: underline; text-underline-offset: 3px; }
+.headlines li > span { font-size: 14.5px; font-weight: 650; line-height: 1.35; color: var(--nw-graphite); text-decoration: none; }
 .news .headlines p { margin: 0; font-size: 13px; line-height: 1.5; color: var(--nw-text); }
 .headlines small { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--nw-muted); }
-.headlines small a { color: inherit; font-weight: 600; }
 .headlines small .logo { width: 16px; height: 16px; }
 .news .headlines .headlineConcept { display: flex; gap: 6px; margin-top: auto; padding-top: 6px; font-size: 12.5px; color: var(--nw-muted); }
 .headlineConcept svg { flex: none; margin-top: 2px; color: var(--nw-clay); }
@@ -114,10 +112,9 @@
 .topics li { padding: 3px 10px; border-radius: 999px; background: color-mix(in srgb, var(--cover-ink, #000) 10%, transparent); font-size: 12.5px; font-weight: 500; }
 
 .body { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
-/* When the cover is the taller side, the lead story stretches so both panels end level. */
-.body > .lead, .body > .questions, .body > .empty { flex: 1 0 auto; }
+/* Cards keep their own height; the column's closing <Fit> takes up whatever room is left, so nothing stretches empty. */
+.body > .lead, .body > .questions, .body > .empty { flex: none; }
 .lead { display: flex; flex-direction: column; }
-.lead .read { margin-top: auto; padding-top: 14px; align-self: flex-start; }
 .byline { display: flex; align-items: center; gap: 8px; min-width: 0; font-size: 13px; color: var(--nw-muted); }
 .source { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .byline time { flex: none; white-space: nowrap; }
@@ -131,15 +128,11 @@
 
 .lead { padding: clamp(20px, 2.2vw, 30px); border: 1px solid color-mix(in srgb, var(--cover-ink, #000) 14%, transparent); border-radius: 14px; background: var(--cover, #fff); }
 .news .lead h4 { margin: 12px 0 0; font-weight: 700; font-size: clamp(20px, 1.8vw, 26px); line-height: 1.2; letter-spacing: -.01em; }
-.lead h4 a, .more a { color: var(--nw-graphite); text-decoration: none; }
-.lead h4 a:hover, .more a:hover { color: var(--nw-clay-deep); text-decoration: underline; text-underline-offset: 3px; }
 .news .lead p { margin: 10px 0 0; font-size: 16px; line-height: 1.55; color: var(--nw-text); text-wrap: pretty; }
-.read { display: inline-flex; align-items: center; gap: 4px; font-size: 14px; font-weight: 600; color: var(--nw-clay-deep); text-decoration: none; }
-.read:hover { text-decoration: underline; text-underline-offset: 3px; }
 
 .more { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); gap: 12px; margin: 0; padding: 0; list-style: none; }
 .more li { display: flex; flex-direction: column; gap: 8px; padding: 16px; border: 1px solid color-mix(in srgb, var(--cover-ink, #000) 14%, transparent); border-radius: 12px; background: var(--cover, #fff); }
-.more a { display: inline; font-weight: 600; font-size: 15.5px; line-height: 1.3; }
+.storyTitle { display: inline; font-weight: 600; font-size: 15.5px; line-height: 1.3; color: var(--nw-graphite); }
 .news .more p { margin: 0; font-size: 14px; line-height: 1.5; color: var(--nw-text); }
 .more .points { display: grid; gap: 4px; margin: 0; padding-left: 18px; font-size: 13px; line-height: 1.45; color: var(--nw-text); }
 .more .points li::marker { color: var(--cover-ink, var(--nw-clay)); }
@@ -154,14 +147,11 @@
 .news .practice p { margin: 3px 0 0; font-size: 13px; line-height: 1.45; color: var(--nw-text); }
 
 .questions { display: flex; flex-direction: column; gap: 10px; margin: 0; padding: 0; list-style: none; }
-.questions > li { flex: 1 0 auto; }
 .questions > li { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 14px; padding: 16px 18px; border: 1px solid color-mix(in srgb, var(--cover-ink, #000) 14%, transparent); border-radius: 12px; background: var(--cover, #fff); }
 .qNumber { font-variant-numeric: tabular-nums; font-weight: 700; font-size: 15px; color: var(--cover-ink, var(--nw-clay)); }
 .news .questions h4 { margin: 0; font-weight: 700; font-size: 16.5px; line-height: 1.35; }
 .news .questions p { margin: 6px 0 0; font-size: 14.5px; line-height: 1.5; color: var(--nw-text); }
 .qMeta { display: flex; align-items: center; gap: 10px 16px; flex-wrap: wrap; margin-top: 10px; font-size: 13px; color: var(--nw-muted); }
-.qMeta a { display: inline-flex; align-items: center; gap: 3px; color: var(--nw-muted); text-decoration: none; }
-.qMeta a:hover { color: var(--nw-clay-deep); text-decoration: underline; }
 .stars { display: inline-flex; gap: 1px; color: var(--nw-rule); }
 .stars svg[data-on="true"] { color: #d9a03f; fill: currentColor; }
 .companies { display: inline-flex; align-items: center; gap: 6px; flex-wrap: wrap; }
@@ -189,6 +179,18 @@
 .more .why, .more .concept { margin-top: 2px; font-size: 13px; padding: 8px 10px; }
 .more .concept { margin-top: auto; }
 
+/* Study material that fills the rest of a column (Fit in landing-news.tsx): sized by the other column, never by its
+   own items, which it shows only while they fit whole and then stretches a little so the column ends level. */
+.fit { display: flex; flex-direction: column; flex: 1 1 0; min-height: 0; overflow: hidden; contain: size; }
+.fit > dl, .fit > ol { display: flex; flex: 1; flex-direction: column; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.fit:not([data-measuring]) > dl > *, .fit:not([data-measuring]) > ol > * { flex: 1 0 auto; }
+.quick { padding: 18px; border: 1px solid var(--nw-line, #e8e6dc); border-radius: 14px; background: var(--nw-ivory, #faf9f5); }
+.news .quick h5 { display: flex; align-items: center; gap: 6px; margin: 0 0 12px; font-size: 12.5px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--nw-graphite); }
+.quick h5 svg { color: var(--nw-clay); }
+.quick li { padding: 11px 14px; border: 1px solid var(--nw-line, #ece9df); border-left: 3px solid var(--nw-clay); border-radius: 4px 10px 10px 4px; background: #fff; }
+.quick b { display: block; font-size: 14px; font-weight: 650; line-height: 1.35; color: var(--nw-graphite); }
+.news .quick p { margin: 4px 0 0; font-size: 13px; line-height: 1.5; color: var(--nw-text); }
+
 .loading { display: grid; align-content: start; gap: 12px; flex: 1 0 auto; padding: 22px; border-radius: 14px; background: var(--nw-ivory); border: 1px solid var(--nw-rule); font-size: 15px; color: var(--nw-muted); }
 .loading span { height: 14px; border-radius: 6px; background: linear-gradient(90deg, var(--nw-rule), var(--nw-paper), var(--nw-rule)); background-size: 200% 100%; animation: shimmer 1.4s linear infinite; }
 .loading span:nth-child(2) { width: 85%; } .loading span:nth-child(3) { width: 60%; }
@@ -198,6 +200,7 @@
   .inner { width: calc(100% - 32px); }
   .slide { grid-template-columns: minmax(0, 1fr); }
   .index ol { display: none; }
+  .fit { flex: none; overflow: visible; contain: none; }
   .index h5 { display: none; }
 }
 @media (prefers-reduced-motion: reduce) {
@@ -205,3 +208,7 @@
   .progress span { animation: none; transform: scaleX(1); opacity: .35; }
   .loading span { animation: none; }
 }
+
+/* Listen: at the top right of the lead story and at the end of each interview question's meta row. */
+.leadHead { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.askListen { margin-left: auto; }

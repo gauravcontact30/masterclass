@@ -131,7 +131,7 @@
 .track::-webkit-scrollbar { display: none; }
 
 /* One slide: brief on the left, diagram on the right, step pills across the bottom. */
-.slide { scroll-snap-align: start; min-width: 0; display: grid; grid-template-columns: minmax(260px, 330px) minmax(0, 1fr); grid-template-areas: "brief board" "steps steps" "prep prep"; gap: 18px 22px; padding: 2px; }
+.slide { scroll-snap-align: start; min-width: 0; display: grid; grid-template-columns: minmax(260px, 330px) minmax(0, 1fr); grid-template-areas: "brief board" "steps steps" "prep prep"; align-content: start; gap: 18px 22px; padding: 2px; }
 .slide[data-group="System Design"] { --tint: #e3eefc; --deep: #22508f; }
 .slide[data-group="LangChain"] { --tint: #dff3e8; --deep: #1d6a45; }
 .slide[data-group="LangGraph"] { --tint: #ece6fb; --deep: #4f3a9c; }
@@ -192,7 +192,8 @@
 .legend li::before { content: ""; width: 4px; height: 12px; border-radius: 2px; background: var(--accent); }
 
 /* Step-by-step callout pills: a different light tone per step, numbered 01, 02 … to match the diagram's badges. */
-.steps { grid-area: steps; display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: 8px 10px; margin: 0; padding: 0; list-style: none; }
+/* Rows pack to their content: every slide is as tall as the tallest in the track, and spare height must not stretch the cards. */
+.steps { grid-area: steps; display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); align-content: start; gap: 8px 10px; margin: 0; padding: 0; list-style: none; }
 .steps li { display: flex; align-items: flex-start; gap: 10px; padding: 8px 14px 8px 8px; border: 1px solid var(--edge); border-radius: 16px; background: var(--wash); font-size: 14px; line-height: 1.45; color: var(--nb-text); }
 .steps b { flex: none; display: grid; place-items: center; min-width: 30px; height: 24px; padding-inline: 6px; border-radius: 999px; background: var(--chip); color: var(--chip-ink); font-size: 12px; font-weight: 800; font-variant-numeric: tabular-nums; letter-spacing: .02em; }
 .steps span { padding-top: 2px; }

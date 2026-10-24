@@ -27,8 +27,8 @@ test("lists each visitor once, with exact arrival and leaving times", async () =
   expect(screen.getAllByText("learner@example.test")).toHaveLength(1);
   expect(screen.getByText(/1m 3\ds · reading/)).toBeVisible();
   expect(screen.getByText(/2 page views · 2 pages/)).toBeVisible();
-  // Total = 600 s engaged + the ~90 s of the page still open.
-  expect(screen.getByText(/11m 3\ds on site · 2 sessions/)).toBeVisible();
+  // Total = the 125 s beacon on /pricing + the ~90 s of the page still open, from the same rows the list shows.
+  expect(screen.getByText(/3m 3\ds engaged · 1 session/)).toBeVisible();
   expect(screen.getByText(clock(arrived))).toBeVisible();
   expect(screen.getByText("On the site now", { selector: "b" })).toBeVisible();
   // Each row has its own Date column, separate from the Arrived and Left times.
@@ -50,4 +50,33 @@ test("the stream reads its own five-day feed, so older visitors still show", asy
   expect(await screen.findByText("Returning visitor")).toBeVisible();
   expect(screen.getByText(/1 visitor · 1 views in the last 5 days/)).toBeVisible();
   expect(screen.getByText(dayOf(old))).toBeVisible();
+});
+
+test("heartbeats decide who is on the site, the filters narrow the list, and refreshes fetch only what is new", async () => {
+  jest.useFakeTimers({ now: Date.now(), doNotFake: ["queueMicrotask", "nextTick"] });
+  const live = { generatedAt: ago(0), totals: { liveNow: 2, liveSignedIn: 0, pageViews: 2, visitors: 2, bounceRate: null, avgSessionSeconds: null }, hours: [], recent: [], people: [] };
+  const stream = {
+    days: 5, generatedAt: ago(0), emails: { "user-7": "reader@example.test" },
+    visits: [
+      { ...base, id: 1, visitor_id: "visitor-7", user_id: "user-7", created_at: ago(200_000), event: "page_view", session_id: "s-7", path: "/learn/react" },
+      { ...base, id: 2, visitor_id: "visitor-8", created_at: ago(900_000), event: "page_view", new_visitor: true, session_id: "s-8", path: "/pricing" },
+    ],
+    // The reader's page sent a heartbeat 20 s ago; the other visitor's tab went quiet ten minutes ago without a beacon.
+    presence: [{ session_id: "s-7", path: "/learn/react", started_at: ago(200_000), seen_at: ago(20_000) }, { session_id: "s-8", path: "/pricing", started_at: ago(900_000), seen_at: ago(600_000) }],
+  };
+  const urls: string[] = [];
+  global.fetch = jest.fn(async (url: RequestInfo | URL) => { urls.push(String(url)); return { ok: true, json: async () => String(url).includes("/activity/stream") ? stream : live }; }) as jest.Mock;
+  render(<OverviewLive snapshot={null} onRefreshSnapshot={() => {}} />);
+  expect(await screen.findByText("reader@example.test")).toBeVisible();
+  expect(screen.getByText(/3m 2\ds · reading/)).toBeVisible();
+  // The quiet tab is timed to its last heartbeat (5 minutes) and shows as left, not as reading.
+  expect(screen.getByText("5m 0s")).toBeVisible();
+  expect(screen.getAllByText("On the site now", { selector: "b" })).toHaveLength(1);
+  expect(screen.getByText("New visitor")).toBeVisible();
+  screen.getByRole("button", { name: /On the site now 1/ }).click();
+  expect(await screen.findByText("reader@example.test")).toBeVisible();
+  expect(screen.queryByText("New visitor")).not.toBeInTheDocument();
+  await jest.advanceTimersByTimeAsync(15_000);
+  expect(urls.filter(url => url.includes("/activity/stream?since="))).toHaveLength(1);
+  jest.useRealTimers();
 });

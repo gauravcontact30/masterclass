@@ -24,8 +24,6 @@ const browserScenarios: Record<string, string> = {
   rtk: `await expect(page.getByText('Count: 0')).toBeVisible();
   await page.getByRole('button', { name: 'Increment' }).click();
   await expect(page.getByText('Count: 1')).toBeVisible();`,
-  tailwind: `await page.getByRole('button', { name: 'Mark complete' }).click();
-  await expect(page.getByRole('button', { name: 'Completed' })).toBeVisible();`,
   tanstack: `await expect(page.getByRole('listitem')).toHaveCount(2);
   await page.route('**/lessons.json', route => route.fulfill({ status: 503, body: 'Unavailable' }));
   await page.reload();
@@ -212,7 +210,6 @@ const cliScenarios: Record<string, { executable: string; args: string[]; expecte
   supabase: { executable: "node", args: ["--env-file=.env", "src/main.js"], expected: "Row level security" },
   upstash: { executable: "node", args: ["--env-file=.env", "src/main.js"], expected: "HTTP Redis" },
   neon: { executable: "node", args: ["--env-file=.env", "src/main.js"], expected: "Postgres over HTTP" },
-  mongoose: { executable: "node", args: ["--env-file=.env", "src/main.js"], expected: "Schema validation" },
   zod: { executable: "node", args: ["src/main.js"], expected: "learner@example.com" },
   vitest: { executable: "node", args: ["node_modules/vitest/vitest.mjs", "run"], expected: "passed" },
   jest: { executable: "node", args: ["node_modules/jest/bin/jest.js", "--runInBand"], expected: "PASS" },

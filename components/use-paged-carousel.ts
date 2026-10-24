@@ -15,8 +15,10 @@ function subscribeMotion(update: () => void) {
 /**
  * A scroll-snap track that turns one screen (one track width) at a time, with autoplay that waits `intervalMs`
  * per screen, pauses while held (hover or focus), loops at the end and starts paused for reduced motion.
+ * `fitHeight` makes the track as tall as the screen on show instead of its tallest slide, so a short slide leaves
+ * no blank band below it; the height follows the slide as its content loads or wraps.
  */
-export function usePagedCarousel<T extends HTMLElement>(itemCount: number, perScreen: number, intervalMs: number) {
+export function usePagedCarousel<T extends HTMLElement>(itemCount: number, perScreen: number, intervalMs: number, { fitHeight = false }: { fitHeight?: boolean } = {}) {
   const track = useRef<T>(null);
   const visible = useVisiblePlayback(track);
   const nearViewport = useNearViewport(track);
@@ -47,6 +49,27 @@ export function usePagedCarousel<T extends HTMLElement>(itemCount: number, perSc
       el.removeEventListener("scroll", schedule); window.removeEventListener("resize", schedule);
     };
   }, [measure]);
+  useEffect(() => {
+    const el = track.current; if (!fitHeight || !el || typeof ResizeObserver === "undefined") return;
+    // Slides keep their own height (not the row's), the track clips the rest of the row to the screen on show.
+    el.style.alignItems = "start"; el.style.overflowY = "hidden";
+    el.style.transition = reduced ? "" : "height .35s ease";
+    let frame = 0;
+    const fit = () => {
+      if (!frame) frame = requestAnimationFrame(() => {
+        frame = 0;
+        const shown = Array.from(el.children).slice(page * perScreen, page * perScreen + perScreen) as HTMLElement[];
+        if (shown.length) el.style.height = `${Math.max(...shown.map(slide => slide.offsetHeight))}px`;
+      });
+    };
+    // Every slide is watched (content loads in, text wraps), and slides added after hydration are picked up too.
+    const resize = new ResizeObserver(fit);
+    const watch = () => { resize.disconnect(); Array.from(el.children).forEach(slide => resize.observe(slide)); fit(); };
+    const added = new MutationObserver(watch);
+    added.observe(el, { childList: true });
+    watch();
+    return () => { cancelAnimationFrame(frame); resize.disconnect(); added.disconnect(); };
+  }, [fitHeight, page, perScreen, reduced, nearViewport]);
   useEffect(() => { if (!playing || held || !visible || reduced) return; const timer = setTimeout(() => goTo(page + 1), intervalMs); return () => clearTimeout(timer); }, [playing, held, visible, reduced, page, goTo, intervalMs]);
 
   const holdProps = { onMouseEnter: () => setHeld(true), onMouseLeave: () => setHeld(false), onFocus: () => setHeld(true), onBlur: () => setHeld(false) };

@@ -69,7 +69,7 @@ async function Entry({ params }: Props) {
       <div className={styles.answer}><p><InlineText text={item.answer} /></p>{item.followUp && <p><strong>Follow-up:</strong> <InlineText text={item.followUp} /></p>}</div>
     </details>)}</section>}
     {card.related.length > 0 && <section className={styles.section} aria-labelledby="related"><h2 id="related">Related</h2><ul className={styles.chips}>{card.related.map(name => <li key={name}><code>{name}</code></li>)}</ul></section>}
-    <p className={styles.meta}>Source: <a href={card.sourceUrl} rel="noopener">{card.sourceTitle || card.sourceUrl}</a>. Checked {card.checkedAt.slice(0, 10)}.</p>
+    <p className={styles.meta}>Source: {card.sourceTitle || card.sourceUrl}. Checked {card.checkedAt.slice(0, 10)}.</p>
     <nav className={styles.next} aria-label="Back"><Link href={`/api-reference/${pkg.id}`}>← All {pkg.name} identifiers</Link></nav>
   </>;
 }

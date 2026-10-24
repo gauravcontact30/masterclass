@@ -64,9 +64,7 @@
 .officialDocs li { --chip: #eaf2fd; --chip-edge: #2a5d9f; }
 .officialDocs li[data-tint="1"] { --chip: #e9f6ee; --chip-edge: #2f7a4f; }
 .officialDocs li[data-tint="2"] { --chip: #f1ecfb; --chip-edge: #5b45a8; }
-.officialDocs a { display: grid; gap: 4px; height: 100%; padding: 12px 14px; border: 1px solid var(--nb-rule); border-top: 3px solid var(--chip-edge); border-radius: 12px; background: linear-gradient(180deg, var(--chip), #fff 60%); color: inherit; text-decoration: none; transition: transform .15s ease, box-shadow .15s ease; }
-.officialDocs a:hover { transform: translateY(-2px); box-shadow: 0 14px 26px -20px rgba(20, 20, 19, .5); }
-.officialDocs a:focus-visible { outline: 3px solid var(--chip-edge); outline-offset: 2px; }
+.docCard { display: grid; gap: 4px; height: 100%; padding: 12px 14px; border: 1px solid var(--nb-rule); border-top: 3px solid var(--chip-edge); border-radius: 12px; background: linear-gradient(180deg, var(--chip), #fff 60%); color: inherit; text-decoration: none; transition: transform .15s ease, box-shadow .15s ease; }
 .officialDocs b { font-size: 14px; color: var(--chip-edge); }
 .docTitle { font-size: 13.5px; font-weight: 650; color: var(--nb-graphite); }
 .docText { font-size: 13px; line-height: 1.5; color: var(--nb-text); }

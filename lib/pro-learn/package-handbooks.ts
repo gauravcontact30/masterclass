@@ -118,7 +118,6 @@ export const NODE_PACKAGES: PackageTopic[] = [
   t("typeorm", "Data & ORM", "Decorator-based ORM with entities, repositories and migrations. Nest's traditional default."),
   t("sequelize", "Data & ORM", "A mature promise-based ORM for Postgres, MySQL, SQLite and SQL Server."),
   t("knex", "Data & ORM", "A query builder rather than an ORM, plus a migration and seeding runner."),
-  t("mongoose", "Data & ORM", "Schemas, validation, middleware and population over MongoDB."),
   t("pg", "Data & ORM", "The Postgres driver: connection pooling, cursors, `LISTEN`/`NOTIFY` and COPY streams."),
   t("mysql2", "Data & ORM", "The MySQL driver with prepared statements and a promise interface."),
   t("better-sqlite3", "Data & ORM", "Synchronous SQLite bindings, faster than the async alternatives for embedded workloads."),
@@ -262,7 +261,6 @@ export const NEST_PACKAGES: PackageTopic[] = [
 
   // Data
   t("@nestjs/typeorm", "Data & persistence", "`forRoot`/`forFeature` wiring, `@InjectRepository` and transaction support."),
-  t("@nestjs/mongoose", "Data & persistence", "Schema definitions via `@Schema`/`@Prop` and `@InjectModel` for repositories."),
   t("@nestjs/sequelize", "Data & persistence", "Sequelize models registered as providers with `@InjectModel`."),
   t("nestjs-prisma", "Data & persistence", "A PrismaService wrapped as an injectable module with lifecycle hooks."),
   t("@Transaction patterns", "Data & persistence", "Unit-of-work via a request-scoped transaction provider or an interceptor around the handler."),

@@ -15,7 +15,7 @@ export const studyGoalSchema = z.object({
     .min(3, "Topic name must be at least 3 characters")
     .max(80, "Topic name must be under 80 characters"),
   targetCategory: z.enum(
-    ["technology", "cbse", "icse", "ssc", "banking", "railways", "defence", "upsc", "general"] as const
+    ["technology", "ai", "cloud", "system-design", "interview", "certification", "general"] as const
   ),
   dailyMinutes: z.coerce
     .number()
@@ -142,13 +142,11 @@ export function ConformStudyGoalForm({ defaultCategory = "technology" }: { defau
               className={styles.selectInput}
             >
               <option value="technology">{hi ? "तकनीक एवं इंजीनियरिंग" : "Technology & Engineering"}</option>
-              <option value="cbse">CBSE (Classes 6-12)</option>
-              <option value="icse">ICSE & ISC</option>
-              <option value="ssc">SSC CGL / CHSL</option>
-              <option value="banking">{hi ? "बैंकिंग एवं बीमा" : "Banking & Insurance"}</option>
-              <option value="railways">{hi ? "रेलवे भर्ती बोर्ड" : "Railways (RRB)"}</option>
-              <option value="defence">{hi ? "रक्षा सेवाएं (NDA/CDS)" : "Defence (NDA/CDS)"}</option>
-              <option value="upsc">UPSC Civil Services</option>
+              <option value="ai">{hi ? "AI और एजेंट" : "AI & agents"}</option>
+              <option value="cloud">{hi ? "क्लाउड और DevOps" : "Cloud & DevOps"}</option>
+              <option value="system-design">{hi ? "सिस्टम डिज़ाइन" : "System Design"}</option>
+              <option value="interview">{hi ? "इंटरव्यू की तैयारी" : "Interview preparation"}</option>
+              <option value="certification">{hi ? "सर्टिफ़िकेशन" : "Certifications"}</option>
             </select>
             {fields.targetCategory.errors && (
               <p id={fields.targetCategory.errorId} className={styles.fieldError}>

@@ -40,15 +40,10 @@ test('specific technologies never inherit their parent technology links', () => 
   expect(learningLinksFor('Maths')).toEqual([]);
 });
 
-test('thumbnail links open resources directly with safe external-link attributes', () => {
+test('thumbnails credit their source without linking to external websites', () => {
   render(<LearningResources technology="React Testing Library" />);
   const shelf = screen.getByRole('region', { name: 'Visual resources for React Testing Library' });
   expect(within(shelf).getByText('3 resources')).toBeInTheDocument();
-  const thumbnails = within(shelf).getAllByRole('link', { name: /^Visit / });
-  expect(thumbnails).toHaveLength(2);
-  for (const link of thumbnails) {
-    expect(link).toHaveAttribute('target', '_blank');
-    expect(link).toHaveAttribute('rel', 'noopener noreferrer');
-    expect(link.querySelector('img')).not.toBeNull();
-  }
+  expect(within(shelf).queryAllByRole('link')).toHaveLength(0);
+  expect(shelf.querySelectorAll('img').length).toBeGreaterThanOrEqual(2);
 });

@@ -60,7 +60,7 @@ export const SURFACES: (Option & { value: LearningSurface; help: string })[] = [
 /** A group of pages in the page picker, in the same order as the Learning Dashboard sidebar. */
 export type PageGroup = "learning" | "professional" | "exams" | "account" | "custom";
 export const PAGE_GROUPS: { value: PageGroup; label: string }[] = [
-  { value: "learning", label: "Learning" }, { value: "professional", label: "Professional Learn" }, { value: "exams", label: "Exam preparation" },
+  { value: "learning", label: "Learning" }, { value: "professional", label: "Professional Learn" }, { value: "exams", label: "Preparation" },
   { value: "account", label: "Account" }, { value: "custom", label: "Your pages" },
 ];
 /** A page an upload can go on; `keywords` are extra words the page picker's search matches. */
@@ -75,19 +75,14 @@ export const DASHBOARD_PAGES: PageOption[] = [
   page("learning", "dashboard", "Dashboard (home)", "home start overview"), page("learning", "library", "Library", "books catalogue"),
   page("learning", "search", "Search (AI)", "ai ask find"), page("learning", "step-by-step", "On The Go", "step by step guide"),
   page("learning", "notes", "Notes", "topic cards"), page("learning", "vocabulary", "Vocabulary", "words english hindi"),
-  page("learning", "coffee-and-code", "Coffee & Code", "blog articles posts"), page("learning", "classroom", "Class Room", "class teacher"),
+  page("learning", "coffee-and-code", "Coffee & Code", "blog articles posts"),
   page("learning", "bookmark", "Bookmark", "saved favourites"),
   page("professional", "official-docs", "Official Docs", "documentation reference"), page("professional", "techy", "Techy", "technology"),
   page("professional", "api-docs", "API Docs", "reference endpoints"), page("professional", "workflow", "Workflow", "agents langchain"),
   page("professional", "certifications", "Certifications", "exam certificate aws roadmap"),
   page("professional", "lessons", "Lessons", "course"), page("professional", "quiz", "Quiz", "test practice"),
   page("professional", "interview", "Interview", "questions answers"),
-  page("exams", "civil-services", "Civil Services", "upsc ias govt"), page("exams", "ssc", "SSC & Recruitment", "cgl govt"),
-  page("exams", "defence", "Defence & Security", "nda cds army govt"), page("exams", "banking", "Banking", "ibps sbi po govt"),
-  page("exams", "railways", "Railways", "rrb ntpc govt"), page("exams", "teaching", "Teaching", "ctet tet govt"),
-  page("exams", "state", "State Exams", "psc govt"), page("exams", "engineering", "Engineering · JEE / IIT", "entrance"),
-  page("exams", "medical", "Medical · NEET", "entrance"), page("exams", "cbse", "CBSE", "board school"), page("exams", "ncert", "NCERT", "board school"),
-  page("exams", "icse", "ICSE", "board school"), page("exams", "isc", "ISC", "board school"), page("exams", "languages", "IELTS & Vocabulary", "english language"),
+  page("exams", "languages", "IELTS & Vocabulary", "english language"),
   page("exams", "technology", "Technology & Interviews", "coding"), page("exams", "system-design", "System Design", "architecture"),
   page("account", "plans", "Plans", "membership billing subscribe"), page("account", "settings", "Settings", "connections profile"),
 ];

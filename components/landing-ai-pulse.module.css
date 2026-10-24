@@ -81,8 +81,7 @@
 .industries dd li { position: relative; padding-left: 13px; font-size: 13px; line-height: 1.4; color: var(--nb-text); text-align: left; }
 .industries dd li::before { content: ""; position: absolute; left: 1px; top: .55em; width: 5px; height: 5px; border-radius: 50%; background: var(--iedge); opacity: .7; }
 
-.source { margin-top: auto; display: inline-flex; align-items: center; gap: 6px; padding-top: 12px; border-top: 1px dashed color-mix(in srgb, var(--edge) 30%, transparent); font-size: 14px; font-weight: 600; color: var(--edge); text-decoration: none; }
-.source:hover { text-decoration: underline; text-underline-offset: 3px; }
+.source { margin: auto 0 0; display: inline-flex; align-items: center; gap: 6px; padding-top: 12px; border-top: 1px dashed color-mix(in srgb, var(--edge) 30%, transparent); font-size: 14px; font-weight: 600; color: var(--edge); text-decoration: none; }
 
 .dots { display: flex; justify-content: center; gap: 8px; margin-top: 28px; }
 /* A 24px tall tap area (transparent borders, background clipped to the padding box) around a 6px bar. */

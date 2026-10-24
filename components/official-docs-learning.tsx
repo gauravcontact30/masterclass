@@ -1,11 +1,11 @@
 import { AccordionSummary } from "@/components/ui/accordion-chevron";
-﻿import { ExternalLink } from "lucide-react";
 import type { OfficialTechnologyDoc } from "@/lib/official-docs-data";
 import { DOCS_PROJECTS } from "@/lib/official-docs-projects";
 import { getDocsCodeExamples } from "@/lib/official-docs-examples";
 import { CodeFiles } from "./code-files";
 import { OfficialDocsTerminal } from "./official-docs-terminal";
 import styles from "./official-docs-cards.module.css";
+import { ListenButton } from "./listen-button";
 
 export const LEARNING_SECTIONS = [
   ["key", "Key information"],
@@ -51,9 +51,12 @@ export function OfficialDocsLearning({ doc, idPrefix }: { doc: OfficialTechnolog
   const sections = LEARNING_SECTIONS.filter(([id]) => id !== "learning" || learningContents.length > 0);
   return <article className={styles.learning} aria-label={`${doc.title} learning notes`}>
     <header className={styles.header}>
-      <h2>{doc.title}</h2>
+      <div className={styles.titleRow}><h2>{doc.title}</h2>
+        <ListenButton id={`docs:${prefix}`} title={`${doc.title} learning notes`} text={() => [doc.title, doc.tagline, `Key information. ${doc.keyPoints.slice(0, 3).join(". ")}`,
+          `Key concepts. ${concepts.map(concept => `${concept.title}: ${concept.description}`).join(". ")}`,
+          ...learningContents.map(({ title, point }) => `${title}. ${point}`),
+          `How it works. ${doc.architecturePoints.slice(0, 2).join(" ")}`, `Recommended practice. ${doc.bestPractices[0] ?? ""}`, `Common pitfall. ${doc.commonGotchas[0] ?? ""}`].join(". ")} /></div>
       <p>{doc.tagline}</p>
-      <a href={doc.officialUrl} target="_blank" rel="noopener noreferrer">Official documentation <ExternalLink size={13} aria-hidden="true" /></a>
     </header>
 
     <nav className={styles.jumpLinks} aria-label={`${doc.title} learning sections`}>

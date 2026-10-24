@@ -1,4 +1,5 @@
 import { AGENTIC_PREP } from "./agentic";
+import { EXTRA_PREP } from "./extra";
 import { SYSTEM_DESIGN_PREP } from "./system-design";
 import type { WorkflowPrep } from "./types";
 
@@ -10,4 +11,4 @@ export { arrangeOptions, byStars } from "@/lib/interview-questions";
  * Only components/landing-workflow-prep.tsx imports this, through a lazy chunk, so the landing page's
  * first load does not carry it.
  */
-export const WORKFLOW_PREP: Record<string, WorkflowPrep> = { ...SYSTEM_DESIGN_PREP, ...AGENTIC_PREP };
+export const WORKFLOW_PREP: Record<string, WorkflowPrep> = { ...SYSTEM_DESIGN_PREP, ...AGENTIC_PREP, ...EXTRA_PREP };

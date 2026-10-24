@@ -1,7 +1,7 @@
 "use client";
 import { useMemo, useState, type ReactNode } from "react";
 import dynamic from "next/dynamic";
-import { Boxes, FlaskConical, GitBranch, Layers, Network, Workflow as WorkflowIcon, type LucideIcon } from "lucide-react";
+import { Boxes, Building2, FlaskConical, GitBranch, Layers, Network, Workflow as WorkflowIcon, Zap, type LucideIcon } from "lucide-react";
 import { WORKFLOW_HEIGHT, WORKFLOW_WIDTH, WORKFLOWS, type Workflow, type WorkflowNodeKind } from "@/lib/landing-workflows";
 import { WORKFLOW_LESSONS } from "@/lib/workflow-learning";
 import { STEP_TONES, WorkflowDiagram, two } from "./workflow-diagram";
@@ -30,8 +30,8 @@ const LANDING_QUESTIONS = 3;
 
 type Group = Workflow["group"];
 type Text = (en: string, hindi: string) => string;
-const GROUPS: Group[] = ["System Design", "LangChain", "LangGraph", "LangFlow", "LangSmith"];
-const GROUP_ICON: Record<Group, LucideIcon> = { "System Design": Boxes, LangChain: Network, LangGraph: GitBranch, LangFlow: WorkflowIcon, LangSmith: FlaskConical };
+const GROUPS: Group[] = ["System Design", "LangChain", "LangGraph", "LangFlow", "LangSmith", "n8n", "Companies"];
+const GROUP_ICON: Record<Group, LucideIcon> = { "System Design": Boxes, LangChain: Network, LangGraph: GitBranch, LangFlow: WorkflowIcon, LangSmith: FlaskConical, n8n: Zap, Companies: Building2 };
 const KIND_LABEL: Record<WorkflowNodeKind, string> = { actor: "Person / client", service: "Service", store: "Data store", queue: "Queue", llm: "Model / agent", tool: "Tool / step", decision: "Decision" };
 
 /**
@@ -47,15 +47,18 @@ const KIND_LABEL: Record<WorkflowNodeKind, string> = { actor: "Person / client",
 export function LandingWorkflows({ expanded = false, preview = false }: Readonly<{ expanded?: boolean; preview?: boolean }>) {
   const { language } = useLanguage(); const hi = language === "hi"; const text: Text = (en, hindi) => hi ? hindi : en;
   const [group, setGroup] = useState<string>("All");
-  const groups = expanded ? [...new Set([...GROUPS, ...WORKFLOW_LESSONS.map(lesson => lesson.group)])] : GROUPS;
+  // The landing preview leaves out the dashboard-only blueprints (the URL shortener and the company slides).
+  const pool = useMemo(() => preview ? WORKFLOWS.filter(workflow => !workflow.dashboardOnly) : WORKFLOWS, [preview]);
+  // A category tab appears only when it has something to show (a blueprint, or on /dashboard a learning path).
+  const groups = expanded ? [...new Set([...GROUPS.filter(option => pool.some(workflow => workflow.group === option) || WORKFLOW_LESSONS.some(lesson => lesson.group === option)), ...WORKFLOW_LESSONS.map(lesson => lesson.group)])] : GROUPS.filter(option => pool.some(workflow => workflow.group === option));
   const lessons = expanded ? WORKFLOW_LESSONS.filter(lesson => group === "All" || lesson.group === group) : [];
   const { overrides, editing } = useContentEditing();
   const section = useContentItem("section:workflows", "section");
   const shown = useMemo(() => {
-    const visible = editing ? WORKFLOWS : WORKFLOWS.filter(workflow => !overrides[workflowKey(workflow)]?.deleted);
+    const visible = editing ? pool : pool.filter(workflow => !overrides[workflowKey(workflow)]?.deleted);
     const all = group === "All" ? visible : visible.filter(workflow => workflow.group === group);
     return preview ? all.slice(0, PREVIEW_COUNT) : all;
-  }, [group, preview, overrides, editing]);
+  }, [group, preview, overrides, editing, pool]);
   const industries = new Set(WORKFLOWS.map(workflow => workflow.industry)).size;
 
   if (section.hidden) return null;
@@ -71,7 +74,7 @@ export function LandingWorkflows({ expanded = false, preview = false }: Readonly
     {/* Remounted per filter so the page count and position start fresh. */}
     <div className={styles.filters} role="group" aria-label={text("Filter workflows", "वर्कफ़्लो छाँटें")}>
       {["All", ...groups].map(option => {
-        const count = (option === "All" ? WORKFLOWS.length : WORKFLOWS.filter(workflow => workflow.group === option).length)
+        const count = (option === "All" ? pool.length : pool.filter(workflow => workflow.group === option).length)
           + (expanded ? WORKFLOW_LESSONS.filter(lesson => option === "All" || lesson.group === option).length : 0);
         const Icon = GROUP_ICON[option as Group] ?? Layers;
         return <button key={option} type="button" aria-pressed={group === option} data-group={option} onClick={() => setGroup(option)}>
@@ -86,7 +89,7 @@ export function LandingWorkflows({ expanded = false, preview = false }: Readonly
 }
 
 function WorkflowCarousel({ workflows, text, preview }: Readonly<{ workflows: Workflow[]; text: Text; preview: boolean }>) {
-  const { track, nearViewport, page, pages, playing, setPlaying, running, goTo, holdProps } = usePagedCarousel<HTMLUListElement>(workflows.length, 1, AUTOPLAY_MS);
+  const { track, nearViewport, page, pages, playing, setPlaying, running, goTo, holdProps } = usePagedCarousel<HTMLUListElement>(workflows.length, 1, AUTOPLAY_MS, { fitHeight: true });
   const current = workflows[page];
   return <>
     <div className={styles.toolbar}>

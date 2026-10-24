@@ -34,7 +34,7 @@ export const API_CATEGORIES: { id: string; label: string; packages: string[] }[]
   { id: "frontend", label: "Frontend & state", packages: ["nextjs", "react", "angular", "tanstack", "zustand", "redux", "t3"] },
   { id: "backend", label: "Backend, APIs & validation", packages: ["express", "fastapi", "graphql", "requests", "httpx", "scrapy", "pydantic", "zod", "conform"] },
   { id: "auth", label: "Auth & security", packages: ["authjs", "clerk", "kinde", "betterauth", "arcjet"] },
-  { id: "data", label: "Databases & storage", packages: ["mongoose", "drizzle", "prisma", "neon", "redis", "upstash"] },
+  { id: "data", label: "Databases & storage", packages: ["drizzle", "prisma", "neon", "redis", "upstash"] },
   { id: "testing", label: "Testing", packages: ["jest", "vitest", "rtl", "playwright", "cypress"] },
   { id: "platform", label: "Cloud, jobs & architecture", packages: ["aws", "devops", "inngest", "systemdesign"] },
 ];

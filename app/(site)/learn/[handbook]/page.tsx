@@ -62,7 +62,7 @@ async function Handbook({ params }: Props) {
         {topic.interview?.map(qa => <details key={qa.question} className={styles.qa}><AccordionSummary><span className={styles.qNumber}>Q</span><span className={styles.qText}><InlineText text={qa.question} /></span></AccordionSummary><div className={styles.answer}><p><InlineText text={qa.answer} /></p></div></details>)}
       </article>)}
     </section>)}
-    {item.sources && item.sources.length > 0 && <section className={styles.section} aria-labelledby="sources"><h2 id="sources">Sources</h2><ul className={styles.prose}>{item.sources.map(source => <li key={source.url}><a href={source.url} rel="noopener">{source.title}</a></li>)}</ul></section>}
+    {item.sources && item.sources.length > 0 && <section className={styles.section} aria-labelledby="sources"><h2 id="sources">Sources</h2><ul className={styles.prose}>{item.sources.map(source => <li key={source.url}>{source.title}</li>)}</ul></section>}
     <nav className={styles.next} aria-label="More handbooks">
       {previous ? <Link href={`/learn/${handbookSlug(previous)}`}>← {handbookName(previous)}</Link> : <span />}
       {next && <Link href={`/learn/${handbookSlug(next)}`}>{handbookName(next)} →</Link>}

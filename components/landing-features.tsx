@@ -58,12 +58,12 @@ const FEATURES: Feature[] = [
   {
     id: "notes-bookmarks", icon: BookMarked, kicker: ["Notes & bookmarks", "नोट्स और बुकमार्क"],
     title: ["Revise from ", "दोहराइए "], emphasis: ["what you already saved.", "जो आपने पहले सहेजा।"],
-    lede: ["Topic notes are short, focused and ranked by how much they matter for interviews and exams. Bookmark anything as you go, and when it is time to revise, everything you saved is waiting in one list.", "विषय नोट्स छोटे, केंद्रित और इंटरव्यू व परीक्षा में उनके महत्व के अनुसार क्रम में हैं। पढ़ते-पढ़ते कुछ भी बुकमार्क करें, और दोहराने के समय आपका सहेजा सब कुछ एक ही सूची में मिलेगा।"],
+    lede: ["Topic notes are short, focused and ranked by how much they matter for interviews and certification exams. Bookmark anything as you go, and when it is time to revise, everything you saved is waiting in one list.", "विषय नोट्स छोटे, केंद्रित और इंटरव्यू व सर्टिफ़िकेशन परीक्षा में उनके महत्व के अनुसार क्रम में हैं। पढ़ते-पढ़ते कुछ भी बुकमार्क करें, और दोहराने के समय आपका सहेजा सब कुछ एक ही सूची में मिलेगा।"],
     details: [
       { icon: BookMarked, title: ["Focused topic notes", "केंद्रित विषय नोट्स"], body: ["Each chapter and topic boiled down to what you need to remember.", "हर अध्याय और विषय उतना ही, जितना याद रखना ज़रूरी है।"] },
       { icon: Star, title: ["Priority stars", "प्राथमिकता सितारे"], body: ["Five-star topics come first, so a short evening still covers what matters most.", "पाँच सितारा विषय पहले आते हैं, ताकि छोटी-सी शाम में भी सबसे ज़रूरी चीज़ें पूरी हों।"] },
       { icon: Check, title: ["Bookmarks everywhere", "हर जगह बुकमार्क"], body: ["Save lessons, questions and topics from anywhere on the dashboard.", "डैशबोर्ड पर कहीं से भी पाठ, प्रश्न और विषय सहेजें।"] },
-      { icon: Download, title: ["Take notes with you", "नोट्स साथ ले जाएँ"], body: ["Download study notes to revise offline, on the train or before the exam hall.", "स्टडी नोट्स डाउनलोड करें और ट्रेन में या परीक्षा हॉल से पहले ऑफ़लाइन दोहराएँ।"] },
+      { icon: Download, title: ["Take notes with you", "नोट्स साथ ले जाएँ"], body: ["Download study notes to revise offline, on the commute or right before an interview.", "स्टडी नोट्स डाउनलोड करें और सफ़र में या इंटरव्यू से ठीक पहले ऑफ़लाइन दोहराएँ।"] },
     ],
     steps: [["Read a topic", "विषय पढ़ें"], ["Bookmark what matters", "ज़रूरी चीज़ें बुकमार्क करें"], ["Revise from one list", "एक सूची से दोहराएँ"]],
     image: { src: "/images/landing/feature-notes.webp", focus: "60% 50%" }, badge: { icon: Star, label: ["Revise what matters first", "पहले ज़रूरी चीज़ें दोहराएँ"] },
@@ -100,11 +100,11 @@ const SEARCH: Card[] = [
 ];
 // The Notes & bookmarks carousel; covers are painted by scripts/generate-lesson-covers.ts (notes:<id>).
 const NOTES: Card[] = [
-  { id: "topic-notes", title: ["Focused topic notes", "केंद्रित विषय नोट्स"], text: ["Every chapter boiled down to what you need to remember, with diagrams and examples.", "हर अध्याय उतना ही, जितना याद रखना ज़रूरी है, आरेख और उदाहरणों के साथ।"] },
-  { id: "priority-stars", title: ["Five-star topics first", "पहले पाँच सितारा विषय"], text: ["Topics are ranked by how often they come up in interviews and exams.", "विषय इस क्रम में हैं कि वे इंटरव्यू और परीक्षा में कितनी बार आते हैं।"] },
+  { id: "topic-notes", title: ["Focused topic notes", "केंद्रित विषय नोट्स"], text: ["Every topic boiled down to what you need to remember, with diagrams and examples.", "हर अध्याय उतना ही, जितना याद रखना ज़रूरी है, आरेख और उदाहरणों के साथ।"] },
+  { id: "priority-stars", title: ["Five-star topics first", "पहले पाँच सितारा विषय"], text: ["Topics are ranked by how often they come up in interviews and certification exams.", "विषय इस क्रम में हैं कि वे इंटरव्यू और सर्टिफ़िकेशन परीक्षा में कितनी बार आते हैं।"] },
   { id: "bookmarks", title: ["Bookmark from anywhere", "कहीं से भी बुकमार्क करें"], text: ["Save lessons, questions and topics with one tap while you read.", "पढ़ते-पढ़ते एक टैप में पाठ, प्रश्न और विषय सहेजें।"] },
-  { id: "revision-list", title: ["One revision list", "एक दोहराने की सूची"], text: ["Everything you saved waits in one list, ready the evening before the test.", "आपका सहेजा सब कुछ एक सूची में, परीक्षा से पहले की शाम के लिए तैयार।"] },
-  { id: "offline-notes", title: ["Revise offline", "ऑफ़लाइन दोहराएँ"], text: ["Download study notes for the train, the library or the exam hall queue.", "ट्रेन, लाइब्रेरी या परीक्षा हॉल की कतार के लिए स्टडी नोट्स डाउनलोड करें।"] },
+  { id: "revision-list", title: ["One revision list", "एक दोहराने की सूची"], text: ["Everything you saved waits in one list, ready the evening before the interview.", "आपका सहेजा सब कुछ एक सूची में, इंटरव्यू से पहले की शाम के लिए तैयार।"] },
+  { id: "offline-notes", title: ["Revise offline", "ऑफ़लाइन दोहराएँ"], text: ["Download study notes for the commute, a flight or the wait before an interview.", "सफ़र, फ़्लाइट या इंटरव्यू से पहले के इंतज़ार के लिए स्टडी नोट्स डाउनलोड करें।"] },
   { id: "two-languages", title: ["English and Hindi", "अंग्रेज़ी और हिन्दी"], text: ["Read the same notes in English or Hindi, whichever helps you remember.", "वही नोट्स अंग्रेज़ी या हिन्दी में पढ़ें, जिसमें आपको बेहतर याद रहे।"] },
 ];
 

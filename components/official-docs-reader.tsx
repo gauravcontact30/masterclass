@@ -1,20 +1,10 @@
 "use client";
-import { AccordionChevron } from "@/components/ui/accordion-chevron";
-
-import { useState } from "react";
-import { ExternalLink, RotateCcw, ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { OFFICIAL_DOCS, OFFICIAL_DOCS_CATEGORIES } from "@/lib/official-docs-data";
 import { Button } from "./ui/button";
 import { OfficialDocsLearning } from "./official-docs-learning";
 import { OfficialDocsDirectory } from "./official-docs-directory";
 import styles from "./official-docs-reader.module.css";
-
-// Publisher response headers checked 2026-09-27. Keep a manual retry because
-// policies can change. Cross-origin iframe load events cannot detect a denial.
-const RESTRICTED_SITES = new Set([
-  "nextjs", "tanstack", "prisma", "supabase", "javascript-info", "golang",
-  "langchain", "langsmith", "docker", "aws", "cicd",
-]);
 
 const REFERENCE_CATEGORIES = OFFICIAL_DOCS_CATEGORIES.filter(category => category !== "All");
 const TABS_PER_PAGE = 3;
@@ -37,7 +27,7 @@ export function OfficialDocsReader({ selectedId, onSelect }: {
     <section id="official-website-reader" className={styles.reader} aria-labelledby="website-reader-heading" tabIndex={-1}>
       <div className={styles.toolbar}>
         <div>
-          <h2 id="website-reader-heading">Official website reader</h2>
+          <h2 id="website-reader-heading">Documentation reader</h2>
           <p>Choose a technology to study its essentials and practice questions.</p>
         </div>
         <label className={styles.selector}>
@@ -81,70 +71,7 @@ export function OfficialDocsReader({ selectedId, onSelect }: {
           {doc.id === "aws" && <OfficialDocsDirectory key="aws-services" docId="aws" />}
         </div>
       </div>
-      <OptionalWebsite key={doc.id} title={doc.title} url={doc.officialUrl} restricted={RESTRICTED_SITES.has(doc.id)} />
     </section>
   );
 }
 
-function OptionalWebsite({ title, url, restricted }: { title: string; url: string; restricted: boolean }) {
-  const [open, setOpen] = useState(false);
-  return <section id="official-website-content" className={styles.websiteSection}>
-    <button type="button" className={styles.websiteToggle} aria-expanded={open} aria-controls="publisher-frame" onClick={() => setOpen(value => !value)}>
-      <span>{open ? "Hide official website" : "Browse official website"}</span><AccordionChevron />
-    </button>
-    <p className={styles.notice}>Need the full API reference? Open the publisher’s documentation here.</p>
-    {open && <div id="publisher-frame"><WebsiteFrame title={title} url={url} restricted={restricted} /></div>}
-  </section>;
-}
-
-function WebsiteFrame({ title, url, restricted }: { title: string; url: string; restricted: boolean }) {
-  const [attempt, setAttempt] = useState(0);
-  const [failed, setFailed] = useState(false);
-  const [tryEmbedding, setTryEmbedding] = useState(false);
-
-  return (
-    <>
-      <div className={styles.addressBar}>
-        <a href={url} target="_blank" rel="noopener noreferrer" className={styles.address}>{url}</a>
-        <Button type="button" variant="outline" size="sm" onClick={() => {
-          setFailed(false);
-          setTryEmbedding(true);
-          setAttempt((value) => value + 1);
-        }} aria-label={`Reload ${title} website`}>
-          <RotateCcw size={14} aria-hidden="true" /> Reload
-        </Button>
-        <a href={url} target="_blank" rel="noopener noreferrer" className={styles.external}>
-          Open in new tab <ExternalLink size={14} aria-hidden="true" />
-        </a>
-      </div>
-      <p className={styles.notice} id="official-website-help">
-        Some publishers block viewing inside other websites. If the page is blank or refuses to connect, use Open in new tab.
-        {(!restricted || tryEmbedding) && !failed && (
-          <> <button type="button" className={styles.helpButton} onClick={() => setFailed(true)}>Website not loading?</button></>
-        )}
-      </p>
-      {restricted && !tryEmbedding ? (
-        <div className={styles.failure} role="status">
-          <p>{title} restricts embedded viewing. Open its official website in a new tab to read the full documentation.</p>
-          <Button type="button" size="sm" variant="outline" onClick={() => setTryEmbedding(true)}>Try embedded view</Button>
-        </div>
-      ) : failed ? (
-        <div className={styles.failure} role="status">
-          <p>This website could not be displayed here.</p>
-          <a href={url} target="_blank" rel="noopener noreferrer">Continue on {title}’s official website <ExternalLink size={14} aria-hidden="true" /></a>
-        </div>
-      ) : (
-        <iframe
-          key={attempt}
-          src={url}
-          title={`${title} official website`}
-          className={styles.frame}
-          aria-describedby="official-website-help"
-          referrerPolicy="strict-origin-when-cross-origin"
-          sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-popups-to-escape-sandbox"
-          onError={() => setFailed(true)}
-        />
-      )}
-    </>
-  );
-}

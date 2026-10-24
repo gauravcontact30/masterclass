@@ -3,14 +3,15 @@
  * track in lib/certifications.ts, a lesson (overview, objectives, concepts, must-remember facts, an example,
  * pitfalls, a workflow and its service icons), a complete multi-file sample project (shown in the Apple-style editor)
  * and a question bank of objective (multiple choice) and subjective questions with answers: a first batch, then an
- * exam-style batch whose questions may carry a code snippet, at least 150 of each per track, and an exam revision pack
+ * exam-style batch whose questions may carry a code snippet, at least 150 of each per track, a third batch of case
+ * studies, troubleshooting and comparisons taking each to at least 250, and an exam revision pack
  * (comparisons, answer cues, a worked scenario, memory aids, a cheat sheet and a self-check). Text comes from Claude through Vercel AI Gateway; each
  * step's picture is designed and judged by the card art director (scripts/card-art-director.ts) and painted with
  * openai/gpt-image-2, and only a picture scoring 4/5 or better with no text is kept.
  *
  * Parts are cached in node_modules/.cache/certification-content, so a stopped run resumes; the merged result is
  * lib/certification-content/<track>.json (served by app/api/certifications/[track]) and the pictures are
- * public/images/certifications/<track>/<step>.webp. The LangChain track is grounded in facts read from the
+ * public/images/certifications/<track>/<step>.webp. The two LangChain-family tracks are grounded in facts read from the
  * official docs through the docs-langchain MCP server and is labelled with that source.
  *
  * Run: npx tsx --env-file=.env scripts/generate-certification-content.ts [track…] [--text-only | --images-only]
@@ -31,6 +32,8 @@ const OUT = "lib/certification-content";
 const TARGET = 105;
 /** The exam-style second batch tops every track up to at least this many objective and subjective questions. */
 const TARGET_MORE = 155;
+/** A third batch (case studies, troubleshooting and "which is better") takes every track to at least this many. */
+const TARGET_EXTRA = 255;
 const args = process.argv.slice(2);
 const only = args.filter(arg => !arg.startsWith("--"));
 const textOnly = args.includes("--text-only"), imagesOnly = args.includes("--images-only");
@@ -44,6 +47,12 @@ const LANGCHAIN_FACTS = `Current LangChain-family facts (from the official docs;
 - LangGraph: StateGraph(State) with add_node, add_edge(START, ...), conditional edges, compile(checkpointer=InMemorySaver(), store=InMemoryStore()). Invoke with config {"configurable": {"thread_id": "..."}}; the checkpointer needs thread_id to save and resume. interrupt(payload) pauses a node; resume with Command(resume=value) on the same thread_id; the node re-runs from its start. graph.get_state_history(config) lists checkpoints newest first. stream_events(..., version="v3") is the recommended way to drive a graph and surfaces stream.interrupted / stream.interrupts. The Agent Server handles persistence automatically.
 - LangSmith: tracing via LANGSMITH_TRACING=true and LANGSMITH_API_KEY; datasets of examples; evaluate(target, data=dataset, evaluators=[...]) runs an experiment; openevals create_llm_as_judge with CORRECTNESS_PROMPT for LLM-as-judge; LangSmith Studio connects to a local agent run with the LangGraph CLI (langgraph dev) and a langgraph.json config.
 - Langflow is a separate open-source visual builder (components, flows, Playground, API); it has no official certification.`;
+// Read from docs.langchain.com through the docs-langchain MCP server (2026-10-23), for the AI Automation track.
+const AUTOMATION_FACTS = `Automation facts (from the official docs; follow them exactly):
+- Agent Server (LangSmith Deployment) is built on assistants, threads, runs and cron jobs, with built-in persistence and a task queue for background runs.
+- Cron jobs: POST /runs/crons with schedule (cron expression), assistant_id and input; each firing creates a new thread with that assistant and sends the same input. on_run_completed is "delete" (default) or "keep". Schedules are interpreted in UTC unless a timezone (IANA, e.g. "Asia/Kolkata") is given; end_time stops the cron; enabled toggles it; a webhook URL is called when the run is done. POST /threads/{thread_id}/runs/crons schedules runs on one existing thread. The Python SDK exposes this as client.crons.
+- LangSmith automation rules: defined by an item type (runs or threads), a filter, a sampling rate and an action; actions include adding traces to a dataset, adding to an annotation queue, triggering a webhook and extending data retention. Online evaluators (LLM-as-judge or code) score live runs and can be backfilled only when the rule is created. Automation rules run on independent schedules, so a webhook rule should filter on the evaluator's feedback key (eq(feedback_key, "...")) to fire after scoring.
+- LangSmith alerts notify Slack (native integration) or a webhook on thresholds such as error rate, latency and feedback scores.`;
 
 const SYSTEM = `You are a senior certification coach and practising engineer writing study material for MasterClass, an Indian e-learning platform. Learners use it to pass the named certifications and the interviews that follow.
 Rules:
@@ -129,6 +138,9 @@ type More = z.infer<ReturnType<typeof moreSchema>>;
 type Project = z.infer<typeof projectSchema>;
 type Questions = z.infer<ReturnType<typeof questionSchema>>;
 
+/** Tracks grounded in the official LangChain docs and labelled with that source. */
+const LANGCHAIN_TRACKS = ["langchain-python", "ai-automation-langchain"];
+
 const trackBrief = (track: CertTrack, index: number) => {
   const step = track.steps[index];
   return [
@@ -138,7 +150,8 @@ const trackBrief = (track: CertTrack, index: number) => {
     `Syllabus: ${step.learn.join("; ")}.`,
     `Hands-on task: ${step.practice}`,
     `Checkpoint: ${step.checkpoint}`,
-    track.id === "langchain-python" ? LANGCHAIN_FACTS : "",
+    LANGCHAIN_TRACKS.includes(track.id) ? LANGCHAIN_FACTS : "",
+    track.id === "ai-automation-langchain" ? AUTOMATION_FACTS : "",
   ].filter(Boolean).join("\n");
 };
 
@@ -194,6 +207,17 @@ async function more(track: CertTrack, index: number, taught: Lesson, asked: Ques
     `The lesson taught: ${taught.concepts.map(concept => concept.term).join(", ")}.`,
     `These questions already exist; do not repeat or rephrase them:\n${existing}`,
     `Write exactly ${count} more objective questions (multiple choice, 4 options, one correct, plausible distractors) and exactly ${count} more subjective questions in the style of the real certification exams on this path: scenarios ("A company needs… which solution…"), troubleshooting, and "what does this code or config do" questions. When a question is about code, a config, a CLI command or a query, put it in "code"; otherwise set "code" to null. Mostly medium and hard.`,
+  ].join("\n\n"));
+}
+
+async function extra(track: CertTrack, index: number, taught: Lesson, asked: Questions, more: More) {
+  const count = Math.ceil((TARGET_EXTRA - TARGET_MORE) / track.steps.length) + 1;
+  const existing = [...asked.objective, ...asked.subjective, ...more.objective, ...more.subjective].map(question => `- ${question.question}`).join("\n");
+  return write<More>(`${track.id}-${index}-questions-3`, moreSchema(count) as z.ZodType<More>, [
+    trackBrief(track, index),
+    `The lesson taught: ${taught.concepts.map(concept => concept.term).join(", ")}. Traps: ${taught.pitfalls.join(" ")}`,
+    `These questions already exist; do not repeat or rephrase them:\n${existing}`,
+    `Write exactly ${count} more objective questions (multiple choice, 4 options, one correct, plausible distractors) and exactly ${count} more subjective questions, in kinds the bank does not have yet: multi-requirement case studies, "this is failing, what is the cause" troubleshooting, "which of these is better here and why" comparisons, ordering the steps of a procedure, and spotting the mistake in a design, config or snippet. When a question is about code, a config, a CLI command or a query, put it in "code"; otherwise set "code" to null. Mostly medium and hard, a few easy.`,
   ].join("\n\n"));
 }
 
@@ -276,7 +300,8 @@ async function main() {
   if (!imagesOnly) await pool(jobs, 4, async ({ track, index }) => {
     try {
       const taught = await lesson(track, index), asked = await questions(track, index, taught);
-      await Promise.all([more(track, index, taught, asked), project(track, index, taught), revision(track, index, taught)]);
+      const [second] = await Promise.all([more(track, index, taught, asked), project(track, index, taught), revision(track, index, taught)]);
+      await extra(track, index, taught, asked, second);
     } catch (error) { failures.push(`${track.id} step ${index + 1}: ${String(error).slice(0, 200)}`); }
   });
   if (!textOnly) await pool(jobs, 3, async ({ track, index }) => {
@@ -287,18 +312,18 @@ async function main() {
     const steps = track.steps.map((_, index) => {
       const taught = cached<Lesson>(`${track.id}-${index}-lesson`), asked = cached<Questions>(`${track.id}-${index}-questions`);
       const extra = cached<More>(`${track.id}-${index}-questions-2`), sample = cached<Project>(`${track.id}-${index}-project`);
-      const revise = cached<Revision>(`${track.id}-${index}-revision`);
+      const revise = cached<Revision>(`${track.id}-${index}-revision`), third = cached<More>(`${track.id}-${index}-questions-3`);
       const file = `public/images/certifications/${track.id}/${index + 1}.webp`;
       return taught && asked && extra && sample ? {
         ...taught, project: sample, ...(revise ? { revision: revise } : {}), image: existsSync(file) ? `/images/certifications/${track.id}/${index + 1}.webp` : null,
-        objective: [...shuffle(asked.objective), ...shuffle(extra.objective)], subjective: [...asked.subjective, ...extra.subjective],
+        objective: [...shuffle(asked.objective), ...shuffle(extra.objective), ...shuffle(third?.objective ?? [])], subjective: [...asked.subjective, ...extra.subjective, ...(third?.subjective ?? [])],
       } : null;
     });
     if (steps.some(step => !step)) { console.log(`skip merge ${track.id}: ${steps.filter(step => !step).length} steps missing`); continue; }
     const objective = steps.reduce((sum, step) => sum + step!.objective.length, 0), subjective = steps.reduce((sum, step) => sum + step!.subjective.length, 0);
     writeFileSync(`${OUT}/${track.id}.json`, JSON.stringify({
       track: track.id, generatedAt: new Date().toISOString(), model: MODEL,
-      source: track.id === "langchain-python" ? "Sourced from Docs by LangChain (MCP)" : null, steps,
+      source: LANGCHAIN_TRACKS.includes(track.id) ? "Sourced from Docs by LangChain (MCP)" : null, steps,
     }));
     console.log(`merged ${track.id}: ${objective} objective, ${subjective} subjective`);
   }

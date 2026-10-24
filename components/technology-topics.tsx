@@ -51,7 +51,7 @@ export function TechnologyTopics({ documents, topics, onLearn }: { documents: Do
     <p className={styles.intro}><ExpandedText text={hi ? "हर विषय का अलग कार्ड: मुख्य बातें, उदाहरण और अभ्यास। हर श्रेणी में चार कार्ड प्रति पृष्ठ।" : "One card per topic, with key ideas, examples and practice. Four cards per category page."} /></p>
     {loading && <p role="status"><ExpandedText text={hi ? "विषय के नोट्स लोड हो रहे हैं…" : "Loading topic notes…"} /></p>}
     {!!failed.length && <div role="alert"><p><ExpandedText text={hi ? "कुछ नोट्स लोड नहीं हो सके। उपलब्ध विषय नीचे हैं।" : "Some notes could not be loaded. Available topics are shown below."} /></p><Button variant="outline" onClick={() => { setFailed([]); setAttempt(value => value + 1); }}><ExpandedText text={hi ? "फिर कोशिश करें" : "Try again"} /></Button></div>}
-    {!!entries.length && <ServiceCatalog services={entries} hi={hi} grouped topics showReferences={false} renderDetails={entry => {
+    {!!entries.length && <ServiceCatalog services={entries} hi={hi} grouped topics renderDetails={entry => {
       const note = entry as TopicNote;
       return <>
         {note.lesson && <details className={styles.details}>

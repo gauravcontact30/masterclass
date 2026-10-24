@@ -1,14 +1,14 @@
 "use client";
 import { useId, useSyncExternalStore } from "react";
 import { Loader2, Pause, Play, SkipBack, SkipForward, Volume2, X } from "lucide-react";
-import { audioState, seekPart, serverAudioState, setSpeed, setVoice, stop, subscribe, toggle } from "@/lib/audio-lecture";
-import { SPEEDS, VOICES } from "@/lib/audio-voices";
+import { audioState, seekPart, serverAudioState, setGender, setSpeed, setVoice, stop, subscribe, toggle } from "@/lib/audio-lecture";
+import { SPEEDS, VOICES, genderOf, type VoiceGender } from "@/lib/audio-voices";
 import { useLanguage } from "./language-provider";
 import styles from "./audio-dock.module.css";
 
 /*
  * The audio lecture player, docked at the bottom of every page while a lecture is open: what is playing, its part,
- * play/pause and part skipping, the voice (ten female, ten male) and the speed. The root layout mounts only the
+ * play/pause and part skipping, a Female/Male narrator switch with that gender's ten voices, and the speed. The root layout mounts only the
  * host (audio-dock-host), which renders nothing and loads this player the first time a Listen button is pressed.
  */
 export function AudioDock() {
@@ -19,7 +19,8 @@ export function AudioDock() {
   if (!audio.id) return null;
   const text = (en: string, hindi: string) => hi ? hindi : en;
   const busy = audio.status === "loading";
-  const group = (gender: "female" | "male") => VOICES.filter(voice => voice.gender === gender).map(voice => <option key={voice.id} value={voice.id}>{voice.id} · {voice.style[hi ? 1 : 0]}</option>);
+  const gender = genderOf(audio.voice);
+  const genders: [VoiceGender, string][] = [["female", text("Female", "महिला")], ["male", text("Male", "पुरुष")]];
   return <section className={styles.dock} aria-label={text("Audio lecture", "ऑडियो लेक्चर")}>
     <div className={styles.head}>
       <span className={styles.mark} aria-hidden="true">{busy ? <Loader2 size={16} className={styles.spin} /> : <Volume2 size={16} />}</span>
@@ -37,10 +38,12 @@ export function AudioDock() {
         <button type="button" className={styles.play} onClick={toggle} disabled={busy} aria-label={audio.status === "playing" ? text("Pause", "रोकें") : text("Play", "चलाएँ")}>{audio.status === "playing" ? <Pause size={18} /> : <Play size={18} />}</button>
         <button type="button" className={styles.icon} onClick={() => seekPart(1)} disabled={audio.index + 1 >= audio.parts.length || busy} aria-label={text("Next part", "अगला भाग")}><SkipForward size={16} /></button>
       </div>
+      <div className={styles.genders} role="radiogroup" aria-label={text("Narrator", "वक्ता")}>
+        {genders.map(([value, label]) => <button type="button" role="radio" key={value} aria-checked={gender === value} onClick={() => setGender(value)}>{label}</button>)}
+      </div>
       <label className={styles.field} htmlFor={`${id}-voice`}><span>{text("Voice", "आवाज़")}</span>
         <select id={`${id}-voice`} value={audio.voice} onChange={event => setVoice(event.target.value)}>
-          <optgroup label={text("Female voices", "महिला आवाज़ें")}>{group("female")}</optgroup>
-          <optgroup label={text("Male voices", "पुरुष आवाज़ें")}>{group("male")}</optgroup>
+          {VOICES.filter(voice => voice.gender === gender).map(voice => <option key={voice.id} value={voice.id}>{voice.id} · {voice.style[hi ? 1 : 0]}</option>)}
         </select>
       </label>
       <div className={styles.speeds} role="radiogroup" aria-label={text("Speed", "गति")}>

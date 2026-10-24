@@ -13,7 +13,7 @@ type Pair = [string, string];
 type Slide = { id: string; src: string; focus: string; tone: "clay" | "sage" | "violet" | "sky" | "honey"; tool: Pair; title: Pair; body: Pair; link: { label: Pair; href: string }; alt: string };
 
 /**
- * The landing hero: five full-HD (1920×1080) study scenes painted by scripts/generate-hero-images.ts (each file's EXIF
+ * The landing hero: four full-HD (1920×1080) study scenes painted by scripts/generate-hero-images.ts (each file's EXIF
  * ImageDescription holds its prompt), full-bleed under the navbar. Each slide
  * carries its own headline and actions; autoplay pauses on hover, on focus,
  * with the pause button, and never starts for visitors who prefer reduced motion.
@@ -21,16 +21,11 @@ type Slide = { id: string; src: string; focus: string; tone: "clay" | "sage" | "
 function slidesFor(technologies: number | undefined): Slide[] {
   const count = technologies ? String(technologies) : "60+";
   return [
-    { id: "school", src: "/images/landing/hero-campus-2.webp", focus: "68% 45%", tone: "clay", tool: ["MasterClass Buddy campus", "MasterClass Buddy कैंपस"],
+    { id: "campus", src: "/images/landing/hero-campus-2.webp", focus: "68% 45%", tone: "clay", tool: ["MasterClass Buddy campus", "MasterClass Buddy कैंपस"],
       title: ["Your campus for the skills companies hire for.", "उन स्किल्स का कैंपस, जिनके लिए कंपनियाँ भर्ती करती हैं।"],
       body: ["Step into one place for AI agents, cloud, system design and full-stack development, with interview prep, certification paths and real projects, in English or हिन्दी.", "AI एजेंट, क्लाउड, सिस्टम डिज़ाइन और फ़ुल-स्टैक डेवलपमेंट के लिए एक ही जगह, इंटरव्यू तैयारी, सर्टिफ़िकेशन रास्तों और असली प्रोजेक्ट्स के साथ, English या हिन्दी में।"],
       link: { label: ["Explore the free library", "मुफ़्त लाइब्रेरी देखें"], href: "/library" },
       alt: "A young professional with a leather laptop bag walking toward a campus building whose wall reads Master Class Buddy - www.masterclassbuddy.com, at golden morning light" },
-    { id: "exams", src: "/images/landing/hero-exams.webp", focus: "66% 40%", tone: "sage", tool: ["Competitive exams", "प्रतियोगी परीक्षाएँ"],
-      title: ["Crack your exam with timed, real-pattern practice.", "समयबद्ध, असली पैटर्न के अभ्यास से परीक्षा पास करें।"],
-      body: ["SSC, banking, railways, defence, JEE and NEET: foundations, practice papers, full solutions and answer review.", "SSC, बैंकिंग, रेलवे, रक्षा, JEE और NEET: आधार, अभ्यास पत्र, पूरे हल और उत्तर समीक्षा।"],
-      link: { label: ["See exam preparation", "परीक्षा तैयारी देखें"], href: "/courses#ssc" },
-      alt: "A student preparing for a competitive exam in a library, with a timer on a tablet, sticky notes and a stack of books" },
     { id: "build", src: "/images/landing/hero-build.webp", focus: "70% 45%", tone: "violet", tool: ["Technology courses", "तकनीकी कोर्स"],
       title: ["Learn to code by building real projects.", "असली प्रोजेक्ट बनाकर कोडिंग सीखें।"],
       body: [`Step-by-step guides for ${count} technologies, from React and Node.js to AI agents, with every command and the complete code.`, `React और Node.js से AI एजेंट तक, ${count} तकनीकों के चरण-दर-चरण गाइड, हर कमांड और पूरे कोड के साथ।`],
@@ -43,7 +38,7 @@ function slidesFor(technologies: number | undefined): Slide[] {
       alt: "Two young professionals practising a technical interview at a table, with a system diagram on a whiteboard behind them" },
     { id: "anywhere", src: "/images/landing/hero-certified-2.webp", focus: "62% 35%", tone: "honey", tool: ["Certifications", "सर्टिफ़िकेशन"],
       title: ["From learning to certified, on masterclassbuddy.com.", "masterclassbuddy.com पर सीखने से सर्टिफ़ाइड होने तक।"],
-      body: ["Follow step-by-step paths for Agentic AI, AWS, n8n, Claude Code and System Design, practise 100+ questions each with mock exams, and walk into your certification ready.", "Agentic AI, AWS, n8n, Claude Code और सिस्टम डिज़ाइन के चरण-दर-चरण रास्ते अपनाएँ, हर एक के 100+ प्रश्नों और मॉक परीक्षा से अभ्यास करें, और पूरी तैयारी के साथ सर्टिफ़िकेशन दें।"],
+      body: ["Follow step-by-step paths for Agentic AI, AWS, DevOps, Cloud Architecture, AI Automation, n8n, Claude Code and System Design, practise 100+ questions each with mock exams, and walk into your certification ready.", "Agentic AI, AWS, DevOps, क्लाउड आर्किटेक्चर, AI ऑटोमेशन, n8n, Claude Code और सिस्टम डिज़ाइन के चरण-दर-चरण रास्ते अपनाएँ, हर एक के 100+ प्रश्नों और मॉक परीक्षा से अभ्यास करें, और पूरी तैयारी के साथ सर्टिफ़िकेशन दें।"],
       link: { label: ["See certification paths", "सर्टिफ़िकेशन रास्ते देखें"], href: "#certifications" },
       alt: "Two young professionals at an office reception holding framed Master Class Buddy certificates of completion in Agentic AI, AWS and n8n, pointing at the masterclassbuddy.com homepage on a large iMac" },
   ];

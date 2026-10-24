@@ -19,12 +19,12 @@ describe("Certifications", () => {
     global.fetch = jest.fn(async () => ({ ok: false, status: 404, json: async () => ({}) })) as jest.Mock;
   });
 
-  it("covers the six requested tracks, each with certificates and a full path", () => {
-    expect(CERTIFICATION_TRACKS.map(track => track.id)).toEqual(["system-design", "claude-code", "aws", "n8n", "agentic-ai", "langchain-python"]);
+  it("covers the nine requested tracks, each with certificates and a full path", () => {
+    expect(CERTIFICATION_TRACKS.map(track => track.id)).toEqual(["system-design", "claude-code", "aws", "n8n", "agentic-ai", "langchain-python", "devops", "cloud-architecture", "ai-automation-langchain"]);
+    expect(CERTIFICATION_TRACKS.filter(track => track.isNew).map(track => track.category)).toEqual(["Cloud & Infrastructure", "Cloud & Infrastructure", "AI & Automation"]);
     for (const track of CERTIFICATION_TRACKS) {
       expect(track.certificates.length).toBeGreaterThan(0);
       expect(track.steps.length).toBeGreaterThanOrEqual(5);
-      for (const cert of track.certificates) expect(cert.url).toMatch(/^https:\/\//);
       for (const step of track.steps) { expect(step.learn.length).toBeGreaterThan(0); expect(step.practice).not.toBe(""); expect(step.checkpoint).not.toBe(""); }
     }
   });
@@ -45,6 +45,7 @@ describe("Certifications", () => {
     const { unmount } = render(<Certifications initialTrack="aws" />);
     expect(screen.getByRole("heading", { level: 2, name: "AWS certifications" })).toBeInTheDocument();
     expect(screen.getByText("CLF-C02")).toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: /Official page/ })).toBeNull();
     fireEvent.click(screen.getByLabelText("Mark step 1 as done"));
     expect(screen.getByRole("progressbar")).toHaveAttribute("aria-valuenow", String(Math.round(100 / 7)));
     unmount();
@@ -118,6 +119,34 @@ describe("Certifications", () => {
     fireEvent.click(await screen.findByRole("button", { name: "Start mock exam" }));
     for (let at = 0; at < 7; at++) fireEvent.click(within(screen.getByRole("group", { name: "Options" })).getByRole("button", { name: /Right one/ }));
     expect(screen.getByRole("heading", { name: /Passed · 100%/ })).toBeInTheDocument();
+  });
+
+  it("filters paths by area and searches titles, certificates and exam codes", () => {
+    render(<Certifications />);
+    expect(screen.getByRole("heading", { level: 3, name: /Cloud & Infrastructure/ })).toBeInTheDocument();
+    fireEvent.click(within(screen.getByRole("group", { name: "Filter paths by area" })).getByRole("button", { name: /AI & Automation/ }));
+    expect(screen.queryByRole("button", { name: /^DevOps engineering/ })).toBeNull();
+    expect(screen.getByRole("button", { name: /^AI Automation with LangChain/ })).toHaveTextContent("New");
+    fireEvent.click(within(screen.getByRole("group", { name: "Filter paths by area" })).getByRole("button", { name: /^All/ }));
+    const search = screen.getByLabelText("Search paths, certificates and exam codes");
+    fireEvent.change(search, { target: { value: "ckad" } });
+    expect(screen.getByText("1 path shown")).toHaveAttribute("role", "status");
+    fireEvent.click(screen.getByRole("button", { name: /^DevOps engineering/ }));
+    expect(screen.getByRole("heading", { level: 2, name: "DevOps engineering" })).toBeInTheDocument();
+    fireEvent.change(search, { target: { value: "no such exam" } });
+    expect(screen.getByText(/No path matches/)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: "Show all paths" }));
+    expect(screen.getByText(`${CERTIFICATION_TRACKS.length} paths shown`)).toBeInTheDocument();
+  });
+
+  it("expands and collapses every step of the path", () => {
+    const { container } = render(<Certifications initialTrack="cloud-architecture" />);
+    const open = () => container.querySelectorAll("li[id^='cert-step-'] > details[open]").length;
+    expect(open()).toBe(1);
+    fireEvent.click(screen.getByRole("button", { name: "Expand all" }));
+    expect(open()).toBe(12);
+    fireEvent.click(screen.getByRole("button", { name: "Collapse all" }));
+    expect(open()).toBe(0);
   });
 
   it("explains when a track's material is still being prepared", async () => {

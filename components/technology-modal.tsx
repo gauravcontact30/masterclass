@@ -3,9 +3,10 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, Check, CheckCircle2, Copy, ExternalLink, HelpCircle, Sparkles, Terminal, X } from "lucide-react";
+import { ArrowRight, Check, CheckCircle2, Copy, HelpCircle, Sparkles, Terminal, X } from "lucide-react";
 import type { TechnologyInfo } from "@/lib/technology-catalog";
 import { useLanguage } from "./language-provider";
+import { ListenButton } from "./listen-button";
 import styles from "./technology-modal.module.css";
 
 export function TechnologyModal({
@@ -90,6 +91,12 @@ export function TechnologyModal({
                 <span className={styles.categoryBadge}>
                   {hi ? tech.category.hi : tech.category.en}
                 </span>
+                <ListenButton
+                  id={`technology:${tech.name}:${language}`}
+                  title={tech.name}
+                  compact
+                  text={() => [tech.name, hi ? tech.summary.hi : tech.summary.en, ...tech.keyFeatures.map(feature => hi ? feature.hi : feature.en)].join(". ")}
+                />
               </div>
               <div className={styles.subMeta}>
                 <span>
@@ -204,22 +211,6 @@ export function TechnologyModal({
         {/* Footer */}
         <footer className={styles.footer}>
           <div className={styles.footerInfo}>
-            <a
-              href={tech.officialDocUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{
-                display: "inline-flex",
-                alignItems: "center",
-                gap: "5px",
-                color: "inherit",
-                textDecoration: "underline",
-                fontSize: "12px",
-              }}
-            >
-              <span>{hi ? "आधिकारिक डॉक्स" : "Official Documentation"}</span>
-              <ExternalLink size={12} aria-hidden="true" />
-            </a>
           </div>
 
           <div className={styles.footerActions}>

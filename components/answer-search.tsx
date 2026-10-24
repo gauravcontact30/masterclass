@@ -36,18 +36,15 @@ import { AiCategoryIcon, AiTermIcon } from "./ai-term-icon";
 import { PythonCategoryIcon, PythonTopicIcon } from "./python-topic-icon";
 import { CatalogBrowser, type CatalogItem } from "./catalog-browser";
 import { summaryExplanation } from "@/lib/pro-learn/prepared-explanation";
-import { classroomExplanation } from "@/lib/pro-learn/classroom/lessons";
 import { VocabularyWordIcon } from "./vocabulary-word-icon";
 import { Pager } from "./pager";
 import { TechnologyCategoryIcon, TechnologyTopicIcon } from "./technology-topic-icon";
-import { ClassroomTopicIcon } from "./classroom-topic-icon";
 import { OfficialScreens } from "./official-screens";
 import { screensFor, type OfficialScreen } from "@/lib/media/official-screens";
 import { essentialPoints } from "@/lib/pro-learn/essentials";
 import { dedupeAnswer, saidOnce } from "@/lib/pro-learn/dedupe-answer";
 import { BrandMark, TopicCover, hasTopicMedia } from "./topic-media";
 import type { TechnologyHandbook } from "@/lib/pro-learn/technology-handbooks";
-import type { Catalogue } from "@/lib/pro-learn/catalogue";
 import { stripCitationsDeep } from "@/lib/strip-citations";
 import styles from "./answer-search.module.css";
 
@@ -195,19 +192,17 @@ function topicImage(catalogue: string, item: CatalogItem) {
  * app's own notes can still ground the answer, but the reader sees one focused
  * answer document rather than a second notes index beneath every result.
  */
-export function AnswerSearch({ initialQuestion = "", heading = "Search", intro = "Ask a question and get the answer first, then the steps to act on it — with what your own notes already cover.", emptyNoun = "service", search = true, catalogues = EMPTY_ITEMS, awsServices = EMPTY_ITEMS, awsCategories = EMPTY_ITEMS, aiGlossary = EMPTY_ITEMS, aiGlossaryCategories = EMPTY_ITEMS, pythonHandbook = EMPTY_ITEMS, pythonCategories = EMPTY_ITEMS, technologyHandbooks = EMPTY_ITEMS, deferredHandbooks = EMPTY_ITEMS }: {
+export function AnswerSearch({ initialQuestion = "", heading = "Search", intro = "Ask a question and get the answer first, then the steps to act on it — with what your own notes already cover.", emptyNoun = "service", search = true, awsServices = EMPTY_ITEMS, awsCategories = EMPTY_ITEMS, aiGlossary = EMPTY_ITEMS, aiGlossaryCategories = EMPTY_ITEMS, pythonHandbook = EMPTY_ITEMS, pythonCategories = EMPTY_ITEMS, technologyHandbooks = EMPTY_ITEMS, deferredHandbooks = EMPTY_ITEMS }: {
   initialQuestion?: string; heading?: string; intro?: string; emptyNoun?: string;
   /**
    * Whether the page asks as well as browses.
    *
-   * Class Room is a syllabus, not a search engine: the reader arrives to pick a
-   * topic off a shelf, and a question box plus a list of what they asked
-   * yesterday sits between them and that shelf. Turning this off drops the
+   * A page that is a syllabus rather than a search engine lets the reader pick a
+   * topic off a shelf without a question box in the way. Turning this off drops the
    * search row and the earlier-searches index; the answer modal still opens,
    * because a card still asks its own question.
    */
   search?: boolean;
-  catalogues?: readonly Catalogue[];
   awsServices?: AwsHighlight[]; awsCategories?: AwsCategory[];
   aiGlossary?: AwsHighlight[]; aiGlossaryCategories?: AwsCategory[];
   pythonHandbook?: AwsHighlight[]; pythonCategories?: AwsCategory[];
@@ -224,9 +219,9 @@ export function AnswerSearch({ initialQuestion = "", heading = "Search", intro =
   const [preparedCard, setPreparedCard] = useState<Card | null>(null);
   // The group the open answer came from, so a related topic in the modal can be
   // opened in place without the modal knowing which catalogue produced it.
-  const [group, setGroup] = useState<{ technology: string; classroom: boolean; items: CatalogItem[] } | null>(null);
-  const explain = useCallback((item: CatalogItem, technology: string, classroom = false, siblings: CatalogItem[] = []) => {
-    const lesson = item.prepared ?? (classroom ? classroomExplanation(technology, item) : summaryExplanation(item.name, item.summary, item.category));
+  const [group, setGroup] = useState<{ technology: string; items: CatalogItem[] } | null>(null);
+  const explain = useCallback((item: CatalogItem, technology: string, siblings: CatalogItem[] = []) => {
+    const lesson = item.prepared ?? summaryExplanation(item.name, item.summary, item.category);
     // A catalogue row carries one summary sentence, which alone makes a thin
     // list of things worth remembering. The technology's authored essentials are
     // merged in here rather than on the server, so the same points are not
@@ -248,7 +243,7 @@ export function AnswerSearch({ initialQuestion = "", heading = "Search", intro =
       industries: item.industries ? [...item.industries] : lesson.answer.industries,
     };
     const related = siblings.filter(other => other.name !== item.name).map(other => ({ name: other.name, summary: other.summary }));
-    setGroup(siblings.length ? { technology, classroom, items: siblings } : null);
+    setGroup(siblings.length ? { technology, items: siblings } : null);
     setPreparedCard({ id: `prepared:${technology}:${item.category}:${item.name}`, question: `${item.name} · ${item.category}`, at: 0, status: "ready",
       result: { answer, walkthrough: lesson.walkthrough, objective: lesson.objective, matches: [], prepared: lesson.kind, screens: screensFor(technology, item.category, item.name), related,
         topic: { subject: technology, name: item.name, summary: item.summary } } });
@@ -352,10 +347,8 @@ export function AnswerSearch({ initialQuestion = "", heading = "Search", intro =
   /**
    * Every catalogue the page offers.
    *
-   * The page's own catalogues are alphabetical, so a reader looking for one
-   * knows where to look. Catalogues handed in whole keep the order they came
-   * in and follow: Class Room's are Maths, Physics, Chemistry, English and
-   * then the exam groups, which alphabetising would scramble.
+   * The catalogues are alphabetical, so a reader looking for one knows where
+   * to look.
    *
    * Built as data rather than markup so the tab strip and the panel read from
    * one list: a section cannot appear as a tab without a body, or the reverse.
@@ -368,7 +361,7 @@ export function AnswerSearch({ initialQuestion = "", heading = "Search", intro =
         description="The services you meet first, in the order most learners meet them. Pick one to ask about it."
         items={awsServices} categories={awsCategories}
         cover={<TopicCover label="AWS" />}
-        onExplain={(item, group) => explain(item, "AWS", false, group)}
+        onExplain={(item, group) => explain(item, "AWS", group)}
         itemIcon={item => <AwsServiceIcon name={item.name} category={item.category} />}
         itemImage={item => { const src = awsServiceImageUrl(item.name); return src ? { src, alt: `Illustration of what ${item.name} does` } : null; }}
         categoryIcon={category => <AwsCategoryIcon category={category} />}
@@ -378,7 +371,7 @@ export function AnswerSearch({ initialQuestion = "", heading = "Search", intro =
       <CatalogBrowser id="ai-glossary" title="AI terms worth knowing" technology="AI terms" noun="terms"
         description="The working vocabulary of building with language models, grouped by the question each term answers."
         items={aiGlossary} categories={aiGlossaryCategories}
-        onExplain={(item, group) => explain(item, "AI terms", false, group)}
+        onExplain={(item, group) => explain(item, "AI terms", group)}
         itemIcon={item => <AiTermIcon name={item.name} category={item.category} />}
         itemImage={item => topicImage("AI terms", item)}
         categoryIcon={category => <AiCategoryIcon category={category} />}
@@ -389,7 +382,7 @@ export function AnswerSearch({ initialQuestion = "", heading = "Search", intro =
         description="The language as it is usually taught — values, collections, control flow, functions, objects, then the craft around them."
         items={pythonHandbook} categories={pythonCategories}
         cover={<TopicCover label="Python" />}
-        onExplain={(item, group) => explain(item, "Python", false, group)}
+        onExplain={(item, group) => explain(item, "Python", group)}
         itemIcon={item => <PythonTopicIcon name={item.name} category={item.category} />}
         itemImage={item => topicImage("Python", item)}
         categoryIcon={category => <PythonCategoryIcon category={category} />}
@@ -406,7 +399,7 @@ export function AnswerSearch({ initialQuestion = "", heading = "Search", intro =
         const renderBook = (handbook: TechnologyHandbook) => <CatalogBrowser id={handbook.title.toLowerCase().replace(/[^a-z0-9]+/g, "-")} title={handbook.title} noun="topics"
         description={handbook.description} items={handbook.topics} categories={handbook.categories}
         cover={<TopicCover label={handbook.title} />}
-        onExplain={(item, group) => explain(item, handbook.title, false, group)}
+        onExplain={(item, group) => explain(item, handbook.title, group)}
         // A package handbook lists products — axios, boto3, @nestjs/common —
         // so those rows get the real mark. Concept rows ("Refs and the DOM")
         // match no brand and keep the category glyph.
@@ -423,30 +416,7 @@ export function AnswerSearch({ initialQuestion = "", heading = "Search", intro =
         return complete ? renderBook(complete) : <DeferredHandbook key={handbook.title} title={handbook.title}>{renderBook}</DeferredHandbook>;
       },
     })),
-  ].sort((a, b) => a.title.localeCompare(b.title)).concat(
-      // Catalogues supplied whole by the caller. Class Room passes only these;
-      // the search page still passes its own three plus the handbooks. They sit
-      // outside the sort above, in the order the caller listed them.
-      //
-      // These are categorised by class or by exam, so the per-category icon the
-      // handbooks use would give every card in a subject the same mark. The
-      // resolvers here read the topic itself, and draw its diagram where the
-      // subject has one.
-      catalogues.map(entry => ({
-        id: entry.id,
-        title: entry.title,
-        count: entry.topics.length,
-        noun: entry.noun,
-        render: () => <CatalogBrowser id={entry.id} title={entry.title} noun={entry.noun}
-          description={entry.description} items={entry.topics} categories={entry.categories}
-          cover={<TopicCover label={entry.title} catalogueId={entry.id} />}
-          onExplain={(item, group) => explain(item, entry.id, true, group)}
-          itemIcon={item => <ClassroomTopicIcon subject={entry.id} name={item.name} summary={item.summary} />}
-          categoryIcon={category => category.startsWith("Class ") ? <GraduationCap size={14} aria-hidden="true" /> : <ClassroomTopicIcon subject={entry.id} name={category} />}
-          question={item => `${entry.questionPrefix} ${item.name} (${entry.title}, ${item.category}). Include a labeled learning diagram, step-by-step explanation, a worked example and common mistakes. ${item.summary}`.slice(0, 400)}
-          onAsk={value => void ask(value)} />,
-      }))
-  ), [awsServices, awsCategories, aiGlossary, aiGlossaryCategories, pythonHandbook, pythonCategories, technologyHandbooks, deferredHandbooks, catalogues, ask, explain]);
+  ].sort((a, b) => a.title.localeCompare(b.title)), [awsServices, awsCategories, aiGlossary, aiGlossaryCategories, pythonHandbook, pythonCategories, technologyHandbooks, deferredHandbooks, ask, explain]);
 
   return <section className={styles.page} aria-label="Search">
     <header className={styles.head}>
@@ -500,7 +470,7 @@ export function AnswerSearch({ initialQuestion = "", heading = "Search", intro =
           <AnswerDocument key={active.id} card={active} providers={providers}
             onOpenRelated={group ? name => {
               const next = group.items.find(item => item.name === name);
-              if (next) explain(next, group.technology, group.classroom, group.items);
+              if (next) explain(next, group.technology, group.items);
             } : undefined}
             onAsk={item => void ask(item)} onRetry={() => { forget(active.id); void ask(active.question); }} onForget={() => preparedCard ? setReading(false) : forget(active.id)} />
         </>}
@@ -610,7 +580,6 @@ function AnswerTitleIcon({ card }: { card: Card }) {
   const category = card.question.split(" · ").at(-1) ?? "";
   const brand = [topic?.name, topic?.subject].find((label): label is string => !!label && hasTopicMedia(label));
   if (brand) return <BrandMark label={brand} size={20} />;
-  if (card.result?.prepared === "exam" && topic) return <ClassroomTopicIcon {...topic} size={20} />;
   return <TechnologyTopicIcon category={category} size={20} />;
 }
 
@@ -676,9 +645,7 @@ function AnswerDocument({ card, providers, onAsk, onRetry, onForget, onOpenRelat
         {/* The header already names the topic, and a prepared answer's headline
             is that same name — so the headline only appears when it says
             something the title did not. */}
-        {contentKey(answer.headline) !== contentKey(title) && <h2 className={styles.headline}>{card.result.topic && (card.result.prepared === "exam"
-          ? <ClassroomTopicIcon {...card.result.topic} size={24} />
-          : <TechnologyTopicIcon category={card.question.split(" · ").at(-1) ?? ""} size={24} />)}<KeyText text={answer.headline} /></h2>}
+        {contentKey(answer.headline) !== contentKey(title) && <h2 className={styles.headline}>{card.result.topic && <TechnologyTopicIcon category={card.question.split(" · ").at(-1) ?? ""} size={24} />}<KeyText text={answer.headline} /></h2>}
         {answer.definition && <p className={styles.definition}><KeyText text={answer.definition} /></p>}
         <p className={styles.summary}><KeyText text={answer.summary} /></p>
         {answer.diagrams?.map((diagram, index) => <LearningDiagram key={`${diagram.title}-${index}`} diagram={diagram} />)}
@@ -820,7 +787,7 @@ function AnswerDocument({ card, providers, onAsk, onRetry, onForget, onOpenRelat
  * Whether a step's code is something to type at a shell.
  *
  * A prepared answer's code is otherwise printed as plain text, which suits a
- * classroom answer's working but not a command: a reader following a Git
+ * worked answer but not a command: a reader following a Git
  * walkthrough needs the terminal chrome that says "run this", and the per-line
  * copy button that comes with it.
  */

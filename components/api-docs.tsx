@@ -57,6 +57,7 @@ import { ApiDefinitionCards } from "./api-definition";
 import { AiProvenance, AiProviderPicker, useAiProvider } from "./ai-provider-picker";
 import { KeyText } from "./key-text";
 import { LearningPicture } from "./learning-picture";
+import { ListenButton } from "./listen-button";
 import { learningImageUrl } from "@/lib/learning-image";
 import { shortDefinition } from "@/lib/notes-study";
 
@@ -237,17 +238,6 @@ export function ApiDetail({
           API Reference
         </Link>
         <div className={styles.learnLinks}>
-          <a
-            href={pkg.docs}
-            target="_blank"
-            rel="noopener noreferrer"
-            className={styles.officialDocsLink}
-            title={`Open official ${pkg.name} documentation`}
-          >
-            <FileCode2 size={15} aria-hidden="true" />
-            Official Reference
-            <ArrowUpRight size={13} aria-hidden="true" />
-          </a>
           <Link href={mentorHref}>
             <MessageCircle size={15} />
             Ask the mentor
@@ -278,6 +268,9 @@ export function ApiDetail({
             </span>
             {detail?.since && <span className={styles.kind}>{detail.since}</span>}
           </h1>
+          {detail && <ListenButton id={`api:${pkg.id}:${entry.name}`} title={entry.name} text={() => [`${entry.name}, from ${detail.packageName}`, detail.description,
+            detail.parameters.length ? `Parameters. ${detail.parameters.map(parameter => `${parameter.name}: ${parameter.description}`).join(". ")}` : "",
+            `Returns. ${detail.returns}`, detail.notes.length ? `Notes. ${detail.notes.join(". ")}` : "", detail.useCases.length ? `Use it for: ${detail.useCases.join(". ")}` : ""].filter(Boolean).join(". ")} />}
           <LearningPicture src={learningImageUrl("api", [pkg.id, entry.name])} alt={`Illustration of how ${entry.name} works`} />
           {!curated && <AiProviderPicker providers={providers} provider={provider} onChoose={choose} />}
           {!detail && generated.status === "loading" && (
@@ -1136,15 +1129,6 @@ export function ApiDocs() {
                             <AccordionChevron />
                           </button>
                         </h3>
-                        <a
-                          href={pkg.docs}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className={ref.docsLink}
-                          aria-label={`Official ${pkg.name} documentation (opens in a new tab)`}
-                        >
-                          Official docs <ArrowUpRight size={13} aria-hidden="true" />
-                        </a>
                       </header>
                       {full && <PackageFacts pkg={full} />}
                       <div id={`api-group-${pkg.id}`} hidden={!isOpen}>

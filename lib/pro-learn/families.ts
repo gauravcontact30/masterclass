@@ -15,7 +15,7 @@ export const TRACK_FAMILIES: TrackFamily[] = [
   { id: "backend", name: "Backend & APIs", icon: "🔌", blurb: "Servers, contracts and the work behind a response.", trackIds: ["node", "express", "fastapi", "graphql"] },
   { id: "validation", name: "Validation & forms", icon: "✅", blurb: "Trusting input before it reaches your business logic.", trackIds: ["zod", "conform", "pydantic"] },
   { id: "auth", name: "Authentication", icon: "🔐", blurb: "Sessions, providers and who is allowed to do what.", trackIds: ["authjs", "clerk", "kinde", "betterauth"] },
-  { id: "database", name: "Databases & storage", icon: "🗄️", blurb: "Schemas, queries, caching and serverless data.", trackIds: ["mongoose", "drizzle", "prisma", "neon", "redis", "upstash"] },
+  { id: "database", name: "Databases & storage", icon: "🗄️", blurb: "Schemas, queries, caching and serverless data.", trackIds: ["drizzle", "prisma", "neon", "redis", "upstash"] },
   { id: "pythondata", name: "Python data & ML", icon: "📊", blurb: "Arrays, dataframes, models and the charts that explain them.", trackIds: ["numpy", "pandas", "polars", "scipy", "sklearn", "tensorflow", "pytorch", "keras", "seaborn", "plotly"] },
   { id: "http", name: "HTTP & scraping", icon: "🌐", blurb: "Talking to other people's services, politely and reliably.", trackIds: ["requests", "httpx", "scrapy"] },
   { id: "testing", name: "Testing & quality", icon: "🧪", blurb: "Proving it works before someone else finds out it doesn't.", trackIds: ["jest", "vitest", "rtl", "playwright", "cypress"] },

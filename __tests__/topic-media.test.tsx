@@ -4,8 +4,6 @@ import { render } from "@testing-library/react";
 import { BRAND_SLUGS, OWNED_BRAND_PNGS, brandKeyFor } from "@/lib/media/brands";
 import { brandAssetFor } from "@/lib/media";
 import { creditLine, needsAttribution, type MediaAsset } from "@/lib/media/types";
-import { SubjectArtwork, hasSubjectArtwork } from "@/components/subject-artwork";
-import { CLASSROOM_CATALOGUES } from "@/lib/pro-learn/classroom";
 import manifest from "@/lib/media/brand-manifest.json";
 import { BrandMark, TopicCover } from "@/components/topic-media";
 import { CatalogBrowser } from "@/components/catalog-browser";
@@ -127,19 +125,3 @@ test.each([
   expect(brandAssetFor(label)).toBeNull();
 });
 
-test("every Class Room catalogue has cover artwork", () => {
-  for (const entry of CLASSROOM_CATALOGUES) {
-    expect(hasSubjectArtwork(entry.id)).toBe(true);
-  }
-});
-
-test("subject artwork is labelled for a screen reader and skipped when unmapped", () => {
-  const { container } = render(<SubjectArtwork id="maths" title="Maths" />);
-  const svg = container.querySelector("svg")!;
-  expect(svg).toHaveAttribute("role", "img");
-  expect(svg.querySelector("title")?.textContent).toMatch(/^Maths: /);
-  expect(svg.getAttribute("aria-labelledby")).toBe(svg.querySelector("title")!.id);
-
-  const { container: none } = render(<SubjectArtwork id="not-a-subject" />);
-  expect(none.querySelector("svg")).toBeNull();
-});

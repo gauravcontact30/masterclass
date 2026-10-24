@@ -1,7 +1,7 @@
 "use client";
 import { AccordionSummary } from "@/components/ui/accordion-chevron";
 import { useState } from "react";
-import { ArrowUpRight, BookOpen, Search } from "lucide-react";
+import { BookOpen, Search } from "lucide-react";
 import { DASHBOARD_LESSONS, type LessonSection } from "@/lib/dashboard-lessons";
 import styles from "./dashboard-lessons.module.css";
 
@@ -15,7 +15,6 @@ export function DashboardLessons({ section }: { section: LessonSection }) {
       <AccordionSummary><span className={styles.meta}>{lesson.technology} · {lesson.minutes} min</span><strong>{lesson.title}</strong><span>{lesson.level} · Open lesson</span></AccordionSummary>
       <div className={styles.body}><p>{lesson.summary}</p><ol>{lesson.steps.map(step => <li key={step}>{step}</li>)}</ol>
         <div className={styles.exercise}><b>Try it yourself</b><p>{lesson.exercise}</p><details><AccordionSummary>Reveal the reasoning</AccordionSummary><p>{lesson.answer}</p></details></div>
-        <a href={lesson.source} target="_blank" rel="noopener noreferrer">Read the source <ArrowUpRight size={14} aria-hidden="true" /></a>
       </div>
     </details>)}</div>
     {!lessons.length && <p role="status">No matching lessons. Try a technology such as PostgreSQL or clear your search.</p>}

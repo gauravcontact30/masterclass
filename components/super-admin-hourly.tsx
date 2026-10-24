@@ -4,6 +4,7 @@ import { ArrowRight, CalendarDays, Clock, FileText, Footprints, Inbox, LayoutGri
 import { reportDay } from "@/lib/daily-social";
 import type { ActivityHours, HourDetails } from "@/lib/activity-hours";
 import { Card } from "./ui/card";
+import { Pager } from "./super-admin-pager";
 import shell from "./super-admin-dashboard.module.css";
 import styles from "./super-admin-hourly.module.css";
 
@@ -11,6 +12,8 @@ const time = (hour: number) => `${String(hour).padStart(2, "0")}:00`;
 const trackedTime = (value: string | null) => value ? new Date(value).toLocaleTimeString("en-IN", { timeZone: "Asia/Kolkata", hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: false }) : "Not recorded";
 const span = (first: string, last: string) => first === last ? trackedTime(first) : `${trackedTime(first)} – ${trackedTime(last)}`;
 type DetailTab = "views" | "visitors" | "users" | "routes";
+/** Visit paths are long cards, so the list shows this many visitors a page. */
+const PATHS_PAGE = 8;
 const periods = ["Night · 00–06", "Morning · 06–12", "Afternoon · 12–18", "Evening · 18–24"];
 
 export function SuperAdminHourly() {
@@ -97,7 +100,7 @@ export function SuperAdminHourly() {
         <div><dt>Latest tracked view (IST)</dt><dd>{trackedTime(detail.lastSeen)}</dd></div>
       </dl>
       {viewingCurrent && <p className={styles.note}>Counts cover this hour so far, through the last successful refresh. They are page-view activity, not a count of people currently online.</p>}
-      <HourTabs details={detail.details} views={detail.views} tab={tab} onTab={setTab} />
+      <HourTabs key={`${date}-${detail.hour}`} details={detail.details} views={detail.views} tab={tab} onTab={setTab} />
     </section> : <p role="status">{error || "Loading hour details…"}</p>}
   </Card></>;
 }
@@ -125,6 +128,10 @@ function Empty({ icon: Icon, text, hint }: { icon: LucideIcon; text: string; hin
 
 /** The four detail views of one hour, one tab each; every table scrolls sideways on its own when narrow. */
 function HourTabs({ details, views, tab, onTab }: { details: HourDetails; views: number; tab: DetailTab; onTab: (tab: DetailTab) => void }) {
+  // Keyed by day and hour, so choosing another hour starts its visit paths on page 1.
+  const [pathsPage, setPathsPage] = useState(1);
+  const pathPages = Math.max(1, Math.ceil(details.journeys.length / PATHS_PAGE));
+  const pathAt = Math.min(pathsPage, pathPages);
   const empty = (text: string) => <Empty icon={Inbox} text={text} />;
   return <div>
     <div className={styles.tabs} role="tablist" aria-label="Hour details">{TABS.map(({ id, label, icon: Icon, count }) => <button key={id} type="button" role="tab" id={`hour-tab-${id}`} aria-controls="hour-tab-panel" aria-selected={tab === id} onClick={() => onTab(id)}><Icon size={13} aria-hidden="true" />{label}<b>{count(details, views)}</b></button>)}</div>
@@ -143,7 +150,7 @@ function HourTabs({ details, views, tab, onTab }: { details: HourDetails; views:
           </section>
         </div>
         <h4 className={styles.pathsHeading}><Footprints size={14} aria-hidden="true" />Visit paths <small>{details.journeys.length} {details.journeys.length === 1 ? "visitor" : "visitors"} · most recent first</small></h4>
-        {details.journeys.length ? <ol className={styles.journeys}>{details.journeys.map(journey => <li key={journey.visitor} className={styles.journey}>
+        {details.journeys.length ? <><ol className={styles.journeys}>{details.journeys.slice((pathAt - 1) * PATHS_PAGE, pathAt * PATHS_PAGE).map(journey => <li key={journey.visitor} className={styles.journey}>
           <header>
             <span className={styles.avatar} data-signed={journey.signedIn || undefined} aria-hidden="true">{journey.email ? journey.email[0].toUpperCase() : <UserRound size={15} />}</span>
             <span className={styles.journeyWho}><b>{journey.email ?? `${journey.newVisitor ? "New" : "Returning"} visitor`}</b><small>{journey.signedIn ? "Signed in" : "Anonymous"} · #{journey.visitor}</small></span>
@@ -162,7 +169,8 @@ function HourTabs({ details, views, tab, onTab }: { details: HourDetails; views:
               <span className={styles.stepTime}><time dateTime={step.at}>{trackedTime(step.at)}</time>{gap > 0 && <small>+{gap < 60_000 ? `${Math.round(gap / 1000)}s` : `${Math.floor(gap / 60_000)}m ${Math.round((gap % 60_000) / 1000)}s`}</small>}</span>
             </li>;
           })}</ol>
-        </li>)}</ol> : <Empty icon={Footprints} text="No visits in this hour yet" hint="Each visitor's pages and clicks will line up here as a path." />}
+        </li>)}</ol>
+        {details.journeys.length > PATHS_PAGE && <Pager page={pathAt} pages={pathPages} total={details.journeys.length} size={PATHS_PAGE} onPage={setPathsPage} />}</> : <Empty icon={Footprints} text="No visits in this hour yet" hint="Each visitor's pages and clicks will line up here as a path." />}
         <p className={styles.note}>Sections and cards come from clicks on the landing page and the Learning Dashboard: the section heading and the card or button label, never typed text.</p>
       </>}
       {tab === "visitors" && (details.visitors.length ? <div className={styles.table}><table><thead><tr><th>Visitor</th><th>Location</th><th>Device</th><th>Views</th><th>Routes</th><th>Clicks</th><th>Last page</th><th>Seen (IST)</th></tr></thead><tbody>{details.visitors.map(row => <tr key={row.visitor}><td><b>{row.email ?? `${row.newVisitor ? "New" : "Returning"} visitor`}</b><small>{row.signedIn ? "Signed in" : "Anonymous"} · {row.visitor}</small></td><td>{row.place ?? "Unknown"}</td><td>{row.device ?? "Unknown"}</td><td>{row.views}</td><td>{row.routes}</td><td>{row.clicks}</td><td><code>{row.lastPath}</code></td><td>{span(row.first, row.last)}</td></tr>)}</tbody></table></div> : empty("No visitors in this hour yet."))}

@@ -32,3 +32,21 @@ describe("ListenButton", () => {
     expect(await screen.findByRole("button", { name: /pause: closures/i })).toBeInTheDocument();
   });
 });
+
+describe("AudioDock narrator switch", () => {
+  it("switches to the male narrator and re-reads the part in that voice, then back to the female narrator", async () => {
+    const { AudioDock } = await import("@/components/audio-dock");
+    jest.spyOn(window.HTMLMediaElement.prototype, "play").mockResolvedValue(undefined);
+    global.fetch = jest.fn().mockResolvedValue({ ok: true, json: async () => ({ url: "https://example.supabase.co/b.mp3" }) });
+    render(<><ListenButton id="t2" title="Promises" text="A promise is a value that arrives later." /><AudioDock /></>);
+    fireEvent.click(screen.getByRole("button", { name: /listen: promises/i }));
+    fireEvent.click(await screen.findByRole("radio", { name: "Male" }));
+    await waitFor(() => expect(JSON.parse((global.fetch as jest.Mock).mock.calls.at(-1)[1].body).voice).toBe("Algieba"));
+    expect(screen.getByRole("radio", { name: "Male" })).toHaveAttribute("aria-checked", "true");
+    expect(screen.getAllByRole("option").every(option => !/Sulafat/.test(option.textContent ?? ""))).toBe(true);
+    // Back to female: the Sulafat part was fetched already, so it replays from memory without a new request.
+    fireEvent.click(screen.getByRole("radio", { name: "Female" }));
+    expect(screen.getByRole("radio", { name: "Female" })).toHaveAttribute("aria-checked", "true");
+    expect(screen.getByRole("combobox", { name: "Voice" })).toHaveValue("Sulafat");
+  });
+});

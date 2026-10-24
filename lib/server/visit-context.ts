@@ -3,8 +3,11 @@ import { createHmac } from "node:crypto";
 
 /** Browser, OS and device class from a User-Agent, coarse on purpose: enough for the activity breakdowns, nothing identifying. */
 export function parseUserAgent(ua: string) {
-  const browser = /Edg\//.test(ua) ? "Edge" : /OPR\/|Opera/.test(ua) ? "Opera" : /SamsungBrowser/.test(ua) ? "Samsung Internet"
-    : /CriOS|Chrome\//.test(ua) ? "Chrome" : /FxiOS|Firefox\//.test(ua) ? "Firefox" : /Safari\//.test(ua) ? "Safari" : "Other";
+  // In-app browsers first: their user agents also carry Chrome/ or Safari tokens, and on iOS a webview carries neither.
+  const inApp = /FBAN|FBAV|FB_IAB/.test(ua) ? "Facebook app" : /Instagram/.test(ua) ? "Instagram app" : /LinkedInApp/.test(ua) ? "LinkedIn app"
+    : /GSA\//.test(ua) ? "Google app" : /WhatsApp/.test(ua) ? "WhatsApp" : /Twitter|TwitterAndroid/.test(ua) ? "X app" : null;
+  const browser = inApp ?? (/Edg\//.test(ua) ? "Edge" : /OPR\/|Opera/.test(ua) ? "Opera" : /SamsungBrowser/.test(ua) ? "Samsung Internet"
+    : /CriOS|Chrome\//.test(ua) ? "Chrome" : /FxiOS|Firefox\//.test(ua) ? "Firefox" : /Safari\//.test(ua) ? "Safari" : /AppleWebKit/.test(ua) && /iPhone|iPad|iPod/.test(ua) ? "In-app browser" : "Other");
   const os = /Windows NT/.test(ua) ? "Windows" : /Android/.test(ua) ? "Android" : /iPad/.test(ua) ? "iPadOS" : /iPhone|iPod/.test(ua) ? "iOS"
     : /Mac OS X|Macintosh/.test(ua) ? "macOS" : /CrOS/.test(ua) ? "ChromeOS" : /Linux/.test(ua) ? "Linux" : "Other";
   const device = /iPad|Tablet|PlayBook|Silk|(Android(?!.*Mobile))/i.test(ua) ? "Tablet" : /Mobi|iPhone|iPod|Android.*Mobile|Windows Phone/i.test(ua) ? "Mobile" : "Desktop";

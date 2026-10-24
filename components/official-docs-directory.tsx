@@ -20,7 +20,7 @@ export function OfficialDocsDirectory({ docId }: { docId: string }) {
   const pageCount = Math.max(1, Math.ceil(matches.length / PAGE_SIZE));
   const current = Math.min(page, pageCount - 1);
   return <section className={styles.directory} aria-labelledby={`${id}-title`}>
-    <header><h3 id={`${id}-title`}>{directory.title}</h3><p>{directory.note}</p><a href={directory.sourceUrl} target="_blank" rel="noopener noreferrer">Official reference index ↗</a></header>
+    <header><h3 id={`${id}-title`}>{directory.title}</h3><p>{directory.note}</p></header>
     <div className={styles.filters}>
       <label htmlFor={`${id}-search`}>Search references<input id={`${id}-search`} type="search" value={query} placeholder="Search a name or concept" onChange={e => { setQuery(e.target.value); setPage(0); }} /></label>
       <label htmlFor={`${id}-category`}>Category<select id={`${id}-category`} value={category} onChange={e => { setCategory(e.target.value); setPage(0); }}><option>All</option>{categories.map(name => <option key={name}>{name}</option>)}</select></label>
@@ -29,7 +29,7 @@ export function OfficialDocsDirectory({ docId }: { docId: string }) {
     <p className={styles.count} role="status">{matches.length} references{matches.length > 0 && ` · ${current * PAGE_SIZE + 1}–${Math.min((current + 1) * PAGE_SIZE, matches.length)}`}</p>
     {matches.length ? <ul className={styles.entries}>{matches.slice(current * PAGE_SIZE, (current + 1) * PAGE_SIZE).map(entry => <li key={`${entry.kind}-${entry.name}-${entry.category}`} className={learningCard.card}>
       <span className={styles.category}>{entry.category} · {entry.kind}</span>
-      <h4><a href={entry.url} target="_blank" rel="noopener noreferrer">{entry.name} <span aria-hidden="true">↗</span></a></h4><p>{entry.summary}</p>
+      <h4>{entry.name}</h4><p>{entry.summary}</p>
       {!!entry.points?.length && <details><AccordionSummary>Key points</AccordionSummary><ul>{entry.points.map(point => <li key={point}>{point}</li>)}</ul></details>}
     </li>)}</ul> : <p>No references match. Try a shorter search or another category.</p>}
     <nav className={styles.pagination} aria-label={`${directory.title} pagination`}>

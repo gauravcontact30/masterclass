@@ -120,12 +120,6 @@ export default function App() { return <QueryClientProvider client={client}><Les
 }`), file("public/lessons.json", '[{"id":1,"title":"Queries"},{"id":2,"title":"Caching"}]')], { "@tanstack/react-query": "^5.0.0" }, ["Open http://localhost:5173 and confirm two lessons appear.", "Refresh the query; inspect the /lessons.json request in browser developer tools."]),
 };
 
-DOCS_PROJECTS.tailwind = reactProject("A responsive lesson card", "Use Tailwind's Vite plugin and utility classes in a complete React project.", `import React, { useState } from 'react';
-export default function App() {
-  const [done, setDone] = useState(false);
-  return <main className="mx-auto max-w-xl p-6"><section className="rounded-xl border border-stone-200 bg-white p-6 shadow-sm"><h1 className="text-2xl font-semibold">Learn utility classes</h1><p className="my-4 text-stone-600">Spacing, type, color, and responsive layout.</p><button className="rounded-lg bg-stone-800 px-4 py-2 text-white hover:bg-stone-700" onClick={() => setDone(!done)}>{done ? 'Completed' : 'Mark complete'}</button></section></main>;
-}`, [file("vite.config.js", `import { defineConfig } from 'vite';\nimport tailwindcss from '@tailwindcss/vite';\nexport default defineConfig({ plugins: [tailwindcss()] });`)], { tailwindcss: "^4.0.0", "@tailwindcss/vite": "^4.0.0" }, ["Open http://localhost:5173; the card has a border, rounded corners, and a dark button.", "Click Mark complete and confirm the label changes."]);
-DOCS_PROJECTS.tailwind.files = DOCS_PROJECTS.tailwind.files.map(entry => entry.path === "src/style.css" ? file(entry.path, '@import "tailwindcss";\nbody { background: #faf9f5; font-family: system-ui, sans-serif; }') : entry);
 
 DOCS_PROJECTS.nextjs = project("Server data with a client-side filter", "A Next.js App Router project with a server page, a data module, and an interactive client component.", [
   file("app/page.js", `import { lessons } from '../lib/lessons.js';\nimport LessonList from './lesson-list.js';\nexport default function Page() { return <main><h1>Lesson library</h1><LessonList lessons={lessons} /></main>; }`),
