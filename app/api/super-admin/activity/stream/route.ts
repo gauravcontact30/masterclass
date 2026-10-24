@@ -16,7 +16,7 @@ import { isLocalAddress, looksAutomated } from "@/lib/visit-quality";
 const LIMIT = 20_000, PAGE = 1000;
 /** Read only to judge a row (lib/visit-quality.ts); never sent to the browser. */
 const PRIVATE = new Set(["timezone", "language", "ip_masked"]);
-const COLUMNS = "id,created_at,event,visitor_id,session_id,user_id,new_visitor,path,title,referrer_host,utm_source,country,region,city,device,browser,os,duration_ms,screen,timezone,language,ip_masked,ip_hash";
+const COLUMNS = "id,created_at,event,visitor_id,session_id,user_id,new_visitor,path,title,referrer_host,utm_source,country,region,city,postal_code,device,browser,os,duration_ms,screen,timezone,language,ip_masked,ip_hash";
 
 // Account emails change rarely; one lookup per account every ten minutes per server instance is plenty.
 const emailCache = new Map<string, { email: string | null; at: number }>();

@@ -81,3 +81,62 @@ test("visitors on the site come first, then the most recently active", () => {
   const visitors = run(rows, [beat("/", 900, 20, "sb")]);
   expect(visitors.map(v => v.key)).toEqual(["visitor:b", "visitor:a"]);
 });
+
+test("accurately calculates stay duration, postal code, and engaged learning contents", () => {
+  const rows = [
+    view(600, "/dashboard/techy/langgraph-agents", { postal_code: "560001", title: "LangGraph Multi-Agent Workflows - Masterclass" }),
+    leave(420, "/dashboard/techy/langgraph-agents", 180),
+    view(420, "/dashboard/lessons/nextjs-16", { postal_code: "560001", title: "Next.js 16 Masterclass" }),
+    leave(120, "/dashboard/lessons/nextjs-16", 300),
+  ];
+  const [visitor] = streamVisitors(indexVisits(rows, []), NOW);
+  // Arrived 600s ago, left 120s ago => stay duration is 480,000 ms (8 minutes)
+  expect(visitor.stayDurationMs).toBe(480_000);
+  // Total active engagement: 180s + 300s = 480,000 ms
+  expect(visitor.engagedMs).toBe(480_000);
+  expect(visitor.postalCode).toBe("560001");
+  expect(visitor.engagedContents).toHaveLength(2);
+  expect(visitor.engagedContents[0]).toMatchObject({
+    path: "/dashboard/lessons/nextjs-16",
+    title: "Next.js 16",
+    category: "Lesson / Track",
+    durationMs: 300_000,
+    views: 1,
+  });
+  expect(visitor.engagedContents[1]).toMatchObject({
+    path: "/dashboard/techy/langgraph-agents",
+    title: "LangGraph Multi-Agent Workflows",
+    category: "Tech Deep-Dive",
+    durationMs: 180_000,
+    views: 1,
+  });
+  // Multi-algorithm analytics:
+  expect(visitor.focusRatio).toBe(100);
+  expect(visitor.intensityTier).toBe("Deep Focus");
+  expect(visitor.readingVelocity).toBe("240s / page");
+  expect(visitor.currentStep).toMatchObject({
+    step: 2,
+    total: 2,
+    title: "Next.js 16",
+    category: "Lesson / Track",
+  });
+  expect(visitor.leftAlgorithm).toBe("beacon");
+  expect(visitor.timeSpentAlgorithm).toBe("beacon");
+});
+
+test("filterZeroSeconds excludes visitors who engaged for 0 seconds", () => {
+  const engagedRow = [view(300, "/dashboard/lessons"), leave(200, "/dashboard/lessons", 100)];
+  // 0s bounced visitor: arrived 400s ago, no leave beacon or 0 duration
+  const zeroRow = [view(400, "/auth/login")];
+
+  const allRows = [...engagedRow, ...zeroRow.map(r => ({ ...r, visitor_id: "zero-visitor", session_id: "zero-session" }))];
+  const index = indexVisits(allRows, []);
+
+  const unfiltered = streamVisitors(index, NOW, {}, false);
+  expect(unfiltered.length).toBe(2);
+
+  const filtered = streamVisitors(index, NOW, {}, true);
+  expect(filtered.length).toBe(1);
+  expect(filtered[0].visitor_id ?? filtered[0].first.visitor_id).toBe("visitor-1");
+});
+

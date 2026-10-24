@@ -178,7 +178,7 @@ export function SuperAdminDashboard({ userId = "admin", isOwner = false }: { use
       {error && !writing && <Alert variant="destructive" className={styles.error}><AlertDescription>{error}{data && " Displaying the last successful snapshot."}</AlertDescription></Alert>}
       {!data && !error && !writing && <div className={styles.loading} role="status"><span>Loading application monitoring...</span><div className={styles.metrics}>{[0,1,2,3].map(id=><Skeleton key={id} className={styles.metricSkeleton}/>)}</div></div>}
       {isCopilotPage(section) && <SuperAdminCopilot key={section} page={section} title={sections.find(s => s.id === section)?.label ?? section} days={days} query={query} />}
-      {notepadOpened && <div hidden={section !== "notepad"}><SuperAdminNotepad userId={userId} /></div>}
+      {notepadOpened && <div hidden={section !== "notepad"} style={{ minWidth: 0, maxWidth: "100%", width: "100%" }}><SuperAdminNotepad userId={userId} /></div>}
       {section === "upload-learning" && isOwner && <SuperAdminUploadLearning userId={userId} />}
       {section === "logs-health" && <SuperAdminLogsHealth />}
       {section === "billing" && <><SuperAdminFestiveSale /><SuperAdminBilling /></>}

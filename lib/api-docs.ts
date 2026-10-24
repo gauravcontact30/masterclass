@@ -6,10 +6,21 @@ export const API_PACKAGES: ApiPackage[] = catalog.packages;
 export const API_TYPES = catalog.types;
 export const API_STATUSES = [{ id: "s", label: "Stable" }, { id: "p", label: "Developer Preview" }, { id: "x", label: "Experimental" }, { id: "d", label: "Deprecated" }];
 
+// Entry objects are stable catalog data; reuse normalized text across the three filter passes.
+const searchText = new WeakMap<ApiEntry, string>();
+function entrySearchText(pkg: ApiPackage, entry: ApiEntry) {
+  let text = searchText.get(entry);
+  if (text === undefined) {
+    text = `${pkg.name} ${entry.name}`.toLowerCase();
+    searchText.set(entry, text);
+  }
+  return text;
+}
+
 export function filterApiPackages(query: string, packageId: string, kinds: string[], statuses: string[]) {
   const normalized = query.trim().toLowerCase();
   return API_PACKAGES.filter(pkg => packageId === "all" || pkg.id === packageId).map(pkg => ({ ...pkg, entries: pkg.entries.filter(entry =>
-    (!kinds.length || kinds.includes(entry.kind)) && statuses.includes(entry.status) && (!normalized || `${pkg.name} ${entry.name}`.toLowerCase().includes(normalized)),
+    (!kinds.length || kinds.includes(entry.kind)) && statuses.includes(entry.status) && (!normalized || entrySearchText(pkg, entry).includes(normalized)),
   ) })).filter(pkg => pkg.entries.length);
 }
 

@@ -8,6 +8,34 @@ function Fixture() {
   return <ul ref={ref}><li>Short</li><li>Tall</li></ul>;
 }
 
+test("does not measure offscreen cards and measures them when they approach the viewport", () => {
+  const original = global.IntersectionObserver;
+  let notify: IntersectionObserverCallback = () => {};
+  const disconnect = jest.fn();
+  global.IntersectionObserver = jest.fn(callback => {
+    notify = callback;
+    return { observe: jest.fn(), disconnect, unobserve: jest.fn() };
+  }) as unknown as typeof IntersectionObserver;
+  jest.useFakeTimers();
+  try {
+    const { container, unmount } = render(<Fixture />);
+    const track = container.querySelector("ul")!;
+    const rect = { left: 0, right: 300, width: 300, height: 240 } as DOMRect;
+    track.getBoundingClientRect = jest.fn(() => rect);
+    const measure = jest.fn(() => rect);
+    track.querySelectorAll("li").forEach(card => { card.getBoundingClientRect = measure; });
+    act(() => { jest.runOnlyPendingTimers(); });
+    expect(measure).not.toHaveBeenCalled();
+    act(() => { notify([{ isIntersecting: true } as IntersectionObserverEntry], {} as IntersectionObserver); jest.runOnlyPendingTimers(); });
+    expect(track.style.height).toBe("240px");
+    unmount();
+    expect(disconnect).toHaveBeenCalled();
+  } finally {
+    global.IntersectionObserver = original;
+    jest.useRealTimers();
+  }
+});
+
 test("fits visible cards, updates after pagination and content resizing, and cleans up", () => {
   let resize: ResizeObserverCallback = () => {};
   const original = global.ResizeObserver;

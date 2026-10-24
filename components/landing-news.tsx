@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useLayoutEffect, useRef, useState, type FocusEvent, type ReactNode } from "react";
-import { preload } from "react-dom";
+import { useNearViewport } from "./use-near-viewport";
+import { useVisiblePlayback } from "./use-visible-playback";
 import { ArrowUpRight, Bot, CircleHelp, Hammer, GraduationCap, Lightbulb, ListChecks, Boxes, BrainCircuit, ChevronLeft, ChevronRight, Cloud, Code2, MessagesSquare, Newspaper, Pause, Play, Rocket, ShoppingCart, Sparkles, Star, TrendingUp, type LucideIcon } from "lucide-react";
 import { NEWS_BASICS, NEWS_PER_SLIDE, NEWS_PRACTICE, NEWS_SLIDES, QUESTIONS_PER_SLIDE, type InterviewAsk, type LandingNews as LandingNewsData, type NewsLogo, type NewsSlideData, type NewsSlideId, type NewsSlideMeta, type NewsStory } from "@/lib/landing-news";
 import { NEWS_MORE_BASICS, NEWS_QUICK_CHECKS } from "@/lib/landing-news-study";
@@ -43,12 +44,13 @@ const cardTone = (slide: number, card: number) => TONES[(slide + 1 + card) % TON
  * stops it.
  */
 export function LandingNews() {
-  // A <link rel=preload> in the page head starts the download with the HTML, before this script has even run; the
-  // fetch below then picks the response up. The stories live in a server-side store, so this is quick even when
-  // the searches behind them are being refreshed.
-  preload(NEWS_URL, { as: "fetch", crossOrigin: "anonymous" });
+  const sectionRef = useRef<HTMLElement>(null);
+  const nearViewport = useNearViewport(sectionRef);
+  const visible = useVisiblePlayback(sectionRef);
   const [news, setNews] = useState<LandingNewsData | null>(null);
   useEffect(() => {
+    // Keep offscreen news requests and JSON parsing out of the hero critical path.
+    if (!nearViewport) return;
     const controller = new AbortController();
     let timer = 0, tries = 0;
     // Later tries add a query so neither the browser nor the CDN hands back the same still-empty answer.
@@ -68,7 +70,7 @@ export function LandingNews() {
       .catch(error => { if ((error as Error).name !== "AbortError") setNews(held => held ?? { updatedAt: null, slides: [] }); });
     void load();
     return () => { window.clearTimeout(timer); controller.abort(); };
-  }, []);
+  }, [nearViewport]);
   const { language } = useLanguage();
   const hi = language === "hi";
   const text = (en: string, hindi: string) => hi ? hindi : en;
@@ -76,7 +78,7 @@ export function LandingNews() {
   const [playing, setPlaying] = useState(true);
   const [hovered, setHovered] = useState(false);
   const [focused, setFocused] = useState(false);
-  const rotating = playing && !hovered && !focused;
+  const rotating = nearViewport && visible && playing && !hovered && !focused;
   const total = NEWS_SLIDES.length;
 
   useEffect(() => {
@@ -91,7 +93,7 @@ export function LandingNews() {
   }
 
   return (
-    <section id="fresh-in-tech" data-own-heading className={styles.news} aria-labelledby="fresh-title" aria-roledescription="carousel"
+    <section ref={sectionRef} id="fresh-in-tech" data-own-heading className={styles.news} aria-labelledby="fresh-title" aria-roledescription="carousel"
       onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)} onFocus={() => setFocused(true)} onBlur={leaveFocus}>
       <div className={styles.inner}>
         <header className={styles.head}>
@@ -121,7 +123,7 @@ export function LandingNews() {
             const data = news?.slides.find(slide => slide.id === meta.id);
             return <article key={meta.id} className={styles.slide} data-tone={TONES[i % TONES.length]} hidden={i !== index} aria-roledescription="slide" aria-label={`${i + 1} / ${total}: ${hi ? meta.hiTitle : meta.title}`}>
               {/* Only the slide on show is built: the hidden ones were ~3,000 nodes to hydrate on every visit. */}
-              {i === index && <><Cover meta={meta} hi={hi} eager={i === 0} data={data} />
+              {i === index && <><Cover meta={meta} hi={hi} eager={false} data={data} />
               <div className={styles.body}>
                 {data?.kind === "news" && data.stories.length > 0 && <Stories stories={data.stories.slice(0, NEWS_PER_SLIDE)} hi={hi} slide={i} />}
                 {data?.kind === "questions" && data.questions.length > 0 && <Questions questions={data.questions.slice(0, QUESTIONS_PER_SLIDE)} hi={hi} slide={i} />}

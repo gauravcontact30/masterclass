@@ -1,4 +1,5 @@
 "use client";
+import { memo } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { OFFICIAL_DOCS, OFFICIAL_DOCS_CATEGORIES } from "@/lib/official-docs-data";
 import { Button } from "./ui/button";
@@ -9,7 +10,7 @@ import styles from "./official-docs-reader.module.css";
 const REFERENCE_CATEGORIES = OFFICIAL_DOCS_CATEGORIES.filter(category => category !== "All");
 const TABS_PER_PAGE = 3;
 
-export function OfficialDocsReader({ selectedId, onSelect }: {
+export const OfficialDocsReader = memo(function OfficialDocsReader({ selectedId, onSelect }: {
   selectedId: string;
   onSelect: (id: string) => void;
 }) {
@@ -73,5 +74,5 @@ export function OfficialDocsReader({ selectedId, onSelect }: {
       </div>
     </section>
   );
-}
+});
 

@@ -44,7 +44,13 @@ test("lists each visitor once, with exact arrival and leaving times", async () =
 test("the stream reads its own five-day feed, so older visitors still show", async () => {
   const live = { generatedAt: ago(0), totals: { liveNow: 0, liveSignedIn: 0, pageViews: 0, visitors: 0, bounceRate: null, avgSessionSeconds: null }, hours: [], recent: [], people: [] };
   const old = ago(3 * 86_400_000);
-  const stream = { days: 5, visits: [{ ...base, visitor_id: "visitor-9", created_at: old, event: "page_view", person: "visitor:visitor-9", email: null, new_visitor: false, session_id: "s-9", path: "/compare" }] };
+  const stream = {
+    days: 5,
+    visits: [
+      { ...base, visitor_id: "visitor-9", created_at: old, event: "page_view", person: "visitor:visitor-9", email: null, new_visitor: false, session_id: "s-9", path: "/compare" },
+      { ...base, visitor_id: "visitor-9", created_at: ago(3 * 86_400_000 - 45_000), event: "page_leave", person: "visitor:visitor-9", session_id: "s-9", path: "/compare", duration_ms: 45_000 },
+    ],
+  };
   global.fetch = jest.fn(async (url: RequestInfo | URL) => ({ ok: true, json: async () => String(url).includes("/activity/stream") ? stream : live })) as jest.Mock;
   render(<OverviewLive snapshot={null} onRefreshSnapshot={() => {}} />);
   expect(await screen.findByText("Returning visitor")).toBeVisible();
@@ -70,7 +76,7 @@ test("heartbeats decide who is on the site, the filters narrow the list, and ref
   expect(await screen.findByText("reader@example.test")).toBeVisible();
   expect(screen.getByText(/3m 2\ds · reading/)).toBeVisible();
   // The quiet tab is timed to its last heartbeat (5 minutes) and shows as left, not as reading.
-  expect(screen.getByText("5m 0s")).toBeVisible();
+  expect(screen.getAllByText("5m 0s")[0]).toBeVisible();
   expect(screen.getAllByText("On the site now", { selector: "b" })).toHaveLength(1);
   expect(screen.getByText("New visitor")).toBeVisible();
   screen.getByRole("button", { name: /On the site now 1/ }).click();

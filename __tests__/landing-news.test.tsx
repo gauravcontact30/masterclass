@@ -77,7 +77,7 @@ describe("LandingNews carousel", () => {
   });
   afterEach(() => { jest.useRealTimers(); });
   // findBy* would advance the fake clock while it polls, and with it the slideshow; flushing the fetch keeps slide 1.
-  const renderLoaded = async () => { render(<LandingNews />); await act(async () => { await Promise.resolve(); await Promise.resolve(); }); };
+  const renderLoaded = async () => { render(<LandingNews />); await act(async () => { jest.advanceTimersByTime(0); await Promise.resolve(); await Promise.resolve(); }); };
 
   test("lists stories beyond the four cards as More headlines, with their concepts and the slide's basics", async () => {
     const story = (n: number) => ({ title: `Story number ${n}`, summary: `Summary ${n}.`, source: "Anthropic", url: `https://www.anthropic.com/news/s${n}`, date: "2026-10-20", logo: null, points: [], why: null, concept: { term: `Term ${n}`, explain: `Explained ${n}.` } });

@@ -9,8 +9,12 @@ export function useCarouselHeight(ref: RefObject<HTMLElement | null>) {
     if (!track) return;
     const previousHeight = track.style.height;
     let frame = 0;
+    let visible = typeof IntersectionObserver === "undefined";
     const measure = () => {
       frame = 0;
+      // Offscreen tracks otherwise measure every card during initial image loads,
+      // forcing layout while the hero and the user's current interaction need it.
+      if (!visible) return;
       const viewport = track.getBoundingClientRect();
       if (!viewport.width) return;
       let height = 0;
@@ -24,8 +28,13 @@ export function useCarouselHeight(ref: RefObject<HTMLElement | null>) {
       if (height > 0 && track.style.height !== next) track.style.height = next;
     };
     const schedule = () => {
-      if (!frame) frame = requestAnimationFrame(measure);
+      if (visible && !frame) frame = requestAnimationFrame(measure);
     };
+    const visibility = typeof IntersectionObserver === "undefined" ? null : new IntersectionObserver(entries => {
+      visible = entries.some(entry => entry.isIntersecting);
+      if (visible) schedule();
+    }, { rootMargin: "300px 0px" });
+    visibility?.observe(track);
     const resize = typeof ResizeObserver === "undefined" ? null : new ResizeObserver(schedule);
     const observe = () => {
       resize?.disconnect();
@@ -43,6 +52,7 @@ export function useCarouselHeight(ref: RefObject<HTMLElement | null>) {
       cancelAnimationFrame(frame);
       resize?.disconnect();
       mutations.disconnect();
+      visibility?.disconnect();
       track.removeEventListener("scroll", schedule);
       track.removeEventListener("load", schedule, true);
       window.removeEventListener("resize", schedule);

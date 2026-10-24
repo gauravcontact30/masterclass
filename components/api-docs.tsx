@@ -4,7 +4,7 @@ import { AccordionChevron } from "@/components/ui/accordion-chevron";
 import { NativeSelect, NativeSelectOptGroup, NativeSelectOption } from "@/components/ui/native-select";
 import { Button } from "@/components/ui/button";
 import { Badge as UiBadge } from "@/components/ui/badge";
-import { useEffect, useMemo, useState, type CSSProperties } from "react";
+import { memo, useDeferredValue, useEffect, useMemo, useState, type CSSProperties } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { vocabularyIcon } from "@/lib/vocabulary-icons";
@@ -616,10 +616,60 @@ function PackageFacts({ pkg }: { pkg: ApiPackage }) {
   );
 }
 
+const ApiEntryRow = memo(function ApiEntryRow({ packageId, entry, pathname }: { packageId: string; entry: ApiEntry; pathname: string }) {
+  const guide = API_DETAILS[`${packageId}:${entry.name}`];
+  // The agentic frameworks read as picture cards, like the Popular AWS
+  // services on Search: the illustration across the top, then the name.
+  if (AGENTIC_FRAMEWORK_IDS.has(packageId)) return (
+    <li className={`${ref.entry} ${ref.entryCard}`} key={entry.name} data-guide={guide ? "" : undefined}>
+      <LearningPicture variant="card" className={ref.entryPicture} src={learningImageUrl("api", [packageId, entry.name])} alt="" />
+      <div className={ref.entryCardBody}>
+        <Badge kind={entry.kind} />
+        <div className={ref.entryText}>
+          <Link prefetch={false} className={ref.entryLink} href={apiTopicHref(pathname, packageId, entry.name)}>
+            {entry.name}
+          </Link>
+          {guide && <p className={ref.entrySummary}>{guide.description}</p>}
+        </div>
+      </div>
+      <span className={ref.entryMeta}>
+        {guide && <span className={ref.guideTag}>Guide</span>}
+        {entry.status !== "s" && (
+          <span className={ref.statusTag} data-status={entry.status}>
+            {statusLabel(entry.status)}
+          </span>
+        )}
+        <span className={ref.kindLabel}>{kindLabel(entry.kind)}</span>
+      </span>
+    </li>
+  );
+  return (
+    <li className={ref.entry} key={entry.name} data-guide={guide ? "" : undefined}>
+      <Badge kind={entry.kind} />
+      <div className={ref.entryText}>
+        <Link prefetch={false} className={ref.entryLink} href={apiTopicHref(pathname, packageId, entry.name)}>
+          {entry.name}
+        </Link>
+        {guide && <p className={ref.entrySummary}>{guide.description}</p>}
+      </div>
+      <span className={ref.entryMeta}>
+        {guide && <span className={ref.guideTag}>Guide</span>}
+        {entry.status !== "s" && (
+          <span className={ref.statusTag} data-status={entry.status}>
+            {statusLabel(entry.status)}
+          </span>
+        )}
+        <span className={ref.kindLabel}>{kindLabel(entry.kind)}</span>
+      </span>
+    </li>
+  );
+});
+
 export function ApiDocs() {
   const pathname = usePathname();
   const params = useSearchParams();
   const [query, setQuery] = useState("");
+  const deferredQuery = useDeferredValue(query);
   const [packageId, setPackageId] = useState("all");
   const [types, setTypes] = useState<string[]>([]);
   const [statuses, setStatuses] = useState(API_STATUSES.map((item) => item.id));
@@ -658,9 +708,9 @@ export function ApiDocs() {
   }, []);
 
   const groups = useMemo(() => {
-    const rawGroups = filterApiPackages(query, packageId, types, statuses);
-    if (!query.trim() || searchScope === "all") return rawGroups;
-    const normalized = query.trim().toLowerCase();
+    const rawGroups = filterApiPackages(deferredQuery, packageId, types, statuses);
+    if (!deferredQuery.trim() || searchScope === "all") return rawGroups;
+    const normalized = deferredQuery.trim().toLowerCase();
     return rawGroups
       .map((pkg) => ({
         ...pkg,
@@ -669,31 +719,31 @@ export function ApiDocs() {
         ),
       }))
       .filter((pkg) => pkg.entries.length > 0);
-  }, [query, packageId, types, statuses, searchScope]);
+  }, [deferredQuery, packageId, types, statuses, searchScope]);
 
   const categories = useMemo(() => groupByCategory(groups), [groups]);
   // Counts per status for the current search, package and types, ignoring the status filter itself.
   const statusCounts = useMemo(() => {
     const counts: Record<string, number> = {};
-    for (const pkg of filterApiPackages(query, packageId, types, API_STATUSES.map((item) => item.id))) {
+    for (const pkg of filterApiPackages(deferredQuery, packageId, types, API_STATUSES.map((item) => item.id))) {
       for (const entry of pkg.entries) counts[entry.status] = (counts[entry.status] ?? 0) + 1;
     }
     return counts;
-  }, [query, packageId, types]);
+  }, [deferredQuery, packageId, types]);
   // The same for each identifier type, ignoring the type filter itself, so every type shows what choosing it would add.
   const typeCounts = useMemo(() => {
     const counts: Record<string, number> = {};
-    for (const pkg of filterApiPackages(query, packageId, [], statuses)) {
+    for (const pkg of filterApiPackages(deferredQuery, packageId, [], statuses)) {
       for (const entry of pkg.entries) counts[entry.kind] = (counts[entry.kind] ?? 0) + 1;
     }
     return counts;
-  }, [query, packageId, statuses]);
+  }, [deferredQuery, packageId, statuses]);
   const selectedFilterPackage = API_PACKAGES.find((pkg) => pkg.id === packageId);
   const total = groups.reduce((sum, pkg) => sum + pkg.entries.length, 0);
   const selectedPackage = API_PACKAGES.find((pkg) => pkg.id === params.get("package"));
   const selectedEntry = selectedPackage?.entries.find((entry) => entry.name === params.get("api"));
   const detailRequested = params.has("api");
-  const searching = query.trim() !== "";
+  const searching = deferredQuery.trim() !== "";
 
   const isFiltered =
     searching || packageId !== "all" || types.length > 0 || statuses.length !== API_STATUSES.length || searchScope !== "all";
@@ -724,54 +774,6 @@ export function ApiDocs() {
     setCollapsed([]);
   }
 
-  function entryRow(pkg: ApiPackage, entry: ApiEntry) {
-    const guide = API_DETAILS[`${pkg.id}:${entry.name}`];
-    // The agentic frameworks read as picture cards, like the Popular AWS
-    // services on Search: the illustration across the top, then the name.
-    if (AGENTIC_FRAMEWORK_IDS.has(pkg.id)) return (
-      <li className={`${ref.entry} ${ref.entryCard}`} key={entry.name} data-guide={guide ? "" : undefined}>
-        <LearningPicture variant="card" className={ref.entryPicture} src={learningImageUrl("api", [pkg.id, entry.name])} alt="" />
-        <div className={ref.entryCardBody}>
-          <Badge kind={entry.kind} />
-          <div className={ref.entryText}>
-            <Link className={ref.entryLink} href={apiTopicHref(pathname, pkg.id, entry.name)}>
-              {entry.name}
-            </Link>
-            {guide && <p className={ref.entrySummary}>{guide.description}</p>}
-          </div>
-        </div>
-        <span className={ref.entryMeta}>
-          {guide && <span className={ref.guideTag}>Guide</span>}
-          {entry.status !== "s" && (
-            <span className={ref.statusTag} data-status={entry.status}>
-              {statusLabel(entry.status)}
-            </span>
-          )}
-          <span className={ref.kindLabel}>{kindLabel(entry.kind)}</span>
-        </span>
-      </li>
-    );
-    return (
-      <li className={ref.entry} key={entry.name} data-guide={guide ? "" : undefined}>
-        <Badge kind={entry.kind} />
-        <div className={ref.entryText}>
-          <Link className={ref.entryLink} href={apiTopicHref(pathname, pkg.id, entry.name)}>
-            {entry.name}
-          </Link>
-          {guide && <p className={ref.entrySummary}>{guide.description}</p>}
-        </div>
-        <span className={ref.entryMeta}>
-          {guide && <span className={ref.guideTag}>Guide</span>}
-          {entry.status !== "s" && (
-            <span className={ref.statusTag} data-status={entry.status}>
-              {statusLabel(entry.status)}
-            </span>
-          )}
-          <span className={ref.kindLabel}>{kindLabel(entry.kind)}</span>
-        </span>
-      </li>
-    );
-  }
 
   if (detailRequested) {
     return (
@@ -1142,7 +1144,7 @@ export function ApiDocs() {
                                   <h4>
                                     {section} <span className={ref.subgroupCount}>{inSection.length}</span>
                                   </h4>
-                                  <ul className={agentic ? `${ref.entries} ${ref.cardGrid}` : ref.entries}>{inSection.map((entry) => entryRow(pkg, entry))}</ul>
+                                  <ul className={agentic ? `${ref.entries} ${ref.cardGrid}` : ref.entries}>{inSection.map((entry) => <ApiEntryRow key={entry.name} packageId={pkg.id} entry={entry} pathname={pathname} />)}</ul>
                                 </div>
                               ) : null;
                             })
@@ -1151,12 +1153,12 @@ export function ApiDocs() {
                               <div className={ref.subgroup} key={group}>
                                 <h4>{group}</h4>
                                 <ul className={ref.entries}>
-                                  {entries.filter((entry) => javascriptGroup(entry.name) === group).map((entry) => entryRow(pkg, entry))}
+                                  {entries.filter((entry) => javascriptGroup(entry.name) === group).map((entry) => <ApiEntryRow key={entry.name} packageId={pkg.id} entry={entry} pathname={pathname} />)}
                                 </ul>
                               </div>
                             ))
                           ) : (
-                            <ul className={agentic ? `${ref.entries} ${ref.cardGrid}` : ref.entries}>{entries.map((entry) => entryRow(pkg, entry))}</ul>
+                            <ul className={agentic ? `${ref.entries} ${ref.cardGrid}` : ref.entries}>{entries.map((entry) => <ApiEntryRow key={entry.name} packageId={pkg.id} entry={entry} pathname={pathname} />)}</ul>
                           ))}
                         {isOpen && entries.length < pkg.entries.length && (
                           <button
