@@ -1,14 +1,15 @@
 import "server-only";
 import { randomUUID } from "node:crypto";
 import { z } from "zod";
-import { required, billingConfigured } from "./config";
+import { required, billingConfigured, subscriptionPrice } from "./config";
+import { saleOffer } from "./festive-sale";
 import { HttpError } from "./http";
 import { db, check } from "./db";
 import { razorpay, billingSubscription, reconcileSubscription, validateSubscriptionPlan } from "./billing";
 import { savePreparationsFor } from "./preparations";
 import { profile } from "./repository";
 
-export type GuestCheckout = { id:string; email:string; name:string; tier:"monthly"|"yearly"; selections:string[]; provider_ref:string; status:"created"|"fulfilled"|"conflict"; user_id:string|null; created_user:boolean; created_at:string };
+export type GuestCheckout = { id:string; email:string; name:string; tier:"monthly"|"yearly"; selections:string[]; provider_ref:string; status:"created"|"fulfilled"|"conflict"; user_id:string|null; created_user:boolean; created_at:string; festive_sale?:string|null; razorpay_plan_id?:string|null; recurring_amount_inr?:number|null };
 const terminal = ["cancelled","completed","expired"];
 /** A mandate the customer has authorised (Razorpay charges the first cycle with it). */
 const paid = (remote: z.infer<typeof billingSubscription>) => ["authenticated","active"].includes(remote.status) || (remote.paid_count ?? 0) > 0;
@@ -24,28 +25,33 @@ async function guestRow(filter: "id" | "provider_ref", value: string) {
 }
 export const guestCheckoutById = (id: string) => guestRow("id", id);
 
-export async function createGuestCheckout(input: { tier:"monthly"|"yearly"; email:string; name:string; selections:string[] }) {
+export async function createGuestCheckout(input: { tier:"monthly"|"yearly"; email:string; name:string; selections:string[]; expectedSale?:string|null; expectedAmountPaise?:number }) {
   if (!billingConfigured()) throw new HttpError(503, "setup_required");
   // An existing account subscribes from its dashboard, so the purchase lands on the right account.
   if (await accountIdByEmail(input.email)) throw new HttpError(409, "account_exists");
-  const planId = required(input.tier === "monthly" ? "RAZORPAY_MONTHLY_PLAN_ID" : "RAZORPAY_YEARLY_PLAN_ID");
+  // A reused checkout must carry the same recurring plan.
+  const offer = await saleOffer(input.tier);
+  const planId = offer?.planId ?? required(input.tier === "monthly" ? "RAZORPAY_MONTHLY_PLAN_ID" : "RAZORPAY_YEARLY_PLAN_ID");
+  if (input.expectedSale !== undefined && input.expectedSale !== (offer?.slug ?? null)) throw new HttpError(409,"pricing_changed");
+  const amountInr = offer?.amountInr ?? subscriptionPrice(input.tier);
+  if (input.expectedAmountPaise !== undefined && input.expectedAmountPaise !== Math.round(amountInr * 100)) throw new HttpError(409,"pricing_changed");
+  await validateSubscriptionPlan(input.tier, offer ?? undefined);
   const recent = check(await db().from("guest_checkouts").select("*").eq("email", input.email).eq("tier", input.tier).eq("status", "created").order("created_at", { ascending:false }).limit(1).maybeSingle()) as GuestCheckout | null;
   if (recent && Date.now() - Date.parse(recent.created_at) < REUSE_MS) {
     const remote = billingSubscription.parse(await razorpay(`subscriptions/${encodeURIComponent(recent.provider_ref)}`));
     if (remote.status === "created" && remote.plan_id === planId) {
       check(await db().from("guest_checkouts").update({ name:input.name, selections:input.selections }).eq("id", recent.id));
-      return { checkoutId:recent.id, subscriptionId:remote.id };
+      return { checkoutId:recent.id, subscriptionId:remote.id, amountInr };
     }
   }
-  await validateSubscriptionPlan(input.tier);
   const id = randomUUID();
   const remote = billingSubscription.parse(await razorpay("subscriptions", { plan_id:planId, total_count:input.tier === "monthly" ? 120 : 10, quantity:1, customer_notify:1, notes:{ guest_checkout:id, email:input.email } }));
-  const inserted = await db().from("guest_checkouts").insert({ id, email:input.email, name:input.name, tier:input.tier, selections:input.selections, provider_ref:remote.id }).select("id").single();
+  const inserted = await db().from("guest_checkouts").insert({ id, email:input.email, name:input.name, tier:input.tier, selections:input.selections, provider_ref:remote.id, festive_sale:offer?.slug ?? null, razorpay_plan_id:planId, recurring_amount_inr:amountInr }).select("id").single();
   if (inserted.error || !inserted.data) {
     await razorpay(`subscriptions/${encodeURIComponent(remote.id)}/cancel`, { cancel_at_cycle_end:0 }).catch(() => undefined);
     throw new HttpError(503, "service_error");
   }
-  return { checkoutId:id, subscriptionId:remote.id };
+  return { checkoutId:id, subscriptionId:remote.id, amountInr };
 }
 
 /**
@@ -66,7 +72,7 @@ async function ensureAccount(row: GuestCheckout) {
 
 /** Give the account this subscription unless it already holds a live one. Returns false on conflict. */
 async function attachSubscription(owner: string, row: GuestCheckout) {
-  const local = { user_id:owner, provider_ref:row.provider_ref, tier:row.tier, status:"created", synced_at:new Date(0).toISOString(), current_period_end:null, grace_until:null, cancel_at_cycle_end:false };
+  const local = { user_id:owner, provider_ref:row.provider_ref, tier:row.tier, status:"created", synced_at:new Date(0).toISOString(), current_period_end:null, grace_until:null, cancel_at_cycle_end:false, festive_sale:row.festive_sale ?? null, razorpay_plan_id:row.razorpay_plan_id ?? null, recurring_amount_inr:row.recurring_amount_inr ?? null };
   const current = check(await db().from("subscriptions").select("provider_ref,status,current_period_end").eq("user_id", owner).maybeSingle()) as { provider_ref:string; status:string; current_period_end:string|null } | null;
   if (!current) {
     const inserted = await db().from("subscriptions").insert(local).select("provider_ref").maybeSingle();

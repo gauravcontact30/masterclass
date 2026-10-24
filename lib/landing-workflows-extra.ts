@@ -8286,6 +8286,212 @@ export const EXTRA_WORKFLOWS: Workflow[] = [
     ]
   },
   {
+    "id": "lg-long-term-memory",
+    "group": "LangGraph",
+    "title": "Personal assistant with long-term memory",
+    "summary": "A LangGraph assistant that recalls a user's saved facts and preferences from a namespaced store using semantic search, keeps each conversation's state with a checkpointer, and runs a memory-writing node after conversations to decide what to save. It must never leak one user's memories into another user's session, and it must never keep a fact the user asked it to forget.",
+    "industry": "Consumer software",
+    "problem": "Chat assistants forget everything when a new thread starts, so users repeat their preferences, names and context every time. Dumping whole chat histories into the prompt is costly, noisy and a privacy risk.",
+    "outcome": "Each new thread starts with a small set of relevant, user-approved facts, so answers are personalised from the first message. Memory stays curated: it is deduplicated, updatable and deletable per user.",
+    "nodes": [
+      {
+        "id": "user",
+        "label": "User\nchat app",
+        "x": 100,
+        "y": 190,
+        "kind": "actor",
+        "step": 1
+      },
+      {
+        "id": "server",
+        "label": "Agent Server\nthread_id + user_id",
+        "x": 300,
+        "y": 190,
+        "kind": "service",
+        "step": 1
+      },
+      {
+        "id": "checkpointer",
+        "label": "PostgresSaver\nper-thread state",
+        "x": 300,
+        "y": 318,
+        "kind": "store",
+        "step": 2
+      },
+      {
+        "id": "recall",
+        "label": "recall_memories\nsemantic search",
+        "x": 500,
+        "y": 62,
+        "kind": "service",
+        "step": 3
+      },
+      {
+        "id": "store",
+        "label": "PostgresStore\nns: memories, user",
+        "x": 700,
+        "y": 62,
+        "kind": "store",
+        "step": 3
+      },
+      {
+        "id": "embed",
+        "label": "Embedding model\nindex + query",
+        "x": 900,
+        "y": 62,
+        "kind": "llm"
+      },
+      {
+        "id": "assistant",
+        "label": "assistant node\nLLM + memories",
+        "x": 500,
+        "y": 190,
+        "kind": "llm",
+        "step": 4
+      },
+      {
+        "id": "route",
+        "label": "tools_condition\ntool call or done?",
+        "x": 500,
+        "y": 318,
+        "kind": "decision",
+        "step": 5
+      },
+      {
+        "id": "tools",
+        "label": "ToolNode\ncalendar, email",
+        "x": 700,
+        "y": 190,
+        "kind": "tool",
+        "step": 5
+      },
+      {
+        "id": "queue",
+        "label": "Memory job\ndebounced per user",
+        "x": 700,
+        "y": 318,
+        "kind": "queue",
+        "step": 6
+      },
+      {
+        "id": "write-memory",
+        "label": "write_memory\nextract + reconcile",
+        "x": 900,
+        "y": 318,
+        "kind": "llm",
+        "step": 7
+      },
+      {
+        "id": "memory-ui",
+        "label": "Memory settings\nview / delete",
+        "x": 900,
+        "y": 190,
+        "kind": "tool",
+        "step": 8
+      }
+    ],
+    "edges": [
+      {
+        "from": "user",
+        "to": "server",
+        "label": "message + ids"
+      },
+      {
+        "from": "server",
+        "to": "checkpointer",
+        "label": "load thread state"
+      },
+      {
+        "from": "server",
+        "to": "recall",
+        "label": "start run"
+      },
+      {
+        "from": "recall",
+        "to": "store",
+        "label": "search(ns, query)"
+      },
+      {
+        "from": "store",
+        "to": "embed",
+        "label": "embed query/items",
+        "dashed": true
+      },
+      {
+        "from": "recall",
+        "to": "assistant",
+        "label": "top-k memories"
+      },
+      {
+        "from": "assistant",
+        "to": "route",
+        "label": "AI message"
+      },
+      {
+        "from": "route",
+        "to": "tools",
+        "label": "tool calls"
+      },
+      {
+        "from": "tools",
+        "to": "assistant",
+        "label": "tool results"
+      },
+      {
+        "from": "route",
+        "to": "server",
+        "label": "final reply"
+      },
+      {
+        "from": "server",
+        "to": "user",
+        "label": "stream tokens"
+      },
+      {
+        "from": "assistant",
+        "to": "checkpointer",
+        "label": "checkpoint per step",
+        "dashed": true
+      },
+      {
+        "from": "route",
+        "to": "queue",
+        "label": "conversation idle",
+        "dashed": true
+      },
+      {
+        "from": "queue",
+        "to": "write-memory",
+        "label": "one run per user"
+      },
+      {
+        "from": "write-memory",
+        "to": "store",
+        "label": "put / delete by key"
+      },
+      {
+        "from": "user",
+        "to": "memory-ui",
+        "label": "manage memories"
+      },
+      {
+        "from": "memory-ui",
+        "to": "store",
+        "label": "user edits/deletes"
+      }
+    ],
+    "steps": [
+      "The client sends the message to the Agent Server with config containing thread_id for the conversation and user_id taken from the authenticated session, never from the request body.",
+      "The compiled StateGraph loads the thread's latest checkpoint from the Postgres checkpointer, so the messages list (merged with the add_messages reducer) holds the conversation so far.",
+      "The recall_memories node calls store.search on the namespace (\"memories\", user_id) with the latest user message as the query and a small limit, returning the most semantically similar facts and preferences.",
+      "The assistant node puts the recalled memories into the system prompt as clearly labelled user facts and calls a tool-calling chat model over the thread's messages.",
+      "A conditional edge (tools_condition) sends tool calls to the ToolNode and loops back to the assistant, or ends the run when the model returns a final answer.",
+      "The reply streams to the user in messages mode while the checkpointer saves state at every super-step; when the conversation goes idle, a debounced memory job is scheduled for that user and thread.",
+      "The write_memory node reads the new messages plus existing memories, asks an LLM with structured output to decide insert, update or no-op for each candidate fact, and writes with store.put using stable keys, which the store embeds for search.",
+      "Users can view, correct or delete their memories in settings; deletes call store.delete and are honoured on the very next recall."
+    ]
+  },
+  {
     "id": "lg-loan-underwriting",
     "group": "LangGraph",
     "title": "Loan underwriting with durable execution",
@@ -12866,6 +13072,434 @@ export const EXTRA_WORKFLOWS: Workflow[] = [
     ]
   },
   {
+    "id": "ls-annotation-queues",
+    "group": "LangSmith",
+    "title": "Human review with annotation queues",
+    "summary": "Routes selected production runs into a LangSmith single-run annotation queue where several reviewers, each holding a reservation, score them against a rubric and assertions. Approved runs are then exported to a dataset for regression experiments. The workflow must never let unreviewed or disputed runs become reference outputs, and it must never let two reviewers silently overwrite each other's work.",
+    "industry": "AI / LLM operations",
+    "problem": "LLM-as-judge scores and user thumbs alone cannot be trusted as ground truth. Ad-hoc spreadsheet reviews lose the link to the original trace, double-assign work and produce labels nobody can reuse.",
+    "outcome": "Domain experts review the right runs in one place, using a consistent rubric and multiple opinions per run. Their verified outputs feed versioned datasets that gate every prompt or model change through evaluate() experiments.",
+    "nodes": [
+      {
+        "id": "app",
+        "label": "LLM app\n@traceable + wrap",
+        "x": 100,
+        "y": 62,
+        "kind": "actor",
+        "step": 1
+      },
+      {
+        "id": "project",
+        "label": "Tracing project\nruns + threads",
+        "x": 300,
+        "y": 62,
+        "kind": "store",
+        "step": 1
+      },
+      {
+        "id": "online-eval",
+        "label": "Online evaluator\nLLM-as-judge",
+        "x": 300,
+        "y": 190,
+        "kind": "llm",
+        "step": 2
+      },
+      {
+        "id": "automation",
+        "label": "Automation rule\nfilter + sampling",
+        "x": 500,
+        "y": 62,
+        "kind": "decision",
+        "step": 3
+      },
+      {
+        "id": "queue",
+        "label": "Annotation queue\nsingle-run",
+        "x": 700,
+        "y": 62,
+        "kind": "queue",
+        "step": 4
+      },
+      {
+        "id": "rubric",
+        "label": "Rubric + assertions\nfeedback keys",
+        "x": 700,
+        "y": 190,
+        "kind": "tool",
+        "step": 4
+      },
+      {
+        "id": "reviewers",
+        "label": "SME reviewers\nN reviewers per run",
+        "x": 100,
+        "y": 318,
+        "kind": "actor",
+        "step": 5
+      },
+      {
+        "id": "reservation",
+        "label": "Reservation\nrun locked to one",
+        "x": 500,
+        "y": 318,
+        "kind": "service",
+        "step": 5
+      },
+      {
+        "id": "feedback",
+        "label": "Run feedback\nscores + comments",
+        "x": 700,
+        "y": 318,
+        "kind": "store",
+        "step": 6
+      },
+      {
+        "id": "agreement",
+        "label": "Agreement check\nall reviews in?",
+        "x": 900,
+        "y": 318,
+        "kind": "decision",
+        "step": 7
+      },
+      {
+        "id": "export",
+        "label": "Export to dataset\ncorrected outputs",
+        "x": 900,
+        "y": 190,
+        "kind": "service",
+        "step": 8
+      },
+      {
+        "id": "dataset",
+        "label": "Golden dataset\nexamples + splits",
+        "x": 900,
+        "y": 62,
+        "kind": "store",
+        "step": 8
+      },
+      {
+        "id": "experiments",
+        "label": "evaluate()\nregression tests",
+        "x": 500,
+        "y": 190,
+        "kind": "service",
+        "step": 9
+      }
+    ],
+    "edges": [
+      {
+        "from": "app",
+        "to": "project",
+        "label": "traces via SDK"
+      },
+      {
+        "from": "project",
+        "to": "online-eval",
+        "label": "sampled runs"
+      },
+      {
+        "from": "online-eval",
+        "to": "automation",
+        "label": "judge feedback"
+      },
+      {
+        "from": "project",
+        "to": "automation",
+        "label": "filter matches"
+      },
+      {
+        "from": "automation",
+        "to": "queue",
+        "label": "add runs to queue"
+      },
+      {
+        "from": "rubric",
+        "to": "queue",
+        "label": "instructions + keys"
+      },
+      {
+        "from": "reviewers",
+        "to": "reservation",
+        "label": "open next run"
+      },
+      {
+        "from": "queue",
+        "to": "reservation",
+        "label": "reserve run"
+      },
+      {
+        "from": "reservation",
+        "to": "queue",
+        "label": "expired: release",
+        "dashed": true
+      },
+      {
+        "from": "reservation",
+        "to": "feedback",
+        "label": "submit rubric"
+      },
+      {
+        "from": "feedback",
+        "to": "agreement",
+        "label": "reviews collected"
+      },
+      {
+        "from": "agreement",
+        "to": "reviewers",
+        "label": "dispute: escalate",
+        "dashed": true
+      },
+      {
+        "from": "agreement",
+        "to": "export",
+        "label": "approved"
+      },
+      {
+        "from": "export",
+        "to": "dataset",
+        "label": "add example"
+      },
+      {
+        "from": "dataset",
+        "to": "experiments",
+        "label": "run experiments"
+      },
+      {
+        "from": "experiments",
+        "to": "online-eval",
+        "label": "calibrate judge",
+        "dashed": true
+      }
+    ],
+    "steps": [
+      "Instrument the app with LANGSMITH_TRACING plus @traceable or wrap_openai (or OpenTelemetry via the OTLP endpoint). Runs land in a tracing project, and threads group multi-turn conversations.",
+      "Attach an online evaluator, such as an LLM-as-judge template, to production runs with a filter and sampling rate. It writes judge scores as feedback on each run.",
+      "An automation rule matches runs worth human attention, such as low judge scores, negative user feedback, errors or a random sample for calibration. It adds those runs to the annotation queue.",
+      "Configure a single-run annotation queue. Give it reviewer instructions, a rubric built from feedback keys, pass/fail assertions, and the number of reviewers required per run.",
+      "Each reviewer opens the queue and is handed the next run under a reservation, so no one else works on it at the same time. If the reviewer walks away, the reservation expires and the run returns to the queue.",
+      "The reviewer inspects the full trace, fills in the rubric scores, answers the assertions and adds comments. The result is stored as feedback on the run, attributed to that reviewer.",
+      "Once the required number of reviewers have finished, compare their scores. Runs where reviewers agree move on; disputed runs go to a lead reviewer for adjudication.",
+      "Export approved runs from the queue to a dataset, correcting the output where needed so it becomes the reference output. Tag the examples with splits such as regression or edge-case.",
+      "Run evaluate() or pytest with @pytest.mark.langsmith against the dataset whenever a prompt commit or model changes, and compare experiments. Use the human labels as few-shot examples to recalibrate the LLM-as-judge."
+    ]
+  },
+  {
+    "id": "ls-prompt-hub",
+    "group": "LangSmith",
+    "title": "Prompt versioning in the Prompt Hub",
+    "summary": "Engineers edit prompts in the Playground, commit immutable versions to the Prompt Hub, promote them by moving staging and prod tags, and have applications pull prompts by tag so a rollback is a tag move, not a redeploy. It must never serve an unevaluated or unknown prompt version to production, and every production trace must record which commit produced it.",
+    "industry": "AI / LLM platforms",
+    "problem": "Prompts often live as strings in code or shared docs, so changes ship without review, nobody knows which wording caused a regression, and reverting needs a full code deploy.",
+    "outcome": "Every prompt change is a traceable commit, promotion is gated by evaluation scores, production reads a named tag, and a bad change can be reverted in minutes by pointing the prod tag at the previous commit.",
+    "nodes": [
+      {
+        "id": "prompt-engineer",
+        "label": "Prompt engineer\nowns the prompt",
+        "x": 100,
+        "y": 62,
+        "kind": "actor",
+        "step": 1
+      },
+      {
+        "id": "playground",
+        "label": "Playground\nedit + test run",
+        "x": 300,
+        "y": 62,
+        "kind": "tool",
+        "step": 1
+      },
+      {
+        "id": "prompt-hub",
+        "label": "Prompt Hub\nversioned commits",
+        "x": 300,
+        "y": 190,
+        "kind": "store",
+        "step": 2
+      },
+      {
+        "id": "eval-experiment",
+        "label": "evaluate()\non regression set",
+        "x": 500,
+        "y": 62,
+        "kind": "service",
+        "step": 3
+      },
+      {
+        "id": "dataset",
+        "label": "Regression dataset\nreference outputs",
+        "x": 500,
+        "y": 190,
+        "kind": "store"
+      },
+      {
+        "id": "promotion-gate",
+        "label": "Promote?\nbeats baseline",
+        "x": 700,
+        "y": 62,
+        "kind": "decision",
+        "step": 4
+      },
+      {
+        "id": "tags",
+        "label": "Commit tags\nstaging / prod",
+        "x": 700,
+        "y": 190,
+        "kind": "store",
+        "step": 5
+      },
+      {
+        "id": "webhook",
+        "label": "Prompt webhook\non commit to CI",
+        "x": 900,
+        "y": 62,
+        "kind": "queue"
+      },
+      {
+        "id": "app-service",
+        "label": "App service\npull_prompt(:prod)",
+        "x": 900,
+        "y": 190,
+        "kind": "service",
+        "step": 6
+      },
+      {
+        "id": "prompt-cache",
+        "label": "Prompt cache\nlast good version",
+        "x": 900,
+        "y": 318,
+        "kind": "store"
+      },
+      {
+        "id": "tracing",
+        "label": "Tracing project\ncommit in metadata",
+        "x": 700,
+        "y": 318,
+        "kind": "service",
+        "step": 7
+      },
+      {
+        "id": "online-eval",
+        "label": "Online evaluator\nsampled prod runs",
+        "x": 500,
+        "y": 318,
+        "kind": "llm",
+        "step": 8
+      },
+      {
+        "id": "rollback",
+        "label": "Rollback\nmove prod tag back",
+        "x": 300,
+        "y": 318,
+        "kind": "decision",
+        "step": 9
+      },
+      {
+        "id": "end-user",
+        "label": "End user\nuses the app",
+        "x": 100,
+        "y": 318,
+        "kind": "actor"
+      }
+    ],
+    "edges": [
+      {
+        "from": "prompt-engineer",
+        "to": "playground",
+        "label": "edit messages, model"
+      },
+      {
+        "from": "playground",
+        "to": "prompt-hub",
+        "label": "commit"
+      },
+      {
+        "from": "prompt-hub",
+        "to": "eval-experiment",
+        "label": "candidate commit"
+      },
+      {
+        "from": "dataset",
+        "to": "eval-experiment",
+        "label": "examples"
+      },
+      {
+        "from": "eval-experiment",
+        "to": "promotion-gate",
+        "label": "scores vs baseline"
+      },
+      {
+        "from": "promotion-gate",
+        "to": "tags",
+        "label": "tag staging, then prod"
+      },
+      {
+        "from": "promotion-gate",
+        "to": "playground",
+        "label": "fails: iterate",
+        "dashed": true
+      },
+      {
+        "from": "prompt-hub",
+        "to": "webhook",
+        "label": "commit event",
+        "dashed": true
+      },
+      {
+        "from": "webhook",
+        "to": "eval-experiment",
+        "label": "trigger CI eval",
+        "dashed": true
+      },
+      {
+        "from": "tags",
+        "to": "app-service",
+        "label": "resolve :prod"
+      },
+      {
+        "from": "app-service",
+        "to": "prompt-cache",
+        "label": "cache with TTL",
+        "dashed": true
+      },
+      {
+        "from": "end-user",
+        "to": "app-service",
+        "label": "requests"
+      },
+      {
+        "from": "app-service",
+        "to": "tracing",
+        "label": "trace + commit hash"
+      },
+      {
+        "from": "tracing",
+        "to": "online-eval",
+        "label": "sampled runs"
+      },
+      {
+        "from": "online-eval",
+        "to": "rollback",
+        "label": "score drop alert"
+      },
+      {
+        "from": "rollback",
+        "to": "tags",
+        "label": "prod to prior commit",
+        "dashed": true
+      }
+    ],
+    "steps": [
+      "The prompt engineer opens the prompt in the Playground, edits the messages, variables and model settings, and runs it against a few saved inputs to sanity-check the output.",
+      "They commit the change to the Prompt Hub with a clear message; each commit is immutable and identified by a commit hash, so earlier versions stay retrievable.",
+      "The commit (manually, or via a prompt-commit webhook into CI) is pulled by hash and run through evaluate() on a regression dataset with code and LLM-as-judge evaluators, producing an experiment.",
+      "The new experiment is compared with the experiment for the current prod commit; it is promoted only if key scores hold or improve and no critical example regresses.",
+      "Promotion is a tag move: the staging tag is pointed at the new commit first, exercised in the staging environment, then the prod tag is moved to the same commit.",
+      "The application calls client.pull_prompt(\"name:prod\") at startup or on a short TTL, caches the result, and falls back to the last good cached version if the Hub is unreachable.",
+      "Each production run is traced into a LangSmith project with the resolved prompt name and commit hash in metadata, so any output can be tied to an exact version.",
+      "Online evaluators score a sampled share of production runs, filtered by prompt commit, and dashboards and alerts flag drops after a promotion.",
+      "To roll back, an owner moves the prod tag back to the previous known-good commit; apps pick it up on the next pull or cache refresh, with no code deploy."
+    ]
+  },
+  {
     "id": "ls-agent-trajectory",
     "group": "LangSmith",
     "title": "Evaluating agent trajectories",
@@ -13073,6 +13707,217 @@ export const EXTRA_WORKFLOWS: Workflow[] = [
       "Compare the new experiment with the baseline experiment in LangSmith. Inspect any example where the trajectory score dropped, even if the answer score held.",
       "Wire the same cases into CI with @pytest.mark.langsmith so each pull request produces an experiment. Merges are blocked when critical-path scores regress.",
       "Attach online evaluators with filters and sampling to production runs or threads. Low scores trigger automation rules that push the traces back into the annotation queue."
+    ]
+  },
+  {
+    "id": "ls-cost-latency",
+    "group": "LangSmith",
+    "title": "Cost & latency monitoring from traces",
+    "summary": "Instruments an LLM app so every LangSmith run records token usage, cost and latency, then uses trace views, dashboards by model and feature, and alerts to find slow steps and catch cost spikes. It must never misattribute cost or latency to the wrong model, feature or step, because teams act on these numbers.",
+    "industry": "AI / SaaS",
+    "problem": "LLM features get slower and more expensive as prompts, models and agent loops change, and nobody sees it until the monthly invoice or user complaints arrive. Without per-run data, teams cannot tell which model, feature or step is responsible.",
+    "outcome": "Each request becomes a trace with per-step latency, tokens and cost, tagged by model and feature. Regressions show up on dashboards and trigger alerts within minutes, and the worst runs feed regression datasets.",
+    "nodes": [
+      {
+        "id": "user",
+        "label": "End user\nchat / feature",
+        "x": 100,
+        "y": 190,
+        "kind": "actor"
+      },
+      {
+        "id": "app",
+        "label": "LLM app service\n@traceable",
+        "x": 300,
+        "y": 190,
+        "kind": "service",
+        "step": 1
+      },
+      {
+        "id": "wrappers",
+        "label": "Model wrappers\nwrap_openai",
+        "x": 300,
+        "y": 62,
+        "kind": "tool",
+        "step": 2
+      },
+      {
+        "id": "otel",
+        "label": "OTel collector\nOTLP fan-out",
+        "x": 300,
+        "y": 318,
+        "kind": "service",
+        "step": 3
+      },
+      {
+        "id": "project",
+        "label": "LangSmith project\nruns + threads",
+        "x": 500,
+        "y": 190,
+        "kind": "store",
+        "step": 4
+      },
+      {
+        "id": "apm",
+        "label": "Existing APM\nvia collector",
+        "x": 500,
+        "y": 318,
+        "kind": "store"
+      },
+      {
+        "id": "trace-view",
+        "label": "Trace tree view\nslow step finder",
+        "x": 500,
+        "y": 62,
+        "kind": "tool",
+        "step": 5
+      },
+      {
+        "id": "dashboards",
+        "label": "Dashboards\nby model, feature",
+        "x": 700,
+        "y": 62,
+        "kind": "service",
+        "step": 6
+      },
+      {
+        "id": "alert",
+        "label": "Alert rule\ncost/latency spike",
+        "x": 700,
+        "y": 190,
+        "kind": "decision",
+        "step": 7
+      },
+      {
+        "id": "webhook",
+        "label": "Webhook\nnotification",
+        "x": 900,
+        "y": 190,
+        "kind": "queue"
+      },
+      {
+        "id": "oncall",
+        "label": "On-call engineer\nSlack / PagerDuty",
+        "x": 900,
+        "y": 62,
+        "kind": "actor"
+      },
+      {
+        "id": "automation",
+        "label": "Automation rule\nsample slow runs",
+        "x": 700,
+        "y": 318,
+        "kind": "service",
+        "step": 8
+      },
+      {
+        "id": "dataset",
+        "label": "Regression dataset\nslow/costly cases",
+        "x": 900,
+        "y": 318,
+        "kind": "store"
+      }
+    ],
+    "edges": [
+      {
+        "from": "user",
+        "to": "app",
+        "label": "request"
+      },
+      {
+        "from": "app",
+        "to": "wrappers",
+        "label": "LLM calls"
+      },
+      {
+        "from": "wrappers",
+        "to": "project",
+        "label": "runs + token usage"
+      },
+      {
+        "from": "app",
+        "to": "project",
+        "label": "trace + metadata"
+      },
+      {
+        "from": "app",
+        "to": "otel",
+        "label": "OTLP spans"
+      },
+      {
+        "from": "otel",
+        "to": "project",
+        "label": "OTLP export"
+      },
+      {
+        "from": "otel",
+        "to": "apm",
+        "label": "fan-out copy",
+        "dashed": true
+      },
+      {
+        "from": "project",
+        "to": "trace-view",
+        "label": "inspect runs"
+      },
+      {
+        "from": "project",
+        "to": "dashboards",
+        "label": "aggregate metrics"
+      },
+      {
+        "from": "project",
+        "to": "alert",
+        "label": "metric stream"
+      },
+      {
+        "from": "alert",
+        "to": "webhook",
+        "label": "threshold crossed"
+      },
+      {
+        "from": "webhook",
+        "to": "oncall",
+        "label": "notify"
+      },
+      {
+        "from": "oncall",
+        "to": "trace-view",
+        "label": "drill into trace",
+        "dashed": true
+      },
+      {
+        "from": "dashboards",
+        "to": "oncall",
+        "label": "review trends",
+        "dashed": true
+      },
+      {
+        "from": "project",
+        "to": "automation",
+        "label": "filter slow runs"
+      },
+      {
+        "from": "automation",
+        "to": "dataset",
+        "label": "add examples"
+      },
+      {
+        "from": "dataset",
+        "to": "app",
+        "label": "regression tests",
+        "dashed": true
+      }
+    ],
+    "steps": [
+      "Enable tracing with LANGSMITH_TRACING and an API key, send each environment to its own project, and decorate entry points and key steps (retrieval, tools, LLM calls) with @traceable. Attach metadata and tags such as feature, tenant tier, prompt version and model so every run can be grouped later.",
+      "Wrap model clients with wrap_openai (or use the LangChain/LangGraph integration) so token counts are captured automatically. For custom or self-hosted model calls, return usage_metadata and set ls_provider and ls_model_name so LangSmith can compute cost from the model pricing map.",
+      "Services already on OpenTelemetry send spans to the LangSmith OTLP endpoint, usually through an OTel collector that fans the same spans out to the existing APM, so infra and LLM views share trace IDs.",
+      "The project stores runs nested into traces, and threads group multi-turn conversations, so latency, tokens and cost can be read per run, per trace and per conversation.",
+      "When a request is slow, open the trace tree and compare child-run latencies to find the slow step, for example a long retrieval call, a retry loop or an agent taking extra tool turns. Check time to first token separately from total latency for streamed responses.",
+      "Build dashboards that chart p50/p99 latency, token usage, cost and error rate, grouped by model and by the feature metadata key, so a regression can be traced to one model or feature instead of the whole app.",
+      "Configure alerts on the project metrics with thresholds and a time window, delivering to a webhook or paging tool. Where a metric you need is not available as an alert, run a small scheduled job that queries runs via the SDK and posts to the same webhook.",
+      "Add automation rules that filter slow or expensive runs with a sampling rate and add them to a dataset or annotation queue. Run evaluate() experiments on that dataset before shipping prompt or model changes to catch cost and latency regressions offline."
     ]
   },
   {
@@ -15104,6 +15949,223 @@ export const EXTRA_WORKFLOWS: Workflow[] = [
       "On a crossing, the Slack node posts to the purchasing channel and the WhatsApp Business Cloud node sends a template message to the buyer. Both messages carry the SKU, the on-hand count and the reorder point.",
       "An Execute Workflow node calls a purchase-draft sub-workflow. It inserts a draft row (SKU, suggested quantity, supplier) into purchase_drafts, but only if no open draft exists for that SKU. It then sends an approval link and pauses on a Wait node until the approval webhook is called.",
       "Every node that writes has retry-on-fail enabled. If a node still fails, the workflow's configured error workflow starts from an Error Trigger. It records the execution ID and error in Postgres, marks the event as failed for replay, and alerts on-call in Slack."
+    ]
+  },
+  {
+    "id": "n8n-hr-onboarding",
+    "group": "n8n",
+    "title": "Employee onboarding automation",
+    "summary": "An n8n Form Trigger collects new-hire details, and an orchestrator workflow calls sub-workflows through Execute Workflow to create accounts, send documents for e-signature, book intro meetings and draft a personalised welcome message through Vercel AI Gateway. It must never create duplicate accounts, grant access before it is due, or send a welcome message that HR has not approved or that contains wrong facts.",
+    "industry": "Human resources",
+    "problem": "Onboarding is usually done by hand across HR, IT and managers: accounts are created late, contracts wait in inboxes, intro meetings get forgotten and welcome notes are generic. Every missed step delays a new hire's first productive day.",
+    "outcome": "One HR form submission drives every onboarding task, with each task's status tracked per hire and failures raised to HR straight away. New hires get their accounts, documents, calendar and an HR-approved welcome message on time, and reruns finish incomplete steps without redoing completed ones.",
+    "nodes": [
+      {
+        "id": "hr-actor",
+        "label": "HR partner\nsubmits new hire",
+        "x": 100,
+        "y": 62,
+        "kind": "actor"
+      },
+      {
+        "id": "form-trigger",
+        "label": "n8n Form Trigger\nnew-hire intake",
+        "x": 100,
+        "y": 190,
+        "kind": "service",
+        "step": 1
+      },
+      {
+        "id": "orchestrator",
+        "label": "Orchestrator\nvalidate + route",
+        "x": 300,
+        "y": 190,
+        "kind": "service",
+        "step": 2
+      },
+      {
+        "id": "onboarding-db",
+        "label": "Postgres\nonboarding status",
+        "x": 300,
+        "y": 62,
+        "kind": "store"
+      },
+      {
+        "id": "error-wf",
+        "label": "Error Trigger\nerror workflow",
+        "x": 300,
+        "y": 318,
+        "kind": "service",
+        "step": 9
+      },
+      {
+        "id": "sub-accounts",
+        "label": "Sub-workflow\ncreate accounts",
+        "x": 500,
+        "y": 62,
+        "kind": "service",
+        "step": 3
+      },
+      {
+        "id": "sub-esign",
+        "label": "Sub-workflow\ne-sign documents",
+        "x": 500,
+        "y": 190,
+        "kind": "service",
+        "step": 4
+      },
+      {
+        "id": "sub-meetings",
+        "label": "Sub-workflow\nintro meetings",
+        "x": 500,
+        "y": 318,
+        "kind": "service",
+        "step": 5
+      },
+      {
+        "id": "workspace-apis",
+        "label": "Google Workspace\n+ Slack nodes",
+        "x": 700,
+        "y": 62,
+        "kind": "tool"
+      },
+      {
+        "id": "esign-provider",
+        "label": "E-sign provider\nvia HTTP Request",
+        "x": 700,
+        "y": 190,
+        "kind": "tool"
+      },
+      {
+        "id": "calendar",
+        "label": "Google Calendar\nintro events",
+        "x": 700,
+        "y": 318,
+        "kind": "tool"
+      },
+      {
+        "id": "ai-gateway",
+        "label": "Vercel AI Gateway\nchat model node",
+        "x": 900,
+        "y": 62,
+        "kind": "tool"
+      },
+      {
+        "id": "welcome-agent",
+        "label": "AI Agent\nwelcome writer",
+        "x": 900,
+        "y": 190,
+        "kind": "llm",
+        "step": 6
+      },
+      {
+        "id": "hr-approval",
+        "label": "HR approval\nWait for form",
+        "x": 900,
+        "y": 318,
+        "kind": "decision",
+        "step": 7
+      }
+    ],
+    "edges": [
+      {
+        "from": "hr-actor",
+        "to": "form-trigger",
+        "label": "submits intake"
+      },
+      {
+        "from": "form-trigger",
+        "to": "orchestrator",
+        "label": "new-hire item"
+      },
+      {
+        "from": "orchestrator",
+        "to": "onboarding-db",
+        "label": "upsert by hire ID"
+      },
+      {
+        "from": "orchestrator",
+        "to": "sub-accounts",
+        "label": "Execute Workflow"
+      },
+      {
+        "from": "orchestrator",
+        "to": "sub-esign",
+        "label": "Execute Workflow"
+      },
+      {
+        "from": "orchestrator",
+        "to": "sub-meetings",
+        "label": "Execute Workflow"
+      },
+      {
+        "from": "sub-accounts",
+        "to": "workspace-apis",
+        "label": "create user, invite"
+      },
+      {
+        "from": "sub-esign",
+        "to": "esign-provider",
+        "label": "send envelope"
+      },
+      {
+        "from": "esign-provider",
+        "to": "sub-esign",
+        "label": "signed webhook"
+      },
+      {
+        "from": "sub-meetings",
+        "to": "calendar",
+        "label": "create events"
+      },
+      {
+        "from": "orchestrator",
+        "to": "welcome-agent",
+        "label": "merged facts"
+      },
+      {
+        "from": "welcome-agent",
+        "to": "ai-gateway",
+        "label": "chat completion"
+      },
+      {
+        "from": "welcome-agent",
+        "to": "hr-approval",
+        "label": "draft message"
+      },
+      {
+        "from": "hr-approval",
+        "to": "workspace-apis",
+        "label": "approved: send"
+      },
+      {
+        "from": "hr-approval",
+        "to": "onboarding-db",
+        "label": "status complete"
+      },
+      {
+        "from": "sub-accounts",
+        "to": "error-wf",
+        "label": "on failure",
+        "dashed": true
+      },
+      {
+        "from": "error-wf",
+        "to": "hr-actor",
+        "label": "Slack alert + link",
+        "dashed": true
+      }
+    ],
+    "steps": [
+      "HR submits the n8n Form Trigger with the new hire's name, personal email, role, department, manager, start date and location. The form only has fields that later steps actually need.",
+      "The orchestrator checks required fields with IF and Code nodes, builds a stable hire ID, and upserts a row in Postgres with a status per task. If a submission repeats a hire that is already in progress, it is routed to finish only the incomplete tasks.",
+      "An Execute Workflow node calls the accounts sub-workflow and waits for it to complete. A Switch picks groups and Slack channels by role, the Google Workspace and Slack nodes create the user with retry-on-fail, and the work email comes back to the orchestrator.",
+      "A second Execute Workflow call starts the e-sign sub-workflow without waiting. It sends the offer and policy documents through an HTTP Request to the e-sign provider, pauses on a Wait node that resumes on the provider's webhook, sends a reminder if the time limit passes, and records the signed status in Postgres.",
+      "The meetings sub-workflow books first-week sessions with the manager, an onboarding buddy and IT using the Google Calendar node, respecting the start date and time zone, and returns the meeting times.",
+      "A Merge node combines the account and meeting results, and an AI Agent drafts the welcome message. Its OpenAI-compatible chat model sub-node points at https://ai-gateway.vercel.sh/v1 with an AI Gateway key and a model such as anthropic/claude-sonnet-4.5. The prompt contains only the facts it needs: first name, role, team, start date and meeting times.",
+      "The draft is posted to HR in Slack with a Wait-for-form approval link, where HR can approve or edit it. Only after approval does Gmail send it to the personal email, and Slack sends a DM on day one.",
+      "Postgres marks each task complete and the manager gets a Slack summary of accounts, signed documents and the meeting schedule, so HR has one status view per hire.",
+      "Any failed node triggers the error workflow. The Error Trigger posts the hire ID, failed node and execution link to an HR-ops channel, and because task status is stored, a rerun skips steps that already finished."
     ]
   },
   {

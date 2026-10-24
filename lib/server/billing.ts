@@ -38,12 +38,12 @@ export async function reconcileSubscription(ref:string,eventId:string) {
   // Read authoritative current state; do not apply potentially stale event payload state.
   const syncedAt=new Date().toISOString();
   const remote=billingSubscription.parse(await razorpay(`subscriptions/${encodeURIComponent(ref)}`));
-  const local=check(await db().from("subscriptions").select("user_id,provider_ref,cancel_at_cycle_end,current_period_end").eq("provider_ref",remote.id).maybeSingle());
+  const local=check(await db().from("subscriptions").select("user_id,provider_ref,cancel_at_cycle_end,current_period_end,tier,razorpay_plan_id").eq("provider_ref",remote.id).maybeSingle());
   const owner=local?.user_id??remote.notes?.user_id;
   if(!owner)throw new HttpError(400,"invalid_request");
   const existing=check(await db().from("profiles").select("id").eq("id",owner).maybeSingle());
   if(!existing)throw new HttpError(400,"invalid_request");
-  const tier=remote.plan_id===required("RAZORPAY_MONTHLY_PLAN_ID")?"monthly":remote.plan_id===required("RAZORPAY_YEARLY_PLAN_ID")?"yearly":null;
+  const tier=local?.razorpay_plan_id === remote.plan_id && ["monthly","yearly"].includes(local?.tier) ? local.tier : remote.plan_id===required("RAZORPAY_MONTHLY_PLAN_ID")?"monthly":remote.plan_id===required("RAZORPAY_YEARLY_PLAN_ID")?"yearly":null;
   if(!tier)throw new HttpError(400,"invalid_request");
   const current=check(await db().from("subscriptions").select("provider_ref").eq("user_id",owner).maybeSingle());
   // A delayed webhook for a finished subscription must not affect its replacement.
@@ -58,9 +58,9 @@ export async function reconcileSubscription(ref:string,eventId:string) {
 }
 
 /** Never charge a plan whose price or billing interval differs from the offer. Every visitor is charged in rupees. */
-export async function validateSubscriptionPlan(tier: "monthly" | "yearly") {
-  const id = required(tier === "monthly" ? "RAZORPAY_MONTHLY_PLAN_ID" : "RAZORPAY_YEARLY_PLAN_ID");
+export async function validateSubscriptionPlan(tier: "monthly" | "yearly", sale?: { planId:string; amountInr:number }) {
+  const id = sale?.planId ?? required(tier === "monthly" ? "RAZORPAY_MONTHLY_PLAN_ID" : "RAZORPAY_YEARLY_PLAN_ID");
   const plan = z.object({ id:z.string(), period:z.string(), interval:z.number(), item:z.object({ amount:z.number(), currency:z.string() }) }).parse(await razorpay(`plans/${encodeURIComponent(id)}`));
-  if (plan.id !== id || plan.period !== tier || plan.interval !== 1 || plan.item.currency !== "INR" || plan.item.amount !== Math.round(subscriptionPrice(tier) * 100)) throw new HttpError(503, "billing_plan_mismatch");
+  if (plan.id !== id || plan.period !== tier || plan.interval !== 1 || plan.item.currency !== "INR" || plan.item.amount !== Math.round((sale?.amountInr ?? subscriptionPrice(tier)) * 100)) throw new HttpError(503, "billing_plan_mismatch");
   return id;
 }

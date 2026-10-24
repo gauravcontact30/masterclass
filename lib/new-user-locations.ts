@@ -19,11 +19,24 @@ export type DayTime = { day: string; ms: number };
 export type UserActivity = { totalMs: number; todayMs: number; activeDays: number; avgPerDayMs: number; sessions: number; pages: number; lastSeenAt: string | null; days: DayTime[] };
 export type NewUserLocation = {
   id: string; name: string; joinedAt: string; firstSeenAt: string | null;
-  country: string | null; countryCode: string | null; state: string | null; city: string | null; postalCode: string | null;
+  country: string | null; countryCode: string | null; state: string | null; city: string | null;
+  /** A locality PIN, or null; `cityLevelPin` is set when the network only resolved to its city's head post office. */
+  postalCode: string | null; cityLevelPin: boolean;
   nearby: { name: string; region: string; country: string; km: number } | null;
   device: string | null; browser: string | null; firstPage: string | null; referrer: string | null;
   activity: UserActivity;
 };
+/**
+ * Whether an IP-geolocation postal code names a locality. For India the geolocation databases fall back to the city's
+ * head post office when they only know the city: 110001 is New Delhi GPO, 202001 Aligarh, 400001 Mumbai GPO, and every
+ * district head office ends in "001". Such a code says "somewhere in this city", not where the person is, so it is not
+ * shown as their PIN. Elsewhere the code is kept as given.
+ */
+export function localityPin(code: string | null | undefined, country: string | null | undefined): string | null {
+  if (!code) return null;
+  if (country === "IN" && /^\d{3}001$/.test(code)) return null;
+  return code;
+}
 /** One row of a location card: the place, how many new users, and for filtering, whether it is in India. */
 export type Tally = { name: string; count: number; country?: string | null; detail?: string };
 export type NewUserLocationReport = {
@@ -85,7 +98,7 @@ export function newUserLocations(users: NewUser[], visits: UserVisit[], now = Da
     const code = v?.country || null;
     return {
       id: user.id, name: user.name?.trim() || "Unnamed learner", joinedAt: user.created_at, firstSeenAt: entry?.created_at ?? null,
-      country: code ? countryLabel(code) : null, countryCode: code, state: stateLabel(v?.region, code), city: v?.city || null, postalCode: v?.postal_code || null,
+      country: code ? countryLabel(code) : null, countryCode: code, state: stateLabel(v?.region, code), city: v?.city || null, postalCode: localityPin(v?.postal_code, code), cityLevelPin: Boolean(v?.postal_code) && !localityPin(v?.postal_code, code),
       nearby: nearbyCity(v?.latitude, v?.longitude, v?.city),
       device: entry?.device || null, browser: [entry?.browser, entry?.os].filter(Boolean).join(" · ") || null, firstPage: entry?.path || null, referrer: entry?.referrer_host || null,
       activity: activity(byUser.get(user.id) ?? [], today),

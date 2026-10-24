@@ -8,6 +8,8 @@ import { razorpay, reconcileSubscription } from "@/lib/server/billing";
 import { savePreparationsFor } from "@/lib/server/preparations";
 import { PREPARATIONS } from "@/lib/study/preparations";
 
+import { saleOffer } from "@/lib/server/festive-sale";
+jest.mock("@/lib/server/festive-sale", () => ({ saleOffer: jest.fn().mockResolvedValue(null) }));
 jest.mock("@/lib/server/auth", () => ({ supabaseServer: jest.fn() }));
 jest.mock("@/lib/server/rate-limit", () => ({ rateLimit: jest.fn() }));
 jest.mock("@/lib/server/preparations", () => ({ savePreparationsFor: jest.fn(async () => undefined) }));
@@ -23,6 +25,17 @@ let remote: Row;
 let signedInUser: Row | null;
 const verifyOtp = jest.fn(async () => ({ error: null }));
 const prep = PREPARATIONS[0].id;
+test("guest checkout persists discounted recurring terms through account fulfilment", async () => {
+  jest.mocked(saleOffer).mockResolvedValue({ slug:"diwali-2026", planId:"plan_sale_monthly", amountInr:225 });
+  const response = await checkout({ expectedSale:"diwali-2026" });
+  expect(response.status).toBe(200);
+  expect(await response.json()).toMatchObject({ amount:22500, discounted:true });
+  expect(razorpay).toHaveBeenCalledWith("subscriptions", expect.objectContaining({ plan_id:"plan_sale_monthly" }));
+  expect(tables.guest_checkouts[0]).toMatchObject({ festive_sale:"diwali-2026", recurring_amount_inr:225 });
+  remote = { ...remote, status:"active", paid_count:1 };
+  await fulfilGuestCheckout("sub_guest", "evt_sale");
+  expect(tables.subscriptions[0]).toMatchObject({ festive_sale:"diwali-2026", razorpay_plan_id:"plan_sale_monthly", recurring_amount_inr:225 });
+});
 const sign = (text: string) => createHmac("sha256", "checkout-secret").update(text).digest("hex");
 const post = (body: unknown) => POST(new Request("http://localhost/api/billing/guest", { method: "POST", headers: { origin: "http://localhost", "Content-Type": "application/json" }, body: JSON.stringify(body) }));
 const checkout = (extra: Row = {}) => post({ action: "checkout", tier: "monthly", email: " Asha@Example.com ", name: "Asha", selections: [prep], ...extra });
@@ -55,6 +68,7 @@ function query(table: string) {
 }
 
 beforeEach(() => {
+  jest.mocked(saleOffer).mockResolvedValue(null);
   Object.assign(process.env, { NEXT_PUBLIC_SUPABASE_URL: "http://supabase", NEXT_PUBLIC_SUPABASE_ANON_KEY: "anon", SUPABASE_SERVICE_ROLE_KEY: "service", RAZORPAY_KEY_ID: "rzp_test_key", RAZORPAY_KEY_SECRET: "checkout-secret", RAZORPAY_WEBHOOK_SECRET: "webhook-secret", RAZORPAY_MONTHLY_PLAN_ID: "plan_monthly", RAZORPAY_YEARLY_PLAN_ID: "plan_yearly", BILLING_ENABLED: "true", ALLOW_LIVE_BILLING: "false", PRO_MONTHLY_PRICE_INR: "299", PRO_YEARLY_PRICE_INR: "2999" });
   tables = { guest_checkouts: [], subscriptions: [] }; users = []; signedInUser = null;
   remote = { id: "sub_guest", plan_id: "plan_monthly", status: "created", paid_count: 0 };

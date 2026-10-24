@@ -127,6 +127,7 @@
 .plansTabs button:focus-visible { outline: 2px solid var(--nb-highlight); outline-offset: 1px; }
 .plansTabs button span { padding: 2px 6px; border-radius: 999px; background: #dbe7e2; color: #3f6b55; font-size: 11px; font-weight: 700; }
 .plansPanel { padding: 14px 10px 6px; }
+.plansBadge { display: inline-flex; margin-top: 15px; margin-bottom: 8px; }
 .plansPrice { margin: 0; color: var(--nb-graphite); font-size: 30px; font-weight: 700; line-height: 1.1; font-variant-numeric: tabular-nums; }
 .plansPrice small { margin-left: 4px; color: var(--nb-muted); font-size: 14px; font-weight: 500; }
 .plansNote { margin: 4px 0 12px; color: var(--nb-muted); font-size: 13px; }

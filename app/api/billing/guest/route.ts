@@ -11,7 +11,7 @@ import { preparationSchema } from "@/lib/study/preparation-schema";
 import { createGuestCheckout, fulfilGuestCheckout, guestCheckoutById, guestEmail } from "@/lib/server/guest-billing";
 
 const inputSchema = z.discriminatedUnion("action", [
-  z.object({ action:z.literal("checkout"), tier:z.enum(["monthly","yearly"]), currency:z.enum(CURRENCIES).optional(), email:guestEmail, name:z.string().trim().min(1).max(80), selections:preparationSchema.optional() }).strict(),
+  z.object({ action:z.literal("checkout"), tier:z.enum(["monthly","yearly"]), currency:z.enum(CURRENCIES).optional(), expectedAmountPaise:z.number().int().positive().optional(), expectedSale:z.string().max(41).nullable().optional(), email:guestEmail, name:z.string().trim().min(1).max(80), selections:preparationSchema.optional() }).strict(),
   z.object({ action:z.literal("verify"), checkoutId:z.uuid(), razorpay_payment_id:z.string().regex(/^pay_[a-zA-Z0-9]+$/), razorpay_subscription_id:z.string().regex(/^sub_[a-zA-Z0-9]+$/), razorpay_signature:z.string().regex(/^[a-f0-9]{64}$/i) }).strict(),
 ]);
 const client = (request: Request) => createHash("sha256").update(request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "anonymous").digest("hex").slice(0, 32);
@@ -28,7 +28,7 @@ export async function POST(request: Request) {
       await rateLimit(`billing:guest:email:${input.email}`, 4, 600);
       // `currency` is only the one the visitor was shown; the charge is always in rupees.
       const checkout = await createGuestCheckout({ ...input, selections:input.selections ?? [] });
-      return Response.json({ ...checkout, keyId:required("RAZORPAY_KEY_ID"), tier:input.tier, amount:Math.round(subscriptionPrice(input.tier) * 100), currency:"INR", prefill:{ email:input.email, name:input.name } });
+      return Response.json({ ...checkout, keyId:required("RAZORPAY_KEY_ID"), tier:input.tier, amount:Math.round(checkout.amountInr * 100), currency:"INR", discounted:checkout.amountInr < subscriptionPrice(input.tier), prefill:{ email:input.email, name:input.name } });
     }
     await rateLimit(`billing:guest:verify:${client(request)}`, 20, 60);
     const row = await guestCheckoutById(input.checkoutId);

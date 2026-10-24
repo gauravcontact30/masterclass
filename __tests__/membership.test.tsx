@@ -11,7 +11,7 @@ test("only a paid plan is offered and yearly checkout needs no course selection"
   render(<Membership enabled data={{ tier: "free", used: 0, limit: 0, subscription: null, creditBalance: 2 }} onRefresh={refresh}/>);
   await screen.findByText("₹299"); expect(screen.queryByText(/free|download credit|per download/i)).not.toBeInTheDocument();
   await user.click(screen.getByRole("button", { name: /yearly/i })); await user.click(screen.getByRole("button", { name: "Choose plan" }));
-  await waitFor(() => expect(requestJson).toHaveBeenCalledWith("/api/billing", expect.objectContaining({ body: JSON.stringify({ action: "checkout", tier: "yearly", currency: "INR" }) })));
+  await waitFor(() => expect(requestJson).toHaveBeenCalledWith("/api/billing", expect.objectContaining({ body: JSON.stringify({ action: "checkout", tier: "yearly", currency: "INR", expectedSale: null }) })));
 });
 test("active members manage renewal without opening a duplicate checkout", async () => {
   const user = userEvent.setup(); render(<Membership enabled selections={["nda"]} data={{ tier: "monthly", used: 0, limit: 50, creditBalance: 0, subscription: { status: "active", current_period_end: "2030-01-01", cancel_at_cycle_end: false } }} onRefresh={jest.fn()}/>);

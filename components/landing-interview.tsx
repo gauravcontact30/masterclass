@@ -1,5 +1,4 @@
 "use client";
-import dynamic from "next/dynamic";
 import { useEffect, useState, type ReactNode } from "react";
 import { GraduationCap } from "lucide-react";
 import type { FreshQuestion } from "@/lib/landing-fresh-types";
@@ -16,10 +15,10 @@ import { useLanguage } from "./language-provider";
 import { usePagedCarousel } from "./use-paged-carousel";
 import { Editable, useContentItem, useVisibleContent } from "./content-editing";
 import { contentKey } from "@/lib/content-overrides";
-const DashboardLessons = dynamic(() => import("./dashboard-lessons").then(module => module.DashboardLessons));
 import home from "./landing-home.module.css";
 import styles from "./landing-interview.module.css";
 import { ListenButton } from "./listen-button";
+import { DashboardLessons } from "./dashboard-lessons";
 
 type Text = (en: string, hindi: string) => string;
 /** Eight light tones the slides cycle through, defined in landing-interview.module.css. */

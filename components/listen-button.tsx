@@ -26,7 +26,7 @@ export function ListenButton({ id, title, text, compact = false, tone = "light",
   };
   const Icon = status === "playing" ? Pause : status === "loading" ? Loader2 : Volume2;
   return <button type="button" className={`${styles.listen} ${className ?? ""}`} data-tone={tone} data-compact={compact || undefined} data-state={status} onClick={press}
-    aria-label={`${label}: ${title}`} aria-pressed={mine && (status === "playing" || status === "loading")} data-tooltip={label}>
+    aria-label={`${label}: ${title}`} aria-pressed={mine && (status === "playing" || status === "loading")} data-tooltip={label} suppressHydrationWarning>
     <Icon size={compact ? 15 : 16} aria-hidden="true" className={status === "loading" ? styles.spin : undefined} />
     {status === "playing" && <span className={styles.bars} aria-hidden="true"><i /><i /><i /></span>}
   </button>;

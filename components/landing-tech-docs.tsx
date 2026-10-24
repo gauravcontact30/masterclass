@@ -14,13 +14,11 @@ import type { OfficialPage, OfficialTechDocs } from "@/lib/tech-docs-official";
 import { useLanguage } from "./language-provider";
 import { Controls } from "./landing-ai-pulse";
 import { DashboardMore } from "./dashboard-more";
-import dynamic from "next/dynamic";
 import home from "./landing-home.module.css";
 import frame from "./landing-section.module.css";
 import styles from "./landing-tech-docs.module.css";
 import { ListenButton } from "./listen-button";
-/** The quick-start project files and editor (~28 KB) load as their own chunk, after the page. */
-const TechProjectPanel = dynamic(() => import("./tech-project-panel"), { ssr: false });
+import TechProjectPanel from "./tech-project-panel";
 
 /** Autoplay: one platform every two minutes. */
 const SLIDE_MS = 120_000;

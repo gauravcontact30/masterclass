@@ -13,7 +13,7 @@ import { Input } from "@/components/ui/input";
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { MessageSquarePlus, Activity, ArrowLeft, Bot, Layers, Receipt, LifeBuoy, Megaphone, MousePointerClick, TrendingUp, ChevronDown, ChevronRight, CreditCard, Database, ExternalLink, Languages, LogOut, RefreshCw, PanelLeftClose, PanelLeftOpen, Server, ShieldCheck, UploadCloud, UserRound, Users } from "lucide-react";
+import { MessageSquarePlus, Activity, HeartPulse, ArrowLeft, ArrowUp, Bot, Layers, Receipt, LifeBuoy, Megaphone, MousePointerClick, TrendingUp, ChevronDown, ChevronRight, CreditCard, Database, ExternalLink, Languages, LogOut, RefreshCw, PanelLeftClose, PanelLeftOpen, Server, ShieldCheck, UploadCloud, UserRound, Users } from "lucide-react";
 import { SidebarTooltips } from "./sidebar-tooltips";
 import { DashboardPageHeader } from "./dashboard-page-header";
 import { Wordmark } from "./brand-mark";
@@ -34,7 +34,10 @@ const SuperAdminOperations = dynamic(() => import("./super-admin-operations").th
 const SuperAdminUsers = dynamic(() => import("./super-admin-users").then(module => module.SuperAdminUsers), { loading: sectionLoading });
 const SuperAdminAuthActivity = dynamic(() => import("./super-admin-auth-activity").then(module => module.SuperAdminAuthActivity), { loading: sectionLoading });
 const SuperAdminAi = dynamic(() => import("./super-admin-ai").then(module => module.SuperAdminAi), { loading: sectionLoading });
+/** Logs & Health: live checks, latency, Web Vitals, AI performance and the log explorer, in its own chunk. */
+const SuperAdminLogsHealth = dynamic(() => import("./super-admin-logs-health").then(module => module.SuperAdminLogsHealth), { loading: sectionLoading });
 const SuperAdminBilling = dynamic(() => import("./super-admin-billing").then(module => module.SuperAdminBilling), { loading: sectionLoading });
+import { SuperAdminFestiveSale } from "./super-admin-festive-sale";
 const SuperAdminInfrastructure = dynamic(() => import("./super-admin-infrastructure").then(module => module.SuperAdminInfrastructure), { loading: sectionLoading });
 const SuperAdminSuggestions = dynamic(() => import("./super-admin-suggestions").then(module => module.SuperAdminSuggestions), { loading: sectionLoading });
 const SuperAdminTraces = dynamic(() => import("./super-admin-traces").then(module => module.SuperAdminTraces), { loading: sectionLoading });
@@ -65,7 +68,7 @@ const groups = [
   { label: "Growth", items: [{ id: "promotions", label: "Promotional Tracking", icon: TrendingUp }] },
   { label: "Revenue", items: [{ id: "billing", label: "Revenue & billing", icon: CreditCard }, { id: "transactions", label: "Transactions", icon: Receipt }] },
   { label: "Content", items: [{ id: "content", label: "Content & audit", icon: Database }, { id: "queue", label: "Generation queue", icon: Layers }, { id: "notepad", label: "Notepad", icon: Receipt }, { id: "upload-learning", label: "Upload Learning", icon: UploadCloud }] },
-  { label: "System", items: [{ id: "infra", label: "Infrastructure", icon: Server }, { id: "health", label: "System health", icon: Activity }, { id: "logs", label: "Application logs", icon: Database }, { id: "security", label: "Security", icon: ShieldCheck }] },
+  { label: "System", items: [{ id: "infra", label: "Infrastructure", icon: Server }, { id: "logs-health", label: "Logs & Health", icon: HeartPulse }, { id: "security", label: "Security", icon: ShieldCheck }] },
 ] as const;
 type SectionItem = (typeof groups)[number]["items"][number];
 const sections: readonly SectionItem[] = groups.flatMap((group): readonly SectionItem[] => group.items);
@@ -177,7 +180,8 @@ export function SuperAdminDashboard({ userId = "admin", isOwner = false }: { use
       {isCopilotPage(section) && <SuperAdminCopilot key={section} page={section} title={sections.find(s => s.id === section)?.label ?? section} days={days} query={query} />}
       {notepadOpened && <div hidden={section !== "notepad"}><SuperAdminNotepad userId={userId} /></div>}
       {section === "upload-learning" && isOwner && <SuperAdminUploadLearning userId={userId} />}
-      {section === "billing" && <SuperAdminBilling />}
+      {section === "logs-health" && <SuperAdminLogsHealth />}
+      {section === "billing" && <><SuperAdminFestiveSale /><SuperAdminBilling /></>}
       {section === "infra" && <SuperAdminInfrastructure />}
       {section === "activity" && <SuperAdminActivity days={days} query={query} />}
       {section === "insights" && <SuperAdminInsights days={days} />}
@@ -192,15 +196,25 @@ export function SuperAdminDashboard({ userId = "admin", isOwner = false }: { use
       {["overview","live","analytics","moderation","security"].includes(section)&&<SuperAdminOperations section={section} days={days} query={query}/>}
       {section==="ai"&&<SuperAdminAi days={days} query={query}/>}
       {data && <>
-        {["logs", "health", "security", "content"].includes(section) && <SuperAdminTraces key={`${section}-${days}`} events={events} query={query} initialMode={section === "health" ? "errors" : section === "content" ? "audit" : "all"} />}
+        {["security", "content"].includes(section) && <SuperAdminTraces key={`${section}-${days}`} events={events} query={query} initialMode={section === "content" ? "audit" : "all"} />}
         {section === "overview" && <><div className={styles.metrics}><Metric label="Registered users" value={data.counts.users} note="All application accounts" /><Metric label="Active subscriptions" value={data.counts.activeSubscriptions} note="Active, unexpired paid memberships" /><Metric label="Estimated MRR" value={money(mrr)} note="Current plan prices · annual plans ÷ 12" /><Metric label="Learning documents" value={data.counts.documents} note={`${data.counts.failedDocuments} failed generations`} /></div><SuperAdminAiBriefing days={days} /><SuperAdminAskData days={days} /><div className={styles.summary}><Card><Activity size={22} /><h2>Platform pulse</h2><p>Database responded in {data.health.databaseMs} ms. {data.requests.errors} server errors across {data.requests.count} recorded API requests in this window.</p></Card><Card><CreditCard size={22} /><h2>Subscription business</h2><p>{data.recurring.monthly} monthly and {data.recurring.yearly} annual memberships. Estimated ARR {money(mrr * 12)}.</p></Card></div><SuperAdminNewUserLocations days={days} query={query} />{table("Recent application activity", events, ["created_at", "kind", "action", "resource", "actor_id", "status"])}</>}
         {section === "users" && <><SuperAdminUsers onOpenSupport={() => setSection("support")} /><SuperAdminAuthActivity sessions={data.sessions} logins={data.logins} users={data.users} query={query} days={days} generatedAt={data.generatedAt} refreshing={busy} onRefresh={refreshQuietly} /></>}
-        {section === "health" && <><div className={styles.metrics}><Metric label="Database latency" value={`${data.health.databaseMs} ms`} note="Current monitoring query round trip" /><Metric label="API p95 latency" value={data.requests.p95 === null ? "No samples" : `${Math.round(data.requests.p95)} ms`} note="95% of recorded requests completed within this time" /><Metric label="Process memory" value={`${Math.round(data.health.processMemory / 1048576)} MB`} note="Current application process RSS" /><Metric label="Process uptime" value={`${Math.floor(data.health.processUptime / 60)} min`} note="Since this instance started, not website availability" /></div><div className={styles.metrics}><Metric label="Process CPU" value={data.health.cpuPercent == null ? "Collecting interval" : `${data.health.cpuPercent.toFixed(1)}%`} note="CPU time since this instance?s previous snapshot"/><Metric label="Filesystem available" value={data.health.storage ? `${(data.health.storage.available/1073741824).toFixed(1)} GB` : "Unavailable"} note={data.health.storage ? `${(data.health.storage.total/1073741824).toFixed(1)} GB capacity on this filesystem` : "Not exposed by this host"}/></div><Card className={styles.panel}><h2>Runtime resources</h2><p>Host memory: {Math.round(data.health.hostUsedMemory / 1048576)} / {Math.round(data.health.hostMemory / 1048576)} MB · {data.health.cpuCores} logical CPUs · {data.health.cpuSeconds.toFixed(1)} cumulative process CPU seconds.</p><p className={styles.note}>Host metrics may reflect a shared container. CPU uses the interval between snapshots on this instance; 100% means one CPU core. Filesystem capacity may be temporary storage on Vercel. External availability and deployment-wide bandwidth require the hosting integration.</p></Card>{table("Errors & failed requests", events.filter(e => Number(e.status) >= 400), ["created_at", "resource", "action", "status", "duration_ms", "details"], "Instrumented API responses, including 404 and 500 errors. Fatal process crashes require hosting logs.")}{table("Failed generation jobs", data.documents.filter(d => d.status === "failed"), ["id", "title", "user_id", "error_code", "created_at"])}</>}
         {section === "billing" && <><div className={styles.metrics}><Metric label="Estimated MRR" value={money(mrr)} note="Based on configured prices, excludes tax/discount adjustments" /><Metric label="Estimated ARR" value={money(mrr * 12)} note="MRR × 12" /><Metric label="Razorpay" value={data.health.billingConfigured ? "Configured" : "Not configured"} note="Configuration status, not a gateway availability probe" /></div>{data.revenue.map((r, i) => <Card className={styles.panel} key={i}><h2>{display(r.currency)} transactions</h2><p>Gross captured: {money(Number(r.gross) / 100, String(r.currency || "INR"))} · Processed refunds: {money(Number(r.refunds) / 100, String(r.currency || "INR"))} · Failed payments: {display(r.failed)}</p></Card>)}{table("Subscriptions", data.subscriptions, ["user_id", "tier", "status", "current_period_end", "cancel_at_cycle_end", "synced_at"])}{table("Billing & invoices", data.billing, ["created_at", "event", "entity_id", "subscription_ref", "amount", "currency", "invoice_id"], "Signed Razorpay events recorded after migration. Amounts are in the smallest currency unit (paise for INR). Historical transactions need backfill; invoice references appear when supplied by Razorpay.")}</>}
         {section === "content" && <>{table("Database audit trail", events.filter(e => e.kind === "audit"), ["created_at", "actor_id", "resource", "action", "details"], "Changes to public application tables existing when migration 0018 is applied. Service/database writes identify the owner separately; the initiating user is unknown when no authenticated JWT is present.")}{table("Learning content", data.documents, ["title", "user_id", "status", "created_at"])}<Card className={styles.panel}><h2>Content moderation</h2><p>Learners can report content issues from dashboard pages. Review the queue in Moderation.</p><Button variant="outline" className={styles.refresh} onClick={()=>setSection("moderation")}>Open moderation</Button></Card></>}
-        {section === "logs" && <>{table("Application event log",events,["created_at","kind","resource","action","actor_id","status","duration_ms","details"],"Recent 200 events. Request paths exclude query strings; prompts and credentials are never included.")}</>}
         {section === "security" && <>{table("Auth security events", data.logins, ["created_at", "action", "actor_id", "ip_address"], "Includes failures when recorded by Supabase Auth. Repeated login failures should also be monitored in the provider's Auth logs.")}{table("Integration connections", data.integrations, ["user_id", "provider", "expires_at"], "Credentials are never included in monitoring responses.")}{table("API & export activity", events.filter(e => e.kind === "request" || e.kind === "export" || e.kind === "integration"), ["created_at", "kind", "actor_id", "resource", "action", "status", "duration_ms", "bytes"])}<Card className={styles.panel}><h2>Monitoring coverage</h2><p className={styles.note}>Tables show the most recent 200 records per feed; totals use the full database or selected time window. Monitoring starts after migration. Auth retention follows Supabase configuration. No automatic email alerts or sensitive-data exports are enabled.</p></Card></>}
       </>}
       <LearningSlot surface="super_admin" page={section} section="bottom" />
+      <footer className={styles.adminFooter}>
+        <div className={styles.adminFooterInner}>
+          <span>© {new Date().getFullYear()} MasterClass Super Admin Console</span>
+          <button type="button" className={styles.moveTopBtn} onClick={() => {
+            const reduce = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+            window.scrollTo({ top: 0, behavior: reduce ? "auto" : "smooth" });
+            document.querySelector<HTMLElement>("main, [role=main]")?.focus?.({ preventScroll: true });
+          }}>
+            Move to top <ArrowUp size={14} aria-hidden="true" />
+          </button>
+        </div>
+      </footer>
     </main></div></div>;
 }

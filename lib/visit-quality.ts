@@ -20,6 +20,15 @@ export function looksAutomated(visit: VisitSignals): boolean {
   return (visit.timezone === "UTC" || visit.timezone === "Etc/UTC") && visit.device === "Desktop";
 }
 
+/**
+ * Whether a beacon comes from the site's own machines: a loopback or private address, or no address at all outside
+ * production (the local dev server sends no forwarding header). TRACK_LOCAL=1 records them anyway.
+ */
+export function isOwnTraffic(ip: string | null | undefined): boolean {
+  if (process.env.TRACK_LOCAL === "1") return false;
+  return isLocalAddress(ip) || (!ip && process.env.NODE_ENV !== "production");
+}
+
 /** A loopback or private network address (masked or full): the site's own machines, not the audience. */
 export function isLocalAddress(ip: string | null | undefined): boolean {
   if (!ip) return false;

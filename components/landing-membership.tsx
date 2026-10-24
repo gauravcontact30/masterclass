@@ -7,10 +7,11 @@ import { useLanguage } from "./language-provider";
 import home from "./landing-home.module.css";
 import frame from "./landing-section.module.css";
 import styles from "./landing-membership.module.css";
-import { formatPrice, type Currency } from "@/lib/pricing";
+import { formatPrice, type Currency, type SaleInfo } from "@/lib/pricing";
+import { SaleBadge, SalePrice } from "./sale-price";
 import { BilledNote, CurrencyPicker } from "./currency-picker";
 
-export type MembershipPrices = { monthly: number; yearly: number; enabled: boolean; currency?: Currency; currencies?: Currency[]; local?: Currency; inr?: { monthly: number; yearly: number } };
+export type MembershipPrices = { monthly: number; yearly: number; enabled: boolean; currency?: Currency; currencies?: Currency[]; local?: Currency; inr?: { monthly: number; yearly: number }; sale?: SaleInfo | null };
 type Area = { icon: LucideIcon; name: [string, string]; note: [string, string] };
 
 /** What the membership opens, in the Learning Dashboard's own groups, names and sidebar icons (components/workspace.tsx). */
@@ -63,12 +64,16 @@ export function LandingMembership({ prices, priceState, cycle, onCycle, onCurren
         <div className={styles.toggle} role="group" aria-label={text("Billing period", "भुगतान अवधि")}>
           {(["monthly", "yearly"] as const).map(value => <button type="button" key={value} aria-pressed={cycle === value} onClick={() => onCycle(value)}>
             <ExpandedText text={value === "monthly" ? text("Monthly", "मासिक") : text("Yearly", "वार्षिक")} />
-            {value === "yearly" && priceState === "ready" && savings > 0 && <span><ExpandedText text={text(`Save ${savings}%`, `${savings}% बचाएँ`)} /></span>}
+            {prices.sale && prices.sale.percent && <span className={styles.discountTag}>-{prices.sale.percent}%</span>}
+            {value === "yearly" && priceState === "ready" && savings > 0 && !prices.sale && <span><ExpandedText text={text(`Save ${savings}%`, `${savings}% बचाएँ`)} /></span>}
           </button>)}
         </div>
+        {priceState === "ready" && <SaleBadge sale={prices.sale} hi={hi} />}
         {onCurrency && prices.currency && <CurrencyPicker value={prices.currency} options={prices.currencies} local={prices.local} onChange={onCurrency} hi={hi} />}
-        <p className={styles.price}><b><ExpandedText text={priceState === "ready" ? money(prices[cycle]) : "—"} /></b><small><ExpandedText text={cycle === "monthly" ? text("/ month", "/ माह") : text("/ year", "/ वर्ष")} /></small></p>
-        <p className={styles.priceNote}><ExpandedText text={priceState === "error" ? text("Current pricing is temporarily unavailable.", "वर्तमान मूल्य अभी उपलब्ध नहीं है।") : cycle === "yearly" && priceState === "ready" ? text(`${money(prices.yearly / 12)}/month equivalent, billed yearly.`, `${money(prices.yearly / 12)}/माह के बराबर, वार्षिक भुगतान।`) : text("Billed monthly. Cancel renewal any time.", "मासिक भुगतान। नवीनीकरण कभी भी रद्द करें।")} /></p>
+        {priceState === "ready" && prices.sale
+          ? <p className={styles.price}><SalePrice sale={prices.sale} cycle={cycle} full={prices[cycle]} currency={prices.currency} hi={hi} per={cycle === "monthly" ? text(" / month", " / माह") : text(" / year", " / वर्ष")} /></p>
+          : <p className={styles.price}><b><ExpandedText text={priceState === "ready" ? money(prices[cycle]) : "—"} /></b><small><ExpandedText text={cycle === "monthly" ? text("/ month", "/ माह") : text("/ year", "/ वर्ष")} /></small></p>}
+        <p className={styles.priceNote}><ExpandedText text={priceState === "error" ? text("Current pricing is temporarily unavailable.", "वर्तमान मूल्य अभी उपलब्ध नहीं है।") : cycle === "yearly" && priceState === "ready" ? text(`${money((prices.sale?.yearly ?? prices.yearly) / 12)}/month equivalent, billed yearly.`, `${money((prices.sale?.yearly ?? prices.yearly) / 12)}/माह के बराबर, वार्षिक भुगतान।`) : text("Billed monthly. Cancel renewal any time.", "मासिक भुगतान। नवीनीकरण कभी भी रद्द करें।")} /></p>
         <BilledNote prices={prices} cycle={cycle} hi={hi} />
         <Link className={`${frame.cta} ${styles.subscribe}`} href={`/subscribe?plan=${cycle}`}><ExpandedText text={text("Subscribe now", "अभी सदस्यता लें")} /><ArrowRight size={16} aria-hidden="true" /></Link>
         <p className={styles.trial}><ExpandedText text={text("New here? ", "नए हैं? ")} /><Link href="/sign-up"><ExpandedText text={text("Start a 1-day free trial", "1 दिन का निःशुल्क ट्रायल शुरू करें")} /></Link><ExpandedText text={text(": full access, no card needed.", ": पूरी पहुँच, कोई कार्ड नहीं।")} /></p>

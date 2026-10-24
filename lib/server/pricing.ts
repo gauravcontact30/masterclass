@@ -1,7 +1,8 @@
 import "server-only";
 import { cacheLife, cacheTag } from "next/cache";
 import { subscriptionPrice } from "./config";
-import { CURRENCIES, currencyForCountry, isCurrency, type Currency, type ShownPrices } from "@/lib/pricing";
+import { activeSale } from "./festive-sale";
+import { CURRENCIES, currencyForCountry, isCurrency, type Currency, type SaleInfo, type ShownPrices } from "@/lib/pricing";
 
 /*
  * The membership price in the visitor's currency. Charges are always the rupee plans; this converts the rupee price
@@ -46,7 +47,13 @@ const round = (value: number, currency: Currency) => currency === "JPY" ? Math.r
 export async function visitorPrices(headers: Headers, chosen?: string | null): Promise<ShownPrices & { country: string | null }> {
   const inr = { monthly: subscriptionPrice("monthly"), yearly: subscriptionPrice("yearly") };
   const country = requestCountry(headers);
-  const base = { currency: "INR" as Currency, ...inr, inr, rate: 1, rateDate: null as string | null, currencies: ["INR"] as Currency[], country };
+  const sale = await activeSale().catch(() => null);
+  const saleIn = (rate: number, currency: Currency): SaleInfo | null => sale && {
+    slug: sale.slug, title: sale.title, titleHi: sale.titleHi, percent: sale.percent, endsAt: sale.endsAt,
+    monthly: sale.plans.monthly ? round(sale.plans.monthly.inr * rate, currency) : null, yearly: sale.plans.yearly ? round(sale.plans.yearly.inr * rate, currency) : null,
+    inr: { monthly: sale.plans.monthly?.inr ?? null, yearly: sale.plans.yearly?.inr ?? null },
+  };
+  const base = { currency: "INR" as Currency, ...inr, inr, rate: 1, rateDate: null as string | null, currencies: ["INR"] as Currency[], country, sale: saleIn(1, "INR") };
   if (!internationalBilling()) return base;
   const { rates, date } = await inrRates().catch(() => ({ rates: {}, date: null }) as Rates);
   const currencies = CURRENCIES.filter(code => code === "INR" || rates[code]);
@@ -54,5 +61,5 @@ export async function visitorPrices(headers: Headers, chosen?: string | null): P
   const currency = wanted === "INR" || rates[wanted] ? wanted : rates.USD ? "USD" : "INR";
   const rate = currency === "INR" ? 1 : rates[currency]!;
   const local = currencyForCountry(country);
-  return { ...base, currency, monthly: round(inr.monthly * rate, currency), yearly: round(inr.yearly * rate, currency), rate, rateDate: date, currencies, local: currencies.includes(local) ? local : undefined };
+  return { ...base, currency, monthly: round(inr.monthly * rate, currency), yearly: round(inr.yearly * rate, currency), rate, rateDate: date, currencies, local: currencies.includes(local) ? local : undefined, sale: saleIn(rate, currency) };
 }

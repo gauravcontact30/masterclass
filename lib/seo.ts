@@ -127,7 +127,7 @@ export function websiteSchema() {
   return { "@context": "https://schema.org", "@type": "WebSite", "@id": `${url}#website`, url, name: siteName, alternateName: "MasterClass Buddy", description: siteDescription, inLanguage: ["en", "hi"], keywords: siteKeywords.join(", "), publisher: { "@id": `${url}#organization` } };
 }
 
-export function organizationSchema() {
+export function organizationSchema(prices?: { monthly:number; yearly:number; endsAt?:string }) {
   const url = siteUrl().href;
   // The membership, as search engines should describe the business: one plan, monthly or yearly, in rupees.
   const offer = (name: string, price: number, unit: "MON" | "ANN") => ({
@@ -138,10 +138,10 @@ export function organizationSchema() {
     "@context": "https://schema.org", "@type": "EducationalOrganization", "@id": `${url}#organization`, name: siteName, alternateName: "MasterClass Buddy", url,
     logo: new URL("/icon.svg", url).href, description: siteDescription, slogan: "Learn in English and Hindi, with an AI tutor beside you.", areaServed: "IN", knowsLanguage: ["en", "hi"],
     knowsAbout: ["IELTS vocabulary", "JavaScript", "TypeScript", "React", "Next.js", "Python", "Node.js", "System design", "AWS", "Git", "AI agents", "Agentic AI", "Generative AI", "LangChain", "LangGraph", "LangSmith", "LangFlow", "n8n", "English vocabulary"],
-    hasOfferCatalog: { "@type": "OfferCatalog", name: "MasterClass membership", itemListElement: [
-      offer("Monthly membership", Number(process.env.PRO_MONTHLY_PRICE_INR ?? 299), "MON"),
-      offer("Yearly membership", Number(process.env.PRO_YEARLY_PRICE_INR ?? 2999), "ANN"),
-    ] },
+    ...(prices ? { hasOfferCatalog: { "@type": "OfferCatalog", name: "MasterClass membership", itemListElement: [
+      { ...offer("Monthly membership", prices.monthly, "MON"), ...(prices.endsAt ? { priceValidUntil:prices.endsAt } : {}) },
+      { ...offer("Yearly membership", prices.yearly, "ANN"), ...(prices.endsAt ? { priceValidUntil:prices.endsAt } : {}) },
+    ] } } : {}),
   };
 }
 

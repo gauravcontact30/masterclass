@@ -42,7 +42,8 @@ describe("international pricing", () => {
   });
   it("formats rupees and yen whole and other currencies to the cent", () => {
     expect(formatPrice(299, "INR")).toBe("₹299");
-    expect(formatPrice(2999 / 12, "INR")).toBe("₹250");
+    expect(formatPrice(2999 / 12, "INR")).toBe("₹249.92");
+    expect(formatPrice(224.25, "INR")).toBe("₹224.25");
     expect(formatPrice(3.15, "USD")).toBe("$3.15");
     expect(formatPrice(3, "USD")).toBe("$3.00");
   });

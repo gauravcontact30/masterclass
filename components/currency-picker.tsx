@@ -2,7 +2,7 @@
 import { lazy, Suspense, useId } from "react";
 import { ChevronDown, Globe2 } from "lucide-react";
 import { requestJson } from "@/lib/client";
-import { CURRENCY_INFO, formatPrice, isCurrency, type Currency, type ShownPrices } from "@/lib/pricing";
+import { CURRENCY_INFO, formatPrice, isCurrency, salePrice, type Currency, type ShownPrices } from "@/lib/pricing";
 import styles from "./currency-picker.module.css";
 
 /*
@@ -47,9 +47,11 @@ export function CurrencyPicker({ value, options, local, onChange, disabled, hi =
 }
 
 /** "Billed as ₹299 / month · converted at today's rate", under a converted price; nothing for rupees. */
-export function BilledNote({ prices, cycle, hi = false, className }: { prices: Partial<Pick<ShownPrices, "currency" | "inr">>; cycle: "monthly" | "yearly"; hi?: boolean; className?: string }) {
+export function BilledNote({ prices, cycle, hi = false, className }: { prices: Partial<Pick<ShownPrices, "currency" | "inr" | "sale">>; cycle: "monthly" | "yearly"; hi?: boolean; className?: string }) {
   if (!prices.currency || prices.currency === "INR" || !prices.inr) return null;
-  const inr = formatPrice(prices.inr[cycle], "INR", hi);
+  // During a festive sale the first charge is the discounted rupee amount.
+  const onSale = salePrice(prices.sale, cycle) != null ? prices.sale?.inr[cycle] ?? null : null;
+  const inr = formatPrice(onSale ?? prices.inr[cycle], "INR", hi);
   return <small className={`${styles.billed} ${className ?? ""}`}>{hi
     ? `${inr} ${cycle === "monthly" ? "/ माह" : "/ वर्ष"} के रूप में बिल · आज की दर से बदला गया, आपका बैंक थोड़ी अलग दर लगा सकता है`
     : `Billed as ${inr} ${cycle === "monthly" ? "/ month" : "/ year"} · converted at today's rate; your bank's rate may differ slightly`}</small>;

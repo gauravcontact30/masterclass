@@ -36,11 +36,27 @@ export function currencyForCountry(country: string | null | undefined): Currency
 
 /** Currencies with no minor unit in everyday prices. */
 const WHOLE: readonly Currency[] = ["INR", "JPY"];
-/** "₹299", "₹250", "$3.58", "€3.29", "¥538": rupees and yen whole, everything else to the cent, as converted. */
+/**
+ * "₹299", "₹250", "$3.58", "€3.29", "¥538": rupees and yen whole, everything else to the cent, as converted. A rupee
+ * amount with paise (a sale price such as ₹224.25) keeps them, because that is exactly what Razorpay charges.
+ */
 export function formatPrice(amount: number, currency: Currency = "INR", hi = false) {
-  const digits = WHOLE.includes(currency) ? 0 : 2;
+  const digits = currency === "INR" && !Number.isInteger(Math.round(amount * 100) / 100) ? 2 : WHOLE.includes(currency) ? 0 : 2;
   return new Intl.NumberFormat(hi ? "hi-IN" : "en-IN", { style: "currency", currency, minimumFractionDigits: digits, maximumFractionDigits: digits }).format(amount);
 }
 /** Prices as the client receives them: in `currency`, and the rupee amounts actually billed. */
 /** `local`: the currency of the country the visitor was located in, marked in the picker. */
-export type ShownPrices = { currency: Currency; monthly: number; yearly: number; inr: Record<Cycle, number>; rate: number; rateDate?: string | null; currencies: Currency[]; local?: Currency };
+export type ShownPrices = { currency: Currency; monthly: number; yearly: number; inr: Record<Cycle, number>; rate: number; rateDate?: string | null; currencies: Currency[]; local?: Currency; sale?: SaleInfo | null };
+/**
+ * A festive sale in force (lib/server/festive-sale.ts): a percentage off EVERY payment. `monthly`/`yearly` are the
+ * discounted recurring payments in the shown currency and `inr` in rupees as charged; null for a plan not on sale.
+ */
+export type SaleInfo = { slug: string; title: string; titleHi: string; percent: number; endsAt: string; monthly: number | null; yearly: number | null; inr: Record<Cycle, number | null> };
+/**
+ * The sale price of a plan, or null. The server only sends a sale while it is in force; pass `now` (from an effect or
+ * timer, never during render) to also drop it once its end time has passed in this browser.
+ */
+export function salePrice(sale: SaleInfo | null | undefined, cycle: Cycle, now?: number) {
+  if (!sale || (now != null && now >= Date.parse(sale.endsAt))) return null;
+  return sale[cycle];
+}

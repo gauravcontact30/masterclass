@@ -7,13 +7,13 @@ import styles from "./back-to-top.module.css";
 const RING = 2 * Math.PI * 22;
 
 /**
- * "Move to top" on the landing page and the learning dashboard: a round button that appears after the first
+ * "Move to top" on the landing page, the learning dashboard, and the super admin dashboard: a round button that appears after the first
  * screen, cycles through five light tones (one every five seconds), draws scroll progress around its edge and
  * shows a tooltip on hover or focus. It sits above the Study Buddy launcher on the same edge.
  */
 export function BackToTop() {
   const pathname = usePathname();
-  const enabled = pathname === "/" || (pathname?.startsWith("/dashboard") && !pathname.startsWith("/dashboard/super-admin"));
+  const enabled = pathname === "/" || pathname?.startsWith("/dashboard");
   const [progress, setProgress] = useState(0);
   const [visible, setVisible] = useState(false);
 

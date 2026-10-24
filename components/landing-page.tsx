@@ -8,10 +8,12 @@
  * FORM: full-bleed image slider (user-pinned), subject ribbon, contents list, ledger, image-led paths.
  */
 
+import { usePriceRefresh } from "./use-price-refresh";
 import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import { loadPrices } from "./currency-picker";
-import type { Currency } from "@/lib/pricing";
+import type { Currency, SaleInfo } from "@/lib/pricing";
+import { LandingFestiveSale } from "./landing-festive-sale";
 import { LibraryBig } from "lucide-react";
 import { landingFont } from "./landing-fonts";
 import { LandingNews } from "./landing-news";
@@ -35,6 +37,8 @@ import type { ContentOverrides } from "@/lib/content-overrides";
 import frame from "./landing-section.module.css";
 import { useLanguage } from "./language-provider";
 import styles from "./learn-landing.module.css";
+import { LandingWorkflows } from "./landing-workflows";
+import { LandingComparisons } from "./landing-comparisons";
 import { LandingInterview } from "./landing-interview";
 import { LandingAiPulse } from "./landing-ai-pulse";
 import { LandingFeatures } from "./landing-features";
@@ -47,8 +51,6 @@ const LibraryLedger = dynamic(() => import("./library-ledger").then(m => m.Libra
 const LandingFooter = dynamic(() => import("./landing-footer").then(m => m.LandingFooter));
 const LandingVocabulary = dynamic(() => import("./landing-vocabulary").then(m => m.LandingVocabulary));
 const StudentReviews = dynamic(() => import("./student-reviews").then(m => m.StudentReviews));
-const LandingWorkflows = dynamic(() => import("./landing-workflows").then(m => m.LandingWorkflows));
-const LandingComparisons = dynamic(() => import("./landing-comparisons").then(m => m.LandingComparisons));
 const LandingTechDocs = dynamic(() => import("./landing-tech-docs").then(m => m.LandingTechDocs));
 const LandingCertifications = dynamic(() => import("./landing-certifications").then(m => m.LandingCertifications));
 const LandingCoffee = dynamic(() => import("./landing-coffee").then(m => m.LandingCoffee));
@@ -56,13 +58,14 @@ const LandingApiDocs = dynamic(() => import("./landing-pro-sections").then(m => 
 const LandingTechy = dynamic(() => import("./landing-pro-sections").then(m => m.LandingTechy));
 
 /** `international`: other currencies are offered, so the page re-prices itself where the visitor is (it is cached in rupees). */
-export type LandingPrices = { monthly: number; yearly: number; enabled: boolean; currency?: Currency; currencies?: Currency[]; local?: Currency; inr?: { monthly: number; yearly: number }; international?: boolean };
+export type LandingPrices = { monthly: number; yearly: number; enabled: boolean; currency?: Currency; currencies?: Currency[]; local?: Currency; inr?: { monthly: number; yearly: number }; international?: boolean; sale?: SaleInfo | null };
 /** `today`: the India-calendar day number (istDay); the sections that turn over daily pick their content from it. */
 export function LandingPage({ pro, library, prices: initialPrices, daily, techDocs, copyrightYear, overrides, coffee, today = 0, featuredDoc, fresh = null }: { fresh?: LandingFresh | null; today?: number; featuredDoc?: string; overrides?: ContentOverrides; coffee?: BlogTeaser[]; copyrightYear?: number; pro?: LandingProPreview; library?: LandingLibrary; prices?: LandingPrices; techDocs?: OfficialTechDocs | null; daily?: { day: string; pulse: PulseCard[]; words: DailyWord[]; locked?: { pulse: LockedTeaser | null; word: LockedTeaser | null }; totals?: { pulse: number; words: number } } }) {
   const { language } = useLanguage(); const hi = language === "hi"; const text = (en: string, hindi: string) => hi ? hindi : en;
   const [cycle, setCycle] = useState<"monthly" | "yearly">("monthly");
   // Prices rendered on the server arrive in the HTML, so the plan card never paints "—" and then shifts; the fetch is only the fallback.
   const [prices, setPrices] = useState<LandingPrices>(initialPrices ?? { monthly: 299, yearly: 2999, enabled: false }); const [priceState, setPriceState] = useState<"loading" | "ready" | "error">(initialPrices ? "ready" : "loading");
+  usePriceRefresh(prices, setPrices);
   const [libraryRef, libraryReveal] = useReveal<HTMLElement>();
   useEffect(() => { if (initialPrices && !initialPrices.international) return; let active = true; loadPrices().then(data => { if (active) { setPrices(current => ({ ...current, ...data })); setPriceState("ready"); } }).catch(() => { if (active) setPriceState("error"); }); return () => { active = false; }; }, [initialPrices]);
   // The picker's choice re-prices every price on the page (membership, Plans menu, welcome window) at once.
@@ -81,6 +84,8 @@ export function LandingPage({ pro, library, prices: initialPrices, daily, techDo
         sections (interview prep, the daily pulse, blueprints, certification paths), a section each for AI Search, featured lessons and notes, proof of depth (library, comparisons,
         docs), then social proof straight before the ask (reviews, membership). */}
     <LandingSlider technologies={library?.counts.technology} />
+    {/* A festive sale in force (lib/server/festive-sale.ts) leads straight after the hero; it renders nothing otherwise. */}
+    {priceState === "ready" && prices.sale && <LandingFestiveSale prices={prices} />}
     <LearningSlot surface="landing" page="home" section="after-slider" className={styles.learningSlot} />
     <LandingNews />
     <LandingPathFinder day={today} fresh={fresh?.goals} />

@@ -2,7 +2,6 @@
 import type { FreshDifference } from "@/lib/landing-fresh-types";
 import { pickDaily } from "@/lib/daily-rotation";
 import { DailyCard } from "./landing-daily-card";
-import dynamic from "next/dynamic";
 import { useEffect, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { Bot, Boxes, Cloud, Database, FlaskConical, GitCompareArrows, Layers, Monitor, Server, type LucideIcon } from "lucide-react";
@@ -22,7 +21,7 @@ import { Combobox } from "./ui/combobox";
 import { useLanguage } from "./language-provider";
 import { usePagedCarousel } from "./use-paged-carousel";
 import { DashboardMore } from "./dashboard-more";
-const DashboardLessons = dynamic(() => import("./dashboard-lessons").then(module => module.DashboardLessons));
+import { DashboardLessons } from "./dashboard-lessons";
 import home from "./landing-home.module.css";
 import interview from "./landing-interview.module.css";
 import styles from "./landing-comparisons.module.css";

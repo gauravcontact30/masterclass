@@ -10,7 +10,7 @@ import { AUTOPLAY_MS, Controls, Dots, PREVIEW_COUNT } from "./landing-ai-pulse";
 import { DashboardMore } from "./dashboard-more";
 import { useLanguage } from "./language-provider";
 import { usePagedCarousel } from "./use-paged-carousel";
-const DashboardLessons = dynamic(() => import("./dashboard-lessons").then(module => module.DashboardLessons));
+import { DashboardLessons } from "./dashboard-lessons";
 import home from "./landing-home.module.css";
 import styles from "./landing-workflows.module.css";
 import { LearningLoader } from "./learning-loader";
@@ -23,7 +23,7 @@ const workflowKey = (workflow: Workflow) => contentKey("workflow", workflow.id);
 /** The official-docs learning paths (~180 KB of curriculum and guides) only show on /dashboard, so they are their own chunk. */
 const WorkflowLearning = dynamic(() => import("./workflow-learning").then(module => module.WorkflowLearning), { loading: () => <LearningLoader size="inline" label="Loading the learning paths…" /> });
 /** Full detail and interview questions: about 200 Q&As, so they load as their own chunk after the page. */
-const WorkflowPrep = dynamic(() => import("./landing-workflow-prep"), { ssr: false, loading: () => <LearningLoader size="inline" label="Loading the blueprint details…" /> });
+import WorkflowPrep from "./landing-workflow-prep";
 
 /** The landing preview shows this many of the most asked subjective and objective questions per blueprint; /dashboard shows all. */
 const LANDING_QUESTIONS = 3;

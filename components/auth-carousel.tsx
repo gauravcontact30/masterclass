@@ -60,7 +60,7 @@ export function AuthCarousel({ slides, labels, intervalMs = 5000 }: { slides: Au
       <div className={styles.slides} aria-live={rotating ? "off" : "polite"}>
         {slides.map((slide, i) => (
           <div key={slide.id} role="group" aria-roledescription="slide" aria-label={labels.position(i + 1, slides.length)} hidden={i !== index} className={styles.slide}>
-            <div className={styles.art} aria-hidden="true"><div className={styles.photo}><Image src={slide.image} alt="" fill sizes="(max-width: 899px) 100vw, 460px" preload={i === 0} loading={i === 0 ? undefined : "lazy"} /></div></div>
+            <div className={styles.art} aria-hidden="true"><div className={styles.photo}><Image src={slide.image} alt="" fill sizes="(max-width: 899px) 100vw, 460px" priority={i === 0} loading={i === 0 ? "eager" : "lazy"} /></div></div>
             <h2 className={styles.slideTitle}>{slide.title}</h2>
             <p className={styles.slideBody}>{slide.body}</p>
           </div>

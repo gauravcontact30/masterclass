@@ -66,7 +66,7 @@ export function SuperAdminNewUserLocations({ days, query = "" }: Readonly<{ days
         <Card tone="sky" icon={Globe2} title="Country" purpose="Which countries new learners come from." rows={current.countries} total={current.total} empty="No country recorded yet." />
         <Card tone="lavender" icon={MapIcon} title="State / region" purpose="State or union territory, with its country." rows={current.states} total={current.total} empty="No state recorded yet." />
         <Card tone="mint" icon={Building2} title="City" purpose="The city the network is registered in, with its state." rows={current.cities} total={current.total} empty="No city recorded yet." />
-        <Card tone="butter" icon={Home} title="Village / locality" purpose="The postal (PIN) area: the finest level an IP address gives. Village names cannot be read from IP data."
+        <Card tone="butter" icon={Home} title="Village / locality" purpose="The postal (PIN) area, only when the network resolves below city level. A city's head post office PIN (e.g. 110001) is the geolocation default, not the user's locality, so it is not counted."
           rows={current.postalAreas} total={current.total} empty={current.coordinates ? "No PIN area recorded yet. It appears for visits after migration 0030." : "Apply migration 0030 to record PIN areas."} />
         <Card tone="peach" icon={Navigation} title="Nearby city" purpose="Nearest major city to the network’s position (other than the user’s own), with its state and the average distance."
           rows={current.nearby} total={current.total} empty={current.coordinates ? "No coordinates recorded yet. They appear for visits after migration 0030." : "Apply migration 0030 to record coordinates."} />
@@ -77,7 +77,7 @@ export function SuperAdminNewUserLocations({ days, query = "" }: Readonly<{ days
           "name",
           { key: "joinedAt", label: "Joined (IST)", render: row => ist(String(row.joinedAt)) },
           { key: "location", label: "City, state, country", render: row => String(row.location || "Not available") },
-          { key: "postalCode", label: "Village / PIN area", render: row => row.postalCode ? `PIN ${row.postalCode}` : "Not available from IP" },
+          { key: "postalCode", label: "Village / PIN area", render: row => row.postalCode ? `PIN ${row.postalCode}` : row.cityLevelPin ? "City-level only (exact PIN not known)" : "Not available from IP" },
           { key: "nearbyCity", label: "Nearby city", render: row => String(row.nearbyCity ?? "Not available") },
           { key: "firstSeenAt", label: "First seen (IST)", render: row => row.firstSeenAt ? ist(String(row.firstSeenAt)) : "No visit recorded" },
           { key: "todayMs", label: "Time today", render: row => duration(Number(row.todayMs)) },

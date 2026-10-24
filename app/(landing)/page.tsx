@@ -9,6 +9,7 @@ import { pickDaily } from "@/lib/daily-rotation";
 import { TECH_DOCS } from "@/lib/tech-docs";
 import { billingConfigured } from "@/lib/server/config";
 import { internationalBilling } from "@/lib/server/pricing";
+import { activeSale } from "@/lib/server/festive-sale";
 import { officialTechDocs, previewTechDocs } from "@/lib/server/official-tech-docs";
 import { organizationSchema, pageMetadata, websiteSchema } from "@/lib/seo";
 import { contentOverrides } from "@/lib/server/content-overrides";
@@ -23,6 +24,7 @@ export default async function Home() {
   "use cache";
   cacheLife("hours");
   cacheTag("landing");
+  // Refreshed chunk hashes for client dynamic imports
   const today = istDay();
   const pro = landingProPreview(today);
   // Technology docs previews one platform a day; the CS fundamentals stay listed under it.
@@ -33,9 +35,13 @@ export default async function Home() {
   const day = landingDaily();
   const daily = { ...day, pulse: day.pulse.slice(0, DAILY_PREVIEW), words: day.words.slice(0, DAILY_PREVIEW), totals: { pulse: day.pulse.length, words: day.words.length } };
   // Cached for everyone, so it is priced in rupees; with international billing on, the page re-prices itself for the visitor.
-  const prices = { monthly: Number(process.env.PRO_MONTHLY_PRICE_INR ?? 299), yearly: Number(process.env.PRO_YEARLY_PRICE_INR ?? 2999), enabled: billingConfigured(), currency: "INR" as const, international: internationalBilling() };
+  // A festive sale in force (lib/server/festive-sale.ts) rides along in rupees; the client hides it at its end time.
+  const festive = await activeSale().catch(() => null);
+  const sale = festive && { slug: festive.slug, title: festive.title, titleHi: festive.titleHi, percent: festive.percent, endsAt: festive.endsAt,
+    monthly: festive.plans.monthly?.inr ?? null, yearly: festive.plans.yearly?.inr ?? null, inr: { monthly: festive.plans.monthly?.inr ?? null, yearly: festive.plans.yearly?.inr ?? null } };
+  const prices = { monthly: Number(process.env.PRO_MONTHLY_PRICE_INR ?? 299), yearly: Number(process.env.PRO_YEARLY_PRICE_INR ?? 2999), enabled: billingConfigured(), currency: "INR" as const, international: internationalBilling(), sale };
   // Super Admin content edits apply to the landing previews too; a save expires both this page and the overrides.
   // Today's AI-written additions (lib/server/landing-fresh.ts); the nightly job publishes them with revalidateTag("landing").
   const [docs, overrides, fresh] = await Promise.all([officialTechDocs(), contentOverrides(), landingFresh(today)]);
-  return <><JsonLd data={[websiteSchema(), organizationSchema()]} /><LandingPage copyrightYear={new Date().getFullYear()} pro={pro} library={previewLibrary(landingLibrary(pro), today)} prices={prices} daily={daily} techDocs={previewTechDocs(docs, featuredDoc)} featuredDoc={featuredDoc} fresh={fresh} today={today} overrides={overrides} coffee={blogTeasers(8, today)} /></>;
+  return <><JsonLd data={[websiteSchema(), organizationSchema({ monthly:sale?.monthly ?? prices.monthly, yearly:sale?.yearly ?? prices.yearly, endsAt:sale?.endsAt })]} /><LandingPage copyrightYear={new Date().getFullYear()} pro={pro} library={previewLibrary(landingLibrary(pro), today)} prices={prices} daily={daily} techDocs={previewTechDocs(docs, featuredDoc)} featuredDoc={featuredDoc} fresh={fresh} today={today} overrides={overrides} coffee={blogTeasers(8, today)} /></>;
 }

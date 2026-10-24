@@ -9,7 +9,7 @@ import { clientIp, geo, geoPoint, hashIp, maskIp, parseUserAgent } from "@/lib/s
 import { isUntrackedEmail, UNTRACKED_COOKIE } from "@/lib/server/tracking-exclusions";
 import { HttpError, jsonBody, sameOrigin } from "@/lib/server/http";
 import { recordEvent } from "@/lib/server/monitoring";
-import { isLocalAddress, looksAutomated } from "@/lib/visit-quality";
+import { isOwnTraffic, looksAutomated } from "@/lib/visit-quality";
 
 /*
  * Page-view beacon for the super admin's User activities page (components/visit-tracker.tsx sends it).
@@ -48,7 +48,7 @@ export async function POST(request: Request) {
 
   const ip = clientIp(request.headers);
   // The site's own development server is not audience (it shares the production database); TRACK_LOCAL=1 records it.
-  if (isLocalAddress(ip) && process.env.TRACK_LOCAL !== "1") return noContent();
+  if (isOwnTraffic(ip)) return noContent();
   const ipHash = ip ? hashIp(ip) : null;
   if (!allowed(ipHash ?? "unknown")) return new Response(null, { status: 429 });
 

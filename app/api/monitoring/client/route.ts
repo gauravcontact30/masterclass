@@ -2,7 +2,7 @@ import { z } from "zod";
 import { jsonBody, sameOrigin } from "@/lib/server/http";
 import { clientIp, parseUserAgent } from "@/lib/server/visit-context";
 import { recordEventLater } from "@/lib/server/monitoring";
-import { isLocalAddress } from "@/lib/visit-quality";
+import { isOwnTraffic } from "@/lib/visit-quality";
 
 /*
  * Frontend performance and errors from components/client-monitor.tsx, for the super admin's Logs & Health page.
@@ -31,7 +31,7 @@ const noContent = () => new Response(null, { status: 204, headers: { "Cache-Cont
 export async function POST(request: Request) {
   try { sameOrigin(request); } catch { return new Response(null, { status: 403 }); }
   const ip = clientIp(request.headers);
-  if (isLocalAddress(ip) && process.env.TRACK_LOCAL !== "1") return noContent();
+  if (isOwnTraffic(ip)) return noContent();
   if (!allowed(ip ?? "unknown")) return new Response(null, { status: 429 });
   let input: z.infer<typeof bodySchema>;
   try { input = bodySchema.parse(await jsonBody(request, 4000)); } catch { return new Response(null, { status: 400 }); }

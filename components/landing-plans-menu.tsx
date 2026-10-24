@@ -5,7 +5,8 @@ import Link from "next/link";
 import { ArrowRight, Check, Crown } from "lucide-react";
 import { useLanguage } from "./language-provider";
 import styles from "./landing-home.module.css";
-import { formatPrice, type Currency } from "@/lib/pricing";
+import { formatPrice, salePrice, type Currency, type SaleInfo } from "@/lib/pricing";
+import { SaleBadge, SalePrice } from "./sale-price";
 import { BilledNote, CurrencyPicker } from "./currency-picker";
 
 type Cycle = "monthly" | "yearly";
@@ -16,7 +17,7 @@ const CYCLES: Cycle[] = ["monthly", "yearly"];
  * each linking straight into guest checkout with that plan preselected.
  * Prices are null until the landing page has loaded them, and show as "—".
  */
-export type PlansMenuPrices = { monthly: number; yearly: number; currency?: Currency; currencies?: Currency[]; local?: Currency; inr?: { monthly: number; yearly: number } };
+export type PlansMenuPrices = { monthly: number; yearly: number; currency?: Currency; currencies?: Currency[]; local?: Currency; inr?: { monthly: number; yearly: number }; sale?: SaleInfo | null };
 export function LandingPlansMenu({ prices, open, onOpenChange, onCurrency }: { prices: PlansMenuPrices | null; open: boolean; onOpenChange: (open: boolean) => void; onCurrency?: (currency: Currency) => void }) {
   const { language } = useLanguage();
   const hi = language === "hi";
@@ -60,14 +61,17 @@ export function LandingPlansMenu({ prices, open, onOpenChange, onCurrency }: { p
         {CYCLES.map(value => <button key={value} id={`${id}-tab-${value}`} type="button" role="tab" aria-selected={cycle === value} aria-controls={`${id}-panel`} tabIndex={cycle === value ? 0 : -1}
           onClick={() => setCycle(value)} onKeyDown={onTabKey}>
           {value === "monthly" ? text("Monthly", "मासिक") : text("Yearly", "वार्षिक")}
-          {value === "yearly" && savings > 0 && <span>{text(`Save ${savings}%`, `${savings}% बचत`)}</span>}
+          {prices?.sale && salePrice(prices.sale, value) != null && <span>-{prices.sale.percent}%</span>}
+          {value === "yearly" && savings > 0 && !prices?.sale && <span>{text(`Save ${savings}%`, `${savings}% बचत`)}</span>}
         </button>)}
       </div>
       <div id={`${id}-panel`} className={styles.plansPanel} role="tabpanel" aria-labelledby={`${id}-tab-${cycle}`}>
         {prices && onCurrency && prices.currency && <CurrencyPicker value={prices.currency} options={prices.currencies} local={prices.local} onChange={onCurrency} hi={hi} />}
-        <p className={styles.plansPrice}>{prices ? money(prices[cycle]) : "—"}<small>{cycle === "monthly" ? text("/ month", "/ माह") : text("/ year", "/ वर्ष")}</small></p>
+        {prices && <SaleBadge sale={prices.sale} hi={hi} className={styles.plansBadge} />}
+        {prices?.sale ? <p className={styles.plansPrice}><SalePrice sale={prices.sale} cycle={cycle} full={prices[cycle]} currency={prices.currency} hi={hi} size="sm" per={cycle === "monthly" ? text(" / month", " / माह") : text(" / year", " / वर्ष")} /></p>
+          : <p className={styles.plansPrice}>{prices ? money(prices[cycle]) : "—"}<small>{cycle === "monthly" ? text("/ month", "/ माह") : text("/ year", "/ वर्ष")}</small></p>}
         <p className={styles.plansNote}>{cycle === "yearly" && prices
-          ? text(`${money(prices.yearly / 12)}/month equivalent, billed yearly.`, `${money(prices.yearly / 12)}/माह के बराबर, वार्षिक भुगतान।`)
+          ? text(`${money((prices.sale?.yearly ?? prices.yearly) / 12)}/month equivalent, billed yearly.`, `${money((prices.sale?.yearly ?? prices.yearly) / 12)}/माह के बराबर, वार्षिक भुगतान।`)
           : text("Billed monthly. Cancel renewal any time.", "मासिक भुगतान। नवीनीकरण कभी भी रद्द करें।")}</p>
         {prices && <BilledNote prices={prices} cycle={cycle} hi={hi} />}
         <ul>{[text("Every course & category", "हर कोर्स और श्रेणी"), text("Notes, worked answers & practice", "नोट्स, हल सहित उत्तर और अभ्यास"), text("English / Hindi", "अंग्रेज़ी / हिन्दी")].map(item => <li key={item}><Check size={14} aria-hidden="true" />{item}</li>)}</ul>

@@ -6,6 +6,7 @@
 .toggle button { display: inline-flex; align-items: center; justify-content: center; gap: 8px; height: 38px; border: 0; border-radius: 8px; background: transparent; color: var(--nb-text); font-size: 15px; font-weight: 500; cursor: pointer; }
 .toggle button[aria-pressed="true"] { background: var(--nb-sheet); color: var(--nb-graphite); font-weight: 600; box-shadow: 0 1px 2px rgba(20, 20, 19, .08), 0 0 0 1px var(--nb-rule-2); }
 .toggle button span { padding: 2px 6px; border-radius: 6px; background: var(--nb-orange); color: var(--nb-ink-deep); font-size: 12px; font-weight: 600; }
+.toggle button .discountTag { padding: 2px 6px; border-radius: 6px; background: #fee2e2; color: #b91c1c; font-size: 11px; font-weight: 750; border: 1px solid #fca5a5; }
 .price { display: flex; align-items: baseline; gap: 8px; margin-top: 6px; text-align: left; }
 .price b { font-size: clamp(40px, 4vw, 52px); font-weight: 600; line-height: 1; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }
 .price small { font-size: 15px; color: var(--nb-muted); }

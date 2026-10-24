@@ -1,0 +1,76 @@
+/* Diwali festive sale: a deep indigo night, saffron and marigold light. The section's one orchestrated moment is the
+   sky (fireworks above flickering diyas, a slowly turning rangoli); everything rests under reduced motion. */
+.sale { --night: #1b1440; --night-2: #2a1d5c; --saffron: #f59e0b; --marigold: #fbbf24; --ember: #ea580c; --ivory: #fff7ed;
+  position: relative; overflow: hidden; isolation: isolate; padding: 64px 24px; color: var(--ivory);
+  background: radial-gradient(120% 90% at 85% 10%, #3b2a7a 0%, var(--night-2) 38%, var(--night) 75%); }
+.inner { position: relative; z-index: 1; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); align-items: center; gap: 40px; max-width: 1180px; margin: 0 auto; }
+
+.copy { display: grid; gap: 18px; }
+.kicker { display: inline-flex; align-items: center; gap: 8px; width: fit-content; padding: 6px 14px; border: 1px solid #f59e0b80; border-radius: 999px; background: #f59e0b1f; font-size: 13px; font-weight: 700; letter-spacing: .02em; color: var(--marigold); }
+.copy h2 { margin: 0; font-family: Georgia, "Times New Roman", serif; font-size: clamp(30px, 4.2vw, 50px); font-weight: 500; line-height: 1.08; letter-spacing: -.01em; color: var(--ivory); }
+.copy h2 span { display: block; margin-top: 6px; background: linear-gradient(90deg, #fde68a, #f59e0b 45%, #fb923c); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.lede { max-width: 54ch; margin: 0; text-align: left; -webkit-hyphens: none; hyphens: none; font-size: 16px; line-height: 1.65; color: #e9e3ff; }
+
+.plans { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; }
+.plan { display: grid; gap: 6px; padding: 18px 20px; border: 1px solid #fbbf2455; border-radius: 18px; background: linear-gradient(160deg, #ffffff14, #ffffff06); color: var(--ivory); text-decoration: none; backdrop-filter: blur(6px);
+  transition: transform .2s ease, border-color .2s ease, box-shadow .2s ease; }
+.plan[data-cycle="yearly"] { border-color: #fbbf24; box-shadow: 0 0 0 1px #fbbf2440, 0 18px 40px -24px #f59e0b; }
+.plan:hover, .plan:focus-visible { transform: translateY(-2px); border-color: var(--marigold); box-shadow: 0 0 0 1px #fbbf24, 0 22px 44px -22px #f59e0b; }
+.plan:focus-visible { outline: 2px solid var(--marigold); outline-offset: 3px; }
+.planName { display: flex; align-items: center; justify-content: space-between; font-size: 14px; font-weight: 700; color: #f5efff; }
+.planName em { padding: 2px 9px; border-radius: 999px; background: var(--ember); font-style: normal; font-size: 12px; color: #fff; }
+.planPrice { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; font-variant-numeric: tabular-nums; }
+.planPrice s { font-size: 15px; color: #c4b8f0; text-decoration-color: #fb923c; text-decoration-thickness: 2px; }
+.planPrice b { font-family: Georgia, "Times New Roman", serif; font-size: 32px; font-weight: 500; color: var(--marigold); }
+.planNote { font-size: 12.5px; color: #d9d0f7; }
+.planCta { display: inline-flex; align-items: center; gap: 6px; margin-top: 4px; font-size: 13.5px; font-weight: 700; color: var(--marigold); }
+
+.countdown { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.countLabel { margin-right: 4px; font-size: 13px; font-weight: 600; color: #d9d0f7; }
+.unit { display: grid; justify-items: center; min-width: 58px; padding: 8px 6px; border: 1px solid #ffffff26; border-radius: 12px; background: #ffffff0f; }
+.unit b { font-family: Georgia, "Times New Roman", serif; font-size: 24px; font-weight: 500; font-variant-numeric: tabular-nums; color: var(--ivory); }
+.unit small { font-size: 11px; color: #c4b8f0; }
+.fine { margin: 0; font-size: 12px; line-height: 1.55; color: #b9addf; }
+
+.art { position: relative; margin: 0; aspect-ratio: 16 / 10; border-radius: 26px; overflow: visible; }
+.slidesWrap { position: relative; width: 100%; height: 100%; border-radius: 26px; overflow: hidden; box-shadow: 0 30px 70px -30px #000, 0 0 0 1px #fbbf2440; }
+.slide { position: absolute; inset: 0; opacity: 0; transition: opacity .7s ease; pointer-events: none; }
+.slide[data-active] { opacity: 1; pointer-events: auto; }
+.photo { border-radius: 26px; object-fit: cover; }
+
+.carouselControls { position: absolute; left: 50%; bottom: 14px; transform: translateX(-50%); z-index: 4; display: flex; align-items: center; gap: 8px; padding: 4px 10px; border: 1px solid rgba(251, 191, 36, 0.3); border-radius: 999px; background: rgba(20, 14, 48, 0.75); backdrop-filter: blur(8px); box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4); }
+.carouselNav { display: grid; place-items: center; width: 24px; height: 24px; padding: 0; border: 0; border-radius: 50%; background: rgba(255, 255, 255, 0.12); color: #fff; cursor: pointer; transition: background .15s ease, color .15s ease; }
+.carouselNav:hover { background: rgba(251, 191, 36, 0.35); color: var(--marigold); }
+.carouselNav:focus-visible { outline: 2px solid var(--marigold); outline-offset: 1px; }
+
+.carouselDots { display: flex; align-items: center; gap: 6px; }
+.dot { width: 7px; height: 7px; padding: 0; border: 0; border-radius: 999px; background: rgba(255, 255, 255, 0.35); cursor: pointer; transition: width .25s ease, background-color .25s ease; }
+.dot:hover { background: rgba(251, 191, 36, 0.7); }
+.dot[aria-selected="true"] { width: 20px; background: var(--marigold); box-shadow: 0 0 6px #f59e0b; }
+.dot:focus-visible { outline: 2px solid var(--marigold); outline-offset: 1px; }
+
+.rangoli { position: absolute; left: -46px; bottom: -46px; width: 140px; height: 140px; filter: drop-shadow(0 8px 18px #0008); animation: turn 40s linear infinite; will-change: transform; transform: translateZ(0); }
+@keyframes turn { to { transform: rotate(360deg); } }
+.diyas { position: absolute; right: 18px; bottom: -18px; display: flex; gap: 14px; }
+.diya { position: relative; width: 34px; height: 16px; border-radius: 0 0 20px 20px; background: linear-gradient(180deg, #c2410c, #7c2d12); box-shadow: 0 4px 10px #0007; }
+.diya i { position: absolute; left: 50%; bottom: 12px; width: 10px; height: 18px; border-radius: 50% 50% 50% 50% / 65% 65% 35% 35%; transform: translateX(-50%);
+  background: radial-gradient(circle at 50% 70%, #fff7ed 0 20%, #fde68a 35%, #f59e0b 65%, transparent 70%); box-shadow: 0 0 18px 6px #f59e0b88;
+  animation: flicker 1.6s ease-in-out infinite alternate; animation-delay: calc(var(--i) * -.37s); transform-origin: 50% 100%; will-change: transform, opacity; }
+@keyframes flicker { 0% { transform: translateX(-50%) scale(1, 1) rotate(-2deg); opacity: .95; } 50% { transform: translateX(-50%) scale(.92, 1.08) rotate(2deg); } 100% { transform: translateX(-50%) scale(1.05, .96) rotate(-1deg); opacity: 1; } }
+
+/* Fireworks: five bursts at fixed points of the sky, each twelve sparks flying out and fading, staggered. */
+.sky { position: absolute; inset: 0; z-index: 0; pointer-events: none; }
+.burst { position: absolute; top: calc(10% + var(--i) * 7%); left: calc(8% + var(--i) * 19%); width: 2px; height: 2px; }
+.burst i { position: absolute; left: 0; top: 0; width: 3px; height: 3px; border-radius: 50%; background: var(--marigold); box-shadow: 0 0 6px 1px #fbbf24;
+  transform: rotate(calc(var(--k) * 30deg)) translateY(0); opacity: 0; animation: spark 3.2s ease-out infinite; animation-delay: calc(var(--i) * .7s); will-change: transform, opacity; }
+.burst:nth-child(2n) i { background: #fb7185; box-shadow: 0 0 6px 1px #fb7185; }
+.burst:nth-child(3n) i { background: #c4b5fd; box-shadow: 0 0 6px 1px #c4b5fd; }
+@keyframes spark { 0% { transform: rotate(calc(var(--k) * 30deg)) translateY(0); opacity: 0; } 8% { opacity: 1; } 55% { opacity: .9; } 100% { transform: rotate(calc(var(--k) * 30deg)) translateY(-46px); opacity: 0; } }
+
+@media (max-width: 900px) {
+  .sale { padding: 48px 18px 64px; }
+  .inner { grid-template-columns: minmax(0, 1fr); gap: 34px; }
+  .art { order: -1; }
+  .rangoli { left: -20px; bottom: -34px; width: 100px; height: 100px; }
+}
+@media (prefers-reduced-motion: reduce) { .rangoli, .diya i, .burst i { animation: none; } .burst i { opacity: 0; } }

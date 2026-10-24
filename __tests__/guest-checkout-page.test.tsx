@@ -33,7 +33,7 @@ test("checkout needs no course selection, then emails the new account a sign-in 
   jest.mocked(openSubscriptionCheckout).mockResolvedValue({ razorpay_payment_id: "pay_1", razorpay_subscription_id: "sub_1", razorpay_signature: "a".repeat(64) });
   fireEvent.click(pay);
   expect(await screen.findByRole("heading", { name: "Your membership is active" })).toBeInTheDocument();
-  expect(JSON.parse(fetch.mock.calls[0][1].body)).toEqual({ action: "checkout", tier: "yearly", currency: "INR", email: "asha@example.com", name: "Asha" });
+  expect(JSON.parse(fetch.mock.calls[0][1].body)).toEqual({ action: "checkout", tier: "yearly", currency: "INR", expectedSale: null, expectedAmountPaise: 299900, email: "asha@example.com", name: "Asha" });
   expect(JSON.parse(fetch.mock.calls[1][1].body)).toMatchObject({ action: "verify", checkoutId: "c1", razorpay_payment_id: "pay_1" });
   expect(openSubscriptionCheckout).toHaveBeenCalledWith(expect.objectContaining({ subscription_id: "sub_1", prefill: { email: "asha@example.com", name: "Asha" } }));
   // The link goes to the inbox; this browser is never signed in directly.

@@ -10,10 +10,11 @@ const ready = () => screen.findByText(/349/, {selector:"p.price b"});
 
 test("offers signup, sign-in and current section navigation", async () => {
   render(<LandingPage/>); await ready();
-  expect(screen.getByRole("heading",{level:1})).toHaveTextContent("school, exam and technology learning");
+  expect(screen.getByRole("heading",{level:1})).toHaveTextContent("technology learning for professionals");
   expect(screen.getByRole("heading",{name:/How real systems and AI agents get work done/})).toBeInTheDocument();
   expect(screen.queryByRole("link",{name:"Build my learning space"})).not.toBeInTheDocument();
-  expect(within(screen.getByRole("banner", {name:"Site header"})).getByRole("link",{name:"Sign in"})).toHaveAttribute("href","/sign-in");
+  fireEvent.click(screen.getByRole("button", { name: "Account" }));
+  expect(within(screen.getByRole("banner", {name:"Site header"})).getByRole("link",{name:/Sign in/})).toHaveAttribute("href","/sign-in");
   expect(within(screen.getByRole("navigation",{name:"Main navigation"})).getByRole("link",{name:"Membership"})).toHaveAttribute("href","/subscribe");
 });
 

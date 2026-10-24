@@ -1,0 +1,11 @@
+{
+  "slug": "diwali-2026",
+  "title": "Diwali Festive Sale",
+  "title_hi": "दिवाली फ़ेस्टिव सेल",
+  "discount_percent": 25,
+  "starts_at": "2026-10-24T00:00:00+05:30",
+  "ends_at": "2026-11-15T23:59:59+05:30",
+  "active": true,
+  "razorpay_plan_monthly": "plan_TreNoCyZrC6vhv",
+  "razorpay_plan_yearly": "plan_TreNoMAceplT9R"
+}
