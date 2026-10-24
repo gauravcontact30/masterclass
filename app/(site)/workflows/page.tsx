@@ -8,7 +8,11 @@ export const metadata = learningMetadata({
   path: "/workflows",
   title: "System design and AI agent workflow blueprints",
   description: "Step-by-step blueprints of real systems and AI agents: URL shortener, rate limiter, payments, chat, video streaming, LangChain RAG, LangGraph human-in-the-loop and supervisors, with tech stacks, design decisions and interview questions.",
-  keywords: ["system design blueprints", "system design interview", "LangGraph workflow examples", "LangChain RAG architecture", "AI agent architecture"],
+  keywords: [
+    "system design blueprints", "system design interview questions", "LangGraph workflow examples", "LangChain RAG architecture",
+    "AI agent architecture", "distributed systems blueprints", "rate limiting architecture", "MCP agent workflows",
+    "human in the loop AI", "microservices architecture", "URL shortener system design", "payments system design"
+  ],
 });
 
 const GROUP_INTRO: Record<string, string> = {

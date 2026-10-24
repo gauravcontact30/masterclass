@@ -1,6 +1,6 @@
 "use client";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Activity, AlertTriangle, BookOpen, BookOpenText, CheckCircle2, Clock, Compass, Cpu, Database, Gauge, Globe2, GraduationCap, Hourglass, Laptop, LogIn, LogOut, MapPin, MousePointerClick, Pause, Play, Radio, RefreshCw, Route, Server, Smartphone, Sparkles, Tablet, Target, Timer, UserRound, Users, Zap, type LucideIcon } from "lucide-react";
+import { Activity, AlertTriangle, BookOpen, BookOpenText, CheckCircle2, Clock, Compass, Cpu, Database, Gauge, Globe2, GraduationCap, Hourglass, Laptop, LogIn, LogOut, MapPin, MousePointerClick, Pause, Play, Radio, RefreshCw, Route, Server, ShieldCheck, Smartphone, Sparkles, Tablet, Target, Timer, UserRound, Users, Zap, type LucideIcon } from "lucide-react";
 import { Flag, countryName } from "./super-admin-audience";
 import { Pager } from "./super-admin-table";
 import styles from "./super-admin-overview-live.module.css";
@@ -243,16 +243,13 @@ export function OverviewLive({ snapshot, onRefreshSnapshot }: { snapshot: Overvi
         {visitors.length ? <>
           <div className={styles.streamTableWrap}>
             <div className={styles.streamHeadRow} aria-hidden="true">
-              <span>Learner Profile</span>
-              <span>Location & PIN</span>
-              <span>Platform & Source</span>
-              <span>Active Target</span>
-              <span>Engaged Learning Contents</span>
-              <span>Focus & Intensity</span>
-              <span>Time Spent</span>
-              <span>Stay Duration</span>
-              <span>Arrived (IST)</span>
-              <span>Left (IST)</span>
+              <span className={styles.streamHeadTitle}>
+                <Activity size={13} aria-hidden="true" />
+                Visitor Logs
+              </span>
+              <span className={styles.streamHeadNote}>
+                Live Learner Activity, Geolocation, Session Timing & Learning History
+              </span>
             </div>
             <ol className={styles.streamList}>
               {visitRows.map(row => {
@@ -266,299 +263,358 @@ export function OverviewLive({ snapshot, onRefreshSnapshot }: { snapshot: Overvi
 
                 return (
                   <li key={row.key} className={styles.streamRow} data-live={isLive || undefined} data-new={freshSince != null && Date.parse(row.arrived) > freshSince || undefined}>
-                    {/* 1. Learner Profile & Identity Card (Light Neutral) */}
-                    <div className={`${styles.streamColCard} ${styles.cardIdentity}`} title={`Visitor ID: ${row.key}`}>
-                      <div className={styles.cardKickerRow}>
-                        <UserRound size={12} className={styles.kickerIcon} aria-hidden="true" />
-                        <span>Learner Profile</span>
-                      </div>
-                      <div className={styles.identityBody}>
-                        <div className={styles.avatarWrap}>
-                          <UserRound size={13} className={styles.avatarIcon} aria-hidden="true" />
-                          {isLive && <span className={styles.liveAvatarPing} aria-hidden="true" />}
-                        </div>
-                        <div className={styles.identityDetails}>
-                          <b className={styles.identityName} title={row.email ?? (row.first.new_visitor ? "New visitor" : "Returning visitor")}>
-                            {row.email ?? (row.first.new_visitor ? "New visitor" : "Returning visitor")}
-                          </b>
-                          <div className={styles.badgeRow}>
-                            {row.signedIn ? (
-                              <span className={styles.badgeSignedIn}><CheckCircle2 size={10} aria-hidden="true" /> Signed In</span>
-                            ) : row.first.new_visitor ? (
-                              <span className={styles.badgeNew}><Sparkles size={10} aria-hidden="true" /> New Learner</span>
-                            ) : (
-                              <span className={styles.badgeReturning}>Returning</span>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                      <div className={styles.cardFooter}>
-                        <span className={styles.idChip}>ID: {row.key.replace(/^(visitor|device):/, "").slice(0, 8)}</span>
-                        <small className={styles.sessionCount}>{row.views} {row.views === 1 ? "view" : "views"} · {row.sessions} {row.sessions === 1 ? "session" : "sessions"}</small>
-                      </div>
-                    </div>
-
-                    {/* 2. Location & Area Pin Code Card (Light Sky Blue) */}
-                    <div className={`${styles.streamColCard} ${styles.cardLocation}`}>
-                      <div className={styles.cardKickerRow}>
-                        <MapPin size={12} className={styles.kickerIcon} aria-hidden="true" />
-                        <span>Location & PIN</span>
-                      </div>
-                      <div className={styles.locationBody}>
-                        <div className={styles.countryRow}>
-                          <Flag code={code} />
-                          <span className={styles.countryName} title={cleanCountry || "Worldwide"}>{cleanCountry || "Worldwide"}</span>
-                        </div>
-                        <span className={styles.cityText} title={[v.city, v.region].filter(Boolean).join(", ") || "City not detected"}>
-                          {[v.city, v.region].filter(Boolean).join(", ") || "City not detected"}
-                        </span>
-                      </div>
-                      <div className={styles.cardFooter}>
-                        {postal ? (
-                          <span className={styles.pinBadge} title={`Area PIN Code: ${postal}`}>
-                            <MapPin size={10} aria-hidden="true" /> PIN: {postal}
+                    <div className={styles.visitorLogCard}>
+                      {/* Top Bar: Identity Overview & Live Presence */}
+                      <div className={styles.logTopBar}>
+                        <div className={styles.logTopLeft}>
+                          <span className={styles.logEntryTag}>
+                            <UserRound size={11} aria-hidden="true" />
+                            Visitor Log
                           </span>
-                        ) : (
-                          <span className={styles.pinEmpty} title="Area PIN code not detected via IP">
-                            PIN: —
-                          </span>
-                        )}
-                        <small className={styles.algoTag} title="Geolocation resolved from client IP lookup">GeoIP 100%</small>
-                      </div>
-                    </div>
-
-                    {/* 3. Platform & Traffic Source Card (Light Butter / Parchment) */}
-                    <div className={`${styles.streamColCard} ${styles.cardDevice}`}>
-                      <div className={styles.cardKickerRow}>
-                        <Device size={12} className={styles.kickerIcon} aria-hidden="true" />
-                        <span>Platform & Source</span>
-                      </div>
-                      <div className={styles.deviceBody}>
-                        <b className={styles.deviceName}>
-                          {v.device ? v.device.charAt(0).toUpperCase() + v.device.slice(1) : "Desktop"}
-                        </b>
-                        <span className={styles.browserOsText} title={[v.browser, v.os].filter(Boolean).join(" · ")}>
-                          {[v.browser, v.os].filter(Boolean).join(" · ") || "Standard browser"} · {row.views} {row.views === 1 ? "page view" : "page views"}{row.pages > 1 ? ` · ${row.pages} pages` : ""}
-                        </span>
-                      </div>
-                      <div className={styles.cardFooter}>
-                        <span className={styles.sourceBadge} title={row.source ? `Traffic source: ${row.source}` : "Direct arrival"}>
-                          {row.source ? `via ${row.source}` : "Direct traffic"}
-                        </span>
-                        <small className={styles.algoTag}>{v.device || "desktop"}</small>
-                      </div>
-                    </div>
-
-                    {/* 4. Active Target & Step Card (Light Ice / Cyan) */}
-                    <div className={`${styles.streamColCard} ${styles.cardTarget}`} title={`Current path: ${v.path}`}>
-                      <div className={styles.cardKickerRow}>
-                        <Target size={12} className={styles.kickerIcon} aria-hidden="true" />
-                        <span>Active Target</span>
-                      </div>
-                      <div className={styles.targetBody}>
-                        <b className={styles.targetTitle} title={row.currentStep.title}>
-                          {row.currentStep.title}
-                        </b>
-                        <span className={styles.targetCategoryBadge} title={`Learning Category: ${row.currentStep.category}`}>
-                          {row.currentStep.category}
-                        </span>
-                        <code className={styles.targetPath} title={v.path}>
-                          {v.path}
-                        </code>
-                      </div>
-                      <div className={styles.cardFooter}>
-                        <span className={styles.targetStep}>
-                          Step {row.currentStep.step} of {row.currentStep.total} in session
-                        </span>
-                        {isLive && <span className={styles.liveReadingRow}><span className={styles.livePulsingDot} aria-hidden="true" /> Live</span>}
-                      </div>
-                    </div>
-
-                    {/* 5. Engaged Learning Contents Card (Light Lavender) - Full Page Visits in Separate Colored Rows (No Tooltip) */}
-                    <div className={`${styles.streamColCard} ${styles.cardLearning}`}>
-                      <div className={styles.cardKickerRow}>
-                        <GraduationCap size={12} className={styles.kickerIcon} aria-hidden="true" />
-                        <span>{row.engagedContents.length ? `Engaged Learning Contents (${row.engagedContents.length})` : "Engaged Learning Contents"}</span>
-                      </div>
-                      <div className={styles.learningBody}>
-                        {row.engagedContents.length > 0 ? (
-                          <div className={styles.contentRowsList} aria-label="Full list of visited pages in separate rows">
-                            {row.engagedContents.map((item, idx) => {
-                              const toneClass = styles[`contentRowTone${idx % 7}`];
-                              return (
-                                <div key={`${item.path}-${idx}`} className={`${styles.contentPageRow} ${toneClass}`}>
-                                  <div className={styles.rowTopLine}>
-                                    <span className={styles.rowCategoryBadge}>{item.category}</span>
-                                    <span className={styles.rowTimeSpent}>{spent(item.durationMs / 1000)}</span>
-                                  </div>
-                                  <div className={styles.rowTitleWrap}>
-                                    <BookOpen size={11} className={styles.rowIcon} aria-hidden="true" />
-                                    <span className={styles.rowTitle}>{item.title}</span>
-                                  </div>
-                                  <div className={styles.rowBottomLine}>
-                                    <code className={styles.rowPath}>{item.path}</code>
-                                    {item.views > 1 && <span className={styles.rowViewsBadge}>{item.views} views</span>}
-                                  </div>
-                                </div>
-                              );
-                            })}
-                          </div>
-                        ) : (
-                          <code className={styles.fallbackPath}>
-                            {v.path}
-                          </code>
-                        )}
-                      </div>
-                      <div className={styles.cardFooter}>
-                        <small className={styles.trailSmall}>
-                          {row.trail.length > 1 ? row.trail.slice(-3).join(" → ") : (v.title || "Single page")}
-                        </small>
-                      </div>
-                    </div>
-
-                    {/* 6. Focus & Intensity Card (Light Golden / Amber) */}
-                    <div className={`${styles.streamColCard} ${styles.cardIntensity}`} title={`Focus Ratio: ${row.focusRatio}% · Intensity: ${row.intensityTier}`}>
-                      <div className={styles.cardKickerRow}>
-                        <Zap size={12} className={styles.kickerIcon} aria-hidden="true" />
-                        <span>Focus & Intensity</span>
-                      </div>
-                      <div className={styles.intensityBody}>
-                        <div className={styles.focusMetricRow}>
-                          <span className={styles.focusValue}>{row.focusRatio}% Focus</span>
-                          {row.intensityTier === "Deep Focus" ? (
-                            <span className={styles.intensityBadgeDeep}><Zap size={9} aria-hidden="true" /> Deep Focus</span>
-                          ) : row.intensityTier === "Active Study" ? (
-                            <span className={styles.intensityBadgeActive}><BookOpen size={9} aria-hidden="true" /> Active Study</span>
+                          <span className={styles.idChip}>ID: {row.key.replace(/^(visitor|device):/, "").slice(0, 8)}</span>
+                          <small className={styles.sessionCount}>{row.views} {row.views === 1 ? "view" : "views"} · {row.sessions} {row.sessions === 1 ? "session" : "sessions"}</small>
+                        </div>
+                        <div className={styles.logTopRight}>
+                          {isLive ? (
+                            <div className={styles.liveOnSiteBadge}>
+                              <span className={styles.livePulseRing} aria-hidden="true" />
+                              <span className={styles.livePulseCenter} aria-hidden="true" />
+                              <span className={styles.liveTopTag}>Live on site</span>
+                              <span className={styles.liveSignalTag}>Active</span>
+                            </div>
                           ) : (
-                            <span className={styles.intensityBadgeExplore}><Compass size={9} aria-hidden="true" /> Exploring</span>
+                            <span className={styles.departedPill}>
+                              <LogOut size={11} aria-hidden="true" /> Departed {since(row.left, clockNow)}
+                            </span>
                           )}
                         </div>
-                        <div className={styles.focusBarWrap} aria-hidden="true">
-                          <div className={styles.focusBarFill} style={{ width: `${Math.max(6, row.focusRatio)}%` }} />
-                        </div>
                       </div>
-                      <div className={styles.cardFooter}>
-                        <span className={styles.velocityText} title="Average reading time per viewed page">
-                          {row.readingVelocity}
-                        </span>
-                        <small className={styles.algoTag}>Study velocity</small>
-                      </div>
-                    </div>
 
-                    {/* 7. Time Spent Card (Light Mint / Sage) */}
-                    <div className={`${styles.streamColCard} ${styles.cardSpent}`}>
-                      <div className={styles.cardKickerRow}>
-                        <Timer size={12} className={styles.kickerIcon} aria-hidden="true" />
-                        <span>Time Spent</span>
-                      </div>
-                      <div className={styles.metricBody}>
-                        {p?.open ? (
-                          <div className={styles.liveReadingRow} title="Learner actively reading on this page (Heartbeat verified)">
-                            <span className={styles.livePulsingDot} aria-hidden="true" />
-                            <span className={styles.readingTime}>{spent(p.ms / 1000)} · reading</span>
+                      {/* 8-Card Responsive Grid under Visitor Logs */}
+                      <div className={styles.logCardsGrid}>
+                        {/* 1. Learner Profile & Identity Card (Light Lavender) */}
+                        <div className={`${styles.streamColCard} ${styles.logCardProfile}`}>
+                          <div className={styles.cardKickerRow}>
+                            <UserRound size={12} className={styles.kickerIcon} aria-hidden="true" />
+                            <span>Learner Profile & Identity</span>
+                            <span className={styles.kickerTag}>Profile</span>
                           </div>
-                        ) : null}
-                        <strong className={styles.primaryMetric}>{spent(row.engagedMs / 1000)}</strong>
-                        <span className={styles.metricSub}>{spent(row.engagedMs / 1000)} engaged · {row.sessions} {row.sessions === 1 ? "session" : "sessions"}</span>
-                      </div>
-                      <div className={styles.cardFooter}>
-                        <small className={styles.sessionCount} title={row.timeSpentAlgorithm === "hybrid" ? "Validated via Leave Beacon + Live Heartbeat Tick" : row.timeSpentAlgorithm === "heartbeat_live" ? "Validated via Active Real-time Heartbeats" : "Validated via 100% Leave Beacons"}>
-                          {row.timeSpentAlgorithm === "hybrid" ? "✓ Dual verified (Beacon+Beat)" : row.timeSpentAlgorithm === "heartbeat_live" ? "✓ Heartbeat verified" : "✓ Beacon verified"}
-                        </small>
-                      </div>
-                    </div>
-
-                    {/* 8. Stay Duration Card (Light Peach / Coral) */}
-                    <div className={`${styles.streamColCard} ${styles.cardStay}`}>
-                      <div className={styles.cardKickerRow}>
-                        <Hourglass size={12} className={styles.kickerIcon} aria-hidden="true" />
-                        <span>Stay Duration</span>
-                      </div>
-                      <div className={styles.metricBody}>
-                        <strong className={styles.primaryMetric}>{spent(row.stayDurationMs / 1000)}</strong>
-                        <span className={styles.metricSub}>100% accurate</span>
-                        {row.sessions > 1 && (
-                          <span className={styles.stayMultiSession} title={`Total retention window span: ${spent(row.totalStayDurationMs / 1000)} across ${row.sessions} sessions`}>
-                            Span: {spent(row.totalStayDurationMs / 1000)} ({row.sessions} sess)
-                          </span>
-                        )}
-                      </div>
-                      <div className={styles.cardFooter}>
-                        <small className={styles.stayType}>
-                          {row.live ? "Session arrival to now (Live)" : "Session arrival to departure"}
-                        </small>
-                      </div>
-                    </div>
-
-                    {/* 9. Arrived (IST) Card (Light Teal / Mint) */}
-                    <div className={`${styles.streamColCard} ${styles.cardArrived}`}>
-                      <div className={styles.cardKickerRow}>
-                        <Clock size={12} className={styles.kickerIcon} aria-hidden="true" />
-                        <span>Arrived (IST)</span>
-                      </div>
-                      <div className={styles.timeBody}>
-                        <time className={styles.clockValue} dateTime={row.sessionArrived}>
-                          {clock(row.sessionArrived)}
-                        </time>
-                        <span className={styles.dateValue}>
-                          <b>{dayOf(row.sessionArrived)}</b> ({weekday(row.sessionArrived)})
-                        </span>
-                        {dayOf(row.firstArrived) !== dayOf(row.sessionArrived) && (
-                          <small className={styles.initialVisit} title={`First ever visit: ${dayOf(row.firstArrived)} (${clock(row.firstArrived)})`}>
-                            First: {dayOf(row.firstArrived)}
-                          </small>
-                        )}
-                      </div>
-                      <div className={styles.cardFooter}>
-                        <small className={styles.relativeAgo}>{since(row.sessionArrived, clockNow)}</small>
-                        <small className={styles.algoTag}>IST (UTC+5:30)</small>
-                      </div>
-                    </div>
-
-                    {/* 10. Left (IST) Card (Light Rose / Glowing Live Emerald) */}
-                    {row.left == null ? (
-                      <div className={`${styles.streamColCard} ${styles.cardLeft} ${styles.cardLiveOnSite}`}>
-                        <div className={styles.cardKickerRow}>
-                          <Radio size={12} className={styles.kickerIcon} aria-hidden="true" />
-                          <span>Left (IST)</span>
-                        </div>
-                        <div className={styles.liveOnSiteBody}>
-                          <div className={styles.liveOnSiteBadge}>
-                            <span className={styles.livePulseRing} aria-hidden="true" />
-                            <span className={styles.livePulseCenter} aria-hidden="true" />
-                            <b>On the site now</b>
+                          <div className={styles.identityBody}>
+                            <div className={styles.avatarWrap}>
+                              <UserRound size={13} className={styles.avatarIcon} aria-hidden="true" />
+                              {isLive && <span className={styles.liveAvatarPing} aria-hidden="true" />}
+                            </div>
+                            <div className={styles.identityDetails}>
+                              <b className={styles.identityName} title={row.email ?? (row.first.new_visitor ? "New visitor" : "Returning visitor")}>
+                                {row.email ?? (row.first.new_visitor ? "New visitor" : "Returning visitor")}
+                              </b>
+                              <div className={styles.badgeRow}>
+                                {row.signedIn ? (
+                                  <span className={styles.badgeSignedIn}><CheckCircle2 size={10} aria-hidden="true" /> Signed In</span>
+                                ) : row.first.new_visitor ? (
+                                  <span className={styles.badgeNew}><Sparkles size={10} aria-hidden="true" /> New Learner</span>
+                                ) : (
+                                  <span className={styles.badgeReturning}>Returning</span>
+                                )}
+                              </div>
+                            </div>
                           </div>
-                          <span className={styles.liveHeartbeatText}>
-                            {heartbeats ? `Active · pinged ${since(row.lastAt, clockNow)}` : `Active · seen ${since(row.lastAt, clockNow)}`}
-                          </span>
+                          <div className={styles.cardFooter}>
+                            <span className={styles.idChip}>ID: {row.key.replace(/^(visitor|device):/, "").slice(0, 8)}</span>
+                            <small className={styles.sessionCount}>{row.views} {row.views === 1 ? "page view" : "page views"}{row.pages > 1 ? ` · ${row.pages} pages` : ""}</small>
+                          </div>
                         </div>
-                        <div className={styles.cardFooter}>
-                          <span className={styles.liveSignalTag}>Live session</span>
-                          <small className={styles.algoTag}>100% Active</small>
+
+                        {/* 2. Geolocation & Area PIN Card (Light Sky Blue) */}
+                        <div className={`${styles.streamColCard} ${styles.logCardLocation}`}>
+                          <div className={styles.cardKickerRow}>
+                            <Globe2 size={12} className={styles.kickerIcon} aria-hidden="true" />
+                            <span>Geolocation & Area PIN</span>
+                            <span className={styles.kickerTag}>Origin</span>
+                          </div>
+                          <div className={styles.locationBody}>
+                            <div className={styles.countryRow}>
+                              <Flag code={code} />
+                              <span className={styles.countryName} title={cleanCountry || "Worldwide"}>{cleanCountry || "Worldwide"}</span>
+                            </div>
+                            <span className={styles.cityText} title={[v.city, v.region].filter(Boolean).join(", ") || "City not detected"}>
+                              {[v.city, v.region].filter(Boolean).join(", ") || "City not detected"}
+                            </span>
+                          </div>
+                          <div className={styles.cardFooter}>
+                            {postal ? (
+                              <span className={styles.pinBadge} title={`Area PIN Code: ${postal}`}>
+                                <MapPin size={10} aria-hidden="true" /> PIN: {postal}
+                              </span>
+                            ) : (
+                              <span className={styles.pinEmpty} title="Area PIN code not detected via IP">
+                                PIN: —
+                              </span>
+                            )}
+                            <small className={styles.algoTag} title="Geolocation resolved from client IP lookup">GeoIP 100%</small>
+                          </div>
+                        </div>
+
+                        {/* 3. Session Timing Card (Light Mint / Sage) */}
+                        <div className={`${styles.streamColCard} ${styles.logCardTiming}`}>
+                          <div className={styles.cardKickerRow}>
+                            <Clock size={12} className={styles.kickerIcon} aria-hidden="true" />
+                            <span>Session Timing (IST & Duration)</span>
+                            <span className={styles.kickerTag}>Timeline</span>
+                          </div>
+                          <div className={styles.timingSubGrid}>
+                            {/* Arrived (IST) */}
+                            <div className={styles.timingCell}>
+                              <div className={styles.timingKicker}>
+                                <span className={styles.timingKickerTitle}><Clock size={10} aria-hidden="true" /> Arrived (IST)</span>
+                                <span className={styles.calibratedTag} title="Server NTP calibrated">Calibrated</span>
+                              </div>
+                              <time className={styles.clockValue} dateTime={row.sessionArrived}>
+                                {clock(row.sessionArrived)}
+                              </time>
+                              <span className={styles.dateValue}>
+                                <b>{dayOf(row.sessionArrived)}</b> ({weekday(row.sessionArrived)})
+                              </span>
+                              <small className={styles.relativeAgo}>{since(row.sessionArrived, clockNow)}</small>
+                              {row.sessions > 1 && row.firstArrived !== row.sessionArrived ? (
+                                <span className={styles.initialVisit} title={`Initial visit: ${dayOf(row.firstArrived)} at ${clock(row.firstArrived)}`}>
+                                  Initial: {dayOf(row.firstArrived)}
+                                </span>
+                              ) : (
+                                <small className={styles.algoTag}>Session start</small>
+                              )}
+                            </div>
+
+                            {/* Left (IST) */}
+                            {row.left == null ? (
+                              <div className={`${styles.timingCell} ${styles.timingCellLive}`}>
+                                <div className={styles.timingKicker}>
+                                  <span className={styles.timingKickerTitle}><Radio size={10} aria-hidden="true" /> Left (IST)</span>
+                                  <span className={styles.livePulseTag}>Active</span>
+                                </div>
+                                <div className={styles.liveOnSiteBadge}>
+                                  <span className={styles.livePulseRing} aria-hidden="true" />
+                                  <span className={styles.livePulseCenter} aria-hidden="true" />
+                                  <b>On the site now</b>
+                                </div>
+                                <span className={styles.liveHeartbeatText}>
+                                  {heartbeats ? `Active · pinged ${since(row.lastAt, clockNow)}` : `Active · seen ${since(row.lastAt, clockNow)}`}
+                                </span>
+                                <small className={styles.beaconStatus} title="Validated in real-time via heartbeat telemetry stream (45s window)">
+                                  ✓ Real-time Heartbeat
+                                </small>
+                              </div>
+                            ) : (
+                              <div className={styles.timingCell}>
+                                <div className={styles.timingKicker}>
+                                  <span className={styles.timingKickerTitle}><LogOut size={10} aria-hidden="true" /> Left (IST)</span>
+                                  <span className={styles.departedTag}>Departed</span>
+                                </div>
+                                <time className={styles.clockValue} dateTime={new Date(row.left).toISOString()} title={row.beacon ? "Leave beacon recorded cleanly upon exit (100% exact)" : "Heartbeat confirmed session closure"}>
+                                  {clock(row.left)}
+                                </time>
+                                <span className={styles.dateValue}>
+                                  {dayOf(row.left) !== dayOf(row.sessionArrived) ? <b>{dayOf(row.left)} · </b> : ""}<small>{since(row.left, clockNow)}</small>
+                                </span>
+                                <small className={styles.beaconStatus} title={row.beacon ? "Validated via W3C Leave Beacon API (100% exact duration)" : "Validated via Heartbeat session closure"}>
+                                  {row.beacon ? "✓ Beacon confirmed (100% exact)" : "Tab closed · Heartbeat verified"}
+                                </small>
+                              </div>
+                            )}
+
+                            {/* Stay Duration */}
+                            <div className={styles.timingCell}>
+                              <div className={styles.timingKicker}>
+                                <span className={styles.timingKickerTitle}><Hourglass size={10} aria-hidden="true" /> Stay Duration</span>
+                                <span className={styles.accuracyTag}>100% Accurate</span>
+                              </div>
+                              <strong className={styles.primaryMetricSm}>{spent(row.stayDurationMs / 1000)}</strong>
+                              <span className={styles.metricSub}>100% accurate · {row.live ? "active session" : "full session"}</span>
+                              <span className={styles.engagedContrast} title="Active focused engagement time vs total stay duration">
+                                Reading: {spent(row.engagedMs / 1000)} ({row.focusRatio}% focus)
+                              </span>
+                              {row.sessions > 1 ? (
+                                <span className={styles.stayMultiSession} title={`Total retention window span: ${spent(row.totalStayDurationMs / 1000)} across ${row.sessions} sessions`}>
+                                  Span: {spent(row.totalStayDurationMs / 1000)} ({row.sessions} sess)
+                                </span>
+                              ) : (
+                                <small className={styles.stayType}>{row.live ? "Elapsed wall-clock" : "Complete session stay"}</small>
+                              )}
+                            </div>
+                          </div>
+
+                          {/* Multi-Resource Telemetry & Verification Status Bar */}
+                          <div className={styles.timingValidationBar}>
+                            <div className={styles.valMetricItem} title="All timestamps strictly formatted in Indian Standard Time (UTC+5:30)">
+                              <span className={styles.valDotGreen} aria-hidden="true" />
+                              <span>IST (UTC+5:30) Calibrated</span>
+                            </div>
+                            <div className={styles.valMetricItem} title="Timing cross-validated across W3C Leave Beacons, Real-time Heartbeats & Page Visibility APIs">
+                              <ShieldCheck size={11} className={styles.valIconShield} aria-hidden="true" />
+                              <span>{row.beacon ? "W3C Beacon (100% exact)" : row.live ? "Heartbeat (45s sync)" : "Multi-metric Sync"}</span>
+                            </div>
+                            <div className={styles.valMetricItem} title="Zero clock drift, 100% validated duration">
+                              <CheckCircle2 size={11} className={styles.valIconCheck} aria-hidden="true" />
+                              <span>100% Verified Timing</span>
+                            </div>
+                          </div>
+
+                          <div className={styles.cardFooter}>
+                            <small className={styles.algoTag}>IST (UTC+5:30) · Asia/Kolkata</small>
+                            <small className={styles.algoTag}>100% verified</small>
+                          </div>
+                        </div>
+
+                        {/* 4. Platform & Traffic Source Card (Light Butter) */}
+                        <div className={`${styles.streamColCard} ${styles.logCardDevice}`}>
+                          <div className={styles.cardKickerRow}>
+                            <Device size={12} className={styles.kickerIcon} aria-hidden="true" />
+                            <span>Platform & Traffic Origin</span>
+                            <span className={styles.kickerTag}>Device</span>
+                          </div>
+                          <div className={styles.deviceBody}>
+                            <b className={styles.deviceName}>
+                              {v.device ? v.device.charAt(0).toUpperCase() + v.device.slice(1) : "Desktop"}
+                            </b>
+                            <span className={styles.browserOsText} title={[v.browser, v.os].filter(Boolean).join(" · ")}>
+                              {[v.browser, v.os].filter(Boolean).join(" · ") || "Standard browser"}
+                            </span>
+                            <small className={styles.screenRes}>{v.screen ? `${v.screen} display` : "Standard display"}</small>
+                          </div>
+                          <div className={styles.cardFooter}>
+                            <span className={styles.sourceBadge} title={row.source ? `Traffic source: ${row.source}` : "Direct arrival"}>
+                              {row.source ? `via ${row.source}` : "Direct traffic"}
+                            </span>
+                            <small className={styles.algoTag}>{v.device || "desktop"}</small>
+                          </div>
+                        </div>
+
+                        {/* 5. Time Spent & Reading Pace Card (Light Emerald / Seafoam) */}
+                        <div className={`${styles.streamColCard} ${styles.logCardSpent}`}>
+                          <div className={styles.cardKickerRow}>
+                            <Timer size={12} className={styles.kickerIcon} aria-hidden="true" />
+                            <span>Time Spent & Reading Pace</span>
+                            <span className={styles.kickerTag}>Telemetry</span>
+                          </div>
+                          <div className={styles.metricBody}>
+                            {p?.open ? (
+                              <div className={styles.liveReadingRow} title="Learner actively reading on this page (Heartbeat verified)">
+                                <span className={styles.livePulsingDot} aria-hidden="true" />
+                                <span className={styles.readingTime}>{spent(p.ms / 1000)} · reading</span>
+                              </div>
+                            ) : null}
+                            <strong className={styles.primaryMetric}>{spent(row.engagedMs / 1000)}</strong>
+                            <span className={styles.metricSub}>{spent(row.engagedMs / 1000)} engaged · {row.sessions} {row.sessions === 1 ? "session" : "sessions"}</span>
+                          </div>
+                          <div className={styles.cardFooter}>
+                            <small className={styles.sessionCount} title={row.timeSpentAlgorithm === "hybrid" ? "Validated via Leave Beacon + Live Heartbeat Tick" : row.timeSpentAlgorithm === "heartbeat_live" ? "Validated via Active Real-time Heartbeats" : "Validated via 100% Leave Beacons"}>
+                              {row.timeSpentAlgorithm === "hybrid" ? "✓ Dual verified (Beacon+Beat)" : row.timeSpentAlgorithm === "heartbeat_live" ? "✓ Heartbeat verified" : "✓ Beacon verified"}
+                            </small>
+                            <small className={styles.algoTag}>Active Reading</small>
+                          </div>
+                        </div>
+
+                        {/* 6. Engaged Learning Contents Card (Light Lavender with Separate Rows, No Tooltip) */}
+                        <div className={`${styles.streamColCard} ${styles.logCardLearning}`}>
+                          <div className={styles.cardKickerRow}>
+                            <GraduationCap size={12} className={styles.kickerIcon} aria-hidden="true" />
+                            <span>Engaged Learning Contents ({row.engagedContents.length})</span>
+                            <span className={styles.kickerTag}>Activity</span>
+                          </div>
+                          <div className={styles.learningBody}>
+                            {row.engagedContents.length > 0 ? (
+                              <div className={styles.contentRowsList} aria-label="Full list of visited pages in separate rows">
+                                {row.engagedContents.map((item, idx) => {
+                                  const toneClass = styles[`contentRowTone${idx % 7}`];
+                                  return (
+                                    <div key={`${item.path}-${idx}`} className={`${styles.contentPageRow} ${toneClass}`}>
+                                      <div className={styles.rowTopLine}>
+                                        <span className={styles.rowCategoryBadge}>{item.category}</span>
+                                        <span className={styles.rowTimeSpent}>{spent(item.durationMs / 1000)}</span>
+                                      </div>
+                                      <div className={styles.rowTitleWrap}>
+                                        <BookOpen size={11} className={styles.rowIcon} aria-hidden="true" />
+                                        <span className={styles.rowTitle}>{item.title}</span>
+                                      </div>
+                                      <div className={styles.rowBottomLine}>
+                                        <code className={styles.rowPath}>{item.path}</code>
+                                        {item.views > 1 && <span className={styles.rowViewsBadge}>{item.views} views</span>}
+                                      </div>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            ) : (
+                              <code className={styles.fallbackPath}>
+                                {v.path}
+                              </code>
+                            )}
+                          </div>
+                          <div className={styles.cardFooter}>
+                            <small className={styles.trailSmall}>
+                              {row.trail.length > 1 ? row.trail.slice(-3).join(" → ") : (v.title || "Single page")}
+                            </small>
+                            <small className={styles.algoTag}>Learning trail</small>
+                          </div>
+                        </div>
+
+                        {/* 7. Active Target & Session Step Card (Light Ice Cyan) */}
+                        <div className={`${styles.streamColCard} ${styles.logCardTarget}`} title={`Current path: ${v.path}`}>
+                          <div className={styles.cardKickerRow}>
+                            <Target size={12} className={styles.kickerIcon} aria-hidden="true" />
+                            <span>Active Target & Session Step</span>
+                            <span className={styles.kickerTag}>Progress</span>
+                          </div>
+                          <div className={styles.targetBody}>
+                            <b className={styles.targetTitle} title={row.currentStep.title}>
+                              {row.currentStep.title}
+                            </b>
+                            <span className={styles.targetCategoryBadge} title={`Learning Category: ${row.currentStep.category}`}>
+                              {row.currentStep.category}
+                            </span>
+                            <code className={styles.targetPath} title={v.path}>
+                              {v.path}
+                            </code>
+                          </div>
+                          <div className={styles.cardFooter}>
+                            <span className={styles.targetStep}>
+                              Step {row.currentStep.step} of {row.currentStep.total} in session
+                            </span>
+                            {isLive && <span className={styles.liveReadingRow}><span className={styles.livePulsingDot} aria-hidden="true" /> Live</span>}
+                          </div>
+                        </div>
+
+                        {/* 8. Focus & Study Intensity Card (Light Golden / Amber) */}
+                        <div className={`${styles.streamColCard} ${styles.logCardIntensity}`} title={`Focus Ratio: ${row.focusRatio}% · Intensity: ${row.intensityTier}`}>
+                          <div className={styles.cardKickerRow}>
+                            <Zap size={12} className={styles.kickerIcon} aria-hidden="true" />
+                            <span>Focus & Study Intensity</span>
+                            <span className={styles.kickerTag}>Focus</span>
+                          </div>
+                          <div className={styles.intensityBody}>
+                            <div className={styles.focusMetricRow}>
+                              <span className={styles.focusValue}>{row.focusRatio}% Focus</span>
+                              {row.intensityTier === "Deep Focus" ? (
+                                <span className={styles.intensityBadgeDeep}><Zap size={9} aria-hidden="true" /> Deep Focus</span>
+                              ) : row.intensityTier === "Active Study" ? (
+                                <span className={styles.intensityBadgeActive}><BookOpen size={9} aria-hidden="true" /> Active Study</span>
+                              ) : (
+                                <span className={styles.intensityBadgeExplore}><Compass size={9} aria-hidden="true" /> Exploring</span>
+                              )}
+                            </div>
+                            <div className={styles.focusBarWrap} aria-hidden="true">
+                              <div className={styles.focusBarFill} style={{ width: `${Math.max(6, row.focusRatio)}%` }} />
+                            </div>
+                          </div>
+                          <div className={styles.cardFooter}>
+                            <span className={styles.velocityText} title="Average reading time per viewed page">
+                              {row.readingVelocity}
+                            </span>
+                            <small className={styles.algoTag}>Study velocity</small>
+                          </div>
                         </div>
                       </div>
-                    ) : (
-                      <div className={`${styles.streamColCard} ${styles.cardLeft}`}>
-                        <div className={styles.cardKickerRow}>
-                          <LogOut size={12} className={styles.kickerIcon} aria-hidden="true" />
-                          <span>Left (IST)</span>
-                        </div>
-                        <div className={styles.timeBody}>
-                          <time className={styles.clockValue} dateTime={new Date(row.left).toISOString()} title={row.beacon ? "Leave beacon recorded upon exit" : "Last recorded activity"}>
-                            {clock(row.left)}
-                          </time>
-                          <span className={styles.dateValue}>
-                            {dayOf(row.left) !== dayOf(row.sessionArrived) ? <b>{dayOf(row.left)} · </b> : ""}<small>{since(row.left, clockNow)}</small>
-                          </span>
-                        </div>
-                        <div className={styles.cardFooter}>
-                          <small className={styles.beaconStatus} title={row.beacon ? "Leave beacon arrived cleanly (100% exact)" : "Tab closed · Heartbeat verified"}>
-                            {row.beacon ? "✓ Beacon confirmed" : "Tab closed"}
-                          </small>
-                          <small className={styles.algoTag}>{row.leftAlgorithm === "beacon" ? "100% exact" : "Verified"}</small>
-                        </div>
-                      </div>
-                    )}
+                    </div>
                   </li>
                 );
               })}

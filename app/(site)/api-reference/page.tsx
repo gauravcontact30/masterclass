@@ -8,7 +8,11 @@ export const metadata = learningMetadata({
   path: "/api-reference",
   title: "API reference for 60 technologies",
   description: "Hooks, classes, functions and CLI commands from React, Next.js, LangGraph, Prisma, Zod, Redis, pandas, PyTorch and more, each with its syntax, parameters, examples and a link to the official docs.",
-  keywords: ["API reference", "React hooks reference", "Next.js API reference", "LangGraph API", "pandas functions", "Prisma client API"],
+  keywords: [
+    "API reference for developers", "React hooks reference", "Next.js API reference", "LangGraph API documentation",
+    "LangChain API reference", "Redis commands reference", "pandas functions", "Prisma client API",
+    "Python API reference", "developer syntax cheat sheet", "tech CLI commands"
+  ],
 });
 
 export default function ApiReferenceIndex() {

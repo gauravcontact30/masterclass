@@ -8,7 +8,11 @@ export const metadata = learningMetadata({
   path: "/learn",
   title: "Technology handbooks: tutorials with examples",
   description: "Free technology handbooks for React, Next.js, Node.js, Python, AWS, Git, Docker, TanStack, testing, system design and more: every topic explained with key points, syntax, worked code examples, use cases and interview questions.",
-  keywords: ["technology tutorials", "React tutorial", "Next.js tutorial", "Python tutorial", "AWS services explained", "Git commands"],
+  keywords: [
+    "technology handbooks", "React 19 tutorial", "Next.js 16 tutorial", "Python 3.12 tutorial", "AWS services explained",
+    "Git commands and workflows", "Docker tutorial for developers", "system design handbook", "Zustand guide",
+    "TanStack Query tutorial", "learn coding in Hindi", "bilingual programming tutorials"
+  ],
 });
 
 export default function HandbooksIndex() {

@@ -25,24 +25,32 @@ export const siteDescription = "Technology learning for professionals in English
  * still read it, and the same terms are used in titles, descriptions and structured data, which do count.
  */
 export const siteKeywords = [
-  // Brand
-  "MasterClass", "MasterClass Buddy",
-  // Bilingual, AI-assisted learning
-  "online learning platform India", "learn in Hindi and English", "Hindi medium study notes", "study notes in Hindi", "AI tutor", "AI study assistant", "ask doubts online", "personalised study plan",
-  "audio lectures", "listen to lessons online", "learn by listening", "AI search for students", "online courses for international students",
-  // Certifications
-  "AWS certification preparation", "system design interview preparation", "Claude Code certification", "n8n certification", "agentic AI certification", "DevOps certification preparation",
-  // Coding and careers
-  "learn coding online", "learn coding in Hindi", "coding tutorials", "programming for beginners", "full stack developer course", "React tutorial", "Next.js tutorial", "Python tutorials", "JavaScript interview questions", "React interview questions", "technology interview preparation", "coding interview preparation", "frontend interview questions", "Node.js interview questions", "Python interview questions", "system design", "system design interview questions", "system design course",
-  "Next.js 16 tutorial", "React hooks explained", "AWS tutorial", "AWS services explained", "AWS interview questions",
-  // AI engineering
-  "agentic AI course", "AI agents tutorial", "AI agent workflows", "generative AI course", "generative AI in Hindi", "LangChain tutorial", "LangGraph tutorial", "LangSmith tutorial", "LangFlow tutorial", "n8n automation tutorial", "latest AI news for developers",
-  // Vocabulary and communication
-  "English vocabulary with Hindi meanings", "spoken English words", "corporate English vocabulary", "word of the day with Hindi meaning",
-  // Articles
-  "Coffee & Code", "software engineering articles", "web development blog",
+  // Brand & Platform
+  "MasterClass", "MasterClass Buddy", "masterclassbuddy.com",
+  // Bilingual & AI-assisted Learning
+  "online learning platform India", "learn in Hindi and English", "Hindi medium study notes", "study notes in Hindi", "AI tutor", "AI study assistant", "ask doubts online", "personalised study plan", "audio lectures", "listen to lessons online", "learn by listening", "AI search for students",
+  // Modern Frontend & Web Frameworks
+  "React 19 tutorial", "React Server Components", "React Server Actions", "Next.js 16 tutorial", "Next.js App Router", "Next.js Partial Prerendering", "Turbopack", "TypeScript tutorial", "modern JavaScript ES2024", "Zustand state management", "TanStack Query tutorial", "TanStack Table", "Angular tutorials", "Vue.js guide", "Flutter development",
+  // AI Engineering & Agentic AI
+  "agentic AI course", "AI agents tutorial", "AI agent workflows", "Model Context Protocol MCP", "Claude Code certification", "LangChain tutorial", "LangGraph tutorial", "LangSmith monitoring", "LangFlow tutorial", "n8n automation tutorial", "generative AI for engineers", "RAG architecture", "LLM application development", "AI agent blueprints",
+  // Backend, Microservices & Programming Languages
+  "Python 3.12 tutorial", "Python for AI and data", "Node.js backend tutorial", "FastAPI tutorial", "Django tutorial", "Express.js REST APIs", "NestJS architecture", "Go Golang programming", "Rust programming language", "microservices architecture", "REST API design", "GraphQL API tutorial",
+  // Cloud, DevOps & Linux
+  "AWS certification preparation", "AWS services explained", "AWS tutorial", "AWS Cloud Practitioner preparation", "AWS Solutions Architect exam", "Docker containers tutorial", "Kubernetes k8s guide", "Linux commands for developers", "Git and GitHub workflows", "CI/CD pipelines", "DevOps certification preparation",
+  // Databases & High-Performance Caching
+  "PostgreSQL tutorial", "Redis caching strategies", "Supabase tutorial", "database indexing and optimization", "SQL query optimization",
+  // System Design & Architecture
+  "system design course", "system design interview questions", "distributed systems architecture", "high level design HLD", "low level design LLD", "microservices patterns", "scalability and load balancing", "rate limiting algorithms", "system design blueprints",
+  // Tech Interview Preparation & Worked Solutions
+  "tech interview preparation", "coding interview questions", "React interview questions", "Next.js interview questions", "Python interview questions", "JavaScript interview questions", "frontend interview questions", "backend interview questions", "Node.js interview questions", "AWS interview questions", "system design interview preparation", "FAANG interview preparation",
+  // Testing & Quality Engineering
+  "Vitest tutorial", "Playwright end to end testing", "Jest testing tutorial", "React Testing Library RTL", "Cypress automation",
+  // Vocabulary & Professional Communication
+  "English vocabulary with Hindi meanings", "spoken English words", "corporate English vocabulary", "word of the day with Hindi meaning", "IELTS vocabulary preparation",
+  // Engineering Articles & Insights
+  "Coffee & Code", "software engineering articles", "web development blog", "technology comparisons",
   // Membership
-  "affordable online courses", "learning membership India",
+  "affordable online courses", "learning membership India", "tech learning membership",
 ];
 export const privateMetadata: Metadata = { robots: { index: false, follow: false } };
 
@@ -68,7 +76,7 @@ export function publicPage(path: PublicPage["path"]): PublicPage {
   return page;
 }
 
-const ogImage = { url: "/opengraph-image", width: 1200, height: 630, alt: `${siteName} — Technology learning for professionals in English and Hindi` };
+const ogImage = { url: "/opengraph-image", width: 1200, height: 630, alt: `${siteName} — Master Coding, Cloud, System Design & Agentic AI in English and Hindi` };
 
 /**
  * Complete metadata for a public page. Next.js replaces (not merges) nested
@@ -76,10 +84,33 @@ const ogImage = { url: "/opengraph-image", width: 1200, height: 630, alt: `${sit
  */
 /** Keywords for each public page, matched to what that page actually offers. */
 const PAGE_KEYWORDS: Partial<Record<PublicPage["path"], string[]>> = {
-  "/courses": ["online courses India", "technology learning paths", "system design course", "technology interview preparation", "IELTS vocabulary", "learning paths in Hindi"],
-  "/library": ["free learning library", "free programming tutorials", "interview questions with answers", "React interview questions", "system design blueprints", "AI agent workflows", "API reference", "technology handbooks", "English vocabulary with Hindi meanings"],
-  "/about": ["about MasterClass", "bilingual learning platform", "Hindi and English education", "online learning India", "AI tutor for developers"],
-  "/contact": ["MasterClass support", "membership help", "billing support", "contact MasterClass"],
+  "/courses": [
+    "technology learning paths", "system design course", "agentic AI course", "React 19 and Next.js 16 path",
+    "Python and backend engineering", "AWS cloud certification path", "tech interview preparation",
+    "bilingual tech courses in Hindi and English", "DevOps learning roadmap", "IELTS vocabulary"
+  ],
+  "/library": [
+    "free learning library", "free programming tutorials", "interview questions with answers", "React interview questions",
+    "Next.js interview questions", "Python interview questions", "system design blueprints", "AI agent workflows",
+    "API reference for 60 technologies", "technology handbooks", "English vocabulary with Hindi meanings",
+    "LangChain vs LangGraph comparison"
+  ],
+  "/about": [
+    "about MasterClass Buddy", "bilingual tech education", "AI study assistant India", "learn coding in Hindi and English",
+    "AI tutor for developers", "MasterClass vision and pedagogy", "personalized developer learning"
+  ],
+  "/contact": [
+    "MasterClass support", "membership assistance", "billing help", "contact MasterClass Buddy", "technical support"
+  ],
+  "/privacy": [
+    "MasterClass privacy policy", "developer learning data protection", "account data security", "user privacy terms", "browser data storage"
+  ],
+  "/terms": [
+    "MasterClass terms and conditions", "membership terms", "AI learning terms of service", "user agreement", "tech course membership terms"
+  ],
+  "/refund-policy": [
+    "MasterClass refund policy", "membership cancellation", "course refund policy", "billing policy", "subscription cancellation"
+  ],
 };
 
 export function pageMetadata(path: PublicPage["path"]): Metadata {
@@ -137,7 +168,12 @@ export function organizationSchema(prices?: { monthly:number; yearly:number; end
   return {
     "@context": "https://schema.org", "@type": "EducationalOrganization", "@id": `${url}#organization`, name: siteName, alternateName: "MasterClass Buddy", url,
     logo: new URL("/icon.svg", url).href, description: siteDescription, slogan: "Learn in English and Hindi, with an AI tutor beside you.", areaServed: "IN", knowsLanguage: ["en", "hi"],
-    knowsAbout: ["IELTS vocabulary", "JavaScript", "TypeScript", "React", "Next.js", "Python", "Node.js", "System design", "AWS", "Git", "AI agents", "Agentic AI", "Generative AI", "LangChain", "LangGraph", "LangSmith", "LangFlow", "n8n", "English vocabulary"],
+    knowsAbout: [
+      "React 19", "Next.js 16", "TypeScript", "JavaScript", "Python 3.12", "Node.js", "System design",
+      "Agentic AI", "AI agents", "Model Context Protocol MCP", "Claude Code", "LangChain", "LangGraph", "LangSmith", "LangFlow", "n8n",
+      "AWS", "Docker", "Kubernetes", "Linux", "Git", "PostgreSQL", "Redis", "FastAPI", "Go", "Rust", "Zustand", "TanStack Query",
+      "Vitest", "Playwright", "Tech interview preparation", "English vocabulary with Hindi meanings"
+    ],
     ...(prices ? { hasOfferCatalog: { "@type": "OfferCatalog", name: "MasterClass membership", itemListElement: [
       { ...offer("Monthly membership", prices.monthly, "MON"), ...(prices.endsAt ? { priceValidUntil:prices.endsAt } : {}) },
       { ...offer("Yearly membership", prices.yearly, "ANN"), ...(prices.endsAt ? { priceValidUntil:prices.endsAt } : {}) },
