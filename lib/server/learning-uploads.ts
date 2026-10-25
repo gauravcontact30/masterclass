@@ -125,7 +125,7 @@ const isoOrNull = z.string().datetime({ offset: true }).nullable().optional();
 export const uploadFields = z.object({
   title: z.string().trim().min(1).max(160), summary: z.string().trim().max(400).nullable().optional(),
   html: z.string().min(1).max(4_000_000), background: z.string().regex(/^#[0-9a-fA-F]{6}$/).default("#ffffff"), sourceFileId: z.string().max(80).nullable().optional(),
-  surface: z.enum(["dashboard", "landing", "sign_in", "sign_up", "super_admin"]), page: z.string().trim().min(1).max(80), section: z.string().trim().min(1).max(40),
+  surface: z.enum(["dashboard", "landing", "sign_in", "sign_up", "super_admin", "tech_buzz"]), page: z.string().trim().min(1).max(80), section: z.string().trim().min(1).max(40),
   layout: z.enum(["card", "banner", "full", "accordion"]).default("card"), tone: z.enum(["ivory", "sky", "mint", "lavender", "rose", "peach", "butter"]).default("ivory"),
   showTitle: z.boolean().default(true), position: z.number().int().min(-1000).max(1000).default(0), pinned: z.boolean().default(false),
   audience: z.enum(["everyone", "signed_out", "signed_in", "members"]).default("everyone"), device: z.enum(["all", "desktop", "mobile"]).default("all"),

@@ -19,5 +19,8 @@ export async function GET(request: NextRequest) {
   const { data, error } = await (await supabaseServer()).auth.verifyOtp({ token_hash: tokenHash, type });
   if (error || !data.session) return NextResponse.redirect(new URL(`/sign-in?error=${error?.code === "otp_expired" ? "link_expired" : "link_invalid"}`, request.url));
   const notice = type === "recovery" ? "recovery" : type === "magiclink" ? "signed_in" : "verified";
-  return NextResponse.redirect(new URL(type === "recovery" ? `/dashboard/settings?notice=${notice}` : `/dashboard?notice=${notice}`, request.url));
+  const next = params.get("next") || params.get("redirect");
+  const fallback = type === "recovery" ? `/dashboard/settings?notice=${notice}` : `/dashboard?notice=${notice}`;
+  const target = next && /^\/(dashboard|notes|subscribe|tech-buzz)(\/|\?|$)/.test(next) && !next.startsWith("//") ? next : fallback;
+  return NextResponse.redirect(new URL(target, request.url));
 }

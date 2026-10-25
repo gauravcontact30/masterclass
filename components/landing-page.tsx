@@ -61,7 +61,7 @@ const LandingTechy = dynamic(() => import("./landing-pro-sections").then(m => m.
 export type LandingPrices = { monthly: number; yearly: number; enabled: boolean; currency?: Currency; currencies?: Currency[]; local?: Currency; inr?: { monthly: number; yearly: number }; international?: boolean; sale?: SaleInfo | null };
 /** `today`: the India-calendar day number (istDay); the sections that turn over daily pick their content from it. */
 export function LandingPage({ pro, library, prices: initialPrices, daily, techDocs, copyrightYear, overrides, coffee, today = 0, featuredDoc, fresh = null }: { fresh?: LandingFresh | null; today?: number; featuredDoc?: string; overrides?: ContentOverrides; coffee?: BlogTeaser[]; copyrightYear?: number; pro?: LandingProPreview; library?: LandingLibrary; prices?: LandingPrices; techDocs?: OfficialTechDocs | null; daily?: { day: string; pulse: PulseCard[]; words: DailyWord[]; locked?: { pulse: LockedTeaser | null; word: LockedTeaser | null }; totals?: { pulse: number; words: number } } }) {
-  const { language } = useLanguage(); const hi = language === "hi"; const text = (en: string, hindi: string) => hi ? hindi : en;
+  const { language, t } = useLanguage(); const hi = language === "hi"; const text = (en: string, hindi: string) => hi ? hindi : en;
   const [cycle, setCycle] = useState<"monthly" | "yearly">("monthly");
   // Prices rendered on the server arrive in the HTML, so the plan card never paints "—" and then shifts; the fetch is only the fallback.
   const [prices, setPrices] = useState<LandingPrices>(initialPrices ?? { monthly: 299, yearly: 2999, enabled: false }); const [priceState, setPriceState] = useState<"loading" | "ready" | "error">(initialPrices ? "ready" : "loading");
@@ -72,14 +72,20 @@ export function LandingPage({ pro, library, prices: initialPrices, daily, techDo
   const reprice = (currency: Currency) => { void loadPrices(currency).then(data => setPrices(current => ({ ...current, ...data }))).catch(() => {}); };
   // [section on this page, label, the section's own crawlable page]: links are real URLs for search engines and
   // new tabs, and smooth-scroll to the section here without a #fragment.
-  const navigation = [["#interview-prep", text("Interview prep", "इंटरव्यू"), "/interview-questions"], ["#workflows", text("Workflows", "वर्कफ़्लो"), "/workflows"], ...(library ? [["#library", text("Library", "लाइब्रेरी"), "/library"]] : []), ...(pro ? [["#techy", "Techy", "/learn"], ["#api-docs", "API Docs", "/api-reference"]] : []), ["#pricing", text("Membership", "सदस्यता"), "/subscribe"]];
+  const navigation = [
+    ["#interview-prep", t("interviewPrep") || "Interview prep", "/interview-questions"],
+    ["#workflows", t("workflows") || "Workflows", "/workflows"],
+    ...(library ? [["#library", t("library") || "Library", "/library"]] : []),
+    ...(pro ? [["#techy", "Techy", "/learn"], ["#api-docs", "API Docs", "/api-reference"]] : []),
+    ["#pricing", t("membership") || "Membership", "/subscribe"]
+  ];
   const font = landingFont(hi);
   const format = (value: number) => new Intl.NumberFormat(hi ? "hi-IN" : "en-IN").format(value);
-  return <ContentProvider overrides={overrides}><div className={`${styles.page} ${home.home} ${font.variable} ${font.className}`}><a className={styles.skip} href="#main-content">{text("Skip to content", "सामग्री पर जाएँ")}</a>
+  return <ContentProvider overrides={overrides}><div className={`${styles.page} ${home.home} ${font.variable} ${font.className}`}><a className={styles.skip} href="#main-content">{t("skipToContent") || "Skip to content"}</a>
     <LandingNavbar links={navigation as [string, string, string][]} prices={priceState === "ready" ? prices : null} onCurrency={reprice} />
     <WelcomeModal prices={priceState === "ready" ? prices : null} onCurrency={reprice} />
     <main id="main-content" tabIndex={-1}>
-    <h1 className={home.srOnly}>{text("MasterClass Buddy: technology learning for professionals, in English and Hindi", "MasterClass Buddy: प्रोफ़ेशनल्स के लिए तकनीकी पढ़ाई, अंग्रेज़ी और हिन्दी में")}</h1>
+    <h1 className={home.srOnly}>{t("siteHeadline") || "MasterClass Buddy: technology learning for professionals, in English and Hindi"}</h1>
     {/* Order (2026-10-20): the promise (slider, what you get), something to try at once (Study Buddy), the highest-intent
         sections (interview prep, the daily pulse, blueprints, certification paths), a section each for AI Search, featured lessons and notes, proof of depth (library, comparisons,
         docs), then social proof straight before the ask (reviews, membership). */}

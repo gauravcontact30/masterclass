@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState, type ComponentProps } from "react";
-import { Bold, Italic, Underline, Strikethrough, Subscript, Superscript, Undo2, Redo2, Scissors, Copy, ClipboardPaste, List, ListOrdered, AlignLeft, AlignCenter, AlignRight, AlignJustify, IndentIncrease, IndentDecrease, Eraser, Highlighter, Minus, Unlink, Link2, FilePlus2, Save, FileDown, Printer, ImagePlus, Table2, FilePlus, Download, X, Check, Type, Heading, ALargeSmall, PaintBucket, Star, Files, Trash2, GitBranch, ZoomIn, ZoomOut, Upload, type LucideIcon, ChevronDown, Wrench } from "lucide-react";
+import { Bold, Italic, Underline, Strikethrough, Subscript, Superscript, Undo2, Redo2, Scissors, Copy, ClipboardPaste, List, ListOrdered, AlignLeft, AlignCenter, AlignRight, AlignJustify, IndentIncrease, IndentDecrease, Eraser, Highlighter, Minus, Unlink, Link2, FilePlus2, Save, FileDown, Printer, ImagePlus, Table2, FilePlus, Download, X, Check, Type, Heading, ALargeSmall, PaintBucket, Star, Files, Trash2, GitBranch, ZoomIn, ZoomOut, Upload, type LucideIcon, ChevronDown, ChevronUp, Wrench, Maximize2, Minimize2, FolderOpen } from "lucide-react";
 import { sanitizeNotepadHtml, notepadDocument, PAPER_COLORS } from "@/lib/notepad";
 import { newNotepadFile, readNotepadCollection, workflowHtml, type NotepadFile } from "@/lib/notepad-library";
 import { NotepadLibrary } from "./notepad-library";
@@ -34,6 +34,8 @@ export function SuperAdminNotepad({ userId }: { userId: string }) {
   const [diagramType, setDiagramType] = useState("workflow");
   const [diagramText, setDiagramText] = useState("Plan\nReview\nPublish");
   const [zoom, setZoom] = useState(100);
+  const [maximized, setMaximized] = useState(false);
+  const [libraryOpen, setLibraryOpen] = useState(true);
   // Tools panel open/closed is a per-viewer convenience, so it is remembered in this browser only.
   const [toolsOpen, setToolsOpen] = useState(true);
   const toggleTools = () => setToolsOpen(value => { try { localStorage.setItem("masterclass:notepad-tools", value ? "closed" : "open"); } catch {} return !value; });
@@ -91,6 +93,39 @@ export function SuperAdminNotepad({ userId }: { userId: string }) {
     const file = filesRef.current.find(item => item.id === id);
     if (file && writeCollection(filesRef.current, id)) loadDocument(file);
   }
+  const deleteDocument = useCallback((id: string) => {
+    const target = filesRef.current.find(item => item.id === id);
+    if (!target) return;
+    const remaining = filesRef.current.filter(item => item.id !== id);
+    if (!remaining.length) {
+      const fresh = newNotepadFile();
+      writeCollection([fresh], fresh.id);
+      loadDocument(fresh);
+      setStatus(`Deleted "${target.title}". Created new blank document.`);
+      return;
+    }
+    const nextActive = id === activeIdRef.current ? remaining[0].id : activeIdRef.current;
+    if (writeCollection(remaining, nextActive)) {
+      if (id === activeIdRef.current) {
+        loadDocument(remaining[0]);
+      }
+      setStatus(`Deleted "${target.title}".`);
+    }
+  }, [writeCollection, loadDocument]);
+
+  const saveDocumentCopy = useCallback((id: string) => {
+    const file = filesRef.current.find(item => item.id === id);
+    if (!file) return;
+    const blob = new Blob([notepadDocument(file.title, file.html, file.background)], { type: "text/html;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `${file.title.replace(/[^\w.-]/g, "_") || "document"}.html`;
+    link.click();
+    URL.revokeObjectURL(url);
+    setStatus(`Saved copy of "${file.title}" to downloads.`);
+  }, []);
+
   function openExport(copy = false) { setExportCopy(copy); setExportName(titleRef.current); setSaveAs(true); }
   useEffect(() => {
     let cancelled = false;
@@ -194,8 +229,34 @@ export function SuperAdminNotepad({ userId }: { userId: string }) {
     } catch { setError(`Use ${navigator.platform.includes("Mac") ? "⌘" : "Ctrl"}+${action === "copy" ? "C" : action === "cut" ? "X" : "V"} in the document; your browser has restricted clipboard access.`); }
   }
   const tool = (label: string, name: string, value?: string) => <IconButton key={name} label={label} icon={COMMAND_ICONS[name]} aria-pressed={["bold", "italic", "underline", "strikeThrough", "insertUnorderedList", "insertOrderedList"].includes(name) ? active.includes(name) : undefined} onMouseDown={e => e.preventDefault()} onClick={() => command(name, value)} />;
-  return <section className={styles.notepad} aria-label="Notepad">
-    <NotepadLibrary files={files} activeId={activeId} activeTitle={title} onOpen={openDocument}/>
+  return <section className={styles.notepad} data-maximized={maximized || undefined} aria-label="Notepad">
+    <div className={styles.libraryToggleBar}>
+      <button
+        type="button"
+        className={styles.libraryToggleBtn}
+        onClick={() => setLibraryOpen(v => !v)}
+        aria-expanded={libraryOpen}
+        aria-label={libraryOpen ? "Hide saved documents library" : "Show saved documents library"}
+      >
+        <FolderOpen size={15} aria-hidden="true" />
+        <span>Saved Documents ({files.length})</span>
+        {libraryOpen ? <ChevronUp size={14} aria-hidden="true" /> : <ChevronDown size={14} aria-hidden="true" />}
+      </button>
+      <div className={styles.windowHeightBadge}>
+        <span>Canvas Window: {maximized ? "100vh Full Window" : "Expanded Tall (850px+)"}</span>
+        <button
+          type="button"
+          className={styles.quickExpandBtn}
+          onClick={() => setMaximized(v => !v)}
+          title={maximized ? "Exit full window" : "Expand canvas window height"}
+          aria-label={maximized ? "Exit full window height" : "Expand canvas window height"}
+        >
+          {maximized ? <Minimize2 size={13} aria-hidden="true" /> : <Maximize2 size={13} aria-hidden="true" />}
+          <span>{maximized ? "Exit Full Window" : "Maximize Height"}</span>
+        </button>
+      </div>
+    </div>
+    {libraryOpen && <NotepadLibrary files={files} activeId={activeId} activeTitle={title} onOpen={openDocument} onDelete={deleteDocument} onSave={saveDocumentCopy}/>}
     <div id="notepad-document-panel" role="tabpanel" aria-label={title || "Untitled document"}>
     <div className={styles.filebar}>
       <label className={styles.title}>Document name<input aria-label="Document name" value={title} maxLength={120} onChange={e => { titleRef.current = e.target.value; setTitle(e.target.value); changed(); }} /></label>
@@ -209,6 +270,7 @@ export function SuperAdminNotepad({ userId }: { userId: string }) {
         <IconButton label="Star document" icon={Star} aria-pressed={files.find(file => file.id === activeId)?.starred || false} onClick={toggleStar} />
         <IconButton label="Clear document" icon={Trash2} onClick={() => setClearOpen(true)} />
         <IconButton type="button" label="Print / PDF" icon={Printer} onClick={() => { const preview = window.open("", "_blank"); if (!preview) { setError("Allow popups to print or save as PDF."); return; } preview.onload = () => preview.print(); preview.document.write(notepadDocument(title, editor.current?.innerHTML || "", background)); preview.document.close(); preview.focus(); }} />
+        <IconButton type="button" label={maximized ? "Exit full window height" : "Expand canvas window height"} icon={maximized ? Minimize2 : Maximize2} aria-pressed={maximized} onClick={() => setMaximized(v => !v)} />
       </div>
     </div>
     <input hidden aria-label="Import document file" ref={fileInput} type="file" accept=".txt,.html,.htm,.md,.json" onChange={e => { void openFile(e.target.files?.[0]); e.target.value = ""; }} />

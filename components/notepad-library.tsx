@@ -1,6 +1,6 @@
 "use client";
 import { useMemo, useState } from "react";
-import { Search, SlidersHorizontal, FileText, Star, X, Image as ImageIcon, GitBranch, Table2 } from "lucide-react";
+import { Search, SlidersHorizontal, FileText, Star, X, Image as ImageIcon, GitBranch, Table2, Pencil, Save, Trash2 } from "lucide-react";
 import { documentText, type NotepadFile } from "@/lib/notepad-library";
 import { Pager } from "./super-admin-pager";
 import styles from "./super-admin-notepad.module.css";
@@ -22,7 +22,22 @@ const snippet = (text: string, terms: string[]) => {
   return `…${text.slice(at - 30, at + 70)}`;
 };
 
-export function NotepadLibrary({ files, activeId, activeTitle, onOpen }: { files: NotepadFile[]; activeId: string; activeTitle: string; onOpen: (id: string) => void }) {
+export function NotepadLibrary({
+  files,
+  activeId,
+  activeTitle,
+  onOpen,
+  onDelete,
+  onSave
+}: {
+  files: NotepadFile[];
+  activeId: string;
+  activeTitle: string;
+  onOpen: (id: string) => void;
+  onDelete?: (id: string) => void;
+  onSave?: (id: string) => void;
+}) {
+  const [deletingFile, setDeletingFile] = useState<NotepadFile | null>(null);
   const [query, setQuery] = useState("");
   const [filters, setFilters] = useState(false);
   const [kind, setKind] = useState("all");
@@ -70,9 +85,121 @@ export function NotepadLibrary({ files, activeId, activeTitle, onOpen }: { files
       <button type="button" aria-label="Show starred documents" aria-pressed={starred} onClick={() => { setStarred(value => !value); setPage(1); }}><Star size={17} aria-hidden="true"/></button>
       <button type="button" aria-label="Reset document filters" onClick={() => { setKind("all"); setMedia("all"); setAfter(""); setStarred(false); setSort("recent"); setPage(1); }}><X size={17} aria-hidden="true"/></button>
     </div>}
-    <div role="tablist" aria-label="Saved documents" className={styles.documentTabs}>{visible.map((file, index) => <button key={file.id} type="button" role="tab" id={`notepad-tab-${file.id}`} aria-label={file.id === activeId ? activeTitle || "Untitled document" : file.title || "Untitled document"} aria-selected={file.id === activeId} aria-controls="notepad-document-panel" onClick={() => open(file.id)} onKeyDown={e => { if (e.key === "ArrowRight" || e.key === "ArrowLeft") { e.preventDefault(); const next = visible[(index + (e.key === "ArrowRight" ? 1 : -1) + visible.length) % visible.length]; document.getElementById(`notepad-tab-${next.id}`)?.focus(); open(next.id); } }}>
-      <FileText size={17} aria-hidden="true"/><span><b>{file.id === activeId ? activeTitle || "Untitled document" : file.title || "Untitled document"}</b><small>{file.kind} · {new Date(file.updatedAt).toLocaleDateString()}</small></span>{file.starred && <Star size={13} aria-hidden="true"/>}{/<img\b/i.test(file.html) && <ImageIcon size={13} aria-hidden="true"/>}{file.html.includes("data-notepad-diagram") ? <GitBranch size={13} aria-hidden="true"/> : /<table\b/i.test(file.html) && <Table2 size={13} aria-hidden="true"/>}
-    </button>)}</div>
+    <div role="tablist" aria-label="Saved documents" className={styles.documentTabs}>
+      {visible.map((file, index) => (
+        <div key={file.id} className={styles.documentCard} data-active={file.id === activeId}>
+          <button
+            type="button"
+            role="tab"
+            id={`notepad-tab-${file.id}`}
+            aria-label={file.id === activeId ? activeTitle || "Untitled document" : file.title || "Untitled document"}
+            aria-selected={file.id === activeId}
+            aria-controls="notepad-document-panel"
+            className={styles.documentTabBtn}
+            onClick={() => open(file.id)}
+            onKeyDown={e => {
+              if (e.key === "ArrowRight" || e.key === "ArrowLeft") {
+                e.preventDefault();
+                const next = visible[(index + (e.key === "ArrowRight" ? 1 : -1) + visible.length) % visible.length];
+                document.getElementById(`notepad-tab-${next.id}`)?.focus();
+                open(next.id);
+              }
+            }}
+          >
+            <FileText size={17} aria-hidden="true" />
+            <span>
+              <b>{file.id === activeId ? activeTitle || "Untitled document" : file.title || "Untitled document"}</b>
+              <small>{file.kind} · {new Date(file.updatedAt).toLocaleDateString()}</small>
+            </span>
+            {file.starred && <Star size={13} aria-hidden="true" />}
+            {/<img\b/i.test(file.html) && <ImageIcon size={13} aria-hidden="true" />}
+            {file.html.includes("data-notepad-diagram") ? <GitBranch size={13} aria-hidden="true" /> : /<table\b/i.test(file.html) && <Table2 size={13} aria-hidden="true" />}
+          </button>
+
+          {/* Hover actions: Edit, Save/Download, Delete */}
+          <div className={styles.documentCardHoverActions}>
+            <button
+              type="button"
+              className={styles.cardActionBtn}
+              data-action="edit"
+              aria-label={`Edit ${file.title || "document"}`}
+              title="Edit document"
+              onClick={e => {
+                e.stopPropagation();
+                open(file.id);
+              }}
+            >
+              <Pencil size={13} aria-hidden="true" />
+            </button>
+            <button
+              type="button"
+              className={styles.cardActionBtn}
+              data-action="save"
+              aria-label={`Save copy of ${file.title || "document"}`}
+              title="Save / Download copy"
+              onClick={e => {
+                e.stopPropagation();
+                onSave?.(file.id);
+              }}
+            >
+              <Save size={13} aria-hidden="true" />
+            </button>
+            <button
+              type="button"
+              className={styles.cardActionBtn}
+              data-action="delete"
+              aria-label={`Delete ${file.title || "document"}`}
+              title="Delete document"
+              onClick={e => {
+                e.stopPropagation();
+                setDeletingFile(file);
+              }}
+            >
+              <Trash2 size={13} aria-hidden="true" />
+            </button>
+          </div>
+        </div>
+      ))}
+    </div>
+
+    {/* Delete Confirmation Dialog */}
+    {deletingFile && (
+      <div className={styles.deleteConfirmOverlay} role="dialog" aria-modal="true" aria-label="Confirm delete document">
+        <div className={styles.deleteConfirmBox}>
+          <div style={{ display: "flex", alignItems: "center", gap: "8px", color: "#b91c1c", fontWeight: 700, fontSize: "14px", marginBottom: "6px" }}>
+            <Trash2 size={16} aria-hidden="true" />
+            <span>Delete Document</span>
+          </div>
+          <p style={{ margin: "0 0 14px", fontSize: "12px", color: "#475569", lineHeight: 1.5 }}>
+            Are you sure you want to permanently delete <b>"{deletingFile.title || "Untitled document"}"</b>? This action cannot be undone.
+          </p>
+          <div style={{ display: "flex", justifyContent: "flex-end", gap: "8px" }}>
+            <button
+              type="button"
+              className={styles.deleteCancelBtn}
+              onClick={() => setDeletingFile(null)}
+              aria-label="Cancel deletion"
+            >
+              <X size={13} aria-hidden="true" />
+              <span>Cancel</span>
+            </button>
+            <button
+              type="button"
+              className={styles.deleteConfirmBtn}
+              onClick={() => {
+                const id = deletingFile.id;
+                setDeletingFile(null);
+                onDelete?.(id);
+              }}
+              aria-label="Confirm permanent deletion"
+            >
+              <Trash2 size={13} aria-hidden="true" />
+              <span>Delete permanently</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
     {!results.length && <p className={styles.libraryEmpty}>No documents match your search and filters.</p>}
     <div className={styles.pagination}><Pager page={current} pages={totalPages} total={results.length} size={PER_PAGE} onPage={setPage}/></div>
   </div>;

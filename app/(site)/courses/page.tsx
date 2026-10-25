@@ -8,6 +8,8 @@ import styles from "../site.module.css";
 import { LearningPicture } from "@/components/learning-picture";
 import { learningImageUrl } from "@/lib/learning-image";
 
+import { CoursesFeed } from "@/components/courses-feed";
+
 export const metadata = pageMetadata("/courses");
 
 const title = (value: string) => value.charAt(0).toUpperCase() + value.slice(1);
@@ -28,19 +30,6 @@ export default function CoursesPage() {
   };
   return <>
     <PageIntro path="/courses" eyebrow="Learning paths" extraSchema={itemList} />
-    <div className={styles.prose}>
-      {groups.map(group => <section key={group.id} aria-labelledby={`group-${group.id}`}>
-        <h2 id={`group-${group.id}`}>{group.label.en}</h2>
-        <div className={styles.grid}>{group.items.map(item => <article key={item.category} id={item.category} className={styles.card}>
-          <LearningPicture variant="card" className={styles.cardPicture} src={learningImageUrl("courses", [item.category])} alt={`Illustration of ${item.label}`} />
-          <h3>{item.label}</h3>
-          <p>{item.summary}</p>
-          {item.subjects.length > 0 && <p><strong>Subjects:</strong> {item.subjects.join(", ")}</p>}
-          {item.examples.length > 0 && <ul>{item.examples.map(example => <li key={example}>{example}</li>)}</ul>}
-          <Link href={`/dashboard/${item.category}`}>Open in your dashboard →</Link>
-        </article>)}</div>
-      </section>)}
-    </div>
-    <div className={styles.banner}><p>Pick your paths, then learn in one focused space.</p><Link className={styles.cta} href="/sign-up">Create your account</Link></div>
+    <CoursesFeed />
   </>;
 }

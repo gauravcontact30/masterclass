@@ -49,8 +49,24 @@
 .dot[aria-selected="true"] { width: 20px; background: var(--marigold); box-shadow: 0 0 6px #f59e0b; }
 .dot:focus-visible { outline: 2px solid var(--marigold); outline-offset: 1px; }
 
-.rangoli { position: absolute; left: -46px; bottom: -46px; width: 140px; height: 140px; filter: drop-shadow(0 8px 18px #0008); animation: turn 40s linear infinite; will-change: transform; transform: translateZ(0); }
-@keyframes turn { to { transform: rotate(360deg); } }
+.rangoli {
+  position: absolute;
+  left: -46px;
+  bottom: -46px;
+  width: 140px;
+  height: 140px;
+  filter: drop-shadow(0 8px 18px rgba(0, 0, 0, 0.5));
+  animation: turnFlower 14s linear infinite !important;
+  transform-origin: 50% 50% !important;
+  transform-box: fill-box !important;
+  will-change: transform;
+  pointer-events: none;
+}
+
+@keyframes turnFlower {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
 .diyas { position: absolute; right: 18px; bottom: -18px; display: flex; gap: 14px; }
 .diya { position: relative; width: 34px; height: 16px; border-radius: 0 0 20px 20px; background: linear-gradient(180deg, #c2410c, #7c2d12); box-shadow: 0 4px 10px #0007; }
 .diya i { position: absolute; left: 50%; bottom: 12px; width: 10px; height: 18px; border-radius: 50% 50% 50% 50% / 65% 65% 35% 35%; transform: translateX(-50%);
@@ -73,4 +89,4 @@
   .art { order: -1; }
   .rangoli { left: -20px; bottom: -34px; width: 100px; height: 100px; }
 }
-@media (prefers-reduced-motion: reduce) { .rangoli, .diya i, .burst i { animation: none; } .burst i { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .diya i, .burst i { animation: none; } .burst i { opacity: 0; } }

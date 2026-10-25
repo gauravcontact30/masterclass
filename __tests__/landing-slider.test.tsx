@@ -30,18 +30,18 @@ describe("hero slider", () => {
     Object.defineProperty(document, "visibilityState", { configurable: true, value: "visible" });
     fireEvent(document, new Event("visibilitychange"));
     act(() => { jest.advanceTimersByTime(10000); });
-    expect(active()).toHaveTextContent("Crack your exam");
+    expect(active()).toHaveTextContent("Learn to code by building real projects");
   });
 
-  test("five full-bleed HD scenes, each with its own headline, image and actions", () => {
+  test("four full-bleed HD scenes, each with its own headline, image and actions", () => {
     render(<LandingSlider technologies={61} />);
-    expect(slides()).toHaveLength(5);
+    expect(slides()).toHaveLength(4);
     expect(within(active()).getByRole("heading", { level: 2 })).toHaveTextContent("Your campus for the skills companies hire for.");
     expect(within(active()).getByRole("img")).toHaveAttribute("alt", expect.stringContaining("www.masterclassbuddy.com"));
     expect(within(active()).getByRole("link", { name: /Start learning/ })).toHaveAttribute("href", "/sign-up");
     expect(within(active()).getByRole("link", { name: "Explore the free library" })).toHaveAttribute("href", "/library");
     // Hidden slides are inert, so their links can't be tabbed to.
-    expect(slides().filter(slide => slide.hasAttribute("inert"))).toHaveLength(4);
+    expect(slides().filter(slide => slide.hasAttribute("inert"))).toHaveLength(3);
   });
 
   test("the technology slide quotes the real technology count", () => {
@@ -56,7 +56,7 @@ describe("hero slider", () => {
     act(() => { jest.advanceTimersByTime(9900); });
     expect(active()).toHaveTextContent("Your campus for the skills");
     act(() => { jest.advanceTimersByTime(100); });
-    expect(active()).toHaveTextContent("Crack your exam");
+    expect(active()).toHaveTextContent("Learn to code by building real projects");
     fireEvent.click(screen.getByRole("button", { name: "Previous slide" }));
     expect(active()).toHaveTextContent("Your campus for the skills");
     fireEvent.click(screen.getByRole("button", { name: "Previous slide" }));
@@ -75,10 +75,10 @@ describe("hero slider", () => {
     expect(active()).toHaveTextContent("Your campus for the skills");
     const region = screen.getByRole("region", { name: "Learning with MasterClass" });
     fireEvent.keyDown(region, { key: "ArrowRight" });
-    expect(active()).toHaveTextContent("Crack your exam");
+    expect(active()).toHaveTextContent("Learn to code by building real projects");
     fireEvent.touchStart(region, { touches: [{ clientX: 300 }] });
     fireEvent.touchEnd(region, { changedTouches: [{ clientX: 120 }] });
-    expect(active()).toHaveTextContent("Learn to code by building real projects");
+    expect(active()).toHaveTextContent("Walk into your interview confident and ready");
   });
 });
 

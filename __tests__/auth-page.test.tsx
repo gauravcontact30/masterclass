@@ -156,6 +156,7 @@ test("after sign-in, the proxy's redirect target is followed only when it is an 
 test.each([
   ["https://evil.example/dashboard", "/dashboard"], ["//evil.example", "/dashboard"], ["/dashboard\evil", "/dashboard"],
   ["/api/admin", "/dashboard"], [undefined, "/dashboard"], ["/dashboard/notes?tab=1", "/dashboard/notes?tab=1"], ["/notes", "/notes"],
+  ["/tech-buzz", "/tech-buzz"], ["/tech-buzz?filter=ai", "/tech-buzz?filter=ai"]
 ])("safeRedirect(%p) → %p", (target, expected) => { expect(safeRedirect(target)).toBe(expected); });
 
 test("the form posts (never GET) and is an ordinary form even before hydration", () => {

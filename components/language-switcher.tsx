@@ -7,6 +7,8 @@ import type { Language } from "@/lib/domain";
 import type { SupportedLanguage } from "@/lib/i18n";
 import styles from "./language-switcher.module.css";
 
+export { LanguageToggle } from "./language-toggle";
+
 export interface LanguageSwitcherProps {
   className?: string;
   variant?: "dropdown" | "compact" | "navbar";
@@ -87,13 +89,13 @@ export function LanguageSwitcher({
                     onClick={() => selectLang(item.code)}
                   >
                     <div className={styles.itemLeft}>
-                      <span className={styles.itemFlag} aria-hidden="true">{item.flag}</span>
+                      <span className={styles.countryCodeBadge} aria-hidden="true">{item.countryCode}</span>
                       <div className={styles.itemText}>
                         <span className={styles.itemNative}>{item.nativeName}</span>
                         <span className={styles.itemMeta}>{item.country} · {item.name}</span>
                       </div>
                     </div>
-                    {selected && <Check size={16} className={styles.itemCheck} aria-hidden="true" />}
+                    {selected && <Check size={18} className={styles.itemCheck} aria-hidden="true" />}
                   </button>
                 </li>
               );

@@ -67,6 +67,7 @@ export const PUBLIC_PAGES: readonly PublicPage[] = [
   { path: "/contact", title: "Contact & support", label: "Contact", description: "Get help with your MasterClass account, membership, billing or study content, and find answers to common questions.", changeFrequency: "yearly", priority: 0.5 },
   { path: "/privacy", title: "Privacy policy", label: "Privacy", description: "How MasterClass collects, uses and protects your account, payment and learning data, and what stays only in your browser.", changeFrequency: "yearly", priority: 0.3 },
   { path: "/terms", title: "Terms & conditions", label: "Terms", description: "The terms that apply when you create a MasterClass account, buy a membership and use study content and AI-assisted answers.", changeFrequency: "yearly", priority: 0.3 },
+  { path: "/tech-buzz", title: "Tech Buzz — Trending Technology Blogs & Deep Dives", label: "Tech Buzz", description: "Read community-rated blogs on the most popular modern technologies: Agentic AI, Next.js 15, TypeScript 5.8, Rust, Cloud Architecture, and Distributed Systems.", changeFrequency: "daily", priority: 0.95 },
   { path: "/refund-policy", title: "Cancellation & refund policy", label: "Refunds", description: "How to cancel a MasterClass membership, how long your access continues, and when payments are refunded, including duplicate and failed charges.", changeFrequency: "yearly", priority: 0.3 },
 ];
 
@@ -108,6 +109,11 @@ const PAGE_KEYWORDS: Partial<Record<PublicPage["path"], string[]>> = {
   "/terms": [
     "MasterClass terms and conditions", "membership terms", "AI learning terms of service", "user agreement", "tech course membership terms"
   ],
+  "/tech-buzz": [
+    "tech buzz", "technology blogs", "medium tech blogs", "popular technologies", "star rated tech blogs",
+    "Agentic AI MCP", "Next.js 15 React 19", "TypeScript 5.8", "Rust distributed systems",
+    "PostgreSQL 17 vector search", "AWS Bedrock", "zero trust cybersecurity", "Kubernetes IDP"
+  ],
   "/refund-policy": [
     "MasterClass refund policy", "membership cancellation", "course refund policy", "billing policy", "subscription cancellation"
   ],
@@ -123,7 +129,7 @@ export function pageMetadata(path: PublicPage["path"]): Metadata {
     description,
     ...(keywords ? { keywords } : {}),
     alternates: { canonical: path },
-    openGraph: { type: "website", url: path, siteName, title: home ? title : `${title} | ${siteName}`, description, locale: "en_IN", alternateLocale: ["hi_IN"], images: [ogImage] },
+    openGraph: { type: "website", url: path, siteName, title: home ? title : `${title} | ${siteName}`, description, locale: "en_IN", alternateLocale: ["hi_IN", "es_ES", "ja_JP", "de_DE", "fr_FR", "zh_CN"], images: [ogImage] },
     twitter: { card: "summary_large_image", title: home ? title : `${title} | ${siteName}`, description, images: [ogImage.url] },
   };
 }

@@ -1,0 +1,19 @@
+.fullWidthWrapper {
+  width: 100%;
+  max-width: 100%;
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Graceful breakout fallback for browsers without :has() support */
+@supports not (selector(:has(*))) {
+  .fullWidthWrapper {
+    width: 100vw;
+    margin-left: calc(-50vw + 50%);
+    margin-right: calc(-50vw + 50%);
+    position: relative;
+    left: 0;
+    right: 0;
+  }
+}

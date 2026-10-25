@@ -25,7 +25,7 @@ export const metadata: Metadata = {
   formatDetection: { telephone: false, email: false, address: false },
   robots: { index: isIndexable(), follow: true, googleBot: { index: isIndexable(), follow: true, "max-image-preview": "large", "max-snippet": -1, "max-video-preview": -1 } },
   // Fallbacks for any route that doesn't define its own; public pages override with full sets.
-  openGraph: { type: "website", siteName, title: siteTitle, description: siteDescription, locale: "en_IN", alternateLocale: ["hi_IN"], images: ["/opengraph-image"] },
+  openGraph: { type: "website", siteName, title: siteTitle, description: siteDescription, locale: "en_IN", alternateLocale: ["hi_IN", "es_ES", "ja_JP", "de_DE", "fr_FR", "zh_CN"], images: ["/opengraph-image"] },
   twitter: { card: "summary_large_image", title: siteTitle, description: siteDescription, images: ["/opengraph-image"] },
   appleWebApp: { capable: true, title: siteName, statusBarStyle: "default" },
   // Search-console ownership tags, each emitted only when its environment variable is set.

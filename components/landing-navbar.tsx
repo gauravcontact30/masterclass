@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from "react";
 import Link from "next/link";
-import { BookOpen, CodeXml, Crown, GraduationCap, Languages, Layers, Library, LogIn, Menu, Terminal, UserPlus, UserRound, X, type LucideIcon } from "lucide-react";
+import { BookOpen, CodeXml, Crown, Flame, GraduationCap, Languages, Layers, Library, LogIn, Menu, Terminal, UserPlus, UserRound, X, type LucideIcon } from "lucide-react";
 import { Wordmark } from "./brand-mark";
 import { SuggestionBox } from "./suggestion-box";
 import { LandingPlansMenu } from "./landing-plans-menu";
@@ -15,9 +15,9 @@ import type { PlansMenuPrices } from "./landing-plans-menu";
 
 type Indicator = { left: number; right: number; visible: boolean; href: string | null };
 /** Each link's own light pill colour, in link order (repeats if there are more links). */
-const PILL_TINTS = ["#f3dccd", "#dbe7e2", "#e3e2ee", "#f3ead6", "#dce8f3", "#e4e9d6"];
+const PILL_TINTS = ["#f3dccd", "#dbe7e2", "#e3e2ee", "#f3ead6", "#dce8f3", "#e4e9d6", "#fed7aa"];
 /** The matching deeper ink for each tint: icon colour, and the well fill when a link is active. */
-const PILL_INKS = ["#a84f36", "#3f6b55", "#5b5689", "#8a6212", "#2f5f82", "#5d6a14"];
+const PILL_INKS = ["#a84f36", "#3f6b55", "#5b5689", "#8a6212", "#2f5f82", "#5d6a14", "#c2410c"];
 const NAV_ICONS: Record<string, LucideIcon> = {
   "#workflows": Layers,
   "#library": Library,
@@ -25,6 +25,8 @@ const NAV_ICONS: Record<string, LucideIcon> = {
   "#api-docs": CodeXml,
   "#interview-prep": GraduationCap,
   "#pricing": Crown,
+  "/tech-buzz": Flame,
+  "#tech-buzz": Flame,
 };
 
 /**
@@ -37,7 +39,60 @@ const NAV_ICONS: Record<string, LucideIcon> = {
 export function LandingNavbar({ links, prices = null, onCurrency }: { links: [string, string, string?][]; prices?: PlansMenuPrices | null; onCurrency?: (currency: Currency) => void }) {
   const { language, setLanguage, t } = useLanguage();
   const hi = language === "hi";
-  const text = (en: string, hindi: string) => hi ? hindi : en;
+  const text = (en: string, hindi: string) => {
+    if (language === "hi") return hindi;
+    if (language === "es") {
+      if (en === "Account") return "Cuenta";
+      if (en === "Language") return "Idioma";
+      if (en === "Sign in") return "Iniciar sesión";
+      if (en === "Welcome back") return "Bienvenido de nuevo";
+      if (en === "Sign up") return "Registrarse";
+      if (en === "Create a free account") return "Crea una cuenta gratis";
+      if (en === "Main navigation") return "Navegación principal";
+      if (en === "Toggle navigation") return "Alternar navegación";
+    }
+    if (language === "ja") {
+      if (en === "Account") return "アカウント";
+      if (en === "Language") return "言語";
+      if (en === "Sign in") return "ログイン";
+      if (en === "Welcome back") return "おかえりなさい";
+      if (en === "Sign up") return "新規登録";
+      if (en === "Create a free account") return "無料アカウントを作成";
+      if (en === "Main navigation") return "メインナビゲーション";
+      if (en === "Toggle navigation") return "ナビゲーション切り替え";
+    }
+    if (language === "de") {
+      if (en === "Account") return "Konto";
+      if (en === "Language") return "Sprache";
+      if (en === "Sign in") return "Anmelden";
+      if (en === "Welcome back") return "Willkommen zurück";
+      if (en === "Sign up") return "Registrieren";
+      if (en === "Create a free account") return "Kostenloses Konto erstellen";
+      if (en === "Main navigation") return "Hauptnavigation";
+      if (en === "Toggle navigation") return "Navigation umschalten";
+    }
+    if (language === "fr") {
+      if (en === "Account") return "Compte";
+      if (en === "Language") return "Langue";
+      if (en === "Sign in") return "Connexion";
+      if (en === "Welcome back") return "Bon retour";
+      if (en === "Sign up") return "S'inscrire";
+      if (en === "Create a free account") return "Créer un compte gratuit";
+      if (en === "Main navigation") return "Navigation principale";
+      if (en === "Toggle navigation") return "Basculer la navigation";
+    }
+    if (language === "zh") {
+      if (en === "Account") return "账户";
+      if (en === "Language") return "语言";
+      if (en === "Sign in") return "登录";
+      if (en === "Welcome back") return "欢迎回来";
+      if (en === "Sign up") return "注册";
+      if (en === "Create a free account") return "创建免费账户";
+      if (en === "Main navigation") return "主导航";
+      if (en === "Toggle navigation") return "切换导航";
+    }
+    return en;
+  };
   const [scrolled, setScrolled] = useState(false);
   const [menu, setMenu] = useState(false);
   const [account, setAccount] = useState(false);
@@ -58,7 +113,7 @@ export function LandingNavbar({ links, prices = null, onCurrency }: { links: [st
   // Scrollspy: the section nearest the top third of the viewport is "here".
   useEffect(() => {
     if (typeof IntersectionObserver === "undefined") return;
-    const sections = links.map(([href]) => document.getElementById(href.slice(1))).filter((node): node is HTMLElement => !!node);
+    const sections = links.filter(([href]) => href.startsWith("#")).map(([href]) => document.getElementById(href.slice(1))).filter((node): node is HTMLElement => !!node);
     const observer = new IntersectionObserver(entries => {
       const visible = entries.filter(entry => entry.isIntersecting).sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
       if (visible[0]) setActive(`#${visible[0].target.id}`);
@@ -106,7 +161,7 @@ export function LandingNavbar({ links, prices = null, onCurrency }: { links: [st
             onMouseEnter={() => moveTo(href)} onFocus={() => moveTo(href)} onClick={event => {
               setMenu(false);
               if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
-              if (scrollToSection(href.slice(1))) { event.preventDefault(); setActive(href); }
+              if (href.startsWith("#") && scrollToSection(href.slice(1))) { event.preventDefault(); setActive(href); }
             }}>
             <span className={styles.navIconWell} aria-hidden="true"><Icon size={13} strokeWidth={2} className={styles.navIcon} /></span>
             <span>{label}</span>
@@ -118,21 +173,29 @@ export function LandingNavbar({ links, prices = null, onCurrency }: { links: [st
         <LandingPlansMenu prices={prices} open={plans} onOpenChange={openPlans} onCurrency={onCurrency} />
         <LanguageSwitcher />
         <div ref={accountRef} className={styles.account}>
-          <button type="button" className={styles.accountButton} aria-label={t("account")} aria-expanded={account} aria-controls="landing-account-menu" onClick={() => { setAccount(value => !value); setMenu(false); setPlans(false); }}>
+          <button type="button" className={styles.accountButton} aria-label={text("Account", "खाता")} aria-expanded={account} aria-controls="landing-account-menu" onClick={() => { setAccount(value => !value); setMenu(false); setPlans(false); }}>
             <UserRound size={19} strokeWidth={1.9} aria-hidden="true" />
           </button>
           {account && <div id="landing-account-menu" className={styles.accountMenu}>
-            <div className={styles.accountLang} role="group" aria-label={t("language")}>
-              <span><Languages size={15} strokeWidth={1.9} aria-hidden="true" />{t("language")}</span>
-              <LanguageSwitcher variant="compact" />
+            <div className={styles.accountLang} role="group" aria-label={text("Language", "भाषा")}>
+              <span><Languages size={15} strokeWidth={1.9} aria-hidden="true" />{text("Language", "भाषा")}</span>
+              <div>
+                <button type="button" aria-pressed={language === "en"} onClick={() => setLanguage("en", false)} title="English (United States)">EN</button>
+                <button type="button" lang="hi" aria-pressed={language === "hi"} onClick={() => setLanguage("hi", false)} title="हिन्दी (India)">हिन्दी</button>
+                <button type="button" lang="es" aria-pressed={language === "es"} onClick={() => setLanguage("es", false)} title="Español (Spain & Latin America)">ES</button>
+                <button type="button" lang="ja" aria-pressed={language === "ja"} onClick={() => setLanguage("ja", false)} title="日本語 (Japan)">JA</button>
+                <button type="button" lang="de" aria-pressed={language === "de"} onClick={() => setLanguage("de", false)} title="Deutsch (Germany)">DE</button>
+                <button type="button" lang="fr" aria-pressed={language === "fr"} onClick={() => setLanguage("fr", false)} title="Français (France)">FR</button>
+                <button type="button" lang="zh" aria-pressed={language === "zh"} onClick={() => setLanguage("zh", false)} title="简体中文 (China)">ZH</button>
+              </div>
             </div>
             <Link className={styles.accountItem} href="/sign-in" onClick={() => setAccount(false)}>
               <span className={styles.accountIcon} aria-hidden="true"><LogIn size={16} strokeWidth={1.9} /></span>
-              <span><strong>{t("signin")}</strong><small aria-hidden="true">{t("signinTitle")}</small></span>
+              <span><strong>{text("Sign in", "साइन इन")}</strong><small aria-hidden="true">{text("Welcome back", "फिर से स्वागत है")}</small></span>
             </Link>
             <Link className={styles.accountItem} href="/sign-up" onClick={() => setAccount(false)}>
               <span className={`${styles.accountIcon} ${styles.accountIconNew}`} aria-hidden="true"><UserPlus size={16} strokeWidth={1.9} /></span>
-              <span><strong>{t("signup")}</strong><small aria-hidden="true">{t("signupHelp")}</small></span>
+              <span><strong>{text("Sign up", "साइन अप")}</strong><small aria-hidden="true">{text("Create a free account", "मुफ़्त खाता बनाएँ")}</small></span>
             </Link>
           </div>}
         </div>

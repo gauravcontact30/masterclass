@@ -13,7 +13,7 @@ const RING = 2 * Math.PI * 22;
  */
 export function BackToTop() {
   const pathname = usePathname();
-  const enabled = pathname === "/" || pathname?.startsWith("/dashboard");
+  const enabled = pathname === "/" || pathname?.startsWith("/dashboard") || pathname?.startsWith("/tech-buzz");
   const [progress, setProgress] = useState(0);
   const [visible, setVisible] = useState(false);
 

@@ -12,6 +12,7 @@ import { supabaseBrowser } from "@/lib/supabase-browser";
 import { hardNavigate } from "@/lib/hard-navigate";
 import { en, TranslationKey } from "@/lib/i18n";
 import { useLanguage } from "./language-provider";
+import { LanguageToggle } from "./language-toggle";
 import { Button } from "./ui/button";
 import { Wordmark } from "./brand-mark";
 import { AuthStory } from "./auth-carousel";
@@ -25,9 +26,8 @@ function authErrorKey(error: { code?: string; message?: string }): TranslationKe
   return code in en ? code as TranslationKey : "service_error";
 }
 
-/** Only same-site paths are followed after sign-in (never `//host` or a full URL), and only into the app. */
 export function safeRedirect(target: string | undefined) {
-  return target && /^\/(dashboard|notes|subscribe)(\/|\?|$)/.test(target) && !target.startsWith("//") ? target : "/dashboard";
+  return target && /^\/(dashboard|notes|subscribe|tech-buzz)(\/|\?|$)/.test(target) && !target.startsWith("//") ? target : "/dashboard";
 }
 /**
  * A full navigation, not router.replace: the new session cookies then reach the proxy and server on the very
@@ -88,7 +88,8 @@ export function AuthPage({ mode, enabled, initialEmail = "", redirectTo, linkErr
     if (!email.trim()) { setError("invalid_request"); return; }
     setBusy(true); setError(null);
     try {
-      const { error } = await supabaseBrowser().auth.signInWithOtp({ email: email.trim(), options: { shouldCreateUser: false, emailRedirectTo: `${window.location.origin}/auth/callback` } });
+      const callbackUrl = `${window.location.origin}/auth/callback${redirectTo ? `?next=${encodeURIComponent(safeRedirect(redirectTo))}` : ""}`;
+      const { error } = await supabaseBrowser().auth.signInWithOtp({ email: email.trim(), options: { shouldCreateUser: false, emailRedirectTo: callbackUrl } });
       // Report success either way, so the form does not reveal which emails have accounts.
       if (error && error.status !== 400 && error.status !== 422) { setError(authErrorKey(error)); return; }
       setLinkSent(true);
@@ -112,7 +113,8 @@ export function AuthPage({ mode, enabled, initialEmail = "", redirectTo, linkErr
       } else {
         // full_name rides along in the user metadata; the on_auth_user_created
         // trigger copies it into public.profiles.name (migration 0003).
-        const { data, error } = await auth.signUp({ email, password, options: { data: { full_name: name.trim() }, emailRedirectTo: `${window.location.origin}/auth/callback` } });
+        const callbackUrl = `${window.location.origin}/auth/callback${redirectTo ? `?next=${encodeURIComponent(safeRedirect(redirectTo))}` : ""}`;
+        const { data, error } = await auth.signUp({ email, password, options: { data: { full_name: name.trim() }, emailRedirectTo: callbackUrl } });
         if (error) { setError(authErrorKey(error)); return; }
         // An already-confirmed address gets a decoy user with no identities and no email at all. Say so, instead
         // of sending the visitor to wait for a confirmation that will never arrive. (An unconfirmed address gets
@@ -123,7 +125,7 @@ export function AuthPage({ mode, enabled, initialEmail = "", redirectTo, linkErr
           return;
         }
         // With email confirmation on, Supabase returns no session until the link is opened.
-        if (data.session && data.user?.email_confirmed_at) { setAuthNotice("created"); leaving = true; enterApp("/dashboard"); return; }
+        if (data.session && data.user?.email_confirmed_at) { setAuthNotice("created"); leaving = true; enterApp(safeRedirect(redirectTo)); return; }
         if (data.session) await auth.signOut();
         setSent(true); setResendIn(RESEND_WAIT);
         toast.success(hi ? "खाता बन गया" : "Account created successfully", { description: hi ? `हमने ${email.trim()} पर पुष्टि लिंक भेजा है। साइन इन करने से पहले उसे खोलें (स्पैम फ़ोल्डर भी देखें)।` : `We sent a confirmation link to ${email.trim()}. Open it before signing in (check spam too).`, duration: 8000 });
@@ -139,11 +141,7 @@ export function AuthPage({ mode, enabled, initialEmail = "", redirectTo, linkErr
         <div className={styles.topBar}>
           <Link className={styles.back} href="/"><ArrowLeft size={15} aria-hidden="true" /><ExpandedText text={t("authBackHome")} /></Link>
           {/* Signed-out visitors have no account to save the choice to, so it stays local (persist=false). */}
-          <div className={styles.langToggle} role="group" aria-label={t("language")}>
-            <Languages size={14} className={styles.langIcon} aria-hidden="true" />
-            <button type="button" aria-pressed={language === "en"} onClick={() => setLanguage("en", false)}>EN</button>
-            <button type="button" lang="hi" aria-pressed={language === "hi"} onClick={() => setLanguage("hi", false)}>Hi</button>
-          </div>
+          <LanguageToggle persist={false} />
         </div>
         <div className={styles.formWrap}>
           <div className={styles.brand}><Wordmark /></div>
@@ -206,9 +204,9 @@ export function AuthPage({ mode, enabled, initialEmail = "", redirectTo, linkErr
                 </div>
                 <Button className={styles.submit} type="submit" disabled={busy || !hydrated} aria-busy={busy || !hydrated}><ExpandedText text={busy || !hydrated ? t("loading") : t(mode === "signin" ? "signin" : "signup")} /></Button>
               </form>
-              {mode === "signup" && error === "user_already_exists" && <p className={styles.switchRow}><Link className={styles.switchLink} href={`/sign-in?email=${encodeURIComponent(email.trim())}`}><ExpandedText text={t("signin")} /><ArrowUpRight size={15} aria-hidden="true" /></Link></p>}
+              {mode === "signup" && error === "user_already_exists" && <p className={styles.switchRow}><Link className={styles.switchLink} href={`/sign-in?email=${encodeURIComponent(email.trim())}${redirectTo ? `&redirect=${encodeURIComponent(safeRedirect(redirectTo))}` : ""}`}><ExpandedText text={t("signin")} /><ArrowUpRight size={15} aria-hidden="true" /></Link></p>}
               {mode === "signin" && <p className={styles.switchRow}><button type="button" className={styles.switchLink} disabled={busy} onClick={() => void sendLink()}><ExpandedText text={hi ? "पासवर्ड नहीं है? मुझे साइन-इन लिंक ईमेल करें" : "No password? Email me a sign-in link"} /></button></p>}
-              <p className={styles.switchRow}><Link className={styles.switchLink} href={mode === "signin" ? "/sign-up" : "/sign-in"}><ExpandedText text={t(mode === "signin" ? "noAccount" : "haveAccount")} /></Link></p>
+              <p className={styles.switchRow}><Link className={styles.switchLink} href={mode === "signin" ? `/sign-up${redirectTo ? `?redirect=${encodeURIComponent(safeRedirect(redirectTo))}` : ""}` : `/sign-in${redirectTo ? `?redirect=${encodeURIComponent(safeRedirect(redirectTo))}` : ""}`}><ExpandedText text={t(mode === "signin" ? "noAccount" : "haveAccount")} /></Link></p>
               {mode === "signup" && <p className={styles.hint}>{language === "hi"
                 ? <>खाता बनाकर आप हमारे <Link href="/terms">नियम और शर्तें</Link> और <Link href="/privacy">गोपनीयता नीति</Link> स्वीकार करते हैं।</>
                 : <>By creating an account you agree to our <Link href="/terms">Terms &amp; conditions</Link> and <Link href="/privacy">Privacy policy</Link>.</>}</p>}

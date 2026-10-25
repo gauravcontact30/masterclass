@@ -8,6 +8,7 @@ import { ArrowLeft, ArrowRight, Check, CircleAlert, Languages, LockKeyhole, Mail
 import { Wordmark } from "./brand-mark";
 import { ExpandedText } from "./expanded-text";
 import { useLanguage } from "./language-provider";
+import { LanguageToggle } from "./language-toggle";
 import { requestJson, errorKey } from "@/lib/client";
 import { openSubscriptionCheckout, type SubscriptionPayment } from "@/lib/razorpay-checkout";
 import type { TranslationKey } from "@/lib/i18n";
@@ -80,11 +81,7 @@ export function GuestCheckout({ initialTier, enabled, prices: located }: { initi
       <Link href="/" className={styles.back}><ArrowLeft size={15} aria-hidden="true" /><ExpandedText text={text("Home", "होम")} /></Link>
       <Link href="/" aria-label="MasterClass" className={styles.brand}><Wordmark /></Link>
       <div className={styles.topActions}>
-        <div className={styles.lang} role="group" aria-label={text("Language", "भाषा")}>
-          <Languages size={13} aria-hidden="true" />
-          <button type="button" aria-pressed={!hi} onClick={() => setLanguage("en", false)}>EN</button>
-          <button type="button" lang="hi" aria-pressed={hi} onClick={() => setLanguage("hi", false)}>HI</button>
-        </div>
+        <LanguageToggle persist={false} />
         {!outcome && <Link href="/sign-in" className={styles.signin}><ExpandedText text={text("Sign in", "साइन इन")} /></Link>}
       </div>
     </header>

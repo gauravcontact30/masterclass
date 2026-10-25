@@ -5,7 +5,7 @@
  * page imports the slot that renders these (see the root layout bundle rule).
  */
 
-export type LearningSurface = "dashboard" | "landing" | "sign_in" | "sign_up" | "super_admin";
+export type LearningSurface = "dashboard" | "landing" | "sign_in" | "sign_up" | "super_admin" | "tech_buzz";
 export type LearningLayout = "card" | "banner" | "full" | "accordion";
 export type LearningAudience = "everyone" | "signed_out" | "signed_in" | "members";
 export type LearningStatus = "draft" | "published" | "hidden";
@@ -56,6 +56,7 @@ export const SURFACES: (Option & { value: LearningSurface; help: string })[] = [
   { value: "sign_in", label: "Sign in page", help: "Beside or under the sign-in form." },
   { value: "sign_up", label: "Sign up page", help: "Beside or under the sign-up form." },
   { value: "super_admin", label: "Super Admin dashboard", help: "A page of this admin dashboard, seen only by admins." },
+  { value: "tech_buzz", label: "Tech Buzz Blogs (/tech-buzz)", help: "Publish learning modules, updates & announcements directly to Tech Buzz radar or article pages." },
 ];
 /** A group of pages in the page picker, in the same order as the Learning Dashboard sidebar. */
 export type PageGroup = "learning" | "professional" | "exams" | "account" | "custom";
@@ -92,7 +93,13 @@ export const SUPER_ADMIN_PAGES: Option[] = [
   { value: "content", label: "Content & audit" }, { value: "notepad", label: "Notepad" }, { value: "upload-learning", label: "Upload Learning" },
 ];
 const SINGLE: Record<Exclude<LearningSurface, "dashboard" | "super_admin">, Option[]> = {
-  landing: [{ value: "home", label: "Home page" }], sign_in: [{ value: "sign-in", label: "Sign in" }], sign_up: [{ value: "sign-up", label: "Sign up" }],
+  landing: [{ value: "home", label: "Home page" }],
+  sign_in: [{ value: "sign-in", label: "Sign in" }],
+  sign_up: [{ value: "sign-up", label: "Sign up" }],
+  tech_buzz: [
+    { value: "radar", label: "Radar Feed (All Blogs)" },
+    { value: "article", label: "Inside Blog Article Reader" },
+  ],
 };
 /** The sections of a page an upload can go in, per surface. */
 export const SECTIONS: Record<LearningSurface, Option[]> = {
@@ -101,6 +108,11 @@ export const SECTIONS: Record<LearningSurface, Option[]> = {
   sign_in: [{ value: "above-form", label: "Above the form" }, { value: "below-form", label: "Below the form" }],
   sign_up: [{ value: "above-form", label: "Above the form" }, { value: "below-form", label: "Below the form" }],
   super_admin: [{ value: "top", label: "Top of the page" }, { value: "bottom", label: "Bottom of the page" }],
+  tech_buzz: [
+    { value: "feed-top", label: "Top of Radar Feed (Announcement/Hero)" },
+    { value: "feed-middle", label: "Between Blog Cards in Radar" },
+    { value: "article-bottom", label: "Bottom of Article (Before Discussion)" },
+  ],
 };
 export const LAYOUTS: (Option & { value: LearningLayout })[] = [
   { value: "card", label: "Card" }, { value: "banner", label: "Slim banner" }, { value: "full", label: "Full-width article" }, { value: "accordion", label: "Collapsible (click to open)" },

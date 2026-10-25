@@ -177,7 +177,7 @@ export function LandingFestiveSale({ prices }: { prices: Prices }) {
           </button>
         </div>
 
-        <svg className={styles.rangoli} viewBox="0 0 200 200" aria-hidden="true">
+        <svg className={styles.rangoli} viewBox="0 0 200 200" aria-hidden="true" style={{ transformOrigin: "100px 100px", willChange: "transform" }}>
           {Array.from({ length: 12 }, (_, i) => <ellipse key={i} cx="100" cy="52" rx="13" ry="40" transform={`rotate(${i * 30} 100 100)`} fill={["#f59e0b", "#e11d48", "#f97316", "#a21caf"][i % 4]} opacity=".85" />)}
           {Array.from({ length: 8 }, (_, i) => <circle key={i} cx="100" cy="30" r="7" transform={`rotate(${i * 45 + 22.5} 100 100)`} fill="#fde68a" />)}
           <circle cx="100" cy="100" r="24" fill="#fff7ed" /><circle cx="100" cy="100" r="12" fill="#ea580c" />

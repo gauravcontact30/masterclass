@@ -1,4 +1,11 @@
-.notepad{border:1px solid #dedbd2;border-radius:12px;overflow:hidden;background:#fff;color:#262624;min-width:0;max-width:100%}
+.notepad{border:1px solid #dedbd2;border-radius:12px;overflow:hidden;background:#fff;color:#262624;min-width:0;max-width:100%;transition:all .2s ease}
+.notepad[data-maximized="true"]{position:fixed;inset:0;z-index:9999;border-radius:0;border:none;height:100vh;max-height:100vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 0 40px rgba(0,0,0,0.3)}
+.libraryToggleBar{display:flex;align-items:center;justify-content:space-between;padding:8px 16px;background:#f0ede6;border-bottom:1px solid #dedbd2;font-size:12px}
+.libraryToggleBtn{display:inline-flex!important;align-items:center;gap:7px;background:transparent!important;border:1px solid transparent!important;font-weight:600;color:#595852!important;cursor:pointer;padding:4px 8px!important;width:auto!important;height:auto!important;min-height:28px!important}
+.libraryToggleBtn:hover{background:#e5e2d9!important;color:#262624!important;border-radius:6px}
+.windowHeightBadge{display:flex;align-items:center;gap:10px;font-size:11px;color:#73716a}
+.quickExpandBtn{display:inline-flex!important;align-items:center;gap:5px;background:#fff!important;border:1px solid #dedbd2!important;border-radius:5px!important;padding:4px 8px!important;font-size:11px!important;font-weight:600;color:#8b402b!important;cursor:pointer;width:auto!important;height:auto!important;min-height:26px!important;transition:all .15s ease}
+.quickExpandBtn:hover{background:#f7e7de!important;border-color:#d97757!important}
 .filebar{display:flex;align-items:end;justify-content:space-between;gap:12px;padding:16px 18px;background:#faf9f5;border-bottom:1px solid #e8e6dc;flex-wrap:wrap;min-width:0;max-width:100%}
 .title{flex:1;min-width:min(180px,100%);max-width:420px;font-size:11px;color:#73716a}
 .title input{display:block;width:100%;box-sizing:border-box;margin-top:5px;padding:8px 10px;border:1px solid #dedbd2;border-radius:6px;background:#fff;font-size:18px;font-weight:600;color:#262624}
@@ -14,9 +21,11 @@
 .group .iconField{position:relative;display:grid;place-items:center;width:36px;height:36px;border:1px solid #dedbd2;border-radius:5px;background:white;color:#3d3d3a;cursor:pointer}
 .group .iconField:hover,.group .iconField:focus-within{background:#f7e7de;border-color:#d97757}
 .group .iconField select,.group .iconField input[type=color]{position:absolute;inset:0;width:100%;height:100%;opacity:0;margin:0;cursor:pointer}
-.canvas{box-sizing:border-box;min-width:0;max-width:100%;padding:32px;background:#e9e7e1;max-height:75vh;overflow-y:auto;overflow-x:hidden}
+.canvas{box-sizing:border-box;min-width:0;max-width:100%;padding:44px 32px;background:#e9e7e1;min-height:850px;height:calc(100vh - 160px);max-height:92vh;overflow-y:auto;overflow-x:hidden;transition:all .2s ease}
 .canvas[data-zoomed="true"]{overflow-x:auto}
-.paper{box-sizing:border-box;width:100%;max-width:794px;min-height:1050px;margin:auto;padding:64px 60px;background:#fff;color:#262624;box-shadow:0 2px 12px #26262412;font:16px/1.65 Arial,sans-serif;outline:none;overflow-wrap:anywhere;white-space:pre-wrap}
+.notepad[data-maximized="true"] #notepad-document-panel{display:flex;flex-direction:column;flex:1;min-height:0;height:100%}
+.notepad[data-maximized="true"] .canvas{flex:1;min-height:0;height:calc(100vh - 130px);max-height:100%;padding:48px 32px}
+.paper{box-sizing:border-box;width:100%;max-width:860px;min-height:1150px;margin:auto;padding:64px 60px;background:#fff;color:#262624;box-shadow:0 4px 20px rgba(38,38,36,0.12);font:16px/1.65 Arial,sans-serif;outline:none;overflow-wrap:anywhere;white-space:pre-wrap}
 .paper:focus{box-shadow:0 0 0 2px #d9775760,0 2px 12px #26262412}
 .paper:empty::before{content:"Start writing here…";color:#9a988f;pointer-events:none}
 /* Imported code and nowrap spans must fit the paper instead of widening the
@@ -60,3 +69,190 @@
 .documentTabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:15px}.documentTabs>button{display:flex;justify-content:flex-start;gap:8px;width:100%;height:auto;min-height:60px;padding:10px 12px;text-align:left;overflow:hidden}.documentTabs>button[aria-selected=true]{background:#fff8ef;border-color:#d97757;box-shadow:inset 3px 0 #d97757}.documentTabs>button>svg{flex-shrink:0}.documentTabs>button>span{min-width:0;flex:1}.documentTabs b{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:12px}.documentTabs small{display:block;font-size:10px;color:#73716a;margin-top:4px;text-transform:capitalize}
 .pagination{display:flex;align-items:center;justify-content:flex-end;gap:8px;margin-top:10px;font-size:11px;color:#73716a}.pagination>span{margin-right:auto}.notepad .pagination button{width:auto;min-width:32px;height:32px;min-height:32px;padding:0 8px;border-radius:8px;font-size:13px}.notepad .pagination button[aria-current=page]{background:#b5573a;border-color:#b5573a;color:#fff}.suggestions mark{background:#f7d9c9;color:inherit;border-radius:2px;padding:0 1px}.libraryEmpty{padding:18px 0;font-size:12px;color:#73716a}.zoom{display:flex;align-items:center;gap:8px}.zoom button{height:28px;width:28px;min-height:28px;padding:5px}.options textarea{width:min(420px,100%);min-width:220px;padding:9px;border:1px solid #dedbd2;border-radius:6px;background:white;font-size:13px}.options input[aria-label="Export document name"]{width:min(280px,100%)}
 @media(max-width:760px){.library{padding:14px}.librarySearch{max-width:none}.documentTabs{grid-template-columns:repeat(2,minmax(0,1fr))}.libraryHead>div:first-child{width:100%}.options textarea{min-width:0;width:100%}}
+
+.documentCard {
+  position: relative;
+  display: flex;
+  align-items: center;
+  border-radius: 7px;
+  border: 1px solid #dedbd2;
+  background: #fff;
+  transition: all 0.15s ease;
+  overflow: hidden;
+}
+
+.documentCard[data-active="true"] {
+  background: #fff8ef;
+  border-color: #d97757;
+  box-shadow: inset 3px 0 #d97757;
+}
+
+.documentCard:hover {
+  border-color: #c9c6bc;
+}
+
+.documentTabBtn {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  height: auto;
+  min-height: 60px;
+  padding: 10px 12px;
+  text-align: left;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.documentTabBtn>svg {
+  flex-shrink: 0;
+}
+
+.documentTabBtn>span {
+  min-width: 0;
+  flex: 1;
+}
+
+.documentTabBtn b {
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 12px;
+}
+
+.documentTabBtn small {
+  display: block;
+  font-size: 10px;
+  color: #73716a;
+  margin-top: 4px;
+  text-transform: capitalize;
+}
+
+.documentCardHoverActions {
+  position: absolute;
+  top: 50%;
+  right: 8px;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(4px);
+  padding: 3px 5px;
+  border-radius: 6px;
+  border: 1px solid #dedbd2;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+  z-index: 10;
+}
+
+.documentCard:hover .documentCardHoverActions,
+.documentCard:focus-within .documentCardHoverActions {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.cardActionBtn {
+  width: 26px;
+  height: 26px;
+  min-height: 26px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: #475569;
+  cursor: pointer;
+  transition: all 0.12s ease;
+}
+
+.cardActionBtn:hover {
+  background: #f1f5f9;
+  color: #0f172a;
+  border-color: #cbd5e1;
+}
+
+.cardActionBtn[data-action="delete"]:hover {
+  background: #fff1f2;
+  color: #e11d48;
+  border-color: #fecdd3;
+}
+
+.cardActionBtn[data-action="edit"]:hover {
+  background: #eff6ff;
+  color: #2563eb;
+  border-color: #bfdbfe;
+}
+
+.cardActionBtn[data-action="save"]:hover {
+  background: #ecfdf5;
+  color: #059669;
+  border-color: #a7f3d0;
+}
+
+.deleteConfirmOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(2px);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.deleteConfirmBox {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 1.5rem;
+  max-width: 420px;
+  width: 100%;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+.deleteCancelBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #475569;
+  background: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  cursor: pointer;
+}
+
+.deleteCancelBtn:hover {
+  background: #e2e8f0;
+  color: #0f172a;
+}
+
+.deleteConfirmBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #ffffff;
+  background: #dc2626;
+  border: 1px solid #b91c1c;
+  cursor: pointer;
+}
+
+.deleteConfirmBtn:hover {
+  background: #b91c1c;
+}

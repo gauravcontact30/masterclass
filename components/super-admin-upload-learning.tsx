@@ -3,8 +3,9 @@ import { useCallback, useEffect, useId, useMemo, useRef, useState, type ReactNod
 import {
   ArrowDown, ArrowUp, BookOpen, CalendarClock, CheckCircle2, Copy, Eye, EyeOff, FilePlus2, FileText, FileUp, History, LayoutTemplate, Map as MapIcon, Monitor, MousePointerClick,
   Pencil, Pin, PinOff, Plus, RefreshCw, Rocket, RotateCcw, Save, Search, Send, Smartphone, Sparkles, Tablet, Tag, Trash2, Upload, UploadCloud, Users, X,
-  ExternalLink, Globe2, LogIn, ShieldCheck, UserPlus, LayoutDashboard, type LucideIcon,
+  ExternalLink, Globe2, LogIn, ShieldCheck, UserPlus, LayoutDashboard, Flame, type LucideIcon,
 } from "lucide-react";
+import { SuperAdminTechBuzz } from "./super-admin-tech-buzz";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "./ui/dialog";
 import { AdminSelect } from "./super-admin-select";
 import { AdminPagePicker } from "./super-admin-page-picker";
@@ -51,7 +52,14 @@ const when = (value: string) => new Date(value).toLocaleString("en-IN", { dateSt
 const toLocal = (iso: string | null) => { if (!iso) return ""; const d = new Date(iso); return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16); };
 const toIso = (local: string) => local ? new Date(local).toISOString() : null;
 const surfaceLabel = (surface: string) => SURFACES.find(s => s.value === surface)?.label ?? surface;
-const SURFACE_ICONS: Record<LearningSurface, LucideIcon> = { dashboard: LayoutDashboard, landing: Globe2, sign_in: LogIn, sign_up: UserPlus, super_admin: ShieldCheck };
+const SURFACE_ICONS: Record<LearningSurface, LucideIcon> = {
+  dashboard: LayoutDashboard,
+  landing: Globe2,
+  sign_in: LogIn,
+  sign_up: UserPlus,
+  super_admin: ShieldCheck,
+  tech_buzz: Flame,
+};
 const LAYOUT_HINTS: Record<LearningLayout, string> = { card: "A framed card with a soft shadow", banner: "One slim line, for short notes", full: "A wide article, for long reads", accordion: "Folded until the learner opens it" };
 const PREVIEW_WIDTHS = [{ value: "desktop", label: "Desktop", width: "100%", icon: Monitor }, { value: "tablet", label: "Tablet", width: "768px", icon: Tablet }, { value: "phone", label: "Phone", width: "375px", icon: Smartphone }] as const;
 /**
@@ -64,6 +72,7 @@ const WIREFRAMES: Record<LearningSurface, (string | { fixed: string })[]> = {
   sign_in: [{ fixed: "Back link and language" }, { fixed: "Sign in heading" }, "above-form", { fixed: "Email and password form" }, "below-form", { fixed: "Brand story panel" }],
   sign_up: [{ fixed: "Back link and language" }, { fixed: "Sign up heading" }, "above-form", { fixed: "Name, email and password form" }, "below-form", { fixed: "Brand story panel" }],
   super_admin: [{ fixed: "Console header" }, { fixed: "Page title" }, "top", { fixed: "The admin page's own content" }, "bottom"],
+  tech_buzz: [{ fixed: "Hero & radar feed header" }, "feed-top", { fixed: "Blog card stream" }, "feed-middle", { fixed: "Story reader" }, "article-bottom"],
 };
 /** The status a learner would see right now. */
 function liveState(u: Pick<LearningUpload, "status" | "startsAt" | "endsAt">, now: number) {
@@ -78,6 +87,7 @@ export function placementHref(surface: LearningSurface, page: string) {
   if (surface === "landing") return "/";
   if (surface === "sign_in") return "/sign-in";
   if (surface === "sign_up") return "/sign-up";
+  if (surface === "tech_buzz") return page === "article" ? "/tech-buzz/scaling-websockets-kubernetes-rust" : "/tech-buzz";
   if (surface === "super_admin") return "/dashboard/super-admin";
   if (page.startsWith("learn:")) return `/dashboard/learn/${page.slice(6)}`;
   return page === "dashboard" ? "/dashboard" : `/dashboard/${page}`;
@@ -100,7 +110,7 @@ const bodyFrom = (d: Draft, status: LearningStatus) => ({
   device: d.device, language: d.language, ctaLabel: d.ctaLabel.trim() || null, ctaUrl: d.ctaUrl.trim() || null, tags: d.tags, status, startsAt: toIso(d.startsAt), endsAt: toIso(d.endsAt),
 });
 
-type Tab = "compose" | "library" | "pages" | "placements";
+type Tab = "compose" | "library" | "pages" | "tech_buzz" | "placements";
 export function SuperAdminUploadLearning({ userId }: { userId: string }) {
   const id = useId();
   const [tab, setTab] = useState<Tab>("compose");
@@ -127,7 +137,13 @@ export function SuperAdminUploadLearning({ userId }: { userId: string }) {
     const top = [...uploads].sort((a, b) => b.views - a.views)[0];
     return { live: states.filter(s => s === "live").length, scheduled: states.filter(s => s === "scheduled").length, drafts: states.filter(s => s === "draft").length, views: uploads.reduce((t, u) => t + u.views, 0), top: top && top.views ? top : null };
   }, [uploads, loadedAt]);
-  const tabs: [Tab, string, LucideIcon, number | null][] = [["compose", draft.id ? "Edit upload" : "Compose", Sparkles, null], ["library", "Library", LayoutTemplate, uploads.length], ["pages", "Learning pages", BookOpen, pages.length], ["placements", "Placements map", MapIcon, null]];
+  const tabs: [Tab, string, LucideIcon, number | null][] = [
+    ["compose", draft.id ? "Edit upload" : "Compose", Sparkles, null],
+    ["library", "Library", LayoutTemplate, uploads.length],
+    ["pages", "Learning pages", BookOpen, pages.length],
+    ["tech_buzz", "Tech Buzz Blogs", Flame, null],
+    ["placements", "Placements map", MapIcon, null],
+  ];
 
   return <div className={styles.root}>
     <section className={styles.hero}>
@@ -162,6 +178,7 @@ export function SuperAdminUploadLearning({ userId }: { userId: string }) {
       {tab === "compose" && <Composer userId={userId} draft={draft} setDraft={setDraft} pages={pages} onDone={text => { setDraft(BLANK); changed(text); setTab("library"); }} onError={setError} />}
       {tab === "library" && <Library uploads={uploads} pages={pages} now={loadedAt} loading={loading} onEdit={edit} onChanged={changed} onError={setError} />}
       {tab === "pages" && <PagesPanel pages={pages} uploads={uploads} onChanged={changed} onError={setError} onAddContent={page => { setDraft({ ...BLANK, page: `learn:${page.slug}`, section: "main" }); setTab("compose"); }} />}
+      {tab === "tech_buzz" && <SuperAdminTechBuzz onChanged={changed} />}
       {tab === "placements" && <Placements uploads={uploads} pages={pages} now={loadedAt} onEdit={edit} onCompose={(surface, page, section) => { setDraft({ ...BLANK, surface, page, section }); setTab("compose"); }} />}
     </div>
   </div>;

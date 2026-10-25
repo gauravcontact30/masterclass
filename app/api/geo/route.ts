@@ -15,9 +15,19 @@ export async function GET(request: Request) {
     ""
   ).trim().toUpperCase();
 
-  const detectedLanguage: Language = rawCountry && COUNTRY_TO_LANGUAGE[rawCountry]
-    ? COUNTRY_TO_LANGUAGE[rawCountry]
-    : "en";
+  const acceptLang = (headers.get("accept-language") || "").toLowerCase();
+
+  let detectedLanguage: Language = "en";
+  if (rawCountry && COUNTRY_TO_LANGUAGE[rawCountry]) {
+    detectedLanguage = COUNTRY_TO_LANGUAGE[rawCountry];
+  } else if (acceptLang) {
+    if (acceptLang.includes("es")) detectedLanguage = "es";
+    else if (acceptLang.includes("ja")) detectedLanguage = "ja";
+    else if (acceptLang.includes("zh")) detectedLanguage = "zh";
+    else if (acceptLang.includes("de")) detectedLanguage = "de";
+    else if (acceptLang.includes("fr")) detectedLanguage = "fr";
+    else if (acceptLang.includes("hi") || acceptLang.includes("mr") || acceptLang.includes("gu") || acceptLang.includes("bn")) detectedLanguage = "hi";
+  }
 
   const langInfo = SUPPORTED_LANGUAGES.find(item => item.code === detectedLanguage);
 

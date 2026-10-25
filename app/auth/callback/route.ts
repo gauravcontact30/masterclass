@@ -15,5 +15,7 @@ export async function GET(request: NextRequest) {
   // A first sign-in right after confirming is "verified"; a magic link or OAuth return is a plain sign-in.
   const confirmedAt = data.user?.email_confirmed_at ? Date.parse(data.user.email_confirmed_at) : 0;
   const notice = Date.now() - confirmedAt < 10 * 60_000 ? "verified" : "signed_in";
-  return NextResponse.redirect(new URL(`/dashboard?notice=${notice}`, request.url));
+  const next = params.get("next") || params.get("redirect");
+  const target = next && /^\/(dashboard|notes|subscribe|tech-buzz)(\/|\?|$)/.test(next) && !next.startsWith("//") ? next : `/dashboard?notice=${notice}`;
+  return NextResponse.redirect(new URL(target, request.url));
 }

@@ -1,7 +1,21 @@
 "use client";
 import { useEffect, useId, useState } from "react";
 import Link from "next/link";
-import { ArrowUpRight, Check, Loader2, RefreshCw, Target, X } from "lucide-react";
+import {
+  ArrowUpRight,
+  Check,
+  CheckCircle2,
+  Lightbulb,
+  Loader2,
+  RefreshCw,
+  RotateCcw,
+  Sparkles,
+  Target,
+  Timer,
+  Trophy,
+  X,
+  XCircle
+} from "lucide-react";
 import type { Coach, CoachQuestion } from "@/lib/study-coach";
 import type { LearningPath } from "@/lib/learning-path";
 import { requestJson } from "@/lib/client";
@@ -75,25 +89,231 @@ export function DashboardCoach() {
   </div></section>;
 }
 
+const OPTION_LETTERS = ["A", "B", "C", "D"] as const;
+
 function Quiz({ questions, hi }: Readonly<{ questions: CoachQuestion[]; hi: boolean }>) {
   const [picked, setPicked] = useState<Record<number, number>>({});
+  const answeredCount = Object.keys(picked).length;
   const score = questions.filter((q, i) => picked[i] === q.answer).length;
-  const done = Object.keys(picked).length === questions.length;
-  return <div className={styles.quiz}>
-    <h3>{hi ? "5 मिनट का क्विज़" : "Five-minute check"}{done && <small>{hi ? `${score}/${questions.length} सही` : `${score}/${questions.length} correct`}</small>}</h3>
-    <ol>
-      {questions.map((q, i) => <li key={q.question}>
-        <p className={styles.question}>{q.question}</p>
-        <div className={styles.options} role="group" aria-label={q.question}>
-          {q.options.map((option, o) => {
-            const answered = i in picked; const right = o === q.answer; const chosen = picked[i] === o;
-            return <button key={option} type="button" disabled={answered} data-state={answered ? (right ? "right" : chosen ? "wrong" : "idle") : "idle"} onClick={() => setPicked(p => ({ ...p, [i]: o }))}>
-              {answered && right && <Check size={13} aria-hidden="true" />}{answered && chosen && !right && <X size={13} aria-hidden="true" />}{option}
-            </button>;
-          })}
+  const done = answeredCount === questions.length;
+  const progressPercent = questions.length > 0 ? (answeredCount / questions.length) * 100 : 0;
+
+  return (
+    <div className={styles.quiz}>
+      {/* Quiz Header Bar */}
+      <div className={styles.quizHeader}>
+        <div className={styles.quizHeaderTitleGroup}>
+          <div className={styles.quizIconBadge}>
+            <Timer size={19} className={styles.quizTimerIcon} />
+          </div>
+          <div>
+            <div className={styles.quizHeadingRow}>
+              <h3 className={styles.quizTitle}>
+                {hi ? "5 मिनट का क्विज़" : "Five-minute check"}
+              </h3>
+              <span className={styles.quizLiveBadge}>
+                <Sparkles size={11} />
+                <span>{hi ? "दैनिक माइक्रो-स्प्रिंट" : "Daily Micro-Sprint"}</span>
+              </span>
+            </div>
+            <p className={styles.quizSubtitle}>
+              {hi
+                ? "आपके हालिया पाठों पर आधारित त्वरित अवधारणा परीक्षण।"
+                : "Rapid retention check calibrated to your active study materials."}
+            </p>
+          </div>
         </div>
-        {i in picked && <p className={styles.explain}>{q.explanation}</p>}
-      </li>)}
-    </ol>
-  </div>;
+
+        {/* Sprint Score & Progress Tracker */}
+        <div className={styles.quizTracker}>
+          <div className={styles.quizTrackerText}>
+            {done ? (
+              <span className={styles.quizScorePillDone}>
+                <Trophy size={13} />
+                <span>
+                  {hi
+                    ? `${score}/${questions.length} सही (${Math.round((score / questions.length) * 100)}%)`
+                    : `${score}/${questions.length} Correct (${Math.round((score / questions.length) * 100)}%)`}
+                </span>
+              </span>
+            ) : (
+              <span className={styles.quizScorePillActive}>
+                <span>
+                  {hi
+                    ? `${answeredCount}/${questions.length} हल किए`
+                    : `${answeredCount}/${questions.length} answered`}
+                </span>
+                <span className={styles.quizDot}>•</span>
+                <span>~2m sprint</span>
+              </span>
+            )}
+            {answeredCount > 0 && (
+              <button
+                type="button"
+                onClick={() => setPicked({})}
+                className={styles.quizResetBtn}
+                title={hi ? "फिर से प्रयास करें" : "Reset sprint"}
+                aria-label={hi ? "प्रश्नोत्तरी रीसेट करें" : "Reset sprint"}
+              >
+                <RotateCcw size={12} />
+                <span>{hi ? "रीसेट" : "Reset"}</span>
+              </button>
+            )}
+          </div>
+
+          <div
+            className={styles.quizProgressBarTrack}
+            role="progressbar"
+            aria-valuenow={progressPercent}
+            aria-valuemin={0}
+            aria-valuemax={100}
+          >
+            <div
+              className={styles.quizProgressBarFill}
+              style={{ width: `${progressPercent}%` }}
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Questions Stack */}
+      <div className={styles.quizQuestionsList}>
+        {questions.map((q, i) => {
+          const isAnswered = i in picked;
+          const isRight = isAnswered && picked[i] === q.answer;
+
+          return (
+            <article key={q.question} className={styles.questionCard} data-answered={isAnswered || undefined}>
+              {/* Question Card Header */}
+              <div className={styles.questionCardHeader}>
+                <span className={styles.questionIndexBadge}>
+                  {hi ? `प्रश्न ${String(i + 1).padStart(2, "0")}` : `QUESTION ${String(i + 1).padStart(2, "0")}`}
+                </span>
+                {isAnswered && (
+                  <span
+                    className={
+                      isRight
+                        ? styles.questionResultBadgeRight
+                        : styles.questionResultBadgeWrong
+                    }
+                  >
+                    {isRight ? (
+                      <>
+                        <CheckCircle2 size={12} />
+                        <span>{hi ? "सही उत्तर" : "Correct (+100)"}</span>
+                      </>
+                    ) : (
+                      <>
+                        <XCircle size={12} />
+                        <span>{hi ? "गलत उत्तर" : "Incorrect"}</span>
+                      </>
+                    )}
+                  </span>
+                )}
+              </div>
+
+              {/* Question Statement */}
+              <p className={styles.questionText}>{q.question}</p>
+
+              {/* Option Choice Grid */}
+              <div
+                className={styles.optionsGrid}
+                role="group"
+                aria-label={q.question}
+              >
+                {q.options.map((option, o) => {
+                  const letter = OPTION_LETTERS[o] ?? String.fromCharCode(65 + o);
+                  const isChosen = picked[i] === o;
+                  const isCorrectAnswer = o === q.answer;
+
+                  let optionState: "idle" | "right" | "wrong" | "dimmed" = "idle";
+                  if (isAnswered) {
+                    if (isCorrectAnswer) {
+                      optionState = "right";
+                    } else if (isChosen) {
+                      optionState = "wrong";
+                    } else {
+                      optionState = "dimmed";
+                    }
+                  }
+
+                  return (
+                    <button
+                      key={option}
+                      type="button"
+                      disabled={isAnswered}
+                      data-state={optionState}
+                      className={styles.optionChoiceBtn}
+                      onClick={() => setPicked(p => ({ ...p, [i]: o }))}
+                    >
+                      <span className={styles.optionLetterBadge}>{letter}</span>
+                      <span className={styles.optionText}>{option}</span>
+                      {isAnswered && isCorrectAnswer && (
+                        <Check size={14} className={styles.optionCheckIcon} aria-hidden="true" />
+                      )}
+                      {isAnswered && isChosen && !isCorrectAnswer && (
+                        <X size={14} className={styles.optionWrongIcon} aria-hidden="true" />
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Verified Takeaway Box */}
+              {isAnswered && (
+                <div className={styles.explainCard}>
+                  <div className={styles.explainHeader}>
+                    <Lightbulb size={14} className={styles.explainIcon} />
+                    <span className={styles.explainTitle}>
+                      {hi ? "अवधारणा सारांश" : "Concept Takeaway"}
+                    </span>
+                  </div>
+                  <p className={styles.explainBody}>{q.explanation}</p>
+                </div>
+              )}
+            </article>
+          );
+        })}
+      </div>
+
+      {/* Completion Banner */}
+      {done && (
+        <div className={styles.quizCompletionBanner}>
+          <div className={styles.completionLeft}>
+            <div className={styles.completionTrophy}>
+              <Trophy size={22} />
+            </div>
+            <div>
+              <h4 className={styles.completionTitle}>
+                {score === questions.length
+                  ? hi
+                    ? "शानदार! पूर्ण अंक"
+                    : "Outstanding Retention!"
+                  : hi
+                    ? "चेक पूरा हुआ!"
+                    : "Sprint Complete!"}
+              </h4>
+              <p className={styles.completionText}>
+                {score === questions.length
+                  ? hi
+                    ? `आपने सभी ${questions.length} प्रश्नों के सही उत्तर दिए हैं। उत्कृष्ट अवधारणा समझ!`
+                    : `You answered all ${questions.length} questions correctly. Excellent mastery over today's topics.`
+                  : hi
+                    ? `आपने ${score}/${questions.length} अंक प्राप्त किए। ऊपर दी गई व्याख्याओं से अपनी समझ मजबूत करें।`
+                    : `You scored ${score}/${questions.length}. Review the key takeaways above to solidify the concepts.`}
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => setPicked({})}
+            className={styles.completionRetakeBtn}
+          >
+            <RotateCcw size={14} />
+            <span>{hi ? "फिर से प्रयास करें" : "Retake Sprint"}</span>
+          </button>
+        </div>
+      )}
+    </div>
+  );
 }

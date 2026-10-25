@@ -46,6 +46,16 @@ describe("BackToTop", () => {
     expect(container.querySelector('button[aria-label="Move to top"]')).toBeInTheDocument();
   });
 
+  test("renders move to top button on tech-buzz page and subsequent article pages", () => {
+    jest.mocked(usePathname).mockReturnValue("/tech-buzz");
+    const { container, rerender } = render(<BackToTop />);
+    expect(container.querySelector('button[aria-label="Move to top"]')).toBeInTheDocument();
+
+    jest.mocked(usePathname).mockReturnValue("/tech-buzz/ebpf-in-production-2026");
+    rerender(<BackToTop />);
+    expect(container.querySelector('button[aria-label="Move to top"]')).toBeInTheDocument();
+  });
+
   test("smooth scrolls to top on click", () => {
     jest.mocked(usePathname).mockReturnValue("/dashboard/super-admin");
     const { container } = render(<BackToTop />);
