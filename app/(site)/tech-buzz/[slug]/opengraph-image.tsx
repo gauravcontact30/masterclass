@@ -1,16 +1,13 @@
 import { ImageResponse } from "next/og";
 import { siteName } from "@/lib/seo";
-import {
-  getTechBuzzArticleBySlug,
-  getTechBuzzArticles,
-  getDiwaliFestiveSaleInfo
-} from "@/lib/tech-buzz-data";
+import { getDiwaliFestiveSaleInfo, getTechBuzzArticles } from "@/lib/tech-buzz-data";
+import { getPublishedTechBuzzArticle, listPublishedTechBuzzArticles } from "@/lib/server/tech-buzz-storage";
 
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
 export async function generateStaticParams() {
-  const articles = getTechBuzzArticles();
+  const articles = await listPublishedTechBuzzArticles();
   return articles.map(article => ({
     slug: article.slug
   }));
@@ -32,7 +29,7 @@ interface ImageProps {
  */
 export default async function Image({ params }: ImageProps) {
   const { slug } = await params;
-  const article = getTechBuzzArticleBySlug(slug) || getTechBuzzArticles()[0];
+  const article = await getPublishedTechBuzzArticle(slug) || getTechBuzzArticles()[0];
   const festiveSale = getDiwaliFestiveSaleInfo();
 
   return new ImageResponse(

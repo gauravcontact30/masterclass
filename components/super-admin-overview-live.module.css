@@ -252,3 +252,17 @@
 .streamRow[data-live] { filter: drop-shadow(0 2px 8px rgba(47, 158, 107, 0.12)); }
 .streamNote { font-size: 12px; color: var(--soft); }
 @media (max-width: 900px) { .streamStats { grid-template-columns: repeat(2, minmax(0, 1fr)); width: 100%; } }
+
+
+/* Last 24 hours: each fact is its own light card in its own tone, with an icon chip, entering in a short stagger. */
+.facts { grid-template-columns: repeat(auto-fill, minmax(min(100%, 150px), 1fr)); gap: 10px; }
+.facts > div[data-tone] { position: relative; overflow: hidden; padding: 11px 12px 12px; border: 1px solid color-mix(in srgb, var(--c) 22%, transparent); border-radius: 14px; background: linear-gradient(160deg, var(--c-wash), var(--c-soft)); transition: transform .18s ease, box-shadow .18s ease; }
+.facts > div[data-tone]::after { content: ""; position: absolute; right: -18px; top: -18px; width: 56px; height: 56px; border-radius: 50%; background: color-mix(in srgb, var(--c) 10%, transparent); }
+.facts > div[data-tone]:hover { transform: translateY(-2px); box-shadow: 0 12px 24px -18px var(--c); }
+.facts > div[data-tone] dt { color: var(--c); }
+.facts > div[data-tone] dt svg { flex-shrink: 0; padding: 3px; width: 18px; height: 18px; border-radius: 6px; background: #fff; box-shadow: 0 0 0 1px color-mix(in srgb, var(--c) 18%, transparent); }
+.facts > div[data-tone] dd { margin-top: 6px; font-family: Georgia, "Times New Roman", serif; font-size: 18px; font-weight: 500; }
+@media (prefers-reduced-motion: no-preference) {
+  .facts > div[data-tone] { animation: factIn .45s cubic-bezier(.16, 1, .3, 1) both; animation-delay: calc(var(--i, 0) * 40ms); }
+}
+@keyframes factIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }

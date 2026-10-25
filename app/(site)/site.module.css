@@ -1,6 +1,6 @@
 /* Public, indexable pages. Same warm palette as the dashboard; system fonts only,
    so nothing blocks first paint and nothing shifts when a webfont swaps in. */
-.page { min-height: 100vh; display: flex; flex-direction: column; background: #f5f4ed; color: #262624; }
+.page { min-height:100vh;min-height:100dvh; display: flex; flex-direction: column; background: #f5f4ed; color: #262624; }
 .skip { position: absolute; left: 16px; top: -48px; padding: 10px 14px; border-radius: 8px; background: #262624; color: #fff; z-index: 10; }
 .skip:focus { top: 12px; }
 .header { display: flex; align-items: center; gap: 28px; padding: 18px clamp(16px, 4vw, 48px); border-bottom: 1px solid #e8e6dc; background: #faf9f5; }

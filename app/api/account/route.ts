@@ -12,6 +12,9 @@ export async function GET(monitorRequest: Request) { return api(async () => {
   // The profile row and the preparations (auth metadata) are independent reads; this route is on every dashboard
   // load, so its round trips run side by side rather than one after another.
   const [user, preparations] = await Promise.all([profile(id), preparationAccess(id)]);
+  // ?view=summary: who is signed in and what they pay for, for public pages (Tech Buzz) that only gate on membership.
+  // Skips the library seed, the document list and progress, the slow half of this route.
+  if (new URL(monitorRequest.url).searchParams.get("view") === "summary") return Response.json({ profile: user, preparations, account: await account(id) }, { headers: { "Cache-Control": "private, no-store" } });
   // Seed the shared default guides before listing, so a first-time library is never empty. Only the document list
   // waits for it. Idempotent, and a failure here must not break the page.
   const seed = preparations.isSuperAdmin || preparations.selections.some(id => id.startsWith("tech:"))

@@ -1,5 +1,5 @@
 .notepad{border:1px solid #dedbd2;border-radius:12px;overflow:hidden;background:#fff;color:#262624;min-width:0;max-width:100%;transition:all .2s ease}
-.notepad[data-maximized="true"]{position:fixed;inset:0;z-index:9999;border-radius:0;border:none;height:100vh;max-height:100vh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 0 40px rgba(0,0,0,0.3)}
+.notepad[data-maximized="true"]{position:fixed;inset:0;z-index:9999;border-radius:0;border:none;height:100vh;height:100dvh;max-height:100vh;max-height:100dvh;display:flex;flex-direction:column;overflow:hidden;box-shadow:0 0 40px rgba(0,0,0,0.3)}
 .libraryToggleBar{display:flex;align-items:center;justify-content:space-between;padding:8px 16px;background:#f0ede6;border-bottom:1px solid #dedbd2;font-size:12px}
 .libraryToggleBtn{display:inline-flex!important;align-items:center;gap:7px;background:transparent!important;border:1px solid transparent!important;font-weight:600;color:#595852!important;cursor:pointer;padding:4px 8px!important;width:auto!important;height:auto!important;min-height:28px!important}
 .libraryToggleBtn:hover{background:#e5e2d9!important;color:#262624!important;border-radius:6px}
@@ -21,10 +21,10 @@
 .group .iconField{position:relative;display:grid;place-items:center;width:36px;height:36px;border:1px solid #dedbd2;border-radius:5px;background:white;color:#3d3d3a;cursor:pointer}
 .group .iconField:hover,.group .iconField:focus-within{background:#f7e7de;border-color:#d97757}
 .group .iconField select,.group .iconField input[type=color]{position:absolute;inset:0;width:100%;height:100%;opacity:0;margin:0;cursor:pointer}
-.canvas{box-sizing:border-box;min-width:0;max-width:100%;padding:44px 32px;background:#e9e7e1;min-height:850px;height:calc(100vh - 160px);max-height:92vh;overflow-y:auto;overflow-x:hidden;transition:all .2s ease}
+.canvas{box-sizing:border-box;min-width:0;max-width:100%;padding:44px 32px;background:#e9e7e1;min-height:850px;height:calc(100vh - 160px);height:calc(100dvh - 160px);max-height:92vh;overflow-y:auto;overflow-x:hidden;transition:all .2s ease}
 .canvas[data-zoomed="true"]{overflow-x:auto}
 .notepad[data-maximized="true"] #notepad-document-panel{display:flex;flex-direction:column;flex:1;min-height:0;height:100%}
-.notepad[data-maximized="true"] .canvas{flex:1;min-height:0;height:calc(100vh - 130px);max-height:100%;padding:48px 32px}
+.notepad[data-maximized="true"] .canvas{flex:1;min-height:0;height:calc(100vh - 130px);height:calc(100dvh - 130px);max-height:100%;padding:48px 32px}
 .paper{box-sizing:border-box;width:100%;max-width:860px;min-height:1150px;margin:auto;padding:64px 60px;background:#fff;color:#262624;box-shadow:0 4px 20px rgba(38,38,36,0.12);font:16px/1.65 Arial,sans-serif;outline:none;overflow-wrap:anywhere;white-space:pre-wrap}
 .paper:focus{box-shadow:0 0 0 2px #d9775760,0 2px 12px #26262412}
 .paper:empty::before{content:"Start writing here…";color:#9a988f;pointer-events:none}
@@ -269,4 +269,39 @@
 
 .deleteConfirmBtn:hover {
   background: #b91c1c;
+}
+
+
+/* My documents: separated cards, one light tone each, and an action ribbon that slides down under the card on hover
+   or keyboard focus (always visible where there is no hover, e.g. phones and tablets). Overrides the rules above. */
+.documentTabs { gap: 14px; }
+.documentCard { --t: #9a4a2c; --t-soft: #fbe6dc; --t-wash: #fff8f4; flex-direction: column; align-items: stretch; border-radius: 14px; border-color: color-mix(in srgb, var(--t) 22%, #e8e6dc); background: linear-gradient(160deg, var(--t-wash), #fff 70%); box-shadow: 0 1px 0 rgba(20, 20, 19, .03); transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease; }
+.documentCard[data-tone="1"] { --t: #2f6b55; --t-soft: #e3f1ea; --t-wash: #f3faf6; }
+.documentCard[data-tone="2"] { --t: #4b4594; --t-soft: #ebe8f8; --t-wash: #f8f7fe; }
+.documentCard[data-tone="3"] { --t: #2f5f82; --t-soft: #e2eef8; --t-wash: #f4f9fd; }
+.documentCard:hover, .documentCard:focus-within { transform: translateY(-2px); border-color: color-mix(in srgb, var(--t) 45%, #e8e6dc); box-shadow: 0 16px 30px -24px var(--t); }
+.documentCard[data-active="true"] { border-color: var(--t); background: linear-gradient(160deg, var(--t-soft), #fff 75%); box-shadow: inset 4px 0 var(--t); }
+.documentCard:hover .documentTabBtn, .documentCard:focus-within .documentTabBtn { padding-right: 12px; }
+.documentTabBtn { gap: 10px; min-height: 64px; padding: 12px; }
+.documentTabBtn b { font-size: 13px; color: #141413; }
+.documentTabBtn small { font-size: 11px; }
+.documentTabBtn > svg { color: var(--t); }
+.documentIcon { display: grid; flex-shrink: 0; place-items: center; width: 34px; height: 34px; border-radius: 10px; background: var(--t-soft); color: var(--t); }
+
+.documentCardHoverActions { position: static; transform: none; justify-content: flex-end; gap: 6px; max-height: 0; padding: 0 10px; overflow: hidden; border: 0; border-top: 1px dashed transparent; border-radius: 0; background: linear-gradient(90deg, var(--t-soft), #fdf6ee 55%, #eef6fb); box-shadow: none; opacity: 0; transition: max-height .22s cubic-bezier(.16, 1, .3, 1), padding .22s ease, opacity .18s ease, border-color .18s ease; }
+.documentCard:hover .documentCardHoverActions, .documentCard:focus-within .documentCardHoverActions { max-height: 52px; padding: 8px 10px; transform: none; border-top-color: color-mix(in srgb, var(--t) 30%, transparent); opacity: 1; }
+.documentCardHoverActions::before { content: "Quick actions"; margin-right: auto; font-size: 10.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--t); align-self: center; }
+.cardActionBtn { width: 32px; height: 32px; min-height: 32px; border-radius: 10px; background: #fff; box-shadow: 0 1px 2px rgba(20, 20, 19, .06); }
+.cardActionBtn[data-action="delete"] { border-color: #fecaca; background: #fff5f5; }
+.cardActionBtn[data-action="edit"] { border-color: #bfdbfe; background: #f3f8ff; }
+.cardActionBtn[data-action="save"] { border-color: #bbf7d0; background: #f2fdf6; }
+.cardActionBtn:hover { transform: translateY(-1px) scale(1.06); }
+.cardActionBtn:focus-visible { outline: 2px solid var(--t); outline-offset: 2px; }
+@media (hover: none) {
+  .documentCardHoverActions { max-height: 52px; padding: 8px 10px; opacity: 1; border-top-color: color-mix(in srgb, var(--t) 30%, transparent); }
+}
+@media (max-width: 480px) { .documentTabs { grid-template-columns: minmax(0, 1fr); } }
+@media (prefers-reduced-motion: reduce) {
+  .documentCard, .documentCardHoverActions, .cardActionBtn { transition: none; }
+  .documentCard:hover, .documentCard:focus-within, .cardActionBtn:hover { transform: none; }
 }

@@ -15,6 +15,8 @@ export type StreamVisit = {
   device?: string | null; browser?: string | null; os?: string | null; duration_ms?: number | null; referrer_host?: string | null; utm_source?: string | null;
   /** Keyed hash of the network and the reported screen: together with browser and OS, a device fingerprint. */
   ip_hash?: string | null; screen?: string | null;
+  /** Reported by the browser with each page view; ip_masked is the network address with its last part hidden. */
+  language?: string | null; timezone?: string | null; ip_masked?: string | null;
 };
 export type Presence = { session_id: string; path: string; started_at: string; seen_at: string };
 

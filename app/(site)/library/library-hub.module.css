@@ -1,0 +1,63 @@
+/* The public library hub (/library): colour-coded cards, one light tone each (--bg, --ink, --edge set inline),
+   entering in a short stagger (--i) and lifting on hover. */
+.free { display: inline-flex; align-items: center; gap: 8px; margin: 18px 0 0; padding: 8px 14px; border: 1px solid #b5dfc8; border-radius: 999px; background: #e7f5ee; color: #1f6a4a; font-size: 14px; font-weight: 600; }
+
+.section { margin-top: 40px; }
+.section > h2 { margin: 0 0 14px; font-family: Georgia, "Nirmala UI", serif; font-weight: 400; font-size: 26px; color: #141413; }
+.lede { margin: -6px 0 16px; font-size: 15px; line-height: 1.55; color: #5e5d59; }
+
+.sections, .picks { display: grid; gap: 16px; margin: 0; padding: 0; list-style: none; }
+.sections { grid-template-columns: repeat(auto-fill, minmax(min(100%, 270px), 1fr)); }
+.picks { grid-template-columns: repeat(auto-fill, minmax(min(100%, 300px), 1fr)); gap: 12px; }
+.sections > li, .picks > li { min-width: 0; }
+
+.card { position: relative; display: grid; grid-template-rows: auto auto auto 1fr auto; height: 100%; overflow: hidden; border: 1px solid var(--edge); border-radius: 18px; background: var(--bg); color: inherit; text-decoration: none; transition: transform .22s cubic-bezier(.16, 1, .3, 1), box-shadow .22s ease, border-color .22s ease; }
+.cover { position: relative; display: block; aspect-ratio: 16 / 7; overflow: hidden; background: color-mix(in srgb, var(--ink) 12%, var(--bg)); }
+.cover::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, transparent 45%, color-mix(in srgb, var(--bg) 92%, transparent)); }
+.coverImage { object-fit: cover; transition: transform .5s cubic-bezier(.16, 1, .3, 1); }
+.icon { position: relative; z-index: 1; display: grid; place-items: center; width: 44px; height: 44px; margin: -26px 0 0 18px; border: 3px solid var(--bg); border-radius: 14px; background: var(--ink); color: #fff; box-shadow: 0 8px 18px -10px var(--ink); }
+.card b { margin: 12px 18px 0; font-size: 17px; color: #141413; }
+.body { margin: 6px 18px 0; font-size: 14px; line-height: 1.55; color: #4d4c48; }
+.foot { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 14px 18px 16px; padding-top: 12px; border-top: 1px dashed var(--edge); }
+.foot small { padding: 3px 10px; border-radius: 999px; background: #fff; color: var(--ink); font-size: 12.5px; font-weight: 700; }
+.arrow { color: var(--ink); transition: transform .2s ease; }
+
+.card:hover, .card:focus-visible { transform: translateY(-4px); border-color: var(--ink); box-shadow: 0 22px 40px -28px var(--ink); }
+.card:hover .coverImage { transform: scale(1.06); }
+.card:hover .arrow { transform: translateX(4px); }
+.card:hover .icon { animation: bob .9s ease-in-out; }
+.card:focus-visible, .pick:focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }
+
+.pick { display: flex; align-items: flex-start; gap: 12px; height: 100%; padding: 14px 16px; border: 1px solid var(--edge); border-radius: 14px; background: var(--bg); color: inherit; text-decoration: none; transition: transform .2s ease, border-color .2s ease, box-shadow .2s ease; }
+.pick:hover { transform: translateY(-2px); border-color: var(--ink); box-shadow: 0 14px 28px -24px var(--ink); }
+.pickIcon { display: grid; place-items: center; flex-shrink: 0; width: 42px; height: 42px; border-radius: 12px; background: #fff; color: var(--ink); box-shadow: inset 0 0 0 1px var(--edge); }
+.pickText { display: grid; gap: 3px; min-width: 0; }
+.pickText small { font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--ink); }
+.pickText b { font-size: 15px; line-height: 1.35; color: #141413; overflow-wrap: anywhere; }
+.pickText span { display: -webkit-box; overflow: hidden; font-size: 13px; line-height: 1.5; color: #5e5d59; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+
+.cta { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 14px; margin-top: 48px; padding: 24px; border-radius: 16px; background: #262624; color: #f5f4ed; }
+.cta p { margin: 0; font-family: Georgia, serif; font-size: 20px; }
+.cta a { padding: 10px 18px; border-radius: 10px; background: #bb5834; color: #fff; font-weight: 600; text-decoration: none; }
+
+@keyframes rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+@keyframes bob { 0%, 100% { transform: translateY(0); } 40% { transform: translateY(-4px) rotate(-4deg); } 70% { transform: translateY(1px); } }
+@media (prefers-reduced-motion: no-preference) {
+  .sections > li, .picks > li { animation: rise .5s cubic-bezier(.16, 1, .3, 1) both; animation-delay: calc(var(--i, 0) * 55ms); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .card, .coverImage, .arrow, .pick { transition: none; }
+  .card:hover, .pick:hover { transform: none; }
+  .card:hover .coverImage { transform: none; }
+  .card:hover .icon { animation: none; }
+}
+
+@media (max-width: 640px) {
+  .section { margin-top: 30px; }
+  .section > h2 { font-size: 22px; }
+  .free { font-size: 13px; }
+  .card b { font-size: 16px; }
+  .cta { padding: 18px; }
+  .cta p { font-size: 17px; }
+  .cta a { width: 100%; text-align: center; }
+}

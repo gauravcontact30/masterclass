@@ -23,6 +23,9 @@ const FEEDS: Record<string, { official?: string; match?: RegExp; medium: string 
   node: { official: "https://nodejs.org/en/feed/blog.xml", medium: "nodejs" },
   openrouter: { medium: "openrouter" },
   "ai-gateway": { official: "https://vercel.com/changelog/rss.xml", match: /ai gateway|ai sdk/i, medium: "vercel" },
+  "tanstack-start": { medium: "tanstack" },
+  zustand: { medium: "zustand" },
+  n8n: { official: "https://blog.n8n.io/rss/", medium: "n8n" },
 };
 
 const HEADERS = {

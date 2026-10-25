@@ -1,16 +1,17 @@
 import "server-only";
 import { cacheLife, cacheTag } from "next/cache";
 import { fetchOfficialTechDocs, slimTechDocs, type OfficialTechDocs } from "@/lib/tech-docs-official";
-import { TECH_DOCS } from "@/lib/tech-docs";
+import { LANDING_TECH_DOC_IDS, TECH_DOCS } from "@/lib/tech-docs";
 import { COMPARISONS } from "@/lib/comparisons";
 import { COMPARISON_DOCS } from "@/lib/comparisons-official";
 
 /** Only what the one-panel previews show (one platform, first comparison), to keep the landing payload small.
  *  `techId` is the platform shown, the first by default; the landing page passes today's (dailyTechDoc). */
 export function previewTechDocs(data: OfficialTechDocs, techId = TECH_DOCS[0].id) {
-  const first = TECH_DOCS.find(tech => tech.id === techId) ?? TECH_DOCS[0];
-  const urls = [first.docs, ...first.materials.map(m => m.url), ...(COMPARISONS[0]?.techs ?? []).map(t => COMPARISON_DOCS[t.name]).filter(Boolean)];
-  return slimTechDocs(data, { urls, articles: [first.id] });
+  // The landing carousel pages through TanStack Start, Zustand and n8n, so all three ship with the page.
+  const shown = TECH_DOCS.filter(tech => tech.id === techId || (LANDING_TECH_DOC_IDS as readonly string[]).includes(tech.id));
+  const urls = [...shown.flatMap(tech => [tech.docs, ...tech.materials.map(m => m.url)]), ...(COMPARISONS[0]?.techs ?? []).map(t => COMPARISON_DOCS[t.name]).filter(Boolean)];
+  return slimTechDocs(data, { urls, articles: shown.map(tech => tech.id) });
 }
 export { slimTechDocs };
 import snapshot from "@/lib/generated/tech-docs-official.json";

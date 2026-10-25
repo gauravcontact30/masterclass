@@ -259,7 +259,7 @@
 
 .optionsGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
   gap: 10px;
 }
 
@@ -459,6 +459,36 @@
 .starter summary { cursor: pointer; font-size: 14px; font-weight: 650; color: #141413; overflow-wrap: anywhere; }
 .starter[open] summary { margin-bottom: 12px; }
 .source { margin: 12px 0 0; font-size: 12px; color: #87867f; }
+
+/* Phones: one column throughout, tighter padding, and the quiz tracker and answers take the full width. */
+@media (max-width: 640px) {
+  .section { padding-block: 20px; }
+  .head { gap: 10px; }
+  .head h2 { font-size: 18px; }
+  .head p { font-size: 13px; }
+  .mark, .head button { width: 34px; height: 34px; }
+  .greeting { margin-top: 12px; font-size: 14px; }
+  .steps { grid-template-columns: minmax(0, 1fr); gap: 8px; }
+  .steps li { padding: 11px 12px; }
+  .quiz { margin-top: 18px; padding: 16px 14px; border-radius: 14px; }
+  .quizHeader { gap: 12px; padding-bottom: 14px; margin-bottom: 16px; }
+  .quizHeaderTitleGroup { gap: 10px; max-width: none; }
+  .quizIconBadge { width: 36px; height: 36px; border-radius: 10px; }
+  .quizTitle { font-size: 16px; }
+  .quizSubtitle { font-size: 12.5px; }
+  .quizTracker { flex: 1 1 100%; min-width: 0; }
+  .quizQuestionsList { gap: 12px; }
+  .questionCard { padding: 14px; border-radius: 12px; }
+  .questionCardHeader { flex-wrap: wrap; gap: 6px; }
+  .questionText { font-size: 14.5px; margin-bottom: 12px; overflow-wrap: anywhere; }
+  .optionsGrid { grid-template-columns: minmax(0, 1fr); gap: 8px; }
+  .optionChoiceBtn { padding: 10px 12px; font-size: 13.5px; }
+  .optionText { overflow-wrap: anywhere; }
+  .quizCompletionBanner { padding: 14px; gap: 12px; }
+  .completionLeft { align-items: flex-start; }
+  .completionRetakeBtn { width: 100%; justify-content: center; }
+  .starter { padding: 10px 12px; }
+}
 
 :global([data-theme="dark"]) .section { border-color: #3a3936; background: linear-gradient(180deg, #1a2620 0%, transparent 100%); }
 :global([data-theme="dark"]) .head h2, :global([data-theme="dark"]) .steps a, :global([data-theme="dark"]) .starter summary { color: #f5f4ef; }

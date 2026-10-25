@@ -1,25 +1,33 @@
 "use client";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Briefcase, Camera, Check, CircleDot, Copy, Link2, MessageCircle, Pencil, PlayCircle, Plus, Send, ThumbsUp, Trash2, AtSign, type LucideIcon } from "lucide-react";
+import { Briefcase, Camera, Check, CircleDot, Copy, GraduationCap, Link2, MessageCircle, PenLine, Pencil, Pin, PlayCircle, Plus, Send, ThumbsUp, Trash2, AtSign, type LucideIcon } from "lucide-react";
 import { Alert, AlertDescription } from "./ui/alert";
 import { Card } from "./ui/card";
 import { AdminTable } from "./super-admin-table";
-import { PLATFORMS, PLATFORM_LABEL, PROMOTION_FORMATS, PROMOTION_STATUSES, campaignSlug, utmLink, type Attribution, type Platform, type Promotion, type PromotionFormat } from "@/lib/promotions";
+import { DEFAULT_FORMAT, LINK_HINT, PLATFORMS, PLATFORM_LABEL, PLATFORM_METRICS, PROMOTION_FORMATS, PROMOTION_STATUSES, campaignSlug, derivedRates, hasPlatformMetrics, utmLink, type Attribution, type MetricKey, type Platform, type PlatformStats, type Promotion, type PromotionFormat } from "@/lib/promotions";
 import { SuperAdminDailySocial } from "./super-admin-daily-social";
 import styles from "./super-admin-promotions.module.css";
 
 type Data = Attribution & { promotions: Promotion[]; days: number; capped: boolean; generatedAt: string };
-export const PLATFORM_ICON: Record<Platform, LucideIcon> = { instagram: Camera, facebook: ThumbsUp, linkedin: Briefcase, telegram: Send, youtube: PlayCircle, x: AtSign, whatsapp: MessageCircle, other: CircleDot };
+export const PLATFORM_ICON: Record<Platform, LucideIcon> = { instagram: Camera, facebook: ThumbsUp, linkedin: Briefcase, telegram: Send, medium: PenLine, pinterest: Pin, coursera: GraduationCap, youtube: PlayCircle, x: AtSign, whatsapp: MessageCircle, other: CircleDot };
 /** Validated categorical palette (dataviz default order); stacking order follows it, so colour follows the platform. */
-const PLATFORM_COLOR: Record<Platform, string> = { facebook: "#2a78d6", instagram: "#eb6834", telegram: "#1baf7a", linkedin: "#eda100", x: "#e87ba4", whatsapp: "#008300", other: "#6250d6", youtube: "#e34948" };
-const STACK: Platform[] = ["facebook", "instagram", "telegram", "linkedin", "x", "whatsapp", "other", "youtube"];
+const PLATFORM_COLOR: Record<Platform, string> = { facebook: "#2a78d6", instagram: "#eb6834", telegram: "#1baf7a", linkedin: "#eda100", x: "#e87ba4", whatsapp: "#008300", other: "#6250d6", youtube: "#e34948", medium: "#3d3d3a", pinterest: "#a3176a", coursera: "#00838f" };
+const STACK: Platform[] = ["facebook", "instagram", "telegram", "linkedin", "medium", "pinterest", "coursera", "x", "whatsapp", "other", "youtube"];
 const money = (n: number) => new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(n);
 const num = (n: number) => n.toLocaleString("en-IN");
-const blank = { platform: "instagram" as Platform, title: "", format: "post" as PromotionFormat, status: "planned", url: "", utm_campaign: "", audience: "", owner: "", starts_on: "", ends_on: "", budget_inr: 0, spend_inr: 0, reach: 0, impressions: 0, engagements: 0, followers_gained: 0, notes: "" };
+const pct = (n: number | null) => n === null ? "—" : `${(n * 100).toFixed(n < 0.1 ? 2 : 1)}%`;
+const blank = { platform: "instagram" as Platform, title: "", format: "post" as PromotionFormat, status: "planned", url: "", utm_campaign: "", audience: "", owner: "", starts_on: "", ends_on: "", budget_inr: 0, spend_inr: 0, reach: 0, impressions: 0, engagements: 0, followers_gained: 0, notes: "", platform_metrics: {} as Partial<Record<MetricKey, number>> };
+/** A platform figure as the platform shows it: money in rupees, a rating to one decimal, counts grouped. */
+function metricValue(platform: Platform, key: MetricKey, value: number | undefined) {
+  if (value === undefined) return "—";
+  const def = hasPlatformMetrics(platform) ? PLATFORM_METRICS[platform].find(item => item.key === key) : undefined;
+  if (key === "earnings_inr") return money(value);
+  return def && "decimals" in def ? value.toFixed(def.decimals) : num(value);
+}
 type Draft = typeof blank & { id?: string };
 
 /**
- * Promotional Tracking: how Instagram, Facebook, LinkedIn, Telegram and other platforms bring people to the site.
+ * Promotional Tracking: how Instagram, Facebook, LinkedIn, Telegram, Medium, Pinterest, Coursera and other platforms bring people to the site.
  * Real traffic comes from site_visits (UTM tags and referrers), outcomes from new accounts and paid memberships,
  * and the platform-reported figures (reach, impressions, spend) from the promotions an admin registers here.
  */
@@ -43,10 +51,12 @@ export function SuperAdminPromotions({ days, query }: Readonly<{ days: number; q
     if (!draft) return;
     setSaving(true); setError("");
     const { id, ...fields } = draft;
-    const payload = Object.fromEntries(Object.entries(fields).map(([key, value]) => [key, value === "" ? null : value]));
+    const { platform_metrics: metrics, ...rest } = fields;
+    const payload: Record<string, unknown> = Object.fromEntries(Object.entries(rest).map(([key, value]) => [key, value === "" ? null : value]));
+    if (hasPlatformMetrics(draft.platform)) payload.platform_metrics = Object.fromEntries(PLATFORM_METRICS[draft.platform].map(def => [def.key, metrics?.[def.key as MetricKey]]).filter(([, value]) => typeof value === "number" && Number.isFinite(value)));
     try {
       const response = await fetch("/api/super-admin/promotions", { method: id ? "PATCH" : "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(id ? { id, ...payload } : payload) });
-      if (!response.ok) { const body = await response.json().catch(() => ({})); throw new Error(body.error === "invalid_request" ? "Check the fields: title, campaign and a valid https link are required." : body.error === "promotions_window" ? "The end date must be on or after the start date." : "The promotion could not be saved."); }
+      if (!response.ok) { const body = await response.json().catch(() => ({})); throw new Error(body.error === "invalid_request" ? "Check the fields: title, campaign and a valid https link are required." : body.error === "promotions_window" ? "The end date must be on or after the start date." : body.error === "migration_required" || hasPlatformMetrics(draft.platform) ? "The promotion could not be saved. Medium, Pinterest and Coursera need migration 0038_promotions_publishing_platforms.sql applied." : "The promotion could not be saved."); }
       setDraft(null); await load();
     } catch (e) { setError(e instanceof Error ? e.message : "The promotion could not be saved."); }
     finally { setSaving(false); }
@@ -57,7 +67,8 @@ export function SuperAdminPromotions({ days, query }: Readonly<{ days: number; q
     if (!response.ok) setError("The promotion could not be deleted."); else await load();
   }
 
-  const promotionRows = useMemo(() => (data?.promotions ?? []).map(item => ({ ...item, platform_name: PLATFORM_LABEL[item.platform], cost_per_visit: "" })), [data]);
+  const promotionRows = useMemo(() => (data?.promotions ?? []).map(item => ({ ...item, platform_name: PLATFORM_LABEL[item.platform], cost_per_visit: "",
+    platform_figures: hasPlatformMetrics(item.platform) ? PLATFORM_METRICS[item.platform].filter(def => item.platform_metrics?.[def.key as MetricKey] !== undefined).map(def => `${def.label.replace(/ \(.*\)$/, "")} ${metricValue(item.platform, def.key as MetricKey, item.platform_metrics?.[def.key as MetricKey])}`).join(" · ") || "—" : "—" })), [data]);
   const campaignRows = useMemo(() => (data?.campaigns ?? []).map(item => ({ ...item, conversion: item.visitors ? `${((item.signups / item.visitors) * 100).toFixed(1)}%` : "—", spend_label: item.spend ? money(item.spend) : "—", cost_per_signup: item.costPerSignup ? money(item.costPerSignup) : "—" })), [data]);
   const landingRows = useMemo(() => (data?.landingPages ?? []).map(item => ({ ...item, platform_name: PLATFORM_LABEL[item.platform] })), [data]);
 
@@ -69,7 +80,7 @@ export function SuperAdminPromotions({ days, query }: Readonly<{ days: number; q
     {data && <>
       <section aria-labelledby="promo-funnel" className={styles.kpis}>
         <h2 id="promo-funnel" className={styles.srOnly}>Social funnel</h2>
-        {[["Social visits", num(data.totals.visits), `Page views from social platforms in the last ${data.days} days`], ["Unique visitors", num(data.totals.visitors), "Browsers counted once"], ["Sign-ups", num(data.totals.signups), "New accounts whose first visit came from social"], ["Paying members", num(data.totals.members), "Of those sign-ups, with an active membership"], ["Spend", money(data.totals.spend), "Entered on registered promotions"], ["Cost per sign-up", data.totals.spend && data.totals.signups ? money(data.totals.spend / data.totals.signups) : "—", "Spend ÷ social sign-ups"]].map(([label, value, note]) =>
+        {[["Social visits", num(data.totals.visits), `Page views from social, blogging and course platforms in the last ${data.days} days`], ["Unique visitors", num(data.totals.visitors), "Browsers counted once"], ["Sign-ups", num(data.totals.signups), "New accounts whose first visit came from social"], ["Paying members", num(data.totals.members), "Of those sign-ups, with an active membership"], ["Spend", money(data.totals.spend), "Entered on registered promotions"], ["Cost per sign-up", data.totals.spend && data.totals.signups ? money(data.totals.spend / data.totals.signups) : "—", "Spend ÷ social sign-ups"]].map(([label, value, note]) =>
           <Card key={label} className={styles.kpi}><span>{label}</span><strong>{value}</strong><small>{note}</small></Card>)}
       </section>
 
@@ -82,7 +93,9 @@ export function SuperAdminPromotions({ days, query }: Readonly<{ days: number; q
             <div><dt>Sign-ups</dt><dd>{num(item.signups)}</dd></div><div><dt>Members</dt><dd>{num(item.members)}</dd></div>
             <div><dt>Reach</dt><dd>{num(item.reach)}</dd></div><div><dt>Engagements</dt><dd>{num(item.engagements)}</dd></div>
             <div><dt>Spend</dt><dd>{money(item.spend)}</dd></div><div><dt>Cost / sign-up</dt><dd>{item.costPerSignup ? money(item.costPerSignup) : "—"}</dd></div>
+            {item.followers > 0 && <div><dt>Followers gained</dt><dd>{num(item.followers)}</dd></div>}
           </dl>
+          <PlatformAnalytics stats={item} />
         </Card>; })}</div>
       </section>
 
@@ -97,10 +110,11 @@ export function SuperAdminPromotions({ days, query }: Readonly<{ days: number; q
           { key: "utm_campaign", label: "Campaign" }, { key: "starts_on", label: "Starts" }, { key: "ends_on", label: "Ends" },
           { key: "reach", label: "Reach", filter: false }, { key: "impressions", label: "Impressions", filter: false }, { key: "engagements", label: "Engagements", filter: false },
           { key: "spend_inr", label: "Spend", filter: false, render: row => money(Number(row.spend_inr)) },
+          { key: "platform_figures", label: "Platform figures", filter: false, sort: false },
           { key: "url", label: "Link", filter: false, sort: false, render: row => row.url ? <a href={String(row.url)} target="_blank" rel="noopener noreferrer" className={styles.link}>Open</a> : "—" },
           { key: "id", label: "Actions", filter: false, sort: false, render: row => confirm === row.id
             ? <span className={styles.rowActions}><button type="button" className={styles.danger} onClick={() => void remove(String(row.id))}>Delete</button><button type="button" onClick={() => setConfirm(null)}>Keep</button></span>
-            : <span className={styles.rowActions}><button type="button" aria-label={`Edit ${String(row.title)}`} title="Edit" onClick={() => setDraft({ ...blank, ...Object.fromEntries(Object.entries(row).filter(([key]) => key in blank || key === "id").map(([key, value]) => [key, value ?? ""])) } as Draft)}><Pencil size={14} /></button><button type="button" aria-label={`Delete ${String(row.title)}`} title="Delete" onClick={() => setConfirm(String(row.id))}><Trash2 size={14} /></button></span> },
+            : <span className={styles.rowActions}><button type="button" aria-label={`Edit ${String(row.title)}`} title="Edit" onClick={() => setDraft({ ...blank, ...Object.fromEntries(Object.entries(row).filter(([key]) => key in blank || key === "id").map(([key, value]) => [key, value ?? (key === "platform_metrics" ? {} : "")])) } as Draft)}><Pencil size={14} /></button><button type="button" aria-label={`Delete ${String(row.title)}`} title="Delete" onClick={() => setConfirm(String(row.id))}><Trash2 size={14} /></button></span> },
         ]} />
 
       {draft && <PromotionForm draft={draft} saving={saving} onChange={setDraft} onCancel={() => setDraft(null)} onSave={() => void save()} />}
@@ -144,6 +158,21 @@ function DailyChart({ data }: Readonly<{ data: Data }>) {
   </Card>;
 }
 
+/** Medium, Pinterest and Coursera report figures no other platform has; their cards show them with the headline rates. */
+function PlatformAnalytics({ stats }: Readonly<{ stats: PlatformStats }>) {
+  if (!hasPlatformMetrics(stats.platform)) return null;
+  const rates = derivedRates(stats.platform, stats.metrics, stats.impressions);
+  return <div className={styles.analytics}>
+    <h3>{PLATFORM_LABEL[stats.platform]} analytics</h3>
+    <dl>
+      {PLATFORM_METRICS[stats.platform].map(def => <div key={def.key}><dt>{def.label}</dt><dd>{metricValue(stats.platform, def.key as MetricKey, stats.metrics[def.key as MetricKey])}</dd></div>)}
+      {stats.platform === "pinterest" && <div><dt>Impressions</dt><dd>{num(stats.impressions)}</dd></div>}
+      {rates.map(rate => <div key={rate.label} title={rate.hint}><dt>{rate.label}</dt><dd>{pct(rate.value)}</dd></div>)}
+    </dl>
+    {stats.promotions === 0 && <p>Add a {PLATFORM_LABEL[stats.platform]} promotion and enter its figures from {stats.platform === "coursera" ? "the instructor dashboard" : `${PLATFORM_LABEL[stats.platform]} analytics`}.</p>}
+  </div>;
+}
+
 function PromotionForm({ draft, saving, onChange, onCancel, onSave }: Readonly<{ draft: Draft; saving: boolean; onChange: (draft: Draft) => void; onCancel: () => void; onSave: () => void }>) {
   const set = <K extends keyof Draft>(key: K, value: Draft[K]) => onChange({ ...draft, [key]: value });
   const field = (key: keyof Draft, label: string, type: "text" | "number" | "date" | "url" = "text", wide = false) => <label className={wide ? styles.wide : undefined}><span>{label}</span>
@@ -152,7 +181,7 @@ function PromotionForm({ draft, saving, onChange, onCancel, onSave }: Readonly<{
     <form onSubmit={event => { event.preventDefault(); onSave(); }} aria-label={draft.id ? "Edit promotion" : "Add promotion"}>
       <h2 className={styles.heading}>{draft.id ? "Edit promotion" : "Add promotion"}</h2>
       <div className={styles.grid}>
-        <label><span>Platform</span><select value={draft.platform} onChange={event => set("platform", event.target.value as Platform)}>{PLATFORMS.map(p => <option key={p} value={p}>{PLATFORM_LABEL[p]}</option>)}</select></label>
+        <label><span>Platform</span><select value={draft.platform} onChange={event => { const platform = event.target.value as Platform; onChange({ ...draft, platform, format: draft.id ? draft.format : DEFAULT_FORMAT[platform] ?? "post" }); }}>{PLATFORMS.map(p => <option key={p} value={p}>{PLATFORM_LABEL[p]}</option>)}</select></label>
         <label><span>Format</span><select value={draft.format} onChange={event => set("format", event.target.value as PromotionFormat)}>{PROMOTION_FORMATS.map(f => <option key={f} value={f}>{f}</option>)}</select></label>
         <label><span>Status</span><select value={draft.status} onChange={event => set("status", event.target.value)}>{PROMOTION_STATUSES.map(s => <option key={s} value={s}>{s}</option>)}</select></label>
         {field("title", "Title", "text", true)}
@@ -164,6 +193,13 @@ function PromotionForm({ draft, saving, onChange, onCancel, onSave }: Readonly<{
         {field("impressions", "Impressions", "number")}{field("engagements", "Engagements", "number")}{field("followers_gained", "Followers gained", "number")}
         <label className={styles.wide}><span>Notes</span><textarea rows={2} value={draft.notes} onChange={event => set("notes", event.target.value)} /></label>
       </div>
+      {hasPlatformMetrics(draft.platform) && <fieldset className={styles.metricsSet}>
+        <legend>{PLATFORM_LABEL[draft.platform]} figures</legend>
+        {LINK_HINT[draft.platform] && <p className={styles.note}>{LINK_HINT[draft.platform]}</p>}
+        <div className={styles.grid}>{PLATFORM_METRICS[draft.platform].map(def => { const key = def.key as MetricKey; const value = draft.platform_metrics?.[key]; return <label key={def.key}><span>{def.label}</span>
+          <input type="number" inputMode="decimal" min={0} max={"max" in def ? def.max : undefined} step={"decimals" in def ? 1 / 10 ** def.decimals : 1} value={value ?? ""}
+            onChange={event => { const next = { ...draft.platform_metrics }; if (event.target.value === "") delete next[key]; else next[key] = Number(event.target.value); set("platform_metrics", next); }} /></label>; })}</div>
+      </fieldset>}
       <div className={styles.formActions}><button type="button" onClick={onCancel}>Cancel</button><button type="submit" className={styles.primary} disabled={saving || draft.title.trim().length < 3 || !draft.utm_campaign}>{saving ? "Saving…" : draft.id ? "Save changes" : "Add promotion"}</button></div>
     </form>
   </Card>;
@@ -180,13 +216,14 @@ function LinkBuilder() {
   try { link = campaign ? utmLink(base, platform, format, campaign) : ""; } catch { link = ""; }
   return <Card className={styles.builder}>
     <h2 className={styles.heading}><Link2 size={16} aria-hidden="true" />Tracked link builder</h2>
-    <p className={styles.note}>Share this link in the post, bio, ad or channel. Visits arrive tagged with the platform and campaign above.</p>
+    <p className={styles.note}>Share this link in the post, bio, ad, channel, article, Pin or course. Visits arrive tagged with the platform and campaign above.</p>
     <div className={styles.grid}>
-      <label><span>Platform</span><select value={platform} onChange={event => setPlatform(event.target.value as Platform)}>{PLATFORMS.filter(p => p !== "other").map(p => <option key={p} value={p}>{PLATFORM_LABEL[p]}</option>)}</select></label>
+      <label><span>Platform</span><select value={platform} onChange={event => { const next = event.target.value as Platform; setPlatform(next); setFormat(DEFAULT_FORMAT[next] ?? "post"); }}>{PLATFORMS.filter(p => p !== "other").map(p => <option key={p} value={p}>{PLATFORM_LABEL[p]}</option>)}</select></label>
       <label><span>Format</span><select value={format} onChange={event => setFormat(event.target.value as PromotionFormat)}>{PROMOTION_FORMATS.map(f => <option key={f} value={f}>{f}</option>)}</select></label>
       <label><span>Campaign</span><input value={campaign} onChange={event => setCampaign(event.target.value)} placeholder="e.g. react-interview-week" /></label>
       <label className={styles.wide}><span>Landing page</span><input type="url" value={base} onChange={event => setBase(event.target.value)} /></label>
     </div>
+    {LINK_HINT[platform] && <p className={styles.note}>{LINK_HINT[platform]}</p>}
     <div className={styles.result}><code>{link || "Enter a campaign to build the link."}</code>
       <button type="button" disabled={!link} onClick={() => { void navigator.clipboard.writeText(link).then(() => { setCopied(true); setTimeout(() => setCopied(false), 1500); }); }}>{copied ? <Check size={14} aria-hidden="true" /> : <Copy size={14} aria-hidden="true" />}{copied ? "Copied" : "Copy"}</button>
     </div>

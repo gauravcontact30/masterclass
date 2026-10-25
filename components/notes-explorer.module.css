@@ -1,4 +1,4 @@
-.page { --ink: #3d3d3a; --muted-ink: #73726c; --green: #262624; --line: #dedcd1; --surface: #fff; --sage: #f5f4ed; --mint: #f0eee6; --blue: #f5f4ed; --sand: #f0eee6; color: var(--ink); background: #f5f4ed; min-height: 100vh; }
+.page { --ink: #3d3d3a; --muted-ink: #73726c; --green: #262624; --line: #dedcd1; --surface: #fff; --sage: #f5f4ed; --mint: #f0eee6; --blue: #f5f4ed; --sand: #f0eee6; color: var(--ink); background: #f5f4ed; min-height:100vh;min-height:100dvh; }
 :global(.dark) .page { --ink: #e8e6dc; --muted-ink: #b0aea5; --green: #d97757; --line: #4d4c48; --surface: #262624; --sage: #262624; --mint: #3d3d3a; --blue: #253449; --sand: #413924; background: #1f1e1d; }
 .shell { width: 100%; margin: auto; }
 .pageTools { position: sticky; top: 12px; z-index: 20; margin: 14px 0; padding: 10px 16px; border: 1px solid var(--line); border-radius: 12px; background: var(--surface); box-shadow: 0 3px 12px #1f1e1d0a; }

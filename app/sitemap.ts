@@ -2,6 +2,7 @@ import type { MetadataRoute } from "next";
 import { cacheLife } from "next/cache";
 import { PUBLIC_PAGES, isIndexable, siteUrl } from "@/lib/seo";
 import { COMPARISONS } from "@/lib/comparisons";
+import { listPublishedTechBuzzArticles } from "@/lib/server/tech-buzz-storage";
 import { apiPackageEntries, apiPackages, handbookSlug, handbooks, interviewTechs, vocabularyGroups, workflows } from "@/lib/public-learning";
 
 /**
@@ -20,6 +21,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     library(`/api-reference/${pkg.id}`, 0.6),
     ...(await apiPackageEntries(pkg.id)).filter(entry => entry.card).map(entry => library(`/api-reference/${pkg.id}/${entry.slug}`, 0.5)),
   ]));
+  // Tech Buzz articles change daily; lastModified lets crawlers pick up new ones without recrawling the rest.
+  const buzz = (await listPublishedTechBuzzArticles()).map(article => ({ url: url(`/tech-buzz/${article.slug}`), lastModified: new Date(article.publishedAt), changeFrequency: "weekly" as const, priority: article.featured ? 0.85 : 0.75 }));
   return [
     ...PUBLIC_PAGES.map(({ path, changeFrequency, priority }) => ({ url: url(path), changeFrequency, priority })),
     library("/interview-questions", 0.9, "weekly"), ...interviewTechs().map(tech => library(`/interview-questions/${tech.id}`, 0.8)),
@@ -28,5 +31,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     library("/api-reference", 0.8, "weekly"), ...api.flat(),
     library("/compare", 0.9, "weekly"), ...COMPARISONS.map(item => library(`/compare/${item.id}`, 0.8)),
     library("/vocabulary", 0.8, "weekly"), ...vocabularyGroups().map(group => library(`/vocabulary/${group.slug}`, 0.6)),
+    ...buzz,
   ];
 }

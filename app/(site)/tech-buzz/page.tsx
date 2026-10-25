@@ -2,6 +2,27 @@ import { Suspense } from "react";
 import { Metadata } from "next";
 import { siteName, siteUrl } from "@/lib/seo";
 import { TechBuzzFeed } from "@/components/tech-buzz-feed";
+import { listPublishedTechBuzzArticles } from "@/lib/server/tech-buzz-storage";
+
+/**
+ * The published articles, cached on the server, so the feed renders them without a client round trip, plus an
+ * ItemList of their URLs so crawlers find every article from this hub.
+ */
+async function Feed() {
+  const articles = await listPublishedTechBuzzArticles();
+  const origin = siteUrl().href;
+  const itemList = {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    name: "Tech Buzz articles",
+    numberOfItems: articles.length,
+    itemListElement: articles.slice(0, 50).map((article, index) => ({ "@type": "ListItem", position: index + 1, url: new URL(`/tech-buzz/${article.slug}`, origin).href, name: article.title }))
+  };
+  return <>
+    <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(itemList).replace(/</g, "\\u003c") }} />
+    <TechBuzzFeed initialArticles={articles} />
+  </>;
+}
 
 export const metadata: Metadata = {
   title: "Tech Buzz — Medium-Style Technology Blogs & Community Ratings | MasterClass",
@@ -64,10 +85,10 @@ export default function TechBuzzPage() {
     <>
       <script
         type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema).replace(/</g, "\\u003c") }}
       />
       <Suspense fallback={null}>
-        <TechBuzzFeed />
+        <Feed />
       </Suspense>
     </>
   );

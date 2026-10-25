@@ -1,4 +1,4 @@
-import { getTechBuzzArticleBySlug, listTechBuzzArticles } from "@/lib/server/tech-buzz-storage";
+import { getPublishedTechBuzzArticle, listPublishedTechBuzzArticles } from "@/lib/server/tech-buzz-storage";
 import { getTopPlatformsComparison } from "@/lib/tech-buzz-data";
 
 export async function GET(request: Request) {
@@ -7,14 +7,14 @@ export async function GET(request: Request) {
     const slug = searchParams.get("slug");
 
     if (slug) {
-      const article = await getTechBuzzArticleBySlug(slug);
+      const article = await getPublishedTechBuzzArticle(slug);
       if (!article) {
         return Response.json({ error: "Article not found" }, { status: 404 });
       }
       return Response.json({ article });
     }
 
-    let articles = await listTechBuzzArticles(false);
+    let articles = [...await listPublishedTechBuzzArticles()];
     const allArticles = [...articles];
 
     const category = searchParams.get("category");

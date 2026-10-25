@@ -32,6 +32,9 @@ export const MATERIAL_KINDS: { id: MaterialKind; label: string }[] = [
   { id: "guide", label: "Guides" }, { id: "tutorial", label: "Tutorials" }, { id: "reference", label: "Reference" }, { id: "release", label: "Release notes" },
 ];
 
+/** The platforms the landing page's Technology docs preview rotates through, one a day; /dashboard shows them all. */
+export const LANDING_TECH_DOC_IDS = ["tanstack-start", "zustand", "n8n"] as const;
+
 export const TECH_DOCS: TechDoc[] = [
   {
     id: "angular", name: "Angular", version: "22.2", release: "Angular 22 · signals-first, zoneless", category: "frontend",
@@ -205,6 +208,104 @@ console.log(text);` },
       { id: "gw-openai", title: "OpenAI-compatible API", summary: "Point any OpenAI client at https://ai-gateway.vercel.sh/v1 and keep your existing code.", level: "intermediate", kind: "reference", minutes: 10, url: "https://vercel.com/docs/ai-gateway/openai-compat", topics: ["openai sdk", "chat completions"] },
       { id: "gw-byok", title: "Bring your own key", summary: "Use your own provider credentials through the gateway while keeping its routing and observability.", level: "advanced", kind: "guide", minutes: 8, url: "https://vercel.com/docs/ai-gateway/byok", topics: ["byok", "credentials"] },
       { id: "gw-observe", title: "Observability", summary: "Requests, tokens, latency and spend per model and project, for debugging and cost control.", level: "advanced", kind: "guide", minutes: 8, url: "https://vercel.com/docs/ai-gateway/observability", topics: ["observability", "spend", "logs"] },
+    ],
+  },
+  {
+    id: "tanstack-start", name: "TanStack Start", version: "v1.169", release: "TanStack Start v1 · full-stack React on Vite", category: "frontend",
+    tone: { ink: "#b4441b", tint: "#fdeee4", glow: "#f6c3a4" }, aliases: ["tanstack", "tanstack router", "react start", "full-stack react", "server functions", "vite ssr"],
+    tagline: "A full-stack React framework built on TanStack Router and Vite: fully type-safe routes, server functions, SSR with streaming, and deploys to any host.",
+    docs: "https://tanstack.com/start/latest/docs/framework/react/overview",
+    features: ["Type-safe file-based routing", "Server functions (createServerFn)", "Route loaders & search-param validation", "SSR, streaming & selective SSR", "Request & function middleware", "Server routes (API endpoints)", "Static prerendering", "Deploy anywhere via Vite"],
+    quickStart: { file: "src/routes/index.tsx", code: `import { createFileRoute } from '@tanstack/react-router'
+import { createServerFn } from '@tanstack/react-start'
+
+// Runs only on the server; the client calls it like a typed function
+const getGreeting = createServerFn({ method: 'GET' })
+  .inputValidator((name: string) => name)
+  .handler(async ({ data }) => \`Hello, \${data}!\`)
+
+export const Route = createFileRoute('/')({
+  loader: () => getGreeting({ data: 'TanStack Start' }),
+  component: Home,
+})
+
+function Home() {
+  const greeting = Route.useLoaderData() // typed as string
+  return <h1>{greeting}</h1>
+}` },
+    materials: [
+      { id: "ts-start-overview", title: "What TanStack Start is", summary: "How Start layers SSR, server functions and bundling on top of TanStack Router, and when to choose it.", level: "beginner", kind: "guide", minutes: 10, url: "https://tanstack.com/start/latest/docs/framework/react/overview", topics: ["overview", "router", "ssr"] },
+      { id: "ts-start-quick", title: "Quick start", summary: "Scaffold a project, run the dev server and add your first route and loader.", level: "beginner", kind: "tutorial", minutes: 15, url: "https://tanstack.com/start/latest/docs/framework/react/quick-start", topics: ["setup", "routes", "loaders"] },
+      { id: "ts-start-server-fns", title: "Server functions", summary: "createServerFn with input validation, GET vs POST, redirects and errors, called from loaders or components.", level: "intermediate", kind: "guide", minutes: 20, url: "https://tanstack.com/start/latest/docs/framework/react/guide/server-functions", topics: ["createServerFn", "validation", "rpc"] },
+      { id: "ts-start-middleware", title: "Middleware", summary: "Share auth, logging and context across requests and server functions with createMiddleware.", level: "intermediate", kind: "guide", minutes: 15, url: "https://tanstack.com/start/latest/docs/framework/react/guide/middleware", topics: ["middleware", "auth", "context"] },
+      { id: "ts-start-selective-ssr", title: "Selective SSR", summary: "Choose per route whether loaders and components render on the server, the client, or data-only.", level: "advanced", kind: "guide", minutes: 12, url: "https://tanstack.com/start/latest/docs/framework/react/guide/selective-ssr", topics: ["ssr", "streaming", "performance"] },
+      { id: "ts-start-hosting", title: "Hosting and deployment", summary: "Ship to Vercel, Netlify, Cloudflare or a Node server, and prerender static routes.", level: "advanced", kind: "guide", minutes: 12, url: "https://tanstack.com/start/latest/docs/framework/react/guide/hosting", topics: ["deploy", "prerender", "vite"] },
+    ],
+  },
+  {
+    id: "zustand", name: "Zustand", version: "v5.0.16", release: "Zustand 5 · tiny, hook-based state", category: "frontend",
+    tone: { ink: "#7a4b22", tint: "#f6ede3", glow: "#e2c7a6" }, aliases: ["zustand", "state management", "react store", "global state", "pmndrs"],
+    tagline: "A small, fast state manager for React: a store is a hook, there are no providers, and components re-render only for the slice they select.",
+    docs: "https://zustand.docs.pmnd.rs/",
+    features: ["create() store as a hook", "Selectors & useShallow", "No providers or boilerplate", "persist middleware", "devtools & immer middleware", "Slices pattern", "Vanilla createStore", "Typed create<T>()()"],
+    quickStart: { file: "cart-store.tsx", code: `import { create } from 'zustand'
+import { persist } from 'zustand/middleware'
+import { useShallow } from 'zustand/react/shallow'
+
+type Cart = { items: string[]; add: (id: string) => void; clear: () => void }
+
+// A typed store, saved to localStorage under "cart"
+export const useCart = create<Cart>()(
+  persist(
+    set => ({
+      items: [],
+      add: id => set(state => ({ items: [...state.items, id] })),
+      clear: () => set({ items: [] }),
+    }),
+    { name: 'cart' },
+  ),
+)
+
+export function CartBadge() {
+  // Re-renders only when items or add change
+  const { items, add } = useCart(useShallow(s => ({ items: s.items, add: s.add })))
+  return <button onClick={() => add('sku-1')}>Cart ({items.length})</button>
+}` },
+    materials: [
+      { id: "zs-intro", title: "Introduction", summary: "Create a store, read state with a selector and update it with actions in a few lines.", level: "beginner", kind: "tutorial", minutes: 10, url: "https://zustand.docs.pmnd.rs/getting-started/introduction", topics: ["create", "selectors", "actions"] },
+      { id: "zs-updating", title: "Updating state", summary: "Flat merges with set(), nested updates without mutation, and when to reach for immer.", level: "beginner", kind: "guide", minutes: 12, url: "https://zustand.docs.pmnd.rs/guides/updating-state", topics: ["set", "immutability", "immer"] },
+      { id: "zs-typescript", title: "TypeScript guide", summary: "Why create<T>()() is curried, typing middleware, and inferring state from the store.", level: "intermediate", kind: "guide", minutes: 15, url: "https://zustand.docs.pmnd.rs/guides/beginner-typescript", topics: ["typescript", "types", "middleware"] },
+      { id: "zs-shallow", title: "Prevent re-renders with useShallow", summary: "Select several fields at once without re-rendering on every unrelated change.", level: "intermediate", kind: "guide", minutes: 8, url: "https://zustand.docs.pmnd.rs/guides/prevent-rerenders-with-use-shallow", topics: ["useShallow", "performance", "selectors"] },
+      { id: "zs-persist", title: "Persisting store data", summary: "Save a store to localStorage or any storage, with versioned migrations and partial persistence.", level: "intermediate", kind: "reference", minutes: 15, url: "https://zustand.docs.pmnd.rs/integrations/persisting-store-data", topics: ["persist", "storage", "migrations"] },
+      { id: "zs-slices", title: "Slices pattern", summary: "Split a large store into typed slices and combine them into one hook.", level: "advanced", kind: "guide", minutes: 12, url: "https://zustand.docs.pmnd.rs/guides/slices-pattern", topics: ["slices", "architecture"] },
+      { id: "zs-nextjs", title: "Zustand with Next.js", summary: "Per-request stores for server rendering, hydration without mismatches, and the App Router.", level: "advanced", kind: "guide", minutes: 15, url: "https://zustand.docs.pmnd.rs/guides/nextjs", topics: ["next.js", "ssr", "hydration"] },
+    ],
+  },
+  {
+    id: "n8n", name: "n8n", version: "v2.44", release: "n8n 2 · workflow automation with AI agents", category: "ai",
+    tone: { ink: "#c2264f", tint: "#fde8ee", glow: "#f5b3c5" }, aliases: ["n8n", "workflow automation", "no-code automation", "ai agent workflows", "zapier alternative", "self-hosted automation"],
+    tagline: "A fair-code workflow automation platform: connect 400+ apps visually, drop into JavaScript or Python where you need to, and build AI agents that call your tools.",
+    docs: "https://docs.n8n.io",
+    features: ["Visual workflow editor", "400+ integrations", "Webhook, schedule & app triggers", "AI Agent node with tools & memory", "Code node (JavaScript & Python)", "Sub-workflows & error workflows", "Self-host with Docker or n8n Cloud", "Queue mode for scaling"],
+    quickStart: { file: "terminal", code: `# Run n8n locally with Docker; your workflows live in the n8n_data volume
+docker volume create n8n_data
+
+docker run -it --rm --name n8n -p 5678:5678 \\
+  -v n8n_data:/home/node/.n8n \\
+  docker.n8n.io/n8nio/n8n
+
+# Open http://localhost:5678, then build:
+#   Webhook trigger -> AI Agent (chat model + tools) -> Slack / Gmail / HTTP Request
+# In a Code node, every item is plain JSON:
+#   return $input.all().map(item => ({ json: { ...item.json, total: item.json.qty * item.json.price } }))` },
+    materials: [
+      { id: "n8n-quickstart", title: "Quick start: your first workflow", summary: "Build and run a workflow from a template, then read its execution data node by node.", level: "beginner", kind: "tutorial", minutes: 15, url: "https://docs.n8n.io/try-it-out/quickstart/", topics: ["workflows", "templates", "executions"] },
+      { id: "n8n-course-1", title: "Text course, level one", summary: "The official beginner course: triggers, nodes, data flow, credentials and scheduling a real workflow.", level: "beginner", kind: "tutorial", minutes: 120, url: "https://docs.n8n.io/courses/level-one/", topics: ["nodes", "credentials", "scheduling"] },
+      { id: "n8n-ai-agent", title: "Build an AI agent", summary: "The AI Agent node with a chat model, memory and tools, step by step from the official AI tutorial.", level: "intermediate", kind: "tutorial", minutes: 30, url: "https://docs.n8n.io/advanced-ai/intro-tutorial/", topics: ["ai agent", "langchain", "tools", "memory"] },
+      { id: "n8n-code", title: "The Code node", summary: "Transform items with JavaScript or Python, use built-in helpers, and return data in n8n's item format.", level: "intermediate", kind: "reference", minutes: 15, url: "https://docs.n8n.io/code/code-node/", topics: ["javascript", "python", "data"] },
+      { id: "n8n-webhook", title: "Webhook node", summary: "Expose a workflow as an HTTP endpoint: test and production URLs, authentication and responses.", level: "intermediate", kind: "reference", minutes: 12, url: "https://docs.n8n.io/integrations/builtin/core-nodes/n8n-nodes-base.webhook/", topics: ["webhook", "http", "api"] },
+      { id: "n8n-queue", title: "Scaling with queue mode", summary: "Run workers behind Redis so many executions run in parallel on a self-hosted instance.", level: "advanced", kind: "guide", minutes: 15, url: "https://docs.n8n.io/hosting/scaling/queue-mode/", topics: ["scaling", "redis", "workers"] },
+      { id: "n8n-release", title: "n8n release notes", summary: "What changed in each n8n 2.x release, including new nodes, AI features and breaking changes.", level: "beginner", kind: "release", minutes: 10, url: "https://docs.n8n.io/release-notes/", topics: ["release", "n8n 2"] },
     ],
   },
   {

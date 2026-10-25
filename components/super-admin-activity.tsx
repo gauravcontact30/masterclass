@@ -82,14 +82,14 @@ export function SuperAdminActivity({ days, query }: { days: number; query: strin
     </div>
 
     <div className={styles.metrics}>
-      <Stat icon={<MousePointerClick size={16} />} label="Page views" value={number(t.pageViews)} note={`${t.pagesPerSession ?? "—"} pages per session`} />
-      <Stat icon={<Users size={16} />} label="Unique visitors" value={number(t.visitors)} note={`${number(t.people)} people after linking sign-ins`} />
-      <Stat icon={<UserPlus size={16} />} label="New vs returning" value={`${number(t.newVisitors)} / ${number(returning)}`} note="First visit in this window vs seen before" />
-      <Stat icon={<UserRound size={16} />} label="Signed-in learners" value={number(t.signedInUsers)} note={`${number(t.newAccounts)} new accounts created`} />
-      <Stat icon={<Radio size={16} />} label="Sessions" value={number(t.sessions)} note="A session ends after 30 idle minutes" />
-      <Stat icon={<Clock size={16} />} label="Avg. session" value={duration(t.avgSessionSeconds)} note="Time between first and last activity, or time read" />
-      <Stat icon={<ArrowLeft size={16} />} label="Bounce rate" value={t.bounceRate == null ? "—" : `${t.bounceRate}%`} note="Sessions that viewed a single page" />
-      <Stat icon={<MonitorSmartphone size={16} />} label="Bots filtered" value={number(t.bots)} note="Crawlers and scripts, kept out of every figure" />
+      <Stat tone="sky" index={0} icon={<MousePointerClick size={16} />} label="Page views" value={number(t.pageViews)} note={`${t.pagesPerSession ?? "—"} pages per session`} />
+      <Stat tone="lavender" index={1} icon={<Users size={16} />} label="Unique visitors" value={number(t.visitors)} note={`${number(t.people)} people after linking sign-ins`} />
+      <Stat tone="mint" index={2} icon={<UserPlus size={16} />} label="New vs returning" value={`${number(t.newVisitors)} / ${number(returning)}`} note="First visit in this window vs seen before" />
+      <Stat tone="peach" index={3} icon={<UserRound size={16} />} label="Signed-in learners" value={number(t.signedInUsers)} note={`${number(t.newAccounts)} new accounts created`} />
+      <Stat tone="butter" index={4} icon={<Radio size={16} />} label="Sessions" value={number(t.sessions)} note="A session ends after 30 idle minutes" />
+      <Stat tone="rose" index={5} icon={<Clock size={16} />} label="Avg. session" value={duration(t.avgSessionSeconds)} note="Time between first and last activity, or time read" />
+      <Stat tone="sage" index={6} icon={<ArrowLeft size={16} />} label="Bounce rate" value={t.bounceRate == null ? "—" : `${t.bounceRate}%`} note="Sessions that viewed a single page" />
+      <Stat tone="aqua" index={7} icon={<MonitorSmartphone size={16} />} label="Bots filtered" value={number(t.bots)} note="Crawlers and scripts, kept out of every figure" />
     </div>
 
     <div className={styles.charts}>
@@ -117,8 +117,9 @@ export function SuperAdminActivity({ days, query }: { days: number; query: strin
   </div>;
 }
 
-function Stat({ icon, label, value, note }: { icon: React.ReactNode; label: string; value: string; note: string }) {
-  return <Card className={styles.stat}><span className={styles.statLabel}>{icon}{label}</span><strong>{value}</strong><small>{note}</small></Card>;
+/** A headline figure on its own light tone, with its icon in a chip; `index` staggers the entrance. */
+function Stat({ icon, label, value, note, tone, index }: { icon: React.ReactNode; label: string; value: string; note: string; tone: string; index: number }) {
+  return <Card className={styles.stat} data-tone={tone} style={{ "--i": index } as React.CSSProperties}><span className={styles.statLabel}><span className={styles.statIcon} aria-hidden="true">{icon}</span>{label}</span><strong>{value}</strong><small>{note}</small></Card>;
 }
 
 function DailyChart({ rows }: { rows: Activity["daily"] }) {

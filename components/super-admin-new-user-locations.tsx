@@ -66,8 +66,9 @@ export function SuperAdminNewUserLocations({ days, query = "" }: Readonly<{ days
         <Card tone="sky" icon={Globe2} title="Country" purpose="Which countries new learners come from." rows={current.countries} total={current.total} empty="No country recorded yet." />
         <Card tone="lavender" icon={MapIcon} title="State / region" purpose="State or union territory, with its country." rows={current.states} total={current.total} empty="No state recorded yet." />
         <Card tone="mint" icon={Building2} title="City" purpose="The city the network is registered in, with its state." rows={current.cities} total={current.total} empty="No city recorded yet." />
-        <Card tone="butter" icon={Home} title="Village / locality" purpose="The postal (PIN) area, only when the network resolves below city level. A city's head post office PIN (e.g. 110001) is the geolocation default, not the user's locality, so it is not counted."
-          rows={current.postalAreas} total={current.total} empty={current.coordinates ? "No PIN area recorded yet. It appears for visits after migration 0030." : "Apply migration 0030 to record PIN areas."} />
+        <Card tone="butter" icon={Home} title="Village / locality" purpose="The postal (PIN) area of the most precise visit, including the same browser's visits before sign-up. Localities come first; a city's head post office PIN (e.g. 110001) only says which city, so it is listed as city level and not counted as a locality."
+          rows={[...current.postalAreas, ...(current.cityPins ?? [])]} total={current.total}
+          empty={!current.coordinates ? "Apply migration 0030 to record PIN areas." : current.total ? "No PIN recorded for these users: their networks resolve only to a country or region." : "No new users in this window."} />
         <Card tone="peach" icon={Navigation} title="Nearby city" purpose="Nearest major city to the network’s position (other than the user’s own), with its state and the average distance."
           rows={current.nearby} total={current.total} empty={current.coordinates ? "No coordinates recorded yet. They appear for visits after migration 0030." : "Apply migration 0030 to record coordinates."} />
       </div>

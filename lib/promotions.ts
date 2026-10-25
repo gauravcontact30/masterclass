@@ -4,12 +4,12 @@
  * rules are testable without a database and shared by the super admin page. No zod or server imports here.
  */
 
-export const PLATFORMS = ["instagram", "facebook", "linkedin", "telegram", "youtube", "x", "whatsapp", "other"] as const;
+export const PLATFORMS = ["instagram", "facebook", "linkedin", "telegram", "medium", "pinterest", "coursera", "youtube", "x", "whatsapp", "other"] as const;
 export type Platform = (typeof PLATFORMS)[number];
-/** The four platforms the team promotes on first; the rest are tracked when traffic arrives from them. */
-export const PRIMARY_PLATFORMS: Platform[] = ["instagram", "facebook", "linkedin", "telegram"];
-export const PLATFORM_LABEL: Record<Platform, string> = { instagram: "Instagram", facebook: "Facebook", linkedin: "LinkedIn", telegram: "Telegram", youtube: "YouTube", x: "X (Twitter)", whatsapp: "WhatsApp", other: "Other" };
-export const PROMOTION_FORMATS = ["post", "reel", "story", "video", "ad", "article", "group", "channel", "live"] as const;
+/** The platforms the team promotes on first; the rest are tracked when traffic arrives from them. */
+export const PRIMARY_PLATFORMS: Platform[] = ["instagram", "facebook", "linkedin", "telegram", "medium", "pinterest", "coursera"];
+export const PLATFORM_LABEL: Record<Platform, string> = { instagram: "Instagram", facebook: "Facebook", linkedin: "LinkedIn", telegram: "Telegram", medium: "Medium", pinterest: "Pinterest", coursera: "Coursera", youtube: "YouTube", x: "X (Twitter)", whatsapp: "WhatsApp", other: "Other" };
+export const PROMOTION_FORMATS = ["post", "reel", "story", "video", "ad", "article", "pin", "idea_pin", "board", "course", "lecture", "group", "channel", "live"] as const;
 export const PROMOTION_STATUSES = ["planned", "live", "paused", "ended"] as const;
 export type PromotionFormat = (typeof PROMOTION_FORMATS)[number];
 export type PromotionStatus = (typeof PROMOTION_STATUSES)[number];
@@ -18,7 +18,53 @@ export type Promotion = {
   id: string; created_at: string; updated_at: string; platform: Platform; title: string; format: PromotionFormat; status: PromotionStatus;
   url: string | null; utm_campaign: string; audience: string | null; owner: string | null; starts_on: string | null; ends_on: string | null;
   budget_inr: number; spend_inr: number; reach: number; impressions: number; engagements: number; followers_gained: number; notes: string | null;
+  /** Figures only one platform reports (Medium reads, Pinterest saves, Coursera enrolments); keys from PLATFORM_METRICS. */
+  platform_metrics?: Partial<Record<MetricKey, number>> | null;
 };
+
+/*
+ * Platform-specific figures, named as each platform's own analytics names them. Medium (Stats): views, reads, claps,
+ * responses, member reading time and Partner Program earnings. Pinterest (Analytics): saves, pin clicks, outbound
+ * clicks and video views on top of impressions. Coursera (instructor/partner dashboard): enrolments, active learners,
+ * completions, ratings and revenue. An admin enters them on the promotion; the page totals them per platform.
+ */
+export type MetricDef = { key: string; label: string; decimals?: number; max?: number };
+export const PLATFORM_METRICS = {
+  medium: [{ key: "views", label: "Views" }, { key: "reads", label: "Reads" }, { key: "claps", label: "Claps" }, { key: "responses", label: "Responses" }, { key: "member_reading_minutes", label: "Member reading time (min)" }, { key: "earnings_inr", label: "Partner earnings (₹)", decimals: 2 }],
+  pinterest: [{ key: "saves", label: "Saves" }, { key: "pin_clicks", label: "Pin clicks" }, { key: "outbound_clicks", label: "Outbound clicks" }, { key: "video_views", label: "Video views" }],
+  coursera: [{ key: "enrollments", label: "Enrolments" }, { key: "active_learners", label: "Active learners" }, { key: "completions", label: "Completions" }, { key: "ratings", label: "Ratings" }, { key: "rating_average", label: "Average rating (of 5)", decimals: 1, max: 5 }, { key: "earnings_inr", label: "Revenue (₹)", decimals: 2 }],
+} as const satisfies Partial<Record<Platform, readonly MetricDef[]>>;
+export type MetricPlatform = keyof typeof PLATFORM_METRICS;
+export type MetricKey = (typeof PLATFORM_METRICS)[MetricPlatform][number]["key"];
+export const METRIC_KEYS = [...new Set(Object.values(PLATFORM_METRICS).flat().map(def => def.key))] as MetricKey[];
+export const hasPlatformMetrics = (platform: Platform): platform is MetricPlatform => platform in PLATFORM_METRICS;
+/** The format a new promotion defaults to on each platform. */
+export const DEFAULT_FORMAT: Partial<Record<Platform, PromotionFormat>> = { medium: "article", pinterest: "pin", coursera: "course", youtube: "video", telegram: "channel" };
+/** Where to put the tracked link on each platform, so its visits are attributed. */
+export const LINK_HINT: Partial<Record<Platform, string>> = {
+  medium: "Put the tracked link in the article body or its closing call to action; Medium keeps query strings on outbound links.",
+  pinterest: "Set the tracked link as the Pin's destination link (Idea Pins: the product or link sticker).",
+  coursera: "Add the tracked link to the course's resources, the instructor profile or a reading item.",
+};
+
+/** The rates each platform's analytics headlines, worked out from the summed figures; null when the base is zero. */
+export type DerivedRate = { label: string; value: number | null; hint: string };
+export function derivedRates(platform: Platform, m: Partial<Record<MetricKey, number>>, impressions: number): DerivedRate[] {
+  const rate = (part = 0, whole = 0) => whole > 0 ? part / whole : null;
+  if (platform === "medium") return [
+    { label: "Read ratio", value: rate(m.reads, m.views), hint: "Reads ÷ views" },
+    { label: "Claps per read", value: m.reads ? (m.claps ?? 0) / m.reads : null, hint: "Claps ÷ reads" },
+  ];
+  if (platform === "pinterest") return [
+    { label: "Save rate", value: rate(m.saves, impressions), hint: "Saves ÷ impressions" },
+    { label: "Outbound click rate", value: rate(m.outbound_clicks, impressions), hint: "Outbound clicks ÷ impressions" },
+  ];
+  if (platform === "coursera") return [
+    { label: "Completion rate", value: rate(m.completions, m.enrollments), hint: "Completions ÷ enrolments" },
+    { label: "Active share", value: rate(m.active_learners, m.enrollments), hint: "Active learners ÷ enrolments" },
+  ];
+  return [];
+}
 export type VisitRow = { created_at: string; visitor_id: string; session_id: string; user_id: string | null; path: string; referrer_host: string | null; utm_source: string | null; utm_medium: string | null; utm_campaign: string | null };
 export type ProfileRow = { id: string; created_at: string };
 export type SubscriptionRow = { user_id: string; status: string; tier: string };
@@ -32,6 +78,11 @@ const SOURCES: Record<Exclude<Platform, "other">, { utm: string[]; hosts: RegExp
   youtube: { utm: ["youtube", "yt"], hosts: /(^|\.)(youtube\.com|youtu\.be)$/ },
   x: { utm: ["x", "twitter"], hosts: /(^|\.)(x\.com|twitter\.com|t\.co)$/ },
   whatsapp: { utm: ["whatsapp", "wa"], hosts: /(^|\.)(whatsapp\.com|wa\.me)$/ },
+  // Medium publications live on *.medium.com; custom-domain publications only show up through utm_source.
+  medium: { utm: ["medium", "medium.com"], hosts: /(^|\.)medium\.com$/ },
+  // Pinterest serves country domains (in.pinterest.com, pinterest.co.uk) and shortens links with pin.it.
+  pinterest: { utm: ["pinterest", "pin", "pinterest.com"], hosts: /(^|\.)(pinterest\.[a-z]{2,3}(\.[a-z]{2})?|pin\.it)$/ },
+  coursera: { utm: ["coursera", "coursera.org"], hosts: /(^|\.)coursera\.(org|com)$/ },
 };
 
 /** The social platform a visit came from: its utm_source first (the team's own tagging), then its referrer host. */
@@ -49,20 +100,37 @@ export function classifyPlatform(visit: Pick<VisitRow, "utm_source" | "referrer_
 export const campaignSlug = (value: string) => value.normalize("NFKD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/[^a-z0-9_-]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 80);
 
 /** A tracked link for a promotion: the landing URL with utm_source, utm_medium and utm_campaign set. */
+const UTM_MEDIUM: Partial<Record<Platform, string>> = { medium: "blog", coursera: "course" };
 export function utmLink(base: string, platform: Platform, format: PromotionFormat, campaign: string): string {
   const url = new URL(base);
   url.searchParams.set("utm_source", platform);
-  url.searchParams.set("utm_medium", format === "ad" ? "paid_social" : "social");
+  url.searchParams.set("utm_medium", format === "ad" ? "paid_social" : UTM_MEDIUM[platform] ?? "social");
   url.searchParams.set("utm_campaign", campaignSlug(campaign));
   return url.toString();
 }
 
 export type Funnel = { visits: number; visitors: number; sessions: number; signups: number; members: number };
-export type PlatformStats = Funnel & { platform: Platform; promotions: number; live: number; spend: number; reach: number; impressions: number; engagements: number; costPerVisit: number | null; costPerSignup: number | null };
+export type PlatformStats = Funnel & { platform: Platform; promotions: number; live: number; spend: number; reach: number; impressions: number; engagements: number; followers: number; costPerVisit: number | null; costPerSignup: number | null; metrics: Partial<Record<MetricKey, number>> };
 export type CampaignStats = Funnel & { campaign: string; platform: Platform | "mixed"; title: string; status: PromotionStatus | "untracked"; spend: number; costPerSignup: number | null };
 export type DailyPoint = { day: string } & Record<Platform, number>;
 export type LandingPage = { path: string; platform: Platform; visits: number; visitors: number };
 export type Attribution = { platforms: PlatformStats[]; campaigns: CampaignStats[]; daily: DailyPoint[]; landingPages: LandingPage[]; totals: Funnel & { spend: number } };
+
+/** Totals a platform's own figures across its promotions; the average rating is weighted by each promotion's ratings. */
+function sumMetrics(platform: Platform, items: Promotion[]): Partial<Record<MetricKey, number>> {
+  if (!hasPlatformMetrics(platform)) return {};
+  const out: Partial<Record<MetricKey, number>> = {};
+  let weighted = 0, weight = 0;
+  for (const item of items) for (const def of PLATFORM_METRICS[platform]) {
+    const key = def.key as MetricKey;
+    const value = Number(item.platform_metrics?.[key] ?? 0);
+    if (!Number.isFinite(value) || value <= 0) continue;
+    if (key === "rating_average") { const n = Number(item.platform_metrics?.ratings ?? 0) || 1; weighted += value * n; weight += n; continue; }
+    out[key] = (out[key] ?? 0) + value;
+  }
+  if (weight) out.rating_average = Math.round((weighted / weight) * 10) / 10;
+  return out;
+}
 
 const emptyFunnel = (): Funnel => ({ visits: 0, visitors: 0, sessions: 0, signups: 0, members: 0 });
 /** Paying members only; Razorpay's "authenticated" means a mandate exists but nothing has been charged yet. */
@@ -143,6 +211,7 @@ export function attribute({ visits, profiles, subscriptions, promotions, since }
     return {
       platform, ...funnel, promotions: items.length, live: items.filter(item => item.status === "live").length, spend,
       reach: items.reduce((sum, item) => sum + item.reach, 0), impressions: items.reduce((sum, item) => sum + item.impressions, 0), engagements: items.reduce((sum, item) => sum + item.engagements, 0),
+      followers: items.reduce((sum, item) => sum + item.followers_gained, 0), metrics: sumMetrics(platform, items),
       costPerVisit: spend && funnel.visits ? spend / funnel.visits : null, costPerSignup: spend && funnel.signups ? spend / funnel.signups : null,
     };
   }).filter(stats => PRIMARY_PLATFORMS.includes(stats.platform) || stats.visits > 0 || stats.promotions > 0);

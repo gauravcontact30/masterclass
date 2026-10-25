@@ -5,7 +5,7 @@ import { cacheGet, cacheSet } from "@/lib/redis";
 import { pickDaily, takeDaily } from "@/lib/daily-rotation";
 import { INTERVIEW_TECHS } from "@/lib/interview-bank";
 import { COMPARISONS } from "@/lib/comparisons";
-import { TECH_DOCS } from "@/lib/tech-docs";
+import { LANDING_TECH_DOC_IDS, TECH_DOCS } from "@/lib/tech-docs";
 import { learningScenePrompt } from "@/lib/learning-image";
 import type { LandingFresh } from "@/lib/landing-fresh-types";
 import { providerModel } from "./ai-providers";
@@ -29,7 +29,7 @@ export function freshTopics(day: number) {
   return {
     tech: takeDaily(INTERVIEW_TECHS, day, 3)[0],
     comparison: pickDaily(COMPARISONS, day),
-    doc: pickDaily(TECH_DOCS.filter(doc => doc.category !== "fundamentals"), day),
+    doc: pickDaily(TECH_DOCS.filter(doc => (LANDING_TECH_DOC_IDS as readonly string[]).includes(doc.id)), day),
   };
 }
 

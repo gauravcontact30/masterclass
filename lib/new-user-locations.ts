@@ -13,6 +13,8 @@ export type UserVisit = {
   user_id: string; created_at: string; event?: string | null; session_id?: string | null; path?: string | null; duration_ms?: number | null;
   device?: string | null; browser?: string | null; os?: string | null; referrer_host?: string | null;
   country?: string | null; region?: string | null; city?: string | null; postal_code?: string | null; latitude?: number | null; longitude?: number | null;
+  /** A signed-out visit from the same browser before the account existed: used for location only, never for time. */
+  inherited?: boolean; visitor_id?: string | null;
 };
 /** Engaged time on one India-calendar day (YYYY-MM-DD). */
 export type DayTime = { day: string; ms: number };
@@ -21,7 +23,7 @@ export type NewUserLocation = {
   id: string; name: string; joinedAt: string; firstSeenAt: string | null;
   country: string | null; countryCode: string | null; state: string | null; city: string | null;
   /** A locality PIN, or null; `cityLevelPin` is set when the network only resolved to its city's head post office. */
-  postalCode: string | null; cityLevelPin: boolean;
+  postalCode: string | null; cityLevelPin: boolean; cityPin: string | null;
   nearby: { name: string; region: string; country: string; km: number } | null;
   device: string | null; browser: string | null; firstPage: string | null; referrer: string | null;
   activity: UserActivity;
@@ -42,13 +44,15 @@ export type Tally = { name: string; count: number; country?: string | null; deta
 export type NewUserLocationReport = {
   days: number; generatedAt: string; coordinates: boolean;
   total: number; located: number; users: NewUserLocation[];
-  countries: Tally[]; states: Tally[]; cities: Tally[]; postalAreas: Tally[]; nearby: Tally[];
+  countries: Tally[]; states: Tally[]; cities: Tally[]; postalAreas: Tally[]; cityPins: Tally[]; nearby: Tally[];
   coverage: { postal: number; nearby: number };
   time: { totalMs: number; todayMs: number; activeToday: number; avgPerUserDayMs: number };
 };
 
 const isView = (v: UserVisit) => !v.event || v.event === "page_view";
 const located = (v: UserVisit) => Boolean(v.country || v.region || v.city);
+/** How precisely a visit places someone: a locality PIN beats a city-level PIN, which beats a city alone. */
+const precision = (v: UserVisit) => (localityPin(v.postal_code, v.country) ? 4 : v.postal_code ? 2 : 0) + (v.latitude != null ? 1 : 0) + (located(v) ? 1 : 0);
 /** The India-calendar date of a timestamp, so a day turns over at midnight IST like the rest of the admin. */
 export const istDate = (iso: string) => new Date(Date.parse(iso) + 5.5 * 3600_000).toISOString().slice(0, 10);
 
@@ -87,18 +91,20 @@ export function newUserLocations(users: NewUser[], visits: UserVisit[], now = Da
   const sorted = [...visits].sort((a, b) => a.created_at.localeCompare(b.created_at));
   const place = new Map<string, UserVisit>(), first = new Map<string, UserVisit>(), byUser = new Map<string, UserVisit[]>();
   for (const visit of sorted) {
-    byUser.set(visit.user_id, [...(byUser.get(visit.user_id) ?? []), visit]);
+    if (!visit.inherited) byUser.set(visit.user_id, [...(byUser.get(visit.user_id) ?? []), visit]);
     if (!isView(visit)) continue;
-    if (!first.has(visit.user_id)) first.set(visit.user_id, visit);
+    if (!visit.inherited && !first.has(visit.user_id)) first.set(visit.user_id, visit);
+    // The most precise place wins (earliest on a tie): IP lookups vary visit to visit, and a locality PIN seen
+    // once, even before sign-up on the same browser, says more than a city's head post office every time after.
     const held = place.get(visit.user_id);
-    if (!held || (!located(held) && located(visit))) place.set(visit.user_id, visit);
+    if (!held || precision(visit) > precision(held)) place.set(visit.user_id, visit);
   }
   const rows: NewUserLocation[] = [...users].sort((a, b) => b.created_at.localeCompare(a.created_at)).map(user => {
     const v = place.get(user.id), entry = first.get(user.id);
     const code = v?.country || null;
     return {
       id: user.id, name: user.name?.trim() || "Unnamed learner", joinedAt: user.created_at, firstSeenAt: entry?.created_at ?? null,
-      country: code ? countryLabel(code) : null, countryCode: code, state: stateLabel(v?.region, code), city: v?.city || null, postalCode: localityPin(v?.postal_code, code), cityLevelPin: Boolean(v?.postal_code) && !localityPin(v?.postal_code, code),
+      country: code ? countryLabel(code) : null, countryCode: code, state: stateLabel(v?.region, code), city: v?.city || null, postalCode: localityPin(v?.postal_code, code), cityLevelPin: Boolean(v?.postal_code) && !localityPin(v?.postal_code, code), cityPin: v?.postal_code && !localityPin(v.postal_code, code) ? v.postal_code : null,
       nearby: nearbyCity(v?.latitude, v?.longitude, v?.city),
       device: entry?.device || null, browser: [entry?.browser, entry?.os].filter(Boolean).join(" · ") || null, firstPage: entry?.path || null, referrer: entry?.referrer_host || null,
       activity: activity(byUser.get(user.id) ?? [], today),
@@ -117,6 +123,8 @@ export function newUserLocations(users: NewUser[], visits: UserVisit[], now = Da
     states: tally(rows, r => r.state && `${r.state}${r.country ? `, ${r.country}` : ""}`, inCountry),
     cities: tally(rows, r => r.city && [r.city, r.state].filter(Boolean).join(", "), inCountry),
     postalAreas: tally(rows, r => r.postalCode && `PIN ${r.postalCode}`, r => ({ ...inCountry(r), detail: [r.city, r.state].filter(Boolean).join(", ") || undefined })),
+    // City-level PINs (a head post office): shown apart from localities so the card is never silently empty.
+    cityPins: tally(rows.filter(r => r.cityLevelPin), r => r.cityPin && `PIN ${r.cityPin}`, r => ({ ...inCountry(r), detail: `City level · ${[r.city, r.state].filter(Boolean).join(", ") || "city unknown"}` })),
     nearby,
     coverage: { postal: rows.filter(r => r.postalCode).length, nearby: rows.filter(r => r.nearby).length },
     time: {

@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from "react";
 import Link from "next/link";
-import { BookOpen, CodeXml, Crown, Flame, GraduationCap, Languages, Layers, Library, LogIn, Menu, Terminal, UserPlus, UserRound, X, type LucideIcon } from "lucide-react";
+import { ArrowRight, BookOpen, BookmarkCheck, CodeXml, Crown, Flame, GraduationCap, Layers, Library, LogIn, Menu, Sparkles, Terminal, Trophy, UserPlus, UserRound, X, type LucideIcon } from "lucide-react";
 import { Wordmark } from "./brand-mark";
 import { SuggestionBox } from "./suggestion-box";
 import { LandingPlansMenu } from "./landing-plans-menu";
@@ -37,7 +37,7 @@ const NAV_ICONS: Record<string, LucideIcon> = {
  */
 /** `links`: [section key ("#workflows"), label, the section's own page for crawlers and new tabs]. */
 export function LandingNavbar({ links, prices = null, onCurrency }: { links: [string, string, string?][]; prices?: PlansMenuPrices | null; onCurrency?: (currency: Currency) => void }) {
-  const { language, setLanguage, t } = useLanguage();
+  const { language, t } = useLanguage();
   const hi = language === "hi";
   const text = (en: string, hindi: string) => {
     if (language === "hi") return hindi;
@@ -177,25 +177,30 @@ export function LandingNavbar({ links, prices = null, onCurrency }: { links: [st
             <UserRound size={19} strokeWidth={1.9} aria-hidden="true" />
           </button>
           {account && <div id="landing-account-menu" className={styles.accountMenu}>
-            <div className={styles.accountLang} role="group" aria-label={text("Language", "भाषा")}>
-              <span><Languages size={15} strokeWidth={1.9} aria-hidden="true" />{text("Language", "भाषा")}</span>
-              <div>
-                <button type="button" aria-pressed={language === "en"} onClick={() => setLanguage("en", false)} title="English (United States)">EN</button>
-                <button type="button" lang="hi" aria-pressed={language === "hi"} onClick={() => setLanguage("hi", false)} title="हिन्दी (India)">हिन्दी</button>
-                <button type="button" lang="es" aria-pressed={language === "es"} onClick={() => setLanguage("es", false)} title="Español (Spain & Latin America)">ES</button>
-                <button type="button" lang="ja" aria-pressed={language === "ja"} onClick={() => setLanguage("ja", false)} title="日本語 (Japan)">JA</button>
-                <button type="button" lang="de" aria-pressed={language === "de"} onClick={() => setLanguage("de", false)} title="Deutsch (Germany)">DE</button>
-                <button type="button" lang="fr" aria-pressed={language === "fr"} onClick={() => setLanguage("fr", false)} title="Français (France)">FR</button>
-                <button type="button" lang="zh" aria-pressed={language === "zh"} onClick={() => setLanguage("zh", false)} title="简体中文 (China)">ZH</button>
-              </div>
+            {/* Top band: why a free account is worth it (language lives in the navbar's own switcher). */}
+            <div className={styles.accountTop}>
+              <span className={styles.accountKicker}><Sparkles size={12} strokeWidth={2.2} aria-hidden="true" />{text("New here?", "पहली बार?")}</span>
+              <strong className={styles.accountTitle}>{text("Learn tech skills free, in English or हिन्दी", "टेक स्किल्स मुफ़्त सीखें, English या हिन्दी में")}</strong>
+              <ul className={styles.accountPerks}>
+                <li data-tone="mint"><span aria-hidden="true"><BookmarkCheck size={14} strokeWidth={2} /></span>{text("Progress & bookmarks saved on every device", "हर डिवाइस पर सेव प्रोग्रेस और बुकमार्क")}</li>
+                <li data-tone="lavender"><span aria-hidden="true"><Sparkles size={14} strokeWidth={2} /></span>{text("AI Study Buddy answers your doubts", "AI स्टडी बडी आपके सवालों का जवाब देता है")}</li>
+                <li data-tone="butter"><span aria-hidden="true"><Trophy size={14} strokeWidth={2} /></span>{text("Timed interview & certification practice", "टाइम्ड इंटरव्यू और सर्टिफ़िकेशन प्रैक्टिस")}</li>
+              </ul>
             </div>
-            <Link className={styles.accountItem} href="/sign-in" onClick={() => setAccount(false)}>
-              <span className={styles.accountIcon} aria-hidden="true"><LogIn size={16} strokeWidth={1.9} /></span>
-              <span><strong>{text("Sign in", "साइन इन")}</strong><small aria-hidden="true">{text("Welcome back", "फिर से स्वागत है")}</small></span>
-            </Link>
-            <Link className={styles.accountItem} href="/sign-up" onClick={() => setAccount(false)}>
-              <span className={`${styles.accountIcon} ${styles.accountIconNew}`} aria-hidden="true"><UserPlus size={16} strokeWidth={1.9} /></span>
-              <span><strong>{text("Sign up", "साइन अप")}</strong><small aria-hidden="true">{text("Create a free account", "मुफ़्त खाता बनाएँ")}</small></span>
+            <div className={styles.accountActions}>
+              <Link className={styles.accountPrimary} href="/sign-up" onClick={() => setAccount(false)}>
+                <UserPlus size={16} strokeWidth={2} aria-hidden="true" />{text("Create free account", "मुफ़्त खाता बनाएँ")}<ArrowRight size={15} strokeWidth={2} aria-hidden="true" />
+              </Link>
+              <Link className={styles.accountItem} href="/sign-in" onClick={() => setAccount(false)}>
+                <span className={styles.accountIcon} aria-hidden="true"><LogIn size={16} strokeWidth={1.9} /></span>
+                <span><strong>{text("Sign in", "साइन इन")}</strong><small aria-hidden="true">{text("Already have an account? Welcome back", "पहले से खाता है? फिर से स्वागत है")}</small></span>
+              </Link>
+            </div>
+            {/* Bottom band: a no-commitment way in. */}
+            <Link className={styles.accountBrowse} href="/library" onClick={() => setAccount(false)}>
+              <span className={styles.accountBrowseIcon} aria-hidden="true"><Library size={15} strokeWidth={2} /></span>
+              <span><strong>{text("Just browsing?", "बस देख रहे हैं?")}</strong><small>{text("Read the free library, no account needed", "फ़्री लाइब्रेरी पढ़ें, खाते की ज़रूरत नहीं")}</small></span>
+              <ArrowRight size={15} strokeWidth={2} aria-hidden="true" />
             </Link>
           </div>}
         </div>

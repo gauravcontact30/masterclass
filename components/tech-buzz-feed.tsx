@@ -165,9 +165,11 @@ const CATEGORY_CONFIG: Record<
   },
 };
 
-export function TechBuzzFeed() {
+/** initialArticles comes from the server's cached list; without it the feed starts from the bundled set and fetches. */
+export function TechBuzzFeed({ initialArticles }: Readonly<{ initialArticles?: TechBuzzArticle[] }> = {}) {
   const { t, language } = useLanguage();
-  const [articles, setArticles] = useState<TechBuzzArticle[]>(() => getTechBuzzArticles());
+  const [articles, setArticles] = useState<TechBuzzArticle[]>(() => initialArticles ?? getTechBuzzArticles());
+  const [serverSentArticles] = useState(() => initialArticles !== undefined);
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [sortBy, setSortBy] = useState<"trending" | "upvotes" | "rating" | "claps" | "reactions" | "latest">("trending");
@@ -267,7 +269,7 @@ export function TechBuzzFeed() {
       let active = true;
 
       // 1. Fetch current user account
-      fetch("/api/account")
+      fetch("/api/account?view=summary")
         .then(res => (res.ok ? res.json() : null))
         .then(data => {
           if (!active || !data) return;
@@ -284,8 +286,8 @@ export function TechBuzzFeed() {
         })
         .catch(() => {});
 
-      // 2. Fetch live Tech Buzz articles from cached backend
-      fetch("/api/tech-buzz")
+      // 2. Fetch live Tech Buzz articles from cached backend (the server already sent them when it could)
+      if (!serverSentArticles) fetch("/api/tech-buzz")
         .then(res => (res.ok ? res.json() : null))
         .then(data => {
           if (!active || !data?.articles) return;
@@ -297,24 +299,7 @@ export function TechBuzzFeed() {
         active = false;
       };
     }
-  }, []);
-
-  // Audio playback simulation ticker
-  useEffect(() => {
-    if (!isPlayingAudio) return;
-    const interval = setInterval(() => {
-      setAudioProgressSeconds(prev => {
-        const next = prev + 1;
-        if (next >= 420) {
-          setIsPlayingAudio(false);
-          return 0;
-        }
-        return next;
-      });
-    }, 1000 / audioSpeed);
-
-    return () => clearInterval(interval);
-  }, [isPlayingAudio, audioSpeed]);
+  }, [serverSentArticles]);
 
   const showToast = useCallback((msg: string) => {
     setToastMessage(msg);

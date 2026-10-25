@@ -4,7 +4,7 @@ import { requireSuperAdmin } from "@/lib/server/super-admin";
 import { rateLimit } from "@/lib/server/rate-limit";
 import { db } from "@/lib/server/db";
 import { adminError } from "@/lib/server/admin-rpc";
-import { PLATFORMS, PROMOTION_FORMATS, PROMOTION_STATUSES, attribute, campaignSlug, type ProfileRow, type Promotion, type SubscriptionRow, type VisitRow } from "@/lib/promotions";
+import { METRIC_KEYS, PLATFORMS, PROMOTION_FORMATS, PROMOTION_STATUSES, attribute, campaignSlug, type ProfileRow, type Promotion, type SubscriptionRow, type VisitRow } from "@/lib/promotions";
 
 /*
  * Promotional Tracking (migration 0024): the promotions an admin registers, joined to real traffic from
@@ -14,16 +14,33 @@ import { PLATFORMS, PROMOTION_FORMATS, PROMOTION_STATUSES, attribute, campaignSl
 const PAGE = 1000;
 const MAX_VISITS = 20_000;
 
+const visitsQuery = (since: string) => db().from("site_visits").select("created_at,visitor_id,session_id,user_id,path,referrer_host,utm_source,utm_medium,utm_campaign")
+  .eq("event", "page_view").eq("is_bot", false).gte("created_at", since);
+
+/** Counts the window first, then reads its pages four at a time instead of one round trip after another. */
 async function pagedVisits(since: string): Promise<{ rows: VisitRow[]; capped: boolean }> {
-  const rows: VisitRow[] = [];
-  for (let from = 0; from < MAX_VISITS; from += PAGE) {
-    const { data, error } = await db().from("site_visits").select("created_at,visitor_id,session_id,user_id,path,referrer_host,utm_source,utm_medium,utm_campaign")
-      .eq("event", "page_view").eq("is_bot", false).gte("created_at", since).order("created_at", { ascending: true }).range(from, from + PAGE - 1);
-    if (error) adminError(error);
-    rows.push(...(data ?? []) as VisitRow[]);
-    if (!data || data.length < PAGE) return { rows, capped: false };
+  const { count, error } = await db().from("site_visits").select("created_at", { count: "estimated", head: true }).eq("event", "page_view").eq("is_bot", false).gte("created_at", since);
+  if (error) adminError(error);
+  const total = Math.min(MAX_VISITS, Math.max(PAGE, count ?? MAX_VISITS));
+  const starts = Array.from({ length: Math.ceil(total / PAGE) }, (_, i) => i * PAGE);
+  const pages: VisitRow[][] = [];
+  for (let i = 0; i < starts.length; i += 4) {
+    const batch = await Promise.all(starts.slice(i, i + 4).map(async from => {
+      const { data, error: pageError } = await visitsQuery(since).order("created_at", { ascending: true }).range(from, from + PAGE - 1);
+      if (pageError) adminError(pageError);
+      return (data ?? []) as VisitRow[];
+    }));
+    pages.push(...batch);
+    if (batch.at(-1)!.length < PAGE) return { rows: pages.flat(), capped: false };
   }
-  return { rows, capped: true };
+  // The estimate can run low; keep reading one page at a time until the window or the cap runs out.
+  for (let from = starts.length * PAGE; from < MAX_VISITS; from += PAGE) {
+    const { data, error: pageError } = await visitsQuery(since).order("created_at", { ascending: true }).range(from, from + PAGE - 1);
+    if (pageError) adminError(pageError);
+    pages.push((data ?? []) as VisitRow[]);
+    if (!data || data.length < PAGE) return { rows: pages.flat(), capped: false };
+  }
+  return { rows: pages.flat(), capped: true };
 }
 
 export async function GET(request: Request) {
@@ -31,17 +48,17 @@ export async function GET(request: Request) {
     await requireSuperAdmin();
     const days = Math.min(365, Math.max(1, Number(new URL(request.url).searchParams.get("days")) || 30));
     const since = new Date(Date.now() - days * 86_400_000).toISOString();
-    const promotionsResult = await db().from("promotions").select("*").order("created_at", { ascending: false }).limit(500);
+    // Promotions and the visit window are independent; read them side by side.
+    const [promotionsResult, { rows: visits, capped }] = await Promise.all([db().from("promotions").select("*").order("created_at", { ascending: false }).limit(500), pagedVisits(since)]);
     if (promotionsResult.error) adminError(promotionsResult.error);
     const promotions = (promotionsResult.data ?? []).map(row => ({ ...row, budget_inr: Number(row.budget_inr), spend_inr: Number(row.spend_inr) })) as Promotion[];
-    const { rows: visits, capped } = await pagedVisits(since);
     const userIds = [...new Set(visits.map(visit => visit.user_id).filter((id): id is string => !!id))];
-    let profiles: ProfileRow[] = [], subscriptions: SubscriptionRow[] = [];
-    for (let i = 0; i < userIds.length; i += 200) {
-      const ids = userIds.slice(i, i + 200);
-      const [p, s] = await Promise.all([db().from("profiles").select("id,created_at").in("id", ids), db().from("subscriptions").select("user_id,status,tier").in("user_id", ids)]);
+    const chunks = Array.from({ length: Math.ceil(userIds.length / 200) }, (_, i) => userIds.slice(i * 200, i * 200 + 200));
+    const results = await Promise.all(chunks.map(ids => Promise.all([db().from("profiles").select("id,created_at").in("id", ids), db().from("subscriptions").select("user_id,status,tier").in("user_id", ids)])));
+    const profiles: ProfileRow[] = [], subscriptions: SubscriptionRow[] = [];
+    for (const [p, s] of results) {
       if (p.error) adminError(p.error); if (s.error) adminError(s.error);
-      profiles = profiles.concat((p.data ?? []) as ProfileRow[]); subscriptions = subscriptions.concat((s.data ?? []) as SubscriptionRow[]);
+      profiles.push(...(p.data ?? []) as ProfileRow[]); subscriptions.push(...(s.data ?? []) as SubscriptionRow[]);
     }
     return Response.json({ promotions, ...attribute({ visits, profiles, subscriptions, promotions, since }), days, capped, generatedAt: new Date().toISOString() });
   }, request);
@@ -55,6 +72,8 @@ const fields = {
   audience: z.string().trim().max(160).nullable().optional(), owner: z.string().trim().max(80).nullable().optional(), starts_on: day, ends_on: day,
   budget_inr: z.number().min(0).max(1e10), spend_inr: z.number().min(0).max(1e10), reach: count, impressions: count, engagements: count, followers_gained: count,
   notes: z.string().trim().max(1000).nullable().optional(),
+  // Medium, Pinterest and Coursera figures (migration 0038); an average rating is out of 5, everything else a count or ₹.
+  platform_metrics: z.object(Object.fromEntries(METRIC_KEYS.map(key => [key, (key === "rating_average" ? z.number().min(0).max(5) : z.number().min(0).max(1e10)).optional()]))).strict().nullable().optional(),
 };
 const createSchema = z.object({ ...fields, budget_inr: fields.budget_inr.default(0), spend_inr: fields.spend_inr.default(0), reach: count.default(0), impressions: count.default(0), engagements: count.default(0), followers_gained: count.default(0), status: fields.status.default("planned"), format: fields.format.default("post") }).strict()
   .refine(input => !input.starts_on || !input.ends_on || input.ends_on >= input.starts_on, { message: "invalid_window" });

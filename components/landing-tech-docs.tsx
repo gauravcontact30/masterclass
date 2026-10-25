@@ -7,9 +7,9 @@ import { DailyCard } from "./landing-daily-card";
 import { Editable, useContentItem } from "./content-editing";
 import {
   Binary, BookOpen, Bot, Boxes, Braces, Building2, Check, ChevronLeft, ChevronRight, Cloud, Code2, FileCode2, GraduationCap,
-  LayoutGrid, Megaphone, MonitorSmartphone, RotateCcw, Rocket, Search, Server, SlidersHorizontal, Sprout, TrendingUp, X, type LucideIcon,
+  LayoutGrid, Megaphone, MonitorSmartphone, PawPrint, RotateCcw, Rocket, Search, Server, SlidersHorizontal, Sprout, TrendingUp, X, type LucideIcon,
 } from "lucide-react";
-import { MATERIAL_KINDS, MATERIAL_LEVELS, TECH_DOC_CATEGORIES, TECH_DOCS, type MaterialKind, type MaterialLevel, type TechConcept, type TechDoc, type TechDocCategory, type TechMaterial } from "@/lib/tech-docs";
+import { LANDING_TECH_DOC_IDS, MATERIAL_KINDS, MATERIAL_LEVELS, TECH_DOC_CATEGORIES, TECH_DOCS, type MaterialKind, type MaterialLevel, type TechConcept, type TechDoc, type TechDocCategory, type TechMaterial } from "@/lib/tech-docs";
 import type { OfficialPage, OfficialTechDocs } from "@/lib/tech-docs-official";
 import { useLanguage } from "./language-provider";
 import { Controls } from "./landing-ai-pulse";
@@ -29,8 +29,8 @@ const FILTERS_PER_PAGE = 3;
 const FILTER_CATEGORIES = ["all", ...TECH_DOC_CATEGORIES.map(c => c.id)] as const;
 const FILTER_PAGES = Math.ceil(FILTER_CATEGORIES.length / FILTERS_PER_PAGE);
 const BRAND = TECH_DOC_BRANDS;
-/** Subjects with no brand mark. */
-const SUBJECT_ICON: Record<string, LucideIcon> = { dsa: Binary, oops: Boxes };
+/** Subjects and platforms with no brand mark (Zustand's mascot is a bear). */
+const SUBJECT_ICON: Record<string, LucideIcon> = { dsa: Binary, oops: Boxes, zustand: PawPrint };
 const CATEGORY_ICON: Record<TechDocCategory | "all", LucideIcon> = { all: LayoutGrid, frontend: MonitorSmartphone, backend: Server, enterprise: Building2, ai: Bot, fundamentals: Braces };
 /** The CS fundamentals the landing preview lists below the featured platform's panel. */
 const FUNDAMENTALS = TECH_DOCS.filter(t => t.category === "fundamentals");
@@ -61,7 +61,8 @@ function BrandIcon({ tech, size = 28 }: { tech: TechDoc; size?: number }) {
 }
 
 /**
- * Technology docs: Angular 22+, Vue 3.5, Salesforce API 68+, Node.js 26, OpenRouter and the Vercel AI Gateway.
+ * Technology docs: TanStack Start, Zustand and n8n lead (the landing preview rotates through them), alongside Angular,
+ * Vue, Salesforce, Node.js, OpenRouter, the Vercel AI Gateway and more.
  * A carousel (one platform per slide, autoplay every two minutes) with numbered pagination, suggestion search,
  * icon filters and a "More options" menu. Titles, summaries and section lists come from each official page.
  * `preview` (the landing page, or a learner without a membership) shows only the featured platform's panel, a few
@@ -99,7 +100,9 @@ export function LandingTechDocs({ official, preview = false, locked = false, con
   const materialText = (m: TechMaterial) => { const p = page(m.url); return norm([m.title, m.summary, p?.title, p?.description, ...(p?.sections ?? []), ...m.topics].join(" ")); };
   const techText = (t: TechDoc) => norm([t.name, t.version, t.release, t.tagline, page(t.docs)?.description, ...t.aliases, ...t.features, ...(concepts?.[t.id] ?? []).map(c => c.title)].join(" "));
 
-  const slides = (preview ? [lead] : TECH_DOCS)
+  // The preview pages through the landing platforms (TanStack Start, Zustand, n8n), today's first.
+  const previewDocs = [lead, ...TECH_DOCS.filter(tech => tech.id !== lead.id && (LANDING_TECH_DOC_IDS as readonly string[]).includes(tech.id))];
+  const slides = (preview ? previewDocs : TECH_DOCS)
     .filter(tech => category === "all" || tech.category === category)
     .map(tech => {
       const techHit = !terms.length || matches(techText(tech));
@@ -272,7 +275,7 @@ export function LandingTechDocs({ official, preview = false, locked = false, con
         <p className={frame.kicker}><BookOpen size={14} aria-hidden="true" />{text("Technology docs", "तकनीकी डॉक्स")}<span>{TECH_DOCS.length - FUNDAMENTALS.length} {text("platforms", "प्लेटफ़ॉर्म")} + {FUNDAMENTALS.map(t => t.name).join(" & ")}</span></p>
         <h2 id={`${uid}-title`}><Editable k="section:tech-docs" f={`heading.${language}`}>{text("Learn from the source, ", "स्रोत से सीखें, ")}</Editable><em><Editable k="section:tech-docs" f={`emphasis.${language}`}>{text("latest releases.", "नवीनतम संस्करण।")}</Editable></em></h2>
       </div>
-      <p className={frame.lede} data-learning-intro>{text("Angular, Vue, React, TypeScript, PostgreSQL, Docker, Salesforce, Node.js, OpenRouter and AI Gateway, plus DSA and OOPs. Explore official guides and complete multi-file projects with setup instructions, annotated code and expected results.", "Angular 22, Vue 3.5, Salesforce API 68, Node.js 26, OpenRouter और Vercel AI Gateway: नीचे हर गाइड उसकी आधिकारिक वेबसाइट से ली गई है, और वर्तमान संस्करण आधिकारिक रजिस्ट्री से। साथ में हर इंटरव्यू के CS मूल विषय: DSA और OOPs, विषय-दर-विषय।")}</p>
+      <p className={frame.lede} data-learning-intro>{text("TanStack Start for type-safe full-stack React, Zustand for lightweight app state, and n8n for workflow automation and AI agents, plus DSA and OOPs. Each comes with its current release, the features worth learning first, a runnable quick start and hand-picked official guides.", "टाइप-सेफ़ फ़ुल-स्टैक React के लिए TanStack Start, हल्के ऐप स्टेट के लिए Zustand, और वर्कफ़्लो ऑटोमेशन व AI एजेंट के लिए n8n, साथ में DSA और OOPs। हर एक के साथ वर्तमान संस्करण, पहले सीखने लायक़ फ़ीचर, चलने वाला क्विक स्टार्ट और चुनी हुई आधिकारिक गाइड।")}</p>
       {total > 0 && <Controls text={text} playing={autoplay} onPlay={() => setAutoplay(value => !value)} page={current} pages={total} goTo={index => { const slide = slides[(index + total) % total]; if (slide) setActiveId(slide.tech.id); }} previous={text("Previous platform", "पिछला प्लेटफ़ॉर्म")} next={text("Next platform", "अगला प्लेटफ़ॉर्म")} />}
     </header>
     {/* Today's AI-written tip for the featured platform (lib/server/landing-fresh.ts). */}

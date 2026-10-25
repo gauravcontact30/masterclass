@@ -1,14 +1,15 @@
 "use client";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Activity, AlertTriangle, BookOpen, BookOpenText, CheckCircle2, Clock, Compass, Cpu, Database, Gauge, Globe2, GraduationCap, Hourglass, Laptop, LogIn, LogOut, MapPin, MousePointerClick, Pause, Play, Radio, RefreshCw, Route, Server, ShieldCheck, Smartphone, Sparkles, Tablet, Target, Timer, UserRound, Users, Zap, type LucideIcon } from "lucide-react";
+import { Activity, AlertTriangle, BookOpen, BookOpenText, Bot, CheckCircle2, Clock, Compass, Cpu, Database, Flame, Gauge, Globe2, Hourglass, Languages, Laptop, Link2, LogIn, LogOut, MapPin, Monitor, MousePointerClick, Network, Pause, Play, Radio, RefreshCw, Route, Server, ShieldCheck, Smartphone, Sparkles, Tablet, Target, Timer, TrendingDown, UserPlus, UserRound, Users, Zap, type LucideIcon } from "lucide-react";
 import { Flag, countryName } from "./super-admin-audience";
 import { Pager } from "./super-admin-table";
 import styles from "./super-admin-overview-live.module.css";
 import { VISIT_RETENTION_DAYS } from "@/lib/visit-retention";
 import { indexVisits, streamVisitors, type Presence } from "@/lib/live-visits";
+import { localityPin } from "@/lib/new-user-locations";
 
 type Row = Record<string, unknown>;
-type Visit = { id?: number; created_at: string; event: string; person?: string; email?: string | null; user_id?: string | null; visitor_id: string; session_id: string; new_visitor?: boolean; path: string; title?: string | null; country?: string | null; city?: string | null; region?: string | null; postal_code?: string | null; device?: string | null; browser?: string | null; os?: string | null; duration_ms?: number | null; referrer_host?: string | null; utm_source?: string | null };
+type Visit = { id?: number; created_at: string; event: string; person?: string; email?: string | null; user_id?: string | null; visitor_id: string; session_id: string; new_visitor?: boolean; path: string; title?: string | null; country?: string | null; city?: string | null; region?: string | null; postal_code?: string | null; device?: string | null; browser?: string | null; os?: string | null; duration_ms?: number | null; referrer_host?: string | null; utm_source?: string | null; screen?: string | null; timezone?: string | null; language?: string | null; ip_masked?: string | null };
 type Live = {
   generatedAt: string;
   totals: { liveNow: number; liveSignedIn: number; pageViews: number; visitors: number; bounceRate: number | null; avgSessionSeconds: number | null; people?: number; sessions?: number; signedInUsers?: number; newVisitors?: number; newAccounts?: number; pagesPerSession?: number | null; bots?: number };
@@ -58,6 +59,8 @@ const TRACE_FILTERS: { id: TraceFilter; label: string; icon: LucideIcon }[] = [
 /** The value below which `q` of the sorted durations fall. */
 const quantile = (sorted: number[], q: number) => sorted.length ? sorted[Math.min(sorted.length - 1, Math.floor(q * sorted.length))] : null;
 const pct = (part: number, whole: number) => whole ? `${Math.round((part / whole) * 1000) / 10}%` : "—";
+/** The current hour in India, to match the IST hourly bars whatever this browser's time zone. */
+const istHour = (ms: number) => new Date(ms + 5.5 * 3600_000).getUTCHours();
 const hourLabel = (hour: number) => `${String(hour).padStart(2, "0")}:00–${String((hour + 1) % 24).padStart(2, "0")}:00`;
 const statusTone = (status: number | null) => status == null ? "info" : status >= 500 ? "error" : status >= 400 ? "warn" : "ok";
 
@@ -208,6 +211,11 @@ export function OverviewLive({ snapshot, onRefreshSnapshot }: { snapshot: Overvi
     { label: "API requests, 15 min", value: n(recent15.length), note: `${n(snapshot?.requests.count)} in the reporting window`, icon: Route, tone: "peach" },
     { label: "Server errors, 15 min", value: n(errors15), note: errors15 ? "Open Application logs for details" : "All clear", icon: AlertTriangle, tone: errors15 ? "rose" : "sage" },
     { label: "API p95 latency", value: snapshot?.requests.p95 == null ? "—" : `${Math.round(snapshot.requests.p95)} ms`, note: `Database ${n(h?.databaseMs)} ms`, icon: Gauge, tone: "butter" },
+    { label: "Active, last 30 min", value: n(counts.recent), note: `${n(counts.signed)} signed in across the stream`, icon: Flame, tone: "rose" },
+    { label: "New accounts, 24 h", value: n(live?.totals.newAccounts), note: `${n(live?.totals.signedInUsers)} signed-in learners`, icon: UserPlus, tone: "mint" },
+    { label: "Engaged time / visitor", value: counts.engaged == null ? "—" : spent(counts.engaged / 1000), note: `${counts.pages ?? "—"} pages per visitor`, icon: Hourglass, tone: "sky" },
+    { label: "Bounce rate, 24 h", value: live?.totals.bounceRate == null ? "—" : `${live.totals.bounceRate}%`, note: live?.totals.avgSessionSeconds == null ? "left after one page" : `avg session ${spent(live.totals.avgSessionSeconds)}`, icon: TrendingDown, tone: "lavender" },
+    { label: "Bots filtered, 24 h", value: n(live?.totals.bots), note: "excluded from every figure", icon: Bot, tone: "sage" },
   ];
 
   return <section className={styles.live} aria-label="Live command centre">
@@ -248,7 +256,7 @@ export function OverviewLive({ snapshot, onRefreshSnapshot }: { snapshot: Overvi
                 Visitor Logs
               </span>
               <span className={styles.streamHeadNote}>
-                Live Learner Activity, Geolocation, Session Timing & Learning History
+                Who each visitor is, where the network places them, how long they stayed and what they read
               </span>
             </div>
             <ol className={styles.streamList}>
@@ -258,7 +266,10 @@ export function OverviewLive({ snapshot, onRefreshSnapshot }: { snapshot: Overvi
                 const code = v.country ?? row.first.country ?? "";
                 const cleanCountry = code ? countryName(code) || code : "";
                 const p = row.page;
-                const postal = row.postalCode || v.postal_code || row.first.postal_code || null;
+                const rawPin = row.postalCode || v.postal_code || row.first.postal_code || null;
+                // A city's head post office PIN (…001 in India) only names the city, so it is labelled as such.
+                const pin = localityPin(rawPin, code || null);
+                const place = [v.city, v.region].filter(Boolean).join(", ");
                 const isLive = row.live;
 
                 return (
@@ -316,8 +327,8 @@ export function OverviewLive({ snapshot, onRefreshSnapshot }: { snapshot: Overvi
                             <div className={styles.compactDepartedBadge}>
                               <LogOut size={11} aria-hidden="true" />
                               <span>Left {since(row.left, clockNow)}</span>
-                              <small className={styles.departedVerified}>
-                                {row.beacon ? "✓ Beacon (100% exact)" : "Heartbeat verified"}
+                              <small className={styles.departedVerified} title={row.beacon ? "The page sent a leave beacon as it closed" : "No leave beacon arrived (closed tab, lost network); the time is the last activity seen"}>
+                                {row.beacon ? "✓ Leave beacon (exact)" : "Estimated from last activity"}
                               </small>
                             </div>
                           )}
@@ -337,40 +348,54 @@ export function OverviewLive({ snapshot, onRefreshSnapshot }: { snapshot: Overvi
                             <div className={styles.originGeoRow}>
                               <Flag code={code} />
                               <div className={styles.originGeoDetails}>
-                                <strong className={styles.originCountryName} title={cleanCountry || "Worldwide"}>
-                                  {cleanCountry || "Worldwide"}
+                                <strong className={styles.originCountryName} title={cleanCountry || "Country not resolved"}>
+                                  {cleanCountry || "Country not resolved"}
                                 </strong>
-                                <span className={styles.originCityText} title={[v.city, v.region].filter(Boolean).join(", ") || "Location detected via IP"}>
-                                  {[v.city, v.region].filter(Boolean).join(", ") || "Location detected via IP"}
+                                <span className={styles.originCityText} title={place || "City not resolved from the network"}>
+                                  {place || "City not resolved from the network"}
                                 </span>
                               </div>
                             </div>
 
                             <div className={styles.originBadgeRow}>
-                              {postal ? (
-                                <span className={styles.pinBadge} title={`Area PIN Code: ${postal}`}>
-                                  <MapPin size={10} aria-hidden="true" /> PIN: {postal}
+                              {pin ? (
+                                <span className={styles.pinBadge} title={`Locality PIN from the network: ${pin}`}>
+                                  <MapPin size={10} aria-hidden="true" /> PIN {pin}
                                 </span>
+                              ) : rawPin ? (
+                                <span className={styles.pinEmpty} title={`${rawPin} is the city's head post office: the network resolved only to the city`}>City PIN {rawPin}</span>
                               ) : (
-                                <span className={styles.pinEmpty} title="Area PIN code not detected via IP">PIN: —</span>
+                                <span className={styles.pinEmpty} title="The network did not resolve a PIN">PIN not resolved</span>
                               )}
-                              <span className={styles.algoTag} title="Geolocation resolved from client IP lookup">GeoIP 100%</span>
+                              <span className={styles.algoTag} title="From the visitor's IP address: VPNs, offices and mobile carriers can place someone in another city">IP-based · approximate</span>
                             </div>
 
                             <div className={styles.clientSpecsGrid}>
-                              <div className={styles.clientSpecItem} title={[v.browser, v.os].filter(Boolean).join(" · ")}>
+                              <div className={styles.clientSpecItem} title={[v.device, v.browser, v.os].filter(Boolean).join(" · ") || "Browser not reported"}>
                                 <Device size={11} aria-hidden="true" />
-                                <span>{[v.browser, v.os].filter(Boolean).join(" · ") || "Standard browser"}</span>
+                                <span>{[v.browser, v.os].filter(Boolean).join(" · ") || "Browser not reported"}</span>
                               </div>
-                              <div className={styles.clientSpecItem} title={v.screen ? `${v.screen} display` : "Standard screen"}>
-                                <Cpu size={11} aria-hidden="true" />
-                                <span>{v.screen ? `${v.screen}` : "1080p display"}</span>
+                              <div className={styles.clientSpecItem} title={v.screen ? `Screen ${v.screen} px` : "Screen size not reported"}>
+                                <Monitor size={11} aria-hidden="true" />
+                                <span>{v.screen ? `${v.screen} px` : "Screen not reported"}</span>
                               </div>
+                              <div className={styles.clientSpecItem} title={v.language ? `Browser language ${v.language}` : "Language not reported"}>
+                                <Languages size={11} aria-hidden="true" />
+                                <span>{v.language || "Language not reported"}</span>
+                              </div>
+                              <div className={styles.clientSpecItem} title={v.timezone ? `Device time zone ${v.timezone}` : "Time zone not reported"}>
+                                <Clock size={11} aria-hidden="true" />
+                                <span>{v.timezone || "Time zone not reported"}</span>
+                              </div>
+                              {v.ip_masked && <div className={styles.clientSpecItem} title="Network address with its last part masked">
+                                <Network size={11} aria-hidden="true" />
+                                <span>{v.ip_masked}</span>
+                              </div>}
                             </div>
 
                             <div className={styles.trafficSourceRow}>
-                              <span className={styles.sourceBadge} title={row.source ? `Traffic source: ${row.source}` : "Direct arrival"}>
-                                {row.source ? `via ${row.source}` : "Direct arrival"}
+                              <span className={styles.sourceBadge} title={row.source ? `Traffic source: ${row.source}` : "No referrer or campaign: typed, bookmarked or opened from an app"}>
+                                <Link2 size={10} aria-hidden="true" /> {row.source ? `via ${row.source}` : "Direct / no referrer"}
                               </span>
                             </div>
                           </div>
@@ -509,11 +534,11 @@ export function OverviewLive({ snapshot, onRefreshSnapshot }: { snapshot: Overvi
                         <div className={styles.footerTagGroup}>
                           <span className={styles.footerTagItem}>
                             <ShieldCheck size={11} className={styles.footerTagIcon} aria-hidden="true" />
-                            {row.beacon ? "Dual Verified (Beacon + Beat)" : row.live ? "Real-time Heartbeat Active" : "Multi-metric Sync"}
+                            {row.live ? (heartbeats ? "Timing: live page heartbeat" : "Timing: estimated (no heartbeats)") : row.beacon ? "Timing: leave beacon" : "Timing: last activity"}
                           </span>
                           <span className={styles.footerTagItem}>
                             <Clock size={11} className={styles.footerTagIcon} aria-hidden="true" />
-                            IST Asia/Kolkata (UTC+5:30)
+                            Times in IST (UTC+5:30)
                           </span>
                           <span className={styles.footerTagItem}>
                             <Gauge size={11} className={styles.footerTagIcon} aria-hidden="true" />
@@ -562,27 +587,28 @@ export function OverviewLive({ snapshot, onRefreshSnapshot }: { snapshot: Overvi
 
       <article className={styles.panel} data-tone="peach">
         <h3><Zap size={16} aria-hidden="true" />Last 24 hours<span>page views by hour (IST), bots excluded</span></h3>
-        <div className={styles.spark} role="img" aria-label={`Hourly page views, peak ${n(peak)}`}>{Array.from({ length: 24 }, (_, hour) => { const views = hours.find(x => x.hour === hour)?.views ?? 0; return <span key={hour} style={{ height: `${Math.max(4, (views / peak) * 100)}%` }} data-now={new Date().getHours() === hour || undefined} title={`${String(hour).padStart(2, "0")}:00 — ${views} views`} />; })}</div>
+        <div className={styles.spark} role="img" aria-label={`Hourly page views, peak ${n(peak)}`}>{Array.from({ length: 24 }, (_, hour) => { const views = hours.find(x => x.hour === hour)?.views ?? 0; return <span key={hour} style={{ height: `${Math.max(4, (views / peak) * 100)}%` }} data-now={istHour(clockNow) === hour || undefined} title={`${String(hour).padStart(2, "0")}:00 — ${views} views`} />; })}</div>
         <div className={styles.sparkAxis}><span>00</span><span>06</span><span>12</span><span>18</span><span>23</span></div>
         {(() => {
           const t = live?.totals; const busiest = hours.reduce<{ hour: number; views: number } | null>((best, x) => !best || x.views > best.views ? x : best, null);
           const mobile = (live?.devices ?? []).filter(d => /mobile|tablet/i.test(d.device)).reduce((sum, d) => sum + Number(d.visitors), 0);
           const deviceTotal = (live?.devices ?? []).reduce((sum, d) => sum + Number(d.visitors), 0);
           const page = live?.pages?.[0], source = live?.referrers?.[0], country = live?.countries?.find(c => c.country !== "Unknown");
-          const facts: [string, string, string?][] = [
-            ["Page views", n(t?.pageViews), `${n(t?.visitors)} unique visitors`],
-            ["Sessions", n(t?.sessions), t?.pagesPerSession == null ? undefined : `${t.pagesPerSession} pages per session`],
-            ["Avg. session", t?.avgSessionSeconds == null ? "—" : spent(t.avgSessionSeconds), t?.bounceRate == null ? undefined : `${t.bounceRate}% bounced after one page`],
-            ["New visitors", n(t?.newVisitors), t?.visitors ? `${pct(t.newVisitors ?? 0, t.visitors)} of visitors` : undefined],
-            ["Signed-in learners", n(t?.signedInUsers), `${n(t?.newAccounts)} new accounts`],
-            ["Peak hour (IST)", busiest?.views ? hourLabel(busiest.hour) : "—", busiest?.views ? `${n(busiest.views)} views` : undefined],
-            ["Busiest page", page?.path ?? "—", page ? `${n(page.views)} views · ${page.avg_seconds == null ? "no read time yet" : `${page.avg_seconds}s avg read`}` : undefined],
-            ["Top source", source?.referrer ?? "—", source ? `${n(source.visitors)} visitors` : undefined],
-            ["Top country", country ? countryName(country.country) || country.country : "—", country ? `${n(country.visitors)} visitors` : undefined],
-            ["Mobile & tablet", deviceTotal ? pct(mobile, deviceTotal) : "—", deviceTotal ? `${n(mobile)} of ${n(deviceTotal)} visitors` : undefined],
-            ["Bots filtered", n(t?.bots), "excluded from every figure"],
+          const facts: [string, string, string | undefined, LucideIcon][] = [
+            ["Page views", n(t?.pageViews), `${n(t?.visitors)} unique visitors`, MousePointerClick],
+            ["Sessions", n(t?.sessions), t?.pagesPerSession == null ? undefined : `${t.pagesPerSession} pages per session`, Activity],
+            ["Avg. session", t?.avgSessionSeconds == null ? "—" : spent(t.avgSessionSeconds), t?.bounceRate == null ? undefined : `${t.bounceRate}% bounced after one page`, Timer],
+            ["New visitors", n(t?.newVisitors), t?.visitors ? `${pct(t.newVisitors ?? 0, t.visitors)} of visitors` : undefined, Sparkles],
+            ["Signed-in learners", n(t?.signedInUsers), `${n(t?.newAccounts)} new accounts`, UserRound],
+            ["Peak hour (IST)", busiest?.views ? hourLabel(busiest.hour) : "—", busiest?.views ? `${n(busiest.views)} views` : undefined, Flame],
+            ["Busiest page", page?.path ?? "—", page ? `${n(page.views)} views · ${page.avg_seconds == null ? "no read time yet" : `${page.avg_seconds}s avg read`}` : undefined, BookOpenText],
+            ["Top source", source?.referrer ?? "—", source ? `${n(source.visitors)} visitors` : undefined, Link2],
+            ["Top country", country ? countryName(country.country) || country.country : "—", country ? `${n(country.visitors)} visitors` : undefined, Globe2],
+            ["Mobile & tablet", deviceTotal ? pct(mobile, deviceTotal) : "—", deviceTotal ? `${n(mobile)} of ${n(deviceTotal)} visitors` : undefined, Smartphone],
+            ["Bots filtered", n(t?.bots), "excluded from every figure", Bot],
           ];
-          return <dl className={styles.facts}>{facts.map(([label, value, note]) => <div key={label}><dt>{label}</dt><dd title={value}>{value}</dd>{note && <small>{note}</small>}</div>)}</dl>;
+          const tones = ["sky", "lavender", "mint", "peach", "butter", "rose", "sage"];
+          return <dl className={styles.facts}>{facts.map(([label, value, note, Icon], i) => <div key={label} data-tone={tones[i % tones.length]} style={{ "--i": i } as React.CSSProperties}><dt><Icon size={12} aria-hidden="true" />{label}</dt><dd title={value}>{value}</dd>{note && <small>{note}</small>}</div>)}</dl>;
         })()}
       </article>
 

@@ -6,7 +6,7 @@ import { landingProPreview } from "@/lib/landing-pro-preview";
 import { istDay, landingDaily } from "@/lib/server/landing-daily";
 import { landingFresh } from "@/lib/server/landing-fresh";
 import { pickDaily } from "@/lib/daily-rotation";
-import { TECH_DOCS } from "@/lib/tech-docs";
+import { LANDING_TECH_DOC_IDS, TECH_DOCS } from "@/lib/tech-docs";
 import { billingConfigured } from "@/lib/server/config";
 import { internationalBilling } from "@/lib/server/pricing";
 import { activeSale } from "@/lib/server/festive-sale";
@@ -27,8 +27,8 @@ export default async function Home() {
   // Refreshed chunk hashes for client dynamic imports
   const today = istDay();
   const pro = landingProPreview(today);
-  // Technology docs previews one platform a day; the CS fundamentals stay listed under it.
-  const featuredDoc = pickDaily(TECH_DOCS.filter(tech => tech.category !== "fundamentals"), today).id;
+  // Technology docs previews one of TanStack Start, Zustand and n8n a day; the CS fundamentals stay listed under it.
+  const featuredDoc = pickDaily(TECH_DOCS.filter(tech => (LANDING_TECH_DOC_IDS as readonly string[]).includes(tech.id)), today).id;
   // The same values /api/billing returns, rendered into the page instead of fetched after hydration.
   // Only the previewed cards go into the page payload (the full day's set was ~170 KB of RSC data); the totals feed
   // the "See all N" links, and /dashboard reads the full set itself.

@@ -87,7 +87,7 @@ export function NotepadLibrary({
     </div>}
     <div role="tablist" aria-label="Saved documents" className={styles.documentTabs}>
       {visible.map((file, index) => (
-        <div key={file.id} className={styles.documentCard} data-active={file.id === activeId}>
+        <div key={file.id} className={styles.documentCard} data-active={file.id === activeId} data-tone={((current - 1) * PER_PAGE + index) % 4}>
           <button
             type="button"
             role="tab"
@@ -106,7 +106,7 @@ export function NotepadLibrary({
               }
             }}
           >
-            <FileText size={17} aria-hidden="true" />
+            <span className={styles.documentIcon} aria-hidden="true"><FileText size={17} /></span>
             <span>
               <b>{file.id === activeId ? activeTitle || "Untitled document" : file.title || "Untitled document"}</b>
               <small>{file.kind} · {new Date(file.updatedAt).toLocaleDateString()}</small>
@@ -116,8 +116,8 @@ export function NotepadLibrary({
             {file.html.includes("data-notepad-diagram") ? <GitBranch size={13} aria-hidden="true" /> : /<table\b/i.test(file.html) && <Table2 size={13} aria-hidden="true" />}
           </button>
 
-          {/* Hover actions: Delete, Edit, Save (Icon-only style) */}
-          <div className={styles.documentCardHoverActions}>
+          {/* Hover ribbon: Delete, Edit and Save, icons only (always shown on touch screens). */}
+          <div className={styles.documentCardHoverActions} role="toolbar" aria-label={`Actions for ${file.title || "document"}`}>
             <button
               type="button"
               className={styles.cardActionBtn}
@@ -180,7 +180,7 @@ export function NotepadLibrary({
             <span>Delete Document</span>
           </div>
           <p style={{ margin: "0 0 14px", fontSize: "12px", color: "#475569", lineHeight: 1.5 }}>
-            Are you sure you want to permanently delete <b>"{deletingFile.title || "Untitled document"}"</b>? This action cannot be undone.
+            Are you sure you want to permanently delete <b>&ldquo;{deletingFile.title || "Untitled document"}&rdquo;</b>? This action cannot be undone.
           </p>
           <div style={{ display: "flex", justifyContent: "flex-end", gap: "8px" }}>
             <button

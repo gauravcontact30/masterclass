@@ -88,7 +88,7 @@ export function TechBuzzArticleView({ article }: Props) {
 
     // Also check account tier if user happens to be logged in
     if (typeof fetch !== "undefined") {
-      fetch("/api/account")
+      fetch("/api/account?view=summary")
         .then(res => (res.ok ? res.json() : null))
         .then(data => {
           if (

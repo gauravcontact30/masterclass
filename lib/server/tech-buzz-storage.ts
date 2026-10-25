@@ -1,4 +1,5 @@
 import "server-only";
+import { cacheLife, cacheTag, revalidateTag } from "next/cache";
 import { db } from "./db";
 import { TECH_BUZZ_ARTICLES, type TechBuzzArticle } from "@/lib/tech-buzz-data";
 import { HttpError } from "./http";
@@ -219,6 +220,27 @@ export async function listTechBuzzArticles(includeDrafts = false): Promise<TechB
   }
 }
 
+/** Cache tag for every public Tech Buzz read; admin writes expire it so a publish shows at once. */
+const TECH_BUZZ_TAG = "tech-buzz";
+const expirePublic = () => { try { revalidateTag(TECH_BUZZ_TAG, { expire: 0 }); } catch { /* outside a request (scripts) */ } };
+
+/**
+ * Published articles for the public feed, API and article pages, cached for minutes so a visit costs no
+ * database round trip (the database is in Tokyo; most visitors are not).
+ */
+export async function listPublishedTechBuzzArticles(): Promise<TechBuzzArticle[]> {
+  "use cache";
+  cacheLife("minutes");
+  cacheTag(TECH_BUZZ_TAG);
+  return listTechBuzzArticles(false);
+}
+
+/** One published article by slug or id, from the cached list; drafts are never served publicly. */
+export async function getPublishedTechBuzzArticle(slug: string): Promise<TechBuzzArticle | null> {
+  const articles = await listPublishedTechBuzzArticles();
+  return articles.find(article => article.slug === slug || article.id === slug) ?? null;
+}
+
 /**
  * Fetch a single Tech Buzz article by slug from Supabase or fallback.
  */
@@ -266,6 +288,7 @@ export async function createTechBuzzArticle(input: Partial<TechBuzzArticle>, use
     throw new Error(result.error.message);
   }
 
+  expirePublic();
   return rowToArticle(result.data as TechBuzzRow);
 }
 
@@ -294,6 +317,7 @@ export async function updateTechBuzzArticle(idOrSlug: string, input: Partial<Tec
     throw new Error(result.error.message);
   }
 
+  expirePublic();
   return rowToArticle(result.data as TechBuzzRow);
 }
 
@@ -316,6 +340,7 @@ export async function deleteTechBuzzArticle(idOrSlug: string): Promise<void> {
     }
     throw new Error(result.error.message);
   }
+  expirePublic();
 }
 
 /**
@@ -337,5 +362,6 @@ export async function syncDefaultArticlesToSupabase(): Promise<{ count: number }
     throw new Error(result.error.message);
   }
 
+  expirePublic();
   return { count: result.data?.length || 0 };
 }
