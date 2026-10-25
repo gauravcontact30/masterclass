@@ -287,14 +287,21 @@ export default async function Image({ params }: ImageProps) {
                   background: "#1e293b",
                 }}
               >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={article.author.avatar}
-                  alt={article.author.name}
-                  width="44"
-                  height="44"
-                  style={{ objectFit: "cover" }}
-                />
+                {/* The renderer fetches only absolute URLs; site-relative avatars (the editorial icon) show initials. */}
+                {/^https?:/.test(article.author.avatar) ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={article.author.avatar}
+                    alt={article.author.name}
+                    width="44"
+                    height="44"
+                    style={{ objectFit: "cover" }}
+                  />
+                ) : (
+                  <span style={{ width: 44, height: 44, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, fontWeight: 800, color: "#fb923c" }}>
+                    {article.author.name.split(/\s+/).map(word => word[0]).slice(0, 2).join("")}
+                  </span>
+                )}
               </div>
               <div style={{ display: "flex", flexDirection: "column", marginLeft: 12 }}>
                 <span style={{ fontSize: 15, fontWeight: 800, color: "#ffffff" }}>
