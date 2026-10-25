@@ -2,7 +2,7 @@
 import { createElement, useEffect, useId, useRef, useState } from "react";
 import {
   AlertTriangle, ArrowDownRight, BadgeIndianRupee, CalendarDays, Check, CheckCircle2, Copy, CreditCard, Crown, Download, ExternalLink, Eye, Globe2, Layers,
-  PieChart, Receipt, RefreshCw, RotateCcw, Search, ShieldAlert, SlidersHorizontal, Sparkles, TrendingUp, Undo2, Users, Wallet, X, XCircle,
+  PieChart, Receipt, RefreshCw, RotateCcw, Search, ShieldAlert, SlidersHorizontal, Sparkles, TrendingUp, Undo2, Users, Wallet, X, XCircle, Trash2,
 } from "lucide-react";
 import { Card } from "./ui/card";
 import { Badge } from "./ui/badge";
@@ -59,6 +59,40 @@ export function SuperAdminTransactions() {
   const [loadedKey, setLoadedKey] = useState("");
   const [nonce, setNonce] = useState(0);
   const [selected, setSelected] = useState<Transaction | null>(null);
+  const [deletingTransaction, setDeletingTransaction] = useState<Transaction | null>(null);
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [actionToast, setActionToast] = useState<string | null>(null);
+
+  const handleDeleteTransaction = async (tx: Transaction) => {
+    setDeleteLoading(true);
+    try {
+      const res = await fetch("/api/super-admin/transactions", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: tx.id })
+      });
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}));
+        throw new Error(body.error || "Failed to delete transaction");
+      }
+      setData(current =>
+        current
+          ? {
+              ...current,
+              rows: current.rows.filter(r => r.id !== tx.id),
+              total: Math.max(0, current.total - 1)
+            }
+          : null
+      );
+      setActionToast(`Transaction ${tx.id} deleted successfully.`);
+      setTimeout(() => setActionToast(null), 3500);
+      setDeletingTransaction(null);
+    } catch (err: unknown) {
+      alert(err instanceof Error ? err.message : "Failed to delete transaction");
+    } finally {
+      setDeleteLoading(false);
+    }
+  };
   const box = useRef<HTMLDivElement>(null);
   const tableRef = useRef<HTMLDivElement>(null);
   // Busy while the shown data is not yet the answer to the current request.
@@ -148,10 +182,11 @@ export function SuperAdminTransactions() {
         <button type="button" className={table.clearFilters} disabled={!activeFilters} onClick={clearFilters}><X size={13} />Clear filters</button>
       </div>}
 
+      {actionToast && <div className={styles.actionToast} role="status"><Check size={14} aria-hidden="true" />{actionToast}</div>}
       {error ? <AdminError>{error === "setup_required" ? "Razorpay is not configured, so transactions cannot be read." : "Transactions could not be loaded from Razorpay. Try Refresh in a moment."}</AdminError>
         : !data ? <p className={table.empty}>Loading transactions…</p>
         : data.rows.length ? <>
-          <div className={`${table.tableWrap} ${styles.tableWrap}`} aria-busy={busy}><DataTable><TableHeader><TableRow>{["Date", "Payment ID", "Type", "Item", "Customer", "Method", "Amount", "Status", "Order / Invoice", ""].map(column => <TableHead key={column || "actions"}>{column || <span className={styles.srOnly}>Actions</span>}</TableHead>)}</TableRow></TableHeader>
+          <div className={`${table.tableWrap} ${styles.tableWrap}`} aria-busy={busy}><DataTable><TableHeader><TableRow>{["Date", "Payment ID", "Type", "Item", "Customer", "Method", "Amount", "Status", "Order / Invoice", "Actions"].map(column => <TableHead key={column}>{column}</TableHead>)}</TableRow></TableHeader>
             <TableBody>{data.rows.map(row => <TableRow key={row.id} data-failed={row.status === "failed" || undefined} className={styles.row}>
               <TableCell data-label="Date" className={styles.nowrap}>{when(row.createdAt)}</TableCell>
               <TableCell data-label="Payment ID"><code className={styles.code}>{row.id}</code></TableCell>
@@ -162,7 +197,30 @@ export function SuperAdminTransactions() {
               <TableCell data-label="Amount" className={styles.amount}>{money(row.amount, row.currency)}{row.refunded > 0 && <small>−{money(row.refunded, row.currency)} refunded</small>}{row.fee != null && <small>fee {money(row.fee, row.currency)}</small>}</TableCell>
               <TableCell data-label="Status"><span className={styles.statusCell}><StatusPill status={row.status} />{row.failure && <small className={styles.failReason} title={row.failure.cause}><AlertTriangle size={11} aria-hidden="true" />{row.failure.title}</small>}</span></TableCell>
               <TableCell data-label="Order / Invoice"><span className={styles.customer}><code className={styles.code}>{row.orderId ?? "—"}</code><small>{row.invoiceId ?? ""}</small></span></TableCell>
-              <TableCell data-label="Details"><button type="button" className={styles.detailButton} onClick={() => setSelected(row)} aria-label={`View details of payment ${row.id}`}><Eye size={14} aria-hidden="true" />Details</button></TableCell>
+              <TableCell data-label="Actions" className={styles.actionsCell}>
+                <div className={styles.tableActionGroup}>
+                  <button
+                    type="button"
+                    className={styles.actionIconBtn}
+                    data-action="view"
+                    onClick={() => setSelected(row)}
+                    title={`View user & payment details (${row.customer})`}
+                    aria-label={`View details of payment ${row.id}`}
+                  >
+                    <Eye size={15} aria-hidden="true" />
+                  </button>
+                  <button
+                    type="button"
+                    className={styles.actionIconBtn}
+                    data-action="delete"
+                    onClick={() => setDeletingTransaction(row)}
+                    title={`Delete transaction record ${row.id}`}
+                    aria-label={`Delete transaction record ${row.id}`}
+                  >
+                    <Trash2 size={15} aria-hidden="true" />
+                  </button>
+                </div>
+              </TableCell>
             </TableRow>)}</TableBody></DataTable></div>
           <Pager page={data.page} pages={data.pages} total={data.total} size={data.pageSize} onPage={setPage} />
         </> : <p className={table.empty}>{activeFilters || search ? "No transactions match your search or filters." : "No payments through this website in this period yet."}</p>}
@@ -177,6 +235,67 @@ export function SuperAdminTransactions() {
           <DialogDescription className={modal.lede}>{selected ? `${selected.type} — ${selected.item}` : ""}</DialogDescription>
         </DialogHeader>
         {selected && <TransactionDetail row={selected} />}
+      </DialogContent>
+    </Dialog>
+
+    <Dialog open={!!deletingTransaction} onOpenChange={value => { if (!value && !deleteLoading) setDeletingTransaction(null); }}>
+      <DialogContent className={`${modal.modal} ${styles.deleteTxModal}`}>
+        <DialogHeader className={modal.header}>
+          <span className={`${modal.headerMark} ${styles.deleteTxMark}`} aria-hidden="true">
+            <Trash2 size={22} />
+          </span>
+          <DialogTitle className={modal.title}>Delete Transaction</DialogTitle>
+          <DialogDescription className={modal.lede}>
+            Are you sure you want to permanently delete transaction <strong className={styles.code}>{deletingTransaction?.id}</strong>? It will be removed from your dashboard table.
+          </DialogDescription>
+        </DialogHeader>
+        {deletingTransaction && (
+          <div className={styles.deleteTxSummary}>
+            <div className={styles.deleteTxRow}>
+              <span>Customer</span>
+              <strong>{deletingTransaction.customer}</strong>
+            </div>
+            {deletingTransaction.email && (
+              <div className={styles.deleteTxRow}>
+                <span>Email</span>
+                <span>{deletingTransaction.email}</span>
+              </div>
+            )}
+            {deletingTransaction.contact && (
+              <div className={styles.deleteTxRow}>
+                <span>Phone</span>
+                <span>{deletingTransaction.contact}</span>
+              </div>
+            )}
+            <div className={styles.deleteTxRow}>
+              <span>Amount</span>
+              <strong>{money(deletingTransaction.amount, deletingTransaction.currency)} · {label(deletingTransaction.status)}</strong>
+            </div>
+            <div className={styles.deleteTxRow}>
+              <span>Item</span>
+              <span>{deletingTransaction.item}</span>
+            </div>
+          </div>
+        )}
+        <div className={styles.deleteTxActions}>
+          <button
+            type="button"
+            className={styles.deleteTxCancelBtn}
+            onClick={() => setDeletingTransaction(null)}
+            disabled={deleteLoading}
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            className={styles.deleteTxConfirmBtn}
+            onClick={() => deletingTransaction && handleDeleteTransaction(deletingTransaction)}
+            disabled={deleteLoading}
+          >
+            <Trash2 size={14} aria-hidden="true" />
+            <span>{deleteLoading ? "Deleting..." : "Delete Transaction"}</span>
+          </button>
+        </div>
       </DialogContent>
     </Dialog>
   </div>;

@@ -148,3 +148,151 @@ button.tile:focus-visible { outline: 2px solid var(--tone-accent); outline-offse
 .copy:hover { color: #b5573a; border-color: #b5573a; }
 .razorpayLink { display: inline-flex; align-items: center; gap: 6px; justify-self: start; padding: 8px 14px; border-radius: 999px; background: #b5573a; color: #fff; font-size: 13px; font-weight: 600; text-decoration: none; }
 .razorpayLink:hover { background: #9a4a2c; }
+
+/* Table Actions Column and Icon Buttons */
+.actionsCell {
+  white-space: nowrap;
+  width: 90px;
+}
+
+.tableActionGroup {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.actionIconBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  min-height: 30px;
+  padding: 0;
+  border-radius: 6px;
+  border: 1px solid #e2e8f0;
+  background: #ffffff;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.actionIconBtn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+.actionIconBtn[data-action="view"] {
+  color: #2563eb;
+}
+
+.actionIconBtn[data-action="view"]:hover {
+  background: #eff6ff;
+  border-color: #bfdbfe;
+  color: #1d4ed8;
+}
+
+.actionIconBtn[data-action="delete"] {
+  color: #dc2626;
+}
+
+.actionIconBtn[data-action="delete"]:hover {
+  background: #fee2e2;
+  border-color: #fca5a5;
+  color: #b91c1c;
+}
+
+/* Delete transaction dialog */
+.deleteTxModal {
+  max-width: 480px;
+  width: min(480px, calc(100vw - 24px));
+}
+
+.deleteTxMark {
+  background: linear-gradient(135deg, #fee2e2, #fecdd3);
+  color: #dc2626;
+}
+
+.deleteTxSummary {
+  display: grid;
+  gap: 8px;
+  padding: 12px 14px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  font-size: 13px;
+  margin: 6px 0 16px;
+}
+
+.deleteTxRow {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+}
+
+.deleteTxRow span:first-child {
+  color: #64748b;
+  font-size: 11px;
+  text-transform: uppercase;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+}
+
+.deleteTxActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.deleteTxCancelBtn {
+  display: inline-flex;
+  align-items: center;
+  padding: 7px 14px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #475569;
+  background: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.deleteTxCancelBtn:hover:not(:disabled) {
+  background: #e2e8f0;
+  color: #0f172a;
+}
+
+.deleteTxConfirmBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #ffffff;
+  background: #dc2626;
+  border: 1px solid #b91c1c;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.deleteTxConfirmBtn:hover:not(:disabled) {
+  background: #b91c1c;
+  box-shadow: 0 4px 12px rgba(220, 38, 38, 0.25);
+}
+
+.actionToast {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  background: #ecfdf5;
+  border: 1px solid #a7f3d0;
+  color: #065f46;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}

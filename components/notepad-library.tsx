@@ -116,8 +116,21 @@ export function NotepadLibrary({
             {file.html.includes("data-notepad-diagram") ? <GitBranch size={13} aria-hidden="true" /> : /<table\b/i.test(file.html) && <Table2 size={13} aria-hidden="true" />}
           </button>
 
-          {/* Hover actions: Edit, Save/Download, Delete */}
+          {/* Hover actions: Delete, Edit, Save (Icon-only style) */}
           <div className={styles.documentCardHoverActions}>
+            <button
+              type="button"
+              className={styles.cardActionBtn}
+              data-action="delete"
+              aria-label={`Delete ${file.title || "document"}`}
+              title="Delete document"
+              onClick={e => {
+                e.stopPropagation();
+                setDeletingFile(file);
+              }}
+            >
+              <Trash2 size={13} aria-hidden="true" />
+            </button>
             <button
               type="button"
               className={styles.cardActionBtn}
@@ -144,19 +157,6 @@ export function NotepadLibrary({
             >
               <Save size={13} aria-hidden="true" />
             </button>
-            <button
-              type="button"
-              className={styles.cardActionBtn}
-              data-action="delete"
-              aria-label={`Delete ${file.title || "document"}`}
-              title="Delete document"
-              onClick={e => {
-                e.stopPropagation();
-                setDeletingFile(file);
-              }}
-            >
-              <Trash2 size={13} aria-hidden="true" />
-            </button>
           </div>
         </div>
       ))}
@@ -164,8 +164,17 @@ export function NotepadLibrary({
 
     {/* Delete Confirmation Dialog */}
     {deletingFile && (
-      <div className={styles.deleteConfirmOverlay} role="dialog" aria-modal="true" aria-label="Confirm delete document">
-        <div className={styles.deleteConfirmBox}>
+      <div
+        className={styles.deleteConfirmOverlay}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Confirm delete document"
+        onClick={() => setDeletingFile(null)}
+      >
+        <div
+          className={styles.deleteConfirmBox}
+          onClick={e => e.stopPropagation()}
+        >
           <div style={{ display: "flex", alignItems: "center", gap: "8px", color: "#b91c1c", fontWeight: 700, fontSize: "14px", marginBottom: "6px" }}>
             <Trash2 size={16} aria-hidden="true" />
             <span>Delete Document</span>

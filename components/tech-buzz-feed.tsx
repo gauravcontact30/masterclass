@@ -63,7 +63,8 @@ import {
   getStaffPicks,
   getAllCategories,
   getTopPlatformsComparison,
-  getDiwaliFestiveSaleInfo
+  getDiwaliFestiveSaleInfo,
+  type FestiveSaleInfo
 } from "@/lib/tech-buzz-data";
 import { LanguageToggle } from "./language-toggle";
 import {
@@ -183,7 +184,11 @@ export function TechBuzzFeed() {
   const [formatPage, setFormatPage] = useState<number>(1);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [blogsPerPage, setBlogsPerPage] = useState<number>(10);
-  const festiveSale = useMemo(() => getDiwaliFestiveSaleInfo(), []);
+  const [festiveSale, setFestiveSale] = useState<FestiveSaleInfo>(() => getDiwaliFestiveSaleInfo());
+
+  useEffect(() => {
+    setFestiveSale(getDiwaliFestiveSaleInfo(Date.now()));
+  }, []);
 
   const updateLayoutDensity = (val: "magazine" | "compact") => {
     setLayoutDensity(val);

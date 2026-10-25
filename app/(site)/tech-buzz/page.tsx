@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import { Metadata } from "next";
 import { siteName, siteUrl } from "@/lib/seo";
 import { TechBuzzFeed } from "@/components/tech-buzz-feed";
@@ -65,7 +66,9 @@ export default function TechBuzzPage() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }}
       />
-      <TechBuzzFeed />
+      <Suspense fallback={null}>
+        <TechBuzzFeed />
+      </Suspense>
     </>
   );
 }

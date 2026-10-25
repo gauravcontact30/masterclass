@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, within } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { SuperAdminTransactions } from "@/components/super-admin-transactions";
 import { explainFailure } from "@/lib/payment-failures";
 
@@ -74,5 +74,17 @@ describe("SuperAdminTransactions", () => {
     await screen.findByDisplayValue("Wrong OTP");
     const last = (global.fetch as jest.Mock).mock.calls.at(-1)[0] as string;
     expect(last).toContain("status=failed");
+  });
+
+  it("deletes a transaction from the table when confirmed in the delete dialog", async () => {
+    render(<SuperAdminTransactions />);
+    const deleteBtn = await screen.findByRole("button", { name: "Delete transaction record pay_fail" });
+    fireEvent.click(deleteBtn);
+    expect(await screen.findByText(/are you sure you want to permanently delete transaction/i)).toBeInTheDocument();
+    const confirmBtn = screen.getByRole("button", { name: "Delete Transaction" });
+    fireEvent.click(confirmBtn);
+    await waitFor(() => {
+      expect(screen.queryByText("pay_fail")).not.toBeInTheDocument();
+    });
   });
 });

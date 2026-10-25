@@ -24,7 +24,7 @@ import {
 } from "lucide-react";
 import { LanguageToggle } from "./language-toggle";
 import { getTechnologyBrandIcon } from "./tech-buzz-brand-icons";
-import { getDiwaliFestiveSaleInfo } from "@/lib/tech-buzz-data";
+import { getDiwaliFestiveSaleInfo, type FestiveSaleInfo } from "@/lib/tech-buzz-data";
 import styles from "./courses-feed.module.css";
 
 export interface MasterCourseItem {
@@ -383,7 +383,11 @@ export function CoursesFeed() {
     return "magazine";
   });
 
-  const festiveSale = useMemo(() => getDiwaliFestiveSaleInfo(), []);
+  const [festiveSale, setFestiveSale] = useState<FestiveSaleInfo>(() => getDiwaliFestiveSaleInfo());
+
+  useEffect(() => {
+    setFestiveSale(getDiwaliFestiveSaleInfo(Date.now()));
+  }, []);
 
   // Interaction tracking
   const [likedCourseIds, setLikedCourseIds] = useState<Record<string, boolean>>({});

@@ -172,6 +172,8 @@ function csv(rows: Transaction[]) {
   return [head.join(","), ...body].join("\r\n");
 }
 
+const deletedIds = new Set<string>();
+
 export async function GET(request: Request) {
   return api(async () => {
     await requireSuperAdmin();
@@ -181,7 +183,8 @@ export async function GET(request: Request) {
     const q = input.q.toLowerCase();
     const from = input.from ? new Date(`${input.from}T00:00:00+05:30`).getTime() : -Infinity;
     const to = input.to ? new Date(`${input.to}T23:59:59.999+05:30`).getTime() : Infinity;
-    const rows = all.filter(row => (input.status === "all" || row.status === input.status) && (input.type === "all" || row.type === input.type)
+    const rows = all.filter(row => !deletedIds.has(row.id)
+      && (input.status === "all" || row.status === input.status) && (input.type === "all" || row.type === input.type)
       && (input.method === "all" || row.method === input.method)
       && new Date(row.createdAt).getTime() >= from && new Date(row.createdAt).getTime() <= to
       && (!q || [row.id, row.orderId, row.invoiceId, row.email, row.contact, row.item, row.methodDetail, row.failure?.title, row.failure?.reason].some(value => value?.toLowerCase().includes(q))));
@@ -193,9 +196,23 @@ export async function GET(request: Request) {
       summary: { count: rows.length, captured: sum(captured), refunded: rows.reduce((total, row) => total + row.refundedInr, 0), failed: rows.filter(row => row.status === "failed").length, unlocks: rows.filter(row => row.type === "Card unlock" && row.status === "captured").length },
       insights: insights(rows, all),
       // Suggestions for the search box: distinct emails, phones, items and ids containing what was typed.
-      suggestions: q ? [...new Set(all.flatMap(row => [row.email, row.contact, row.item, row.id, row.orderId]).filter((value): value is string => !!value && value.toLowerCase().includes(q) && value.toLowerCase() !== q))].sort((x, y) => x.length - y.length).slice(0, 6) : [],
-      facets: { statuses: [...new Set(all.map(row => row.status))].sort(), types: [...new Set(all.map(row => row.type))].sort(), methods: [...new Set(all.map(row => row.method))].filter(m => m !== "—").sort() },
+      suggestions: q ? [...new Set(all.flatMap(row => [row.email, row.contact, row.item, row.id, row.orderId]).filter((value): value is string => !deletedIds.has(row.id) && !!value && value.toLowerCase().includes(q) && value.toLowerCase() !== q))].sort((x, y) => x.length - y.length).slice(0, 6) : [],
+      facets: { statuses: [...new Set(all.filter(row => !deletedIds.has(row.id)).map(row => row.status))].sort(), types: [...new Set(all.filter(row => !deletedIds.has(row.id)).map(row => row.type))].sort(), methods: [...new Set(all.filter(row => !deletedIds.has(row.id)).map(row => row.method))].filter(m => m !== "—").sort() },
       generatedAt: new Date().toISOString(),
     });
+  }, request);
+}
+
+export async function DELETE(request: Request) {
+  return api(async () => {
+    await requireSuperAdmin();
+    const body = await request.json().catch(() => ({}));
+    const id = typeof body?.id === "string" ? body.id.trim() : "";
+    if (!id) throw new HttpError(400, "missing_transaction_id");
+    deletedIds.add(id);
+    for (const entry of cache.values()) {
+      entry.rows = entry.rows.filter(r => r.id !== id);
+    }
+    return Response.json({ success: true, id });
   }, request);
 }

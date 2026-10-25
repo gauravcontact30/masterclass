@@ -8,6 +8,7 @@ import styles from "../site.module.css";
 import { LearningPicture } from "@/components/learning-picture";
 import { learningImageUrl } from "@/lib/learning-image";
 
+import { Suspense } from "react";
 import { CoursesFeed } from "@/components/courses-feed";
 
 export const metadata = pageMetadata("/courses");
@@ -30,6 +31,8 @@ export default function CoursesPage() {
   };
   return <>
     <PageIntro path="/courses" eyebrow="Learning paths" extraSchema={itemList} />
-    <CoursesFeed />
+    <Suspense fallback={null}>
+      <CoursesFeed />
+    </Suspense>
   </>;
 }

@@ -1709,10 +1709,14 @@ export interface FestiveSaleInfo {
   active: boolean;
 }
 
-export function getDiwaliFestiveSaleInfo(): FestiveSaleInfo {
-  const endsAt = new Date("2026-11-15T23:59:59+05:30");
-  const now = new Date();
-  const active = now <= endsAt;
+export function getDiwaliFestiveSaleInfo(currentTime?: Date | number): FestiveSaleInfo {
+  // Epoch ms for 2026-11-15T23:59:59+05:30 = 1794767399000
+  const endsAtMs = 1794767399000;
+  // If currentTime is provided (e.g., in client useEffect), evaluate active status;
+  // otherwise default to true to prevent Next.js prerender error 'new Date() in Client Component'.
+  const active = currentTime !== undefined
+    ? (typeof currentTime === "number" ? currentTime : currentTime.getTime()) <= endsAtMs
+    : true;
   return {
     title: "Diwali Festive Sale",
     festival: "Diwali 2026",
