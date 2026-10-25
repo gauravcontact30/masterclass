@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo, useSyncExternalStore } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -38,10 +38,16 @@ interface Props {
 
 /** Remote covers (Unsplash) are already sized by URL; local ones go through the image optimizer. */
 const remote = (src: string) => /^https?:/.test(src);
+/** Whether this browser holds a Supabase session cookie; null during the server render. */
+const hasSessionCookie = () => /(?:^|;\s*)sb-[^=]+-auth-token/.test(document.cookie);
+const noSubscription = () => () => {};
 
 export function TechBuzzArticleView({ article, related, prevStory, nextStory }: Props) {
   // Membership: "checking" while the member body loads, then the body or the reason it is locked.
-  const [access, setAccess] = useState<"checking" | "member" | "signin_required" | "subscription_required">("checking");
+  // Without a session cookie the visitor cannot be a member, so no request is made and the preview stays locked.
+  const signedIn = useSyncExternalStore(noSubscription, hasSessionCookie, () => null);
+  const [memberAccess, setAccess] = useState<"checking" | "member" | "signin_required" | "subscription_required">("checking");
+  const access = signedIn === false ? "signin_required" : memberAccess;
   const [memberContent, setMemberContent] = useState<TechBuzzMemberContent | null>(null);
   const isSubscribed = access === "member" && !!memberContent;
   const [claps, setClaps] = useState<number>(article.claps);
@@ -84,9 +90,9 @@ export function TechBuzzArticleView({ article, related, prevStory, nextStory }: 
     } catch {}
   }, [article.id]);
 
-  // The member body. Without a Supabase session cookie the visitor cannot be a member, so no request is made.
+  // The member body, checked on the server for signed-in readers.
   useEffect(() => {
-    if (!/(?:^|;\s*)sb-[^=]+-auth-token/.test(document.cookie)) { setAccess("signin_required"); return; }
+    if (!signedIn) return;
     const controller = new AbortController();
     fetch(`/api/tech-buzz/${encodeURIComponent(article.slug)}/member`, { signal: controller.signal })
       .then(res => (res.ok ? res.json() : null))
@@ -99,7 +105,7 @@ export function TechBuzzArticleView({ article, related, prevStory, nextStory }: 
       })
       .catch(() => { if (!controller.signal.aborted) setAccess("signin_required"); });
     return () => controller.abort();
-  }, [article.slug]);
+  }, [article.slug, signedIn]);
 
   // Track scroll position for reading progress bar
   useEffect(() => {
@@ -328,7 +334,7 @@ export function TechBuzzArticleView({ article, related, prevStory, nextStory }: 
         <div className={styles.stickyNavInner}>
           <Link href="/tech-buzz" className={styles.backLink}>
             <ArrowLeft size={16} />
-            <span>Back to Master Class Buddy - Blogs</span>
+            <span>Back to Tech Buzz</span>
           </Link>
 
           <div className={styles.stickyNavRight}>
@@ -436,10 +442,12 @@ export function TechBuzzArticleView({ article, related, prevStory, nextStory }: 
                 </button>
               )}
 
-              <div className={styles.starBadge} title={`Rated ${article.rating.average}/5`}>
+              <div className={styles.starBadge} title={article.rating.count ? `Rated ${article.rating.average}/5 by ${article.rating.count} readers` : "No reader ratings yet"}>
                 <Star size={13} fill="#f59e0b" color="#f59e0b" />
-                <span>{article.rating.average}</span>
-                <span style={{ opacity: 0.7 }}>({article.rating.count})</span>
+                {article.rating.count ? <>
+                  <span>{article.rating.average}</span>
+                  <span style={{ opacity: 0.7 }}>({article.rating.count})</span>
+                </> : <span>New story</span>}
               </div>
             </div>
           </div>

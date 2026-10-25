@@ -53,7 +53,7 @@
 .hero { position: relative; margin-bottom: 8px; padding-bottom: 24px; border-bottom: 1px solid var(--line); }
 .heroLink { display: grid; gap: 16px; color: inherit; text-decoration: none; }
 .heroBody { display: grid; gap: 8px; }
-.heroBody h2 { margin: 0; font-family: Georgia, "Nirmala UI", serif; font-size: clamp(24px, 3vw, 32px); font-weight: 700; line-height: 1.18; color: var(--ink); }
+.heroBody h2 { display: -webkit-box; overflow: hidden; -webkit-line-clamp: 3; -webkit-box-orient: vertical; margin: 0; font-family: Georgia, "Nirmala UI", serif; font-size: clamp(24px, 3vw, 32px); font-weight: 700; line-height: 1.18; color: var(--ink); }
 .heroBody p { margin: 0; font-size: 17px; line-height: 1.55; color: var(--body); }
 .heroLink:hover h2 { text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 4px; }
 

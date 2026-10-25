@@ -24,7 +24,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   if (!article) {
     return {
       robots: { index: false, follow: true },
-      title: "Article Not Found | Tech Buzz — MasterClass",
+      title: "Story not found | Tech Buzz",
       description: "The requested Tech Buzz article could not be located."
     };
   }
@@ -34,7 +34,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const ogImageUrl = `/tech-buzz/${article.slug}/opengraph-image`;
 
   return {
-    title: `${article.title} | Tech Buzz — MasterClass Buddy`,
+    title: `${article.title} | Tech Buzz`,
     description: article.subtitle,
     keywords: [
       article.technology,

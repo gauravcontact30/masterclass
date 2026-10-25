@@ -4,7 +4,7 @@ import { siteName, siteUrl } from "@/lib/seo";
 import { TechBuzzBlog, type TechBuzzTopic } from "@/components/tech-buzz-blog";
 import { listPublishedTechBuzzArticles } from "@/lib/server/tech-buzz-storage";
 import { communityPosts } from "@/lib/server/community-feed";
-import { isTechnologyStory, toCard } from "@/lib/tech-buzz-public";
+import { isTechnologyStory, toCard, topicLabel } from "@/lib/tech-buzz-public";
 
 const DESCRIPTION = "Reader-rated technology blogs on Next.js 16, React 19, TypeScript, LangChain, LangGraph, AI agents, Node.js, Python, Docker, AWS, testing and system design, plus fresh developer community headlines.";
 
@@ -18,7 +18,7 @@ async function Blog() {
   const counts = new Map<string, TechBuzzTopic>();
   for (const card of cards) {
     const id = card.techId ?? card.category;
-    const topic = counts.get(id) ?? { id, label: card.techId ? card.technology.replace(/\s+&.*$/, "") : card.category, count: 0 };
+    const topic = counts.get(id) ?? { id, label: topicLabel(card), count: 0 };
     topic.count += 1;
     counts.set(id, topic);
   }
@@ -38,7 +38,7 @@ async function Blog() {
 }
 
 export const metadata: Metadata = {
-  title: "Tech Buzz: Technology Blogs Rated by Developers | MasterClass Buddy",
+  title: "Tech Buzz: Technology Blogs Rated by Developers",
   description: DESCRIPTION,
   keywords: [
     "technology blogs", "developer blog India", "Next.js 16 blog", "React 19 tutorial", "TypeScript guide", "LangChain tutorial",

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState, type CSSProperties } from "react";
+import { useMemo, useState, useSyncExternalStore, type CSSProperties } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -29,6 +29,23 @@ const FEEDS: { id: Feed; label: string; icon: LucideIcon }[] = [
 const PAGE = 10;
 const SAVED_KEY = "masterclass:tech-buzz-bookmarks";
 const TONES = ["#fdf0e6", "#e7f5ee", "#f0ecfb", "#e8f2fb", "#fdf6dc", "#fcebef", "#eef3e6", "#e4f5f5"];
+
+const VIEW_KEY = "masterclass:tech-buzz-view";
+/** Reading list and layout live in this browser's storage, read through useSyncExternalStore so the server render
+ *  (no storage) and the first client render agree, and writes in another tab show up here too. */
+const STORE_EVENT = "masterclass:tech-buzz-storage";
+const subscribe = (onChange: () => void) => {
+  window.addEventListener("storage", onChange);
+  window.addEventListener(STORE_EVENT, onChange);
+  return () => { window.removeEventListener("storage", onChange); window.removeEventListener(STORE_EVENT, onChange); };
+};
+const readStored = (key: string) => { try { return localStorage.getItem(key); } catch { return null; } };
+const writeStored = (key: string, value: string) => {
+  try { localStorage.setItem(key, value); } catch { /* storage blocked: kept for this visit only */ }
+  window.dispatchEvent(new Event(STORE_EVENT));
+};
+const useStored = (key: string) => useSyncExternalStore(subscribe, () => readStored(key), () => null);
+const never = () => () => {};
 
 export type TechBuzzTopic = { id: string; label: string; count: number };
 
@@ -84,26 +101,27 @@ export function TechBuzzBlog({ cards, topics, community }: { cards: TechBuzzCard
   const [feed, setFeed] = useState<Feed>("for-you");
   const [topic, setTopic] = useState<string | null>(null);
   const [query, setQuery] = useState("");
-  const [view, setView] = useState<"list" | "grid">("list");
   const [shown, setShown] = useState(PAGE);
-  const [saved, setSaved] = useState<Record<string, boolean>>({});
-  const [sale, setSale] = useState(() => getDiwaliFestiveSaleInfo());
+  // Fallbacks for a browser that blocks storage, so saving and switching layout still work for the visit.
+  const [savedThisVisit, setSavedThisVisit] = useState<Record<string, boolean> | null>(null);
+  const [viewThisVisit, setViewThisVisit] = useState<"list" | "grid" | null>(null);
+  const storedSaved = useStored(SAVED_KEY);
+  const storedView = useStored(VIEW_KEY);
+  const saved = useMemo<Record<string, boolean>>(() => {
+    if (savedThisVisit) return savedThisVisit;
+    try { return JSON.parse(storedSaved ?? "{}"); } catch { return {}; }
+  }, [savedThisVisit, storedSaved]);
+  const view = viewThisVisit ?? (storedView === "grid" ? "grid" : "list");
+  // The sale banner shows on the server render; the browser's clock hides it once the sale has ended.
+  const saleEnded = useSyncExternalStore(never, () => !getDiwaliFestiveSaleInfo(Date.now()).active, () => false);
+  const sale = getDiwaliFestiveSaleInfo();
 
-  useEffect(() => {
-    try {
-      setSaved(JSON.parse(localStorage.getItem(SAVED_KEY) ?? "{}"));
-      const remembered = localStorage.getItem("masterclass:tech-buzz-view");
-      if (remembered === "grid" || remembered === "list") setView(remembered);
-    } catch { /* storage blocked: defaults */ }
-    setSale(getDiwaliFestiveSaleInfo(Date.now()));
-  }, []);
-
-  const toggleSaved = (id: string) => setSaved(current => {
-    const next = { ...current, [id]: !current[id] };
-    try { localStorage.setItem(SAVED_KEY, JSON.stringify(next)); } catch { /* not persisted */ }
-    return next;
-  });
-  const chooseView = (next: "list" | "grid") => { setView(next); try { localStorage.setItem("masterclass:tech-buzz-view", next); } catch { /* not persisted */ } };
+  const toggleSaved = (id: string) => {
+    const next = { ...saved, [id]: !saved[id] };
+    setSavedThisVisit(next);
+    writeStored(SAVED_KEY, JSON.stringify(next));
+  };
+  const chooseView = (next: "list" | "grid") => { setViewThisVisit(next); writeStored(VIEW_KEY, next); };
 
   const ranked = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -155,7 +173,7 @@ export function TechBuzzBlog({ cards, topics, community }: { cards: TechBuzzCard
       </div>
     </header>
 
-    {sale.active && <Link href="/subscribe" className={styles.sale}>
+    {!saleEnded && <Link href="/subscribe" className={styles.sale}>
       <Sparkles size={16} aria-hidden="true" />
       <span><b>{sale.title}:</b> {sale.discountPercent}% off membership until {sale.validTill}. Read every story in full.</span>
       <ArrowRight size={16} aria-hidden="true" />

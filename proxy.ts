@@ -136,6 +136,7 @@ export const config = {
   matcher: [
     "/",
     "/learning/:path*",
+    "/super-admin/:path*",
     "/sign-in/:path*",
     "/sign-up/:path*",
     "/api/:path*",

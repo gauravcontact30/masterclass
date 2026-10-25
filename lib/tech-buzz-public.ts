@@ -15,9 +15,16 @@ export const isTechnologyStory = (article: Pick<TechBuzzArticle, "slug">) => !NO
 /** Learning Dashboard technology ids for stories saved before techId existed, matched on their technology label. */
 const TECH_IDS: [RegExp, string][] = [
   [/next\.?js/i, "nextjs"], [/typescript/i, "typescript"], [/postgres/i, "postgresql"], [/agentic|mcp/i, "agentic-ai"],
-  [/rust/i, "rust"], [/kafka|streaming/i, "system-design"], [/kubernetes|crossplane|platform engineering/i, "kubernetes"],
-  [/react/i, "react"], [/python/i, "python"], [/docker/i, "docker"], [/aws|cloud/i, "aws"],
+  [/rust/i, "rust"], [/kubernetes|crossplane|platform engineering/i, "kubernetes"],
+  [/react/i, "react"], [/python/i, "python"], [/docker/i, "docker"], [/\baws\b/i, "aws"],
 ];
+/** Topic names for technologies that several stories share (labels like "Next.js 15 & React 19" are per story). */
+const TOPIC_LABELS: Record<string, string> = {
+  nextjs: "Next.js", react: "React", typescript: "TypeScript", postgresql: "PostgreSQL", "agentic-ai": "Agentic AI",
+  rust: "Rust", kubernetes: "Kubernetes", aws: "AWS", python: "Python", docker: "Docker", "system-design": "System Design",
+};
+export const topicLabel = (card: Pick<TechBuzzCard, "techId" | "technology" | "category">) =>
+  card.techId ? TOPIC_LABELS[card.techId] ?? card.technology.replace(/\s+(&|\d).*$/, "") : card.category;
 export const techIdOf = (article: Pick<TechBuzzArticle, "techId" | "technology">) =>
   article.techId ?? TECH_IDS.find(([pattern]) => pattern.test(article.technology))?.[1];
 
@@ -49,7 +56,8 @@ export type TechBuzzPreview = Omit<TechBuzzArticle, "contentSections" | "founder
 };
 
 export function toPreview(article: TechBuzzArticle): TechBuzzPreview {
-  const { contentSections, founderTakeaway: _takeaway, comments: _comments, ...rest } = article;
+  const { contentSections, founderTakeaway, comments, ...rest } = article;
+  void founderTakeaway; void comments; // member-only: left out of the preview on purpose
   const [first, ...locked] = contentSections;
   return {
     ...rest,

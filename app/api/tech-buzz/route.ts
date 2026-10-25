@@ -77,7 +77,7 @@ export async function GET(request: Request) {
 
     return Response.json(
       {
-        articles,
+        articles: articles.map(toCard),
         total: articles.length,
         categories,
         technologies,
