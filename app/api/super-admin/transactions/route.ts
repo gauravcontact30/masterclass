@@ -196,7 +196,7 @@ export async function GET(request: Request) {
       summary: { count: rows.length, captured: sum(captured), refunded: rows.reduce((total, row) => total + row.refundedInr, 0), failed: rows.filter(row => row.status === "failed").length, unlocks: rows.filter(row => row.type === "Card unlock" && row.status === "captured").length },
       insights: insights(rows, all),
       // Suggestions for the search box: distinct emails, phones, items and ids containing what was typed.
-      suggestions: q ? [...new Set(all.flatMap(row => [row.email, row.contact, row.item, row.id, row.orderId]).filter((value): value is string => !deletedIds.has(row.id) && !!value && value.toLowerCase().includes(q) && value.toLowerCase() !== q))].sort((x, y) => x.length - y.length).slice(0, 6) : [],
+      suggestions: q ? [...new Set(all.filter(row => !deletedIds.has(row.id)).flatMap(row => [row.email, row.contact, row.item, row.id, row.orderId]).filter((value): value is string => !!value && value.toLowerCase().includes(q) && value.toLowerCase() !== q))].sort((x, y) => x.length - y.length).slice(0, 6) : [],
       facets: { statuses: [...new Set(all.filter(row => !deletedIds.has(row.id)).map(row => row.status))].sort(), types: [...new Set(all.filter(row => !deletedIds.has(row.id)).map(row => row.type))].sort(), methods: [...new Set(all.filter(row => !deletedIds.has(row.id)).map(row => row.method))].filter(m => m !== "—").sort() },
       generatedAt: new Date().toISOString(),
     });
