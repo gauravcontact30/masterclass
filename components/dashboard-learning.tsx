@@ -19,7 +19,7 @@ import styles from "./dashboard-learning.module.css";
 export type DashboardDaily = { day: string; pulse: PulseCard[]; words: DailyWord[]; locked: { pulse: LockedTeaser | null; word: LockedTeaser | null } };
 
 /**
- * The full learning sections inside /dashboard: AI & agentic pulse, Word power, Workflow blueprints (with every
+ * The full learning sections inside /learning: AI & agentic pulse, Word power, Workflow blueprints (with every
  * most-asked interview question) and Interview prep. The landing page previews three cards of each and links
  * here (components/dashboard-more.tsx), so these render the same components, in the landing page's tokens and font.
  */

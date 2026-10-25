@@ -28,7 +28,7 @@ export function ClientMonitor() {
   });
 
   useEffect(() => {
-    if (pathname.startsWith("/dashboard/super-admin")) return;
+    if (pathname.startsWith("/super-admin")) return;
     const flush = () => {
       const current = page.current;
       if (current.sent || (!Object.keys(current.vitals).length && !current.errors.length)) return;

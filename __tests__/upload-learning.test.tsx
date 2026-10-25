@@ -27,8 +27,8 @@ describe("placement catalog", () => {
   });
   it("makes URL-safe slugs and resolves where a placement is visible", () => {
     expect(slugify("  Weekly Deep-Dives: React!  ")).toBe("weekly-deep-dives-react");
-    expect(placementHref("dashboard", "learn:deep-dives")).toBe("/dashboard/learn/deep-dives");
-    expect(placementHref("dashboard", "techy")).toBe("/dashboard/techy");
+    expect(placementHref("dashboard", "learn:deep-dives")).toBe("/learning/learn/deep-dives");
+    expect(placementHref("dashboard", "techy")).toBe("/learning/techy");
     expect(placementHref("sign_up", "sign-up")).toBe("/sign-up");
   });
 });
@@ -66,7 +66,7 @@ describe("SuperAdminUploadLearning", () => {
     expect(screen.getByText(/Landing page › Home page › Middle/)).toBeInTheDocument();
     expect(screen.getByText("Live")).toBeInTheDocument();
     fireEvent.click(screen.getByRole("tab", { name: /learning pages/i }));
-    expect(screen.getByText(/\/dashboard\/learn\/deep-dives/)).toBeInTheDocument();
+    expect(screen.getByText(/\/learning\/learn\/deep-dives/)).toBeInTheDocument();
   });
 
   it("selects uploads and applies one change to all of them", async () => {

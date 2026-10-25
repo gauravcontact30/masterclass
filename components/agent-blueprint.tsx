@@ -160,7 +160,7 @@ export function AgentBlueprint() {
               <Users size={14} aria-hidden="true" /> Multi-agent
             </button>
           </div>
-          <Link href="/dashboard/workflow" className={styles.guidesLink}>
+          <Link href="/learning/workflow" className={styles.guidesLink}>
             Full build guides <ArrowRight size={14} aria-hidden="true" />
           </Link>
         </div>
@@ -196,7 +196,7 @@ export function AgentBlueprint() {
                     <span>APIs in this step</span>
                     {step.apis.map(api =>
                       inCatalog(api.pkg, api.name) ? (
-                        <Link key={api.name} href={`/dashboard/api-docs/${api.pkg}/${api.name}`} className={styles.apiLink}>
+                        <Link key={api.name} href={`/learning/api-docs/${api.pkg}/${api.name}`} className={styles.apiLink}>
                           {api.name}
                           <ArrowUpRight size={11} aria-hidden="true" />
                         </Link>

@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import { siteName, siteUrl } from "@/lib/seo";
 import { getPublishedTechBuzzArticle, listPublishedTechBuzzArticles } from "@/lib/server/tech-buzz-storage";
 import { TechBuzzArticleView } from "@/components/tech-buzz-article-view";
+import { isTechnologyStory, toCard, toPreview } from "@/lib/tech-buzz-public";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -90,6 +91,15 @@ export default async function TechBuzzArticlePage({ params }: PageProps) {
     notFound();
   }
 
+  // Related stories (same technology, then same category, then the rest) and the neighbours in the feed, as light
+  // cards: the browser never receives another story's body.
+  const stories = (await listPublishedTechBuzzArticles()).filter(isTechnologyStory);
+  const index = stories.findIndex(story => story.id === article.id);
+  const rank = (story: (typeof stories)[number]) => (story.technology === article.technology ? 0 : story.category === article.category ? 1 : 2);
+  const related = stories.filter(story => story.id !== article.id).sort((a, b) => rank(a) - rank(b)).slice(0, 9).map(toCard);
+  const prevStory = index > 0 ? toCard(stories[index - 1]) : null;
+  const nextStory = index >= 0 && index < stories.length - 1 ? toCard(stories[index + 1]) : null;
+
   const origin = siteUrl().href;
   const pageUrl = new URL(`/tech-buzz/${article.slug}`, origin).href;
   const image = new URL(article.coverImage, origin).href;
@@ -120,7 +130,10 @@ export default async function TechBuzzArticlePage({ params }: PageProps) {
     mainEntityOfPage: {
       "@type": "WebPage",
       "@id": pageUrl
-    }
+    },
+    // Member-only beyond the preview: tells Google the gated part is a paywall, not cloaking.
+    isAccessibleForFree: false,
+    hasPart: { "@type": "WebPageElement", isAccessibleForFree: false, cssSelector: ".paywalled-story" }
   };
   const breadcrumbSchema = {
     "@context": "https://schema.org",
@@ -138,7 +151,7 @@ export default async function TechBuzzArticlePage({ params }: PageProps) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify([articleSchema, breadcrumbSchema]).replace(/</g, "\\u003c") }}
       />
-      <TechBuzzArticleView article={article} />
+      <TechBuzzArticleView article={toPreview(article)} related={related} prevStory={prevStory} nextStory={nextStory} />
     </>
   );
 }

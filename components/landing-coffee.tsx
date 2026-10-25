@@ -47,7 +47,7 @@ export function LandingCoffee({ posts }: Readonly<{ posts: BlogTeaser[] }>) {
   const slides = shown.map(post => ({
     id: post.slug, image: post.cover, tone: COVERS[post.tone], kicker: post.topic, title: post.title, text: post.dek,
     meta: hi ? `${post.minutes} मिनट पढ़ें` : `${post.minutes} min read`,
-    href: `/sign-in?redirect=${encodeURIComponent(`/dashboard/coffee-and-code/${post.slug}`)}`, cta: hi ? "पूरा पढ़ें" : "Read article",
+    href: `/sign-in?redirect=${encodeURIComponent(`/learning/coffee-and-code/${post.slug}`)}`, cta: hi ? "पूरा पढ़ें" : "Read article",
   }));
   return <FeatureSection feature={FEATURE} index={1} total={1} section={section} float={<CoverCarousel slides={slides} label={hi ? "Coffee & Code लेख" : "Coffee & Code articles"} />} />;
 }

@@ -32,7 +32,7 @@ test("signs in with email and password, then lands on the dashboard", async () =
   await user.click(screen.getByRole("button", { name: "Sign in" }));
 
   await waitFor(() => expect(signInWithPassword).toHaveBeenCalledWith({ email: "student@example.com", password: "hunter2pass" }));
-  await waitFor(() => expect(replace).toHaveBeenCalledWith("/dashboard"));
+  await waitFor(() => expect(replace).toHaveBeenCalledWith("/learning"));
 });
 
 test("explains a failed sign-in instead of leaving the form silent", async () => {
@@ -145,17 +145,17 @@ test.each(["signin", "signup"] as const)("the eye button reveals and hides the p
 
 test("after sign-in, the proxy's redirect target is followed only when it is an in-app path", async () => {
   signInWithPassword.mockResolvedValue(confirmed);
-  render(<AuthPage mode="signin" enabled redirectTo="/dashboard/super-admin" />);
+  render(<AuthPage mode="signin" enabled redirectTo="/super-admin" />);
   const user = await fillCredentials();
   await user.click(screen.getByRole("button", { name: "Sign in" }));
-  await waitFor(() => expect(replace).toHaveBeenCalledWith("/dashboard/super-admin"));
+  await waitFor(() => expect(replace).toHaveBeenCalledWith("/super-admin"));
   // The button stays busy while the dashboard loads, so a second tap cannot resubmit.
   expect(screen.getByRole("button", { name: "Loading…" })).toBeDisabled();
 });
 
 test.each([
-  ["https://evil.example/dashboard", "/dashboard"], ["//evil.example", "/dashboard"], ["/dashboard\evil", "/dashboard"],
-  ["/api/admin", "/dashboard"], [undefined, "/dashboard"], ["/dashboard/notes?tab=1", "/dashboard/notes?tab=1"], ["/notes", "/notes"],
+  ["https://evil.example/dashboard", "/learning"], ["//evil.example", "/learning"], ["/learning\evil", "/learning"],
+  ["/api/admin", "/learning"], [undefined, "/learning"], ["/learning/notes?tab=1", "/learning/notes?tab=1"], ["/notes", "/notes"],
   ["/tech-buzz", "/tech-buzz"], ["/tech-buzz?filter=ai", "/tech-buzz?filter=ai"]
 ])("safeRedirect(%p) → %p", (target, expected) => { expect(safeRedirect(target)).toBe(expected); });
 
@@ -213,7 +213,7 @@ test("a project that auto-confirms still signs the new learner in, with a welcom
   render(<AuthPage mode="signup" enabled />);
   const user = await fillCredentials("new@example.com");
   await user.click(screen.getByRole("button", { name: "Start learning" }));
-  await waitFor(() => expect(replace).toHaveBeenCalledWith("/dashboard"));
+  await waitFor(() => expect(replace).toHaveBeenCalledWith("/learning"));
   expect(sessionStorage.getItem("mc:auth-notice")).toBe("created");
 });
 

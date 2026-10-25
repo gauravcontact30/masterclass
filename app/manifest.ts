@@ -5,7 +5,7 @@ export default function manifest(): MetadataRoute.Manifest {
     name: `${siteName} — Learn in App`,
     short_name: siteName,
     description: siteDescription,
-    start_url: "/dashboard",
+    start_url: "/learning",
     scope: "/",
     display: "standalone",
     background_color: "#f5f4ed",

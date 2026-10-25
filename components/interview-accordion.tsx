@@ -26,7 +26,7 @@ const LETTERS = ["A", "B", "C", "D"];
  * blueprints and the interview carousel on the landing page.
  * `limit` shows only the most asked few of each kind (the landing preview), with a link to the full set at `moreHref`.
  */
-export function InterviewQuestions({ set, text, heading, scroll = false, limit, moreHref = "/dashboard" }: Readonly<{ set: QuestionSet; text: Text; heading?: ReactNode; scroll?: boolean; limit?: number; moreHref?: string }>) {
+export function InterviewQuestions({ set, text, heading, scroll = false, limit, moreHref = "/learning" }: Readonly<{ set: QuestionSet; text: Text; heading?: ReactNode; scroll?: boolean; limit?: number; moreHref?: string }>) {
   const [mode, setMode] = useState<Mode>(set.subjective.length || !set.objective.length ? "subjective" : "objective");
   const cap = <T,>(list: T[]) => limit ? list.slice(0, limit) : list;
   const subjective = useVisibleContent(set.subjective, questionKey);

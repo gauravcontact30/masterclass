@@ -88,9 +88,9 @@ export function placementHref(surface: LearningSurface, page: string) {
   if (surface === "sign_in") return "/sign-in";
   if (surface === "sign_up") return "/sign-up";
   if (surface === "tech_buzz") return page === "article" ? "/tech-buzz/scaling-websockets-kubernetes-rust" : "/tech-buzz";
-  if (surface === "super_admin") return "/dashboard/super-admin";
-  if (page.startsWith("learn:")) return `/dashboard/learn/${page.slice(6)}`;
-  return page === "dashboard" ? "/dashboard" : `/dashboard/${page}`;
+  if (surface === "super_admin") return "/super-admin";
+  if (page.startsWith("learn:")) return `/learning/learn/${page.slice(6)}`;
+  return page === "dashboard" ? "/learning" : `/learning/${page}`;
 }
 
 async function send<T>(url: string, method: string, body?: unknown): Promise<T> {
@@ -290,7 +290,7 @@ function Composer({ userId, draft, setDraft, pages, onDone, onError }: { userId:
           <fieldset className={styles.tones}><legend>Colour</legend>{TONES.map(tone => <label key={tone.value} title={tone.label} style={{ background: tone.fill, borderColor: tone.edge }}>
             <input type="radio" name={`${id}-tone`} value={tone.value} checked={draft.tone === tone.value} onChange={() => set("tone")(tone.value)} /><span>{tone.label}</span></label>)}</fieldset>
           <Field label="Button text (optional)" htmlFor={`${id}-cta-label`}><input id={`${id}-cta-label`} value={draft.ctaLabel} maxLength={40} onChange={e => set("ctaLabel")(e.target.value)} placeholder="e.g. Start the lesson" /></Field>
-          <Field label="Button link" htmlFor={`${id}-cta-url`} hint={invalidCta ? "Give both the text and a link starting with / or https://" : "A page here (/dashboard/techy) or an https:// link"}><input id={`${id}-cta-url`} value={draft.ctaUrl} maxLength={500} onChange={e => set("ctaUrl")(e.target.value)} placeholder="/dashboard/techy" aria-invalid={invalidCta} /></Field>
+          <Field label="Button link" htmlFor={`${id}-cta-url`} hint={invalidCta ? "Give both the text and a link starting with / or https://" : "A page here (/learning/techy) or an https:// link"}><input id={`${id}-cta-url`} value={draft.ctaUrl} maxLength={500} onChange={e => set("ctaUrl")(e.target.value)} placeholder="/learning/techy" aria-invalid={invalidCta} /></Field>
           <Field label="Topic tags (up to 10)" htmlFor={`${id}-tag`} wide>
             <div className={styles.tagBox}>{draft.tags.map(t => <span key={t}><Tag size={11} aria-hidden="true" />{t}<button type="button" aria-label={`Remove tag ${t}`} onClick={() => set("tags")(draft.tags.filter(x => x !== t))}><X size={11} /></button></span>)}
               <input id={`${id}-tag`} value={tag} maxLength={30} onChange={e => setTag(e.target.value)} onKeyDown={e => { if (e.key === "Enter" || e.key === ",") { e.preventDefault(); addTag(); } }} onBlur={addTag} placeholder={draft.tags.length ? "Add another…" : "Type and press Enter"} disabled={draft.tags.length >= 10} /></div>
@@ -489,7 +489,7 @@ function PagesPanel({ pages, uploads, onChanged, onError, onAddContent }: { page
       <header className={styles.panelHead}><FilePlus2 size={16} aria-hidden="true" /><h3>{form.id ? "Edit page" : "New Learning Dashboard page"}</h3></header>
       <div className={styles.form}>
         <Field label="Page title" htmlFor={`${id}-title`}><input id={`${id}-title`} value={form.title} maxLength={80} onChange={e => setForm({ ...form, title: e.target.value })} placeholder="e.g. Weekly deep dives" /></Field>
-        <Field label="Address" htmlFor={`${id}-slug`} hint={`/dashboard/learn/${slugify(form.slug || form.title) || "…"}`}><input id={`${id}-slug`} value={form.slug} maxLength={60} onChange={e => setForm({ ...form, slug: e.target.value })} placeholder="Made from the title if left empty" /></Field>
+        <Field label="Address" htmlFor={`${id}-slug`} hint={`/learning/learn/${slugify(form.slug || form.title) || "…"}`}><input id={`${id}-slug`} value={form.slug} maxLength={60} onChange={e => setForm({ ...form, slug: e.target.value })} placeholder="Made from the title if left empty" /></Field>
         <Field label="Description (optional)" htmlFor={`${id}-desc`} wide><input id={`${id}-desc`} value={form.description} maxLength={300} onChange={e => setForm({ ...form, description: e.target.value })} placeholder="Shown under the page heading" /></Field>
         <Field label="Sidebar icon" htmlFor={`${id}-icon`}><AdminSelect id={`${id}-icon`} label="Icon" value={form.icon} onValueChange={icon => setForm({ ...form, icon })} options={PAGE_ICONS.map(icon => ({ value: icon, label: icon.replace(/([a-z])([A-Z0-9])/g, "$1 $2") }))} /></Field>
         <Field label="Order in the sidebar" htmlFor={`${id}-position`}><input id={`${id}-position`} type="number" min={-1000} max={1000} value={form.position} onChange={e => setForm({ ...form, position: Number(e.target.value) || 0 })} /></Field>
@@ -503,12 +503,12 @@ function PagesPanel({ pages, uploads, onChanged, onError, onAddContent }: { page
     <section className={styles.panel} data-tone="sky">
       <header className={styles.panelHead}><BookOpen size={16} aria-hidden="true" /><h3>Your pages</h3><span>Shown under “Your pages” in the Learning Dashboard sidebar</span></header>
       {pages.length ? <ul className={styles.pageList}>{pages.map(page => { const count = uploads.filter(u => u.surface === "dashboard" && u.page === `learn:${page.slug}`).length; return <li key={page.id} data-hidden={!page.visible || undefined}>
-        <div><strong>{page.title}</strong><small>/dashboard/learn/{page.slug} · {count} upload{count === 1 ? "" : "s"} · order {page.position}</small><span className={styles.status} data-status={page.visible ? "live" : "hidden"}>{page.visible ? "In sidebar" : "Hidden"}</span></div>
+        <div><strong>{page.title}</strong><small>/learning/learn/{page.slug} · {count} upload{count === 1 ? "" : "s"} · order {page.position}</small><span className={styles.status} data-status={page.visible ? "live" : "hidden"}>{page.visible ? "In sidebar" : "Hidden"}</span></div>
         <div className={styles.rowActions}>
           <button type="button" onClick={() => onAddContent(page)} aria-label={`Add content to ${page.title}`} title="Add content"><Upload size={14} /></button>
           <button type="button" onClick={() => setForm({ id: page.id, title: page.title, slug: page.slug, description: page.description ?? "", icon: page.icon, position: page.position, visible: page.visible })} aria-label={`Edit ${page.title}`} title="Edit"><Pencil size={14} /></button>
           <button type="button" disabled={busy} onClick={() => void act(() => send("/api/super-admin/learning-pages", "PATCH", { id: page.id, changes: { visible: !page.visible } }), `${page.visible ? "Hid" : "Showed"} “${page.title}”.`)} aria-label={`${page.visible ? "Hide" : "Show"} ${page.title}`} title={page.visible ? "Hide from sidebar" : "Show in sidebar"}>{page.visible ? <EyeOff size={14} /> : <Eye size={14} />}</button>
-          <a href={`/dashboard/learn/${page.slug}`} target="_blank" rel="noreferrer" aria-label={`Open ${page.title}`} title="Open the page"><ExternalLink size={14} /></a>
+          <a href={`/learning/learn/${page.slug}`} target="_blank" rel="noreferrer" aria-label={`Open ${page.title}`} title="Open the page"><ExternalLink size={14} /></a>
           <button type="button" className={styles.danger} disabled={busy} onClick={() => setConfirm(page)} aria-label={`Delete ${page.title}`} title="Delete"><Trash2 size={14} /></button>
         </div>
       </li>; })}</ul> : <div className={styles.emptyState}><BookOpen size={28} aria-hidden="true" /><p>No custom pages yet. Add one to give your uploads their own place in the Learning Dashboard.</p></div>}

@@ -35,13 +35,13 @@ describe("BackToTop", () => {
   });
 
   test("renders move to top button on learning dashboard", () => {
-    jest.mocked(usePathname).mockReturnValue("/dashboard/techy");
+    jest.mocked(usePathname).mockReturnValue("/learning/techy");
     const { container } = render(<BackToTop />);
     expect(container.querySelector('button[aria-label="Move to top"]')).toBeInTheDocument();
   });
 
   test("renders move to top button on super admin dashboard", () => {
-    jest.mocked(usePathname).mockReturnValue("/dashboard/super-admin");
+    jest.mocked(usePathname).mockReturnValue("/super-admin");
     const { container } = render(<BackToTop />);
     expect(container.querySelector('button[aria-label="Move to top"]')).toBeInTheDocument();
   });
@@ -57,7 +57,7 @@ describe("BackToTop", () => {
   });
 
   test("smooth scrolls to top on click", () => {
-    jest.mocked(usePathname).mockReturnValue("/dashboard/super-admin");
+    jest.mocked(usePathname).mockReturnValue("/super-admin");
     const { container } = render(<BackToTop />);
     const button = container.querySelector('button[aria-label="Move to top"]')!;
     fireEvent.click(button);
@@ -65,7 +65,7 @@ describe("BackToTop", () => {
   });
 
   test("respects prefers-reduced-motion for auto scrolling", () => {
-    jest.mocked(usePathname).mockReturnValue("/dashboard/super-admin");
+    jest.mocked(usePathname).mockReturnValue("/super-admin");
     jest.mocked(window.matchMedia).mockReturnValue({
       matches: true,
       media: "(prefers-reduced-motion: reduce)",

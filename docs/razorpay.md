@@ -8,7 +8,7 @@
 - Reuse of incomplete checkouts, duplicate checkout protection, and cleanup of losing concurrent subscription creations.
 - Separate messages for success, activation pending, dismissal, provider failure and verification failure. A successful mandate alone never grants access.
 - Scheduled cancellation for an active paid cycle; immediate cancellation for incomplete/failed subscriptions. Paid access ends at its stored expiry. Cancellation is irreversible at Razorpay; a new subscription may be purchased after the old paid period ends.
-- Protected learning pages/APIs with a verified super admin exemption. Membership management remains available at `/dashboard?tab=plans` and through the learner profile menu.
+- Protected learning pages/APIs with a verified super admin exemption. Membership management remains available at `/learning?tab=plans` and through the learner profile menu.
 - Latest 30 invoices for the current subscription, fetched server-side and scoped to the signed-in owner. Previous subscription invoices remain in Razorpay; the admin billing ledger retains webhook records.
 - Super admin Revenue & billing: secret-presence indicators, test/live mode, plan validation, subscription table, payment/refund ledger and revenue summaries. No secret values are sent to the browser.
 - Signed subscription events and `invoice.paid` reconcile the latest provider state. Optional scheduled reconciliation recovers missed webhooks. Disabling new checkout does not disable existing account management or webhooks.
@@ -27,7 +27,7 @@
 
 Use a regular learner account, not the super admin (which bypasses subscription gates). Never use real payment details for a Test Mode checkout.
 
-1. Open `/dashboard?tab=plans`, select preparation and a billing period, and choose the plan. Confirm the displayed amount and Razorpay amount agree.
+1. Open `/learning?tab=plans`, select preparation and a billing period, and choose the plan. Confirm the displayed amount and Razorpay amount agree.
 2. Complete Checkout using Razorpay's current official subscription test payment details. Verify the server reports success, the subscription becomes active, and a previously blocked learning page/API is accessible.
 3. Repeat with a separate learner for the yearly plan. Check the invoice and plan interval.
 4. Close Checkout before paying, reopen it and confirm it reuses the pending subscription. Try changing the cycle: it must ask you to cancel the unfinished subscription first.

@@ -2,7 +2,7 @@ import { z } from "zod";
 import { api, jsonBody, sameOrigin } from "@/lib/server/http";
 import { createPage, deletePage, pageInput, requireOwner, updatePage } from "@/lib/server/learning-uploads";
 
-/** Custom Learning Dashboard pages (sidebar entries at /dashboard/learn/[slug]), managed by the owner account only. */
+/** Custom Learning Dashboard pages (sidebar entries at /learning/learn/[slug]), managed by the owner account only. */
 export async function POST(request: Request) {
   return api(async () => {
     sameOrigin(request); await requireOwner();

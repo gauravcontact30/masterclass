@@ -379,7 +379,7 @@ export function LandingTechDocs({ official, preview = false, locked = false, con
         </ul>
       </article>)}
     </div>}
-    {preview && <DashboardMore className={styles.seeAll} href={locked ? "/dashboard/plans" : "/dashboard"} title={locked ? text(`Subscribe to open all ${TECH_DOCS.length} docs & topics`, `सभी ${TECH_DOCS.length} डॉक्स और विषय खोलने के लिए सदस्यता लें`) : text(`See all ${TECH_DOCS.length} docs & topics`, `सभी ${TECH_DOCS.length} डॉक्स और विषय देखें`)} detail={text("Every platform, guide, search and filter, and every DSA and OOPs concept in detail, is in your dashboard.", "हर प्लेटफ़ॉर्म, गाइड, खोज और फ़िल्टर, और DSA व OOPs की हर अवधारणा विस्तार से, आपके डैशबोर्ड में है।")} />}
+    {preview && <DashboardMore className={styles.seeAll} href={locked ? "/learning/plans" : "/learning"} title={locked ? text(`Subscribe to open all ${TECH_DOCS.length} docs & topics`, `सभी ${TECH_DOCS.length} डॉक्स और विषय खोलने के लिए सदस्यता लें`) : text(`See all ${TECH_DOCS.length} docs & topics`, `सभी ${TECH_DOCS.length} डॉक्स और विषय देखें`)} detail={text("Every platform, guide, search and filter, and every DSA and OOPs concept in detail, is in your dashboard.", "हर प्लेटफ़ॉर्म, गाइड, खोज और फ़िल्टर, और DSA व OOPs की हर अवधारणा विस्तार से, आपके डैशबोर्ड में है।")} />}
     <p className={styles.footnote}>{official ? text(`Guides read from the official websites, last refreshed ${shortDate(official.fetchedAt)}. Versions from npm and nodejs.org.`, `गाइड आधिकारिक वेबसाइटों से, अंतिम अपडेट ${shortDate(official.fetchedAt)}। संस्करण npm और nodejs.org से।`) : text("Links go to each platform's official documentation.", "लिंक हर प्लेटफ़ॉर्म के आधिकारिक दस्तावेज़ पर जाते हैं।")}</p>
   </div></section>;
 }

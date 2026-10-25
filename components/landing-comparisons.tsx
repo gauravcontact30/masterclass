@@ -40,7 +40,7 @@ const GROUP_ICON: Record<ComparisonGroup, LucideIcon> = {
  * Tech Topics comparisons: one slide per "what is the difference…" question, with its picture, a one-line definition
  * and short description of each technology, an at-a-glance table and 40+ difference questions with answers.
  * Autoplay turns a slide every two minutes and holds while the reader hovers or reads; a picker jumps to any
- * comparison. Questions load per slide, when it is near. The same section runs on the landing page and /dashboard.
+ * comparison. Questions load per slide, when it is near. The same section runs on the landing page and /learning.
  * `preview` (the landing page, or a learner without a membership) shows one comparison, today's (`day`), with its 10
  * most-asked difference questions; the rest are in the dashboard's Tech Topics section. `fresh` is today's AI-written
  * difference (lib/server/landing-fresh.ts), shown above it.
@@ -88,7 +88,7 @@ export function LandingComparisons({ expanded = false, preview = false, locked =
       {shown.map((item, i) => <ComparisonSlide key={item.id} item={item} index={i} total={items.length} near={nearViewport && Math.abs(i - page) <= 1} text={text} official={official} preview={preview} />)}
     </ul>
     {!preview && <Dots pages={pages} page={page} running={running} goTo={goTo} label={n => text(`Show comparison ${n}`, `तुलना ${n} दिखाएँ`)} />}
-    {preview && <DashboardMore href={locked ? "/dashboard/plans" : "/dashboard"} title={locked ? text(`Subscribe to open all ${items.length} comparisons`, `सभी ${items.length} तुलनाएँ खोलने के लिए सदस्यता लें`) : text(`See all ${items.length} comparisons`, `सभी ${items.length} तुलनाएँ देखें`)} detail={text("Every comparison, its picker, table and 40+ questions are in your dashboard.", "हर तुलना, उसका चयनकर्ता, तालिका और 40+ प्रश्न आपके डैशबोर्ड में हैं।")} />}
+    {preview && <DashboardMore href={locked ? "/learning/plans" : "/learning"} title={locked ? text(`Subscribe to open all ${items.length} comparisons`, `सभी ${items.length} तुलनाएँ खोलने के लिए सदस्यता लें`) : text(`See all ${items.length} comparisons`, `सभी ${items.length} तुलनाएँ देखें`)} detail={text("Every comparison, its picker, table and 40+ questions are in your dashboard.", "हर तुलना, उसका चयनकर्ता, तालिका और 40+ प्रश्न आपके डैशबोर्ड में हैं।")} />}
     {expanded && <DashboardLessons section="topics" />}
   </div></section>;
 }

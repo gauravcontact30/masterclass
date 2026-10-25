@@ -3,7 +3,7 @@
 const AUTH_PAGES = ["/sign-in", "/sign-up"];
 export function redirectFor({ pathname, signedIn }: { pathname: string; signedIn: boolean }): string | null {
   const onAuthPage = AUTH_PAGES.some(page => pathname === page || pathname.startsWith(`${page}/`));
-  if (!signedIn && pathname.startsWith("/dashboard")) return "/sign-in";
-  if (signedIn && (onAuthPage || pathname === "/")) return "/dashboard";
+  if (!signedIn && /^\/(learning|super-admin)(\/|$)/.test(pathname)) return "/sign-in";
+  if (signedIn && (onAuthPage || pathname === "/")) return "/learning";
   return null;
 }

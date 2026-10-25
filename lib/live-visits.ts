@@ -145,7 +145,7 @@ export function getLearningCategory(path: string): string {
   if (p.includes("/bookmark")) return "Bookmarks";
   if (p.includes("/step-by-step")) return "Step-by-Step";
   if (p.includes("/vocabs") || p.includes("/vocabulary")) return "Vocabularies";
-  if (p.includes("/dashboard")) return "Learning Dashboard";
+  if (p.includes("/learning") || p.includes("/dashboard")) return "Learning Dashboard"; // /dashboard: visits before the 2026-10-25 move
   return "General";
 }
 

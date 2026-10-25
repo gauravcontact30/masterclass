@@ -9,7 +9,7 @@ const mockRemove = jest.fn(async (_owner: string, _id: string) => {});
 jest.mock("@/lib/server/config", () => ({ authConfigured: () => true }));
 jest.mock("@/lib/server/auth", () => ({ supabaseServer: async () => ({ auth: { getUser: async () => ({ data: { user: mockOwner ? { id: mockOwner } : null } }) } }) }));
 jest.mock("@/lib/server/bookmarks", () => ({ listBookmarks: (...args: [string, number]) => mockList(...args), saveBookmark: (...args: [string, unknown]) => mockSave(...args), removeBookmark: (...args: [string, string]) => mockRemove(...args) }));
-const bookmark = { sourceKey: "agentic-ai-lesson-6", title: "Agentic AI essentials", technology: "agentic-ai", href: "/dashboard/notes?note=agentic-ai-lesson-6", points: ["Use bounded tool loops."] };
+const bookmark = { sourceKey: "agentic-ai-lesson-6", title: "Agentic AI essentials", technology: "agentic-ai", href: "/learning/notes?note=agentic-ai-lesson-6", points: ["Use bounded tool loops."] };
 const request = (method: string, body: unknown, origin = "https://app.test") => new Request("https://app.test/api/bookmarks", { method, headers: { origin, "Content-Type": "application/json" }, body: JSON.stringify(body) });
 beforeEach(() => { mockOwner = "alice"; });
 test("saves privately under the authenticated owner", async () => {

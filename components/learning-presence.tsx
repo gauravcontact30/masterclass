@@ -4,7 +4,7 @@ import {usePathname} from 'next/navigation';
 export function LearningPresence({enabled}:{enabled:boolean}) {
   const path=usePathname();
   useEffect(()=>{
-    if(!enabled||!path.startsWith('/dashboard')||path.startsWith('/dashboard/super-admin')) return;
+    if(!enabled||!path.startsWith('/learning')||path.startsWith('/super-admin')) return;
     let sessionId:string;
     try {sessionId=sessionStorage.getItem('masterclass:presence')||crypto.randomUUID();sessionStorage.setItem('masterclass:presence',sessionId);}catch{sessionId=crypto.randomUUID();}
     const controller=new AbortController();let first=true;let disabled=false;let sending=false;

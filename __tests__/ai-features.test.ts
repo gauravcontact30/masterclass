@@ -23,7 +23,7 @@ describe("learning path", () => {
     expect(path.stages).toHaveLength(3);
     expect(path.stages.map(s => [s.from, s.to])).toEqual([[1, 2], [3, 3], [4, 4]]);
     expect(path.stages[0].technologies.map(t => t.id)).toEqual(["javascript"]);
-    expect(path.stages[1].technologies).toEqual([{ id: "node", title: "Node.js", href: "/dashboard/notes?technology=node" }]);
+    expect(path.stages[1].technologies).toEqual([{ id: "node", title: "Node.js", href: "/learning/notes?technology=node" }]);
   });
   test("rejects fewer than three stages, a reply linking to nothing in the catalog, or prose", () => {
     const two = JSON.stringify({ summary: "x", stages: [1, 2].map(() => ({ focus: "a", technologyIds: ["node"], tasks: ["t"], outcome: "o" })) });
@@ -57,7 +57,7 @@ describe("study coach", () => {
       { question: "Q1", options: ["a", "b", "c", "d"], answer: 1, explanation: "e" },
       { question: "Q2", options: ["a", "A", "c", "d"], answer: 0, explanation: "e" },
     ] }))!;
-    expect(coach.next[0]).toMatchObject({ technology: null, href: "/dashboard/notes" });
+    expect(coach.next[0]).toMatchObject({ technology: null, href: "/learning/notes" });
     expect(coach.quiz.map(q => q.question)).toEqual(["Q1"]);
   });
   test("rule coach finishes open lessons first and always gives steps", () => {

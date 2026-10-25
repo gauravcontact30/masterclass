@@ -20,7 +20,7 @@ export async function GET(request: NextRequest) {
   if (error || !data.session) return NextResponse.redirect(new URL(`/sign-in?error=${error?.code === "otp_expired" ? "link_expired" : "link_invalid"}`, request.url));
   const notice = type === "recovery" ? "recovery" : type === "magiclink" ? "signed_in" : "verified";
   const next = params.get("next") || params.get("redirect");
-  const fallback = type === "recovery" ? `/dashboard/settings?notice=${notice}` : `/dashboard?notice=${notice}`;
+  const fallback = type === "recovery" ? `/learning/settings?notice=${notice}` : `/learning?notice=${notice}`;
   const target = next && /^\/(dashboard|notes|subscribe|tech-buzz)(\/|\?|$)/.test(next) && !next.startsWith("//") ? next : fallback;
   return NextResponse.redirect(new URL(target, request.url));
 }

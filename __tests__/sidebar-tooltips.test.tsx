@@ -1,7 +1,7 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { SidebarTooltips } from "@/components/sidebar-tooltips";
 test("collapsed options show a portaled tooltip for hover and focus, and Escape dismisses it", () => {
-  const { container } = render(<aside><SidebarTooltips collapsed/><button aria-label="Users & access">U</button><a href="/dashboard" title="Learning dashboard">D</a></aside>);
+  const { container } = render(<aside><SidebarTooltips collapsed/><button aria-label="Users & access">U</button><a href="/learning" title="Learning dashboard">D</a></aside>);
   const button = screen.getByRole("button", {name:"Users & access"});
   fireEvent.mouseOver(button);
   expect(screen.getByRole("tooltip")).toHaveTextContent("Users & access");

@@ -36,7 +36,7 @@ describe("Certifications", () => {
     const slides = within(section as HTMLElement).getAllByRole("article", { hidden: true });
     expect(slides).toHaveLength(CERTIFICATION_TRACKS.length);
     CERTIFICATION_TRACKS.forEach((track, at) => {
-      expect(slides[at].querySelector("a")?.getAttribute("href")).toBe(`/sign-in?redirect=${encodeURIComponent(`/dashboard/certifications?track=${track.id}`)}`);
+      expect(slides[at].querySelector("a")?.getAttribute("href")).toBe(`/sign-in?redirect=${encodeURIComponent(`/learning/certifications?track=${track.id}`)}`);
       expect(slides[at].textContent).toContain(`${track.steps.length} steps`);
     });
   });

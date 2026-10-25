@@ -99,7 +99,7 @@ export function LandingTechy({ data }: { data: LandingProPreview["techy"] }) {
         <ul>{modes.map(mode => <li key={mode.title}><span aria-hidden="true"><mode.icon size={17} /></span><div><h4>{mode.title}</h4><p>{mode.body}</p></div></li>)}</ul>
       </div>
     </div>
-    <div className={frame.actions}><Link className={frame.cta} href="/dashboard/techy">{text("Open Techy", "Techy खोलें")}<ArrowRight size={16} aria-hidden="true" /></Link><small>{text("Included with your account. Sign in to start practising.", "आपके खाते में शामिल। अभ्यास के लिए साइन इन करें।")}</small></div>
+    <div className={frame.actions}><Link className={frame.cta} href="/learning/techy">{text("Open Techy", "Techy खोलें")}<ArrowRight size={16} aria-hidden="true" /></Link><small>{text("Included with your account. Sign in to start practising.", "आपके खाते में शामिल। अभ्यास के लिए साइन इन करें।")}</small></div>
   </div></section>;
 }
 
@@ -169,6 +169,6 @@ export function LandingApiDocs({ data }: { data: LandingProPreview["api"] }) {
       </div>
       <ul className={styles.points}>{points.map(point => <li key={point.title}><point.icon size={17} aria-hidden="true" /><div><h4>{point.title}</h4><p>{point.body}</p></div></li>)}</ul>
     </article>
-    <div className={frame.actions}><Link className={frame.cta} href="/dashboard/api-docs">{text("Browse the API reference", "API संदर्भ देखें")}<ArrowUpRight size={16} aria-hidden="true" /></Link><small>{text("Each entry is marked stable, preview, experimental or deprecated.", "हर प्रविष्टि स्थिर, प्रीव्यू, प्रायोगिक या अप्रचलित चिह्नित है।")}</small></div>
+    <div className={frame.actions}><Link className={frame.cta} href="/learning/api-docs">{text("Browse the API reference", "API संदर्भ देखें")}<ArrowUpRight size={16} aria-hidden="true" /></Link><small>{text("Each entry is marked stable, preview, experimental or deprecated.", "हर प्रविष्टि स्थिर, प्रीव्यू, प्रायोगिक या अप्रचलित चिह्नित है।")}</small></div>
   </div></section>;
 }

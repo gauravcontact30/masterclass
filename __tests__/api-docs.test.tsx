@@ -10,7 +10,7 @@ import { catalogReference } from "@/lib/server/api-reference-fallback";
 import styles from "@/components/api-docs.module.css";
 
 let mockSearchParams = new URLSearchParams();
-jest.mock("next/navigation", () => ({ usePathname: () => "/dashboard/api-docs", useSearchParams: () => mockSearchParams }));
+jest.mock("next/navigation", () => ({ usePathname: () => "/learning/api-docs", useSearchParams: () => mockSearchParams }));
 beforeEach(() => { mockSearchParams = new URLSearchParams(); });
 
 test("reference catalog has unique identifiers, supported types and HTTPS documentation", () => {
@@ -44,7 +44,7 @@ test("search, clearing filters, grouping and deep links work", async () => {
   const search = screen.getByRole("searchbox", { name: "Filter APIs" });
   await user.click(search);
   await user.paste("useState");
-  expect(screen.getByRole("link", { name: "useState" })).toHaveAttribute("href", "/dashboard/api-docs/react/useState");
+  expect(screen.getByRole("link", { name: "useState" })).toHaveAttribute("href", "/learning/api-docs/react/useState");
   await user.selectOptions(screen.getByRole("combobox", { name: "API package" }), "python");
   expect(screen.getByRole("heading", { name: "No APIs match your filters." })).toBeVisible();
   await user.click(screen.getByRole("button", { name: "Clear all filters" }));
@@ -65,8 +65,8 @@ test("detail view contains a signature, parameters, usage and cross references",
   expect(screen.getByRole("img", {name:"Balancing benefits and costs"})).toHaveAttribute("src",expect.stringContaining("balance.png"));
   expect(screen.getByText("initialState", { selector: "b" })).toBeVisible();
   expect(screen.getByRole("heading", { name: "Complete code workspace" })).toBeVisible();
-  expect(screen.getByRole("link", { name: "useEffect" })).toHaveAttribute("href", "/dashboard/api-docs/react/useEffect");
-  expect(screen.getByRole("link", { name: "Ask the mentor" })).toHaveAttribute("href", expect.stringMatching(/^\/dashboard\/mentors\?q=/));
+  expect(screen.getByRole("link", { name: "useEffect" })).toHaveAttribute("href", "/learning/api-docs/react/useEffect");
+  expect(screen.getByRole("link", { name: "Ask the mentor" })).toHaveAttribute("href", expect.stringMatching(/^\/learning\/mentors\?q=/));
   for (const link of document.querySelectorAll<HTMLAnchorElement>("a[href^='http']")) { expect(link.href).toMatch(/^https:\/\//); expect(link.rel).toContain("noopener"); }
 });
 
@@ -81,7 +81,7 @@ test("unknown API deep links recover and catalog-only entries are prepared in th
   render(<ApiDocs/>);
   expect(await screen.findByText("Cache a function definition between re-renders.", {selector:"p"})).toBeVisible();
   expect(global.fetch).toHaveBeenCalledWith("/api/pro-learn/api-detail", expect.objectContaining({ method: "POST", body: JSON.stringify({ packageId: "react", name: "useCallback" }) }));
-  expect(screen.getByRole("link", { name: "useMemo" })).toHaveAttribute("href", "/dashboard/api-docs/react/useMemo");
+  expect(screen.getByRole("link", { name: "useMemo" })).toHaveAttribute("href", "/learning/api-docs/react/useMemo");
   await waitFor(() => expect(localStorage.getItem("masterclass:api-detail:v2")).toContain("useCallback"));
   for (const link of document.querySelectorAll<HTMLAnchorElement>("a[href^='http']")) { expect(link.href).toMatch(/^https:\/\//); expect(link.rel).toContain("noopener"); }
 });

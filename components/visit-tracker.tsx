@@ -28,7 +28,7 @@ export function VisitTracker() {
   const open = useRef<{ path: string; since: number | null } | null>(null);
 
   useEffect(() => {
-    if (!pathname || pathname.startsWith("/dashboard/super-admin")) return;
+    if (!pathname || pathname.startsWith("/super-admin")) return;
     const pause = () => {
       const page = open.current; if (page?.since == null) return;
       send({ type: "leave", path: page.path, duration: Math.round(performance.now() - page.since) });
@@ -59,7 +59,7 @@ export function VisitTracker() {
     };
     // Only UI labels and route paths: never typed text, form values or query strings.
     const onClick = (event: MouseEvent) => {
-      if (pathname !== "/" && !pathname.startsWith("/dashboard")) return;
+      if (pathname !== "/" && !pathname.startsWith("/learning")) return;
       const control = event.target instanceof Element ? event.target.closest<HTMLElement>("a,button,summary,[data-track-option]") : null;
       if (!control || control.closest('form,[contenteditable="true"],[data-track-ignore]')) return;
       const option = (control.dataset.trackOption || control.getAttribute("aria-label") || control.textContent || "").trim().replace(/\s+/g, " ").slice(0, 100);

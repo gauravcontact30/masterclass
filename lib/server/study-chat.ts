@@ -82,7 +82,7 @@ const NO_MATCH = "I’m currently using the app’s study notes, and I couldn’
 function tutorSetup(input: StudyChatRequest) {
   const last = input.messages.at(-1)!.content;
   const notes = relatedStudyNotes(last);
-  const sources = notes.map(note => ({ title: note.title, href: `/dashboard/notes?note=${encodeURIComponent(note.id)}` }));
+  const sources = notes.map(note => ({ title: note.title, href: `/learning/notes?note=${encodeURIComponent(note.id)}` }));
   // The tutor answers with the same provider as the rest of the learning
   // content, so a Perplexity deployment serves it too. The study limiter still
   // requires the database, because this endpoint is public.

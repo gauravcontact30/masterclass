@@ -1,5 +1,8 @@
 import { getPublishedTechBuzzArticle, listPublishedTechBuzzArticles } from "@/lib/server/tech-buzz-storage";
 import { getTopPlatformsComparison } from "@/lib/tech-buzz-data";
+import { isTechnologyStory, toCard, toPreview } from "@/lib/tech-buzz-public";
+
+/** Public and cacheable, so it returns cards and free previews only; members read bodies from ./[slug]/member. */
 
 export async function GET(request: Request) {
   try {
@@ -11,10 +14,10 @@ export async function GET(request: Request) {
       if (!article) {
         return Response.json({ error: "Article not found" }, { status: 404 });
       }
-      return Response.json({ article });
+      return Response.json({ article: toPreview(article) });
     }
 
-    let articles = [...await listPublishedTechBuzzArticles()];
+    let articles = (await listPublishedTechBuzzArticles()).filter(isTechnologyStory);
     const allArticles = [...articles];
 
     const category = searchParams.get("category");

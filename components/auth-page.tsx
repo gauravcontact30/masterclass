@@ -27,7 +27,7 @@ function authErrorKey(error: { code?: string; message?: string }): TranslationKe
 }
 
 export function safeRedirect(target: string | undefined) {
-  return target && /^\/(dashboard|notes|subscribe|tech-buzz)(\/|\?|$)/.test(target) && !target.startsWith("//") ? target : "/dashboard";
+  return target && /^\/(dashboard|notes|subscribe|tech-buzz)(\/|\?|$)/.test(target) && !target.startsWith("//") ? target : "/learning";
 }
 /**
  * A full navigation, not router.replace: the new session cookies then reach the proxy and server on the very

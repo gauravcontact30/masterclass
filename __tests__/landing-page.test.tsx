@@ -32,7 +32,7 @@ test("footer navigation points to real routes and existing page sections", async
   render(<LandingPage/>); await ready();
   const footer=within(screen.getByRole("contentinfo"));
   expect(footer.getAllByRole("navigation")).toHaveLength(6);
-  expect(footer.getByRole("link",{name:"My Library"})).toHaveAttribute("href","/dashboard/library");
+  expect(footer.getByRole("link",{name:"My Library"})).toHaveAttribute("href","/learning/library");
   for(const link of footer.getAllByRole("link")) {
     const href=link.getAttribute("href")!;
     if(href.startsWith("#")) expect(document.getElementById(href.slice(1))).not.toBeNull();

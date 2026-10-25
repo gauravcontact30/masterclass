@@ -27,16 +27,16 @@ const OPENS_IN: Record<LibraryKind, [string, string]> = {
 
 /** The dashboard page each kind of entry lives on, shown in the tablet's address bar. */
 const ROUTES: Record<LibraryKind, string> = {
-  technology: "/dashboard/search", api: "/dashboard/api-docs", course: "/dashboard", word: "/dashboard/vocabulary", techy: "/dashboard/techy",
+  technology: "/learning/search", api: "/learning/api-docs", course: "/learning", word: "/learning/vocabulary", techy: "/learning/techy",
 };
 
 /** The dashboard's own collapsed sidebar, in its order, so the tablet reads as the real app. */
 const RAIL: { route: string; icon: LucideIcon; label: [string, string] }[] = [
-  { route: "/dashboard", icon: LayoutDashboard, label: ["Dashboard", "डैशबोर्ड"] },
-  { route: "/dashboard/search", icon: Search, label: ["Search", "खोज"] },
-  { route: "/dashboard/api-docs", icon: FileCode2, label: ["API Docs", "API Docs"] },
-  { route: "/dashboard/vocabulary", icon: BookA, label: ["Vocabulary", "शब्दावली"] },
-  { route: "/dashboard/techy", icon: Code2, label: ["Techy", "Techy"] },
+  { route: "/learning", icon: LayoutDashboard, label: ["Dashboard", "डैशबोर्ड"] },
+  { route: "/learning/search", icon: Search, label: ["Search", "खोज"] },
+  { route: "/learning/api-docs", icon: FileCode2, label: ["API Docs", "API Docs"] },
+  { route: "/learning/vocabulary", icon: BookA, label: ["Vocabulary", "शब्दावली"] },
+  { route: "/learning/techy", icon: Code2, label: ["Techy", "Techy"] },
 ];
 
 const normalise = (value: string) => value.toLocaleLowerCase("en").normalize("NFKD").replace(/[̀-ͯ]/g, "");
@@ -201,7 +201,7 @@ export function LibraryLedger({ library: initial }: { library: LandingLibrary })
           <Link href="/sign-up">{text("Ask it in Search once you’re in", "साइन अप के बाद इसे सर्च में पूछें")}<ArrowUpRight size={13} aria-hidden="true" /></Link>
         </p>}
       </div>
-      <Tablet route={selected ? ROUTES[selected.kind] : "/dashboard/search"} hi={hi}>
+      <Tablet route={selected ? ROUTES[selected.kind] : "/learning/search"} hi={hi}>
         {selected ? <Preview entry={selected} hi={hi} text={text} kindLabel={kindLabel(selected.kind)} /> : <div className={styles.previewEmpty} aria-hidden="true"><Search size={26} strokeWidth={1.5} /></div>}
       </Tablet>
     </div>

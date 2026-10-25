@@ -12,7 +12,7 @@ export type TechDocCategory = "frontend" | "backend" | "enterprise" | "ai" | "fu
 export type MaterialLevel = "beginner" | "intermediate" | "advanced";
 export type MaterialKind = "guide" | "tutorial" | "reference" | "release";
 export type TechMaterial = { id: string; title: string; summary: string; level: MaterialLevel; kind: MaterialKind; minutes: number; url: string; topics: string[] };
-/** One concept note for a CS fundamentals subject (lib/tech-docs-concepts.ts), shown on /dashboard only. */
+/** One concept note for a CS fundamentals subject (lib/tech-docs-concepts.ts), shown on /learning only. */
 export type TechConcept = { id: string; title: string; level: MaterialLevel; summary: string; points: string[]; complexity?: string; code?: { lang: string; code: string } };
 export type TechDoc = {
   id: string; name: string; version: string; release: string; category: TechDocCategory;
@@ -32,7 +32,7 @@ export const MATERIAL_KINDS: { id: MaterialKind; label: string }[] = [
   { id: "guide", label: "Guides" }, { id: "tutorial", label: "Tutorials" }, { id: "reference", label: "Reference" }, { id: "release", label: "Release notes" },
 ];
 
-/** The platforms the landing page's Technology docs preview rotates through, one a day; /dashboard shows them all. */
+/** The platforms the landing page's Technology docs preview rotates through, one a day; /learning shows them all. */
 export const LANDING_TECH_DOC_IDS = ["tanstack-start", "zustand", "n8n"] as const;
 
 export const TECH_DOCS: TechDoc[] = [

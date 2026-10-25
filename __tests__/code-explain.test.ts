@@ -85,10 +85,10 @@ describe("extractSymbols", () => {
 describe("urlAnatomy", () => {
   it("decomposes a worked URL for the search-params snippet", () => {
     const anatomy = urlAnatomy(SNIPPET)!;
-    expect(anatomy.pathname).toBe("/dashboard");
+    expect(anatomy.pathname).toBe("/learning");
     expect(anatomy.searchParams).toEqual([{ key: "q", value: "running-shoes" }]);
     expect(anatomy.params).toEqual([]);
-    expect(anatomy.url).toBe("/dashboard?q=running-shoes");
+    expect(anatomy.url).toBe("/learning?q=running-shoes");
   });
 
   it("builds the route from the dynamic params the code names", () => {
@@ -108,6 +108,6 @@ describe("urlAnatomy", () => {
   });
 
   it("recognises usePathname on its own", () => {
-    expect(urlAnatomy("const pathname = usePathname()")?.pathname).toBe("/dashboard");
+    expect(urlAnatomy("const pathname = usePathname()")?.pathname).toBe("/learning");
   });
 });

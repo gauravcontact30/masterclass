@@ -31,7 +31,7 @@ export default async function Home() {
   const featuredDoc = pickDaily(TECH_DOCS.filter(tech => (LANDING_TECH_DOC_IDS as readonly string[]).includes(tech.id)), today).id;
   // The same values /api/billing returns, rendered into the page instead of fetched after hydration.
   // Only the previewed cards go into the page payload (the full day's set was ~170 KB of RSC data); the totals feed
-  // the "See all N" links, and /dashboard reads the full set itself.
+  // the "See all N" links, and /learning reads the full set itself.
   const day = landingDaily();
   const daily = { ...day, pulse: day.pulse.slice(0, DAILY_PREVIEW), words: day.words.slice(0, DAILY_PREVIEW), totals: { pulse: day.pulse.length, words: day.words.length } };
   // Cached for everyone, so it is priced in rupees; with international billing on, the page re-prices itself for the visitor.

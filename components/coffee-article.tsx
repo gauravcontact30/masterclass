@@ -36,7 +36,7 @@ export function CoffeeArticle({ post, related, onOpen }: Readonly<{ post: BlogPo
   const k = contentKey("blog", post.slug);
   const item = useContentItem(k, "article");
   const project = useMemo(() => articleFiles(post), [post]);
-  const back = !onOpen && <Link className={styles.back} href="/dashboard/coffee-and-code"><ArrowLeft size={15} aria-hidden="true" />All articles</Link>;
+  const back = !onOpen && <Link className={styles.back} href="/learning/coffee-and-code"><ArrowLeft size={15} aria-hidden="true" />All articles</Link>;
   if (item.hidden) return <section className={styles.article}>
     <p className={styles.removed}>This article has been removed.</p>
     {back}
@@ -56,7 +56,7 @@ export function CoffeeArticle({ post, related, onOpen }: Readonly<{ post: BlogPo
       <h2 id="related-title">Keep reading</h2>
       <ul>{related.map(next => <li key={next.slug} className={styles.relatedItem} data-tone={next.tone}>{onOpen
         ? <button type="button" onClick={() => onOpen(next.slug)}><span>{next.topic}</span>{next.title}</button>
-        : <Link href={`/dashboard/coffee-and-code/${next.slug}`} prefetch={false}><span>{next.topic}</span>{next.title}</Link>}</li>)}</ul>
+        : <Link href={`/learning/coffee-and-code/${next.slug}`} prefetch={false}><span>{next.topic}</span>{next.title}</Link>}</li>)}</ul>
     </aside>}
   </article>;
 }

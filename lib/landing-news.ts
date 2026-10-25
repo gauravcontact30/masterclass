@@ -21,7 +21,7 @@ export type NewsSlideMeta = {
 };
 
 // The dashboard's Certifications page, through sign-in, opened on one track.
-const cert = (track: string) => `/sign-in?redirect=${encodeURIComponent(`/dashboard/certifications?track=${track}`)}`;
+const cert = (track: string) => `/sign-in?redirect=${encodeURIComponent(`/learning/certifications?track=${track}`)}`;
 const L = {
   blueprints: { label: "System design & AI workflow blueprints", hiLabel: "सिस्टम डिज़ाइन और AI वर्कफ़्लो ब्लूप्रिंट", href: "/workflows" },
   questions: { label: "Interview questions with answers", hiLabel: "उत्तर सहित इंटरव्यू प्रश्न", href: "/interview-questions" },

@@ -319,7 +319,7 @@ export default async function Image({ params }: ImageProps) {
                 }}
               >
                 <span style={{ fontSize: 12, fontWeight: 800, color: "#fbbf24" }}>
-                  ★ {article.rating.average} / 5 ({article.rating.count} ratings)
+                  {article.rating.count ? `★ ${article.rating.average} / 5 (${article.rating.count} ratings)` : `★ New · ${article.readTimeMinutes} min read`}
                 </span>
               </div>
 
@@ -335,7 +335,7 @@ export default async function Image({ params }: ImageProps) {
                 }}
               >
                 <span style={{ fontSize: 12, fontWeight: 800, color: "#fb923c" }}>
-                  ▲ {article.upvotes} upvotes
+                  {article.upvotes ? `▲ ${article.upvotes} upvotes` : article.technology}
                 </span>
               </div>
 
@@ -351,7 +351,7 @@ export default async function Image({ params }: ImageProps) {
                 }}
               >
                 <span style={{ fontSize: 12, fontWeight: 800, color: "#34d399" }}>
-                  👏 {article.claps} claps
+                  {article.claps ? `👏 ${article.claps} claps` : "Member story"}
                 </span>
               </div>
             </div>

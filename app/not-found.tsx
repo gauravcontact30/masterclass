@@ -14,7 +14,7 @@ export default function NotFound() {
       <p style={{ color: "#5e5d59", lineHeight: 1.7 }}>The link may be old or mistyped. Try one of these instead:</p>
       <nav aria-label="Helpful links" style={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: "10px 20px", marginTop: 20 }}>
         {PUBLIC_PAGES.map(page => <Link key={page.path} href={page.path} style={{ color: "#c6613f" }}>{page.label}</Link>)}
-        <Link href="/dashboard" style={{ color: "#c6613f" }}>Dashboard</Link>
+        <Link href="/learning" style={{ color: "#c6613f" }}>Dashboard</Link>
       </nav>
       {/* A mistyped or retired address still leads somewhere worth reading: the free learning library, no sign-in needed. */}
       <p style={{ color: "#5e5d59", lineHeight: 1.7, marginTop: 28 }}>Or carry on learning:</p>

@@ -48,7 +48,7 @@ export default async function proxy(request: NextRequest) {
   }
 
   // 3. Super Admin Route Protection Check
-  if (pathname.startsWith("/dashboard/super-admin")) {
+  if (pathname.startsWith("/super-admin")) {
     const hasSessionCookie = request.cookies.getAll().some(
       (c) => c.name.includes("auth-token") || c.name.startsWith("sb-")
     );
@@ -135,7 +135,7 @@ export default async function proxy(request: NextRequest) {
 export const config = {
   matcher: [
     "/",
-    "/dashboard/:path*",
+    "/learning/:path*",
     "/sign-in/:path*",
     "/sign-up/:path*",
     "/api/:path*",

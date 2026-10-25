@@ -10,7 +10,7 @@ export const metadata = { ...privateMetadata, title: "Subscribe" };
 
 /** Membership checkout for visitors without an account, priced in their country's currency; members manage plans in the dashboard. */
 export default async function Page({ searchParams }: { searchParams: Promise<{ [key: string]: string | string[] | undefined }> }) {
-  if (authConfigured() && await currentUser()) redirect("/dashboard/plans");
+  if (authConfigured() && await currentUser()) redirect("/learning/plans");
   const plan = (await searchParams).plan;
   return <GuestCheckout
     initialTier={plan === "yearly" ? "yearly" : "monthly"}

@@ -14,8 +14,8 @@ type Text = (en: string, hindi: string) => string;
  * questions most asked about it, subjective and objective, each rated by how often it comes up and opened
  * one at a time like an accordion. Loaded as its own chunk by components/landing-workflows.tsx. The first
  * three of each kind ship with it; the rest load when the blueprint's slide comes near the screen, on the landing
- * page and on /dashboard alike. `full={false}` keeps just those three; `limit` (the landing preview) shows only the
- * most asked few of each kind, with a link to the full set on /dashboard.
+ * page and on /learning alike. `full={false}` keeps just those three; `limit` (the landing preview) shows only the
+ * most asked few of each kind, with a link to the full set on /learning.
  */
 export default function WorkflowPrepPanel({ id, text, full = true, limit }: Readonly<{ id: string; text: Text; full?: boolean; limit?: number }>) {
   const prep = WORKFLOW_PREP[id];

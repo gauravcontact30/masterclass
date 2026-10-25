@@ -404,16 +404,16 @@ function WorkflowStudioReader({
           </Badge>
         </div>
         <div className={apiStyles.learnLinks}>
-          <Link href="/dashboard/api-docs" className={apiStyles.officialDocsLink}>
+          <Link href="/learning/api-docs" className={apiStyles.officialDocsLink}>
             <FileCode2 size={15} aria-hidden="true" />
             API Reference
             <ArrowUpRight size={13} aria-hidden="true" />
           </Link>
-          <Link href={`/dashboard/mentors?q=${encodeURIComponent(`Explain ${workflow.title} architecture in LangGraph`)}`}>
+          <Link href={`/learning/mentors?q=${encodeURIComponent(`Explain ${workflow.title} architecture in LangGraph`)}`}>
             <MessageCircle size={15} />
             Ask the mentor
           </Link>
-          <Link href={`/dashboard/quiz?topic=${encodeURIComponent(workflow.title)}`}>
+          <Link href={`/learning/quiz?topic=${encodeURIComponent(workflow.title)}`}>
             <GraduationCap size={15} />
             Quiz me on this
           </Link>

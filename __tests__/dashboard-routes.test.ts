@@ -6,5 +6,5 @@ test.each(Object.entries(DASHBOARD_ROUTES))("legacy %s resolves to its clean pag
 });
 
 test.each([undefined, "unknown", "https://example.com", ["plans", "library"]])("invalid legacy values stay on the dashboard", value => {
-  expect(legacyDashboardRoute(value)).toBe("/dashboard");
+  expect(legacyDashboardRoute(value)).toBe("/learning");
 });

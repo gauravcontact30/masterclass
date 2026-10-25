@@ -7,15 +7,15 @@ jest.mock("@/lib/server/auth", () => ({ supabaseServer: jest.fn() }));
 
 describe("redirectFor", () => {
   it("redirects signed-in homepage visitors before static rendering", () => {
-    expect(redirectFor({ pathname: "/", signedIn: true })).toBe("/dashboard");
+    expect(redirectFor({ pathname: "/", signedIn: true })).toBe("/learning");
   });
   it("sends signed-out visitors from the dashboard to sign-in", () => {
-    expect(redirectFor({ pathname: "/dashboard", signedIn: false })).toBe("/sign-in");
-    expect(redirectFor({ pathname: "/dashboard/library", signedIn: false })).toBe("/sign-in");
+    expect(redirectFor({ pathname: "/learning", signedIn: false })).toBe("/sign-in");
+    expect(redirectFor({ pathname: "/learning/library", signedIn: false })).toBe("/sign-in");
   });
 
   it("leaves signed-in visitors on the dashboard", () => {
-    expect(redirectFor({ pathname: "/dashboard", signedIn: true })).toBeNull();
+    expect(redirectFor({ pathname: "/learning", signedIn: true })).toBeNull();
   });
 
   it("keeps the marketing page and auth pages open to signed-out visitors", () => {
@@ -25,8 +25,8 @@ describe("redirectFor", () => {
   });
 
   it("moves signed-in visitors off the auth pages into the app", () => {
-    expect(redirectFor({ pathname: "/sign-in", signedIn: true })).toBe("/dashboard");
-    expect(redirectFor({ pathname: "/sign-up", signedIn: true })).toBe("/dashboard");
+    expect(redirectFor({ pathname: "/sign-in", signedIn: true })).toBe("/learning");
+    expect(redirectFor({ pathname: "/sign-up", signedIn: true })).toBe("/learning");
   });
 });
 

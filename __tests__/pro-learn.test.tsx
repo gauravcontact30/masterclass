@@ -13,7 +13,7 @@ import { SidebarSearch, sidebarSuggestions } from "@/components/sidebar-search";
 
 let mockParams = new URLSearchParams();
 const push = jest.fn();
-jest.mock("next/navigation", () => ({ useSearchParams: () => mockParams, useRouter: () => ({ push }), usePathname: () => "/dashboard" }));
+jest.mock("next/navigation", () => ({ useSearchParams: () => mockParams, useRouter: () => ({ push }), usePathname: () => "/learning" }));
 const lessons = lessonsData as ProLesson[];
 const json = (body: unknown, ok = true) => ({ ok, json: async () => body });
 beforeEach(() => { window.scrollTo = jest.fn(); Element.prototype.scrollIntoView = jest.fn(); mockParams = new URLSearchParams(); localStorage.clear(); push.mockClear(); });
@@ -40,7 +40,7 @@ test("lessons filter by level, open a reader and remember completion", async () 
   await user.click(screen.getByRole("button", { name: "All" }));
   await user.click(screen.getByRole("button", { name: reactLessons[0].title }));
   expect(screen.getByRole("heading", { level: 1, name: reactLessons[0].title })).toBeVisible();
-  expect(screen.getByRole("link", { name: "Ask the mentor" })).toHaveAttribute("href", expect.stringContaining("/dashboard/mentors?track=react"));
+  expect(screen.getByRole("link", { name: "Ask the mentor" })).toHaveAttribute("href", expect.stringContaining("/learning/mentors?track=react"));
   await user.click(screen.getByRole("button", { name: "Mark complete" }));
   expect(screen.getByRole("button", { name: "Completed" })).toHaveAttribute("aria-pressed", "true");
   await user.click(screen.getByRole("button", { name: "All lessons" }));
@@ -144,7 +144,7 @@ test("sidebar search suggests destinations, filters by icon scope, clears and na
   await user.clear(search); await user.type(search, "python");
   expect(screen.getAllByRole("option").every(option => option.textContent?.includes("Lesson track"))).toBe(true);
   await user.keyboard("{Enter}");
-  expect(push).toHaveBeenCalledWith("/dashboard/lessons?track=python");
+  expect(push).toHaveBeenCalledWith("/learning/lessons?track=python");
   await user.type(search, "library");
   await user.click(screen.getByRole("button", { name: "All results" }));
   await user.click(screen.getByRole("button", { name: "Clear sidebar search" }));

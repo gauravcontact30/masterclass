@@ -3,7 +3,7 @@ import { ReadableStream, TextDecoderStream } from "node:stream/web";
 import StudentChatPanel from "@/components/student-chat-panel";
 import { LanguageProvider } from "@/components/language-provider";
 
-jest.mock("next/navigation", () => ({ usePathname: () => "/dashboard/workflow" }));
+jest.mock("next/navigation", () => ({ usePathname: () => "/learning/workflow" }));
 Object.assign(globalThis, { ReadableStream, TextDecoderStream });
 
 /** An NDJSON reply whose lines arrive one by one, released by `next()`. */
@@ -19,7 +19,7 @@ beforeEach(() => { localStorage.clear(); global.fetch = jest.fn() as jest.Mock; 
 
 test("an answer appears while it is being written, then gains copy, regenerate and follow-ups", async () => {
   const reply = streamedReply([
-    { type: "meta", sources: [{ title: "Closures", href: "/dashboard/notes?note=closures" }] },
+    { type: "meta", sources: [{ title: "Closures", href: "/learning/notes?note=closures" }] },
     { type: "delta", text: "A closure **keeps** its scope.\n" },
     { type: "delta", text: "- one\n- two" },
     { type: "done", answer: "A closure **keeps** its scope.\n- one\n- two", mode: "ai" },
@@ -30,7 +30,7 @@ test("an answer appears while it is being written, then gains copy, regenerate a
   fireEvent.click(screen.getByRole("button", { name: "Send question" }));
 
   const body = JSON.parse((global.fetch as jest.Mock).mock.calls[0][1].body);
-  expect(body).toMatchObject({ stream: true, mode: "study", language: "en", page: { path: "/dashboard/workflow" }, messages: [{ role: "user", content: "What is a closure?" }] });
+  expect(body).toMatchObject({ stream: true, mode: "study", language: "en", page: { path: "/learning/workflow" }, messages: [{ role: "user", content: "What is a closure?" }] });
   expect(screen.getByRole("button", { name: "Stop reply" })).toBeInTheDocument();
 
   await act(async () => { reply.next(); reply.next(); });
@@ -43,7 +43,7 @@ test("an answer appears while it is being written, then gains copy, regenerate a
   await waitFor(() => expect(within(answer).getAllByRole("listitem")).toHaveLength(2));
   expect(within(answer).getByRole("button", { name: "Copy answer" })).toBeInTheDocument();
   expect(within(answer).getByRole("button", { name: "Regenerate answer" })).toBeInTheDocument();
-  expect(within(answer).getByRole("link", { name: "Closures" })).toHaveAttribute("href", "/dashboard/notes?note=closures");
+  expect(within(answer).getByRole("link", { name: "Closures" })).toHaveAttribute("href", "/learning/notes?note=closures");
   expect(within(screen.getByRole("group", { name: "Follow up on this answer" })).getByRole("button", { name: "Quiz me" })).toBeInTheDocument();
 });
 

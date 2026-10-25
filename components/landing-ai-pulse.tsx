@@ -32,12 +32,12 @@ export const dayLabel = (day: string, hi: boolean) => new Intl.DateTimeFormat(hi
  * (lib/server/landing-daily.ts), each in its own light tone. Every card has the same blocks, cards in a row
  * are the same height, and the industry panels hug their text.
  */
-/** Cards a landing-page preview shows; the rest of each learning section lives on /dashboard. */
+/** Cards a landing-page preview shows; the rest of each learning section lives on /learning. */
 export const PREVIEW_COUNT = 3;
 const pulseKey = (card: PulseCard) => contentKey("pulse", card.id);
 
 /**
- * `preview` (the landing page) shows the first three cards and a link to the full set on /dashboard, where the
+ * `preview` (the landing page) shows the first three cards and a link to the full set on /learning, where the
  * same section renders every card of the day, the locked bonus card included.
  */
 export function LandingAiPulse({ cards: all, total = all.length, day, locked: lockedCard, preview = false, expanded = false }: { expanded?: boolean; cards: PulseCard[]; total?: number; day: string; locked?: LockedTeaser | null; preview?: boolean }) {
@@ -51,7 +51,7 @@ export function LandingAiPulse({ cards: all, total = all.length, day, locked: lo
   if (section.hidden) return null;
 
   return <section id="ai-pulse" className={styles.pulse} aria-labelledby="ai-pulse-title" {...section.props}>{section.toolbar}<div className={home.inner}>
-    {preview && <DashboardMore href="/dashboard" title={text(`See all ${total + (lockedCard ? 1 : 0)} cards`, `सभी ${total + (lockedCard ? 1 : 0)} कार्ड देखें`)} detail={text("Every technology, every day: the full pulse lives in your dashboard.", "हर तकनीक, हर दिन: पूरा पल्स आपके डैशबोर्ड में है।")} />}
+    {preview && <DashboardMore href="/learning" title={text(`See all ${total + (lockedCard ? 1 : 0)} cards`, `सभी ${total + (lockedCard ? 1 : 0)} कार्ड देखें`)} detail={text("Every technology, every day: the full pulse lives in your dashboard.", "हर तकनीक, हर दिन: पूरा पल्स आपके डैशबोर्ड में है।")} />}
     <div className={styles.head} data-learning-header>
       <div className={styles.headCopy} data-learning-copy>
         <p className={styles.kicker}><Sparkles size={14} aria-hidden="true" />{text("AI & agentic pulse", "AI और एजेंटिक हलचल")}<span className={styles.today}>{text("New today", "आज नया")} · {dayLabel(day, hi)}</span></p>

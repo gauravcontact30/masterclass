@@ -6,7 +6,7 @@ import { DASHBOARD_PAGES, surfacePages } from "@/lib/learning-uploads";
 describe("Learning Dashboard page list", () => {
   it("offers every page the sidebar links to", () => {
     const sidebar = readFileSync("components/workspace.tsx", "utf8");
-    const linked = [...sidebar.matchAll(/href="\/dashboard\/([a-z-]+)"/g)].map(m => m[1]).filter(p => p !== "super-admin");
+    const linked = [...sidebar.matchAll(/href="\/learning\/([a-z-]+)"/g)].map(m => m[1]).filter(p => p !== "super-admin");
     const values = DASHBOARD_PAGES.map(p => p.value);
     for (const page of [...linked, "dashboard", "library", "official-docs", "techy", "api-docs", "workflow", "lessons", "quiz", "interview"]) expect(values).toContain(page);
     expect(values).toContain("coffee-and-code");

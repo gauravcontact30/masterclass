@@ -68,7 +68,7 @@ test("the landing preview shows the 3 most asked of each kind and links to the f
   const slide = slides[0];
   await within(slide).findByRole("heading", { name: /questions$/ });
   expect(within(slide).getAllByRole("img", { name: /Asked often: \d of 5/ })).toHaveLength(3);
-  expect(within(slide).getByRole("link", { name: /Showing the 3 most asked of \d+\. See all \d+ subjective questions in the dashboard/ })).toHaveAttribute("href", "/dashboard");
+  expect(within(slide).getByRole("link", { name: /Showing the 3 most asked of \d+\. See all \d+ subjective questions in the dashboard/ })).toHaveAttribute("href", "/learning");
   fireEvent.click(within(slide).getByRole("button", { name: /Objective/ }));
   expect(slide.querySelectorAll("[data-correct='true']")).toHaveLength(3);
   expect(within(slide).getByRole("link", { name: /See all \d+ objective questions/ })).toBeInTheDocument();

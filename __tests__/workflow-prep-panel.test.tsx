@@ -49,10 +49,10 @@ test("the landing preview (limit) shows the 7 most asked of each kind and links 
   expect(container.querySelectorAll("details")).toHaveLength(7);
   fireEvent.click(screen.getByRole("button", { name: /Objective/ }));
   expect(container.querySelectorAll("details")).toHaveLength(7);
-  expect(screen.getByRole("link", { name: /See all \d+ objective questions in the dashboard/ })).toHaveAttribute("href", "/dashboard");
+  expect(screen.getByRole("link", { name: /See all \d+ objective questions in the dashboard/ })).toHaveAttribute("href", "/learning");
 });
 
-test("without a limit (/dashboard) every question shows", async () => {
+test("without a limit (/learning) every question shows", async () => {
   const { container } = render(<WorkflowPrep id="url-shortener" text={text} />);
   await screen.findByRole("button", { name: /Subjective\s*([8-9]|\d\d)/ });
   expect(container.querySelectorAll("details").length).toBeGreaterThan(7);

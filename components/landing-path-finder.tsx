@@ -82,7 +82,7 @@ const STAGES: { icon: LucideIcon; en: string; hi: string }[] = [
   { icon: Hammer, en: "Practice", hi: "अभ्यास" },
   { icon: Flag, en: "Project", hi: "प्रोजेक्ट" },
 ];
-const note = (id: string) => `/dashboard/notes?technology=${id}`;
+const note = (id: string) => `/learning/notes?technology=${id}`;
 const t = (id: string, title: string) => ({ id, title, href: note(id) });
 /** Shown before the first plan, quieter than a real one, so a visitor sees what the planner returns; one a day. */
 const SAMPLES: { label: [string, string]; en: PathStage[]; hi: PathStage[] }[] = [

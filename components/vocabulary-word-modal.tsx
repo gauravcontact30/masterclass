@@ -512,7 +512,7 @@ export function VocabularyWordModal({
 
           <div className={styles.footerActions}>
             <Link
-              href="/dashboard/vocabulary"
+              href="/learning/vocabulary"
               className={styles.vocabPageLink}
               onClick={onClose}
             >

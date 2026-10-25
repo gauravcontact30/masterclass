@@ -23,7 +23,7 @@ const nextConfig: NextConfig = {
   },
   serverExternalPackages: ["@electric-sql/pglite"],
   // Official learning cards are read from disk at request time (lib/server/official-content.ts).
-  outputFileTracingIncludes: Object.fromEntries(["/dashboard/search", "/api/pro-learn/handbook", "/api/pro-learn/api-detail"].map(route => [route, ["./content/official/**/*.json"]])),
+  outputFileTracingIncludes: Object.fromEntries(["/learning/search", "/api/pro-learn/handbook", "/api/pro-learn/api-detail"].map(route => [route, ["./content/official/**/*.json"]])),
   // AVIF first (smallest), WebP as the fallback, for every next/image.
   images: { formats: ["image/avif", "image/webp"], qualities: [75, 82, 85], minimumCacheTTL: 60 * 60 * 24 * 30 },
   experimental: {
@@ -50,6 +50,16 @@ const nextConfig: NextConfig = {
       static: 300,
     },
   },
+  // The Learning Dashboard moved from /dashboard to /learning and the Super Admin console from /dashboard/super-admin
+  // to /super-admin on 2026-10-25. Old bookmarks, emails and search results keep working, query string included.
+  async redirects() {
+    return [
+      { source: "/dashboard/super-admin/:path*", destination: "/super-admin/:path*", permanent: true },
+      { source: "/dashboard/super-admin", destination: "/super-admin", permanent: true },
+      { source: "/dashboard/:path*", destination: "/learning/:path*", permanent: true },
+      { source: "/dashboard", destination: "/learning", permanent: true },
+    ];
+  },
   async headers() {
     return [
       {
@@ -68,7 +78,7 @@ const nextConfig: NextConfig = {
           { key: "Cross-Origin-Opener-Policy", value: "same-origin-allow-popups" },
         ],
       },
-      ...["/api/:path*", "/auth/:path*", "/dashboard/:path*", "/sign-in/:path*", "/sign-up/:path*"].map(source => ({
+      ...["/api/:path*", "/auth/:path*", "/learning/:path*", "/super-admin/:path*", "/sign-in/:path*", "/sign-up/:path*"].map(source => ({
         source,
         headers: [{ key: "X-Robots-Tag", value: "noindex, nofollow" }],
       })),

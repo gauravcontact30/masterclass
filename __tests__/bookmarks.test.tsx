@@ -3,7 +3,7 @@ import { BookmarkButton, BookmarkPoint, BookmarkScope, BookmarksProvider } from 
 import { BookmarkPage } from "@/components/bookmark-page";
 import { bookmarkText, type SavedBookmark } from "@/lib/bookmarks";
 jest.mock("@/lib/supabase-browser", () => ({ supabaseBrowser: () => ({ auth: { onAuthStateChange: () => ({ data: { subscription: { unsubscribe: jest.fn() } } }) } }) }));
-const source = { sourceKey: "agentic-ai-lesson-6", title: "Agentic AI essentials", technology: "agentic-ai", href: "/dashboard/notes?note=agentic-ai-lesson-6" };
+const source = { sourceKey: "agentic-ai-lesson-6", title: "Agentic AI essentials", technology: "agentic-ai", href: "/learning/notes?note=agentic-ai-lesson-6" };
 const saved: SavedBookmark = { ...source, points: ["Use bounded tool loops."], id: "a".repeat(64), savedAt: "2026-09-14T12:00:00.000Z" };
 const json = (data: unknown, ok = true) => Promise.resolve({ ok, status: ok ? 200 : 500, json: async () => data });
 let records: SavedBookmark[];

@@ -1,10 +1,10 @@
 export type WorkspaceTab = "dashboard" | "library" | "plans" | "settings";
 
 export const DASHBOARD_ROUTES: Record<WorkspaceTab, string> = {
-  dashboard: "/dashboard",
-  library: "/dashboard/library",
-  plans: "/dashboard/plans",
-  settings: "/dashboard/settings",
+  dashboard: "/learning",
+  library: "/learning/library",
+  plans: "/learning/plans",
+  settings: "/learning/settings",
 };
 
 /** Resolve only known legacy tabs; never redirect to an arbitrary query value. */

@@ -64,7 +64,7 @@ describe("SuperAdminTransactions", () => {
     const dialog = await screen.findByRole("dialog");
     expect(within(dialog).getByRole("region", { name: /why this payment failed/i })).toBeInTheDocument();
     expect(within(dialog).getByText("BAD_REQUEST_ERROR")).toBeInTheDocument();
-    expect(within(dialog).getByRole("link", { name: /open in razorpay/i })).toHaveAttribute("href", "https://dashboard.razorpay.com/app/payments/pay_fail");
+    expect(within(dialog).getByRole("link", { name: /open in razorpay/i })).toHaveAttribute("href", "https://learning.razorpay.com/app/payments/pay_fail");
   });
 
   it("drills into failed payments from a failure reason and exports CSV", async () => {

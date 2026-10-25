@@ -35,7 +35,7 @@ export const coachReplySchema = z.object({
 const TITLES = new Map(preview.technologies.map(t => [t.id, t.title]));
 const known = (id: string | null | undefined) => (id && TITLES.has(id) ? id : null);
 const step = (title: string, why: string, technologyId: string | null): CoachStep =>
-  ({ title, why, technology: technologyId ? TITLES.get(technologyId) ?? null : null, href: technologyId ? technologyHref(technologyId) : "/dashboard/notes" });
+  ({ title, why, technology: technologyId ? TITLES.get(technologyId) ?? null : null, href: technologyId ? technologyHref(technologyId) : "/learning/notes" });
 
 /** The signals the model sees: per-technology counts, the unfinished titles, and the goal. */
 export function coachSummary(signals: CoachSignals) {

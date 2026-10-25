@@ -1,3 +1,5 @@
+import { TECHNOLOGY_ARTICLES } from "./tech-buzz-technology-articles";
+
 export interface BlogAuthor {
   name: string;
   role: string;
@@ -78,6 +80,8 @@ export interface TechBuzzArticle {
   subtitle: string;
   category: string;
   technology: string;
+  /** The Learning Dashboard technology this story belongs to (public/images/tech/<techId>.png), when there is one. */
+  techId?: string;
   techBadgeColor: string;
   publishedAt: string;
   readTimeMinutes: number;
@@ -248,7 +252,7 @@ export const TOP_PLATFORMS_COMPARISON: ContentPlatformComparison[] = [
   }
 ];
 
-export const TECH_BUZZ_ARTICLES: TechBuzzArticle[] = [
+const FEATURE_ARTICLES: TechBuzzArticle[] = [
   // 1. daily.dev - Agentic AI MCP
   {
     id: "tb-01",
@@ -1651,6 +1655,9 @@ LIMIT 10;`
 
 ];
 
+/** The built-in stories: the original features, then one guide per Learning Dashboard technology. */
+export const TECH_BUZZ_ARTICLES: TechBuzzArticle[] = [...FEATURE_ARTICLES, ...TECHNOLOGY_ARTICLES];
+
 export function getTechBuzzArticles(): TechBuzzArticle[] {
   return TECH_BUZZ_ARTICLES;
 }
@@ -1697,35 +1704,5 @@ export function getTopPlatformsComparison(): ContentPlatformComparison[] {
   return TOP_PLATFORMS_COMPARISON;
 }
 
-export interface FestiveSaleInfo {
-  title: string;
-  festival: string;
-  discountPercent: number;
-  validTill: string;
-  regularMonthly: number;
-  discountedMonthly: number;
-  regularYearly: number;
-  discountedYearly: number;
-  active: boolean;
-}
-
-export function getDiwaliFestiveSaleInfo(currentTime?: Date | number): FestiveSaleInfo {
-  // Epoch ms for 2026-11-15T23:59:59+05:30 = 1794767399000
-  const endsAtMs = 1794767399000;
-  // If currentTime is provided (e.g., in client useEffect), evaluate active status;
-  // otherwise default to true to prevent Next.js prerender error 'new Date() in Client Component'.
-  const active = currentTime !== undefined
-    ? (typeof currentTime === "number" ? currentTime : currentTime.getTime()) <= endsAtMs
-    : true;
-  return {
-    title: "Diwali Festive Sale",
-    festival: "Diwali 2026",
-    discountPercent: 25,
-    validTill: "15th November",
-    regularMonthly: 299,
-    discountedMonthly: 225,
-    regularYearly: 2999,
-    discountedYearly: 2250,
-    active
-  };
-}
+// The festive sale lives in its own small module so client pages can read it without bundling these articles.
+export { getDiwaliFestiveSaleInfo, type FestiveSaleInfo } from "./festive-sale";

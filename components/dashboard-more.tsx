@@ -4,7 +4,7 @@ import styles from "./dashboard-more.module.css";
 
 /**
  * The landing page shows three cards per learning section; this compact link, pinned to the section's top-right
- * corner, leads to the rest, which live in the same section on /dashboard (components/dashboard-learning.tsx).
+ * corner, leads to the rest, which live in the same section on /learning (components/dashboard-learning.tsx).
  * `detail` is the longer explanation, kept as the tooltip and the accessible description.
  */
 export function DashboardMore({ href, title, detail, className }: Readonly<{ href: string; title: string; detail: string; className?: string }>) {

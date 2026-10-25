@@ -69,7 +69,7 @@ async function ComparisonPage({ params }: Props) {
       </table></div>
     </section>
     {shown.subjective.length > 0 && <section className={styles.section} aria-labelledby="questions"><h2 id="questions">The {shown.subjective.length} most-asked difference questions</h2><QuestionList set={shown} idPrefix="q" level={3} />
-      {set.subjective.length > shown.subjective.length && <p className={styles.meta}><Link href={`/sign-in?redirect=${encodeURIComponent("/dashboard")}`}>See all {set.subjective.length} difference questions with answers in your dashboard →</Link></p>}</section>}
+      {set.subjective.length > shown.subjective.length && <p className={styles.meta}><Link href={`/sign-in?redirect=${encodeURIComponent("/learning")}`}>See all {set.subjective.length} difference questions with answers in your dashboard →</Link></p>}</section>}
     <nav className={styles.next} aria-label="More comparisons">
       {previous ? <Link href={`/compare/${previous.id}`}>← {previous.techs.map(tech => tech.name).join(" vs ")}</Link> : <span />}
       {next && <Link href={`/compare/${next.id}`}>{next.techs.map(tech => tech.name).join(" vs ")} →</Link>}

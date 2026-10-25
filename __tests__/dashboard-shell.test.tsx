@@ -2,7 +2,7 @@ import { render,screen,within } from "@testing-library/react";
 import { Workspace } from "@/components/workspace";
 import userEvent from "@testing-library/user-event";
 import { STUDY_COURSES } from "@/lib/study/catalog";
-jest.mock("next/navigation",()=>({usePathname:()=>"/dashboard/techy",useRouter:()=>({replace:jest.fn(),refresh:jest.fn()})}));
+jest.mock("next/navigation",()=>({usePathname:()=>"/learning/techy",useRouter:()=>({replace:jest.fn(),refresh:jest.fn()})}));
 jest.mock("@/lib/client",()=>({requestJson:jest.fn(),errorKey:()=>"service_error"}));
 
 test.each([
@@ -13,16 +13,16 @@ test.each([
 ])("header super admin access for %s with verified access %s", (email, isSuperAdmin, visible) => {
   render(<Workspace authEnabled configured={false} billingEnabled={false} userEmail={email} initialCategory="techy" notesContent={<div>Learning</div>} initialAccount={{profile:{language:"en"},account:{tier:"monthly",used:0,limit:50,creditBalance:0,subscription:null},preparations:{isSuperAdmin,selections:[]},documents:[],progress:[]}}/>);
   const link = within(screen.getByRole("banner")).queryByRole("link", {name:"Super admin"});
-  if (visible) expect(link).toHaveAttribute("href", "/dashboard/super-admin");
+  if (visible) expect(link).toHaveAttribute("href", "/super-admin");
   else expect(link).not.toBeInTheDocument();
 });
 
 test("Techy has a separate professional section and renders its supplied deck", () => {
   render(<Workspace authEnabled={false} configured={false} billingEnabled={false} initialCategory="techy" notesContent={<section aria-label="Techy deck">Practice</section>}/>);
   const nav = within(screen.getByRole("navigation", { name: "Professional Learn" }));
-  expect(nav.getByRole("link", { name: "Techy" })).toHaveAttribute("href", "/dashboard/techy");
+  expect(nav.getByRole("link", { name: "Techy" })).toHaveAttribute("href", "/learning/techy");
   expect(nav.getByRole("link", { name: "Techy" })).toHaveAttribute("aria-current", "page");
-  expect(nav.getByRole("link", { name: "API Docs" })).toHaveAttribute("href", "/dashboard/api-docs");
+  expect(nav.getByRole("link", { name: "API Docs" })).toHaveAttribute("href", "/learning/api-docs");
   expect(screen.getByRole("region", { name: "Techy deck" })).toBeVisible();
   expect(screen.queryByText("Your learning space is almost ready")).not.toBeInTheDocument();
 });
@@ -35,7 +35,7 @@ test("My Library owns All technology notes and dashboard Notes only shows its to
   render(<Workspace authEnabled={false} configured={false} billingEnabled={false} initialCategory="notes" initialAccount={account} notesContent={<section aria-label="Topic cards">Study topics</section>} />);
   expect(screen.getByRole("region", { name: "Topic cards" })).toBeVisible();
   expect(screen.queryByRole("heading", { name: /All technology notes/ })).not.toBeInTheDocument();
-  expect(screen.getByRole("link", { name: "Notes" })).toHaveAttribute("href", "/dashboard/notes");
+  expect(screen.getByRole("link", { name: "Notes" })).toHaveAttribute("href", "/learning/notes");
 });
 test("sidebar has learning navigation only and keeps account access in the header",()=>{
   localStorage.clear();render(<Workspace authEnabled configured={false} billingEnabled={false} userEmail="student@example.test" initialStudyCourses={[]} initialAccount={{profile:{language:"en"},account:{tier:"monthly",used:0,limit:50,creditBalance:0,subscription:null},preparations:{isSuperAdmin:false,selections:["nda"]},documents:[],progress:[]}}/>);

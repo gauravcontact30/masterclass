@@ -20,12 +20,12 @@ import { ListenButton } from "./listen-button";
 
 const workflowKey = (workflow: Workflow) => contentKey("workflow", workflow.id);
 
-/** The official-docs learning paths (~180 KB of curriculum and guides) only show on /dashboard, so they are their own chunk. */
+/** The official-docs learning paths (~180 KB of curriculum and guides) only show on /learning, so they are their own chunk. */
 const WorkflowLearning = dynamic(() => import("./workflow-learning").then(module => module.WorkflowLearning), { loading: () => <LearningLoader size="inline" label="Loading the learning paths…" /> });
 /** Full detail and interview questions: about 200 Q&As, so they load as their own chunk after the page. */
 import WorkflowPrep from "./landing-workflow-prep";
 
-/** The landing preview shows this many of the most asked subjective and objective questions per blueprint; /dashboard shows all. */
+/** The landing preview shows this many of the most asked subjective and objective questions per blueprint; /learning shows all. */
 const LANDING_QUESTIONS = 3;
 
 type Group = Workflow["group"];
@@ -42,14 +42,14 @@ const KIND_LABEL: Record<WorkflowNodeKind, string> = { actor: "Person / client",
  */
 /**
  * `preview` (the landing page) shows the first three blueprints of each category, each with its 7 most asked
- * subjective and 7 most asked objective interview questions; /dashboard carries every blueprint with its full set.
+ * subjective and 7 most asked objective interview questions; /learning carries every blueprint with its full set.
  */
 export function LandingWorkflows({ expanded = false, preview = false }: Readonly<{ expanded?: boolean; preview?: boolean }>) {
   const { language } = useLanguage(); const hi = language === "hi"; const text: Text = (en, hindi) => hi ? hindi : en;
   const [group, setGroup] = useState<string>("All");
   // The landing preview leaves out the dashboard-only blueprints (the URL shortener and the company slides).
   const pool = useMemo(() => preview ? WORKFLOWS.filter(workflow => !workflow.dashboardOnly) : WORKFLOWS, [preview]);
-  // A category tab appears only when it has something to show (a blueprint, or on /dashboard a learning path).
+  // A category tab appears only when it has something to show (a blueprint, or on /learning a learning path).
   const groups = expanded ? [...new Set([...GROUPS.filter(option => pool.some(workflow => workflow.group === option) || WORKFLOW_LESSONS.some(lesson => lesson.group === option)), ...WORKFLOW_LESSONS.map(lesson => lesson.group)])] : GROUPS.filter(option => pool.some(workflow => workflow.group === option));
   const lessons = expanded ? WORKFLOW_LESSONS.filter(lesson => group === "All" || lesson.group === group) : [];
   const { overrides, editing } = useContentEditing();
@@ -63,7 +63,7 @@ export function LandingWorkflows({ expanded = false, preview = false }: Readonly
 
   if (section.hidden) return null;
   return <section id="workflows" className={styles.section} aria-labelledby="workflows-title" {...section.props}>{section.toolbar}<div className={home.inner}>
-    {preview && <DashboardMore href="/dashboard" title={text(`See all ${WORKFLOWS.length} blueprints`, `सभी ${WORKFLOWS.length} ब्लूप्रिंट देखें`)} detail={text("Every blueprint with 30+ subjective and 30+ objective interview questions.", "हर ब्लूप्रिंट के साथ 30+ विषयगत और 30+ वस्तुनिष्ठ इंटरव्यू प्रश्न।")} />}
+    {preview && <DashboardMore href="/learning" title={text(`See all ${WORKFLOWS.length} blueprints`, `सभी ${WORKFLOWS.length} ब्लूप्रिंट देखें`)} detail={text("Every blueprint with 30+ subjective and 30+ objective interview questions.", "हर ब्लूप्रिंट के साथ 30+ विषयगत और 30+ वस्तुनिष्ठ इंटरव्यू प्रश्न।")} />}
     <div className={styles.head} data-learning-header>
       <p className={styles.kicker}><Layers size={14} aria-hidden="true" />{text("Workflow blueprints", "वर्कफ़्लो ब्लूप्रिंट")}</p>
       <h2 id="workflows-title"><Editable k="section:workflows" f={`heading.${language}`}>{text("How real systems and ", "असली सिस्टम और ")}</Editable><em><Editable k="section:workflows" f={`emphasis.${language}`}>{text("AI agents get work done", "AI एजेंट काम कैसे करते हैं")}</Editable></em></h2>

@@ -7,7 +7,7 @@ import { guideMatchesTechnology, technologyTerms } from "@/lib/step-by-step/tech
 import { guideInterviewSchema, stepGuideSchema } from "@/lib/step-by-step/types";
 import { interviewForGuide } from "@/lib/step-by-step/interview";
 
-jest.mock("next/navigation", () => ({ usePathname: () => "/dashboard/step-by-step", useRouter: () => ({ replace: jest.fn(), refresh: jest.fn() }) }));
+jest.mock("next/navigation", () => ({ usePathname: () => "/learning/step-by-step", useRouter: () => ({ replace: jest.fn(), refresh: jest.fn() }) }));
 jest.mock("@/lib/client", () => ({ requestJson: jest.fn(), errorKey: () => "service_error" }));
 
 beforeEach(() => { localStorage.clear(); });
@@ -407,7 +407,7 @@ describe("StepByStep page", () => {
 test("the dashboard sidebar links to On The Go", () => {
   render(<Workspace authEnabled={false} configured={false} billingEnabled={false} initialCategory="step-by-step" notesContent={<section aria-label="Step content">Steps</section>} />);
   const link = screen.getByRole("link", { name: "On The Go" });
-  expect(link).toHaveAttribute("href", "/dashboard/step-by-step");
+  expect(link).toHaveAttribute("href", "/learning/step-by-step");
   expect(link).toHaveAttribute("aria-current", "page");
   expect(screen.getByRole("region", { name: "Step content" })).toBeVisible();
 });

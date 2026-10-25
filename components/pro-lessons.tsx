@@ -59,8 +59,8 @@ function Reader({ lesson, track, siblings, done, builtIn, onToggleDone, onBack, 
       <LearningResources key={track.id} technology={track.name} />
       {!!lesson.takeaways.length && <div className={styles.takeaways}><h3>Key takeaways</h3><ul>{lesson.takeaways.map(item => <li key={item}>{item}</li>)}</ul></div>}
       <div className={styles.articleFoot}>
-        <Link className={`${styles.btn} ${styles.outline} ${styles.small}`} href={`/dashboard/mentors?track=${track.id}&q=${encodeURIComponent(`Go deeper on: ${lesson.title}`)}`}><MessageCircle size={15}/>Ask the mentor</Link>
-        <Link className={`${styles.btn} ${styles.outline} ${styles.small}`} href={`/dashboard/quiz?track=${track.id}&topic=${encodeURIComponent(lesson.title)}`}><GraduationCap size={15}/>Quiz me on this</Link>
+        <Link className={`${styles.btn} ${styles.outline} ${styles.small}`} href={`/learning/mentors?track=${track.id}&q=${encodeURIComponent(`Go deeper on: ${lesson.title}`)}`}><MessageCircle size={15}/>Ask the mentor</Link>
+        <Link className={`${styles.btn} ${styles.outline} ${styles.small}`} href={`/learning/quiz?track=${track.id}&topic=${encodeURIComponent(lesson.title)}`}><GraduationCap size={15}/>Quiz me on this</Link>
       </div>
       {(previous || next) && <nav className={styles.articleNav} aria-label="Lesson navigation">
         {previous ? <button onClick={() => onOpen(previous)}><small>← Previous</small><b>{previous.title}</b></button> : <span/>}

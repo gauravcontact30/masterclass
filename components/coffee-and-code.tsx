@@ -87,7 +87,7 @@ export function CoffeeAndCode({ posts, topics }: Readonly<{ posts: BlogPost[]; t
       <DialogContent className={styles.reader} showCloseButton={false}>
         <div className={styles.readerBar}>
           <DialogTitle render={<p />}>{open ? `${open.topic} · ${open.minutes} min read` : ""}</DialogTitle>
-          {open && <Link href={`/dashboard/coffee-and-code/${open.slug}`} prefetch={false}>Open as a page</Link>}
+          {open && <Link href={`/learning/coffee-and-code/${open.slug}`} prefetch={false}>Open as a page</Link>}
           <button type="button" aria-label="Close article" onClick={() => setReading(null)}><X size={18} /></button>
         </div>
         {/* key: a "Keep reading" choice starts the next article from its top. */}

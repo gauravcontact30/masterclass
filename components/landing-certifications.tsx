@@ -46,7 +46,7 @@ export function LandingCertifications() {
   const slides = CARDS.map(card => ({
     id: card.id, image: `/images/landing/certifications/${card.id}.webp`, kicker: hi ? "सर्टिफ़िकेशन" : "Certification",
     title: card.title, text: pick(card.text), meta: pick(card.meta),
-    href: `/sign-in?redirect=${encodeURIComponent(`/dashboard/certifications?track=${card.id}`)}`, cta: hi ? "रास्ता देखें" : "See the path",
+    href: `/sign-in?redirect=${encodeURIComponent(`/learning/certifications?track=${card.id}`)}`, cta: hi ? "रास्ता देखें" : "See the path",
   }));
   return <FeatureSection feature={FEATURE} index={0} total={1} float={<CoverCarousel slides={slides} label={hi ? "सर्टिफ़िकेशन रास्ते" : "Certification paths"} />} />;
 }

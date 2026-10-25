@@ -4,7 +4,7 @@ import { ApiDocs } from "@/components/api-docs";
 import { API_CATEGORIES, API_PACKAGES, groupByCategory } from "@/lib/api-docs";
 import { API_DETAILS } from "@/lib/api-docs-details";
 jest.mock("@/components/api-project-workspace", () => ({ ApiProjectWorkspace: () => <div>Project workspace</div> }));
-jest.mock("next/navigation", () => ({ usePathname: () => "/dashboard/api-docs", useSearchParams: () => new URLSearchParams() }));
+jest.mock("next/navigation", () => ({ usePathname: () => "/learning/api-docs", useSearchParams: () => new URLSearchParams() }));
 beforeAll(() => { Element.prototype.scrollIntoView = jest.fn(); });
 
 test("every catalog package sits in exactly one category", () => {
@@ -32,7 +32,7 @@ test("choosing a package in the index filters to it and shows its details", asyn
   const index = screen.getByRole("navigation", { name: "Browse packages" });
   await user.click(within(index).getByRole("button", { name: /Next\.js 16\+/ }));
   expect(screen.getByRole("status")).toHaveTextContent("118 identifiers in 1 package");
-  expect(screen.getByRole("link", { name: "usePathname" })).toHaveAttribute("href", "/dashboard/api-docs/nextjs/usePathname");
+  expect(screen.getByRole("link", { name: "usePathname" })).toHaveAttribute("href", "/learning/api-docs/nextjs/usePathname");
   expect(screen.getAllByText("Guide").length).toBeGreaterThan(0);
   await user.click(screen.getByRole("button", { name: "Show all packages" }));
   expect(screen.getByRole("status")).toHaveTextContent("5,698 identifiers in 59 packages");

@@ -16,6 +16,6 @@ export async function GET(request: NextRequest) {
   const confirmedAt = data.user?.email_confirmed_at ? Date.parse(data.user.email_confirmed_at) : 0;
   const notice = Date.now() - confirmedAt < 10 * 60_000 ? "verified" : "signed_in";
   const next = params.get("next") || params.get("redirect");
-  const target = next && /^\/(dashboard|notes|subscribe|tech-buzz)(\/|\?|$)/.test(next) && !next.startsWith("//") ? next : `/dashboard?notice=${notice}`;
+  const target = next && /^\/(dashboard|notes|subscribe|tech-buzz)(\/|\?|$)/.test(next) && !next.startsWith("//") ? next : `/learning?notice=${notice}`;
   return NextResponse.redirect(new URL(target, request.url));
 }

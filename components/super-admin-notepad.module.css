@@ -283,6 +283,10 @@
 .documentCard[data-active="true"] { border-color: var(--t); background: linear-gradient(160deg, var(--t-soft), #fff 75%); box-shadow: inset 4px 0 var(--t); }
 .documentCard:hover .documentTabBtn, .documentCard:focus-within .documentTabBtn { padding-right: 12px; }
 .documentTabBtn { gap: 10px; min-height: 64px; padding: 12px; }
+/* The toolbar's `.notepad button` (a 36px centred icon box) outranks .documentTabBtn and squeezed each card's name to a
+   sliver; the card button takes the card's full width, and long names wrap onto two lines instead of being cut. */
+.notepad .documentTabBtn { display: flex; justify-content: flex-start; align-items: center; width: 100%; height: auto; min-height: 64px; padding: 12px; flex-shrink: 1; }
+.notepad .documentTabBtn b { display: -webkit-box; white-space: normal; overflow-wrap: anywhere; -webkit-line-clamp: 2; -webkit-box-orient: vertical; line-height: 1.35; }
 .documentTabBtn b { font-size: 13px; color: #141413; }
 .documentTabBtn small { font-size: 11px; }
 .documentTabBtn > svg { color: var(--t); }

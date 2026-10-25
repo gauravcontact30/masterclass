@@ -21,9 +21,9 @@ try {
   assert.equal(snapshot.revenue[0].refunds,2000);
   assert(snapshot.events.some(e=>e.action==='access_changed'));
   assert(!JSON.stringify(snapshot).includes('never expose'));
-  await db.exec(`insert into learning_presence(user_id,session_id,path,device) values('owner','00000000-0000-4000-8000-000000000001','/dashboard/lessons','Desktop');
-    insert into learning_presence(user_id,session_id,path,device,last_seen_at) values('inactive','00000000-0000-4000-8000-000000000002','/dashboard','Desktop',now()-interval '3 minutes');
-    insert into content_reports(user_id,path,reason,description) values('owner','/dashboard/lessons','incorrect','The example needs correction.');
+  await db.exec(`insert into learning_presence(user_id,session_id,path,device) values('owner','00000000-0000-4000-8000-000000000001','/learning/lessons','Desktop');
+    insert into learning_presence(user_id,session_id,path,device,last_seen_at) values('inactive','00000000-0000-4000-8000-000000000002','/learning','Desktop',now()-interval '3 minutes');
+    insert into content_reports(user_id,path,reason,description) values('owner','/learning/lessons','incorrect','The example needs correction.');
     insert into monitor_events(kind,action,status,details) values('uptime','probe',200,'{}'),('uptime','probe',503,'{}');`);
   const operations=(await db.query('select super_admin_operations(30) as data')).rows[0].data;
   assert.equal(operations.liveCount,1,'expired heartbeat must not count as live');

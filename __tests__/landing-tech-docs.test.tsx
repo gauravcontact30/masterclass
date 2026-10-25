@@ -34,7 +34,7 @@ describe("Technology docs: CS fundamentals", () => {
     expect(oops).toHaveTextContent("Encapsulation");
     // The detailed notes stay on the dashboard.
     expect(screen.queryByText("Concepts")).not.toBeInTheDocument();
-    expect(screen.getByRole("link", { name: new RegExp(`See all ${TECH_DOCS.length} docs & topics`) })).toHaveAttribute("href", "/dashboard");
+    expect(screen.getByRole("link", { name: new RegExp(`See all ${TECH_DOCS.length} docs & topics`) })).toHaveAttribute("href", "/learning");
   });
 
   test("the dashboard shows every concept, each with its key points", () => {

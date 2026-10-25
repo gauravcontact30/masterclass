@@ -24,7 +24,7 @@
 .pulse .track { overflow-y: hidden; }
 @media (max-width: 1080px) { .track { grid-auto-columns: calc((100% - var(--gap)) / 2); } }
 @media (max-width: 680px) { .track { --gap: 14px; grid-auto-columns: 100%; } }
-/* /dashboard (no `preview`): two cards a screen with justified, hyphenated card text; phones keep one. */
+/* /learning (no `preview`): two cards a screen with justified, hyphenated card text; phones keep one. */
 .track.twoUp { grid-auto-columns: calc((100% - var(--gap)) / 2); }
 @media (max-width: 680px) { .track.twoUp { grid-auto-columns: 100%; } }
 .twoUp > li :is(p, li, dd) { text-align: justify; text-justify: inter-word; -webkit-hyphens: auto; hyphens: auto; }

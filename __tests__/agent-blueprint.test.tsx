@@ -20,7 +20,7 @@ test("each blueprint is a complete codebase with a note on every code line", () 
 
 test("step chips link only to identifiers that exist in the catalog", () => {
   render(<AgentBlueprint />);
-  for (const link of screen.getAllByRole("link").filter(a => a.getAttribute("href")?.startsWith("/dashboard/api-docs/"))) {
+  for (const link of screen.getAllByRole("link").filter(a => a.getAttribute("href")?.startsWith("/learning/api-docs/"))) {
     const [, , , pkg, name] = link.getAttribute("href")!.split("/");
     expect(API_PACKAGES.find(item => item.id === pkg)?.entries.some(entry => entry.name === name)).toBe(true);
   }

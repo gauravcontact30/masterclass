@@ -24,7 +24,7 @@ import {
 } from "lucide-react";
 import { LanguageToggle } from "./language-toggle";
 import { getTechnologyBrandIcon } from "./tech-buzz-brand-icons";
-import { getDiwaliFestiveSaleInfo, type FestiveSaleInfo } from "@/lib/tech-buzz-data";
+import { getDiwaliFestiveSaleInfo, type FestiveSaleInfo } from "@/lib/festive-sale";
 import styles from "./courses-feed.module.css";
 
 export interface MasterCourseItem {
@@ -66,7 +66,7 @@ export const MASTER_COURSES: MasterCourseItem[] = [
     techBadgeColor: "#059669",
     title: "System Design: WhatsApp-style Ultra-High Concurrency Messaging",
     subtitle: "Architecting end-to-end encrypted bidirectional messaging, offline sync queues, read receipts, and cluster federation across 2 billion users.",
-    dashboardPath: "/dashboard/system-design",
+    dashboardPath: "/learning/system-design",
     level: "Advanced",
     durationHours: 18,
     modulesCount: 14,
@@ -97,7 +97,7 @@ export const MASTER_COURSES: MasterCourseItem[] = [
     techBadgeColor: "#2563eb",
     title: "System Design: Facebook-style Social Graph & Billion-User NewsFeed",
     subtitle: "Designing graph edge traversal, fan-out-on-write timelines, distributed Memcached clusters, and asynchronous notification backplanes.",
-    dashboardPath: "/dashboard/system-design",
+    dashboardPath: "/learning/system-design",
     level: "Principal",
     durationHours: 22,
     modulesCount: 16,
@@ -128,7 +128,7 @@ export const MASTER_COURSES: MasterCourseItem[] = [
     techBadgeColor: "#e11d48",
     title: "System Design: Instagram-style Global Media Pipeline & CDN Edge Caching",
     subtitle: "High-throughput photo/video ingestion, asynchronous transcoding workers, pgvector semantic search, and multi-tier edge CDN invalidation.",
-    dashboardPath: "/dashboard/system-design",
+    dashboardPath: "/learning/system-design",
     level: "Advanced",
     durationHours: 16,
     modulesCount: 12,
@@ -159,7 +159,7 @@ export const MASTER_COURSES: MasterCourseItem[] = [
     techBadgeColor: "#ea580c",
     title: "System Design: Food Delivery Platform & Real-Time Geospatial Dispatch",
     subtitle: "UberEats/DoorDash architecture: QuadTree spatial partitioning, driver-order matching algorithms, live GPS streaming, and dynamic surge pricing.",
-    dashboardPath: "/dashboard/system-design",
+    dashboardPath: "/learning/system-design",
     level: "Intermediate",
     durationHours: 14,
     modulesCount: 11,
@@ -190,7 +190,7 @@ export const MASTER_COURSES: MasterCourseItem[] = [
     techBadgeColor: "#7c3aed",
     title: "System Design: Stripe-style Payment Gateway & Immutable Financial Ledger",
     subtitle: "Zero-loss financial transactions: two-phase commits, idempotency keys, Raft distributed consensus, double-entry bookkeeping, and fraud anomaly detection.",
-    dashboardPath: "/dashboard/system-design",
+    dashboardPath: "/learning/system-design",
     level: "Principal",
     durationHours: 24,
     modulesCount: 18,
@@ -221,7 +221,7 @@ export const MASTER_COURSES: MasterCourseItem[] = [
     techBadgeColor: "#8b5cf6",
     title: "System Design: Enterprise AI Automation Platform & Model Context Protocol",
     subtitle: "Building multi-agent autonomous systems: MCP tool server architectures, sandboxed code execution, streaming token state machines, and human-in-the-loop review.",
-    dashboardPath: "/dashboard/system-design",
+    dashboardPath: "/learning/system-design",
     level: "Advanced",
     durationHours: 20,
     modulesCount: 15,
@@ -252,7 +252,7 @@ export const MASTER_COURSES: MasterCourseItem[] = [
     techBadgeColor: "#ea580c",
     title: "System Design: Netflix-style Adaptive Bitrate Video Streaming & Multi-CDN",
     subtitle: "Per-title chunked video encoding, adaptive bitrate switching (HLS/DASH), multi-CDN steering algorithms, and distributed viewing session state.",
-    dashboardPath: "/dashboard/system-design",
+    dashboardPath: "/learning/system-design",
     level: "Advanced",
     durationHours: 18,
     modulesCount: 13,
@@ -283,7 +283,7 @@ export const MASTER_COURSES: MasterCourseItem[] = [
     techBadgeColor: "#0284c7",
     title: "System Design: High-Concurrency Ticket Booking & Flash Sale Lock Engine",
     subtitle: "Zero-overselling distributed architecture: Redlock mutex algorithms, virtual waiting room queueing, seat matrix caching, and payment timeout webhooks.",
-    dashboardPath: "/dashboard/system-design",
+    dashboardPath: "/learning/system-design",
     level: "Advanced",
     durationHours: 16,
     modulesCount: 12,
@@ -314,7 +314,7 @@ export const MASTER_COURSES: MasterCourseItem[] = [
     techBadgeColor: "#059669",
     title: "IELTS Academic & Executive Tech English: Band 8.5+ Architecture Communication",
     subtitle: "Master senior engineering interview communication, architectural whitepaper writing, vocabulary precision, and English fluency with native voice feedback.",
-    dashboardPath: "/dashboard/languages",
+    dashboardPath: "/learning/languages",
     level: "Intermediate",
     durationHours: 15,
     modulesCount: 10,
@@ -345,7 +345,7 @@ export const MASTER_COURSES: MasterCourseItem[] = [
     techBadgeColor: "#3178c6",
     title: "Modern Full-Stack Engineering: React 19, Next.js 15, TypeScript & Rust",
     subtitle: "Complete hands-on curriculum: The React Compiler, async Server Components, Rust Tokio microservices, and PostgreSQL pgvector production deployment.",
-    dashboardPath: "/dashboard/technology",
+    dashboardPath: "/learning/technology",
     level: "Intermediate",
     durationHours: 26,
     modulesCount: 20,

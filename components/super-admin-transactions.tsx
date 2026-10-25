@@ -44,7 +44,7 @@ const when = (value: string) => new Date(value).toLocaleString("en-IN", { dateSt
 const shortDay = (day: string) => new Date(`${day}T00:00:00+05:30`).toLocaleDateString("en-IN", { day: "numeric", month: "short" });
 const label = (value: string) => value.toUpperCase() === "UPI" ? "UPI" : value.charAt(0).toUpperCase() + value.slice(1);
 const percent = (value: number | null) => value == null ? "—" : `${Math.round(value * 1000) / 10}%`;
-const dashboardUrl = (id: string) => `https://dashboard.razorpay.com/app/payments/${id}`;
+const dashboardUrl = (id: string) => `https://learning.razorpay.com/app/payments/${id}`;
 
 /** Every payment made through this website — memberships, download credits and ₹2 card unlocks — read from Razorpay. */
 export function SuperAdminTransactions() {

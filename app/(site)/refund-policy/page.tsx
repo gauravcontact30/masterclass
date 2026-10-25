@@ -13,7 +13,7 @@ export default function RefundPolicyPage() {
     <div className={styles.prose}>
       <h2>Cancelling your membership</h2>
       <ul>
-        <li>You can cancel renewal at any time from <Link href="/dashboard/plans">plans in your dashboard</Link>. No cancellation fee applies.</li>
+        <li>You can cancel renewal at any time from <Link href="/learning/plans">plans in your dashboard</Link>. No cancellation fee applies.</li>
         <li>Cancelling stops future charges. Your access continues until the end of the monthly or yearly period you have already paid for, and then ends.</li>
         <li>Memberships are billed through Razorpay. Cancelling in MasterClass also cancels the payment mandate, so no further amount is debited.</li>
       </ul>

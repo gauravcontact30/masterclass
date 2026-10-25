@@ -25,9 +25,9 @@ export function sidebarSuggestions(access: PreparationAccess, hi: boolean): Side
   const pages: SidebarSuggestion[] = [
     { id: "page:dashboard", label: hi ? "डैशबोर्ड" : "Dashboard", hint: hi ? "पेज" : "Page", scope: "pages", tab: "dashboard", keywords: "dashboard home डैशबोर्ड" },
     { id: "page:library", label: hi ? "मेरी लाइब्रेरी" : "My library", hint: hi ? "पेज" : "Page", scope: "pages", tab: "library", keywords: "library documents guides लाइब्रेरी" },
-    { id: "page:notes", label: hi ? "नोट्स" : "Notes", hint: hi ? "पेज" : "Page", scope: "pages", href: "/dashboard/notes", keywords: "notes topic cards नोट्स" },
-    { id: "page:vocabulary", label: "Vocabulary", hint: "English word finder", scope: "pages", href: "/dashboard/vocabulary", keywords: "vocabulary dictionary english hindi words phrases idioms meaning synonyms antonyms pronunciation" },
-    { id: "page:bookmark", label: "Bookmark", hint: hi ? "पेज" : "Page", scope: "pages", href: "/dashboard/bookmark", keywords: "bookmarks saved" },
+    { id: "page:notes", label: hi ? "नोट्स" : "Notes", hint: hi ? "पेज" : "Page", scope: "pages", href: "/learning/notes", keywords: "notes topic cards नोट्स" },
+    { id: "page:vocabulary", label: "Vocabulary", hint: "English word finder", scope: "pages", href: "/learning/vocabulary", keywords: "vocabulary dictionary english hindi words phrases idioms meaning synonyms antonyms pronunciation" },
+    { id: "page:bookmark", label: "Bookmark", hint: hi ? "पेज" : "Page", scope: "pages", href: "/learning/bookmark", keywords: "bookmarks saved" },
   ];
   const professional: SidebarSuggestion[] = [
     ["techy", "Techy", "interview answers quiz code examples corporate english"], ["api-docs", "API Docs", "api reference identifiers hooks functions classes"],
@@ -35,14 +35,14 @@ export function sidebarSuggestions(access: PreparationAccess, hi: boolean): Side
     ["certifications", "Certifications", "certification certificate exam aws system design claude code n8n agentic ai langchain langgraph langsmith langflow roadmap"],
     ["lessons", "Lessons", "lessons articles syllabus reading"], ["quiz", "Quiz", "quiz test multiple choice score"],
     ["interview", "Interview", "interview questions company google meta amazon"], ["mentors", "Mentors", "mentor chat ai tutor ask"],
-  ].map(([id, label, keywords]) => ({ id: `pro:${id}`, label, hint: "Professional Learn", scope: "professional" as const, href: `/dashboard/${id}`, keywords }));
+  ].map(([id, label, keywords]) => ({ id: `pro:${id}`, label, hint: "Professional Learn", scope: "professional" as const, href: `/learning/${id}`, keywords }));
   const options = PREPARATIONS.filter(option => access.isSuperAdmin || access.selections.includes(option.id));
   const preparation: SidebarSuggestion[] = PREPARATION_GROUPS.flatMap(group => group.categories.filter(id => options.some(option => option.category === id)).flatMap(id => [
-    { id: `cat:${id}`, label: pick(CATEGORY_LABELS[id]), hint: pick(group.label), scope: "preparation" as const, href: `/dashboard/${id}`, keywords: `${CATEGORY_LABELS[id].en} ${CATEGORY_LABELS[id].hi} ${group.label.en}` },
-    ...(id === "system-design" ? SYSTEM_DESIGN_COURSES.map(course => ({ id: `course:${course.id}`, label: pick(course.title), hint: pick(CATEGORY_LABELS[id]), scope: "preparation" as const, href: `/dashboard/${id}?course=${course.id}`, keywords: `${course.title.en} ${course.title.hi}` }))
-      : options.filter(option => option.category === id).map(option => ({ id: `prep:${option.id}`, label: pick(option.label), hint: pick(CATEGORY_LABELS[id]), scope: "preparation" as const, href: `/dashboard/${id}?preparation=${encodeURIComponent(option.id)}`, keywords: `${option.label.en} ${option.label.hi} ${CATEGORY_LABELS[id].en}` }))),
+    { id: `cat:${id}`, label: pick(CATEGORY_LABELS[id]), hint: pick(group.label), scope: "preparation" as const, href: `/learning/${id}`, keywords: `${CATEGORY_LABELS[id].en} ${CATEGORY_LABELS[id].hi} ${group.label.en}` },
+    ...(id === "system-design" ? SYSTEM_DESIGN_COURSES.map(course => ({ id: `course:${course.id}`, label: pick(course.title), hint: pick(CATEGORY_LABELS[id]), scope: "preparation" as const, href: `/learning/${id}?course=${course.id}`, keywords: `${course.title.en} ${course.title.hi}` }))
+      : options.filter(option => option.category === id).map(option => ({ id: `prep:${option.id}`, label: pick(option.label), hint: pick(CATEGORY_LABELS[id]), scope: "preparation" as const, href: `/learning/${id}?preparation=${encodeURIComponent(option.id)}`, keywords: `${option.label.en} ${option.label.hi} ${CATEGORY_LABELS[id].en}` }))),
   ]));
-  const tracks: SidebarSuggestion[] = PRO_TRACKS.map(track => ({ id: `track:${track.id}`, label: `${track.icon} ${track.name}`, hint: hi ? "लेसन ट्रैक" : "Lesson track", scope: "tracks", href: `/dashboard/lessons?track=${track.id}`, keywords: `${track.name} ${track.focus} ${track.syllabus.join(" ")}` }));
+  const tracks: SidebarSuggestion[] = PRO_TRACKS.map(track => ({ id: `track:${track.id}`, label: `${track.icon} ${track.name}`, hint: hi ? "लेसन ट्रैक" : "Lesson track", scope: "tracks", href: `/learning/lessons?track=${track.id}`, keywords: `${track.name} ${track.focus} ${track.syllabus.join(" ")}` }));
   return [...pages, ...professional, ...preparation, ...tracks];
 }
 

@@ -24,7 +24,7 @@ type Text = (en: string, hindi: string) => string;
 /** Eight light tones the slides cycle through, defined in landing-interview.module.css. */
 const TONES = 8;
 const two = (n: number) => String(n).padStart(2, "0");
-/** The landing preview shows this many of the most asked subjective and objective questions; /dashboard shows all. */
+/** The landing preview shows this many of the most asked subjective and objective questions; /learning shows all. */
 /** Questions per technology on the landing preview; members and trial users see all of them in the dashboard. */
 const LANDING_QUESTIONS = 3;
 const techKey = (tech: InterviewTech) => contentKey("interview", tech.id);
@@ -37,7 +37,7 @@ const techKey = (tech: InterviewTech) => contentKey("interview", tech.id);
  */
 export function LandingInterview({ expanded = false, preview = false, day = 0, fresh = null }: Readonly<{ expanded?: boolean; preview?: boolean; day?: number; fresh?: FreshQuestion | null }>) {
   const { language } = useLanguage(); const hi = language === "hi"; const text: Text = (en, hindi) => hi ? hindi : en;
-  // The landing page previews three technologies; /dashboard carries all of them with the navigator.
+  // The landing page previews three technologies; /learning carries all of them with the navigator.
   const visible = useVisibleContent(INTERVIEW_TECHS, techKey);
   const techs = preview ? takeDaily(visible, day, PREVIEW_COUNT) : visible;
   const section = useContentItem("section:interview-prep", "section");
@@ -48,7 +48,7 @@ export function LandingInterview({ expanded = false, preview = false, day = 0, f
   const chooseTab = (id: string, tab: number) => setTabs(all => ({ ...all, [id]: tab }));
   if (section.hidden) return null;
   return <section id="interview-prep" className={styles.section} aria-labelledby="interview-title" {...section.props}>{section.toolbar}<div className={home.inner}>
-    {preview && <DashboardMore href="/dashboard" title={text(`See all ${INTERVIEW_TECHS.length} technologies`, `सभी ${INTERVIEW_TECHS.length} तकनीकें देखें`)} detail={text("30+ subjective and 30+ objective questions for every technology, with search and filters.", "हर तकनीक के लिए 30+ विषयगत और 30+ वस्तुनिष्ठ प्रश्न, खोज और फ़िल्टर के साथ।")} />}
+    {preview && <DashboardMore href="/learning" title={text(`See all ${INTERVIEW_TECHS.length} technologies`, `सभी ${INTERVIEW_TECHS.length} तकनीकें देखें`)} detail={text("30+ subjective and 30+ objective questions for every technology, with search and filters.", "हर तकनीक के लिए 30+ विषयगत और 30+ वस्तुनिष्ठ प्रश्न, खोज और फ़िल्टर के साथ।")} />}
     <div className={styles.head} data-learning-header>
       <div className={styles.headCopy} data-learning-copy>
         <p className={styles.kicker}><GraduationCap size={14} aria-hidden="true" />{text("Interview prep", "इंटरव्यू की तैयारी")}<span>{INTERVIEW_TECHS.length} {text("technologies", "तकनीकें")}</span></p>

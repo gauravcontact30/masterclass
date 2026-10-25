@@ -20,9 +20,9 @@ MasterClass puts every learning tool a learner needs into one dashboard, bilingu
 A bilingual (English/Hindi) AI study workspace. It pairs prepared, published notes with AI answers, and covers school, competitive exams and technology careers in one place.
 
 ## Operating Context
-Public: landing page (`/`), `/courses`, `/about`, `/contact`, `/privacy`, `/terms`. Everything else is behind sign-in, under `/dashboard`:
+Public: landing page (`/`), `/courses`, `/about`, `/contact`, `/privacy`, `/terms`. Everything else is behind sign-in, under `/learning`:
 - **Search:** answers questions from the app's own notes, or from an AI model when AI Mode is on (Anthropic, Perplexity).
-- **On The Go** (`/dashboard/step-by-step`): step-by-step build guides for 60+ technologies, with comparisons between technologies.
+- **On The Go** (`/learning/step-by-step`): step-by-step build guides for 60+ technologies, with comparisons between technologies.
 - **Class Room:** topic explanations with worked answers, diagrams and a Hindi toggle.
 - **Vocabulary:** English word finder with Hindi meanings, synonyms and antonyms.
 - **Notes** library, **Bookmarks**, reading progress and personal notes.

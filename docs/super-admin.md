@@ -8,7 +8,7 @@ New responses from the shared `api()` wrapper include a server-generated `X-Requ
 
 Activity refresh failures retain the last successful snapshot with a stale-data warning and offer retry when no snapshot exists. Infrastructure configuration checks show unknown status until loaded, expose refresh errors, and disable cache actions until configuration is available. Configuration is not a provider uptime check. Table CSV exports neutralize formula prefixes, and active date filters exclude records with missing or invalid timestamps.
 
-Open `/dashboard/super-admin`, or choose **Super admin** in the learning dashboard account menu. Both the server page and API verify the current Supabase user and require a confirmed `garvcontact30@gmail.com` email. User-editable role metadata cannot grant access. Both sidebars show hover/focus tooltips when collapsed.
+Open `/super-admin`, or choose **Super admin** in the learning dashboard account menu. Both the server page and API verify the current Supabase user and require a confirmed `garvcontact30@gmail.com` email. User-editable role metadata cannot grant access. Both sidebars show hover/focus tooltips when collapsed.
 
 ## Deployment
 

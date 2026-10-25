@@ -46,7 +46,7 @@ export type LearningUpload = LearningBlock & {
 };
 /** An earlier version of an upload's content, kept on every edit that changed it. */
 export type LearningRevision = { id: string; uploadId: string; version: number; title: string; summary: string | null; html: string; background: string; createdAt: string };
-/** A page the owner adds to the Learning Dashboard sidebar, shown at /dashboard/learn/[slug]. */
+/** A page the owner adds to the Learning Dashboard sidebar, shown at /learning/learn/[slug]. */
 export type LearningPage = { id: string; slug: string; title: string; description: string | null; icon: string; position: number; visible: boolean; createdAt: string; updatedAt: string };
 
 type Option = { value: string; label: string };
@@ -69,7 +69,7 @@ export type PageOption = Option & { group?: PageGroup; keywords?: string };
 const page = (group: PageGroup, value: string, label: string, keywords = ""): PageOption => ({ value, label, group, keywords });
 /**
  * Every Learning Dashboard page a learner can open from the sidebar, in sidebar order. Custom pages are added as
- * `learn:<slug>`. The exam pages are /dashboard/<category> (CATEGORY_LABELS in lib/study/preparations, which is not
+ * `learn:<slug>`. The exam pages are /learning/<category> (CATEGORY_LABELS in lib/study/preparations, which is not
  * imported here because it pulls in the catalogue).
  */
 export const DASHBOARD_PAGES: PageOption[] = [

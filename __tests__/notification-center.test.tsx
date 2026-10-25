@@ -9,7 +9,7 @@ const recent = new Date().toISOString();
 const reply = (notifications: object[], unread: number) => ({ ok: true, json: async () => ({ notifications, unread }) });
 const renderCenter = () => render(<LanguageProvider><NotificationCenter /></LanguageProvider>);
 
-beforeEach(() => { sessionStorage.clear(); window.history.replaceState(null, "", "/dashboard"); global.fetch = jest.fn().mockResolvedValue(reply([], 0)) as jest.Mock; });
+beforeEach(() => { sessionStorage.clear(); window.history.replaceState(null, "", "/learning"); global.fetch = jest.fn().mockResolvedValue(reply([], 0)) as jest.Mock; });
 
 test("the sign-in confirmation toast shows once, from the auth page's notice", async () => {
   setAuthNotice("signed_in");
@@ -19,7 +19,7 @@ test("the sign-in confirmation toast shows once, from the auth page's notice", a
 });
 
 test("an emailed link's ?notice=verified toasts and is removed from the address bar", async () => {
-  window.history.replaceState(null, "", "/dashboard?notice=verified&tab=1");
+  window.history.replaceState(null, "", "/learning?notice=verified&tab=1");
   renderCenter();
   await waitFor(() => expect(toast.success).toHaveBeenCalledWith("Email verified. You are signed in", expect.anything()));
   expect(window.location.search).toBe("?tab=1");
@@ -27,7 +27,7 @@ test("an emailed link's ?notice=verified toasts and is removed from the address 
 
 test("the bell shows the unread count, lists notifications and marks them all read", async () => {
   (global.fetch as jest.Mock).mockResolvedValue(reply([
-    { id: "a", kind: "sign_in", title: "Signed in successfully", body: "New sign-in", link: "/dashboard/settings", created_at: recent, read_at: null },
+    { id: "a", kind: "sign_in", title: "Signed in successfully", body: "New sign-in", link: "/learning/settings", created_at: recent, read_at: null },
     { id: "b", kind: "email_verified", title: "Email verified", body: "", link: null, created_at: recent, read_at: "2026-10-20T00:00:00Z" },
   ], 1));
   renderCenter();

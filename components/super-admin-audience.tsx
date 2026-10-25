@@ -49,7 +49,7 @@ export function sourceKind(referrer: string): "direct" | "search" | "social" | "
 const LIBRARY = /^\/(library|courses|interview-questions|workflows|learn|api-reference|compare|vocabulary|about|contact)(\/|$)/;
 export function pageSection(path: string): "home" | "dashboard" | "auth" | "library" | "other" {
   if (path === "/") return "home";
-  if (path.startsWith("/dashboard")) return "dashboard";
+  if (/^\/(learning|dashboard)(\/|$)/.test(path)) return "dashboard"; // /dashboard: visits before the 2026-10-25 move
   if (/^\/(sign-in|sign-up|auth|subscribe)(\/|$)/.test(path)) return "auth";
   if (LIBRARY.test(path)) return "library";
   return "other";

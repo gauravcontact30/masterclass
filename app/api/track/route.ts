@@ -44,7 +44,7 @@ export async function POST(request: Request) {
   let input: z.infer<typeof bodySchema>;
   try { input = bodySchema.parse(await jsonBody(request, 4000)); } catch (error) { return new Response(null, { status: error instanceof HttpError ? error.status : 400 }); }
   // Super admin pages are not part of the audience being measured.
-  if (input.path.startsWith("/dashboard/super-admin") || input.path.startsWith("/api/")) return noContent();
+  if (input.path.startsWith("/super-admin") || input.path.startsWith("/api/")) return noContent();
 
   const ip = clientIp(request.headers);
   // The site's own development server is not audience (it shares the production database); TRACK_LOCAL=1 records it.

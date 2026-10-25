@@ -22,7 +22,7 @@ export function LearningPagesNav({ collapsed, activeSlug }: { collapsed: boolean
     <div className="sidebar-label">{!collapsed && "Your pages"}</div>
     <nav aria-label="Your pages" className="sidebar-pro-nav">{pages.map(page => {
       const Icon = ICONS[page.icon] ?? BookOpen;
-      return <Link key={page.slug} href={`/dashboard/learn/${page.slug}`} aria-label={page.title} className="sidebar-notes" aria-current={activeSlug === page.slug ? "page" : undefined}>
+      return <Link key={page.slug} href={`/learning/learn/${page.slug}`} aria-label={page.title} className="sidebar-notes" aria-current={activeSlug === page.slug ? "page" : undefined}>
         <Icon size={17} />{!collapsed && <>{page.title}<ChevronRight size={14} /></>}{collapsed && <span className="sidebar-tooltip">{page.title}</span>}
       </Link>;
     })}</nav>

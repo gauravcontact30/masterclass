@@ -8,5 +8,5 @@ export default async function NotesRedirect({ searchParams }: { searchParams: Pr
     if (typeof value === "string") query.set(key, value);
     else if (Array.isArray(value)) value.forEach(item => query.append(key, item));
   }
-  redirect(`/dashboard/notes${query.size ? `?${query}` : ""}`);
+  redirect(`/learning/notes${query.size ? `?${query}` : ""}`);
 }

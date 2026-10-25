@@ -13,7 +13,7 @@ try {
   await db.exec(await readFile('supabase/migrations/0027_activity_breakdowns.sql', 'utf8'));
   // 20 countries, 30 cities; a bot row that must be ignored; one signed-in visitor; page_leave read times.
   await db.exec(`insert into site_visits(event, visitor_id, session_id, path, country, region, city, new_visitor, referrer_host, user_id, duration_ms, is_bot)
-    select 'page_view', 'visitor' || n, 'session' || n, case when n % 3 = 0 then '/dashboard' else '/' end,
+    select 'page_view', 'visitor' || n, 'session' || n, case when n % 3 = 0 then '/learning' else '/' end,
       'C' || chr(65 + n % 20), 'Region', 'City' || (n % 30), n % 2 = 0, case when n % 4 = 0 then 'www.google.com' else null end,
       case when n = 1 then '00000000-0000-4000-8000-000000000001'::uuid end, null, false from generate_series(1, 120) n;
     insert into site_visits(event, visitor_id, session_id, path, country, duration_ms) values ('page_leave', 'visitor2', 'session2', '/', 'CC', 40000);
@@ -27,7 +27,7 @@ try {
   assert.equal(b.countries.reduce((s, c) => s + c.visitors, 0), 120);
   assert.equal(b.countries.find(c => c.country === 'CC').avg_seconds, 40);
   assert.equal(b.countries.reduce((s, c) => s + c.signed_in, 0), 1);
-  assert.deepEqual(b.pages.map(p => p.path).sort(), ['/', '/dashboard']);
+  assert.deepEqual(b.pages.map(p => p.path).sort(), ['/', '/learning']);
   assert.equal(b.referrers.find(r => r.referrer === 'www.google.com').views, 30);
   assert(b.countries.every((c, i, a) => i === 0 || a[i - 1].visitors >= c.visitors), 'ordered by visitors');
   for (const role of ['anon', 'authenticated']) { await db.exec(`set role ${role}`); await assert.rejects(db.query('select admin_activity_breakdowns(7)'), /permission denied/); await db.exec('reset role'); }

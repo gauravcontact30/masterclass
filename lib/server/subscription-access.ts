@@ -15,6 +15,6 @@ export async function requirePaidAccess(owner:string) {
 export async function requireLearningUser() {
   const user=await currentUser();
   if (!user) redirect("/sign-in");
-  if (!isSuperAdminUser(user) && (await account(user.id)).tier === "free") redirect("/dashboard/plans");
+  if (!isSuperAdminUser(user) && (await account(user.id)).tier === "free") redirect("/learning/plans");
   return user;
 }

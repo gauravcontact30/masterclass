@@ -23,21 +23,27 @@ import {
   Layers,
   Flame
 } from "lucide-react";
-import {
-  type TechBuzzArticle,
-  getTechBuzzArticles
-} from "@/lib/tech-buzz-data";
+import type { TechBuzzCard, TechBuzzMemberContent, TechBuzzPreview } from "@/lib/tech-buzz-public";
 import styles from "./tech-buzz-article.module.css";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 
 interface Props {
-  article: TechBuzzArticle;
+  /** The free preview only; the member body is fetched from /api/tech-buzz/[slug]/member after a server-side check. */
+  article: TechBuzzPreview;
+  related: TechBuzzCard[];
+  prevStory: TechBuzzCard | null;
+  nextStory: TechBuzzCard | null;
 }
 
-export function TechBuzzArticleView({ article }: Props) {
-  // Subscription status
-  const [isSubscribed, setIsSubscribed] = useState<boolean>(false);
+/** Remote covers (Unsplash) are already sized by URL; local ones go through the image optimizer. */
+const remote = (src: string) => /^https?:/.test(src);
+
+export function TechBuzzArticleView({ article, related, prevStory, nextStory }: Props) {
+  // Membership: "checking" while the member body loads, then the body or the reason it is locked.
+  const [access, setAccess] = useState<"checking" | "member" | "signin_required" | "subscription_required">("checking");
+  const [memberContent, setMemberContent] = useState<TechBuzzMemberContent | null>(null);
+  const isSubscribed = access === "member" && !!memberContent;
   const [claps, setClaps] = useState<number>(article.claps);
   const [userReactions, setUserReactions] = useState<{ heart: number; unicorn: number; rocket: number; mindblown: number }>(article.reactions);
   const [bookmarked, setBookmarked] = useState<boolean>(false);
@@ -65,42 +71,35 @@ export function TechBuzzArticleView({ article }: Props) {
   const [moreBlogsPage, setMoreBlogsPage] = useState<number>(1);
 
   // Comments state
-  const [comments, setComments] = useState(article.comments || []);
+  const [comments, setComments] = useState<TechBuzzMemberContent["comments"]>([]);
   const [newCommentText, setNewCommentText] = useState<string>("");
 
-  // Check saved subscription status from localStorage
+  // Restore claps and bookmarks saved in this browser.
   useEffect(() => {
     try {
-      const status = localStorage.getItem("mcb_member_status");
-      if (status === "subscribed") {
-        setIsSubscribed(true);
-      }
       const savedClaps = localStorage.getItem(`masterclass:claps:${article.id}`);
-      if (savedClaps) {
-        setClaps(Number(savedClaps));
-      }
+      if (savedClaps) setClaps(Number(savedClaps));
       const savedBookmarks = localStorage.getItem("masterclass:tech-buzz-bookmarks");
-      if (savedBookmarks) {
-        const parsed = JSON.parse(savedBookmarks);
-        if (parsed[article.id]) setBookmarked(true);
-      }
+      if (savedBookmarks && JSON.parse(savedBookmarks)[article.id]) setBookmarked(true);
     } catch {}
-
-    // Also check account tier if user happens to be logged in
-    if (typeof fetch !== "undefined") {
-      fetch("/api/account?view=summary")
-        .then(res => (res.ok ? res.json() : null))
-        .then(data => {
-          if (
-            data?.account?.subscription?.status === "active" ||
-            ["monthly", "yearly", "trial"].includes(data?.account?.tier)
-          ) {
-            setIsSubscribed(true);
-          }
-        })
-        .catch(() => {});
-    }
   }, [article.id]);
+
+  // The member body. Without a Supabase session cookie the visitor cannot be a member, so no request is made.
+  useEffect(() => {
+    if (!/(?:^|;\s*)sb-[^=]+-auth-token/.test(document.cookie)) { setAccess("signin_required"); return; }
+    const controller = new AbortController();
+    fetch(`/api/tech-buzz/${encodeURIComponent(article.slug)}/member`, { signal: controller.signal })
+      .then(res => (res.ok ? res.json() : null))
+      .then((data: { member?: boolean; reason?: "signin_required" | "subscription_required"; content?: TechBuzzMemberContent } | null) => {
+        if (data?.member && data.content) {
+          setMemberContent(data.content);
+          setComments(data.content.comments);
+          setAccess("member");
+        } else setAccess(data?.reason ?? "signin_required");
+      })
+      .catch(() => { if (!controller.signal.aborted) setAccess("signin_required"); });
+    return () => controller.abort();
+  }, [article.slug]);
 
   // Track scroll position for reading progress bar
   useEffect(() => {
@@ -122,22 +121,10 @@ export function TechBuzzArticleView({ article }: Props) {
     }, 3200);
   }, []);
 
-  // Direct platform subscription without signin/signup
-  const handleSubscribePlatform = () => {
-    setIsSubscribed(true);
-    try {
-      localStorage.setItem("mcb_member_status", "subscribed");
-    } catch {}
-    showToast("Subscribed! Full Medium-style deep dive content unlocked.");
-
-    if (typeof fetch !== "undefined") {
-      fetch("/api/tech-buzz/action", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "subscribe_newsletter", email: "subscriber@masterclass.dev" })
-      }).catch(() => {});
-    }
-  };
+  // Where the paywall sends a reader: sign in first, or choose a plan when already signed in.
+  const articlePath = `/tech-buzz/${article.slug}`;
+  const unlockHref = access === "subscription_required" ? "/learning/plans" : `/sign-in?redirect=${encodeURIComponent(articlePath)}`;
+  const unlockLabel = access === "subscription_required" ? "Choose a plan to keep reading" : "Sign in to keep reading";
 
   const handleClap = () => {
     const next = claps + 1;
@@ -252,15 +239,9 @@ export function TechBuzzArticleView({ article }: Props) {
   const completedTakeawaysCount = defaultTakeaways.filter((_, i) => checkedTakeaways[i]).length;
 
   // Flatten all paragraphs for sequential voiceover reading
-  const allParagraphs = useMemo(() => {
-    const list: string[] = [];
-    article.contentSections.forEach(sec => {
-      sec.paragraphs.forEach(p => {
-        list.push(p);
-      });
-    });
-    return list;
-  }, [article.contentSections]);
+  // The voiceover reads what this reader may see: the whole story for members, the preview for everyone else.
+  const visibleSections = useMemo(() => memberContent?.sections ?? [article.teaser], [memberContent, article.teaser]);
+  const allParagraphs = useMemo(() => visibleSections.flatMap(sec => sec.paragraphs), [visibleSections]);
 
   const stopAudio = useCallback(() => {
     setIsPlayingAudio(false);
@@ -322,14 +303,9 @@ export function TechBuzzArticleView({ article }: Props) {
     };
   }, []);
 
-  // Story Navigation & More Blogs Pagination
-  const allArticles = getTechBuzzArticles();
-  const currentIndex = allArticles.findIndex(a => a.id === article.id);
-  const prevStory = currentIndex > 0 ? allArticles[currentIndex - 1] : null;
-  const nextStory = currentIndex >= 0 && currentIndex < allArticles.length - 1 ? allArticles[currentIndex + 1] : null;
-
+  // More Blogs pagination over the related cards the server sent.
   const MORE_PER_PAGE = 3;
-  const otherArticles = allArticles.filter(a => a.id !== article.id);
+  const otherArticles = related;
   const totalMorePages = Math.ceil(otherArticles.length / MORE_PER_PAGE);
   const paginatedMoreArticles = otherArticles.slice(
     (moreBlogsPage - 1) * MORE_PER_PAGE,
@@ -359,17 +335,13 @@ export function TechBuzzArticleView({ article }: Props) {
             {isSubscribed ? (
               <span className={styles.subscribedPill}>
                 <CheckCircle2 size={13} />
-                <span>Subscribed Member</span>
+                <span>Member</span>
               </span>
-            ) : (
-              <button
-                type="button"
-                onClick={handleSubscribePlatform}
-                className={styles.subscribeTopBtn}
-              >
+            ) : access !== "checking" && (
+              <Link href={unlockHref} className={styles.subscribeTopBtn}>
                 <Sparkles size={13} />
-                <span>Subscribe to Platform</span>
-              </button>
+                <span>{access === "subscription_required" ? "Become a member" : "Sign in"}</span>
+              </Link>
             )}
 
             <button
@@ -435,7 +407,7 @@ export function TechBuzzArticleView({ article }: Props) {
                 width={52}
                 height={52}
                 className={styles.authorAvatar}
-                unoptimized
+                unoptimized={remote(article.author.avatar)}
               />
               <div className={styles.authorDetails}>
                 <div className={styles.authorName}>
@@ -481,7 +453,8 @@ export function TechBuzzArticleView({ article }: Props) {
             fill
             className={styles.coverImage}
             priority
-            unoptimized
+            sizes="(max-width: 900px) 100vw, 900px"
+            unoptimized={remote(article.coverImage)}
           />
         </div>
       </header>
@@ -618,13 +591,13 @@ export function TechBuzzArticleView({ article }: Props) {
             </div>
           )}
 
-          {/* Section 0: Free Teaser Section */}
-          {article.contentSections[0] && (
+          {/* Section 0: the free preview, or the full first section for members */}
+          {visibleSections[0] && (
             <section>
-              {article.contentSections[0].heading && (
-                <h2 className={styles.proseHeading}>{article.contentSections[0].heading}</h2>
+              {visibleSections[0].heading && (
+                <h2 className={styles.proseHeading}>{visibleSections[0].heading}</h2>
               )}
-              {article.contentSections[0].paragraphs.map((para, i) => {
+              {visibleSections[0].paragraphs.map((para, i) => {
                 const isReading = isPlayingAudio && activeParagraphIndex === i;
                 return (
                   <p
@@ -638,69 +611,61 @@ export function TechBuzzArticleView({ article }: Props) {
                   </p>
                 );
               })}
-              {article.contentSections[0].quote && (
+              {visibleSections[0].quote && (
                 <blockquote className={styles.proseQuote}>
-                  "{article.contentSections[0].quote.text}"
-                  <cite>— {article.contentSections[0].quote.attribution}</cite>
+                  &ldquo;{visibleSections[0].quote.text}&rdquo;
+                  <cite>— {visibleSections[0].quote.attribution}</cite>
                 </blockquote>
               )}
             </section>
           )}
 
-          {/* Medium Paywall or Unlocked Sections */}
+          {/* Member paywall (Medium-style): the rest of the story is never sent to non-members */}
           {!isSubscribed ? (
-            <div className={styles.paywallCurtain}>
+            <div className={`${styles.paywallCurtain} paywalled-story`}>
               <div className={styles.paywallFade} />
 
-              {/* Blurred preview of upcoming sections */}
-              {article.contentSections.length > 1 && (
-                <div className={styles.paywallBlurredPreview} aria-hidden="true">
-                  {article.contentSections.slice(1).map((sec, i) => (
-                    <div key={i}>
-                      {sec.heading && <h3 className={styles.proseHeading}>{sec.heading}</h3>}
-                      <p className={styles.proseParagraph}>{sec.paragraphs.join(" ")}</p>
-                    </div>
-                  ))}
+              {article.outline.length > 0 && (
+                <div className={styles.paywallOutline}>
+                  <span className={styles.paywallOutlineLabel}>In the rest of this story</span>
+                  <ol>{article.outline.map(heading => <li key={heading}>{heading}</li>)}</ol>
+                  {article.lockedCodeSamples > 0 && <small>{article.lockedCodeSamples} code example{article.lockedCodeSamples === 1 ? "" : "s"} · {article.readTimeMinutes} min read in full</small>}
                 </div>
               )}
 
-              {/* Medium-style Paywall Card */}
-              <div className={styles.paywallCard}>
+              <div className={styles.paywallCard} aria-busy={access === "checking"}>
                 <div className={styles.paywallStarBadge}>
                   <Star size={14} fill="#fcd34d" color="#d97706" />
-                  <span>Member-Only Story • Master Class Buddy Blogs</span>
+                  <span>Member-only story</span>
                 </div>
 
                 <h2 className={styles.paywallHeading}>
-                  Read the full story with a Master Class Buddy subscription
+                  {access === "checking" ? "Checking your membership…" : "Read the full story with a MasterClass Buddy membership"}
                 </h2>
 
                 <p className={styles.paywallText}>
-                  This story is exclusive to subscribers of this platform. Subscribe to unlock unlimited access to all production architectures, benchmark code labs, system blueprints, and audio voiceovers.
+                  Members read every Tech Buzz story in full, with code examples, audio and the discussion, plus every course, quiz and interview set in the Learning Dashboard.
                 </p>
 
-                <div className={styles.paywallActions}>
-                  <button
-                    type="button"
-                    onClick={handleSubscribePlatform}
-                    className={styles.paywallSubscribeBtn}
-                  >
+                {access !== "checking" && <div className={styles.paywallActions}>
+                  <Link href={unlockHref} className={styles.paywallSubscribeBtn}>
                     <Sparkles size={16} />
-                    <span>Subscribe to Platform — Instant Access</span>
-                  </button>
-                </div>
+                    <span>{unlockLabel}</span>
+                  </Link>
+                  {access === "signin_required" && <Link href={`/sign-up?redirect=${encodeURIComponent(articlePath)}`} className={styles.paywallSecondaryBtn}>Create a free account</Link>}
+                </div>}
               </div>
             </div>
-          ) : (
-            /* Subscribed: Render all full deep-dive sections */
+          ) : memberContent && (
+            /* Members: the rest of the story */
             <div>
               <div className={styles.unlockedBanner}>
                 <CheckCircle2 size={16} color="#059669" />
-                <span>You have full subscriber access to this story and all code labs.</span>
+                <span>Member access: the full story, code examples and discussion.</span>
               </div>
 
-              {article.contentSections.slice(1).map((section, idx) => {
-                const prevParasCount = article.contentSections
+              {memberContent.sections.slice(1).map((section, idx) => {
+                const prevParasCount = memberContent.sections
                   .slice(0, idx + 1)
                   .reduce((acc, s) => acc + s.paragraphs.length, 0);
 
@@ -768,13 +733,13 @@ export function TechBuzzArticleView({ article }: Props) {
             })}
 
               {/* Founder Architectural Takeaway */}
-              {article.founderTakeaway && (
+              {memberContent.founderTakeaway && (
                 <div style={{ background: "#f8fafc", borderLeft: "4px solid #ea580c", padding: "1.5rem", borderRadius: "0 12px 12px 0", margin: "2.5rem 0" }}>
                   <div style={{ fontSize: "0.75rem", fontWeight: 700, textTransform: "uppercase", color: "#ea580c", marginBottom: "0.5rem", letterSpacing: "0.06em" }}>
                     💡 Architectural Takeaway
                   </div>
                   <p style={{ margin: 0, fontStyle: "italic", color: "#334155", fontSize: "1.0625rem", lineHeight: 1.6 }}>
-                    "{article.founderTakeaway}"
+                    &ldquo;{memberContent.founderTakeaway}&rdquo;
                   </p>
                 </div>
               )}
@@ -935,7 +900,7 @@ export function TechBuzzArticleView({ article }: Props) {
               width={64}
               height={64}
               style={{ borderRadius: "50%", objectFit: "cover" }}
-              unoptimized
+              unoptimized={remote(article.author.avatar)}
             />
             <div>
               <div style={{ fontSize: "0.8125rem", color: "#64748b", textTransform: "uppercase", letterSpacing: "0.05em", fontWeight: 700 }}>
@@ -979,7 +944,8 @@ export function TechBuzzArticleView({ article }: Props) {
                     alt={rel.title}
                     fill
                     style={{ objectFit: "cover" }}
-                    unoptimized
+                    sizes="(max-width: 640px) 100vw, 33vw"
+                    unoptimized={remote(rel.coverImage)}
                   />
                 </div>
                 <div className={styles.moreBlogCardBody}>

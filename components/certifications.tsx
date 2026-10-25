@@ -193,7 +193,7 @@ function TrackDetail({ track, done, onToggle }: { track: CertTrack; done: Set<nu
     </div>
     {material.status === "loading" && <p className={styles.notice} role="status">Loading the study material for this path…</p>}
     {material.status === "pending" && <p className={styles.notice}><BookOpen size={15} aria-hidden="true" />The full lessons and question bank for this path are being prepared. The steps below already show what to learn, build and check.</p>}
-    {material.status === "locked" && <p className={styles.notice}>Lessons, question banks and mock exams are part of the membership. <Link href="/dashboard/plans">See plans</Link></p>}
+    {material.status === "locked" && <p className={styles.notice}>Lessons, question banks and mock exams are part of the membership. <Link href="/learning/plans">See plans</Link></p>}
     {material.status === "error" && <p className={styles.notice} role="alert">The study material could not be loaded. Refresh the page to try again.</p>}
     {content?.source && <p className={styles.sourceTag}>{content.source}</p>}
     <ol className={styles.steps}>

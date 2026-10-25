@@ -1383,3 +1383,17 @@
   box-shadow: 0 8px 24px rgba(234, 88, 12, 0.2);
 }
 
+
+/* Member paywall: an outline of the locked sections (headings only, the body is never sent) and the sign-in/sign-up
+   links, which are anchors now that unlocking goes through a real account and plan. */
+.paywallOutline { position: relative; margin: 0 auto 70px; padding: 1.25rem 1.5rem; max-width: 720px; border: 1px dashed #fdba74; border-radius: 16px; background: #fffaf3; color: #334155; }
+.paywallOutlineLabel { display: block; margin-bottom: 0.5rem; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #c2410c; }
+.paywallOutline ol { margin: 0; padding-left: 1.25rem; display: grid; gap: 0.35rem; font-size: 1rem; line-height: 1.5; }
+.paywallOutline small { display: block; margin-top: 0.75rem; font-size: 0.8125rem; color: #64748b; }
+.subscribeTopBtn, .paywallSubscribeBtn { text-decoration: none; }
+.paywallSecondaryBtn { color: #9a3412; font-size: 0.9375rem; font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
+.paywallSecondaryBtn:hover { color: #7c2d12; }
+@media (max-width: 640px) {
+  .paywallOutline { margin-bottom: 60px; padding: 1rem; }
+  .paywallSubscribeBtn { width: 100%; justify-content: center; padding: 0.85rem 1.25rem; }
+}

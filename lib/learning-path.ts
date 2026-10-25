@@ -36,7 +36,7 @@ export const pathReplySchema = z.object({
 });
 
 const TECHNOLOGIES = new Map(preview.technologies.map(t => [t.id, t]));
-export const technologyHref = (id: string) => `/dashboard/notes?technology=${encodeURIComponent(id)}`;
+export const technologyHref = (id: string) => `/learning/notes?technology=${encodeURIComponent(id)}`;
 const tech = (id: string): PathTechnology | null => { const t = TECHNOLOGIES.get(id); return t ? { id, title: t.title, href: technologyHref(id) } : null; };
 const techs = (ids: string[]) => [...new Set(ids)].map(tech).filter((t): t is PathTechnology => t !== null);
 

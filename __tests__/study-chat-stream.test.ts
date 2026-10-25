@@ -39,9 +39,9 @@ test("streams the answer piece by piece, then the final cleaned answer", async (
 test("the page being read and the Hindi reading language reach the tutor as context", async () => {
   process.env.PERPLEXITY_API_KEY = "pplx-test";
   (global.fetch as jest.Mock).mockResolvedValue(sse(["ठीक है"]));
-  await events((await load()).streamStudyAnswer(ask({ page: { path: "/dashboard/workflow", title: "Workflow blueprints" }, language: "hi" })));
+  await events((await load()).streamStudyAnswer(ask({ page: { path: "/learning/workflow", title: "Workflow blueprints" }, language: "hi" })));
   const system = JSON.parse((global.fetch as jest.Mock).mock.calls[0][1].body).messages[0].content as string;
-  expect(system).toContain('"Workflow blueprints" (/dashboard/workflow)');
+  expect(system).toContain('"Workflow blueprints" (/learning/workflow)');
   expect(system).toContain("answer in clear, simple Hindi");
 });
 

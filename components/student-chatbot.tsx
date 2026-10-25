@@ -24,7 +24,7 @@ export function StudentChatbot() {
     window.addEventListener(STUDY_BUDDY_EVENT, onAsk);
     return () => window.removeEventListener(STUDY_BUDDY_EVENT, onAsk);
   }, []);
-  if (pathname !== "/" && pathname !== "/dashboard" && !pathname?.startsWith("/dashboard/")) return null;
+  if (pathname !== "/" && pathname !== "/learning" && !pathname?.startsWith("/learning/")) return null;
   return <>
     <button className={styles.launcher} onClick={() => { setLoaded(true); setOpen(true); }} aria-label="Open Study Buddy" aria-haspopup="dialog" aria-expanded={open} suppressHydrationWarning>
       <span className={styles.launcherMark} aria-hidden="true">✻</span><span>Study Buddy<small>Ask. Understand. Practice.</small></span><MessageCircle size={18} />

@@ -15,7 +15,7 @@ export function AnnouncementBanner() {
   const pathname = usePathname();
   const [items, setItems] = useState<Announcement[]>([]);
   useEffect(() => {
-    if (pathname?.startsWith("/dashboard/super-admin")) return;
+    if (pathname?.startsWith("/super-admin")) return;
     const controller = new AbortController();
     fetch("/api/announcements", { signal: controller.signal })
       .then(response => response.ok ? response.json() : { announcements: [] })
@@ -23,7 +23,7 @@ export function AnnouncementBanner() {
       .catch(() => {});
     return () => controller.abort();
   }, [pathname]);
-  if (!items.length || pathname?.startsWith("/dashboard/super-admin")) return null;
+  if (!items.length || pathname?.startsWith("/super-admin")) return null;
   function close(id: string) {
     try { localStorage.setItem(KEY, JSON.stringify([...dismissed(), id].slice(-50))); } catch { /* private mode */ }
     setItems(list => list.filter(item => item.id !== id));

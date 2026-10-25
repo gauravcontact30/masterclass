@@ -22,8 +22,8 @@ export function dailySocial(events: DailyEvent[], day: string) {
     const previous = sessions.get(sessionKey);
     const attribution = source ? { platform: PLATFORM_LABEL[source], campaign: row.utm_campaign || previous?.campaign || "—" } : previous || { platform: "Direct / unknown", campaign: row.utm_campaign || "—" };
     sessions.set(sessionKey, attribution);
-    if (Date.parse(row.created_at) < Date.parse(since) || Date.parse(row.created_at) >= Date.parse(until) || row.path.startsWith("/dashboard/super-admin")) continue;
-    const page = row.path === "/" ? "Landing page" : row.path === "/dashboard" || row.path.startsWith("/dashboard/") ? "Learning dashboard" : "Other pages";
+    if (Date.parse(row.created_at) < Date.parse(since) || Date.parse(row.created_at) >= Date.parse(until) || /^\/(dashboard\/)?super-admin(\/|$)/.test(row.path)) continue;
+    const page = row.path === "/" ? "Landing page" : /^\/(learning|dashboard)(\/|$)/.test(row.path) ? "Learning dashboard" : "Other pages";
     const visitor = visitors.get(sessionKey) || { id: sessionKey, email: "Anonymous", city: "Not available", region: "Not available", country: "", time: row.created_at, duration: null, platform: attribution.platform, pages: [] };
     if (row.user_id) visitor.email = row.email || "Email unavailable";
     if (row.city) visitor.city = row.city;

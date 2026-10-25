@@ -1,6 +1,6 @@
 # Techy — Profissional Learn
 
-Dashboard route: `/dashboard/techy`. The page follows the dashboard's sign-in check and presents a static curated learning library without document generation. A development-only preview is available at `/ui-review/techy`.
+Dashboard route: `/learning/techy`. The page follows the dashboard's sign-in check and presents a static curated learning library without document generation. A development-only preview is available at `/ui-review/techy`.
 
 ## Content
 

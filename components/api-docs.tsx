@@ -224,10 +224,10 @@ export function ApiDetail({
   const seeAlso = related.length
     ? related
     : pkg.entries.filter((item) => item.name !== entry.name && item.kind === entry.kind).slice(0, 6);
-  const mentorHref = `/dashboard/mentors?q=${encodeURIComponent(
+  const mentorHref = `/learning/mentors?q=${encodeURIComponent(
     `Explain ${entry.name} from ${pkg.name} with a practical example`
   )}`;
-  const quizHref = `/dashboard/quiz?topic=${encodeURIComponent(`${pkg.name} ${entry.name}`)}`;
+  const quizHref = `/learning/quiz?topic=${encodeURIComponent(`${pkg.name} ${entry.name}`)}`;
   const isAgentic = AGENTIC_FRAMEWORK_IDS.has(pkg.id);
 
   return (
@@ -475,7 +475,7 @@ export function ApiDetail({
                   {pkg.topics.map((topic) => (
                     <Link
                       key={topic}
-                      href={`/dashboard/lessons?track=${encodeURIComponent(
+                      href={`/learning/lessons?track=${encodeURIComponent(
                         pkg.id
                       )}&topic=${encodeURIComponent(topic)}`}
                     >

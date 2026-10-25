@@ -14,7 +14,7 @@ test("missing optional monitoring schema stops heartbeats and retries after the 
   const warn = jest.spyOn(console, "warn").mockImplementation(() => {});
   const upsert = jest.fn().mockResolvedValue({ data: null, error: { code: "PGRST205" } });
   (db as jest.Mock).mockReturnValue({from: () => ({upsert})});
-  const request = () => new Request("http://localhost/api/monitoring/presence", {method:"POST",headers:{origin:"http://localhost"},body:JSON.stringify({sessionId:"63a61031-e24e-40b5-bc53-d148b3ec7675",path:"/dashboard",view:false})});
+  const request = () => new Request("http://localhost/api/monitoring/presence", {method:"POST",headers:{origin:"http://localhost"},body:JSON.stringify({sessionId:"63a61031-e24e-40b5-bc53-d148b3ec7675",path:"/learning",view:false})});
   try {
     const response = await POST(request());
     expect(response.status).toBe(200);

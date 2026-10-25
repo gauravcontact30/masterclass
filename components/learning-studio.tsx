@@ -16,7 +16,7 @@ const destinations: { id: string; label: string; caption: string; icon: LucideIc
 /** The four stages of the loop, shown on every professional learning page. */
 export function LearningPath({ active }: { active: string }) {
   return <nav className={styles.learningPath} aria-label="Your learning journey">
-    {destinations.map(({ id, label, caption, icon: Icon }, index) => <Link key={id} href={`/dashboard/${id}`} aria-current={active === id ? "page" : undefined}>
+    {destinations.map(({ id, label, caption, icon: Icon }, index) => <Link key={id} href={`/learning/${id}`} aria-current={active === id ? "page" : undefined}>
       <span className={styles.pathNumber}>0{index + 1}</span>
       <Icon size={16} aria-hidden="true"/>
       <span className={styles.pathText}><b>{label}</b><small>{caption}</small></span>
