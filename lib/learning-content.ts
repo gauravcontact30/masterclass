@@ -1,10 +1,10 @@
 import { contentIdentity } from "./concise-learning";
-import type { CodeExample, Curriculum, ExampleFile, KeyPoint, Lesson } from "./domain";
+import type { CodeExample, Curriculum, ExampleFile, KeyPoint, Lesson, Language } from "./domain";
 
 const lines = (text: string) => text.split("\n").map(line => line.replace(/^\s*[-•]\s*/, "").trim()).filter(Boolean);
 
 /** Keep authored key points only when they add information to the lesson. */
-export function lessonKeyPoints(lesson: Lesson, language: "en" | "hi"): KeyPoint[] {
+export function lessonKeyPoints(lesson: Lesson, language: Language): KeyPoint[] {
   void language;
   const seen = new Set([lesson.explanation, lesson.example, lesson.mistake,
     ...Object.values(lesson.useCase ?? {}),
@@ -47,7 +47,7 @@ export function snippetFiles(code: string, technology: string, description: stri
 }
 
 /** Backwards compatibility: old excerpts stay labelled as excerpts, never as runnable projects. */
-export function lessonCodeExamples(lesson: Lesson, technology: string, language: "en" | "hi"): CodeExample[] {
+export function lessonCodeExamples(lesson: Lesson, technology: string, language: Language): CodeExample[] {
   if (lesson.codeExamples?.length) return lesson.codeExamples;
   if (!lesson.code) return [];
   const hi = language === "hi";
@@ -76,6 +76,6 @@ export function lessonCodeExamples(lesson: Lesson, technology: string, language:
 }
 
 /** Shared by the reader and text export, including already saved documents. */
-export function enrichLearningNotes(deck: Curriculum, language: "en" | "hi"): Curriculum {
+export function enrichLearningNotes(deck: Curriculum, language: Language): Curriculum {
   return { ...deck, lessons: deck.lessons.map(lesson => ({ ...lesson, keyPoints: lessonKeyPoints(lesson, language) })) };
 }

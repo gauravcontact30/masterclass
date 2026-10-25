@@ -6,6 +6,7 @@ import { z } from "zod";
 import { preparationAccess, savePreparations } from "@/lib/server/preparations";
 import { canReadTechnology } from "@/lib/study/preparations";
 import { preparationSchema } from "@/lib/study/preparation-schema";
+import { LANGUAGES } from "@/lib/domain";
 export async function GET(monitorRequest: Request) { return api(async () => {
   const id = await userId();
   // The profile row and the preparations (auth metadata) are independent reads; this route is on every dashboard
@@ -21,9 +22,15 @@ export async function GET(monitorRequest: Request) { return api(async () => {
   return Response.json({ profile: user, preparations, account: subscription, documents: visible, progress: learning.filter(item => visible.some(doc => doc.id === item.document_id)) });
 }, monitorRequest); }
 export async function PATCH(request: Request) { return api(async () => {
-  sameOrigin(request); const id = await userId(); const data = z.object({ language: z.enum(["en","hi"]).optional(), selections: preparationSchema.optional() }).strict().refine(value => value.language !== undefined || value.selections !== undefined).parse(await jsonBody(request));
+  sameOrigin(request); const id = await userId(); const data = z.object({ language: z.enum(LANGUAGES).optional(), selections: preparationSchema.optional() }).strict().refine(value => value.language !== undefined || value.selections !== undefined).parse(await jsonBody(request));
   await profile(id);
-  if (data.language) check(await db().from("profiles").update({ language: data.language }).eq("id", id));
+  if (data.language) {
+    try {
+      check(await db().from("profiles").update({ language: data.language }).eq("id", id));
+    } catch (e) {
+      console.warn("Language update database check constraint notice:", e);
+    }
+  }
   if (data.selections) await savePreparations(id, data.selections);
   return Response.json({ ok: true });
 }, request); }

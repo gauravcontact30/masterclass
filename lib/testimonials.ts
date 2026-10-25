@@ -26,7 +26,7 @@ import type { Language } from "@/lib/domain";
  * relying on it in public marketing.
  */
 
-export type LocalizedText = Record<Language, string>;
+export type LocalizedText = Partial<Record<Language, string>> & { en: string; hi: string };
 
 export type Testimonial = {
   /** Stable id, used for React keys and the deterministic avatar colours. */

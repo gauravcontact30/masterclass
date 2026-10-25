@@ -47,7 +47,7 @@ export async function GET(request: Request) {
     // Rows recorded before /api/track learned to spot them (lib/visit-quality.ts): headless data-centre browsers, judged
     // by their page view and dropped with the rest of their session, and the development server's own beacons.
     const automated = new Set(rows.filter(row => row.event === "page_view" && looksAutomated(row as Parameters<typeof looksAutomated>[0])).map(row => String(row.session_id)));
-    const genuine = rows.filter(row => !automated.has(String(row.session_id)) && !isLocalAddress(row.ip_masked as string | null))
+    const genuine = rows.filter(row => !automated.has(String(row.session_id)) && (process.env.TRACK_LOCAL === "1" || process.env.NODE_ENV !== "production" || !isLocalAddress(row.ip_masked as string | null)))
       // The signals stay on the server; the panel only needs the screen and the keyed network hash to join a visitor whose
       // in-app browser dropped its cookie.
       .map(row => Object.fromEntries(Object.entries(row).filter(([key]) => !PRIVATE.has(key))));

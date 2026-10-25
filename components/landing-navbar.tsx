@@ -8,6 +8,7 @@ import { SuggestionBox } from "./suggestion-box";
 import { LandingPlansMenu } from "./landing-plans-menu";
 import { scrollToSection } from "./hashless-navigation";
 import { useLanguage } from "./language-provider";
+import { LanguageSwitcher } from "./language-switcher";
 import styles from "./landing-home.module.css";
 import type { Currency } from "@/lib/pricing";
 import type { PlansMenuPrices } from "./landing-plans-menu";
@@ -34,7 +35,7 @@ const NAV_ICONS: Record<string, LucideIcon> = {
  */
 /** `links`: [section key ("#workflows"), label, the section's own page for crawlers and new tabs]. */
 export function LandingNavbar({ links, prices = null, onCurrency }: { links: [string, string, string?][]; prices?: PlansMenuPrices | null; onCurrency?: (currency: Currency) => void }) {
-  const { language, setLanguage } = useLanguage();
+  const { language, setLanguage, t } = useLanguage();
   const hi = language === "hi";
   const text = (en: string, hindi: string) => hi ? hindi : en;
   const [scrolled, setScrolled] = useState(false);
@@ -113,27 +114,25 @@ export function LandingNavbar({ links, prices = null, onCurrency }: { links: [st
         })}
       </nav>
       <div className={styles.navActions}>
-        <SuggestionBox label={text("Suggestion Box", "सुझाव पेटी")} />
+        <SuggestionBox label={t("suggestionBox")} />
         <LandingPlansMenu prices={prices} open={plans} onOpenChange={openPlans} onCurrency={onCurrency} />
+        <LanguageSwitcher />
         <div ref={accountRef} className={styles.account}>
-          <button type="button" className={styles.accountButton} aria-label={text("Account", "खाता")} aria-expanded={account} aria-controls="landing-account-menu" onClick={() => { setAccount(value => !value); setMenu(false); setPlans(false); }}>
+          <button type="button" className={styles.accountButton} aria-label={t("account")} aria-expanded={account} aria-controls="landing-account-menu" onClick={() => { setAccount(value => !value); setMenu(false); setPlans(false); }}>
             <UserRound size={19} strokeWidth={1.9} aria-hidden="true" />
           </button>
           {account && <div id="landing-account-menu" className={styles.accountMenu}>
-            <div className={styles.accountLang} role="group" aria-label={text("Language", "भाषा")}>
-              <span><Languages size={15} strokeWidth={1.9} aria-hidden="true" />{text("Language", "भाषा")}</span>
-              <div>
-                <button type="button" aria-pressed={!hi} onClick={() => setLanguage("en", false)}>EN</button>
-                <button type="button" lang="hi" aria-pressed={hi} onClick={() => setLanguage("hi", false)}>हिन्दी</button>
-              </div>
+            <div className={styles.accountLang} role="group" aria-label={t("language")}>
+              <span><Languages size={15} strokeWidth={1.9} aria-hidden="true" />{t("language")}</span>
+              <LanguageSwitcher variant="compact" />
             </div>
             <Link className={styles.accountItem} href="/sign-in" onClick={() => setAccount(false)}>
               <span className={styles.accountIcon} aria-hidden="true"><LogIn size={16} strokeWidth={1.9} /></span>
-              <span><strong>{text("Sign in", "साइन इन")}</strong><small aria-hidden="true">{text("Welcome back", "फिर से स्वागत है")}</small></span>
+              <span><strong>{t("signin")}</strong><small aria-hidden="true">{t("signinTitle")}</small></span>
             </Link>
             <Link className={styles.accountItem} href="/sign-up" onClick={() => setAccount(false)}>
               <span className={`${styles.accountIcon} ${styles.accountIconNew}`} aria-hidden="true"><UserPlus size={16} strokeWidth={1.9} /></span>
-              <span><strong>{text("Sign up", "साइन अप")}</strong><small aria-hidden="true">{text("Create a free account", "मुफ़्त खाता बनाएँ")}</small></span>
+              <span><strong>{t("signup")}</strong><small aria-hidden="true">{t("signupHelp")}</small></span>
             </Link>
           </div>}
         </div>

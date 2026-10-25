@@ -7,15 +7,16 @@ import { z } from "zod";
  */
 import { DOCUMENT_FORMAT } from "./document-format";
 export { DOCUMENT_FORMAT, labelledOption, optionLetter } from "./document-format";
+export const LANGUAGES = ["en", "hi", "es", "ja", "de", "fr", "zh"] as const;
+export type Language = (typeof LANGUAGES)[number];
 export const requestSchema = z.object({
   technologyId: z.string().min(1).max(80),
   topicId: z.string().min(1).max(80),
   format: z.literal(DOCUMENT_FORMAT),
-  language: z.enum(["en", "hi"]),
+  language: z.enum(LANGUAGES),
   level: z.enum(["beginner", "intermediate", "advanced"]),
 }).strict();
 export type GenerationRequest = z.infer<typeof requestSchema>;
-export type Language = "en" | "hi";
 /** "trial" is the one-day full-access window after sign-up; it is never stored on a subscription row. */
 export type Tier = "free" | "trial" | "monthly" | "yearly";
 export type Topic = { id: string; technology_id: string; title: string; title_hi: string; full_track: boolean; version: number; references: string[] };

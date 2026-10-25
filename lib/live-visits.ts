@@ -159,9 +159,9 @@ export function getCleanTitle(title: string | null | undefined, path: string): s
     .replace(/\b\w/g, c => c.toUpperCase());
 }
 
-/** Determines if a visitor had at least 1 second of active visible engagement. */
-export function isEngagedVisitor(v: { engagedMs: number; live?: boolean; page?: { ms: number } | null }): boolean {
-  return Math.round(v.engagedMs / 1000) > 0 || Boolean(v.live && (v.page?.ms ?? 0) >= 1000);
+/** Determines if a visitor had active visible engagement, live presence, or recorded page views. */
+export function isEngagedVisitor(v: { engagedMs: number; live?: boolean; page?: { ms: number } | null; views?: number }): boolean {
+  return Boolean(v.live) || Math.round(v.engagedMs / 1000) > 0 || (v.page?.ms ?? 0) > 0 || (v.views ?? 0) > 0;
 }
 
 /**

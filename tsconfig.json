@@ -43,6 +43,7 @@
     ".playwright-mcp",
     "artifacts",
     "coverage",
-    "__tests__"
+    "__tests__",
+    "scratch"
   ]
 }

@@ -10,7 +10,7 @@ import { compactAbbreviations } from "@/lib/abbreviations";
 
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
 import { BookOpen, Check, ChevronLeft, ChevronRight, Copy, Lightbulb, ListTree, NotebookPen, PanelLeftClose, PanelLeftOpen, Sparkles, TriangleAlert } from "lucide-react";
-import { Curriculum, DocumentRecord, KeyPoint, Progress, VocabularyEntry } from "@/lib/domain";
+import { Curriculum, DocumentRecord, KeyPoint, Progress, VocabularyEntry, type Language } from "@/lib/domain";
 import { curriculumNotes } from "@/lib/notes";
 import { enrichLearningNotes, lessonCodeExamples } from "@/lib/learning-content";
 import { requestJson, errorKey } from "@/lib/client";
@@ -162,7 +162,7 @@ function VocabularyPage({ words, hi }: { words: VocabularyEntry[]; hi: boolean }
  * Sections are registered by index: 0 is the overview, 1..n the lessons and
  * n+1 the wrap-up, which is what the reader's contents list and progress use.
  */
-function StructuredNotes({ deck, title, language, technology, sourceHref, sectionRef, idPrefix }: { deck: Curriculum; title: string; language: "en" | "hi"; technology: string; sourceHref: string; sectionRef: SectionRef; idPrefix: string }) {
+function StructuredNotes({ deck, title, language, technology, sourceHref, sectionRef, idPrefix }: { deck: Curriculum; title: string; language: Language; technology: string; sourceHref: string; sectionRef: SectionRef; idPrefix: string }) {
   const hi = language === "hi";
   const count = deck.lessons.length;
   const { focused } = useInterviewFocus();

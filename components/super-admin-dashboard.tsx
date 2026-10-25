@@ -24,6 +24,7 @@ import { LearningSlot } from "./learning-slot";
 import styles from "./super-admin-dashboard.module.css";
 import side from "./super-admin-sidebar.module.css";
 import { useLanguage } from "./language-provider";
+import { LanguageSwitcher } from "./language-switcher";
 import { COPILOT_META, isCopilotPage } from "@/lib/admin-pages";
 
 const sectionLoading = () => <AdminLoading>Loading section...</AdminLoading>;
@@ -63,12 +64,12 @@ type Snapshot = {
 };
 // Grouped by the question an administrator arrives with; the flat list keeps the existing section ids.
 const groups = [
-  { label: "Monitor", items: [{ id: "overview", label: "Overview", icon: Activity }, { id: "activity", label: "User activities", icon: MousePointerClick }, { id: "live", label: "Live learners", icon: Users }, { id: "analytics", label: "Learning analytics", icon: Activity }, { id: "ai", label: "AI analytics", icon: Bot }, { id: "insights", label: "Growth insights", icon: TrendingUp }] },
-  { label: "People", items: [{ id: "users", label: "Users & access", icon: Users }, { id: "suggestions", label: "Suggestion Box", icon: MessageSquarePlus }, { id: "support", label: "Learner support", icon: LifeBuoy }, { id: "moderation", label: "Moderation", icon: ShieldCheck }, { id: "announcements", label: "Announcements", icon: Megaphone }] },
-  { label: "Growth", items: [{ id: "promotions", label: "Promotional Tracking", icon: TrendingUp }] },
-  { label: "Revenue", items: [{ id: "billing", label: "Revenue & billing", icon: CreditCard }, { id: "transactions", label: "Transactions", icon: Receipt }] },
-  { label: "Content", items: [{ id: "content", label: "Content & audit", icon: Database }, { id: "queue", label: "Generation queue", icon: Layers }, { id: "notepad", label: "Notepad", icon: Receipt }, { id: "upload-learning", label: "Upload Learning", icon: UploadCloud }] },
-  { label: "System", items: [{ id: "infra", label: "Infrastructure", icon: Server }, { id: "logs-health", label: "Logs & Health", icon: HeartPulse }, { id: "security", label: "Security", icon: ShieldCheck }] },
+  { label: "Monitor", key: "monitor" as const, items: [{ id: "overview", key: "overview" as const, label: "Overview", icon: Activity }, { id: "activity", key: "userActivities" as const, label: "User activities", icon: MousePointerClick }, { id: "live", key: "liveLearners" as const, label: "Live learners", icon: Users }, { id: "analytics", key: "learningAnalytics" as const, label: "Learning analytics", icon: Activity }, { id: "ai", key: "aiAnalytics" as const, label: "AI analytics", icon: Bot }, { id: "insights", key: "growthInsights" as const, label: "Growth insights", icon: TrendingUp }] },
+  { label: "People", key: "people" as const, items: [{ id: "users", key: "usersAndAccess" as const, label: "Users & access", icon: Users }, { id: "suggestions", key: "suggestionBox" as const, label: "Suggestion Box", icon: MessageSquarePlus }, { id: "support", key: "learnerSupport" as const, label: "Learner support", icon: LifeBuoy }, { id: "moderation", key: "moderation" as const, label: "Moderation", icon: ShieldCheck }, { id: "announcements", key: "announcements" as const, label: "Announcements", icon: Megaphone }] },
+  { label: "Growth", key: "growth" as const, items: [{ id: "promotions", key: "promotionalTracking" as const, label: "Promotional Tracking", icon: TrendingUp }] },
+  { label: "Revenue", key: "revenue" as const, items: [{ id: "billing", key: "revenueAndBilling" as const, label: "Revenue & billing", icon: CreditCard }, { id: "transactions", key: "transactions" as const, label: "Transactions", icon: Receipt }] },
+  { label: "Content", key: "content" as const, items: [{ id: "content", key: "contentAndAudit" as const, label: "Content & audit", icon: Database }, { id: "queue", key: "generationQueue" as const, label: "Generation queue", icon: Layers }, { id: "notepad", key: "notepad" as const, label: "Notepad", icon: Receipt }, { id: "upload-learning", key: "uploadLearning" as const, label: "Upload Learning", icon: UploadCloud }] },
+  { label: "System", key: "system" as const, items: [{ id: "infra", key: "infrastructure" as const, label: "Infrastructure", icon: Server }, { id: "logs-health", key: "logsAndHealth" as const, label: "Logs & Health", icon: HeartPulse }, { id: "security", key: "security" as const, label: "Security", icon: ShieldCheck }] },
 ] as const;
 type SectionItem = (typeof groups)[number]["items"][number];
 const sections: readonly SectionItem[] = groups.flatMap((group): readonly SectionItem[] => group.items);
@@ -86,7 +87,7 @@ function Metric({ label, value, note }: { label: string; value: string | number;
 /** `isOwner` unlocks Upload Learning, which only the owner account may use (the API enforces it as well). */
 export function SuperAdminDashboard({ userId = "admin", isOwner = false }: { userId?: string; isOwner?: boolean }) {
   const router = useRouter();
-  const { language, setLanguage } = useLanguage();
+  const { t, language, setLanguage } = useLanguage();
   const [signingOut, setSigningOut] = useState(false);
   const [accountError, setAccountError] = useState("");
   async function signOut() {
@@ -127,47 +128,43 @@ export function SuperAdminDashboard({ userId = "admin", isOwner = false }: { use
   const events = data?.events ?? [];
   // Writing pages have no reporting window or monitoring snapshot of their own.
   const writing = section === "notepad" || section === "upload-learning";
-  return <div className={`app-shell compact-workspace ${styles.shell}${collapsed ? " sidebar-collapsed" : ""}`}><aside className={`sidebar ${styles.sidebar} ${side.sidebar}`} data-collapsed={collapsed || undefined}><SidebarTooltips collapsed={collapsed}/><div className="sidebar-brand-row"><Link href="/dashboard" className="wordmark" aria-label="Learning dashboard"><Wordmark /></Link><Button variant="ghost" className="sidebar-toggle" aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"} aria-expanded={!collapsed} onClick={() => setCollapsed(value => !value)}>{collapsed ? <PanelLeftOpen size={17}/> : <PanelLeftClose size={17}/>}</Button></div>{!collapsed && <div className={side.badge}><span className={side.badgeMark}><ShieldCheck size={15} /></span><span><b>Super admin</b><small>Control centre</small></span></div>}<nav aria-label="Super admin" className={side.nav}>{groups.map(group => <div key={group.label} className={side.group} role="group" aria-label={group.label}>
-        {!collapsed && <span className={side.groupLabel}>{group.label}</span>}
-        {group.items.filter(item => item.id !== "upload-learning" || isOwner).map(({ id, label, icon: Icon }) => <button type="button" key={id} aria-label={label} title={collapsed ? label : undefined} className={side.item} aria-current={section === id ? "page" : undefined} onClick={() => { if (id === "notepad") setNotepadOpened(true); setSection(id); setQuery(""); }}>
-          <span className={side.icon}><Icon size={16} /></span>{!collapsed && <span className={side.label}>{label}</span>}
+  return <div className={`app-shell compact-workspace ${styles.shell}${collapsed ? " sidebar-collapsed" : ""}`}><aside className={`sidebar ${styles.sidebar} ${side.sidebar}`} data-collapsed={collapsed || undefined}><SidebarTooltips collapsed={collapsed}/><div className="sidebar-brand-row"><Link href="/dashboard" className="wordmark" aria-label={t("learningDashboard")}><Wordmark /></Link><Button variant="ghost" className="sidebar-toggle" aria-label={collapsed ? t("expandSidebar") : t("collapseSidebar")} aria-expanded={!collapsed} onClick={() => setCollapsed(value => !value)}>{collapsed ? <PanelLeftOpen size={17}/> : <PanelLeftClose size={17}/>}</Button></div>{!collapsed && <div className={side.badge}><span className={side.badgeMark}><ShieldCheck size={15} /></span><span><b>{t("superAdmin")}</b><small>{t("controlCentre")}</small></span></div>}<nav aria-label={t("superAdmin")} className={side.nav}>{groups.map(group => <div key={group.key} className={side.group} role="group" aria-label={t(group.key)}>
+        {!collapsed && <span className={side.groupLabel}>{t(group.key)}</span>}
+        {group.items.filter(item => item.id !== "upload-learning" || isOwner).map(({ id, key, icon: Icon }) => <button type="button" key={id} aria-label={t(key)} title={collapsed ? t(key) : undefined} className={side.item} aria-current={section === id ? "page" : undefined} onClick={() => { if (id === "notepad") setNotepadOpened(true); setSection(id); setQuery(""); }}>
+          <span className={side.icon}><Icon size={16} /></span>{!collapsed && <span className={side.label}>{t(key)}</span>}
         </button>)}
-      </div>)}</nav><Link className={side.back} href="/dashboard" aria-label="Learning dashboard"><span className={side.icon}><ArrowLeft size={16} /></span>{!collapsed && "Learning dashboard"}</Link></aside>
+      </div>)}</nav><Link className={side.back} href="/dashboard" aria-label={t("learningDashboard")}><span className={side.icon}><ArrowLeft size={16} /></span>{!collapsed && t("learningDashboard")}</Link></aside>
     <div className="main-shell"><header className={`topbar ${styles.adminHeader}`}>
       <div className={styles.headerIdentity}>
         <span className={styles.headerMark} aria-hidden="true"><ShieldCheck size={21} /></span>
         <div className={styles.headerLocation}>
-          <span className={styles.consoleName}>Admin console</span>
+          <span className={styles.consoleName}>{t("adminConsole")}</span>
           <ChevronRight size={14} aria-hidden="true" />
-          <span className={styles.currentSection}>{sections.find(s => s.id === section)?.label}</span>
+          <span className={styles.currentSection}>{(() => { const current = sections.find(s => s.id === section); return current ? t(current.key) : section; })()}</span>
         </div>
       </div>
       <div className={styles.headerActions}>
         <span className={styles.syncStatus} data-state={error ? "error" : busy ? "busy" : "ready"} aria-live="polite">
           <span className={styles.statusDot} aria-hidden="true" />
-          {busy ? "Refreshing..." : error ? "Refresh unavailable" : data ? `Updated ${new Date(data.generatedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}` : "Awaiting data"}
+          {busy ? t("refreshing") : error ? t("refreshUnavailable") : data ? `${t("updatedAt")} ${new Date(data.generatedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}` : t("awaitingData")}
         </span>
-        <Button variant="outline" type="button" className={styles.headerRefresh} disabled={busy} onClick={() => void refresh()} aria-label="Refresh monitoring" title="Refresh monitoring">
+        <Button variant="outline" type="button" className={styles.headerRefresh} disabled={busy} onClick={() => void refresh()} aria-label={t("refreshMonitoring")} title={t("refreshMonitoring")}>
           <RefreshCw size={16} className={busy ? "spin" : ""} aria-hidden="true" />
         </Button>
-        <div className="language-toggle" role="group" aria-label="Language">
-          <Languages size={14} className="lang-icon" aria-hidden="true"/>
-          <button type="button" aria-pressed={language==="en"} onClick={()=>setLanguage("en")}>EN</button>
-          <button type="button" aria-pressed={language==="hi"} onClick={()=>setLanguage("hi")}>Hi</button>
-        </div>
+        <LanguageSwitcher />
         <Separator orientation="vertical" className={styles.headerDivider} />
         <DropdownMenu>
-          <DropdownMenuTrigger className={styles.profileTrigger} aria-label="Super admin profile" disabled={signingOut}>
+          <DropdownMenuTrigger className={styles.profileTrigger} aria-label={t("adminProfile")} disabled={signingOut}>
             <span className={styles.profileAvatar} aria-hidden="true"><UserRound size={18} /></span>
             <ChevronDown size={13} className={styles.profileChevron} aria-hidden="true" />
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" sideOffset={10} className={styles.profileMenu}>
             <DropdownMenuGroup>
-              <DropdownMenuLabel>Super admin account</DropdownMenuLabel>
-              <DropdownMenuItem render={<Link href="/" />}><ExternalLink size={16} />View website</DropdownMenuItem>
+              <DropdownMenuLabel>{t("superAdmin")}</DropdownMenuLabel>
+              <DropdownMenuItem render={<Link href="/" />}><ExternalLink size={16} />{t("learn")}</DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem variant="destructive" disabled={signingOut} onClick={() => void signOut()}><LogOut size={16} />Sign out</DropdownMenuItem>
+            <DropdownMenuItem variant="destructive" disabled={signingOut} onClick={() => void signOut()}><LogOut size={16} />{t("signout")}</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>

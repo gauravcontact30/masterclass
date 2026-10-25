@@ -1,4 +1,4 @@
-import { Curriculum, labelledOption, optionLetter } from "./domain";
+import { Curriculum, labelledOption, optionLetter, Language } from "./domain";
 import { enrichLearningNotes } from "./learning-content";
 
 /**
@@ -13,7 +13,7 @@ import { enrichLearningNotes } from "./learning-content";
  * already fetched over the authenticated API, so the notes can be copied
  * without a network round trip once the curriculum is in hand.
  */
-export function curriculumNotes(deck: Curriculum, title: string, language: "en" | "hi"): string {
+export function curriculumNotes(deck: Curriculum, title: string, language: Language): string {
   deck = enrichLearningNotes(deck, language);
   const hi = language === "hi";
   const lines: string[] = [title, `${deck.minutes} ${hi ? "मिनट" : "minutes"}`];

@@ -1,0 +1,213 @@
+.wrapper {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.35rem 0.65rem;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--foreground, #1c1917);
+  background: var(--paper-subtle, rgba(255, 255, 255, 0.85));
+  border: 1px solid var(--border-soft, rgba(0, 0, 0, 0.08));
+  border-radius: 9999px;
+  cursor: pointer;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  backdrop-filter: blur(8px);
+  user-select: none;
+  line-height: 1.2;
+}
+
+.trigger:hover {
+  background: var(--paper-hover, #ffffff);
+  border-color: var(--border-hover, rgba(0, 0, 0, 0.16));
+  transform: translateY(-0.5px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.trigger[aria-expanded="true"] {
+  border-color: #bb5834;
+  box-shadow: 0 0 0 2px rgba(187, 88, 52, 0.12);
+}
+
+.flag {
+  font-size: 1.05rem;
+  line-height: 1;
+  display: inline-block;
+  transform: translateY(0.5px);
+}
+
+.label {
+  font-size: 0.8125rem;
+  letter-spacing: -0.01em;
+}
+
+.chevron {
+  opacity: 0.55;
+  transition: transform 0.18s ease;
+}
+
+.trigger[aria-expanded="true"] .chevron {
+  transform: rotate(180deg);
+}
+
+/* Dropdown popover */
+.popover {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  width: 290px;
+  max-width: 90vw;
+  background: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.09);
+  border-radius: 14px;
+  box-shadow: 0 12px 36px -4px rgba(0, 0, 0, 0.12), 0 4px 12px -2px rgba(0, 0, 0, 0.06);
+  z-index: 1000;
+  overflow: hidden;
+  animation: slideDown 0.16s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-4px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.popoverHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.65rem 0.85rem;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  background: #faf8f5;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #78716c;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.geoBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #a84f36;
+  background: #fdf2ee;
+  padding: 0.15rem 0.45rem;
+  border-radius: 9999px;
+  border: 1px solid rgba(168, 79, 54, 0.15);
+  text-transform: none;
+}
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0.35rem;
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+.item {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 0.65rem;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: #1c1917;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.12s ease;
+}
+
+.item:hover {
+  background: #f5f2ed;
+}
+
+.item[aria-selected="true"] {
+  background: #fcf1eb;
+  color: #a84f36;
+  font-weight: 600;
+}
+
+.itemLeft {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.itemFlag {
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+.itemText {
+  display: flex;
+  flex-direction: column;
+}
+
+.itemNative {
+  font-size: 0.85rem;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.itemMeta {
+  font-size: 0.72rem;
+  color: #78716c;
+  line-height: 1.2;
+}
+
+.itemCheck {
+  color: #a84f36;
+  flex-shrink: 0;
+}
+
+/* Compact pill toggle for tight headers */
+.compactGroup {
+  display: inline-flex;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.04);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 9999px;
+  padding: 2px;
+  gap: 2px;
+}
+
+.compactBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.25rem 0.55rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: 9999px;
+  border: none;
+  background: transparent;
+  color: #57534e;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.compactBtn:hover {
+  color: #1c1917;
+}
+
+.compactBtn[aria-pressed="true"] {
+  background: #ffffff;
+  color: #a84f36;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}

@@ -2,9 +2,17 @@ import type { Language, Tier } from "@/lib/domain";
 import type { Appearance } from "./schemas";
 export type { Appearance } from "./schemas";
 
-export type Bilingual = { en: string; hi: string };
-export const bi = (en: string, hi: string): Bilingual => ({ en, hi });
-export const localize = (text: Bilingual, language: Language) => text[language];
+export type Bilingual = Record<Language, string>;
+export const bi = (en: string, hi: string, extra?: Partial<Record<Language, string>>): Bilingual => ({
+  en,
+  hi,
+  es: extra?.es ?? en,
+  ja: extra?.ja ?? en,
+  de: extra?.de ?? en,
+  fr: extra?.fr ?? en,
+  zh: extra?.zh ?? en,
+});
+export const localize = (text: Bilingual, language: Language) => text[language] ?? text.en;
 // School boards and their classes, and the government and entrance exams, were removed on 2026-10-24 (see ./catalog.ts).
 export type StudySubject = "english" | "vocabulary" | "ielts" | "synonyms" | "antonyms" | "system-design";
 export type StudyCourse = { id: string; title: Bilingual; category: "exam" | "course"; subject?: StudySubject; subjects: StudySubject[]; aliases: string[]; sourceUrl: string; scope: Bilingual };
