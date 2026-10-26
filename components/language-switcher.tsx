@@ -13,6 +13,8 @@ export interface LanguageSwitcherProps {
   /** Save the choice to the signed-in account as well as this browser. */
   persist?: boolean;
   size?: "sm" | "md";
+  /** A round flag button with no visible text (the default everywhere); the language stays in its accessible name and tooltip. */
+  iconOnly?: boolean;
 }
 
 /**
@@ -21,7 +23,7 @@ export interface LanguageSwitcherProps {
  * country and code. The list renders into document.body and is placed against the viewport, so a header with
  * overflow, a transform or a narrow phone screen can never clip it. Phones show a round flag-only trigger.
  */
-export function LanguageSwitcher({ className = "", persist = true, size = "md" }: LanguageSwitcherProps) {
+export function LanguageSwitcher({ className = "", persist = true, size = "md", iconOnly = true }: LanguageSwitcherProps) {
   const { language, setLanguage, languages, detectedCountry, isDetected, t } = useLanguage();
   const [open, setOpen] = useState(false);
   const [place, setPlace] = useState<CSSProperties>({});
@@ -71,13 +73,13 @@ export function LanguageSwitcher({ className = "", persist = true, size = "md" }
   };
 
   return <div className={`${styles.wrapper} ${className}`} data-size={size}>
-    <button ref={triggerRef} type="button" className={styles.trigger} aria-expanded={open} aria-haspopup="listbox"
+    <button ref={triggerRef} type="button" className={styles.trigger} data-icon-only={iconOnly || undefined} aria-expanded={open} aria-haspopup="listbox"
       aria-label={`${t("language") || "Language"}: ${current.nativeName} (${current.country})`} title={`${current.nativeName} · ${current.country}`}
       onClick={() => setOpen(value => !value)}>
       <Languages size={15} strokeWidth={2} className={styles.symbol} aria-hidden="true" />
       <FlagIcon country={current.countryCode} size={20} className={styles.flag} />
-      <span className={styles.label}>{current.nativeName}</span>
-      <ChevronDown size={14} className={styles.chevron} aria-hidden="true" />
+      {!iconOnly && <span className={styles.label}>{current.nativeName}</span>}
+      {!iconOnly && <ChevronDown size={14} className={styles.chevron} aria-hidden="true" />}
     </button>
 
     {open && typeof document !== "undefined" && createPortal(

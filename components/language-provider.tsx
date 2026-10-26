@@ -3,11 +3,8 @@ import { createContext, useContext, useSyncExternalStore, useEffect, useCallback
 import { LANGUAGES, type Language } from "@/lib/domain";
 import {
   en,
-  hi,
   translations,
   SUPPORTED_LANGUAGES,
-  COUNTRY_TO_LANGUAGE,
-  isLanguageAvailable,
   usableLanguage,
   type TranslationKey,
   type SupportedLanguage,
@@ -33,38 +30,12 @@ const Context = createContext<LanguageContextValue>({
 
 let memoryLanguage: Language = "en";
 
-export function detectBrowserLocale(): Language {
-  if (typeof window === "undefined") return "en";
-  try {
-    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || "";
-    if (tz.includes("Kolkata") || tz.includes("Calcutta") || tz.includes("India")) return "hi";
-    if (tz.includes("Tokyo") || tz.includes("Japan")) return "ja";
-    if (tz.includes("Shanghai") || tz.includes("Chongqing") || tz.includes("Hong_Kong") || tz.includes("Taipei")) return "zh";
-    if (tz.includes("Berlin") || tz.includes("Vienna") || tz.includes("Zurich")) return "de";
-    if (tz.includes("Paris") || tz.includes("Brussels") || tz.includes("Monaco")) return "fr";
-    if (
-      tz.includes("Madrid") || tz.includes("Mexico") || tz.includes("Buenos_Aires") ||
-      tz.includes("Bogota") || tz.includes("Santiago") || tz.includes("Lima") || tz.includes("Caracas")
-    ) {
-      return "es";
-    }
-
-    const navLangs = navigator.languages?.length ? navigator.languages : [navigator.language || ""];
-    for (const raw of navLangs) {
-      const code = raw.toLowerCase();
-      if (code.startsWith("hi") || code.startsWith("mr") || code.startsWith("gu") || code.startsWith("bn") || code.startsWith("pa")) return "hi";
-      if (code.startsWith("ja")) return "ja";
-      if (code.startsWith("zh")) return "zh";
-      if (code.startsWith("de")) return "de";
-      if (code.startsWith("fr")) return "fr";
-      if (code.startsWith("es")) return "es";
-    }
-  } catch {
-    /* fallback to en */
-  }
-  return "en";
-}
-
+/*
+ * English is every visitor's language until they pick another one themselves (user rule 2026-10-26). Nothing is
+ * guessed from the timezone, the browser or the visitor's country: those guesses used to switch visitors in India to
+ * Hindi and save it as if they had chosen it. Only a choice made in the language switcher (or saved on the signed-in
+ * account) is remembered, marked by masterclass:language-manual.
+ */
 function subscribe(callback: () => void) {
   window.addEventListener("storage", callback);
   window.addEventListener("masterclass-language", callback);
@@ -77,15 +48,9 @@ function subscribe(callback: () => void) {
 function snapshot(): Language {
   try {
     const saved = localStorage.getItem("masterclass:language");
-    // A saved or detected language without localized content yet falls back to English.
-    if (saved && (LANGUAGES as readonly string[]).includes(saved)) {
-      return usableLanguage(saved);
-    }
-    if (process.env.NODE_ENV !== "test" && typeof window !== "undefined") {
-      const detected = usableLanguage(detectBrowserLocale());
-      memoryLanguage = detected;
-      return detected;
-    }
+    const chosen = localStorage.getItem("masterclass:language-manual") === "1";
+    // Only the visitor's own choice counts; a language without localized content yet falls back to English.
+    if (chosen && saved && (LANGUAGES as readonly string[]).includes(saved)) return usableLanguage(saved);
     return memoryLanguage;
   } catch {
     return memoryLanguage;
@@ -100,37 +65,14 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     document.documentElement.lang = language;
   }, [language]);
 
-  // Non-blocking geolocation check to detect native country/language when user hasn't explicitly locked a preference
+  // The visitor's country is shown in the language picker only; it never changes the language.
   useEffect(() => {
     if (process.env.NODE_ENV === "test") return;
-    try {
-      const isManual = localStorage.getItem("masterclass:language-manual") === "1";
-      if (isManual) return;
-    } catch {
-      /* storage inaccessible */
-    }
-
     const controller = new AbortController();
     fetch("/api/geo", { signal: controller.signal })
       .then(res => res.ok ? res.json() : null)
-      .then(data => {
-        if (!data) return;
-        if (data.country) setDetectedCountry(data.country);
-        const geoLang = data.language as Language | undefined;
-        if (geoLang && isLanguageAvailable(geoLang)) {
-          const manual = localStorage.getItem("masterclass:language-manual") === "1";
-          const currentSaved = localStorage.getItem("masterclass:language");
-          if (!manual && !currentSaved && geoLang !== memoryLanguage) {
-            memoryLanguage = geoLang;
-            try {
-              localStorage.setItem("masterclass:language", geoLang);
-            } catch {}
-            window.dispatchEvent(new Event("masterclass-language"));
-          }
-        }
-      })
+      .then(data => { if (data?.country) setDetectedCountry(data.country); })
       .catch(() => {});
-
     return () => controller.abort();
   }, []);
 

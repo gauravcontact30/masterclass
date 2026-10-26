@@ -39,7 +39,7 @@ export function ExpandedText({ text }: { text: string }) {
             title={`Click to inspect “${part.text}” (${part.fullForm}) in Vocabulary`}
           >
             <abbr title={part.fullForm}>{part.text}</abbr>
-            <span className={styles.fullForm} aria-label={`stands for ${part.fullForm}`}>
+            <span className={styles.fullForm}>
               {part.fullForm}
             </span>
           </span>

@@ -38,7 +38,9 @@
     ".next-trial/types/**/*.ts",
     ".next-trial/dev/types/**/*.ts",
     ".next-dev2/types/**/*.ts",
-    ".next-dev2/dev/types/**/*.ts"
+    ".next-dev2/dev/types/**/*.ts",
+    ".next-verify/types/**/*.ts",
+    ".next-verify/dev/types/**/*.ts"
   ],
   "//": "__tests__ is excluded so a stale test file cannot break `next build`. Tests are checked by running them, and tsconfig.test.json type-checks them on demand.",
   "exclude": [

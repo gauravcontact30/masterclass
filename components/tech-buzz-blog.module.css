@@ -1,17 +1,22 @@
-@import url('https://fonts.googleapis.com/css2?family=Crimson+Text:ital,wght@0,400;0,600;0,700;1,400&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Serif:ital,wght@0,400;0,600;1,400&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Lato:wght@400;700&family=Literata:ital,wght@0,400;0,600;1,400&family=Lora:ital,wght@0,400;0,600;1,400&family=Merriweather:ital,wght@0,300;0,400;0,700;1,300&family=Montserrat:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,400&family=Nunito:wght@400;600;700&family=Open+Sans:ital,wght@0,400;0,600;1,400&family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Poppins:wght@400;500;600&family=Roboto:wght@400;500;700&family=Source+Code+Pro:wght@400;500;600&family=Source+Sans+3:wght@400;600;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=Spectral:ital,wght@0,400;0,600;1,400&family=Work+Sans:wght@400;500;600&display=swap');
-
 /* Tech Buzz blog (components/tech-buzz-blog.tsx): an elite, reading-first engineering publication.
    Serif headlines, responsive card grid/list views, learning tracks, and architectural roadmap paths. */
 .blog {
-  --ink: #0f172a;
-  --body: #334155;
-  --muted: #64748b;
-  --line: #e2e8f0;
+  --ink: #1b1a2e;
+  --body: #3b3a4f;
+  --muted: #6b6a80;
+  --line: #ebe7f2;
   --paper: #ffffff;
-  --accent: #ea580c;
-  --accent-soft: #ffedd5;
-  --accent-hover: #c2410c;
-  font-family: var(--reading-font, Georgia, "Nirmala UI", serif);
+  --accent: #ff5a36;
+  --accent-soft: #ffe8e0;
+  --accent-hover: #e0431f;
+  /* Secondary accents for badges, tracks and highlights. */
+  --indigo: #5b4bdb;
+  --indigo-soft: #ecebff;
+  --gold: #f5a524;
+  --gold-soft: #fff3d6;
+  --teal: #0ea5a4;
+  --teal-soft: #ddf6f4;
+  font-family: var(--reading-font, var(--font-inter, "Inter"), "Inter", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, "Nirmala UI", sans-serif);
   width: 100%;
   max-width: 1320px;
   margin: 0 auto;
@@ -22,6 +27,16 @@
 
 .blog[data-full-width="true"] {
   max-width: 1480px;
+}
+
+/* Large desktops and Apple Studio/Pro displays: use more of the screen instead of a narrow centred column. */
+@media (min-width: 1800px) {
+  .blog { max-width: 1480px; }
+  .blog[data-full-width="true"] { max-width: 1720px; }
+}
+@media (min-width: 2400px) {
+  .blog { max-width: 1640px; }
+  .blog[data-full-width="true"] { max-width: 1960px; }
 }
 
 .srOnly {
@@ -83,23 +98,23 @@
   gap: 6px;
   padding: 5px 12px;
   border-radius: 999px;
-  background: #f1f5f9;
-  color: #475569;
+  background: #f5f2fa;
+  color: #4a4960;
   font-size: 12.5px;
   font-weight: 600;
 }
 
 .brand h1 {
   margin: 0;
-  font-family: Georgia, "Nirmala UI", serif;
+  font-family: var(--font-inter, "Inter"), "Inter", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, "Nirmala UI", sans-serif;
   font-weight: 700;
-  font-size: clamp(16px, 1.95vw, 25px);
+  font-size: 25px;
   line-height: 1.25;
   letter-spacing: -.015em;
   color: var(--ink);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  /* Wraps instead of clipping, so the full heading reads on every phone. */
+  overflow-wrap: anywhere;
+  text-wrap: balance;
   width: 100%;
 }
 
@@ -128,8 +143,8 @@
   align-items: center;
   gap: 14px;
   padding: 6px 16px;
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
+  background: #fbf9fd;
+  border: 1px solid #ebe7f2;
   border-radius: 999px;
   box-shadow: 0 1px 3px rgba(15, 23, 42, .04);
   height: 42px;
@@ -179,7 +194,7 @@
 .metricDivider {
   width: 1px;
   height: 14px;
-  background: #cbd5e1;
+  background: #d9d4e6;
   flex-shrink: 0;
 }
 
@@ -190,7 +205,8 @@
   gap: 10px;
   flex: 0 1 auto;
   min-width: 0;
-  flex-wrap: nowrap;
+  /* Wraps on any screen too narrow for the search, font, layout, width and language controls in one row. */
+  flex-wrap: wrap;
 }
 
 .search {
@@ -226,7 +242,7 @@
 }
 
 .search input::placeholder {
-  color: #94a3b8;
+  color: #9a98ad;
 }
 
 .search button {
@@ -236,14 +252,14 @@
   height: 22px;
   border: 0;
   border-radius: 50%;
-  background: #f1f5f9;
+  background: #f5f2fa;
   color: var(--muted);
   cursor: pointer;
   flex-shrink: 0;
 }
 
 .search button:hover {
-  background: #e2e8f0;
+  background: #ebe7f2;
   color: var(--ink);
 }
 
@@ -347,8 +363,8 @@
 .techTracksSection {
   margin-top: 24px;
   padding: 16px 20px;
-  background: linear-gradient(180deg, #f8fafc 0%, #ffffff 100%);
-  border: 1px solid #e2e8f0;
+  background: linear-gradient(180deg, #fbf9fd 0%, #ffffff 100%);
+  border: 1px solid #ebe7f2;
   border-radius: 16px;
   box-shadow: 0 2px 8px rgba(15, 23, 42, .03);
 }
@@ -402,10 +418,10 @@
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  background: #f1f5f9;
+  background: #f5f2fa;
   padding: 3px;
   border-radius: 999px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid #ebe7f2;
 }
 
 .tracksNavBtn {
@@ -506,7 +522,7 @@
 }
 
 .techTracksScroll::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+  background: #d9d4e6;
   border-radius: 999px;
 }
 
@@ -517,7 +533,7 @@
   flex-shrink: 0;
   height: 42px;
   padding: 0 14px 0 10px;
-  border: 1px solid #cbd5e1;
+  border: 1px solid #d9d4e6;
   border-radius: 999px;
   background: #ffffff;
   color: var(--body);
@@ -556,8 +572,8 @@
 .trackPillBadge {
   padding: 1px 7px;
   border-radius: 999px;
-  background: #ffedd5;
-  color: #c2410c;
+  background: #ffe8e0;
+  color: #e0431f;
   font-size: 11px;
   font-weight: 700;
 }
@@ -565,8 +581,8 @@
 .trackPillCount {
   padding: 1px 7px;
   border-radius: 999px;
-  background: #f1f5f9;
-  color: #475569;
+  background: #f5f2fa;
+  color: #4a4960;
   font-size: 11.5px;
   font-weight: 700;
 }
@@ -603,7 +619,7 @@
 
 .roadmapsHeader h2 {
   margin: 4px 0 6px;
-  font-family: Georgia, "Nirmala UI", serif;
+  font-family: var(--font-inter, "Inter"), "Inter", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, "Nirmala UI", sans-serif;
   font-size: clamp(20px, 2.4vw, 26px);
   font-weight: 700;
   color: var(--ink);
@@ -625,16 +641,16 @@
   display: flex;
   flex-direction: column;
   padding: 18px 20px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid #ebe7f2;
   border-radius: 14px;
-  background: #f8fafc;
+  background: #fbf9fd;
   cursor: pointer;
   text-align: left;
   transition: all .2s cubic-bezier(.16, 1, .3, 1);
 }
 
 .roadmapCard:hover {
-  border-color: #cbd5e1;
+  border-color: #d9d4e6;
   background: #ffffff;
   transform: translateY(-2px);
   box-shadow: 0 10px 24px -12px rgba(15, 23, 42, .15);
@@ -656,8 +672,8 @@
 .roadmapBadge {
   padding: 2px 9px;
   border-radius: 999px;
-  background: #ffedd5;
-  color: #c2410c;
+  background: #ffe8e0;
+  color: #e0431f;
   font-size: 11.5px;
   font-weight: 700;
   letter-spacing: .02em;
@@ -726,9 +742,9 @@
   padding: 3px 8px;
   border-radius: 6px;
   background: #ffffff;
-  border: 1px solid #e2e8f0;
+  border: 1px solid #ebe7f2;
   font-size: 12px;
-  color: #475569;
+  color: #4a4960;
   font-weight: 500;
 }
 
@@ -738,7 +754,7 @@
   width: 15px;
   height: 15px;
   border-radius: 50%;
-  background: #e2e8f0;
+  background: #ebe7f2;
   color: var(--ink);
   font-size: 10px;
   font-weight: 700;
@@ -749,7 +765,7 @@
   align-items: center;
   justify-content: space-between;
   padding-top: 10px;
-  border-top: 1px solid #e2e8f0;
+  border-top: 1px solid #ebe7f2;
   font-size: 13px;
   font-weight: 700;
   color: var(--accent);
@@ -762,9 +778,9 @@
   gap: 12px;
   margin-top: 20px;
   padding: 12px 18px;
-  border: 1px solid #fed7aa;
+  border: 1px solid #ffd3c4;
   border-radius: 14px;
-  background: linear-gradient(90deg, #fff7ed, #fefce8);
+  background: linear-gradient(90deg, #fff3ee, #fefce8);
   color: #9a3412;
   font-size: 14.5px;
   text-decoration: none;
@@ -813,8 +829,8 @@
 }
 
 .feeds button:hover {
-  border-color: #cbd5e1;
-  background: #f8fafc;
+  border-color: #d9d4e6;
+  background: #fbf9fd;
 }
 
 .feeds button[aria-pressed="true"] {
@@ -826,8 +842,8 @@
 .savedPillCount {
   padding: 1px 7px;
   border-radius: 999px;
-  background: #f1f5f9;
-  color: #334155;
+  background: #f5f2fa;
+  color: #3b3a4f;
   font-size: 11px;
   font-weight: 700;
 }
@@ -916,7 +932,7 @@
   width: 28px;
   height: 28px;
   padding: 0;
-  border: 1px solid #e2e8f0;
+  border: 1px solid #ebe7f2;
   border-radius: 50%;
   background: #ffffff;
   color: var(--muted);
@@ -941,7 +957,7 @@
   min-width: 56px !important;
   max-width: 56px !important;
   padding: 10px 4px 14px !important;
-  border: 1px solid #e2e8f0;
+  border: 1px solid #ebe7f2;
   border-radius: 16px;
   background: #ffffff;
   box-shadow: 0 2px 8px rgba(15, 23, 42, .04);
@@ -960,9 +976,9 @@
   place-items: center;
   width: 38px;
   height: 38px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid #ebe7f2;
   border-radius: 10px;
-  background: #f8fafc;
+  background: #fbf9fd;
   color: var(--ink);
   cursor: pointer;
   transition: all .15s ease;
@@ -981,7 +997,7 @@
   place-items: center;
   width: 38px;
   height: 38px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid #ebe7f2;
   border-radius: 10px;
   background: #ffffff;
   color: var(--body);
@@ -1029,7 +1045,7 @@
   height: 12px;
   padding: 0 2px;
   border-radius: 999px;
-  background: #0f172a;
+  background: #1b1a2e;
   color: #ffffff;
   font-size: 8.5px;
   font-weight: 700;
@@ -1041,7 +1057,7 @@
   display: block;
   width: 28px;
   height: 1px;
-  background: #e2e8f0;
+  background: #ebe7f2;
   margin: 4px 0;
 }
 
@@ -1061,7 +1077,7 @@
   height: 32px;
   border-radius: 50%;
   overflow: hidden;
-  border: 2px solid #e2e8f0;
+  border: 2px solid #ebe7f2;
   transition: all .15s ease;
 }
 
@@ -1077,15 +1093,15 @@
 }
 
 .railProBtn {
-  background: linear-gradient(135deg, #fff7ed, #ffedd5);
-  border-color: #fdba74;
-  color: #c2410c;
+  background: linear-gradient(135deg, #fff3ee, #ffe8e0);
+  border-color: #ffb59c;
+  color: #e0431f;
 }
 
 .railProBtn:hover {
-  background: #ea580c;
+  background: #ff5a36;
   color: #ffffff;
-  border-color: #ea580c;
+  border-color: #ff5a36;
 }
 
 /* Left Topics Rail */
@@ -1117,9 +1133,9 @@
   width: 100%;
   margin-bottom: 20px;
   padding: 12px 14px;
-  border: 1px solid #fed7aa;
+  border: 1px solid #ffd3c4;
   border-radius: 14px;
-  background: linear-gradient(135deg, #fff7ed, #ffffff 85%);
+  background: linear-gradient(135deg, #fff3ee, #ffffff 85%);
   color: var(--ink);
   font: inherit;
   text-align: left;
@@ -1166,7 +1182,7 @@
   padding: 8px 12px;
   border: 1px solid var(--line);
   border-radius: 12px;
-  background: #f8fafc;
+  background: #fbf9fd;
   color: var(--ink);
   font: inherit;
   font-size: 14px;
@@ -1188,7 +1204,7 @@
 }
 
 .topics .allTopics[aria-pressed="true"] small {
-  color: #94a3b8;
+  color: #9a98ad;
 }
 
 .groups {
@@ -1316,7 +1332,7 @@
 }
 
 .group li button:hover {
-  background: #f8fafc;
+  background: #fbf9fd;
 }
 
 .group li button[aria-pressed="true"] {
@@ -1358,9 +1374,9 @@
   gap: 10px;
   margin: 0 0 18px;
   padding: 10px 16px;
-  border: 1px solid #cbd5e1;
+  border: 1px solid #d9d4e6;
   border-radius: 12px;
-  background: #f8fafc;
+  background: #fbf9fd;
   font-size: 14px;
   color: var(--body);
 }
@@ -1388,7 +1404,7 @@
   position: relative;
   margin-bottom: 24px;
   padding: 24px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid #ebe7f2;
   border-radius: 20px;
   background: #ffffff;
   box-shadow: 0 8px 30px -12px rgba(15, 23, 42, .08);
@@ -1396,7 +1412,7 @@
 }
 
 .hero:hover {
-  border-color: #cbd5e1;
+  border-color: #d9d4e6;
 }
 
 .heroBadgeRow {
@@ -1413,8 +1429,8 @@
   gap: 5px;
   padding: 3px 10px;
   border-radius: 999px;
-  background: #ffedd5;
-  color: #c2410c;
+  background: #ffe8e0;
+  color: #e0431f;
   font-size: 12px;
   font-weight: 800;
   letter-spacing: .03em;
@@ -1442,7 +1458,7 @@
 
 .heroBody h2 {
   margin: 0;
-  font-family: var(--reading-font, Georgia, "Nirmala UI", serif);
+  font-family: var(--reading-font, var(--font-inter, "Inter"), "Inter", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, "Nirmala UI", sans-serif);
   font-size: 25px;
   font-weight: 700;
   line-height: 1.25;
@@ -1468,8 +1484,8 @@
   margin: 4px 0 6px;
   padding: 12px 16px;
   border-radius: 12px;
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
+  background: #fbf9fd;
+  border: 1px solid #ebe7f2;
   list-style: none;
 }
 
@@ -1479,7 +1495,7 @@
   gap: 9px;
   font-size: 14px;
   line-height: 1.45;
-  color: #334155;
+  color: #3b3a4f;
 }
 
 .bulletCheckIcon {
@@ -1495,7 +1511,7 @@
   justify-content: space-between;
   gap: 14px;
   padding-top: 12px;
-  border-top: 1px solid #f1f5f9;
+  border-top: 1px solid #f5f2fa;
 }
 
 .heroCta {
@@ -1529,7 +1545,7 @@
   flex-shrink: 0;
   border-radius: 50%;
   object-fit: cover;
-  background: #f1f5f9;
+  background: #f5f2fa;
 }
 
 .meta {
@@ -1562,7 +1578,7 @@
 .starTrack {
   position: relative;
   display: inline-block;
-  color: #cbd5e1;
+  color: #d9d4e6;
   font-size: 13px;
   letter-spacing: 1px;
   line-height: 1;
@@ -1591,7 +1607,7 @@
   display: block;
   overflow: hidden;
   border-radius: 12px;
-  background: var(--tone, #f1f5f9);
+  background: var(--tone, #f5f2fa);
 }
 
 .thumb[data-size="list"] {
@@ -1745,7 +1761,7 @@
 
 .stories[data-view="list"] .storyLink:hover {
   transform: translateY(-2px);
-  border-color: #cbd5e1;
+  border-color: #d9d4e6;
   box-shadow: 0 12px 28px -12px rgba(15, 23, 42, .12);
 }
 
@@ -1776,7 +1792,7 @@
 
 .storyText h3 {
   margin: 0;
-  font-family: Georgia, "Nirmala UI", serif;
+  font-family: var(--font-inter, "Inter"), "Inter", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, "Nirmala UI", sans-serif;
   font-size: 20px;
   font-weight: 700;
   line-height: 1.25;
@@ -1810,7 +1826,7 @@
 .tags span {
   padding: 2px 8px;
   border-radius: 6px;
-  background: var(--tone, #f1f5f9);
+  background: var(--tone, #f5f2fa);
   color: var(--body);
   font-size: 12px;
   font-weight: 500;
@@ -1839,7 +1855,7 @@
 
 .stories[data-view="grid"] .storyLink:hover {
   transform: translateY(-4px);
-  border-color: #cbd5e1;
+  border-color: #d9d4e6;
   box-shadow: 0 18px 36px -16px rgba(15, 23, 42, .18);
 }
 
@@ -1916,15 +1932,15 @@
 
 .more:hover {
   border-color: var(--ink);
-  background: #f8fafc;
+  background: #fbf9fd;
 }
 
 /* ── Explore By Category Tabs & Pagination ───────────────────────────────────────────────── */
 .categorySection {
   margin: 16px 0 24px;
   padding: 18px 20px;
-  background: linear-gradient(180deg, #f8fafc 0%, #ffffff 100%);
-  border: 1px solid #e2e8f0;
+  background: linear-gradient(180deg, #fbf9fd 0%, #ffffff 100%);
+  border: 1px solid #ebe7f2;
   border-radius: 16px;
   box-shadow: 0 2px 8px rgba(15, 23, 42, .03);
 }
@@ -1948,7 +1964,7 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  font-family: Georgia, "Nirmala UI", serif;
+  font-family: var(--font-inter, "Inter"), "Inter", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, "Nirmala UI", sans-serif;
   font-size: 20px;
   font-weight: 700;
   color: var(--ink);
@@ -1978,10 +1994,10 @@
   display: flex;
   align-items: center;
   gap: 5px;
-  background: #f1f5f9;
+  background: #f5f2fa;
   padding: 3px;
   border-radius: 999px;
-  border: 1px solid #e2e8f0;
+  border: 1px solid #ebe7f2;
 }
 
 .categoryNavBtn {
@@ -2100,8 +2116,8 @@
   aspect-ratio: 16 / 9;
   min-height: 100px;
   overflow: hidden;
-  background: #f1f5f9;
-  border-bottom: 1px solid #e2e8f0;
+  background: #f5f2fa;
+  border-bottom: 1px solid #ebe7f2;
 }
 
 .categoryTabImage {
@@ -2183,14 +2199,14 @@
   gap: 6px;
   padding: 10px 12px;
   border-radius: 12px;
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
+  background: #fbf9fd;
+  border: 1px solid #ebe7f2;
   transition: all .15s ease;
 }
 
 .picks a:hover {
   background: #ffffff;
-  border-color: #cbd5e1;
+  border-color: #d9d4e6;
   box-shadow: 0 4px 12px rgba(15, 23, 42, .06);
 }
 
@@ -2216,7 +2232,7 @@
 }
 
 .trending a:hover {
-  background: #f8fafc;
+  background: #fbf9fd;
 }
 
 .trending a > span:last-child {
@@ -2231,20 +2247,20 @@
 }
 
 .rank {
-  font-family: Georgia, serif;
+  font-family: var(--font-inter, "Inter"), "Inter", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, "Nirmala UI", sans-serif;
   font-size: 20px;
   font-weight: 700;
   line-height: 1;
-  color: #cbd5e1;
+  color: #d9d4e6;
 }
 
 .milestones a {
   display: grid;
   gap: 4px;
   padding: 12px 14px;
-  border: 1px solid #fed7aa;
+  border: 1px solid #ffd3c4;
   border-radius: 14px;
-  background: #fff7ed;
+  background: #fff3ee;
   transition: all .15s ease;
 }
 
@@ -2258,7 +2274,7 @@
   font-weight: 700;
   letter-spacing: .05em;
   text-transform: uppercase;
-  color: #c2410c;
+  color: #e0431f;
 }
 
 .milestones b {
@@ -2275,8 +2291,8 @@
 .memberCard {
   padding: 22px;
   border-radius: 18px;
-  background: linear-gradient(160deg, #0f172a 0%, #1e293b 100%);
-  color: #f8fafc;
+  background: linear-gradient(160deg, #1b1a2e 0%, #1e293b 100%);
+  color: #fbf9fd;
   box-shadow: 0 10px 30px -10px rgba(15, 23, 42, .4);
 }
 
@@ -2288,7 +2304,7 @@
 }
 
 .memberCardSparkle {
-  color: #fb923c;
+  color: #ff9466;
 }
 
 .memberCard h2 {
@@ -2303,7 +2319,7 @@
   margin: 0 0 14px;
   font-size: 13.5px;
   line-height: 1.55;
-  color: #cbd5e1;
+  color: #d9d4e6;
 }
 
 .memberCardBullets {
@@ -2313,7 +2329,7 @@
   padding: 0;
   list-style: none;
   font-size: 12.5px;
-  color: #94a3b8;
+  color: #9a98ad;
 }
 
 .memberCardBullets li {
@@ -2324,7 +2340,7 @@
 
 .memberCardBullets li::before {
   content: "✓";
-  color: #fb923c;
+  color: #ff9466;
   font-weight: 700;
 }
 
@@ -2336,7 +2352,7 @@
   width: 100%;
   padding: 10px 16px;
   border-radius: 999px;
-  background: #ea580c;
+  background: #ff5a36;
   color: #ffffff;
   font-size: 13.5px;
   font-weight: 700;
@@ -2345,7 +2361,7 @@
 }
 
 .memberCard a:hover {
-  background: #c2410c;
+  background: #e0431f;
 }
 
 .blog :is(a, button):focus-visible {
@@ -2421,6 +2437,8 @@
   }
   .tools {
     width: 100%;
+    /* The search takes its own row (below); the font, layout and language buttons wrap instead of running off the screen. */
+    flex-wrap: wrap;
   }
   .search {
     flex-basis: 100%;
@@ -2464,3 +2482,13 @@
     aspect-ratio: 16 / 9;
   }
 }
+
+/* ── No horizontal scrolling: rows of chips and metrics wrap onto more lines instead (user rule 2026-10-26). ── */
+.metricsRibbon { flex-wrap: wrap; overflow-x: visible; height: auto; row-gap: 6px; padding-block: 8px; border-radius: 16px; }
+.techTracksScroll, .feeds { flex-wrap: wrap; overflow-x: visible; }
+@media (max-width: 1100px) { .groups { flex-wrap: wrap; overflow-x: visible; } }
+
+/* ── Type scale (user rule 2026-10-26): main headings 25px, secondary headings 18px, body 15px. ── */
+.brand h1, .roadmapsHeader h2, .heroBody h2, .categorySectionTitle { font-size: 25px; line-height: 1.25; }
+.topics h2, .sidebar h2, .memberCard h2, .blog h3 { font-size: 18px; line-height: 1.35; }
+.lede, .blog article p { font-size: 15px; line-height: 1.6; }

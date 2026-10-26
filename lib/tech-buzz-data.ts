@@ -138,6 +138,8 @@ export interface TechBuzzArticle {
       attribution: string;
     };
     bulletPoints?: string[];
+    /** An illustration shown under the section heading (the daily edition's blog image). */
+    image?: { src: string; alt: string };
   }[];
 }
 

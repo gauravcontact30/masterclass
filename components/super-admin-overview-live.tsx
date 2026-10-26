@@ -7,6 +7,7 @@ import styles from "./super-admin-overview-live.module.css";
 import { VISIT_RETENTION_DAYS } from "@/lib/visit-retention";
 import { indexVisits, streamVisitors, type Presence } from "@/lib/live-visits";
 import { localityPin } from "@/lib/new-user-locations";
+import { FirstLookVisitors } from "./super-admin-first-look";
 
 type Row = Record<string, unknown>;
 type Visit = { id?: number; created_at: string; event: string; person?: string; email?: string | null; user_id?: string | null; visitor_id: string; session_id: string; new_visitor?: boolean; path: string; title?: string | null; country?: string | null; city?: string | null; region?: string | null; postal_code?: string | null; device?: string | null; browser?: string | null; os?: string | null; duration_ms?: number | null; referrer_host?: string | null; utm_source?: string | null; screen?: string | null; timezone?: string | null; language?: string | null; ip_masked?: string | null };
@@ -560,6 +561,9 @@ export function OverviewLive({ snapshot, onRefreshSnapshot }: { snapshot: Overvi
         {stream && !heartbeats && <p className={styles.streamNote}>Live status is estimated: apply migration 0034 (page heartbeats) so a visitor counts as on the site only while their page is open, timed to the second. Until then a page without a leave beacon counts as open for up to 30 minutes.</p>}
         {stream?.capped && <p className={styles.streamNote}>Showing the newest 20,000 events of the window; older visitors are left out.</p>}
       </article>
+
+      {/* Anonymous visitors whose whole stay is one page view, from the same visitor list as the stream above. */}
+      <FirstLookVisitors everyone={everyone} now={clockNow} days={streamDays} />
 
       <article className={`${styles.panel} ${styles.wide}`} data-tone="lavender">
         <h3><Route size={16} aria-hidden="true" />Request tracing

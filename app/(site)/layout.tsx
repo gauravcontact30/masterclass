@@ -22,7 +22,7 @@ export default function SiteLayout({ children }: { children: React.ReactNode }) 
   return <div className={styles.page}>
     <a className={styles.skip} href="#main-content">Skip to content</a>
     <header className={styles.header}>
-      <Link href="/" aria-label="MasterClass home"><Wordmark /></Link>
+      <Link href="/" aria-label="Master Class Buddy home"><Wordmark /></Link>
       <nav aria-label="Main navigation" className={styles.nav}>{NAV.map(page => <Link key={page.path} href={page.path}>{page.label}</Link>)}</nav>
       <div className={styles.actions}><Link href="/sign-in">Sign in</Link><Link className={styles.cta} href="/sign-up">Start learning</Link></div>
     </header>

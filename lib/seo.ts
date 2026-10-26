@@ -16,7 +16,7 @@ export function isIndexable(): boolean {
     !["localhost", "127.0.0.1", "[::1]"].includes(url.hostname);
 }
 
-export const siteName = "MasterClass";
+export const siteName = "Master Class Buddy";
 export const siteTitle = "MasterClass Buddy | Tech Learning, AI Agents & Interview Prep";
 export const siteDescription = "Technology learning for professionals in English and Hindi, with an AI tutor and audio lectures: coding, cloud, system design, AI agents, certifications and interview questions.";
 /**

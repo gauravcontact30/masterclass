@@ -152,13 +152,24 @@ export function getGoogleFontUrl(fontName: string): string {
   return `https://fonts.googleapis.com/css2?family=${encoded}:wght@400;500;600;700&display=swap`;
 }
 
+/** The `<link>` id a loaded font uses, so a font is never requested twice (the pre-paint script in app/layout.tsx uses it too). */
+export function googleFontLinkId(fontName: string): string {
+  return `gf-link-${fontName.trim().replace(/^["']|["']$/g, "").toLowerCase().replace(/[^a-z0-9]/g, "-")}`;
+}
+
+/** The stylesheet a font needs, or null for a device font that is never downloaded. */
+export function googleFontHref(fontName: string): string | null {
+  const cleanName = fontName.trim().replace(/^["']|["']$/g, "");
+  return !cleanName || SYSTEM_FONT_NAMES.has(cleanName) ? null : getGoogleFontUrl(cleanName);
+}
+
 /** Dynamically injects Google Font link into document head so custom fonts render in real time. */
 export function loadGoogleFont(fontName: string): void {
   if (typeof document === "undefined" || !fontName) return;
   const cleanName = fontName.trim().replace(/^["']|["']$/g, "");
   if (SYSTEM_FONT_NAMES.has(cleanName)) return;
 
-  const fontId = `gf-link-${cleanName.toLowerCase().replace(/[^a-z0-9]/g, "-")}`;
+  const fontId = googleFontLinkId(cleanName);
   if (document.getElementById(fontId)) return;
 
   const link = document.createElement("link");

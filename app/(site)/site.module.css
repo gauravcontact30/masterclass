@@ -51,6 +51,17 @@
   .actions { margin-left: auto; }
   .footer small { margin-left: 0; }
 }
+/* Phones: logo and both actions stay on one row. */
+@media (max-width: 480px) {
+  .header { flex-wrap: nowrap; gap: 10px; padding-block: 12px; }
+  .header :global(.brand-name) { font-size: 20px; }
+  .header :global(.brand-mark) { width: 32px; height: 32px; }
+  .actions { gap: 10px; font-size: 13px; flex-shrink: 0; }
+  .cta { padding: 8px 12px; white-space: nowrap; }
+}
+@media (max-width: 359px) {
+  .actions a:not(.cta) { display: none; }
+}
 
 /* A learning-path picture runs flush across the top of its card, inside the padding. */
 .cardPicture { margin: -20px -20px 14px; }

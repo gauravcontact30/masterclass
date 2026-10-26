@@ -6,6 +6,8 @@ import { visitorPrices } from "@/lib/server/pricing";
 import { currentUser } from "@/lib/server/auth";
 import { privateMetadata } from "@/lib/seo";
 
+// Renders only once its content is ready: no loading screen is ever shown in its place (no loading.tsx, no fallback).
+export const instant = false;
 export const metadata = { ...privateMetadata, title: "Subscribe" };
 
 /** Membership checkout for visitors without an account, priced in their country's currency; members manage plans in the dashboard. */

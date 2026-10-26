@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
-import { Suspense } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { apiPackage, apiPackageEntries, apiPackages, apiTypes } from "@/lib/public-learning";
 import { learningMetadata } from "@/lib/seo";
 import { LibraryIntro, InlineText } from "@/components/public-learning/library-intro";
-import { LearningLoader } from "@/components/learning-loader";
 import styles from "@/components/public-learning/library.module.css";
+
+// Renders only once its content is ready: no loading screen is ever shown in its place (no loading.tsx, no fallback).
+export const instant = false;
 
 type Props = { params: Promise<{ package: string }> };
 
@@ -26,7 +27,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default function Page({ params }: Props) {
-  return <Suspense fallback={<LearningLoader size="inline" label="Loading the reference…" />}><PackageReference params={params} /></Suspense>;
+  return <PackageReference params={params} />;
 }
 
 async function PackageReference({ params }: Props) {

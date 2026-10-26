@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
-import { Suspense } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { slugify, vocabularyGroup, vocabularyGroups } from "@/lib/public-learning";
 import { learningMetadata, siteUrl } from "@/lib/seo";
 import { LibraryIntro } from "@/components/public-learning/library-intro";
-import { LearningLoader } from "@/components/learning-loader";
 import styles from "@/components/public-learning/library.module.css";
+
+// Renders only once its content is ready: no loading screen is ever shown in its place (no loading.tsx, no fallback).
+export const instant = false;
 
 type Props = { params: Promise<{ group: string }> };
 
@@ -26,7 +27,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default function Page({ params }: Props) {
-  return <Suspense fallback={<LearningLoader size="inline" label="Loading the words…" />}><Words params={params} /></Suspense>;
+  return <Words params={params} />;
 }
 
 async function Words({ params }: Props) {

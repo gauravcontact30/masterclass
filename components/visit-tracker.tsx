@@ -2,6 +2,9 @@
 import { useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
 
+/** Set by the early page-view beacon in <head> (lib/early-track.ts). */
+declare global { interface Window { __mcEarly?: { path: string; sent: boolean; taken: boolean } } }
+
 /** The referrer belongs to the page load, not to every client-side navigation after it. */
 let referrerSent = false;
 
@@ -36,8 +39,18 @@ export function VisitTracker() {
     };
     const leave = () => { pause(); open.current = null; };
     leave();
+    // The first page's view was already sent by the early beacon in <head> (lib/early-track.ts): adopt it, timing the
+    // page from navigation start so the seconds before hydration count too.
+    const early = window.__mcEarly;
+    if (early && !early.taken && early.sent && early.path === pathname) {
+      early.taken = true;
+      referrerSent = true;
+      open.current = { path: pathname, since: document.visibilityState === "hidden" ? null : 0 };
+    }
+    if (early) early.taken = true;
     // Wait a moment so document.title is the new page's, not the previous one's.
     const timer = setTimeout(() => {
+      if (open.current?.path === pathname) return;
       const params = new URLSearchParams(location.search);
       send({
         type: "view", path: pathname, title: document.title,

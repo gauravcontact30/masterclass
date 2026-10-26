@@ -1,4 +1,3 @@
-import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { Workspace } from "@/components/workspace";
 import { OfficialDocs } from "@/components/official-docs";
@@ -19,9 +18,7 @@ export default async function OfficialDocsPage() {
       billingEnabled={billingConfigured()}
       userEmail={user?.email ?? null}
       notesContent={
-        <Suspense fallback={<p role="status">Loading Official Docs…</p>}>
-          <OfficialDocs />
-        </Suspense>
+        <OfficialDocs />
       }
     />
   );

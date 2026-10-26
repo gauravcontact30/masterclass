@@ -3437,17 +3437,15 @@ export interface SupportedLanguage {
 
 export const SUPPORTED_LANGUAGES: readonly SupportedLanguage[] = [
   { code: "en", countryCode: "US", name: "English", nativeName: "English", country: "United States / Global", flag: "🇺🇸", region: "Global", available: true },
-  { code: "hi", countryCode: "IN", name: "Hindi", nativeName: "हिन्दी", country: "India", flag: "🇮🇳", region: "South Asia / Tech Hub", available: true },
-  { code: "es", countryCode: "ES", name: "Spanish", nativeName: "Español", country: "Spain & Latin America", flag: "🇪🇸", region: "Europe & Americas", available: true },
-  { code: "ja", countryCode: "JP", name: "Japanese", nativeName: "日本語", country: "Japan", flag: "🇯🇵", region: "East Asia / AI & Robotics", available: true },
-  { code: "de", countryCode: "DE", name: "German", nativeName: "Deutsch", country: "Germany & DACH", flag: "🇩🇪", region: "Europe / Engineering", available: true },
-  { code: "fr", countryCode: "FR", name: "French", nativeName: "Français", country: "France & EU", flag: "🇫🇷", region: "Europe / AI Research", available: true },
-  { code: "zh", countryCode: "CN", name: "Chinese", nativeName: "简体中文", country: "China", flag: "🇨🇳", region: "East Asia / Deep Tech", available: true },
+  { code: "hi", countryCode: "IN", name: "Hindi", nativeName: "हिन्दी", country: "India", flag: "🇮🇳", region: "South Asia / Tech Hub", available: false },
+  { code: "es", countryCode: "ES", name: "Spanish", nativeName: "Español", country: "Spain & Latin America", flag: "🇪🇸", region: "Europe & Americas", available: false },
+  { code: "ja", countryCode: "JP", name: "Japanese", nativeName: "日本語", country: "Japan", flag: "🇯🇵", region: "East Asia / AI & Robotics", available: false },
+  { code: "de", countryCode: "DE", name: "German", nativeName: "Deutsch", country: "Germany & DACH", flag: "🇩🇪", region: "Europe / Engineering", available: false },
+  { code: "fr", countryCode: "FR", name: "French", nativeName: "Français", country: "France & EU", flag: "🇫🇷", region: "Europe / AI Research", available: false },
+  { code: "zh", countryCode: "CN", name: "Chinese", nativeName: "简体中文", country: "China", flag: "🇨🇳", region: "East Asia / Deep Tech", available: false },
 ] as const;
 
-/**
- * All 7 languages are fully available with comprehensive localized dictionaries across the platform.
- */
+/** Only English is enabled site-wide for now; every other language shows as "Coming soon" and falls back to English. */
 export const isLanguageAvailable = (code: string): code is Language => SUPPORTED_LANGUAGES.some(item => item.code === code && item.available);
 /** The language to use for a saved, detected or requested choice: itself when available, English otherwise. */
 export const usableLanguage = (code: string | null | undefined): Language => (code && isLanguageAvailable(code) ? code : "en");

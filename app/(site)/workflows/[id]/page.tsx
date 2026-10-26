@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import { Suspense } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { workflow, workflowPrep, workflowQuestions, workflows } from "@/lib/public-learning";
@@ -7,10 +6,12 @@ import { learningMetadata, siteUrl } from "@/lib/seo";
 import { LibraryIntro } from "@/components/public-learning/library-intro";
 import { QuestionList, faqData } from "@/components/public-learning/question-list";
 import { WorkflowDiagram } from "@/components/workflow-diagram";
-import { LearningLoader } from "@/components/learning-loader";
 import home from "@/components/landing-home.module.css";
 import diagram from "@/components/landing-workflows.module.css";
 import styles from "@/components/public-learning/library.module.css";
+
+// Renders only once its content is ready: no loading screen is ever shown in its place (no loading.tsx, no fallback).
+export const instant = false;
 
 type Props = { params: Promise<{ id: string }> };
 
@@ -30,7 +31,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default function Page({ params }: Props) {
-  return <Suspense fallback={<LearningLoader size="inline" label="Loading the blueprint…" />}><Blueprint params={params} /></Suspense>;
+  return <Blueprint params={params} />;
 }
 
 async function Blueprint({ params }: Props) {

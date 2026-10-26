@@ -1,10 +1,9 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState, useMemo, type ReactNode } from "react";
-import { READING_FONTS, DEFAULT_READING_FONT_ID, type FontOption } from "@/lib/tech-buzz-public";
+import { READING_FONTS, type FontOption } from "@/lib/tech-buzz-public";
 import { loadGoogleFont } from "@/lib/google-fonts";
-
-const APP_FONT_STORAGE_KEY = "masterclass:app-font-family";
+import { APP_FONT_STORAGE_KEY, APP_FONT_STACK_KEY, DEFAULT_APP_FONT_ID, appFontRecord, appFontStack } from "@/lib/app-font";
 
 interface AppFontContextType {
   appFontId: string;
@@ -14,16 +13,28 @@ interface AppFontContextType {
 }
 
 const AppFontContext = createContext<AppFontContextType | undefined>(undefined);
+const DEFAULT_ID = DEFAULT_APP_FONT_ID;
 
+/**
+ * The application font. Inter by default for every visitor (app/layout.tsx renders html[data-app-font="inter"]);
+ * a font picked in Application Typography replaces it. `html[data-app-font]` drives the override in globals.css,
+ * which sets every element (code excepted) to --app-font.
+ * The inline script in app/layout.tsx applies a saved choice before first paint, so a reload never flashes the
+ * default faces; this provider only keeps the DOM in step after hydration and on change.
+ */
 export function AppFontProvider({ children }: { children: ReactNode }) {
-  const [appFontId, setAppFontIdState] = useState<string>("inter");
+  const [appFontId, setAppFontIdState] = useState<string>(DEFAULT_ID);
+  const [chosen, setChosen] = useState(false);
 
-  // Hydrate user font preference on client mount to eliminate SSR mismatch console errors
   useEffect(() => {
     try {
       const saved = localStorage.getItem(APP_FONT_STORAGE_KEY);
-      if (saved && READING_FONTS.some(f => f.id === saved)) {
-        setAppFontIdState(saved);
+      const font = saved ? READING_FONTS.find(f => f.id === saved) : undefined;
+      if (font) {
+        setAppFontIdState(font.id);
+        setChosen(true);
+        // Choices saved before the pre-paint script existed have no record yet.
+        localStorage.setItem(APP_FONT_STACK_KEY, appFontRecord(font));
       }
     } catch {
       /* ignore storage access error */
@@ -31,40 +42,44 @@ export function AppFontProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const currentFont = useMemo(() => {
-    return READING_FONTS.find(f => f.id === appFontId) ?? READING_FONTS.find(f => f.id === "inter") ?? READING_FONTS[0];
+    return READING_FONTS.find(f => f.id === appFontId) ?? READING_FONTS.find(f => f.id === DEFAULT_ID) ?? READING_FONTS[0];
   }, [appFontId]);
 
-  // Apply font to entire application DOM
   useEffect(() => {
-    if (typeof document === "undefined" || !currentFont) return;
-
-    // Load Google font stylesheet dynamically
-    loadGoogleFont(currentFont.name);
-
-    // Apply font variables to root HTML and body for 100% global coverage
+    if (typeof document === "undefined" || !currentFont || !chosen) return;
+    if (currentFont.id !== DEFAULT_ID) loadGoogleFont(currentFont.name);
     const root = document.documentElement;
-    root.style.setProperty("--font-sans", currentFont.stack);
-    root.style.setProperty("--app-font", currentFont.stack);
-    root.style.setProperty("--font-heading", currentFont.stack);
-    root.style.setProperty("--reading-font", currentFont.stack);
-    document.body.style.fontFamily = currentFont.stack;
-  }, [currentFont]);
+    root.style.setProperty("--app-font", appFontStack(currentFont.stack, currentFont.id));
+    root.setAttribute("data-app-font", currentFont.id);
+  }, [currentFont, chosen]);
 
   const setAppFont = (fontId: string) => {
-    setAppFontIdState(fontId);
     const font = READING_FONTS.find(f => f.id === fontId);
-    if (font) {
-      loadGoogleFont(font.name);
-    }
+    if (!font) return;
+    setAppFontIdState(fontId);
+    setChosen(true);
+    if (font.id !== DEFAULT_ID) loadGoogleFont(font.name);
     try {
       localStorage.setItem(APP_FONT_STORAGE_KEY, fontId);
+      localStorage.setItem(APP_FONT_STACK_KEY, appFontRecord(font));
     } catch {
       /* ignore storage error */
     }
   };
 
   const resetAppFont = () => {
-    setAppFont("inter");
+    setAppFontIdState(DEFAULT_ID);
+    setChosen(false);
+    // Back to the server-rendered default: Inter.
+    const root = document.documentElement;
+    root.style.removeProperty("--app-font");
+    root.setAttribute("data-app-font", DEFAULT_ID);
+    try {
+      localStorage.removeItem(APP_FONT_STORAGE_KEY);
+      localStorage.removeItem(APP_FONT_STACK_KEY);
+    } catch {
+      /* ignore storage error */
+    }
   };
 
   return (
@@ -78,9 +93,9 @@ export function useAppFont() {
   const context = useContext(AppFontContext);
   if (!context) {
     // Graceful fallback if outside provider
-    const fallbackFont = READING_FONTS.find(f => f.id === "inter") ?? READING_FONTS[0];
+    const fallbackFont = READING_FONTS.find(f => f.id === DEFAULT_ID) ?? READING_FONTS[0];
     return {
-      appFontId: "inter",
+      appFontId: DEFAULT_ID,
       currentFont: fallbackFont,
       setAppFont: () => {},
       resetAppFont: () => {},

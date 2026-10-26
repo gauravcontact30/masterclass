@@ -10,6 +10,8 @@ import styles from "./font-family-dropdown.module.css";
 export interface FontFamilyDropdownProps {
   value: string;
   onChange: (value: string) => void;
+  /** "Reset to default" calls this instead of selecting `defaultVal`, e.g. to restore the site's own typography. */
+  onReset?: () => void;
   fonts?: FontOption[];
   ariaLabel?: string;
   variant?: "pill" | "toolbar";
@@ -22,6 +24,7 @@ export interface FontFamilyDropdownProps {
 export function FontFamilyDropdown({
   value,
   onChange,
+  onReset,
   fonts: passedFonts,
   ariaLabel = "Font family",
   variant = "pill",
@@ -58,7 +61,7 @@ export function FontFamilyDropdown({
       { id: "Serif", label: "Serif", count: fonts.filter(f => f.category === "Serif").length },
       { id: "Monospace", label: "Monospace", count: fonts.filter(f => f.category === "Monospace").length },
       { id: "Display/Creative", label: "Creative", count: fonts.filter(f => f.category === "Display/Creative").length },
-    ];
+    ].filter(cat => cat.id === "All" || cat.count > 0);
   }, [fonts]);
 
   // Filtered fonts based on search and selected category
@@ -85,6 +88,12 @@ export function FontFamilyDropdown({
   };
 
   const handleReset = () => {
+    if (onReset) {
+      onReset();
+      setOpen(false);
+      setSearch("");
+      return;
+    }
     const target = fonts.find(f => (valueType === "name" ? f.name === defaultVal : f.id === defaultVal)) ?? fonts[0];
     if (target) {
       handleSelect(target);
@@ -115,27 +124,33 @@ export function FontFamilyDropdown({
         }}
         className={styles.accessibleSelect}
       >
-        <optgroup label="Serif (Editorial & Books)">
+        {serifFonts.length > 0 && (
+          <optgroup label="Serif (Editorial & Books)">
           {serifFonts.map(f => (
             <option key={f.id} value={valueType === "name" ? f.name : f.id}>
               {f.name}
             </option>
           ))}
         </optgroup>
-        <optgroup label="Sans-Serif (Modern & Crisp)">
+        )}
+        {sansFonts.length > 0 && (
+          <optgroup label="Sans-Serif (Modern & Crisp)">
           {sansFonts.map(f => (
             <option key={f.id} value={valueType === "name" ? f.name : f.id}>
               {f.name}
             </option>
           ))}
         </optgroup>
-        <optgroup label="Monospace & Technical">
+        )}
+        {monoFonts.length > 0 && (
+          <optgroup label="Monospace & Technical">
           {monoFonts.map(f => (
             <option key={f.id} value={valueType === "name" ? f.name : f.id}>
               {f.name}
             </option>
           ))}
         </optgroup>
+        )}
         {creativeFonts.length > 0 && (
           <optgroup label="Handwriting & Creative">
             {creativeFonts.map(f => (
@@ -159,7 +174,7 @@ export function FontFamilyDropdown({
           title={`Font family: ${activeFont ? activeFont.name : "Default"} (${(activeFont?.rating ?? 5.0).toFixed(1)}★)`}
         >
           <Type size={variant === "toolbar" ? 15 : 14} className={styles.triggerIcon} aria-hidden="true" />
-          <span className={styles.fontName} style={{ fontFamily: activeFont?.stack }}>
+          <span className={styles.fontName} data-own-font style={{ fontFamily: activeFont?.stack }}>
             {activeFont ? activeFont.name : "Font"}
           </span>
           <span className={styles.triggerRating} aria-label={`Rating: ${(activeFont?.rating ?? 5.0).toFixed(1)} out of 5 stars`}>
@@ -190,7 +205,7 @@ export function FontFamilyDropdown({
               <span className={styles.starHeaderBadge}>
                 <Star size={11} fill="#eab308" color="#eab308" aria-hidden="true" /> Top Rated
               </span>
-              <span className={styles.countBadge}>{fonts.length}+ Fonts</span>
+              <span className={styles.countBadge}>{fonts.length} Fonts</span>
             </div>
           </div>
 
@@ -200,7 +215,7 @@ export function FontFamilyDropdown({
             <input
               type="text"
               className={styles.searchInput}
-              placeholder="Search 85+ fonts (e.g. Roboto, Lora)..."
+              placeholder={`Search ${fonts.length} fonts (e.g. Inter, Roboto)…`}
               value={search}
               onChange={e => setSearch(e.target.value)}
               autoFocus={open}
@@ -237,7 +252,7 @@ export function FontFamilyDropdown({
           {/* Scrollable Font List */}
           <div className={styles.fontList} role="listbox" aria-label="Font options">
             {filteredFonts.length === 0 ? (
-              <div className={styles.emptyState}>No fonts match "{search}"</div>
+              <div className={styles.emptyState}>No fonts match &ldquo;{search}&rdquo;</div>
             ) : (
               filteredFonts.map(font => {
                 const isSelected =
@@ -270,7 +285,7 @@ export function FontFamilyDropdown({
                           </span>
                         </div>
                       </div>
-                      <div className={styles.fontItemPreview} style={{ fontFamily: font.stack }}>
+                      <div className={styles.fontItemPreview} data-own-font style={{ fontFamily: font.stack }}>
                         Sphinx of black quartz, judge my vow · 123
                       </div>
                     </div>
@@ -286,7 +301,7 @@ export function FontFamilyDropdown({
 
           {/* Footer with Active Font Preview & Reset */}
           <div className={styles.popoverFooter}>
-            <div className={styles.activeFontSample} style={{ fontFamily: activeFont?.stack }}>
+            <div className={styles.activeFontSample} data-own-font style={{ fontFamily: activeFont?.stack }}>
               Current: {activeFont?.name}
             </div>
             <button type="button" className={styles.resetBtn} onClick={handleReset}>

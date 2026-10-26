@@ -31,8 +31,6 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   const canonicalUrl = `/tech-buzz/${article.slug}`;
 
-  const ogImageUrl = `/tech-buzz/${article.slug}/opengraph-image`;
-
   return {
     title: `${article.title} | Tech Buzz`,
     description: article.subtitle,
@@ -65,20 +63,12 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       tags: article.tags,
       locale: "en_IN",
       alternateLocale: ["hi_IN"],
-      images: [
-        {
-          url: ogImageUrl,
-          width: 1200,
-          height: 630,
-          alt: `${article.title} — MasterClass Buddy Tech Buzz`
-        }
-      ]
+      // The card comes from ./opengraph-image.tsx (and ./twitter-image.tsx); Next serves them at hashed URLs.
     },
     twitter: {
       card: "summary_large_image",
       title: `${article.title} | Tech Buzz`,
-      description: article.subtitle,
-      images: [ogImageUrl]
+      description: article.subtitle
     }
   };
 }
@@ -109,7 +99,7 @@ export default async function TechBuzzArticlePage({ params }: PageProps) {
     "@type": "BlogPosting",
     headline: article.title,
     description: article.subtitle,
-    image: [image, new URL(`/tech-buzz/${article.slug}/opengraph-image`, origin).href],
+    image: [image],
     datePublished: article.publishedAt,
     dateModified: article.publishedAt,
     url: pageUrl,

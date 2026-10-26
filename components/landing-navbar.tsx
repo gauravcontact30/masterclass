@@ -100,7 +100,7 @@ export function LandingNavbar({ links, prices = null, onCurrency }: { links: [st
   const [menu, setMenu] = useState(false);
   const [account, setAccount] = useState(false);
   const [plans, setPlans] = useState(false);
-  const { appFontId, setAppFont } = useAppFont();
+  const { appFontId, setAppFont, resetAppFont } = useAppFont();
   const openPlans = useCallback((value: boolean) => { setPlans(value); if (value) { setAccount(false); setMenu(false); } }, []);
   const accountRef = useRef<HTMLDivElement>(null);
   const [active, setActive] = useState<string | null>(null);
@@ -145,7 +145,13 @@ export function LandingNavbar({ links, prices = null, onCurrency }: { links: [st
   useEffect(() => {
     if (!account) return;
     const onKey = (event: KeyboardEvent) => { if (event.key === "Escape") { setAccount(false); accountRef.current?.querySelector("button")?.focus(); } };
-    const onPointer = (event: PointerEvent) => { if (!accountRef.current?.contains(event.target as Node)) setAccount(false); };
+    // The font picker's list is portalled to <body>, outside this menu: a press there must not close the menu, or the
+    // picker unmounts before its click lands and the font is never selected.
+    const onPointer = (event: PointerEvent) => {
+      const target = event.target as Element | null;
+      if (accountRef.current?.contains(target) || target?.closest?.('[data-slot="popover-content"]')) return;
+      setAccount(false);
+    };
     window.addEventListener("keydown", onKey);
     document.addEventListener("pointerdown", onPointer);
     return () => { window.removeEventListener("keydown", onKey); document.removeEventListener("pointerdown", onPointer); };
@@ -153,7 +159,7 @@ export function LandingNavbar({ links, prices = null, onCurrency }: { links: [st
 
   return <header aria-label="Site header" className={styles.navbar} data-solid={scrolled || menu || plans || undefined}>
     <div className={styles.navbarInner}>
-      <Link href="/" aria-label="MasterClass" className={styles.brand}><Wordmark /></Link>
+      <Link href="/" aria-label="Master Class Buddy home" className={styles.brand}><Wordmark /></Link>
       <nav ref={navRef} className={styles.navLinks} data-open={menu || undefined} aria-label={text("Main navigation", "मुख्य नेविगेशन")} onMouseLeave={() => moveTo(active)}>
         <span className={styles.navIndicator} aria-hidden="true" data-visible={indicator.visible || undefined} style={{ clipPath: `inset(0 ${indicator.right}px 0 ${indicator.left}px round 999px)`, backgroundColor: PILL_TINTS[Math.max(0, links.findIndex(([href]) => href === indicator.href)) % PILL_TINTS.length] }} />
         {links.map(([href, label, page], index) => {
@@ -173,9 +179,9 @@ export function LandingNavbar({ links, prices = null, onCurrency }: { links: [st
         })}
       </nav>
       <div className={styles.navActions}>
-        <SuggestionBox label={t("suggestionBox")} />
+        <SuggestionBox label={t("suggestionBox")} iconOnly />
         <LandingPlansMenu prices={prices} open={plans} onOpenChange={openPlans} onCurrency={onCurrency} />
-        <LanguageSwitcher />
+        <LanguageSwitcher iconOnly />
         <div ref={accountRef} className={styles.account}>
           <button type="button" className={styles.accountButton} aria-label={text("Account", "खाता")} aria-expanded={account} aria-controls="landing-account-menu" onClick={() => { setAccount(value => !value); setMenu(false); setPlans(false); }}>
             <UserRound size={19} strokeWidth={1.9} aria-hidden="true" />
@@ -205,6 +211,7 @@ export function LandingNavbar({ links, prices = null, onCurrency }: { links: [st
                 <FontFamilyDropdown
                   value={appFontId}
                   onChange={setAppFont}
+                  onReset={resetAppFont}
                   fonts={READING_FONTS}
                   ariaLabel="Application font family"
                   variant="pill"

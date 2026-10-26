@@ -79,7 +79,7 @@ export function GuestCheckout({ initialTier, enabled, prices: located }: { initi
   return <div className={`${styles.page} ${landingFont(language === "hi").variable}`}>
     <header className={styles.top}>
       <Link href="/" className={styles.back}><ArrowLeft size={15} aria-hidden="true" /><ExpandedText text={text("Home", "होम")} /></Link>
-      <Link href="/" aria-label="MasterClass" className={styles.brand}><Wordmark /></Link>
+      <Link href="/" aria-label="Master Class Buddy home" className={styles.brand}><Wordmark /></Link>
       <div className={styles.topActions}>
         <LanguageToggle persist={false} />
         {!outcome && <Link href="/sign-in" className={styles.signin}><ExpandedText text={text("Sign in", "साइन इन")} /></Link>}

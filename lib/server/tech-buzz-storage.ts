@@ -13,6 +13,10 @@ const isMissing = (err: { code?: string; message: string } | null) =>
     /could not find the table|relation .* does not exist/i.test(err.message)
   );
 
+/** PostgREST's "column not in schema cache" for the likes/dislikes columns migration 0041 adds. */
+const missingCounterColumns = (err: { code?: string; message: string }) =>
+  (err.code === "PGRST204" || err.code === "42703") && /likes|dislikes/.test(err.message);
+
 type TechBuzzRow = {
   id: string;
   slug: string;
@@ -72,7 +76,8 @@ function rowToArticle(row: TechBuzzRow): TechBuzzArticle {
     claps: Number(row.claps) || 0,
     rating: {
       average: Number(row.rating_average) || 4.9,
-      count: Number(row.rating_count) || 1,
+      // 0 means not rated yet (daily stories start there).
+      count: row.rating_count == null ? 1 : Number(row.rating_count),
       breakdown: (row.rating_breakdown as any) || { 1: 0, 2: 0, 3: 2, 4: 15, 5: 80 },
     },
     author: row.author || {
@@ -275,11 +280,17 @@ export async function createTechBuzzArticle(input: Partial<TechBuzzArticle>, use
   const client = db();
   const rowData = articleToRow(input, userId);
 
-  const result = await client
+  let result = await client
     .from("tech_buzz_articles")
     .insert(rowData)
     .select("*")
     .single();
+  // Before migration 0041 the table has no likes/dislikes columns: store likes as upvotes and drop dislikes.
+  if (result.error && missingCounterColumns(result.error)) {
+    const { likes, dislikes, ...legacy } = rowData;
+    void likes; void dislikes;
+    result = await client.from("tech_buzz_articles").insert(legacy).select("*").single();
+  }
 
   if (result.error) {
     if (isMissing(result.error)) {
@@ -445,3 +456,42 @@ export async function withUnsplashCovers<T extends CoverFields>(stories: T[]): P
     return { ...story, coverImage: photo.url, photoCredit: photo.credit };
   }));
 }
+
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+export type TechBuzzCounter = "likes" | "dislikes" | "claps";
+
+/**
+ * One reader reaction on a stored story (the built-in stories have no row and keep their in-memory counts). Uses the
+ * atomic tech_buzz_bump() from migration 0041; before it lands, likes and claps are written with a plain update
+ * (likes into upvotes) and dislikes are not stored. Returns the new counts, or null when the story has no row.
+ */
+export async function bumpTechBuzzCounter(id: string, field: TechBuzzCounter, delta: number): Promise<{ likes: number; dislikes: number; claps: number } | null> {
+  if (!UUID.test(id)) return null;
+  const client = db();
+  const rpc = await client.rpc("tech_buzz_bump", { p_id: id, p_field: field, p_delta: delta });
+  if (!rpc.error) {
+    const row = (rpc.data as { likes: number; dislikes: number; claps: number }[] | null)?.[0];
+    return row ? { likes: Number(row.likes), dislikes: Number(row.dislikes), claps: Number(row.claps) } : null;
+  }
+  if (!isMissing(rpc.error)) throw new Error(rpc.error.message);
+  const current = await client.from("tech_buzz_articles").select("upvotes, claps").eq("id", id).eq("status", "published").maybeSingle();
+  if (current.error || !current.data) return null;
+  const counts = { likes: Number(current.data.upvotes) || 0, dislikes: 0, claps: Number(current.data.claps) || 0 };
+  if (field === "dislikes") return counts;
+  counts[field] = Math.max(0, counts[field] + delta);
+  const update = await client.from("tech_buzz_articles").update(field === "likes" ? { upvotes: counts.likes } : { claps: counts.claps }).eq("id", id);
+  if (update.error) throw new Error(update.error.message);
+  return counts;
+}
+
+/** Whether the daily edition for an IST date (YYYY-MM-DD) is already stored, so the 5:00 AM job never doubles up. */
+export async function dailyEditionSlugs(date: string): Promise<string[]> {
+  const result = await db().from("tech_buzz_articles").select("slug").contains("tags", [`daily:${date}`]);
+  if (result.error) {
+    if (isMissing(result.error)) throw new HttpError(503, "migration_required: Apply supabase/migrations/0037_tech_buzz_blogs.sql in Supabase");
+    throw new Error(result.error.message);
+  }
+  return (result.data ?? []).map(row => row.slug as string);
+}
+
+export { expirePublic as expireTechBuzzCache };

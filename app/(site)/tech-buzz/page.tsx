@@ -1,9 +1,11 @@
-import { Suspense } from "react";
 import type { Metadata } from "next";
 import { siteName, siteUrl } from "@/lib/seo";
 import { TechBuzzBlog, type TechBuzzGroup } from "@/components/tech-buzz-blog";
 import { listPublishedTechBuzzArticles, withUnsplashCovers } from "@/lib/server/tech-buzz-storage";
 import { isTechnologyStory, toCard, topicLabel } from "@/lib/tech-buzz-public";
+
+// Renders only once its content is ready: no loading screen is ever shown in its place (no loading.tsx, no fallback).
+export const instant = false;
 
 const DESCRIPTION = "Reader-rated technology blogs and engineering masterclasses on Agentic AI, LangChain, LangGraph, LangSmith, LangFlow, n8n, Next.js 16+, React 19+, System Design, TypeScript, and Cloud Architecture.";
 
@@ -38,7 +40,7 @@ async function Blog() {
   };
   return <>
     <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(itemList).replace(/</g, "\\u003c") }} />
-    <TechBuzzBlog cards={cards} groups={groups} />
+    <TechBuzzBlog cards={cards} groups={groups} showcase />
   </>;
 }
 
@@ -58,14 +60,13 @@ export const metadata: Metadata = {
     siteName,
     title: "Tech Buzz: Technology Blogs Rated by Developers",
     description: DESCRIPTION,
-    locale: "en_IN",
-    images: [{ url: "/tech-buzz/opengraph-image", width: 1200, height: 630, alt: "Tech Buzz by MasterClass Buddy" }]
+    locale: "en_IN"
+    // The card comes from ./opengraph-image.tsx; Next serves it at a hashed URL, so it is never named here.
   },
   twitter: {
     card: "summary_large_image",
     title: "Tech Buzz: Technology Blogs Rated by Developers",
-    description: DESCRIPTION,
-    images: ["/tech-buzz/opengraph-image"]
+    description: DESCRIPTION
   }
 };
 
@@ -86,9 +87,7 @@ export default function TechBuzzPage() {
   return (
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema).replace(/</g, "\\u003c") }} />
-      <Suspense fallback={<div style={{ minHeight: "100vh" }} aria-busy="true" />}>
-        <Blog />
-      </Suspense>
+      <Blog />
     </>
   );
 }

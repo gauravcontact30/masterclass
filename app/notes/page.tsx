@@ -1,5 +1,8 @@
 import { redirect } from "next/navigation";
 
+// Renders only once its content is ready: no loading screen is ever shown in its place (no loading.tsx, no fallback).
+export const instant = false;
+
 /** Preserve bookmarked searches while keeping Notes inside the dashboard. */
 export default async function NotesRedirect({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const params = await searchParams;

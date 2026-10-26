@@ -6,9 +6,10 @@ import Link from "next/link";
 import {
   ArrowRight, Binary, Bookmark, BookmarkCheck, BookOpen, Bot, Building2, CheckCircle2, ChevronDown, ChevronLeft, ChevronRight, Cloud, Clock,
   Compass, FlaskConical, Flame, Hash, Heart, Layers, LayoutGrid, LayoutList, Maximize2, MessageCircle, Minimize2, Network,
-  Newspaper, PanelsTopLeft, Rocket, Search, Server, ShieldCheck, Sparkles, Star, TrendingUp, Trophy, Type, X, Zap, type LucideIcon,
+  PanelsTopLeft, Rocket, Search, Server, ShieldCheck, Sparkles, Star, TrendingUp, Trophy, X, Zap, type LucideIcon,
 } from "lucide-react";
 import { LanguageSwitcher } from "./language-switcher";
+import { BrandMark } from "./brand-mark";
 import { useLanguage } from "./language-provider";
 import { getDiwaliFestiveSaleInfo } from "@/lib/festive-sale";
 import { DEFAULT_READING_FONT_ID, popularity, READING_FONTS, techLogo, type TechBuzzCard } from "@/lib/tech-buzz-public";
@@ -16,6 +17,7 @@ import { isUnsplash, unsplashLoader } from "@/lib/image-loaders";
 import { loadGoogleFont } from "@/lib/google-fonts";
 import { FontFamilyDropdown } from "./font-family-dropdown";
 import styles from "./tech-buzz-blog.module.css";
+import { TechBuzzShowcase } from "./tech-buzz-showcase";
 
 /**
  * The Tech Buzz blog: an elite, reading-first technology publication.
@@ -193,8 +195,30 @@ function SaveButton({ saved, onToggle, title }: { saved: boolean; onToggle: () =
   </button>;
 }
 
-export function TechBuzzBlog({ cards, groups }: { cards: TechBuzzCard[]; groups: TechBuzzGroup[] }) {
-  const { t, language } = useLanguage();
+const READING_FONT_STORAGE_KEY = "masterclass:tech-buzz-reading-font";
+const READING_FONT_EVENT = "masterclass-reading-font";
+function subscribeReadingFont(callback: () => void) {
+  window.addEventListener("storage", callback);
+  window.addEventListener(READING_FONT_EVENT, callback);
+  return () => {
+    window.removeEventListener("storage", callback);
+    window.removeEventListener(READING_FONT_EVENT, callback);
+  };
+}
+/** The reading font id the reader saved, when it is still on the list; null otherwise or when storage is unavailable. */
+function readSavedReadingFont(): string | null {
+  try {
+    const stored = localStorage.getItem(READING_FONT_STORAGE_KEY);
+    return stored && READING_FONTS.some(f => f.id === stored) ? stored : null;
+  } catch {
+    return null;
+  }
+}
+
+/** `showcase`: show the curated sections (components/tech-buzz-showcase.tsx) between the masthead and the feed. Rendered
+ *  here rather than passed in as an element, which React's dev key check flags when it crosses the server boundary. */
+export function TechBuzzBlog({ cards, groups, showcase = false }: { cards: TechBuzzCard[]; groups: TechBuzzGroup[]; showcase?: boolean }) {
+  const { t } = useLanguage();
   const [feed, setFeed] = useState<Feed>("for-you");
   const [topic, setTopic] = useState<string | null>(null);
   const [activeRoadmapId, setActiveRoadmapId] = useState<string | null>(null);
@@ -335,50 +359,39 @@ export function TechBuzzBlog({ cards, groups }: { cards: TechBuzzCard[]; groups:
     });
   };
 
-  // Reading font family state (25+ popular reading fonts)
-  const FONT_STORAGE_KEY = "masterclass:tech-buzz-reading-font";
-  const [readingFontId, setReadingFontId] = useState<string>(DEFAULT_READING_FONT_ID);
-
-  useEffect(() => {
-    try {
-      const stored = localStorage.getItem(FONT_STORAGE_KEY);
-      if (stored && READING_FONTS.some(f => f.id === stored)) {
-        setReadingFontId(stored);
-        const target = READING_FONTS.find(f => f.id === stored);
-        if (target) loadGoogleFont(target.name);
-      }
-    } catch {
-      // storage unavailable
-    }
-  }, []);
-
+  // Reading font: the reader's saved pick, read straight from storage (no state copied in an effect). None saved means
+  // the default, and a saved pick wins over the application font inside the blog (data-own-font).
+  const savedFontId = useSyncExternalStore(subscribeReadingFont, readSavedReadingFont, () => null);
+  const readingChosen = savedFontId !== null;
   const currentFont = useMemo(() => {
-    return READING_FONTS.find(f => f.id === readingFontId) ?? READING_FONTS[0];
-  }, [readingFontId]);
+    return READING_FONTS.find(f => f.id === (savedFontId ?? DEFAULT_READING_FONT_ID)) ?? READING_FONTS[0];
+  }, [savedFontId]);
+
+  // Loading the font's stylesheet is the only side effect; it sets no React state.
+  useEffect(() => {
+    if (readingChosen) loadGoogleFont(currentFont.name);
+  }, [readingChosen, currentFont.name]);
 
   const handleFontChange = (fontId: string) => {
-    setReadingFontId(fontId);
-    const target = READING_FONTS.find(f => f.id === fontId);
-    if (target) {
-      loadGoogleFont(target.name);
-    }
     try {
-      localStorage.setItem(FONT_STORAGE_KEY, fontId);
+      localStorage.setItem(READING_FONT_STORAGE_KEY, fontId);
     } catch {
       /* ignore storage error */
     }
+    window.dispatchEvent(new Event(READING_FONT_EVENT));
   };
 
   return <div
     className={styles.blog}
     data-full-width={leftCollapsed && rightCollapsed ? "true" : "false"}
+    data-own-font={readingChosen || undefined}
     style={{ "--reading-font": currentFont.stack } as CSSProperties}
   >
     {/* 1. Masthead */}
     <header className={styles.masthead}>
       <div className={styles.brand}>
         <div className={styles.badgeRow}>
-          <p className={styles.kicker}><Newspaper size={14} aria-hidden="true" />Tech Buzz</p>
+          <p className={styles.kicker}><BrandMark size={18} />MCB - Tech Buzz</p>
           <span className={styles.verifiedKicker}><Sparkles size={13} aria-hidden="true" />Engineering Masterclasses</span>
         </div>
         <h1>{t("techBuzzTitle")}</h1>
@@ -430,7 +443,7 @@ export function TechBuzzBlog({ cards, groups }: { cards: TechBuzzCard[]; groups:
 
           {/* Creative & Professional Shadcn UI Reading Font Dropdown (75+ Google Fonts) */}
           <FontFamilyDropdown
-            value={readingFontId}
+            value={currentFont.id}
             onChange={handleFontChange}
             fonts={READING_FONTS}
             ariaLabel="Select reading font family"
@@ -464,6 +477,8 @@ export function TechBuzzBlog({ cards, groups }: { cards: TechBuzzCard[]; groups:
         </div>
       </div>
     </header>
+
+    {showcase && <TechBuzzShowcase cards={cards} />}
 
     {/* 2. Featured Technology Learning Tracks Bar with Proper Pagination */}
     <section className={styles.techTracksSection} aria-label={t("techBuzzPopularTracks")}>

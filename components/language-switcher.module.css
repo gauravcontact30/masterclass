@@ -44,3 +44,10 @@
 .item:disabled { cursor: not-allowed; opacity: .55; }
 .item:disabled:hover { background: transparent; }
 .soon { padding: 3px 8px; border-radius: 999px; background: #f0eee6; color: #6b6a64; font-size: 10.5px; font-weight: 700; white-space: nowrap; }
+
+/* Icon only (landing header): a round flag button with a small translate badge on its rim, at every width. */
+.trigger[data-icon-only] { position: relative; width: 40px; height: 40px; padding: 0; justify-content: center; gap: 0; overflow: visible; box-shadow: 0 1px 2px rgba(31, 30, 28, .08); transition: transform .15s ease, border-color .15s ease, box-shadow .15s ease; }
+.trigger[data-icon-only]:hover { transform: translateY(-1px); box-shadow: 0 8px 18px -10px rgba(60, 40, 20, .45); }
+.trigger[data-icon-only] .flag { border-radius: 4px; box-shadow: 0 0 0 1px rgba(31, 30, 28, .08); }
+.trigger[data-icon-only] .symbol { display: block; position: absolute; right: -4px; bottom: -4px; width: 18px; height: 18px; padding: 3px; border-radius: 50%; background: #bb5834; color: #fff; box-shadow: 0 0 0 2px #fff; box-sizing: border-box; }
+.wrapper[data-size="sm"] .trigger[data-icon-only] { width: 34px; height: 34px; padding: 0; }

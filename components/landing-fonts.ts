@@ -8,7 +8,8 @@ import { Anek_Devanagari, Anek_Latin } from "next/font/google";
  * Why two: Anek Devanagari's Devanagari file is ~700 KB, and its unicode-range also covers ₹ (U+20B9), so English
  * pages downloaded it for every price, Hindi gloss and "हिन्दी" toggle. English now never references that face.
  */
-export const anekLatin = Anek_Latin({ subsets: ["latin"], axes: ["wdth"], display: "swap", variable: "--font-anek" });
+/** Not preloaded since Inter became the site-wide font (app/layout.tsx): Anek now only backs up glyphs Inter lacks. */
+export const anekLatin = Anek_Latin({ subsets: ["latin"], axes: ["wdth"], display: "swap", variable: "--font-anek", preload: false });
 /** Not preloaded: it is only needed once a reader switches to Hindi. */
 export const anekDevanagari = Anek_Devanagari({ subsets: ["devanagari", "latin"], axes: ["wdth"], display: "swap", variable: "--font-anek", preload: false });
 

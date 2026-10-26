@@ -11,6 +11,14 @@
     {
       "path": "/api/cron/news-refresh",
       "schedule": "5 19 * * *"
+    },
+    {
+      "path": "/api/cron/tech-buzz-daily",
+      "schedule": "30 23 * * *"
+    },
+    {
+      "path": "/api/blog-job",
+      "schedule": "0 5 * * *"
     }
   ]
 }

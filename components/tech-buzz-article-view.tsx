@@ -337,9 +337,9 @@ export function TechBuzzArticleView({ article, related, prevStory, nextStory }: 
       {/* 2. Top Sticky Navigation */}
       <nav className={styles.stickyArticleNav} aria-label="Article navigation">
         <div className={styles.stickyNavInner}>
-          <Link href="/tech-buzz" className={styles.backLink}>
-            <ArrowLeft size={16} />
-            <span>{t("techBuzzBackToGuides")}</span>
+          <Link href="/tech-buzz" className={styles.backLink} aria-label={t("techBuzzBackToGuides")}>
+            <ArrowLeft size={16} aria-hidden="true" />
+            <span className={styles.backLabel}>{t("techBuzzBackToGuides")}</span>
           </Link>
 
           <div className={styles.stickyNavRight}>
@@ -701,6 +701,13 @@ export function TechBuzzArticleView({ article, related, prevStory, nextStory }: 
                   <section key={idx + 1} style={{ marginBottom: "2.5rem" }}>
                     {section.heading && (
                       <h2 className={styles.proseHeading}>{section.heading}</h2>
+                    )}
+
+                    {section.image && (
+                      <figure style={{ margin: "0 0 1.5rem" }}>
+                        {/* eslint-disable-next-line @next/next/no-img-element -- generated blog images live in Supabase Storage */}
+                        <img src={section.image.src} alt={section.image.alt} loading="lazy" decoding="async" style={{ width: "100%", height: "auto", aspectRatio: "3 / 2", objectFit: "cover", borderRadius: 14, display: "block" }} />
+                      </figure>
                     )}
 
                     {section.paragraphs.map((p, pIdx) => {

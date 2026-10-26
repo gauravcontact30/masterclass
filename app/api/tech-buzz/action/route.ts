@@ -1,5 +1,8 @@
 import { NextResponse } from "next/server";
 import { TECH_BUZZ_ARTICLES, type TechBuzzArticle } from "@/lib/tech-buzz-data";
+import { bumpTechBuzzCounter, type TechBuzzCounter } from "@/lib/server/tech-buzz-storage";
+import { rateLimit } from "@/lib/server/rate-limit";
+import { clientIp } from "@/lib/server/http";
 
 // Newsletter subscribers memory list
 const newsletterSubscribers: Set<string> = new Set();
@@ -48,6 +51,19 @@ export async function POST(request: Request) {
 
     if (!articleId) {
       return NextResponse.json({ error: "Missing articleId" }, { status: 400 });
+    }
+
+    // Likes, dislikes and claps on a stored story (the daily edition, admin posts) persist in the database; built-in
+    // stories have no row and fall through to the in-memory handlers below.
+    if (action === "like" || action === "upvote" || action === "dislike" || action === "clap") {
+      const field: TechBuzzCounter = action === "clap" ? "claps" : action === "dislike" ? "dislikes" : "likes";
+      const delta = action === "clap"
+        ? (typeof body.count === "number" ? Math.min(50, Math.max(1, Math.round(body.count))) : 1)
+        : body.delta === -1 ? -1 : 1;
+      const limited = await rateLimit(`tech-buzz:${field}:${clientIp(request)}`, 60, 60).then(() => false, error => (error as { status?: number }).status === 429);
+      if (limited) return NextResponse.json({ error: "Too many reactions, slow down a little." }, { status: 429 });
+      const stored = await bumpTechBuzzCounter(String(articleId), field, delta).catch(() => null);
+      if (stored) return NextResponse.json({ success: true, ...stored, upvotes: stored.likes, netLikes: stored.likes - stored.dislikes });
     }
 
     // 2. Like (Upvote) action
