@@ -39,3 +39,8 @@
 .item[aria-selected="true"] .code { background: #bb5834; color: #fff; }
 .itemCheck { color: #bb5834; visibility: hidden; }
 .item[aria-selected="true"] .itemCheck { visibility: visible; }
+
+/* Languages without localized content yet: listed, but not selectable. */
+.item:disabled { cursor: not-allowed; opacity: .55; }
+.item:disabled:hover { background: transparent; }
+.soon { padding: 3px 8px; border-radius: 999px; background: #f0eee6; color: #6b6a64; font-size: 10.5px; font-weight: 700; white-space: nowrap; }

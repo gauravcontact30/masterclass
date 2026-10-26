@@ -50,7 +50,7 @@ export const LINK_HINT: Partial<Record<Platform, string>> = {
 /** The rates each platform's analytics headlines, worked out from the summed figures; null when the base is zero. */
 export type DerivedRate = { label: string; value: number | null; hint: string };
 export function derivedRates(platform: Platform, m: Partial<Record<MetricKey, number>>, impressions: number): DerivedRate[] {
-  const rate = (part = 0, whole = 0) => whole > 0 ? part / whole : null;
+  const rate = (part?: number, whole?: number) => part !== undefined && whole !== undefined && whole > 0 ? part / whole : null;
   if (platform === "medium") return [
     { label: "Read ratio", value: rate(m.reads, m.views), hint: "Reads ÷ views" },
     { label: "Claps per read", value: m.reads ? (m.claps ?? 0) / m.reads : null, hint: "Claps ÷ reads" },
@@ -67,7 +67,7 @@ export function derivedRates(platform: Platform, m: Partial<Record<MetricKey, nu
 }
 export type VisitRow = { created_at: string; visitor_id: string; session_id: string; user_id: string | null; path: string; referrer_host: string | null; utm_source: string | null; utm_medium: string | null; utm_campaign: string | null };
 export type ProfileRow = { id: string; created_at: string };
-export type SubscriptionRow = { user_id: string; status: string; tier: string };
+export type SubscriptionRow = { user_id: string; status: string; tier: string; current_period_end?: string | null };
 
 /** utm_source values and referrer hosts that identify each platform (in-app browsers and link shorteners included). */
 const SOURCES: Record<Exclude<Platform, "other">, { utm: string[]; hosts: RegExp }> = {
@@ -92,6 +92,7 @@ export function classifyPlatform(visit: Pick<VisitRow, "utm_source" | "referrer_
   for (const [platform, rule] of Object.entries(SOURCES) as [Exclude<Platform, "other">, (typeof SOURCES)[keyof typeof SOURCES]][]) {
     if (source && rule.utm.includes(source)) return platform;
   }
+  if (source) return source === "other" ? "other" : null;
   if (host) for (const [platform, rule] of Object.entries(SOURCES) as [Exclude<Platform, "other">, (typeof SOURCES)[keyof typeof SOURCES]][]) if (rule.hosts.test(host)) return platform;
   return null;
 }
@@ -123,9 +124,9 @@ function sumMetrics(platform: Platform, items: Promotion[]): Partial<Record<Metr
   let weighted = 0, weight = 0;
   for (const item of items) for (const def of PLATFORM_METRICS[platform]) {
     const key = def.key as MetricKey;
-    const value = Number(item.platform_metrics?.[key] ?? 0);
-    if (!Number.isFinite(value) || value <= 0) continue;
-    if (key === "rating_average") { const n = Number(item.platform_metrics?.ratings ?? 0) || 1; weighted += value * n; weight += n; continue; }
+    const value = item.platform_metrics?.[key];
+    if (value === undefined || !Number.isFinite(value) || value < 0) continue;
+    if (key === "rating_average") { const n = Number(item.platform_metrics?.ratings ?? 0); if (n > 0) { weighted += value * n; weight += n; } continue; }
     out[key] = (out[key] ?? 0) + value;
   }
   if (weight) out.rating_average = Math.round((weighted / weight) * 10) / 10;
@@ -141,21 +142,15 @@ const ACTIVE = new Set(["active"]);
  * platform when the account was created inside the window and its first attributed visit came from that platform;
  * a member is such a sign-up with an active subscription. Campaigns match on utm_campaign.
  */
-export function attribute({ visits, profiles, subscriptions, promotions, since }: { visits: VisitRow[]; profiles: ProfileRow[]; subscriptions: SubscriptionRow[]; promotions: Promotion[]; since: string }): Attribution {
+export function attribute({ visits, profiles, subscriptions, promotions, since, until = new Date().toISOString() }: { visits: VisitRow[]; profiles: ProfileRow[]; subscriptions: SubscriptionRow[]; promotions: Promotion[]; since: string; until?: string }): Attribution {
   const sinceTime = new Date(since).getTime();
   const created = new Map(profiles.map(profile => [profile.id, new Date(profile.created_at).getTime()]));
-  const paying = new Set(subscriptions.filter(sub => ACTIVE.has(sub.status)).map(sub => sub.user_id));
-  const sorted = [...visits].sort((a, b) => a.created_at.localeCompare(b.created_at));
+  const paying = new Set(subscriptions.filter(sub => ACTIVE.has(sub.status) && !!sub.current_period_end && Date.parse(sub.current_period_end) > Date.parse(until)).map(sub => sub.user_id));
+  const sorted = visits.filter(visit => Date.parse(visit.created_at) >= sinceTime && Date.parse(visit.created_at) < Date.parse(until)).sort((a, b) => a.created_at.localeCompare(b.created_at));
 
-  // Sessions inherit the platform of their first social visit, so later pages in that session count for it too.
+  // Apply source changes in time order; a later campaign must never rewrite earlier activity.
   const sessionPlatform = new Map<string, Platform>();
   const sessionCampaign = new Map<string, string>();
-  for (const visit of sorted) {
-    const platform = classifyPlatform(visit);
-    if (platform && !sessionPlatform.has(visit.session_id)) sessionPlatform.set(visit.session_id, platform);
-    const campaign = visit.utm_campaign?.trim().toLowerCase();
-    if (campaign && !sessionCampaign.has(visit.session_id)) sessionCampaign.set(visit.session_id, campaign);
-  }
 
   const platformFunnel = new Map<Platform, Funnel & { visitorSet: Set<string>; sessionSet: Set<string> }>();
   const campaignFunnel = new Map<string, Funnel & { visitorSet: Set<string>; sessionSet: Set<string>; platforms: Set<Platform> }>();
@@ -164,20 +159,29 @@ export function attribute({ visits, profiles, subscriptions, promotions, since }
   const dailyMap = new Map<string, DailyPoint>();
   const landing = new Map<string, LandingPage & { visitorSet: Set<string> }>();
   const firstPage = new Set<string>();
+  const allVisitors = new Set<string>(), allSessions = new Set<string>();
 
   for (const visit of sorted) {
-    const platform = sessionPlatform.get(visit.session_id);
-    const campaign = sessionCampaign.get(visit.session_id);
+    if (/^\/(?:dashboard\/)?super-admin(?:\/|$)/.test(visit.path)) continue;
+    const session = `${visit.visitor_id}:${visit.session_id}`;
+    const source = classifyPlatform(visit);
+    if (visit.utm_source || visit.referrer_host) {
+      if (source) sessionPlatform.set(session, source); else sessionPlatform.delete(session);
+      sessionCampaign.delete(session);
+    }
+    if (visit.utm_campaign) sessionCampaign.set(session, visit.utm_campaign.trim().toLowerCase());
+    const platform = sessionPlatform.get(session);
+    const campaign = sessionCampaign.get(session);
     if (platform) {
       const f = platformFunnel.get(platform) ?? { ...emptyFunnel(), visitorSet: new Set(), sessionSet: new Set() };
-      f.visits++; f.visitorSet.add(visit.visitor_id); f.sessionSet.add(visit.session_id);
+      f.visits++; f.visitorSet.add(visit.visitor_id); f.sessionSet.add(session);
+      allVisitors.add(visit.visitor_id); allSessions.add(session);
       platformFunnel.set(platform, f);
-      const day = visit.created_at.slice(0, 10);
+      const day = new Date(Date.parse(visit.created_at) + 330 * 60_000).toISOString().slice(0, 10);
       const point = dailyMap.get(day) ?? Object.fromEntries([["day", day], ...PLATFORMS.map(p => [p, 0])]) as DailyPoint;
       point[platform]++; dailyMap.set(day, point);
       // The page a social session started on is its landing page.
-      if (!firstPage.has(visit.session_id)) {
-        firstPage.add(visit.session_id);
+      if (!firstPage.has(session)) {
         const key = `${platform}|${visit.path}`;
         const page = landing.get(key) ?? { path: visit.path, platform, visits: 0, visitors: 0, visitorSet: new Set() };
         page.visits++; page.visitorSet.add(visit.visitor_id); landing.set(key, page);
@@ -186,13 +190,14 @@ export function attribute({ visits, profiles, subscriptions, promotions, since }
     }
     if (campaign) {
       const c = campaignFunnel.get(campaign) ?? { ...emptyFunnel(), visitorSet: new Set(), sessionSet: new Set(), platforms: new Set() };
-      c.visits++; c.visitorSet.add(visit.visitor_id); c.sessionSet.add(visit.session_id); if (platform) c.platforms.add(platform);
+      c.visits++; c.visitorSet.add(visit.visitor_id); c.sessionSet.add(session); if (platform) c.platforms.add(platform);
       campaignFunnel.set(campaign, c);
       if (visit.user_id && !firstCampaignOfUser.has(visit.user_id)) firstCampaignOfUser.set(visit.user_id, campaign);
     }
+    firstPage.add(session);
   }
 
-  const isNewSignup = (userId: string) => (created.get(userId) ?? 0) >= sinceTime;
+  const isNewSignup = (userId: string) => (created.get(userId) ?? 0) >= sinceTime && (created.get(userId) ?? Infinity) < Date.parse(until);
   for (const [userId, platform] of firstPlatformOfUser) {
     if (!isNewSignup(userId)) continue;
     const f = platformFunnel.get(platform)!; f.signups++; if (paying.has(userId)) f.members++;
@@ -214,7 +219,7 @@ export function attribute({ visits, profiles, subscriptions, promotions, since }
       followers: items.reduce((sum, item) => sum + item.followers_gained, 0), metrics: sumMetrics(platform, items),
       costPerVisit: spend && funnel.visits ? spend / funnel.visits : null, costPerSignup: spend && funnel.signups ? spend / funnel.signups : null,
     };
-  }).filter(stats => PRIMARY_PLATFORMS.includes(stats.platform) || stats.visits > 0 || stats.promotions > 0);
+  });
 
   const campaignNames = new Set([...campaignFunnel.keys(), ...promotions.map(item => item.utm_campaign)]);
   const campaigns: CampaignStats[] = [...campaignNames].map(campaign => {
@@ -232,5 +237,7 @@ export function attribute({ visits, profiles, subscriptions, promotions, since }
   const daily = [...dailyMap.values()].sort((a, b) => a.day.localeCompare(b.day));
   const landingPages = [...landing.values()].map(({ visitorSet, ...page }) => ({ ...page, visitors: visitorSet.size })).sort((a, b) => b.visits - a.visits).slice(0, 50);
   const totals = platforms.reduce((sum, p) => ({ visits: sum.visits + p.visits, visitors: sum.visitors + p.visitors, sessions: sum.sessions + p.sessions, signups: sum.signups + p.signups, members: sum.members + p.members, spend: sum.spend + p.spend }), { ...emptyFunnel(), spend: 0 });
+  totals.visitors = allVisitors.size;
+  totals.sessions = allSessions.size;
   return { platforms, campaigns, daily, landingPages, totals };
 }

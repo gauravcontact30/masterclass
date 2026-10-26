@@ -6,8 +6,8 @@ import type { TechBuzzArticle } from "./tech-buzz-data";
  * comments: those figures come only from readers, never invented. The first section is the free preview; the rest is
  * for members (lib/tech-buzz-public.ts).
  */
-type Section = TechBuzzArticle["contentSections"][number];
-type Seed = {
+export type Section = TechBuzzArticle["contentSections"][number];
+export type TechBuzzSeed = {
   techId: string; technology: string; category: string; color: string; date: string; minutes: number;
   title: string; subtitle: string; tags: string[]; summary: string[]; stack: string[]; sections: Section[]; takeaway: string;
 };
@@ -19,6 +19,7 @@ const COVER: Record<string, string> = {
   "Cloud & DevOps": "/images/news/aws.webp",
   "Testing & Quality": "/images/news/trending.webp",
   "Computer Science": "/images/news/system-design.webp",
+  "Full-Stack Development": "/images/news/frontend.webp",
   "System Architecture": "/images/news/system-design.webp",
   "Enterprise Platforms": "/images/news/ai-labs.webp",
 };
@@ -29,7 +30,8 @@ function slugify(text: string) {
   return slug.length <= 80 ? slug : slug.slice(0, slug.lastIndexOf("-", 80));
 }
 
-function article(seed: Seed, index: number): TechBuzzArticle {
+/** A seed becomes a full story with honest defaults: editorial author, no ratings, claps or comments yet. */
+export function article(seed: TechBuzzSeed, index: number): TechBuzzArticle {
   const slug = slugify(seed.title);
   return {
     id: `tb-tech-${seed.techId}`,
@@ -65,7 +67,7 @@ function article(seed: Seed, index: number): TechBuzzArticle {
   };
 }
 
-const SEEDS: Seed[] = [
+const SEEDS: TechBuzzSeed[] = [
   // ── Artificial Intelligence ─────────────────────────────────────────────────────────────────────────────
   {
     techId: "langchain", technology: "LangChain", category: "Artificial Intelligence", color: "#1c3c3c", date: "2026-10-24", minutes: 8,
@@ -1364,4 +1366,750 @@ export async function checkout(method: PaymentMethod, amountInr: number) {
   },
 ];
 
-export const TECHNOLOGY_ARTICLES: TechBuzzArticle[] = SEEDS.map(article);
+/**
+ * More editorial stories per Tech Buzz category (added 2026-10-25), so every topic in the left rail has several
+ * practical reads. Same rules as tech-buzz-technology-articles.ts: original writing, no invented reader numbers, the
+ * first section is the free preview.
+ */
+const MORE_SEEDS: TechBuzzSeed[] = [
+  // ── Artificial Intelligence ─────────────────────────────────────────────────────────────────────────────
+  {
+    techId: "agentic-ai", technology: "RAG", category: "Artificial Intelligence", color: "#7c3aed", date: "2026-10-25", minutes: 9,
+    title: "RAG That Actually Works: Chunking, Retrieval and Evaluation in Practice",
+    subtitle: "Why most retrieval-augmented generation demos fail in production, and the four decisions that fix them.",
+    tags: ["RAG", "Vector Search", "Embeddings", "LLM Apps"], stack: ["Embeddings", "pgvector", "LangChain"],
+    summary: ["Answer quality is decided at retrieval time, not by the prompt.", "Chunk by meaning (headings, paragraphs), not by fixed character counts.", "Measure retrieval and answers separately with a small labelled set."],
+    sections: [
+      { heading: "The demo works, production does not", paragraphs: [
+        "Retrieval-augmented generation looks simple: embed your documents, find the closest chunks to a question, paste them into the prompt. The demo answers ten questions perfectly. Then real users ask the eleventh, and the model confidently answers from the wrong page.",
+        "Almost every RAG failure is a retrieval failure. If the right passage never reaches the model, no prompt can rescue the answer.",
+      ] },
+      { heading: "Chunking and metadata", paragraphs: [
+        "Split documents along their structure: headings, sections and paragraphs, with a little overlap. Keep each chunk's title path (Guide › Billing › Refunds) and store it with the text, so a chunk still makes sense on its own.",
+        "Attach metadata such as product, version and date. Filters on metadata often improve results more than a better embedding model.",
+      ], bulletPoints: ["Prefer 300–800 token chunks that end at a natural boundary.", "Prepend the section path to each chunk before embedding.", "Store source ids so answers can cite where they came from."] },
+      { heading: "Hybrid retrieval with a re-rank", paragraphs: ["Combine keyword search (exact terms, error codes, names) with vector search (meaning), then re-rank the merged list and keep the best few."],
+        codeSnippet: { language: "typescript", filename: "retrieve.ts", code: `export async function retrieve(question: string, product: string) {
+  const [keyword, semantic] = await Promise.all([
+    db.searchText(question, { product, limit: 20 }),            // full-text / BM25
+    db.searchVector(await embed(question), { product, limit: 20 }),
+  ]);
+  // Reciprocal rank fusion: reward chunks that rank well in either list.
+  const scores = new Map<string, number>();
+  for (const list of [keyword, semantic]) {
+    list.forEach((chunk, rank) => scores.set(chunk.id, (scores.get(chunk.id) ?? 0) + 1 / (60 + rank)));
+  }
+  const merged = [...new Map([...keyword, ...semantic].map(c => [c.id, c])).values()]
+    .sort((a, b) => scores.get(b.id)! - scores.get(a.id)!);
+  return merged.slice(0, 5);
+}` } },
+      { heading: "Evaluate before you tune", paragraphs: ["Collect 50 real questions with the passage that answers each. Now you can measure instead of guessing."],
+        bulletPoints: ["Retrieval: is the right passage in the top 5 (recall@5)?", "Answer: is it correct and grounded in the passages?", "Track both on every change to chunking, model or prompt.", "Tell the model to say when the context does not contain the answer."] },
+    ],
+    takeaway: "Fix retrieval first: structured chunks, metadata filters and hybrid search beat prompt tweaking every time.",
+  },
+  {
+    techId: "agentic-ai", technology: "Model Context Protocol", category: "Artificial Intelligence", color: "#7c3aed", date: "2026-10-21", minutes: 8,
+    title: "Build Your First MCP Server in TypeScript: Tools, Resources and Safe Defaults",
+    subtitle: "Expose your own data and actions to AI assistants through the Model Context Protocol, without giving away the keys.",
+    tags: ["MCP", "AI Agents", "TypeScript", "Tool Calling"], stack: ["MCP SDK", "TypeScript", "Zod"],
+    summary: ["MCP standardises how AI apps discover and call tools and read resources.", "A server declares tools with schemas; the client decides when to call them.", "Least privilege and confirmation for writes keep it safe."],
+    sections: [
+      { heading: "One protocol instead of many plugins", paragraphs: [
+        "Every AI assistant used to need its own plugin format. The Model Context Protocol (MCP) gives them one: a server describes tools (actions), resources (readable data) and prompts, and any MCP-capable client can use them.",
+        "For a team, that means writing one integration for your internal docs or ticket system and using it from several assistants and IDEs.",
+      ] },
+      { heading: "Tools, resources and transports", paragraphs: [
+        "Tools are functions with a name, a description and an input schema; the model chooses when to call them. Resources are addressable content such as files or records that the client can read. A transport carries the messages: stdio for local servers, HTTP for remote ones.",
+        "Descriptions matter as much as code. The model reads them to decide which tool fits the user's request.",
+      ], bulletPoints: ["Keep each tool focused on one job.", "Return concise, structured text the model can use.", "Version your server like any API."] },
+      { heading: "A minimal server with one tool", paragraphs: ["The schema doubles as validation: bad arguments never reach your code."],
+        codeSnippet: { language: "typescript", filename: "server.ts", code: `import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+import { z } from "zod";
+
+const server = new McpServer({ name: "course-catalog", version: "1.0.0" });
+
+server.tool(
+  "search_courses",
+  "Search the course catalogue by topic. Use it when the user asks what to study next.",
+  { topic: z.string().min(2), limit: z.number().int().max(10).default(5) },
+  async ({ topic, limit }) => {
+    const courses = await catalog.search(topic, limit);
+    return { content: [{ type: "text", text: courses.map(c => \`\${c.title} (\${c.level})\`).join("\\n") }] };
+  },
+);
+
+await server.connect(new StdioServerTransport());` } },
+      { heading: "Safe defaults", paragraphs: ["An MCP server is an API that an AI decides when to call. Design it with that in mind."],
+        bulletPoints: ["Start read-only; add write tools deliberately.", "Ask the user to confirm destructive actions.", "Scope credentials to exactly what the tools need.", "Log every tool call with its arguments."] },
+    ],
+    takeaway: "Treat an MCP server as a public API for an AI: small tools, strict schemas, least privilege and an audit log.",
+  },
+  {
+    techId: "langchain", technology: "Prompt Engineering", category: "Artificial Intelligence", color: "#1c3c3c", date: "2026-10-18", minutes: 7,
+    title: "Prompt Engineering for Production: Structured Output, Examples and Guard Rails",
+    subtitle: "Prompts are code. How to write ones that are testable, versioned and predictable.",
+    tags: ["Prompt Engineering", "Structured Output", "LLM Apps", "Evaluation"], stack: ["Zod", "AI SDK", "LangChain"],
+    summary: ["Clear role, task, constraints and output format beat clever wording.", "Structured output with a schema removes parsing bugs.", "Version prompts and test them against a fixed set of inputs."],
+    sections: [
+      { heading: "From magic words to engineering", paragraphs: [
+        "Early prompt advice was folklore: magic phrases and capital letters. Production prompts look more like specifications: who the model is, what it must do, what it must not do, and exactly what shape the answer takes.",
+        "When the output feeds another program, that shape matters more than anything else.",
+      ] },
+      { heading: "Anatomy of a reliable prompt", paragraphs: [
+        "State the task in one sentence, then list constraints, then give one or two short examples of input and ideal output. Put long reference material in clearly delimited blocks so it is not confused with instructions.",
+        "Ask for structured output against a schema whenever code reads the result.",
+      ], bulletPoints: ["One task per prompt.", "Examples that cover an edge case, not just the happy path.", "An explicit 'if unsure' behaviour."] },
+      { heading: "Typed output with a schema", paragraphs: ["The model must return an object that matches the schema, so there is no regex parsing of free text."],
+        codeSnippet: { language: "typescript", filename: "classify.ts", code: `import { generateObject } from "ai";
+import { z } from "zod";
+
+const Ticket = z.object({
+  category: z.enum(["billing", "bug", "how-to", "other"]),
+  urgency: z.enum(["low", "normal", "high"]),
+  summary: z.string().max(140),
+});
+
+export async function classify(message: string) {
+  const { object } = await generateObject({
+    model: "openai/gpt-5-mini",
+    schema: Ticket,
+    system: "You triage support messages for an online learning platform. If unsure, choose 'other' and 'normal'.",
+    prompt: message,
+  });
+  return object; // typed as z.infer<typeof Ticket>
+}` } },
+      { heading: "Treat prompts like code", paragraphs: ["A prompt change is a behaviour change; review and test it."],
+        bulletPoints: ["Keep prompts in files under version control.", "Run a fixed test set on every change.", "Pin model versions for stable behaviour.", "Log prompt version with each request."] },
+    ],
+    takeaway: "Specify, constrain, give examples and demand a schema; then test prompts like any other code change.",
+  },
+  // ── Frontend Engineering ────────────────────────────────────────────────────────────────────────────────
+  {
+    techId: "nextjs", technology: "Core Web Vitals", category: "Frontend Engineering", color: "#000000", date: "2026-10-24", minutes: 8,
+    title: "Core Web Vitals in 2026: Fixing LCP, INP and CLS on Real Pages",
+    subtitle: "What each metric measures, the usual causes of poor scores, and the fixes that move them.",
+    tags: ["Core Web Vitals", "Performance", "Next.js", "SEO"], stack: ["Next.js", "Lighthouse", "Chrome DevTools"],
+    summary: ["LCP is about the biggest element arriving early: preload it and cut render blockers.", "INP is about long tasks: break up work and defer non-urgent JavaScript.", "CLS is about reserved space: size images and embeds."],
+    sections: [
+      { heading: "Three numbers Google actually uses", paragraphs: [
+        "Core Web Vitals summarise how a page feels: Largest Contentful Paint (how fast the main content appears), Interaction to Next Paint (how quickly the page responds to taps and clicks) and Cumulative Layout Shift (how much things jump around).",
+        "They are measured on real users' devices, so a fast laptop in the office tells you little. Test on a mid-range phone profile.",
+      ] },
+      { heading: "Where the time goes", paragraphs: [
+        "Poor LCP usually comes from a late-discovered hero image, render-blocking CSS or fonts, or slow server responses. Poor INP comes from long JavaScript tasks during hydration or event handlers. CLS comes from images without dimensions, late-loading fonts and banners injected above content.",
+        "Find the LCP element first; most fixes follow from knowing what it is.",
+      ], bulletPoints: ["LCP target: under 2.5 s.", "INP target: under 200 ms.", "CLS target: under 0.1."] },
+      { heading: "Fixes in a Next.js page", paragraphs: ["Preload the hero image, give every image a size, and keep interactive islands small."],
+        codeSnippet: { language: "tsx", filename: "app/page.tsx", code: `import Image from "next/image";
+import dynamic from "next/dynamic";
+
+// Heavy, below-the-fold widget: loaded after the page is interactive.
+const Comments = dynamic(() => import("./comments"));
+
+export default function Page() {
+  return <main>
+    {/* The LCP element: discovered early, sized, served as AVIF/WebP */}
+    <Image src="/hero.jpg" alt="Students learning together" width={1200} height={630} preload sizes="100vw" />
+    <article>{/* server-rendered text, no client JS */}</article>
+    <Comments />
+  </main>;
+}` } },
+      { heading: "A short checklist", paragraphs: ["Measure, fix the biggest problem, measure again."],
+        bulletPoints: ["Serve the HTML fast (cache it at the edge where possible).", "Self-host fonts with font-display: swap and subsets.", "Split long tasks; avoid heavy work in click handlers.", "Reserve space for images, ads and banners."] },
+    ],
+    takeaway: "Identify the LCP element, shorten long tasks, and reserve space for everything that loads late.",
+  },
+  {
+    techId: "react", technology: "Web Accessibility", category: "Frontend Engineering", color: "#0ea5e9", date: "2026-10-20", minutes: 7,
+    title: "Accessible React Components: Keyboard, Focus and ARIA Done Right",
+    subtitle: "Practical patterns for dialogs, menus and forms that work for everyone, including screen reader users.",
+    tags: ["Accessibility", "React", "ARIA", "UX"], stack: ["React", "TypeScript"],
+    summary: ["Native elements give you keyboard and screen reader support for free.", "Dialogs need focus management: move focus in, trap it, and restore it.", "ARIA describes what native HTML cannot; it never adds behaviour."],
+    sections: [
+      { heading: "Accessibility is a quality bar, not a feature", paragraphs: [
+        "Around one in six people lives with a disability, and many more use keyboards, zoom or screen readers some of the time. An inaccessible component is simply a broken component for them.",
+        "The good news: most accessibility comes from using the right HTML element and managing focus carefully.",
+      ] },
+      { heading: "Start with native elements", paragraphs: [
+        "A button element is focusable, activates with Enter and Space and announces itself as a button. A div with an onClick does none of that. Links navigate; buttons act. Labels must be connected to inputs.",
+        "Reach for ARIA only to describe things HTML has no element for, like tabs or a live status message.",
+      ], bulletPoints: ["Every interactive element reachable by Tab.", "Visible focus styles, never outline: none without a replacement.", "Text alternatives for meaningful images."] },
+      { heading: "A dialog that manages focus", paragraphs: ["The native dialog element handles the focus trap and Escape key; React only opens and closes it."],
+        codeSnippet: { language: "tsx", filename: "ConfirmDialog.tsx", code: `import { useEffect, useRef } from "react";
+
+export function ConfirmDialog({ open, title, onClose, onConfirm }: {
+  open: boolean; title: string; onClose: () => void; onConfirm: () => void;
+}) {
+  const ref = useRef<HTMLDialogElement>(null);
+  useEffect(() => {
+    const dialog = ref.current;
+    if (open && !dialog?.open) dialog?.showModal();   // focus moves inside, background is inert
+    if (!open && dialog?.open) dialog.close();         // focus returns to the opener
+  }, [open]);
+
+  return <dialog ref={ref} aria-labelledby="confirm-title" onClose={onClose}>
+    <h2 id="confirm-title">{title}</h2>
+    <button onClick={onClose} autoFocus>Cancel</button>
+    <button onClick={onConfirm}>Delete</button>
+  </dialog>;
+}` } },
+      { heading: "Test it like a user", paragraphs: ["Automated checks catch about a third of issues; the rest need a quick manual pass."],
+        bulletPoints: ["Unplug the mouse and complete the main task with the keyboard.", "Try a screen reader on the key flows.", "Zoom to 200% and check nothing overlaps.", "Run an automated checker in CI."] },
+    ],
+    takeaway: "Use native elements, manage focus deliberately, and test with a keyboard before you ship.",
+  },
+  {
+    techId: "javascript", technology: "Modern CSS", category: "Frontend Engineering", color: "#2563eb", date: "2026-10-16", minutes: 7,
+    title: "Modern CSS Layout: Container Queries, :has() and Subgrid Without Hacks",
+    subtitle: "The CSS features that replace JavaScript layout code and media-query tangles.",
+    tags: ["CSS", "Container Queries", "Responsive Design", "Frontend"], stack: ["CSS"],
+    summary: ["Container queries style a component by the space it actually has.", ":has() selects a parent based on its children.", "Subgrid aligns nested content to the outer grid."],
+    sections: [
+      { heading: "CSS caught up", paragraphs: [
+        "For years, responsive components needed JavaScript resize observers or brittle media queries that guessed where a component would be placed. Modern CSS now answers those questions directly, in every evergreen browser.",
+        "Three features do most of the work: container queries, the :has() selector and subgrid.",
+      ] },
+      { heading: "Components that adapt to their container", paragraphs: [
+        "A media query asks how wide the screen is. A container query asks how wide the component's container is, so the same card can be a row in a wide main column and a stack in a narrow sidebar.",
+        ":has() lets a card change when it contains an image, or a form show an error style when one of its inputs is invalid, with no extra class names.",
+      ], bulletPoints: ["Use min() and clamp() for fluid sizes.", "Prefer gap over margins between grid items.", "Use logical properties (margin-inline) for RTL support."] },
+      { heading: "A card that adapts to its slot", paragraphs: ["No JavaScript and no breakpoints tied to the viewport."],
+        codeSnippet: { language: "css", filename: "card.css", code: `.card-slot { container-type: inline-size; }
+
+.card { display: grid; gap: 12px; }
+
+/* Side-by-side only when this card has room, wherever it is placed */
+@container (min-width: 420px) {
+  .card { grid-template-columns: 160px 1fr; }
+}
+
+/* Cards with a cover image get a tinted border */
+.card:has(img) { border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent); }
+
+/* Rows in a list line up across cards */
+.list { display: grid; grid-template-columns: auto 1fr auto; }
+.list > .row { display: grid; grid-column: 1 / -1; grid-template-columns: subgrid; }` } },
+      { heading: "Adopting them safely", paragraphs: ["These features are widely supported; still, design sensible fallbacks."],
+        bulletPoints: ["Start with a mobile-first single column.", "Add container queries for components used in several places.", "Avoid deep :has() chains in very large lists.", "Check support for your audience's browsers."] },
+    ],
+    takeaway: "Let components respond to their own space with container queries, and replace class toggling with :has().",
+  },
+  // ── Backend & APIs ──────────────────────────────────────────────────────────────────────────────────────
+  {
+    techId: "postgresql", technology: "PostgreSQL", category: "Backend & APIs", color: "#336791", date: "2026-10-23", minutes: 8,
+    title: "PostgreSQL Indexing for Developers: B-tree, GIN and Reading EXPLAIN",
+    subtitle: "How to find the slow query, choose the right index and confirm the planner uses it.",
+    tags: ["PostgreSQL", "Database Performance", "SQL", "Indexing"], stack: ["PostgreSQL", "SQL"],
+    summary: ["EXPLAIN ANALYZE shows what the database actually did and how long it took.", "B-tree indexes serve equality, ranges and sorting; GIN serves arrays, JSON and full text.", "Composite index column order must match how you filter."],
+    sections: [
+      { heading: "The query that was fast last month", paragraphs: [
+        "Most database slowdowns are not mysterious. A table grows, a query that once scanned a thousand rows now scans a million, and pages that took 50 ms take five seconds.",
+        "The fix is usually an index, but the right index depends on exactly how the query filters and sorts. Guessing adds indexes that cost writes and never get used.",
+      ] },
+      { heading: "Reading EXPLAIN ANALYZE", paragraphs: [
+        "EXPLAIN ANALYZE runs the query and shows the plan with real timings. Look for sequential scans on large tables, estimated rows far from actual rows, and sorts that spill to disk.",
+        "A large gap between estimated and actual rows often means stale statistics; ANALYZE refreshes them.",
+      ], bulletPoints: ["Seq Scan on a big table with a selective filter: missing index.", "Rows removed by filter in the millions: index does not match the filter.", "Sort Method: external merge: too little work_mem or a missing sorted index."] },
+      { heading: "Matching indexes to queries", paragraphs: ["Equality columns first, then the range or sort column. A partial index keeps it small."],
+        codeSnippet: { language: "sql", filename: "indexes.sql", code: `-- Query: a learner's recent completed lessons
+EXPLAIN ANALYZE
+SELECT lesson_id, completed_at
+FROM progress
+WHERE user_id = $1 AND status = 'done'
+ORDER BY completed_at DESC
+LIMIT 20;
+
+-- Equality columns first, then the sort column; only rows the query can return.
+CREATE INDEX CONCURRENTLY progress_user_done_recent
+  ON progress (user_id, completed_at DESC)
+  WHERE status = 'done';
+
+-- Tags stored as an array: GIN answers "contains" queries.
+CREATE INDEX CONCURRENTLY courses_tags_gin ON courses USING gin (tags);
+SELECT id FROM courses WHERE tags @> ARRAY['react'];` } },
+      { heading: "Index hygiene", paragraphs: ["Indexes speed reads but slow writes and use memory."],
+        bulletPoints: ["Create indexes CONCURRENTLY on live tables.", "Drop indexes with zero scans in pg_stat_user_indexes.", "Index foreign keys used in joins and deletes.", "Re-check plans after big data changes."] },
+    ],
+    takeaway: "Measure with EXPLAIN ANALYZE, build the index that matches the filter and sort, then confirm the plan changed.",
+  },
+  {
+    techId: "nodejs", technology: "API Design", category: "Backend & APIs", color: "#5fa04e", date: "2026-10-19", minutes: 7,
+    title: "REST API Design That Lasts: Resources, Pagination, Errors and Versioning",
+    subtitle: "Conventions that make an API easy to use today and safe to change next year.",
+    tags: ["REST", "API Design", "Backend", "HTTP"], stack: ["HTTP", "JSON", "OpenAPI"],
+    summary: ["Model resources with nouns and use HTTP methods and status codes as intended.", "Cursor pagination stays correct while data changes.", "A consistent error shape saves every client time."],
+    sections: [
+      { heading: "An API is a promise", paragraphs: [
+        "Once other teams or apps depend on your API, every change can break someone. Good design up front reduces the number of breaking changes you will ever need.",
+        "The conventions are not new, but applying them consistently is what makes an API pleasant to use.",
+      ] },
+      { heading: "Resources, methods and status codes", paragraphs: [
+        "Use plural nouns for collections (/courses), identifiers for items (/courses/42) and HTTP methods for actions: GET reads, POST creates, PATCH updates partly, DELETE removes. Return 201 for created, 400 for invalid input, 401 when not signed in, 403 when not allowed, 404 when missing and 409 for conflicts.",
+        "Make writes safe to retry with idempotency keys, especially for payments.",
+      ], bulletPoints: ["Use ISO 8601 timestamps in UTC.", "Never expose internal database errors.", "Document with OpenAPI and keep it in sync."] },
+      { heading: "Cursor pagination and one error shape", paragraphs: ["Cursors stay stable when new rows are inserted, unlike page numbers."],
+        codeSnippet: { language: "typescript", filename: "courses.ts", code: `// GET /courses?limit=20&cursor=eyJpZCI6NDJ9
+app.get("/courses", async (req, res) => {
+  const limit = Math.min(Number(req.query.limit) || 20, 100);
+  const after = req.query.cursor ? JSON.parse(Buffer.from(String(req.query.cursor), "base64url").toString()) : null;
+  const rows = await db.course.findMany({ where: after ? { id: { gt: after.id } } : {}, orderBy: { id: "asc" }, take: limit + 1 });
+  const next = rows.length > limit ? Buffer.from(JSON.stringify({ id: rows[limit - 1].id })).toString("base64url") : null;
+  res.json({ data: rows.slice(0, limit), next_cursor: next });
+});
+
+// Every error, everywhere, has the same shape.
+function sendError(res, status: number, code: string, message: string) {
+  res.status(status).json({ error: { code, message } });
+}` } },
+      { heading: "Changing without breaking", paragraphs: ["Additive changes are safe; removals and renames are not."],
+        bulletPoints: ["Add fields freely; never change a field's meaning.", "Version in the URL or a header when you must break.", "Announce deprecations with dates.", "Keep old versions until clients have moved."] },
+    ],
+    takeaway: "Consistent resources, status codes, cursors and errors make an API predictable, and predictable APIs are easy to evolve.",
+  },
+  {
+    techId: "nodejs", technology: "Authentication", category: "Backend & APIs", color: "#5fa04e", date: "2026-10-14", minutes: 8,
+    title: "Authentication Done Right: Sessions, JWTs, OAuth and Passkeys Explained",
+    subtitle: "Which approach fits which app, and the security details that separate safe from risky.",
+    tags: ["Authentication", "Security", "OAuth", "JWT"], stack: ["OAuth 2.0", "JWT", "Cookies"],
+    summary: ["Server sessions in httpOnly cookies are simple and easy to revoke.", "JWTs suit stateless APIs but need short lifetimes and rotation.", "Passkeys remove passwords and resist phishing."],
+    sections: [
+      { heading: "Who are you, and can you prove it?", paragraphs: [
+        "Authentication answers who a user is; authorisation answers what they may do. Mixing them up is the root of many security bugs.",
+        "Most apps today combine a few building blocks: a login method (password, OAuth, passkey), a way to remember the user (session cookie or token) and checks on every request.",
+      ] },
+      { heading: "Sessions versus tokens", paragraphs: [
+        "A session stores state on the server and gives the browser a random id in an httpOnly, Secure, SameSite cookie. Revoking a session is instant. A JWT carries signed claims, so servers can verify it without a lookup, but it stays valid until it expires unless you add a deny list.",
+        "For browser apps, cookies are the safer default; never store long-lived tokens in localStorage, where any injected script can read them.",
+      ], bulletPoints: ["Hash passwords with a slow algorithm (Argon2id or bcrypt).", "Rate-limit and lock out brute-force attempts.", "Rotate refresh tokens and detect reuse."] },
+      { heading: "A safe session cookie", paragraphs: ["The cookie cannot be read by JavaScript, is sent only over HTTPS, and is not sent on cross-site requests."],
+        codeSnippet: { language: "typescript", filename: "session.ts", code: `import { randomBytes, createHash } from "node:crypto";
+
+export async function startSession(res: Response, userId: string) {
+  const token = randomBytes(32).toString("base64url");
+  // Store only a hash: a leaked sessions table cannot be replayed.
+  const id = createHash("sha256").update(token).digest("hex");
+  await db.session.create({ data: { id, userId, expiresAt: new Date(Date.now() + 14 * 86400_000) } });
+
+  res.headers.append("Set-Cookie",
+    \`sid=\${token}; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=\${14 * 86400}\`);
+}` } },
+      { heading: "Checklist", paragraphs: ["Security comes from details applied consistently."],
+        bulletPoints: ["Use OAuth with PKCE for social and mobile sign-in.", "Offer passkeys alongside passwords.", "Require re-authentication for sensitive actions.", "Check authorisation on the server for every request."] },
+    ],
+    takeaway: "Prefer httpOnly session cookies for web apps, keep tokens short-lived, and check authorisation on every request.",
+  },
+  // ── Cloud & DevOps ──────────────────────────────────────────────────────────────────────────────────────
+  {
+    techId: "kubernetes", technology: "Kubernetes", category: "Cloud & DevOps", color: "#326ce5", date: "2026-10-22", minutes: 9,
+    title: "Kubernetes for Application Developers: Pods, Deployments, Services and Probes",
+    subtitle: "The handful of objects you need to ship an app, and the settings that keep it healthy.",
+    tags: ["Kubernetes", "Containers", "DevOps", "Cloud Native"], stack: ["Kubernetes", "Docker", "YAML"],
+    summary: ["A Deployment keeps the right number of identical pods running.", "A Service gives pods a stable address and load balances across them.", "Readiness and liveness probes, plus resource requests, keep rollouts safe."],
+    sections: [
+      { heading: "You do not need to know everything", paragraphs: [
+        "Kubernetes has hundreds of features, which scares many developers away. To deploy a typical web service you need four objects: a Deployment, a Service, a ConfigMap or Secret, and an Ingress or Gateway.",
+        "Understanding those well, plus health probes and resource limits, covers most day-to-day work.",
+      ] },
+      { heading: "How the pieces fit", paragraphs: [
+        "A pod runs one or more containers. A Deployment describes the desired pods and replaces them gradually during a rollout. A Service selects pods by label and gives them a stable name inside the cluster. An Ingress routes outside traffic to Services.",
+        "Readiness probes tell Kubernetes when a pod may receive traffic; liveness probes restart a pod that is stuck.",
+      ], bulletPoints: ["Label everything consistently (app, version).", "Never put secrets in images or plain ConfigMaps.", "Set requests so the scheduler can place pods sensibly."] },
+      { heading: "A deployment with probes and limits", paragraphs: ["Rollouts wait for new pods to become ready before old ones are removed."],
+        codeSnippet: { language: "yaml", filename: "deployment.yaml", code: `apiVersion: apps/v1
+kind: Deployment
+metadata: { name: courses-api }
+spec:
+  replicas: 3
+  selector: { matchLabels: { app: courses-api } }
+  template:
+    metadata: { labels: { app: courses-api } }
+    spec:
+      containers:
+        - name: api
+          image: registry.example.com/courses-api:1.8.2
+          ports: [{ containerPort: 3000 }]
+          envFrom: [{ secretRef: { name: courses-api-secrets } }]
+          resources:
+            requests: { cpu: 200m, memory: 256Mi }
+            limits: { memory: 512Mi }
+          readinessProbe: { httpGet: { path: /health/ready, port: 3000 }, periodSeconds: 5 }
+          livenessProbe: { httpGet: { path: /health/live, port: 3000 }, initialDelaySeconds: 10 }
+---
+apiVersion: v1
+kind: Service
+metadata: { name: courses-api }
+spec:
+  selector: { app: courses-api }
+  ports: [{ port: 80, targetPort: 3000 }]` } },
+      { heading: "Common mistakes", paragraphs: ["Most production incidents on Kubernetes come from a few repeated errors."],
+        bulletPoints: ["Liveness probes that check the database (cascading restarts).", "No memory limit, so one pod starves the node.", "Using the latest tag instead of an immutable version.", "Ignoring graceful shutdown on SIGTERM."] },
+    ],
+    takeaway: "Deployments, Services, probes and resource requests are the core; master them before anything fancier.",
+  },
+  {
+    techId: "aws", technology: "Observability", category: "Cloud & DevOps", color: "#ff9900", date: "2026-10-17", minutes: 7,
+    title: "Observability for Busy Teams: Logs, Metrics and Traces with OpenTelemetry",
+    subtitle: "How to know what your system is doing in production, and find the cause of an incident in minutes.",
+    tags: ["Observability", "OpenTelemetry", "Monitoring", "DevOps"], stack: ["OpenTelemetry", "Node.js"],
+    summary: ["Metrics tell you something is wrong; traces show where; logs explain why.", "OpenTelemetry instruments once and exports to any backend.", "Alert on user-facing symptoms, not on every internal blip."],
+    sections: [
+      { heading: "Monitoring is not enough", paragraphs: [
+        "Dashboards of CPU and memory tell you when a server is unhappy. They rarely tell you why checkout is slow for users in one region. Observability is the ability to ask new questions of your system without shipping new code.",
+        "It rests on three signals working together: metrics, traces and structured logs.",
+      ] },
+      { heading: "The three signals", paragraphs: [
+        "Metrics are cheap numbers over time: request rate, error rate, latency percentiles. Traces follow one request across services as a tree of timed spans. Logs are detailed events; structured as JSON with a trace id, they connect to the trace they belong to.",
+        "OpenTelemetry provides one standard API and SDK for all three, so you can change vendors without re-instrumenting.",
+      ], bulletPoints: ["Track the four golden signals: latency, traffic, errors, saturation.", "Include trace ids in every log line.", "Sample traces sensibly; keep all errors."] },
+      { heading: "Tracing a Node service", paragraphs: ["Auto-instrumentation records HTTP, database and framework spans; you add business spans where they help."],
+        codeSnippet: { language: "typescript", filename: "instrumentation.ts", code: `import { NodeSDK } from "@opentelemetry/sdk-node";
+import { getNodeAutoInstrumentations } from "@opentelemetry/auto-instrumentations-node";
+import { OTLPTraceExporter } from "@opentelemetry/exporter-trace-otlp-http";
+import { trace } from "@opentelemetry/api";
+
+new NodeSDK({
+  serviceName: "courses-api",
+  traceExporter: new OTLPTraceExporter(),        // endpoint from OTEL_EXPORTER_OTLP_ENDPOINT
+  instrumentations: [getNodeAutoInstrumentations()],
+}).start();
+
+export async function enrol(userId: string, courseId: string) {
+  return trace.getTracer("courses").startActiveSpan("enrol", async span => {
+    span.setAttributes({ "course.id": courseId });
+    try { return await db.enrolment.create({ data: { userId, courseId } }); }
+    finally { span.end(); }
+  });
+}` } },
+      { heading: "Alerting that people trust", paragraphs: ["Too many alerts teach people to ignore them."],
+        bulletPoints: ["Alert on symptoms users feel (error rate, latency SLOs).", "Every alert links to a runbook.", "Review and delete noisy alerts monthly.", "Practise incident response before you need it."] },
+    ],
+    takeaway: "Instrument once with OpenTelemetry, connect logs to traces, and alert only on what users feel.",
+  },
+  // ── Testing & Quality ───────────────────────────────────────────────────────────────────────────────────
+  {
+    techId: "vitest", technology: "Testing Strategy", category: "Testing & Quality", color: "#6e9f18", date: "2026-10-21", minutes: 7,
+    title: "The Testing Trophy in 2026: What to Unit Test, Integrate and Run End to End",
+    subtitle: "A practical split of tests that catches real bugs without a slow, brittle suite.",
+    tags: ["Testing", "Test Strategy", "Unit Testing", "E2E"], stack: ["Vitest", "Testing Library", "Playwright"],
+    summary: ["Static checks catch typos and type errors for free.", "Integration tests give the most confidence per minute.", "A few end-to-end tests guard the money paths."],
+    sections: [
+      { heading: "More tests is not the goal", paragraphs: [
+        "A thousand unit tests that mock everything can pass while the app is broken. A suite of slow end-to-end tests can take an hour and fail randomly. The goal is confidence that the product works, at a cost the team can sustain.",
+        "The testing trophy describes a balance: a wide base of static checks, many integration tests, fewer unit tests for tricky logic, and a thin top of end-to-end tests.",
+      ] },
+      { heading: "What goes where", paragraphs: [
+        "Static analysis (TypeScript, lint) catches whole classes of bugs before tests run. Unit tests suit pure logic with many cases: pricing, parsing, date handling. Integration tests render a component with its real children or call an API route with a real database, mocking only the outside world. End-to-end tests drive a real browser through critical journeys like sign-up and checkout.",
+        "Write tests the way users use the software, and they survive refactors.",
+      ], bulletPoints: ["Mock the network at the boundary, not your own modules.", "Use a real test database for API tests.", "Keep E2E for the five flows that would cost money if broken."] },
+      { heading: "An integration test at the network boundary", paragraphs: ["The component and its hooks are real; only the HTTP response is controlled."],
+        codeSnippet: { language: "tsx", filename: "CourseList.test.tsx", code: `import { render, screen } from "@testing-library/react";
+import { http, HttpResponse } from "msw";
+import { setupServer } from "msw/node";
+import { CourseList } from "./CourseList";
+
+const server = setupServer(
+  http.get("/api/courses", () => HttpResponse.json([{ id: "1", title: "Next.js 16" }])),
+);
+beforeAll(() => server.listen());
+afterAll(() => server.close());
+
+test("lists courses from the API", async () => {
+  render(<CourseList />);
+  expect(await screen.findByRole("link", { name: "Next.js 16" })).toBeInTheDocument();
+});` } },
+      { heading: "Keeping the suite fast and trusted", paragraphs: ["A flaky test is worse than no test: it trains people to ignore failures."],
+        bulletPoints: ["Quarantine and fix flaky tests within a week.", "Run fast tests on every commit, E2E before deploy.", "Measure suite time and keep it under ten minutes.", "Delete tests that only test mocks."] },
+    ],
+    takeaway: "Lean on types and integration tests, unit-test tricky logic, and keep end-to-end tests for critical journeys.",
+  },
+  {
+    techId: "playwright", technology: "Visual Testing", category: "Testing & Quality", color: "#2ead33", date: "2026-10-13", minutes: 6,
+    title: "Visual Regression Testing with Playwright: Catch UI Breaks Before Users Do",
+    subtitle: "Screenshot comparisons that are stable, reviewable and cheap to maintain.",
+    tags: ["Playwright", "Visual Testing", "UI Testing", "QA"], stack: ["Playwright", "CI"],
+    summary: ["Screenshot assertions catch layout and style regressions unit tests miss.", "Stable environments and masked dynamic content prevent false failures.", "Review image diffs like code."],
+    sections: [
+      { heading: "When the code is right but the page is wrong", paragraphs: [
+        "A CSS change in one component shifts a button off-screen on another page. Every test passes, because no test looks at the page. Visual regression tests compare screenshots with approved baselines and flag pixel differences.",
+        "Playwright has this built in with toHaveScreenshot, so there is no extra service to set up.",
+      ] },
+      { heading: "Making screenshots stable", paragraphs: [
+        "Differences in fonts, animations and dynamic data cause false failures. Run screenshots in the same browser and operating system as the baselines (usually in CI's container), disable animations, and mask timestamps, avatars and ads.",
+        "Screenshot components or key regions rather than very long pages; smaller images give clearer diffs.",
+      ], bulletPoints: ["Generate baselines in CI, not on laptops.", "Mask dynamic regions.", "Set a small pixel threshold for anti-aliasing noise."] },
+      { heading: "A stable visual check", paragraphs: ["Animations are disabled and the live clock is masked."],
+        codeSnippet: { language: "typescript", filename: "pricing.visual.spec.ts", code: `import { test, expect } from "@playwright/test";
+
+test("pricing cards look right on mobile", async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/subscribe");
+  await expect(page.getByRole("heading", { name: /plans/i })).toBeVisible();
+
+  await expect(page.locator("main")).toHaveScreenshot("pricing-mobile.png", {
+    animations: "disabled",
+    mask: [page.getByTestId("live-clock")],
+    maxDiffPixelRatio: 0.01,
+  });
+});` } },
+      { heading: "Workflow tips", paragraphs: ["Visual tests only help if updating baselines is easy and deliberate."],
+        bulletPoints: ["Update baselines with --update-snapshots in a dedicated commit.", "Attach diffs to CI reports.", "Cover breakpoints that matter: phone, tablet, desktop.", "Keep the visual suite small and focused."] },
+    ],
+    takeaway: "Screenshot key regions in a fixed environment, mask what changes, and review diffs like code.",
+  },
+  // ── Computer Science ────────────────────────────────────────────────────────────────────────────────────
+  {
+    techId: "dsa", technology: "Graph Algorithms", category: "Computer Science", color: "#0891b2", date: "2026-10-22", minutes: 8,
+    title: "Graph Algorithms Explained: BFS, DFS, Dijkstra and Topological Sort",
+    subtitle: "Four algorithms behind maps, social networks, build systems and many interview questions.",
+    tags: ["Graphs", "Algorithms", "DSA", "Coding Interview"], stack: ["Algorithms", "TypeScript"],
+    summary: ["BFS finds shortest paths in unweighted graphs; DFS explores and detects cycles.", "Dijkstra finds shortest paths with non-negative weights using a priority queue.", "Topological sort orders tasks with dependencies."],
+    sections: [
+      { heading: "Graphs are everywhere", paragraphs: [
+        "A graph is just nodes connected by edges. Roads between cities, people who follow each other, packages that depend on packages, and pages that link to pages are all graphs.",
+        "Once you recognise a problem as a graph, a small toolkit of algorithms solves most of them.",
+      ] },
+      { heading: "Choosing the algorithm", paragraphs: [
+        "Breadth-first search explores level by level, so the first time it reaches a node is via the fewest edges. Depth-first search goes deep first and is natural for exploring, counting islands and detecting cycles. Dijkstra generalises BFS to weighted edges. Topological sort orders a directed acyclic graph so every dependency comes before what needs it.",
+        "Represent graphs as adjacency lists for sparse data; it keeps traversal at O(V + E).",
+      ], bulletPoints: ["Unweighted shortest path: BFS.", "Weighted, no negative edges: Dijkstra.", "Ordering with dependencies: topological sort (Kahn's algorithm)."] },
+      { heading: "BFS shortest path on a grid", paragraphs: ["Each cell is a node; neighbours are the four directions. The queue guarantees the first arrival is the shortest."],
+        codeSnippet: { language: "typescript", filename: "shortest-path.ts", code: `export function shortestPath(grid: string[], start: [number, number], goal: [number, number]): number {
+  const rows = grid.length, cols = grid[0].length;
+  const seen = new Set([start.join(",")]);
+  const queue: [number, number, number][] = [[...start, 0]];
+  for (let head = 0; head < queue.length; head++) {
+    const [r, c, steps] = queue[head];
+    if (r === goal[0] && c === goal[1]) return steps;
+    for (const [dr, dc] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+      const nr = r + dr, nc = c + dc, key = \`\${nr},\${nc}\`;
+      if (nr < 0 || nc < 0 || nr >= rows || nc >= cols || grid[nr][nc] === "#" || seen.has(key)) continue;
+      seen.add(key);
+      queue.push([nr, nc, steps + 1]);
+    }
+  }
+  return -1; // unreachable
+}` } },
+      { heading: "Interview tips", paragraphs: ["Say which algorithm and why before coding."],
+        bulletPoints: ["Mark nodes visited when you enqueue them, not when you dequeue.", "State complexity: O(V + E) for BFS and DFS.", "Use a min-heap for Dijkstra: O((V + E) log V).", "Detect cycles in a directed graph with three colours."] },
+    ],
+    takeaway: "Recognise the graph, then pick by edge type: BFS for unweighted, Dijkstra for weighted, topological sort for dependencies.",
+  },
+  {
+    techId: "oops", technology: "Concurrency", category: "Computer Science", color: "#9333ea", date: "2026-10-12", minutes: 7,
+    title: "Concurrency Basics Every Developer Needs: Threads, Async, Locks and Races",
+    subtitle: "Why two correct pieces of code can be wrong together, and the tools that prevent it.",
+    tags: ["Concurrency", "Async", "Computer Science", "Interview Prep"], stack: ["JavaScript", "Python", "SQL"],
+    summary: ["Concurrency is about dealing with many things at once; parallelism is doing them at once.", "A race condition happens when the result depends on timing.", "Atomic operations, locks and idempotency prevent lost updates."],
+    sections: [
+      { heading: "Bugs that only appear under load", paragraphs: [
+        "Two requests read a seat count of 1, both see it available, both book it. Each request was correct; together they oversold the seat. That is a race condition, and it never shows up when you test alone.",
+        "Every backend developer meets these bugs, even in single-threaded JavaScript, because requests and database transactions interleave.",
+      ] },
+      { heading: "Concepts in plain words", paragraphs: [
+        "Concurrency means structuring a program to make progress on several tasks by interleaving them; parallelism means running them at the same instant on several cores. Async I/O in Node or Python is concurrency on one thread. A critical section is code that must not run interleaved; a lock or an atomic operation protects it.",
+        "Deadlock happens when two tasks each wait for a lock the other holds; acquiring locks in a fixed order prevents it.",
+      ], bulletPoints: ["Prefer atomic database operations over read-then-write.", "Keep critical sections short.", "Make retries safe with idempotency keys."] },
+      { heading: "Fixing a lost update", paragraphs: ["The check and the change happen in one atomic statement, so two requests cannot both win."],
+        codeSnippet: { language: "sql", filename: "book-seat.sql", code: `-- Race-prone: two requests can both read seats_left = 1, then both decrement.
+-- SELECT seats_left FROM batches WHERE id = $1;  ...  UPDATE ... SET seats_left = 0;
+
+-- Atomic: only one request can succeed; the other updates 0 rows.
+UPDATE batches
+SET seats_left = seats_left - 1
+WHERE id = $1 AND seats_left > 0
+RETURNING seats_left;
+
+-- When several rows must change together, lock them inside a transaction:
+BEGIN;
+SELECT * FROM wallets WHERE user_id = $1 FOR UPDATE;
+UPDATE wallets SET balance = balance - $2 WHERE user_id = $1;
+COMMIT;` } },
+      { heading: "How to reason about it", paragraphs: ["Ask what happens if two of these run at exactly the same time."],
+        bulletPoints: ["Identify shared state first.", "Use database constraints (unique, check) as the last line of defence.", "Test concurrency with parallel requests in integration tests.", "Prefer message queues for work that must happen once."] },
+    ],
+    takeaway: "Whenever state is shared, make the check and the change atomic; concurrency bugs hide until real traffic arrives.",
+  },
+  // ── System Architecture ─────────────────────────────────────────────────────────────────────────────────
+  {
+    techId: "system-design", technology: "Caching", category: "System Architecture", color: "#475569", date: "2026-10-23", minutes: 8,
+    title: "Caching Strategies at Every Layer: Browser, CDN, Application and Database",
+    subtitle: "Where to cache, for how long, and how to keep cached data correct.",
+    tags: ["Caching", "System Design", "CDN", "Performance"], stack: ["HTTP caching", "CDN", "Redis"],
+    summary: ["The closest cache to the user saves the most time.", "Cache-Control headers decide browser and CDN behaviour.", "Invalidation by tag or event keeps caches correct."],
+    sections: [
+      { heading: "The fastest request is the one you never make", paragraphs: [
+        "Caching is the most effective performance tool in system design, and the most common source of stale-data bugs. Good caching starts by asking where data can safely be reused and for how long.",
+        "There is a cache at every layer between the user and the database, and each solves a different problem.",
+      ] },
+      { heading: "Layers and what they are for", paragraphs: [
+        "The browser cache reuses files on one device. A CDN serves the same response to many users near them. An application cache (in memory or Redis) stores computed results and database reads. The database has its own buffer cache for hot pages.",
+        "Static, versioned assets can be cached for a year. Personalised responses must never be cached publicly.",
+      ], bulletPoints: ["Content-hashed assets: Cache-Control: public, max-age=31536000, immutable.", "Shared HTML: s-maxage with stale-while-revalidate.", "Private data: Cache-Control: private, no-store."] },
+      { heading: "Headers and invalidation", paragraphs: ["Serve fast from the CDN, refresh in the background, and purge by tag when content changes."],
+        codeSnippet: { language: "typescript", filename: "headers.ts", code: `// Public, shared page: CDN serves it for 5 minutes, then refreshes in the background.
+res.setHeader("Cache-Control", "public, s-maxage=300, stale-while-revalidate=86400");
+res.setHeader("Cache-Tag", "course-42, catalog");   // purge by tag on change
+
+// Application cache with a version in the key: bump the version to invalidate everything.
+const key = \`catalog:v7:\${locale}\`;
+const cached = await redis.get(key);
+if (cached) return JSON.parse(cached);
+const fresh = await db.course.findMany();
+await redis.set(key, JSON.stringify(fresh), { EX: 600 });
+
+// On publish: purge the CDN tag and delete the app cache key.
+await cdn.purgeTags(["course-42"]);` } },
+      { heading: "Pitfalls", paragraphs: ["Most caching incidents fall into a few categories."],
+        bulletPoints: ["Caching personalised pages publicly (data leaks).", "No invalidation plan (stale prices for hours).", "Cache stampede when a hot key expires.", "Caching errors as if they were successful responses."] },
+    ],
+    takeaway: "Cache as close to the user as correctness allows, and design invalidation at the same time as the cache.",
+  },
+  {
+    techId: "system-design", technology: "Event-Driven Architecture", category: "System Architecture", color: "#475569", date: "2026-10-15", minutes: 8,
+    title: "Event-Driven Architecture: Queues, Pub/Sub, Retries and Idempotency",
+    subtitle: "Decouple services with messages, and handle the duplicates and failures that come with them.",
+    tags: ["Event-Driven", "Message Queues", "System Design", "Microservices"], stack: ["Queues", "Pub/Sub", "Outbox"],
+    summary: ["Queues spread work over time; pub/sub fans one event out to many consumers.", "Most systems deliver at least once, so consumers must be idempotent.", "The outbox pattern publishes events reliably with database changes."],
+    sections: [
+      { heading: "Why send messages instead of calling services", paragraphs: [
+        "When an order is placed, you may need to send an email, update analytics, issue an invoice and notify the warehouse. Calling each service in the request makes checkout slow and fragile: one slow service delays everyone.",
+        "Publishing an 'order placed' event lets each consumer react in its own time, retry on failure and scale independently.",
+      ] },
+      { heading: "Queues, topics and delivery guarantees", paragraphs: [
+        "A queue delivers each message to one worker, spreading work. A topic (pub/sub) delivers each event to every subscriber. Most brokers guarantee at-least-once delivery, so the same message can arrive twice; design consumers so processing twice has the same effect as once.",
+        "Messages that keep failing go to a dead-letter queue for inspection instead of blocking the line.",
+      ], bulletPoints: ["Include an event id and version in every message.", "Retry with exponential backoff and jitter.", "Alert on dead-letter queue growth."] },
+      { heading: "Outbox plus an idempotent consumer", paragraphs: ["The event is saved in the same transaction as the order, then published by a relay; the consumer skips ids it has seen."],
+        codeSnippet: { language: "typescript", filename: "orders.ts", code: `// Producer: order and event commit together, so neither is lost.
+await db.$transaction(async tx => {
+  const order = await tx.order.create({ data: input });
+  await tx.outbox.create({ data: { id: crypto.randomUUID(), type: "order.placed", payload: { orderId: order.id } } });
+});
+// A relay process reads unpublished outbox rows and publishes them to the broker.
+
+// Consumer: processing the same event twice is harmless.
+export async function onOrderPlaced(event: { id: string; payload: { orderId: string } }) {
+  const firstTime = await db.processedEvent.createMany({ data: [{ id: event.id }], skipDuplicates: true });
+  if (firstTime.count === 0) return; // already handled
+  await sendConfirmationEmail(event.payload.orderId);
+}` } },
+      { heading: "Trade-offs to discuss", paragraphs: ["Events add flexibility and new failure modes."],
+        bulletPoints: ["Eventual consistency: the UI may lag behind.", "Ordering is per partition, not global.", "Debugging needs correlation ids and tracing.", "Schema changes need versioned events."] },
+    ],
+    takeaway: "Events decouple services, but only idempotent consumers and a reliable outbox make them safe.",
+  },
+  // ── Full-Stack Development ──────────────────────────────────────────────────────────────────────────────
+  {
+    techId: "typescript", technology: "TypeScript", category: "Full-Stack Development", color: "#3178c6", date: "2026-10-20", minutes: 7,
+    title: "TypeScript Generics and Utility Types: Write Types Once, Reuse Everywhere",
+    subtitle: "Generics, constraints and built-in utility types explained with examples you will use this week.",
+    tags: ["TypeScript", "Generics", "Type Safety", "Full-Stack"], stack: ["TypeScript"],
+    summary: ["Generics let functions and types work with many types while staying precise.", "Constraints (extends) say what a generic must support.", "Utility types derive new types from existing ones instead of duplicating them."],
+    sections: [
+      { heading: "Stop copying types", paragraphs: [
+        "Large TypeScript codebases often have the same shape declared five times: the database row, the API response, the form values and two variants for updates. When one changes, the others drift.",
+        "Generics and utility types let you declare a shape once and derive the rest, so the compiler keeps them in sync.",
+      ] },
+      { heading: "Generics and constraints", paragraphs: [
+        "A generic is a type parameter: function first<T>(items: T[]): T | undefined returns exactly the element type you passed. A constraint like <T extends { id: string }> says T can be anything with an id.",
+        "Utility types transform types: Partial makes every field optional, Pick and Omit select fields, Record builds maps, and ReturnType reads a function's result type.",
+      ], bulletPoints: ["Let inference work; annotate parameters, not every variable.", "Prefer unknown over any for untrusted data.", "Use satisfies to check a value without widening it."] },
+      { heading: "Deriving types from one source", paragraphs: ["The update payload and the lookup map follow the Course type automatically."],
+        codeSnippet: { language: "typescript", filename: "types.ts", code: `type Course = { id: string; title: string; level: "beginner" | "advanced"; priceInr: number };
+
+// Updates may change anything except the id.
+type CourseUpdate = Partial<Omit<Course, "id">>;
+
+// A typed index by id for any entity that has one.
+function byId<T extends { id: string }>(items: T[]): Record<string, T> {
+  return Object.fromEntries(items.map(item => [item.id, item]));
+}
+
+const courses = byId(await api.courses());  // Record<string, Course>
+
+// Config checked against a type without losing its literal values.
+const levels = { beginner: "Start here", advanced: "Go deeper" } satisfies Record<Course["level"], string>;` } },
+      { heading: "Habits that keep types helpful", paragraphs: ["Types are documentation the compiler checks."],
+        bulletPoints: ["Derive API and form types from one schema (e.g. Zod).", "Turn on strict mode in new projects.", "Avoid deeply clever conditional types in app code.", "Name generic parameters meaningfully when there are several."] },
+    ],
+    takeaway: "Declare each shape once and derive the rest with generics and utility types; let the compiler keep them in sync.",
+  },
+  {
+    techId: "supabase", technology: "Supabase", category: "Full-Stack Development", color: "#3ecf8e", date: "2026-10-18", minutes: 8,
+    title: "Supabase for Full-Stack Apps: Auth, Row Level Security and Server-Side Access",
+    subtitle: "How Postgres policies keep each user's data private, and when to use the service key instead.",
+    tags: ["Supabase", "PostgreSQL", "Row Level Security", "Authentication"], stack: ["Supabase", "PostgreSQL", "Next.js"],
+    summary: ["Supabase gives you Postgres, auth, storage and APIs in one project.", "Row Level Security policies decide which rows each user can read or write.", "The service role key bypasses RLS and must stay on the server."],
+    sections: [
+      { heading: "A backend you can query from the browser", paragraphs: [
+        "Supabase exposes your Postgres database through an API, so a frontend can read and write data directly. That is only safe because Postgres itself checks every request against Row Level Security policies.",
+        "Get the policies right and the browser can talk to the database without a custom API layer for simple features.",
+      ] },
+      { heading: "How RLS works", paragraphs: [
+        "With RLS enabled, a table returns no rows until a policy allows them. Policies are SQL conditions evaluated per row, and auth.uid() gives the signed-in user's id. Separate policies cover select, insert, update and delete.",
+        "Server code with the service role key bypasses RLS entirely, which is useful for admin jobs and dangerous anywhere else.",
+      ], bulletPoints: ["Enable RLS on every table in an exposed schema.", "Write policies for each operation you allow.", "Never ship the service role key to the browser."] },
+      { heading: "Policies for private notes", paragraphs: ["Users read and write only their own rows, and cannot assign notes to someone else."],
+        codeSnippet: { language: "sql", filename: "notes-rls.sql", code: `alter table notes enable row level security;
+
+create policy "read own notes" on notes
+  for select using (auth.uid() = user_id);
+
+create policy "create own notes" on notes
+  for insert with check (auth.uid() = user_id);
+
+create policy "update own notes" on notes
+  for update using (auth.uid() = user_id) with check (auth.uid() = user_id);
+
+-- Index the column every policy filters on.
+create index notes_user_id_idx on notes (user_id);` } },
+      { heading: "Production checklist", paragraphs: ["Most Supabase security issues are missing or too-broad policies."],
+        bulletPoints: ["Run the security advisor after every migration.", "Test policies as different users, including signed out.", "Validate input in server routes before using the service key.", "Use storage policies for files, not just tables."] },
+    ],
+    takeaway: "Row Level Security makes direct database access safe; keep the service key on the server and test every policy.",
+  },
+  // ── Enterprise Platforms ────────────────────────────────────────────────────────────────────────────────
+  {
+    techId: "salesforce", technology: "Lightning Web Components", category: "Enterprise Platforms", color: "#00a1e0", date: "2026-10-11", minutes: 7,
+    title: "Lightning Web Components: Building Modern UI on Salesforce",
+    subtitle: "Standards-based components, wire adapters for data and the patterns that keep them fast.",
+    tags: ["Salesforce", "Lightning Web Components", "JavaScript", "Enterprise"], stack: ["LWC", "Apex", "JavaScript"],
+    summary: ["LWC uses standard web components with a thin Salesforce layer.", "@wire reads Salesforce data reactively and caches it.", "Lightning Data Service avoids writing Apex for simple record access."],
+    sections: [
+      { heading: "Web standards inside Salesforce", paragraphs: [
+        "Lightning Web Components replaced the older Aura framework with standard JavaScript classes, templates and custom elements. If you know modern JavaScript, most of LWC will feel familiar.",
+        "Salesforce adds secure data access, base components that match the Lightning design system, and deployment through metadata.",
+      ] },
+      { heading: "Getting data in", paragraphs: [
+        "The @wire decorator connects a property or function to a data source: Lightning Data Service adapters such as getRecord, or an Apex method marked cacheable. Wired data refreshes when its reactive parameters change, and results are cached on the client.",
+        "Use imperative Apex calls for actions that change data, and refresh wired data afterwards.",
+      ], bulletPoints: ["Prefer Lightning Data Service for single-record reads and writes.", "Mark read-only Apex methods cacheable=true.", "Use base components for consistent, accessible UI."] },
+      { heading: "A component that shows an account's open cases", paragraphs: ["The Apex method is cacheable, so repeated views are served from the client cache."],
+        codeSnippet: { language: "javascript", filename: "openCases.js", code: `import { LightningElement, api, wire } from "lwc";
+import getOpenCases from "@salesforce/apex/CaseController.getOpenCases";
+
+export default class OpenCases extends LightningElement {
+  @api recordId; // the Account page passes its id
+
+  @wire(getOpenCases, { accountId: "$recordId" })
+  cases;
+
+  get hasCases() {
+    return this.cases.data && this.cases.data.length > 0;
+  }
+}
+
+// Apex: @AuraEnabled(cacheable=true)
+// public static List<Case> getOpenCases(Id accountId) {
+//   return [SELECT Id, Subject, Status FROM Case WHERE AccountId = :accountId AND IsClosed = false LIMIT 50];
+// }` } },
+      { heading: "Performance and security", paragraphs: ["Components run in a shared, governed environment."],
+        bulletPoints: ["Respect field-level security in Apex (WITH USER_MODE).", "Limit query rows and paginate.", "Lazy-load heavy child components.", "Write Jest tests for component logic."] },
+    ],
+    takeaway: "LWC is modern JavaScript with Salesforce data wired in; use Lightning Data Service first and Apex when you need it.",
+  },
+];
+
+export const TECHNOLOGY_ARTICLES: TechBuzzArticle[] = [...SEEDS.map(article), ...MORE_SEEDS.map((seed, index) => article(seed, SEEDS.length + index))];

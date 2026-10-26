@@ -129,7 +129,7 @@ export function pageMetadata(path: PublicPage["path"]): Metadata {
     description,
     ...(keywords ? { keywords } : {}),
     alternates: { canonical: path },
-    openGraph: { type: "website", url: path, siteName, title: home ? title : `${title} | ${siteName}`, description, locale: "en_IN", alternateLocale: ["hi_IN", "es_ES", "ja_JP", "de_DE", "fr_FR", "zh_CN"], images: [ogImage] },
+    openGraph: { type: "website", url: path, siteName, title: home ? title : `${title} | ${siteName}`, description, locale: "en_IN", alternateLocale: ["hi_IN"], images: [ogImage] },
     twitter: { card: "summary_large_image", title: home ? title : `${title} | ${siteName}`, description, images: [ogImage.url] },
   };
 }

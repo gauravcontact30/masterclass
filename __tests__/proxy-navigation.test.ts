@@ -28,13 +28,13 @@ test.each(["/", "/sign-in", "/sign-up", "/api/catalog"])("anonymous %s avoids re
   expect(protectWithArcjet).toHaveBeenCalled();
 });
 test("anonymous dashboard navigation still redirects", async () => {
-  const response = await proxy(new NextRequest("https://example.com/dashboard/techy"));
+  const response = await proxy(new NextRequest("https://example.com/learning/techy"));
   expect(response.headers.get("location")).toBe("https://example.com/sign-in");
   expect(getClaims).not.toHaveBeenCalled();
 });
 test.each([true, false])("validates chunked auth cookies before routing (valid=%s)", async valid => {
   getClaims.mockResolvedValue(valid ? { data: { claims: { sub: "learner", email: "learner@example.com" } }, error: null } : { data: null, error: new Error("invalid JWT") });
-  const response = await proxy(new NextRequest("https://example.com/dashboard/techy", { headers: { cookie: "sb-example-auth-token.0=signed-token" } }));
+  const response = await proxy(new NextRequest("https://example.com/learning/techy", { headers: { cookie: "sb-example-auth-token.0=signed-token" } }));
   expect(getClaims).toHaveBeenCalledTimes(1);
   expect(response.status).toBe(valid ? 200 : 307);
 });

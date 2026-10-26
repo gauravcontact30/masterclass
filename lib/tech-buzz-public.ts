@@ -12,6 +12,13 @@ export type TechBuzzSection = TechBuzzArticle["contentSections"][number];
 const NOT_TECHNOLOGY = new Set(["bain-company-enterprise-ai-roi-report", "indian-express-sovereign-ai-semiconductor-fabs"]);
 export const isTechnologyStory = (article: Pick<TechBuzzArticle, "slug">) => !NOT_TECHNOLOGY.has(article.slug);
 
+/** Third-party blog platforms are never named, linked or shown on Tech Buzz (user rule 2026-10-25): stories carry
+ *  MasterClass Buddy as their source, and tags naming a platform are dropped. */
+const PLATFORM = /\b(medium|daily\.?dev|dev\.to|indie ?hackers|hashnode|substack)\b/i;
+const OWN_SOURCE: TechBuzzArticle["source"] = { name: "MasterClass Buddy", domain: "masterclass", trustScore: "" };
+const ownTags = (tags: string[]) => tags.filter(tag => !PLATFORM.test(tag));
+const ownText = (text: string | undefined) => (text && !PLATFORM.test(text) ? text : undefined);
+
 /** Learning Dashboard technology ids for stories saved before techId existed, matched on their technology label. */
 const TECH_IDS: [RegExp, string][] = [
   [/next\.?js/i, "nextjs"], [/typescript/i, "typescript"], [/postgres/i, "postgresql"], [/agentic|mcp/i, "agentic-ai"],
@@ -34,6 +41,8 @@ export type TechBuzzCard = {
   claps: number; likes: number; reactions: number; commentsCount: number; rating: { average: number; count: number };
   author: { name: string; role: string; avatar: string; verified: boolean }; coverImage: string; tags: string[];
   summary: string[]; milestone?: { label: string; value: string };
+  /** Plain-text credit when the cover is an Unsplash photo chosen for the story (lib/server/tech-buzz-storage.ts). */
+  photoCredit?: string;
 };
 
 export function toCard(article: TechBuzzArticle): TechBuzzCard {
@@ -45,14 +54,15 @@ export function toCard(article: TechBuzzArticle): TechBuzzCard {
     claps: article.claps ?? 0, likes: article.likes ?? 0, reactions: reactions.heart + reactions.unicorn + reactions.rocket + reactions.mindblown,
     commentsCount: article.commentsCount ?? 0, rating: { average: article.rating?.average ?? 0, count: article.rating?.count ?? 0 },
     author: { name: article.author.name, role: article.author.role, avatar: article.author.avatar, verified: !!article.author.verified },
-    coverImage: article.coverImage, tags: article.tags.slice(0, 5), summary: article.summaryBullets.slice(0, 3),
-    milestone: article.builderMetrics ? { label: article.builderMetrics.metricLabel, value: article.builderMetrics.metricValue } : undefined,
+    coverImage: article.coverImage, tags: ownTags(article.tags).slice(0, 5), summary: article.summaryBullets.slice(0, 3),
+    milestone: article.builderMetrics && ownText(article.builderMetrics.metricLabel) && ownText(article.builderMetrics.metricValue)
+      ? { label: article.builderMetrics.metricLabel, value: article.builderMetrics.metricValue } : undefined,
   };
 }
 
 /** The free part of a story: everything but the body, plus its first section's opening paragraphs and an outline. */
 export type TechBuzzPreview = Omit<TechBuzzArticle, "contentSections" | "founderTakeaway" | "comments"> & {
-  teaser: TechBuzzSection; outline: string[]; lockedCodeSamples: number;
+  teaser: TechBuzzSection; outline: string[]; lockedCodeSamples: number; photoCredit?: string;
 };
 
 export function toPreview(article: TechBuzzArticle): TechBuzzPreview {
@@ -61,6 +71,9 @@ export function toPreview(article: TechBuzzArticle): TechBuzzPreview {
   const [first, ...locked] = contentSections;
   return {
     ...rest,
+    tags: ownTags(rest.tags),
+    source: OWN_SOURCE,
+    newsletterEdition: ownText(rest.newsletterEdition),
     teaser: { heading: first?.heading ?? "", paragraphs: (first?.paragraphs ?? []).slice(0, 2), quote: first?.quote },
     outline: locked.map(section => section.heading).filter(Boolean),
     lockedCodeSamples: contentSections.filter(section => section.codeSnippet).length,

@@ -116,3 +116,109 @@ test("the tools panel collapses and expands while words, zoom and save status st
   fireEvent.click(toggle);
   expect(screen.getByRole("button", { name: "Insert table" })).toBeVisible();
 });
+
+test("supports font styling, family, font size increment/decrement, and line spacing", async () => {
+  const exec = jest.fn(() => true);
+  Object.defineProperty(document, "execCommand", { value: exec, configurable: true });
+  render(<SuperAdminNotepad userId="alice" />);
+  await act(async () => {});
+
+  // Font family
+  const fontSelect = screen.getByLabelText("Font family");
+  fireEvent.change(fontSelect, { target: { value: "Inter" } });
+  expect(exec).toHaveBeenCalledWith("fontName", false, "Inter");
+
+  // Font style
+  const styleSelect = screen.getByLabelText("Font style");
+  fireEvent.change(styleSelect, { target: { value: "italic" } });
+  expect(exec).toHaveBeenCalledWith("italic", false, undefined);
+
+  // Increase / decrease text size
+  fireEvent.click(screen.getByRole("button", { name: "Increase text size" }));
+  expect(screen.getByText(/Font size: 18px/)).toBeInTheDocument();
+
+  fireEvent.click(screen.getByRole("button", { name: "Decrease text size" }));
+  expect(screen.getByText(/Font size: 16px/)).toBeInTheDocument();
+
+  // Font size dropdown
+  const sizeSelect = screen.getByLabelText("Font size");
+  fireEvent.change(sizeSelect, { target: { value: "24" } });
+  expect(sizeSelect).toHaveValue("24");
+
+  // Line spacing
+  const spacingSelect = screen.getByLabelText("Line spacing");
+  fireEvent.change(spacingSelect, { target: { value: "1.8" } });
+  expect(spacingSelect).toHaveValue("1.8");
+});
+
+test("supports rich elements: checklists, code blocks, callouts, and symbols", async () => {
+  const exec = jest.fn(() => true);
+  Object.defineProperty(document, "execCommand", { value: exec, configurable: true });
+  render(<SuperAdminNotepad userId="alice" />);
+  await act(async () => {});
+
+  // Checklist
+  fireEvent.click(screen.getByRole("button", { name: "Task checklist" }));
+  expect(exec).toHaveBeenCalledWith("insertHTML", false, expect.stringContaining('data-notepad-checklist="true"'));
+
+  // Code block
+  fireEvent.click(screen.getByRole("button", { name: "Insert code block" }));
+  expect(exec).toHaveBeenCalledWith("insertHTML", false, expect.stringContaining("<pre"));
+
+  // Inline code
+  fireEvent.click(screen.getByRole("button", { name: "Inline code" }));
+  expect(exec).toHaveBeenCalledWith("insertHTML", false, expect.stringContaining("<code"));
+
+  // Date and time
+  fireEvent.click(screen.getByRole("button", { name: "Insert current date and time" }));
+  expect(exec).toHaveBeenCalledWith("insertHTML", false, expect.stringMatching(/<span>.*<\/span>&nbsp;/));
+
+  // Callout box
+  fireEvent.click(screen.getByRole("button", { name: "Insert callout box" }));
+  fireEvent.change(screen.getByLabelText("Callout title"), { target: { value: "Warning Note" } });
+  fireEvent.change(screen.getByLabelText("Message"), { target: { value: "Check this carefully" } });
+  fireEvent.click(screen.getByRole("button", { name: "Add callout box" }));
+  expect(exec).toHaveBeenCalledWith("insertHTML", false, expect.stringContaining('data-notepad-callout="info"'));
+  expect(exec).toHaveBeenCalledWith("insertHTML", false, expect.stringContaining("Warning Note"));
+
+  // Symbols palette
+  fireEvent.click(screen.getByRole("button", { name: "Insert special symbol" }));
+  expect(screen.getByRole("region", { name: "Insert special symbol" })).toBeInTheDocument();
+  fireEvent.click(screen.getByRole("button", { name: "Insert symbol Checkmark" }));
+  expect(exec).toHaveBeenCalledWith("insertHTML", false, "<span>✓</span>");
+});
+
+test("provides functional find and replace across document text", async () => {
+  render(<SuperAdminNotepad userId="alice" />);
+  await act(async () => {});
+
+  const editor = screen.getByRole("textbox", { name: "Document content" });
+  editor.innerHTML = "<p>The quick brown fox jumps over the lazy dog.</p>";
+  fireEvent.input(editor);
+
+  fireEvent.click(screen.getByRole("button", { name: "Find and replace" }));
+  expect(screen.getByRole("search", { name: "Find and replace" })).toBeInTheDocument();
+
+  fireEvent.change(screen.getByPlaceholderText("Find in document…"), { target: { value: "fox" } });
+  fireEvent.change(screen.getByPlaceholderText("Replace with…"), { target: { value: "cat" } });
+
+  fireEvent.click(screen.getByRole("button", { name: "Replace all" }));
+  expect(editor.innerHTML).toContain("quick brown cat jumps");
+  expect(screen.getByText(/Replaced 1 occurrence/)).toBeInTheDocument();
+});
+
+test("computes and displays detailed document statistics", async () => {
+  render(<SuperAdminNotepad userId="alice" />);
+  await act(async () => {});
+
+  const editor = screen.getByRole("textbox", { name: "Document content" });
+  editor.innerHTML = "<p>First paragraph with words.</p><p>Second paragraph with more words.</p>";
+  fireEvent.input(editor);
+
+  const wordBadge = screen.getByText(/9 words/);
+  expect(wordBadge).toBeInTheDocument();
+  fireEvent.click(wordBadge);
+  const statsDialog = screen.getByRole("dialog", { name: "Document statistics" });
+  expect(statsDialog).toHaveTextContent("Words:9");
+  expect(statsDialog).toHaveTextContent("Paragraphs:2");
+});

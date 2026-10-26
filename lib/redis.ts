@@ -23,6 +23,12 @@ class MemoryRedisStore {
   }
 
   async set(key: string, value: unknown, options?: { ex?: number }): Promise<"OK"> {
+    // Expired keys otherwise accumulate forever when they are never read again.
+    if (this.store.size >= 5000) {
+      const now = Date.now();
+      for (const [name, entry] of this.store) if (entry.expiresAt !== null && entry.expiresAt <= now) this.store.delete(name);
+      if (this.store.size >= 5000) this.store.delete(this.store.keys().next().value!);
+    }
     const serialized = typeof value === "string" ? value : JSON.stringify(value);
     const expiresAt = options?.ex ? Date.now() + options.ex * 1000 : null;
     this.store.set(key, { value: serialized, expiresAt });
@@ -49,6 +55,8 @@ export const redis =
     ? new Redis({
         url: env.UPSTASH_REDIS_REST_URL,
         token: env.UPSTASH_REDIS_REST_TOKEN,
+        retry: false,
+        signal: () => AbortSignal.timeout(1500),
       })
     : (memoryStore as unknown as Redis);
 
@@ -64,6 +72,8 @@ export const ratelimiter =
         prefix: "masterclass:ratelimit",
       })
     : null;
+const limiters = new Map<string, Ratelimit>();
+const pendingFetches = new Map<string, Promise<unknown>>();
 
 /**
  * Universal caching utility with TTL and transparent serialization.
@@ -101,14 +111,18 @@ export async function cacheFetch<T>(
   fetcher: () => Promise<T>,
   ttlSeconds = 300
 ): Promise<T> {
-  const cached = await cacheGet<T>(key);
-  if (cached !== null && cached !== undefined) {
-    return cached;
-  }
-
-  const fresh = await fetcher();
-  await cacheSet(key, fresh, ttlSeconds);
-  return fresh;
+  const pending = pendingFetches.get(key);
+  if (pending) return pending as Promise<T>;
+  const work = (async () => {
+    const cached = await cacheGet<T>(key);
+    if (cached !== null && cached !== undefined) return cached;
+    const fresh = await fetcher();
+    await cacheSet(key, fresh, ttlSeconds);
+    return fresh;
+  })();
+  pendingFetches.set(key, work);
+  try { return await work; }
+  finally { if (pendingFetches.get(key) === work) pendingFetches.delete(key); }
 }
 
 /**
@@ -121,7 +135,13 @@ export async function checkRateLimit(
 ): Promise<{ success: boolean; remaining: number; reset: number }> {
   if (ratelimiter) {
     try {
-      const res = await ratelimiter.limit(identifier);
+      const policy = `${limit}:${windowSeconds}`;
+      let configured = limiters.get(policy);
+      if (!configured) {
+        configured = new Ratelimit({ redis, limiter: Ratelimit.slidingWindow(limit, `${windowSeconds} s`), analytics: false, prefix: `masterclass:ratelimit:${policy}` });
+        limiters.set(policy, configured);
+      }
+      const res = await configured.limit(identifier);
       return { success: res.success, remaining: res.remaining, reset: res.reset };
     } catch {
       // Fallback on network/redis error
@@ -129,7 +149,7 @@ export async function checkRateLimit(
   }
 
   // Local fallback sliding window
-  const key = `rl:${identifier}`;
+  const key = `rl:${limit}:${windowSeconds}:${identifier}`;
   const record = await memoryStore.get<{ count: number; start: number }>(key);
   const now = Date.now();
   const windowMs = windowSeconds * 1000;

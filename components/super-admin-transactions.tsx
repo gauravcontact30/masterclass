@@ -87,6 +87,8 @@ export function SuperAdminTransactions() {
       setActionToast(`Transaction ${tx.id} deleted successfully.`);
       setTimeout(() => setActionToast(null), 3500);
       setDeletingTransaction(null);
+      setSelected(current => current?.id === tx.id ? null : current);
+      setNonce(current => current + 1);
     } catch (err: unknown) {
       alert(err instanceof Error ? err.message : "Failed to delete transaction");
     } finally {
@@ -104,7 +106,7 @@ export function SuperAdminTransactions() {
   useEffect(() => {
     const controller = new AbortController(); const key = requestKey;
     fetch(`/api/super-admin/transactions?${new URLSearchParams({ ...filters, page: String(page) })}`, { cache: "no-store", signal: controller.signal })
-      .then(async response => { const body = await response.json().catch(() => ({})); if (!response.ok) throw new Error(body.error ?? "service_error"); setData(body); setError(""); })
+      .then(async response => { const body = await response.json().catch(() => ({})); if (controller.signal.aborted) return; if (!response.ok) throw new Error(body.error ?? "service_error"); setData(body); setError(""); })
       .catch(e => { if (!controller.signal.aborted) setError(e instanceof Error ? e.message : "service_error"); })
       .finally(() => { if (!controller.signal.aborted) setLoadedKey(key); });
     return () => controller.abort();
@@ -246,7 +248,7 @@ export function SuperAdminTransactions() {
           </span>
           <DialogTitle className={modal.title}>Delete Transaction</DialogTitle>
           <DialogDescription className={modal.lede}>
-            Are you sure you want to permanently delete transaction <strong className={styles.code}>{deletingTransaction?.id}</strong>? It will be removed from your dashboard table.
+            Are you sure you want to permanently delete transaction <strong className={styles.code}>{deletingTransaction?.id}</strong>? This removes its local billing records and excludes it from dashboard reports and exports. The original payment remains in Razorpay. This cannot be undone.
           </DialogDescription>
         </DialogHeader>
         {deletingTransaction && (

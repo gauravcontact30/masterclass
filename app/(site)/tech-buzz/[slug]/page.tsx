@@ -1,9 +1,9 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { siteName, siteUrl } from "@/lib/seo";
-import { getPublishedTechBuzzArticle, listPublishedTechBuzzArticles } from "@/lib/server/tech-buzz-storage";
+import { getPublishedTechBuzzArticle, listPublishedTechBuzzArticles, withUnsplashCovers } from "@/lib/server/tech-buzz-storage";
 import { TechBuzzArticleView } from "@/components/tech-buzz-article-view";
-import { isTechnologyStory, toCard, toPreview } from "@/lib/tech-buzz-public";
+import { isTechnologyStory, techIdOf, toCard, toPreview } from "@/lib/tech-buzz-public";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -64,7 +64,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       authors: [article.author.name],
       tags: article.tags,
       locale: "en_IN",
-      alternateLocale: ["hi_IN", "es_ES", "ja_JP", "de_DE", "fr_FR", "zh_CN"],
+      alternateLocale: ["hi_IN"],
       images: [
         {
           url: ogImageUrl,
@@ -96,13 +96,14 @@ export default async function TechBuzzArticlePage({ params }: PageProps) {
   const stories = (await listPublishedTechBuzzArticles()).filter(isTechnologyStory);
   const index = stories.findIndex(story => story.id === article.id);
   const rank = (story: (typeof stories)[number]) => (story.technology === article.technology ? 0 : story.category === article.category ? 1 : 2);
-  const related = stories.filter(story => story.id !== article.id).sort((a, b) => rank(a) - rank(b)).slice(0, 9).map(toCard);
+  const related = await withUnsplashCovers(stories.filter(story => story.id !== article.id).sort((a, b) => rank(a) - rank(b)).slice(0, 9).map(toCard));
   const prevStory = index > 0 ? toCard(stories[index - 1]) : null;
   const nextStory = index >= 0 && index < stories.length - 1 ? toCard(stories[index + 1]) : null;
+  const [preview] = await withUnsplashCovers([{ ...toPreview(article), techId: techIdOf(article) }]);
 
   const origin = siteUrl().href;
   const pageUrl = new URL(`/tech-buzz/${article.slug}`, origin).href;
-  const image = new URL(article.coverImage, origin).href;
+  const image = preview.photoCredit ? `${preview.coverImage}&w=1200&q=80&auto=format&fit=crop` : new URL(preview.coverImage, origin).href;
   const articleSchema = {
     "@context": "https://schema.org",
     "@type": "BlogPosting",
@@ -151,7 +152,7 @@ export default async function TechBuzzArticlePage({ params }: PageProps) {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify([articleSchema, breadcrumbSchema]).replace(/</g, "\\u003c") }}
       />
-      <TechBuzzArticleView article={toPreview(article)} related={related} prevStory={prevStory} nextStory={nextStory} />
+      <TechBuzzArticleView article={preview} related={related} prevStory={prevStory} nextStory={nextStory} />
     </>
   );
 }

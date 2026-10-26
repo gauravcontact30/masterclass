@@ -20,7 +20,7 @@ export function dailySocial(events: DailyEvent[], day: string) {
     const sessionKey = `${row.visitor_id}:${row.session_id}`;
     const source = classifyPlatform(row);
     const previous = sessions.get(sessionKey);
-    const attribution = source ? { platform: PLATFORM_LABEL[source], campaign: row.utm_campaign || previous?.campaign || "—" } : previous || { platform: "Direct / unknown", campaign: row.utm_campaign || "—" };
+    const attribution = row.utm_source || row.referrer_host ? { platform: source ? PLATFORM_LABEL[source] : "Direct / unknown", campaign: row.utm_campaign || "—" } : previous || { platform: "Direct / unknown", campaign: row.utm_campaign || "—" };
     sessions.set(sessionKey, attribution);
     if (Date.parse(row.created_at) < Date.parse(since) || Date.parse(row.created_at) >= Date.parse(until) || /^\/(dashboard\/)?super-admin(\/|$)/.test(row.path)) continue;
     const page = row.path === "/" ? "Landing page" : /^\/(learning|dashboard)(\/|$)/.test(row.path) ? "Learning dashboard" : "Other pages";
@@ -41,7 +41,7 @@ export function dailySocial(events: DailyEvent[], day: string) {
     const parts = row.path.split("/").filter(Boolean);
     traces.push({ id: row.id, time: row.created_at, visitor: row.visitor_id, account: row.user_id || "Anonymous", session: row.session_id, platform: attribution.platform, campaign: attribution.campaign, page, route: row.path, topic: row.topic || (page === "Learning dashboard" && parts.length > 1 ? parts.slice(1).join(" / ") : "General"), option: row.option || "Page opened", destination: row.target_path || "—", event: row.event === "page_view" ? "Page view" : "Option click" });
   }
-  const platforms = [...PLATFORMS.filter(p => p !== "other").map(p => PLATFORM_LABEL[p]), "Direct / unknown"].map(platform => {
+  const platforms = [...PLATFORMS.map(p => PLATFORM_LABEL[p]), "Direct / unknown"].map(platform => {
     const rows = traces.filter(row => row.platform === platform);
     return { platform, visitors: new Set(rows.map(row => row.visitor)).size, views: rows.filter(row => row.event === "Page view").length, clicks: rows.filter(row => row.event === "Option click").length, landing: rows.filter(row => row.page === "Landing page" && row.event === "Page view").length, dashboard: rows.filter(row => row.page === "Learning dashboard" && row.event === "Page view").length, latest: rows.at(-1)?.time || null };
   });

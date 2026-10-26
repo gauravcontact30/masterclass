@@ -20,7 +20,13 @@ export default async function proxy(request: NextRequest) {
   if (PUBLIC_DATA.has(pathname) && request.method === "GET") return NextResponse.next();
 
   // 1. Arcjet Bot Detection & Security Shield
-  const arcjetCheck = await protectWithArcjet(request);
+  // These remote checks are independent; authorization still follows both decisions.
+  const needsRateLimit = pathname.startsWith("/api/") && pathname !== "/api/track";
+  const clientIp = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "anonymous";
+  const [arcjetCheck, rl] = await Promise.all([
+    protectWithArcjet(request),
+    needsRateLimit ? checkRateLimit(clientIp, 60, 60) : Promise.resolve(null),
+  ]);
   if (!arcjetCheck.allowed) {
     return NextResponse.json(
       { error: "ACCESS_DENIED", message: arcjetCheck.reason },
@@ -30,9 +36,7 @@ export default async function proxy(request: NextRequest) {
 
   // 2. Upstash Redis Rate Limiting on API endpoints
   // The page-view beacon has its own limiter (app/api/track/route.ts) and must not spend the API budget.
-  if (pathname.startsWith("/api/") && pathname !== "/api/track") {
-    const clientIp = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "anonymous";
-    const rl = await checkRateLimit(clientIp, 60, 60); // 60 requests per minute
+  if (rl) {
     if (!rl.success) {
       return NextResponse.json(
         { error: "RATE_LIMIT_EXCEEDED", message: "Too many requests. Please try again shortly." },

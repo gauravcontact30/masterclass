@@ -1,5 +1,4 @@
 import { getPublishedTechBuzzArticle, listPublishedTechBuzzArticles } from "@/lib/server/tech-buzz-storage";
-import { getTopPlatformsComparison } from "@/lib/tech-buzz-data";
 import { isTechnologyStory, toCard, toPreview } from "@/lib/tech-buzz-public";
 
 /** Public and cacheable, so it returns cards and free previews only; members read bodies from ./[slug]/member. */
@@ -73,7 +72,6 @@ export async function GET(request: Request) {
 
     const categories = ["All", ...new Set(allArticles.map(a => a.category))];
     const technologies = ["All", ...new Set(allArticles.map(a => a.technology))];
-    const platformsComparison = getTopPlatformsComparison();
 
     return Response.json(
       {
@@ -81,7 +79,6 @@ export async function GET(request: Request) {
         total: articles.length,
         categories,
         technologies,
-        platformsComparison,
         stats: {
           totalArticles: allArticles.length,
           totalCategories: categories.length,

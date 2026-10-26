@@ -24,6 +24,7 @@ import {
   Flame
 } from "lucide-react";
 import type { TechBuzzCard, TechBuzzMemberContent, TechBuzzPreview } from "@/lib/tech-buzz-public";
+import { isUnsplash, unsplashLoader } from "@/lib/image-loaders";
 import styles from "./tech-buzz-article.module.css";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
@@ -36,8 +37,9 @@ interface Props {
   nextStory: TechBuzzCard | null;
 }
 
-/** Remote covers (Unsplash) are already sized by URL; local ones go through the image optimizer. */
-const remote = (src: string) => /^https?:/.test(src);
+/** Local images go through the optimizer, Unsplash through its own CDN (unsplashLoader); any other remote host as is. */
+const remote = (src: string) => /^https?:/.test(src) && !isUnsplash(src);
+const loaderFor = (src: string) => (isUnsplash(src) ? unsplashLoader : undefined);
 /** Whether this browser holds a Supabase session cookie; null during the server render. */
 const hasSessionCookie = () => /(?:^|;\s*)sb-[^=]+-auth-token/.test(document.cookie);
 const noSubscription = () => () => {};
@@ -413,7 +415,7 @@ export function TechBuzzArticleView({ article, related, prevStory, nextStory }: 
                 width={52}
                 height={52}
                 className={styles.authorAvatar}
-                unoptimized={remote(article.author.avatar)}
+                loader={loaderFor(article.author.avatar)} unoptimized={remote(article.author.avatar)}
               />
               <div className={styles.authorDetails}>
                 <div className={styles.authorName}>
@@ -460,10 +462,11 @@ export function TechBuzzArticleView({ article, related, prevStory, nextStory }: 
             alt={article.title}
             fill
             className={styles.coverImage}
-            priority
+            preload
             sizes="(max-width: 900px) 100vw, 900px"
-            unoptimized={remote(article.coverImage)}
+            loader={loaderFor(article.coverImage)} unoptimized={remote(article.coverImage)}
           />
+          {article.photoCredit && <small className={styles.coverCredit}>{article.photoCredit}</small>}
         </div>
       </header>
 
@@ -574,7 +577,7 @@ export function TechBuzzArticleView({ article, related, prevStory, nextStory }: 
             </ul>
           </div>
 
-          {/* Builder Metrics Row (Indie Hackers) */}
+          {/* Builder metrics row */}
           {article.builderMetrics && (
             <div className={styles.builderMetricsCard}>
               <div className={styles.builderMetricsTitle}>
@@ -591,7 +594,7 @@ export function TechBuzzArticleView({ article, related, prevStory, nextStory }: 
             </div>
           )}
 
-          {/* Hashnode Series Banner */}
+          {/* Series banner */}
           {article.series && (
             <div style={{ display: "inline-flex", alignItems: "center", gap: "0.5rem", background: "#eff6ff", border: "1px solid #bfdbfe", padding: "0.4rem 0.85rem", borderRadius: "9999px", color: "#1d4ed8", fontSize: "0.8125rem", fontWeight: 600, marginBottom: "2rem" }}>
               <Layers size={14} />
@@ -628,7 +631,7 @@ export function TechBuzzArticleView({ article, related, prevStory, nextStory }: 
             </section>
           )}
 
-          {/* Member paywall (Medium-style): the rest of the story is never sent to non-members */}
+          {/* Member paywall: the rest of the story is never sent to non-members */}
           {!isSubscribed ? (
             <div className={`${styles.paywallCurtain} paywalled-story`}>
               <div className={styles.paywallFade} />
@@ -908,7 +911,7 @@ export function TechBuzzArticleView({ article, related, prevStory, nextStory }: 
               width={64}
               height={64}
               style={{ borderRadius: "50%", objectFit: "cover" }}
-              unoptimized={remote(article.author.avatar)}
+              loader={loaderFor(article.author.avatar)} unoptimized={remote(article.author.avatar)}
             />
             <div>
               <div style={{ fontSize: "0.8125rem", color: "#64748b", textTransform: "uppercase", letterSpacing: "0.05em", fontWeight: 700 }}>
@@ -953,7 +956,7 @@ export function TechBuzzArticleView({ article, related, prevStory, nextStory }: 
                     fill
                     style={{ objectFit: "cover" }}
                     sizes="(max-width: 640px) 100vw, 33vw"
-                    unoptimized={remote(rel.coverImage)}
+                    loader={loaderFor(rel.coverImage)} unoptimized={remote(rel.coverImage)}
                   />
                 </div>
                 <div className={styles.moreBlogCardBody}>

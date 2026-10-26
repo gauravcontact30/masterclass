@@ -1,8 +1,9 @@
 "use client";
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { Search, SlidersHorizontal, FileText, Star, X, Image as ImageIcon, GitBranch, Table2, Pencil, Save, Trash2 } from "lucide-react";
 import { documentText, type NotepadFile } from "@/lib/notepad-library";
 import { Pager } from "./super-admin-pager";
+import { NotepadDeleteDialog } from "./notepad-delete-dialog";
 import styles from "./super-admin-notepad.module.css";
 
 /** Documents per page in My documents. */
@@ -38,6 +39,7 @@ export function NotepadLibrary({
   onSave?: (id: string) => void;
 }) {
   const [deletingFile, setDeletingFile] = useState<NotepadFile | null>(null);
+  const closeDelete = useCallback(() => setDeletingFile(null), []);
   const [query, setQuery] = useState("");
   const [filters, setFilters] = useState(false);
   const [kind, setKind] = useState("all");
@@ -148,8 +150,8 @@ export function NotepadLibrary({
               type="button"
               className={styles.cardActionBtn}
               data-action="save"
-              aria-label={`Save copy of ${file.title || "document"}`}
-              title="Save / Download copy"
+              aria-label={`Download ${file.title || "document"} as PDF`}
+              title="Download as PDF"
               onClick={e => {
                 e.stopPropagation();
                 onSave?.(file.id);
@@ -162,53 +164,7 @@ export function NotepadLibrary({
       ))}
     </div>
 
-    {/* Delete Confirmation Dialog */}
-    {deletingFile && (
-      <div
-        className={styles.deleteConfirmOverlay}
-        role="dialog"
-        aria-modal="true"
-        aria-label="Confirm delete document"
-        onClick={() => setDeletingFile(null)}
-      >
-        <div
-          className={styles.deleteConfirmBox}
-          onClick={e => e.stopPropagation()}
-        >
-          <div style={{ display: "flex", alignItems: "center", gap: "8px", color: "#b91c1c", fontWeight: 700, fontSize: "14px", marginBottom: "6px" }}>
-            <Trash2 size={16} aria-hidden="true" />
-            <span>Delete Document</span>
-          </div>
-          <p style={{ margin: "0 0 14px", fontSize: "12px", color: "#475569", lineHeight: 1.5 }}>
-            Are you sure you want to permanently delete <b>&ldquo;{deletingFile.title || "Untitled document"}&rdquo;</b>? This action cannot be undone.
-          </p>
-          <div style={{ display: "flex", justifyContent: "flex-end", gap: "8px" }}>
-            <button
-              type="button"
-              className={styles.deleteCancelBtn}
-              onClick={() => setDeletingFile(null)}
-              aria-label="Cancel deletion"
-            >
-              <X size={13} aria-hidden="true" />
-              <span>Cancel</span>
-            </button>
-            <button
-              type="button"
-              className={styles.deleteConfirmBtn}
-              onClick={() => {
-                const id = deletingFile.id;
-                setDeletingFile(null);
-                onDelete?.(id);
-              }}
-              aria-label="Confirm permanent deletion"
-            >
-              <Trash2 size={13} aria-hidden="true" />
-              <span>Delete permanently</span>
-            </button>
-          </div>
-        </div>
-      </div>
-    )}
+    {deletingFile && <NotepadDeleteDialog file={deletingFile} onCancel={closeDelete} onConfirm={() => { const id = deletingFile.id; setDeletingFile(null); onDelete?.(id); }} />}
     {!results.length && <p className={styles.libraryEmpty}>No documents match your search and filters.</p>}
     <div className={styles.pagination}><Pager page={current} pages={totalPages} total={results.length} size={PER_PAGE} onPage={setPage}/></div>
   </div>;

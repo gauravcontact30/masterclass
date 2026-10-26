@@ -4,18 +4,18 @@ import { useMemo, useState, useSyncExternalStore, type CSSProperties } from "rea
 import Image from "next/image";
 import Link from "next/link";
 import {
-  ArrowRight, Bookmark, BookmarkCheck, Clock, Flame, Hash, Heart, LayoutGrid, LayoutList, MessageCircle, Newspaper,
-  Rocket, Search, Sparkles, Star, TrendingUp, Trophy, Users, X, type LucideIcon,
+  ArrowRight, Binary, Bookmark, BookmarkCheck, Bot, Building2, Cloud, Clock, FlaskConical, Flame, Hash, Heart, Layers, LayoutGrid,
+  LayoutList, MessageCircle, Network, Newspaper, PanelsTopLeft, Rocket, Search, Server, Sparkles, Star, TrendingUp, Trophy, X, type LucideIcon,
 } from "lucide-react";
 import { LanguageSwitcher } from "./language-switcher";
 import { getDiwaliFestiveSaleInfo } from "@/lib/festive-sale";
 import { popularity, techLogo, type TechBuzzCard } from "@/lib/tech-buzz-public";
-import type { CommunityPost } from "@/lib/server/community-feed";
+import { isUnsplash, unsplashLoader } from "@/lib/image-loaders";
 import styles from "./tech-buzz-blog.module.css";
 
 /**
- * The Tech Buzz blog: Medium's reading-first story list and member stories, daily.dev's feed tabs and card grid,
- * dev.to's tags and reactions, and Indie Hackers' milestones, over technology stories only. Every story arrives as a
+ * The Tech Buzz blog: a reading-first story list with member stories, feed tabs and a card grid, tinted tags and
+ * reactions, and builder milestones, over technology stories only. Every story arrives as a
  * light card (lib/tech-buzz-public.ts); bodies stay on the server behind the member paywall.
  */
 type Feed = "for-you" | "latest" | "popular" | "rated" | "saved";
@@ -48,6 +48,22 @@ const useStored = (key: string) => useSyncExternalStore(subscribe, () => readSto
 const never = () => () => {};
 
 export type TechBuzzTopic = { id: string; label: string; count: number };
+/** A category in the left rail with the technologies written about in it. */
+export type TechBuzzGroup = { category: string; count: number; topics: TechBuzzTopic[] };
+
+/** Each category's colour and icon, shared by the rail and the "Explore by category" cards. */
+const CATEGORY_STYLE: Record<string, { icon: LucideIcon; tone: string; ink: string }> = {
+  "Artificial Intelligence": { icon: Bot, tone: "#f0ecfb", ink: "#5a3fa8" },
+  "Frontend Engineering": { icon: PanelsTopLeft, tone: "#e8f2fb", ink: "#245d8f" },
+  "Backend & APIs": { icon: Server, tone: "#e7f5ee", ink: "#1f6a4a" },
+  "Cloud & DevOps": { icon: Cloud, tone: "#e4f5f5", ink: "#16696b" },
+  "Testing & Quality": { icon: FlaskConical, tone: "#fdf6dc", ink: "#86610b" },
+  "Computer Science": { icon: Binary, tone: "#fcebef", ink: "#a32c4f" },
+  "System Architecture": { icon: Network, tone: "#f5efe6", ink: "#7a5530" },
+  "Full-Stack Development": { icon: Layers, tone: "#fdf0e6", ink: "#a5461f" },
+  "Enterprise Platforms": { icon: Building2, tone: "#eef3e6", ink: "#4d6b22" },
+};
+const styleOf = (category: string) => CATEGORY_STYLE[category] ?? { icon: Hash, tone: "#f1efe7", ink: "#3d3d3a" };
 
 const time = (iso: string) => Date.parse(iso) || 0;
 const dateLabel = (iso: string) => {
@@ -55,9 +71,9 @@ const dateLabel = (iso: string) => {
   return Number.isNaN(date.getTime()) ? iso : date.toLocaleDateString("en-IN", { day: "numeric", month: "short" });
 };
 const compact = (n: number) => (n >= 1000 ? `${(n / 1000).toFixed(n >= 10000 ? 0 : 1)}k` : String(n));
-/** Unsplash covers are resized by URL; local covers go through next/image. */
-const remote = (src: string) => /^https?:/.test(src);
-const sized = (src: string, width: number) => (src.includes("images.unsplash.com") ? src.replace(/([?&])w=\d+/, `$1w=${width}`) : src);
+/** Local images go through the optimizer, Unsplash through its own CDN (unsplashLoader); any other remote host as is. */
+const remote = (src: string) => /^https?:/.test(src) && !isUnsplash(src);
+const loaderFor = (src: string) => (isUnsplash(src) ? unsplashLoader : undefined);
 const toneOf = (key: string) => TONES[[...key].reduce((sum, ch) => sum + ch.charCodeAt(0), 0) % TONES.length];
 
 function Stars({ rating }: { rating: TechBuzzCard["rating"] }) {
@@ -71,11 +87,11 @@ function Stars({ rating }: { rating: TechBuzzCard["rating"] }) {
 
 function Thumb({ card, size }: { card: TechBuzzCard; size: "list" | "grid" | "hero" }) {
   const logo = techLogo(card.techId);
-  const width = size === "hero" ? 960 : size === "grid" ? 480 : 240;
-  return <span className={styles.thumb} data-size={size} style={{ "--tone": toneOf(card.technology) } as CSSProperties}>
-    <Image src={sized(card.coverImage, width)} alt="" fill sizes={size === "hero" ? "(max-width: 900px) 100vw, 640px" : size === "grid" ? "(max-width: 640px) 100vw, 320px" : "120px"}
-      unoptimized={remote(card.coverImage)} className={styles.thumbImage} priority={size === "hero"} />
+  return <span className={styles.thumb} data-size={size} style={{ "--tone": toneOf(card.technology) } as CSSProperties} title={card.photoCredit}>
+    <Image src={card.coverImage} loader={loaderFor(card.coverImage)} alt="" fill sizes={size === "hero" ? "(max-width: 900px) 100vw, 640px" : size === "grid" ? "(max-width: 640px) 100vw, 320px" : "120px"}
+      unoptimized={remote(card.coverImage)} className={styles.thumbImage} preload={size === "hero"} />
     {logo && <span className={styles.thumbLogo}><Image src={logo} alt="" width={28} height={28} /></span>}
+    {size === "hero" && card.photoCredit && <small className={styles.credit}>{card.photoCredit}</small>}
   </span>;
 }
 
@@ -97,7 +113,7 @@ function SaveButton({ saved, onToggle, title }: { saved: boolean; onToggle: () =
   </button>;
 }
 
-export function TechBuzzBlog({ cards, topics, community }: { cards: TechBuzzCard[]; topics: TechBuzzTopic[]; community: CommunityPost[] }) {
+export function TechBuzzBlog({ cards, groups }: { cards: TechBuzzCard[]; groups: TechBuzzGroup[] }) {
   const [feed, setFeed] = useState<Feed>("for-you");
   const [topic, setTopic] = useState<string | null>(null);
   const [query, setQuery] = useState("");
@@ -148,7 +164,10 @@ export function TechBuzzBlog({ cards, topics, community }: { cards: TechBuzzCard
   const staffPicks = useMemo(() => [...cards].filter(card => card.rating.count).sort((a, b) => b.rating.average - a.rating.average).slice(0, 4), [cards]);
   const trending = useMemo(() => [...cards].sort((a, b) => (a.trendingRank ?? 99) - (b.trendingRank ?? 99) || popularity(b) - popularity(a)).slice(0, 5), [cards]);
   const milestones = useMemo(() => cards.filter(card => card.milestone && card.claps > 0).slice(0, 3), [cards]);
-  const topicLabel = topics.find(item => item.id === topic)?.label ?? topic;
+  const topicLabel = groups.flatMap(group => group.topics).find(item => item.id === topic)?.label ?? topic;
+  const savedCount = cards.filter(card => saved[card.id]).length;
+  // One picture per category for the "Explore by category" row: its most popular story's cover.
+  const spotlight = useMemo(() => groups.map(group => ({ ...group, cover: [...cards].filter(card => card.category === group.category).sort((a, b) => popularity(b) - popularity(a))[0] })), [groups, cards]);
   const resetTo = (next: () => void) => { next(); setShown(PAGE); };
 
   return <div className={styles.blog}>
@@ -187,14 +206,26 @@ export function TechBuzzBlog({ cards, topics, community }: { cards: TechBuzzCard
 
     <div className={styles.layout}>
       <aside className={styles.topics} aria-label="Topics">
-        <h2><Hash size={15} aria-hidden="true" />Topics</h2>
-        <ul>
-          <li><button type="button" aria-pressed={!topic} onClick={() => resetTo(() => setTopic(null))}>All technologies<small>{cards.length}</small></button></li>
-          {topics.map(item => <li key={item.id}><button type="button" aria-pressed={topic === item.id} onClick={() => resetTo(() => setTopic(topic === item.id ? null : item.id))}>
-            {techLogo(item.id) ? <Image src={techLogo(item.id)!} alt="" width={18} height={18} /> : <Hash size={14} aria-hidden="true" />}
-            <span>{item.label}</span><small>{item.count}</small>
-          </button></li>)}
-        </ul>
+        <button type="button" className={styles.readingCard} aria-pressed={feed === "saved"} onClick={() => resetTo(() => { setTopic(null); setFeed(feed === "saved" ? "for-you" : "saved"); })}>
+          <span className={styles.readingIcon} aria-hidden="true"><BookmarkCheck size={18} /></span>
+          <span><b>Your reading list</b><small>{savedCount ? `${savedCount} saved ${savedCount === 1 ? "story" : "stories"}` : "Save stories to read later"}</small></span>
+        </button>
+        <h2><Hash size={15} aria-hidden="true" />Browse topics</h2>
+        <button type="button" className={styles.allTopics} aria-pressed={!topic} onClick={() => resetTo(() => setTopic(null))}>
+          <Sparkles size={15} aria-hidden="true" /><span>All technologies</span><small>{cards.length}</small>
+        </button>
+        <div className={styles.groups}>{groups.map(group => {
+          const { icon: Icon, tone, ink } = styleOf(group.category);
+          return <section key={group.category} className={styles.group} style={{ "--tone": tone, "--ink": ink } as CSSProperties}>
+            <button type="button" className={styles.groupHead} aria-pressed={topic === group.category} onClick={() => resetTo(() => setTopic(topic === group.category ? null : group.category))}>
+              <span className={styles.groupIcon} aria-hidden="true"><Icon size={16} /></span><span>{group.category}</span><small>{group.count}</small>
+            </button>
+            {group.topics.length > 0 && <ul>{group.topics.map(item => <li key={item.id}><button type="button" aria-pressed={topic === item.id} onClick={() => resetTo(() => setTopic(topic === item.id ? null : item.id))}>
+              {techLogo(item.id) ? <Image src={techLogo(item.id)!} alt="" width={18} height={18} /> : <span className={styles.dot} aria-hidden="true" />}
+              <span>{item.label}</span><small>{item.count}</small>
+            </button></li>)}</ul>}
+          </section>;
+        })}</div>
       </aside>
 
       <main className={styles.feed} aria-label="Stories">
@@ -210,12 +241,25 @@ export function TechBuzzBlog({ cards, topics, community }: { cards: TechBuzzCard
               <span className={styles.eyebrow} style={{ color: hero.color }}>{hero.technology} · {hero.category}</span>
               <h2>{hero.title}</h2>
               <p>{hero.subtitle}</p>
-              <span className={styles.byline}><Image src={hero.author.avatar} alt="" width={26} height={26} unoptimized={remote(hero.author.avatar)} />{hero.author.name}</span>
+              <span className={styles.byline}><Image src={hero.author.avatar} alt="" width={26} height={26} loader={loaderFor(hero.author.avatar)} unoptimized={remote(hero.author.avatar)} />{hero.author.name}</span>
               <Meta card={hero} />
             </span>
           </Link>
           <SaveButton saved={!!saved[hero.id]} onToggle={() => toggleSaved(hero.id)} title={hero.title} />
         </article>}
+
+        {!filtered && <section className={styles.spotlight} aria-labelledby="explore-heading">
+          <h2 id="explore-heading">Explore by category</h2>
+          <ul>{spotlight.map(group => {
+            const { icon: Icon, tone, ink } = styleOf(group.category);
+            return <li key={group.category} style={{ "--tone": tone, "--ink": ink } as CSSProperties}>
+              <button type="button" onClick={() => resetTo(() => setTopic(group.category))}>
+                {group.cover && <Thumb card={group.cover} size="grid" />}
+                <span className={styles.spotlightBody}><span className={styles.groupIcon} aria-hidden="true"><Icon size={15} /></span><b>{group.category}</b><small>{group.count} {group.count === 1 ? "story" : "stories"}</small></span>
+              </button>
+            </li>;
+          })}</ul>
+        </section>}
 
         {visible.length === 0 ? <div className={styles.empty}>
           <Bookmark size={28} aria-hidden="true" />
@@ -226,7 +270,7 @@ export function TechBuzzBlog({ cards, topics, community }: { cards: TechBuzzCard
               <Link href={`/tech-buzz/${card.slug}`} className={styles.storyLink}>
                 <span className={styles.storyText}>
                   <span className={styles.byline}>
-                    <Image src={card.author.avatar} alt="" width={22} height={22} unoptimized={remote(card.author.avatar)} />
+                    <Image src={card.author.avatar} alt="" width={22} height={22} loader={loaderFor(card.author.avatar)} unoptimized={remote(card.author.avatar)} />
                     <span>{card.author.name}</span>
                     <span className={styles.muted}>in</span>
                     <span className={styles.eyebrow} style={{ color: card.color }}>{card.technology}</span>
@@ -247,29 +291,13 @@ export function TechBuzzBlog({ cards, topics, community }: { cards: TechBuzzCard
           Show more stories <small>{stories.length - shown} left</small>
         </button>}
 
-        {community.length > 0 && <section className={styles.community} aria-labelledby="community-heading">
-          <h2 id="community-heading"><Users size={18} aria-hidden="true" />Fresh from the developer community</h2>
-          <p className={styles.lede}>Today’s headlines from dev.to and Medium on the technologies you study, with a short excerpt. Credited to their authors; read in full on the source site.</p>
-          <ul className={styles.communityGrid}>{community.slice(0, 12).map(post => <li key={post.id} style={{ "--tone": toneOf(post.technology) } as CSSProperties}>
-            <span className={styles.communitySource} data-source={post.source}>{post.source}</span>
-            <h3>{post.title}</h3>
-            <p>{post.excerpt}</p>
-            <span className={styles.meta}>
-              <span>{post.author}</span>
-              <span>{dateLabel(post.publishedAt)}</span>
-              {post.readingMinutes ? <span><Clock size={13} aria-hidden="true" />{post.readingMinutes} min</span> : null}
-              {post.reactions ? <span><Heart size={13} aria-hidden="true" />{compact(post.reactions)}</span> : null}
-            </span>
-            {post.tags.length > 0 && <span className={styles.tags}>{post.tags.slice(0, 3).map(tag => <span key={tag} style={{ "--tone": toneOf(tag) } as CSSProperties}>#{tag.toLowerCase().replace(/\s+/g, "")}</span>)}</span>}
-          </li>)}</ul>
-        </section>}
       </main>
 
       <aside className={styles.sidebar} aria-label="Highlights">
         {staffPicks.length > 0 && <section>
           <h2><Trophy size={16} aria-hidden="true" />Top rated</h2>
           <ol className={styles.picks}>{staffPicks.map(card => <li key={card.id}><Link href={`/tech-buzz/${card.slug}`}>
-            <span className={styles.byline}><Image src={card.author.avatar} alt="" width={18} height={18} unoptimized={remote(card.author.avatar)} />{card.author.name}</span>
+            <span className={styles.byline}><Image src={card.author.avatar} alt="" width={18} height={18} loader={loaderFor(card.author.avatar)} unoptimized={remote(card.author.avatar)} />{card.author.name}</span>
             <b>{card.title}</b><Stars rating={card.rating} />
           </Link></li>)}</ol>
         </section>}

@@ -365,3 +365,83 @@ export async function syncDefaultArticlesToSupabase(): Promise<{ count: number }
   expirePublic();
   return { count: result.data?.length || 0 };
 }
+
+/* ── Unsplash cover photos ─────────────────────────────────────────────────────────────────────────────────────────
+ * Stories without a hand-picked cover get a real photo from the Unsplash API (UNSPLASH_ACCESS_KEY, a free Access Key
+ * from unsplash.com/developers), found by the story's technology. Searches are cached for weeks, so a few dozen API
+ * calls cover every story (the free tier allows 50 an hour); stories on the same technology get different photos.
+ * Photos are hotlinked from images.unsplash.com and credited in plain text, as Unsplash's API guidelines ask (no links,
+ * per the site rule). Without a key, or when Unsplash fails, the story keeps its existing cover. */
+const PHOTO_QUERIES: Record<string, string> = {
+  langchain: "chain links technology", langgraph: "network nodes connections", langflow: "flowchart whiteboard planning",
+  langsmith: "monitoring dashboard screen", openrouter: "network cables router", "ai-gateway": "data center servers",
+  n8n: "automation workflow factory", "agentic-ai": "artificial intelligence robot", nextjs: "web development laptop code",
+  react: "javascript code screen", angular: "web developer coding", vue: "green code editor", tanstack: "data dashboard laptop",
+  "tanstack-start": "full stack developer laptop", zustand: "brown bear forest", "redux-toolkit": "toolbox tools workshop",
+  javascript: "javascript code", nodejs: "server terminal programming", express: "api backend programming",
+  nestjs: "software architecture diagram", graphql: "graph network connections", python: "python programming laptop",
+  redis: "server room lights", postgresql: "database server racks", supabase: "database developer laptop",
+  salesforce: "business team crm", docker: "shipping containers port", kubernetes: "container ship ocean",
+  aws: "cloud computing data center", git: "tree branches", "github-actions": "assembly line automation",
+  playwright: "theatre stage spotlight", cypress: "software testing laptop", jest: "quality inspection checklist",
+  vitest: "lightning storm", rtl: "user interface design", "system-design": "architecture blueprint",
+  dsa: "algorithm whiteboard", oops: "building blocks", typescript: "programming code monitor",
+};
+const CATEGORY_QUERIES: Record<string, string> = {
+  "Artificial Intelligence": "artificial intelligence", "Frontend Engineering": "web design laptop", "Backend & APIs": "server programming",
+  "Cloud & DevOps": "cloud data center", "Testing & Quality": "quality testing", "Computer Science": "mathematics whiteboard",
+  "System Architecture": "architecture blueprint", "Full-Stack Development": "software developer desk", "Enterprise Platforms": "business office team",
+};
+type UnsplashPhoto = { url: string; credit: string; downloadLocation: string };
+type CoverFields = { slug: string; techId?: string; technology: string; category: string; coverImage: string };
+
+const photoQuery = (story: CoverFields) => PHOTO_QUERIES[story.techId ?? ""] ?? CATEGORY_QUERIES[story.category] ?? story.technology;
+const needsPhoto = (story: CoverFields) => story.coverImage.startsWith("/");
+
+/** Up to 15 landscape photos for a query. Throws on any API failure so a failure is never cached. */
+async function unsplashSearch(query: string): Promise<UnsplashPhoto[]> {
+  "use cache";
+  cacheLife("weeks");
+  cacheTag("tech-buzz-photos");
+  const params = new URLSearchParams({ query, per_page: "15", orientation: "landscape", content_filter: "high" });
+  const res = await fetch(`https://api.unsplash.com/search/photos?${params}`, {
+    headers: { Authorization: `Client-ID ${process.env.UNSPLASH_ACCESS_KEY}`, "Accept-Version": "v1" },
+    signal: AbortSignal.timeout(6000),
+  });
+  if (!res.ok) throw new Error(`Unsplash search failed: ${res.status}`);
+  const data = await res.json() as { results: { urls: { raw: string }; user: { name: string }; links: { download_location: string } }[] };
+  // Unsplash+ photos are licensed separately and live on another host; only free photos are used.
+  return data.results.filter(photo => photo.urls.raw.startsWith("https://images.unsplash.com/"))
+    .map(photo => ({ url: photo.urls.raw, credit: `Photo: ${photo.user.name} / Unsplash`, downloadLocation: photo.links.download_location }));
+}
+
+/** Unsplash asks apps to report each photo they use (it counts as a download for the photographer); once per photo. */
+async function reportPhotoUse(downloadLocation: string) {
+  "use cache";
+  cacheLife("max");
+  await fetch(downloadLocation, { headers: { Authorization: `Client-ID ${process.env.UNSPLASH_ACCESS_KEY}` }, signal: AbortSignal.timeout(6000) }).catch(() => undefined);
+  return true;
+}
+
+/**
+ * Gives each story that has only a stock local cover a real Unsplash photo for its technology, plus the photo credit.
+ * Positions among all published stories sharing a query pick the photo, so a story gets the same photo on every page
+ * and its neighbours on the same technology get different ones.
+ */
+export async function withUnsplashCovers<T extends CoverFields>(stories: T[]): Promise<(T & { photoCredit?: string })[]> {
+  if (!process.env.UNSPLASH_ACCESS_KEY || !stories.some(needsPhoto)) return stories;
+  const everyone = (await listPublishedTechBuzzArticles()).filter(needsPhoto).map(story => ({ slug: story.slug, query: photoQuery(story) }))
+    .sort((a, b) => a.slug.localeCompare(b.slug));
+  const queries = [...new Set(stories.filter(needsPhoto).map(photoQuery))];
+  const found = new Map(await Promise.all(queries.map(async query => [query, await unsplashSearch(query).catch(() => [] as UnsplashPhoto[])] as const)));
+  return Promise.all(stories.map(async story => {
+    if (!needsPhoto(story)) return story;
+    const query = photoQuery(story);
+    const photos = found.get(query) ?? [];
+    if (!photos.length) return story;
+    const position = everyone.filter(other => other.query === query).findIndex(other => other.slug === story.slug);
+    const photo = photos[Math.max(0, position) % photos.length];
+    await reportPhotoUse(photo.downloadLocation).catch(() => undefined);
+    return { ...story, coverImage: photo.url, photoCredit: photo.credit };
+  }));
+}

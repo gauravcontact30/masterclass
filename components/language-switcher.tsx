@@ -64,7 +64,7 @@ export function LanguageSwitcher({ className = "", persist = true, size = "md" }
   const onListKey = (event: KeyboardEvent<HTMLUListElement>) => {
     if (!["ArrowDown", "ArrowUp", "Home", "End"].includes(event.key)) return;
     event.preventDefault();
-    const options = [...(popoverRef.current?.querySelectorAll<HTMLButtonElement>('[role="option"]') ?? [])];
+    const options = [...(popoverRef.current?.querySelectorAll<HTMLButtonElement>('[role="option"]:not(:disabled)') ?? [])];
     const at = options.indexOf(document.activeElement as HTMLButtonElement);
     const next = event.key === "Home" ? 0 : event.key === "End" ? options.length - 1 : (at + (event.key === "ArrowDown" ? 1 : -1) + options.length) % options.length;
     options[next]?.focus();
@@ -90,13 +90,13 @@ export function LanguageSwitcher({ className = "", persist = true, size = "md" }
           {languages.map(item => {
             const selected = item.code === language;
             return <li key={item.code}>
-              <button type="button" role="option" aria-selected={selected} className={styles.item} lang={item.code} onClick={() => choose(item.code)}>
+              <button type="button" role="option" aria-selected={selected} aria-disabled={!item.available || undefined} disabled={!item.available} title={item.available ? undefined : `${item.name} content is coming soon`} className={styles.item} lang={item.code} onClick={() => item.available && choose(item.code)}>
                 <FlagIcon country={item.countryCode} size={26} />
                 <span className={styles.itemText}>
                   <span className={styles.itemNative}>{item.nativeName}</span>
                   <span className={styles.itemMeta}>{item.country} · {item.name}</span>
                 </span>
-                <span className={styles.code}>{item.code.toUpperCase()}</span>
+                {item.available ? <span className={styles.code}>{item.code.toUpperCase()}</span> : <span className={styles.soon}>Coming soon</span>}
                 <Check size={16} strokeWidth={2.4} className={styles.itemCheck} aria-hidden="true" />
               </button>
             </li>;

@@ -156,7 +156,7 @@ export default function Image() {
               >
                 <span style={{ fontSize: 13, marginRight: 6 }}>🌍</span>
                 <span style={{ fontSize: 11, fontWeight: 800, color: "#818cf8", letterSpacing: "0.4px" }}>
-                  7 LANGUAGES · 🇺🇸 🇮🇳 🇪🇸 🇯🇵 🇩🇪 🇫🇷 🇨🇳
+                  ENGLISH & HINDI · 🇺🇸 🇮🇳
                 </span>
               </div>
 
@@ -235,7 +235,7 @@ export default function Image() {
                 marginTop: 8,
               }}
             >
-              Production study notes in 7 native languages, 31+ tech interview question banks, real-world system design blueprints, and community-rated 4.94★ Tech Buzz developer blogs.
+              Production study notes in 7 native languages, 31+ tech interview question banks, real-world system design blueprints, and community-rated 4.94/5 Tech Buzz developer blogs.
             </span>
           </div>
 
@@ -266,7 +266,7 @@ export default function Image() {
                   🔥 Tech Buzz Blogs
                 </span>
                 <span style={{ fontSize: 10, fontWeight: 800, color: "#fb923c", background: "rgba(234, 88, 12, 0.18)", padding: "2px 6px", borderRadius: 4 }}>
-                  4.94★ Rated
+                  4.94/5 Rated
                 </span>
               </div>
               <span style={{ fontSize: 11, color: "#94a3b8", marginTop: 4, lineHeight: 1.35 }}>

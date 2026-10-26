@@ -13,7 +13,7 @@ jest.mock("@/lib/server/config", () => ({ authConfigured: () => true }));
 jest.mock("@/lib/server/db", () => ({ db: jest.fn() }));
 jest.mock("@/lib/server/monitoring", () => ({ recordEvent: jest.fn() }));
 const request = (body: string, headers = {}) => new Request("https://example.com/api/track", {
-  method: "POST", headers, body,
+  method: "POST", headers: { "x-forwarded-for": "203.0.113.10", ...headers }, body,
 });
 beforeEach(() => {
   (cookies as jest.Mock).mockResolvedValue({ get: jest.fn(), set: jest.fn(), delete: jest.fn() });
@@ -32,6 +32,15 @@ test("regular learner still schedules a visit", async () => {
   (supabaseServer as jest.Mock).mockResolvedValue({ auth: { getClaims: async () => ({ data: { claims: { sub: "learner", email: "learner@example.com" } } }) } });
   expect((await POST(request(JSON.stringify({ type: "view", path: "/learning" })))).status).toBe(204);
   expect(after).toHaveBeenCalledTimes(1);
+});
+
+test("an expired session cannot inherit an old platform attribution cookie", async () => {
+  (supabaseServer as jest.Mock).mockResolvedValue({ auth: { getClaims: async () => ({ data: { claims: {} } }) } });
+  const values = new Map([["mc_attribution", JSON.stringify({ source: "instagram", medium: "social", campaign: "old", referrer: null })]]);
+  const store = { get: jest.fn((key: string) => values.has(key) ? { value: values.get(key) } : undefined), set: jest.fn((key: string, value: string) => { values.set(key, value); }), delete: jest.fn() };
+  (cookies as jest.Mock).mockResolvedValue(store);
+  await POST(request(JSON.stringify({ type: "view", path: "/" })));
+  expect(JSON.parse(values.get("mc_attribution")!)).toMatchObject({ source: null, campaign: null });
 });
 
 test("option clicks use the interaction log and retain the visitor session", async () => {

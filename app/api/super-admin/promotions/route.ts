@@ -5,6 +5,7 @@ import { rateLimit } from "@/lib/server/rate-limit";
 import { db } from "@/lib/server/db";
 import { adminError } from "@/lib/server/admin-rpc";
 import { METRIC_KEYS, PLATFORMS, PROMOTION_FORMATS, PROMOTION_STATUSES, attribute, campaignSlug, type ProfileRow, type Promotion, type SubscriptionRow, type VisitRow } from "@/lib/promotions";
+import { VISIT_RETENTION_DAYS } from "@/lib/visit-retention";
 
 /*
  * Promotional Tracking (migration 0024): the promotions an admin registers, joined to real traffic from
@@ -12,55 +13,51 @@ import { METRIC_KEYS, PLATFORMS, PROMOTION_FORMATS, PROMOTION_STATUSES, attribut
  * POST, PATCH and DELETE manage promotions. Reads are paged and capped so a busy month stays fast.
  */
 const PAGE = 1000;
-const MAX_VISITS = 20_000;
 
-const visitsQuery = (since: string) => db().from("site_visits").select("created_at,visitor_id,session_id,user_id,path,referrer_host,utm_source,utm_medium,utm_campaign")
-  .eq("event", "page_view").eq("is_bot", false).gte("created_at", since);
+const visitsQuery = (since: string, until: string) => db().from("site_visits").select("id,created_at,visitor_id,session_id,user_id,path,referrer_host,utm_source,utm_medium,utm_campaign")
+  .eq("event", "page_view").eq("is_bot", false).gte("created_at", since).lt("created_at", until);
 
-/** Counts the window first, then reads its pages four at a time instead of one round trip after another. */
-async function pagedVisits(since: string): Promise<{ rows: VisitRow[]; capped: boolean }> {
-  const { count, error } = await db().from("site_visits").select("created_at", { count: "estimated", head: true }).eq("event", "page_view").eq("is_bot", false).gte("created_at", since);
-  if (error) adminError(error);
-  const total = Math.min(MAX_VISITS, Math.max(PAGE, count ?? MAX_VISITS));
-  const starts = Array.from({ length: Math.ceil(total / PAGE) }, (_, i) => i * PAGE);
-  const pages: VisitRow[][] = [];
-  for (let i = 0; i < starts.length; i += 4) {
-    const batch = await Promise.all(starts.slice(i, i + 4).map(async from => {
-      const { data, error: pageError } = await visitsQuery(since).order("created_at", { ascending: true }).range(from, from + PAGE - 1);
-      if (pageError) adminError(pageError);
-      return (data ?? []) as VisitRow[];
-    }));
-    pages.push(...batch);
-    if (batch.at(-1)!.length < PAGE) return { rows: pages.flat(), capped: false };
+/** Keyset pagination avoids truncated totals and shifting offsets during retention cleanup. */
+async function pagedVisits(since: string, until: string): Promise<VisitRow[]> {
+  const rows: VisitRow[] = [];
+  let cursor = 0;
+  while (true) {
+    const { data, error } = await visitsQuery(since, until).gt("id", cursor).order("id", { ascending: true }).limit(PAGE);
+    if (error) adminError(error);
+    const page = (data ?? []) as (VisitRow & { id: number })[];
+    rows.push(...page);
+    if (page.length < PAGE) return rows;
+    cursor = page.at(-1)!.id;
   }
-  // The estimate can run low; keep reading one page at a time until the window or the cap runs out.
-  for (let from = starts.length * PAGE; from < MAX_VISITS; from += PAGE) {
-    const { data, error: pageError } = await visitsQuery(since).order("created_at", { ascending: true }).range(from, from + PAGE - 1);
-    if (pageError) adminError(pageError);
-    pages.push((data ?? []) as VisitRow[]);
-    if (!data || data.length < PAGE) return { rows: pages.flat(), capped: false };
+}
+
+async function allPromotions() {
+  const rows: Promotion[] = [];
+  for (let offset = 0; ; offset += PAGE) {
+    const { data, error } = await db().from("promotions").select("*").order("id").range(offset, offset + PAGE - 1);
+    if (error) adminError(error);
+    rows.push(...(data ?? []).map(row => ({ ...row, budget_inr: Number(row.budget_inr), spend_inr: Number(row.spend_inr) })) as Promotion[]);
+    if (!data || data.length < PAGE) return rows;
   }
-  return { rows: pages.flat(), capped: true };
 }
 
 export async function GET(request: Request) {
   return api(async () => {
     await requireSuperAdmin();
-    const days = Math.min(365, Math.max(1, Number(new URL(request.url).searchParams.get("days")) || 30));
-    const since = new Date(Date.now() - days * 86_400_000).toISOString();
+    const days = Math.floor(Math.min(365, Math.max(1, Number(new URL(request.url).searchParams.get("days")) || 30)));
+    const until = new Date().toISOString();
+    const since = new Date(Date.parse(until) - days * 86_400_000).toISOString();
     // Promotions and the visit window are independent; read them side by side.
-    const [promotionsResult, { rows: visits, capped }] = await Promise.all([db().from("promotions").select("*").order("created_at", { ascending: false }).limit(500), pagedVisits(since)]);
-    if (promotionsResult.error) adminError(promotionsResult.error);
-    const promotions = (promotionsResult.data ?? []).map(row => ({ ...row, budget_inr: Number(row.budget_inr), spend_inr: Number(row.spend_inr) })) as Promotion[];
+    const [promotions, visits] = await Promise.all([allPromotions(), pagedVisits(since, until)]);
     const userIds = [...new Set(visits.map(visit => visit.user_id).filter((id): id is string => !!id))];
     const chunks = Array.from({ length: Math.ceil(userIds.length / 200) }, (_, i) => userIds.slice(i * 200, i * 200 + 200));
-    const results = await Promise.all(chunks.map(ids => Promise.all([db().from("profiles").select("id,created_at").in("id", ids), db().from("subscriptions").select("user_id,status,tier").in("user_id", ids)])));
+    const results = await Promise.all(chunks.map(ids => Promise.all([db().from("profiles").select("id,created_at").in("id", ids), db().from("subscriptions").select("user_id,status,tier,current_period_end").in("user_id", ids)])));
     const profiles: ProfileRow[] = [], subscriptions: SubscriptionRow[] = [];
     for (const [p, s] of results) {
       if (p.error) adminError(p.error); if (s.error) adminError(s.error);
       profiles.push(...(p.data ?? []) as ProfileRow[]); subscriptions.push(...(s.data ?? []) as SubscriptionRow[]);
     }
-    return Response.json({ promotions, ...attribute({ visits, profiles, subscriptions, promotions, since }), days, capped, generatedAt: new Date().toISOString() });
+    return Response.json({ promotions, ...attribute({ visits, profiles, subscriptions, promotions, since, until }), days, capped: false, retentionDays: VISIT_RETENTION_DAYS, generatedAt: until });
   }, request);
 }
 

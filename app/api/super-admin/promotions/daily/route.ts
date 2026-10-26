@@ -39,13 +39,10 @@ export async function GET(request: Request) {
     const events = [...views.events, ...clicks.events];
     const ids = [...new Set(events.map(event => event.user_id).filter((id): id is string => !!id))];
     const emails = new Map<string, string>();
-    const client = db();
-    for (let offset = 0; offset < ids.length; offset += 10) {
-      await Promise.all(ids.slice(offset, offset + 10).map(async id => {
-        const { data, error } = await client.auth.admin.getUserById(id);
-        if (error && error.status !== 404) throw error;
-        if (data.user?.email) emails.set(id, data.user.email);
-      }));
+    for (let offset = 0; offset < ids.length; offset += 200) {
+      const { data, error } = await db().rpc("promotion_visitor_emails", { p_ids: ids.slice(offset, offset + 200) });
+      if (error) adminError(error);
+      for (const user of (data ?? []) as { id: string; email: string | null }[]) if (user.email) emails.set(user.id, user.email);
     }
     for (const event of events) event.email = event.user_id ? emails.get(event.user_id) || null : null;
     return Response.json({ ...dailySocial(events, day), generatedAt: new Date().toISOString(), capped: views.capped || clicks.capped }, { headers: { "Cache-Control": "no-store" } });

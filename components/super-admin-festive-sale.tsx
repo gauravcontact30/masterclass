@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { CalendarClock, CheckCircle2, CircleAlert, Percent, Save, Sparkles, Ticket } from "lucide-react";
 import { requestJson } from "@/lib/client";
 import { formatPrice } from "@/lib/pricing";
+import { useLanguage } from "./language-provider";
 import styles from "./super-admin-festive-sale.module.css";
 
 type Row = { slug: string; title: string; title_hi: string | null; discount_percent: number; starts_at: string; ends_at: string; active: boolean; razorpay_plan_monthly: string | null; razorpay_plan_yearly: string | null; updated_at?: string; updated_by?: string | null };
@@ -20,6 +21,7 @@ const ist = (iso: string) => new Intl.DateTimeFormat("en-IN", { day: "numeric", 
  * entered; the status line says which plans are being charged at the sale price right now.
  */
 export function SuperAdminFestiveSale() {
+  const { language } = useLanguage();
   const [data, setData] = useState<Data | null>(null);
   const [form, setForm] = useState<Row | null>(null);
   const [state, setState] = useState<"idle" | "saving" | "saved" | "error">("idle");
@@ -65,7 +67,7 @@ export function SuperAdminFestiveSale() {
 
     <div className={styles.grid}>
       <label><span>Sale name</span><input value={form.title} maxLength={80} onChange={event => set("title", event.target.value)} /></label>
-      <label><span>Name in Hindi</span><input value={form.title_hi ?? ""} maxLength={80} onChange={event => set("title_hi", event.target.value)} /></label>
+      {language === "hi" && <label><span>Name in Hindi</span><input value={form.title_hi ?? ""} maxLength={80} onChange={event => set("title_hi", event.target.value)} /></label>}
       <label><span><Percent size={13} aria-hidden="true" />Discount on every payment (%)</span><input type="number" min={1} max={90} value={percent} onChange={event => set("discount_percent", Math.max(1, Math.min(90, Number(event.target.value) || 1)))} /></label>
       <label><span><CalendarClock size={13} aria-hidden="true" />Starts (IST)</span><input type="datetime-local" value={toInput(form.starts_at)} onChange={event => event.target.value && set("starts_at", fromInput(event.target.value))} /></label>
       <label><span><CalendarClock size={13} aria-hidden="true" />Ends (IST)</span><input type="datetime-local" value={toInput(form.ends_at)} onChange={event => event.target.value && set("ends_at", fromInput(event.target.value))} /></label>

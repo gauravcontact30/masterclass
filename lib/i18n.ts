@@ -3179,17 +3179,27 @@ export interface SupportedLanguage {
   country: string;
   flag: string;
   region: string;
+  /** Whether the site's learning content is localized for this language yet; others show as "Coming soon". */
+  available: boolean;
 }
 
 export const SUPPORTED_LANGUAGES: readonly SupportedLanguage[] = [
-  { code: "en", countryCode: "US", name: "English", nativeName: "English", country: "United States / Global", flag: "🇺🇸", region: "Global" },
-  { code: "hi", countryCode: "IN", name: "Hindi", nativeName: "हिन्दी", country: "India", flag: "🇮🇳", region: "South Asia / Tech Hub" },
-  { code: "es", countryCode: "ES", name: "Spanish", nativeName: "Español", country: "Spain & Latin America", flag: "🇪🇸", region: "Europe & Americas" },
-  { code: "ja", countryCode: "JP", name: "Japanese", nativeName: "日本語", country: "Japan", flag: "🇯🇵", region: "East Asia / AI & Robotics" },
-  { code: "de", countryCode: "DE", name: "German", nativeName: "Deutsch", country: "Germany & DACH", flag: "🇩🇪", region: "Europe / Engineering" },
-  { code: "fr", countryCode: "FR", name: "French", nativeName: "Français", country: "France & EU", flag: "🇫🇷", region: "Europe / AI Research" },
-  { code: "zh", countryCode: "CN", name: "Chinese", nativeName: "简体中文", country: "China", flag: "🇨🇳", region: "East Asia / Deep Tech" },
+  { code: "en", countryCode: "US", name: "English", nativeName: "English", country: "United States / Global", flag: "🇺🇸", region: "Global", available: true },
+  { code: "hi", countryCode: "IN", name: "Hindi", nativeName: "हिन्दी", country: "India", flag: "🇮🇳", region: "South Asia / Tech Hub", available: true },
+  { code: "es", countryCode: "ES", name: "Spanish", nativeName: "Español", country: "Spain & Latin America", flag: "🇪🇸", region: "Europe & Americas", available: false },
+  { code: "ja", countryCode: "JP", name: "Japanese", nativeName: "日本語", country: "Japan", flag: "🇯🇵", region: "East Asia / AI & Robotics", available: false },
+  { code: "de", countryCode: "DE", name: "German", nativeName: "Deutsch", country: "Germany & DACH", flag: "🇩🇪", region: "Europe / Engineering", available: false },
+  { code: "fr", countryCode: "FR", name: "French", nativeName: "Français", country: "France & EU", flag: "🇫🇷", region: "Europe / AI Research", available: false },
+  { code: "zh", countryCode: "CN", name: "Chinese", nativeName: "简体中文", country: "China", flag: "🇨🇳", region: "East Asia / Deep Tech", available: false },
 ] as const;
+
+/**
+ * Only English (the default) and Hindi have localized content today (user decision 2026-10-26); the other languages
+ * stay listed but disabled until their content is added. Turn one on by setting `available: true` above.
+ */
+export const isLanguageAvailable = (code: string): code is Language => SUPPORTED_LANGUAGES.some(item => item.code === code && item.available);
+/** The language to use for a saved, detected or requested choice: itself when available, English otherwise. */
+export const usableLanguage = (code: string | null | undefined): Language => (code && isLanguageAvailable(code) ? code : "en");
 
 /** Maps standard ISO country codes to default native languages */
 export const COUNTRY_TO_LANGUAGE: Record<string, Language> = {

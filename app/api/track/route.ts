@@ -44,7 +44,7 @@ export async function POST(request: Request) {
   let input: z.infer<typeof bodySchema>;
   try { input = bodySchema.parse(await jsonBody(request, 4000)); } catch (error) { return new Response(null, { status: error instanceof HttpError ? error.status : 400 }); }
   // Super admin pages are not part of the audience being measured.
-  if (input.path.startsWith("/super-admin") || input.path.startsWith("/api/")) return noContent();
+  if (/^\/(?:dashboard\/)?super-admin(?:\/|$)/.test(input.path) || input.path.startsWith("/api/")) return noContent();
 
   const ip = clientIp(request.headers);
   // The site's own development server is not audience (it shares the production database); TRACK_LOCAL=1 records it.
@@ -70,7 +70,8 @@ export async function POST(request: Request) {
 
   const known = store.get(VISITOR)?.value;
   const visitorId = known && /^[\w-]{8,64}$/.test(known) ? known : randomUUID();
-  const sessionId = store.get(SESSION)?.value && /^[\w-]{8,64}$/.test(store.get(SESSION)!.value) ? store.get(SESSION)!.value : randomUUID();
+  const knownSession = store.get(SESSION)?.value;
+  const sessionId = knownSession && /^[\w-]{8,64}$/.test(knownSession) ? knownSession : randomUUID();
   // A first-party, HTTP-only id: one per browser for a year, and a session that ends after 30 idle minutes.
   store.set(VISITOR, visitorId, { httpOnly: true, sameSite: "lax", secure, path: "/", maxAge: 365 * 86400 });
   store.set(SESSION, sessionId, { httpOnly: true, sameSite: "lax", secure, path: "/", maxAge: SESSION_SECONDS });
@@ -82,7 +83,7 @@ export async function POST(request: Request) {
   // Carry the session's source across client-side routes and reloads, including midnight.
   const sourceSchema = z.object({ source: text(80), medium: text(80), campaign: text(120), referrer: text(120) });
   let prior: z.infer<typeof sourceSchema> | null = null;
-  try { prior = sourceSchema.parse(JSON.parse(store.get("mc_attribution")?.value || "null")); } catch { /* no valid source */ }
+  try { if (knownSession === sessionId) prior = sourceSchema.parse(JSON.parse(store.get("mc_attribution")?.value || "null")); } catch { /* no valid source */ }
   const attribution = input.utm?.source || referrerHost
     ? { source: input.utm?.source || null, medium: input.utm?.medium || null, campaign: input.utm?.campaign || null, referrer: referrerHost }
     : prior || { source: null, medium: null, campaign: null, referrer: null };

@@ -3,20 +3,12 @@ import { api } from "@/lib/server/http";
 import { requireSuperAdmin } from "@/lib/server/super-admin";
 import { db, check } from "@/lib/server/db";
 import { billingConfigured } from "@/lib/server/config";
-import { protectWithArcjet } from "@/lib/arcjet";
 import { cacheFetch } from "@/lib/redis";
 import { inngest } from "@/lib/inngest/client";
 
 
 export async function GET(request: Request) {
-  // 1. Arcjet Security Shield Check
-  const arcjetCheck = await protectWithArcjet(request);
-  if (!arcjetCheck.allowed) {
-    return Response.json(
-      { error: "ACCESS_DENIED", message: arcjetCheck.reason },
-      { status: arcjetCheck.status || 403 }
-    );
-  }
+  // The proxy applies Arcjet once for this route. Keep role checks here.
 
   return api(async () => {
     // 2. Authentication and Authorization Check

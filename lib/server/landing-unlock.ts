@@ -35,7 +35,7 @@ export async function rememberUnlock(key: string, secure: boolean) {
 export async function hasUnlock(key: string, userId: string | null) {
   if ((await cookieUnlocks()).includes(key)) return true;
   if (!userId) return false;
-  const { data } = await db().from("billing_ledger").select("event_id").eq("user_id", userId).eq("subscription_ref", `unlock:${key}`).limit(1);
+  const { data } = await db().from("card_unlock_entitlements").select("unlock_key").eq("user_id", userId).eq("unlock_key", `unlock:${key}`).limit(1);
   return !!data?.length;
 }
 

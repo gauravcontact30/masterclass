@@ -160,7 +160,7 @@ export default async function Image({ params }: ImageProps) {
                 }}
               >
                 <span style={{ fontSize: 11, fontWeight: 800, color: "#a5b4fc" }}>
-                  7 LANGUAGES · 🇺🇸 🇮🇳 🇪🇸 🇯🇵 🇩🇪 🇫🇷 🇨🇳
+                  ENGLISH & HINDI · 🇺🇸 🇮🇳
                 </span>
               </div>
 
@@ -293,8 +293,8 @@ export default async function Image({ params }: ImageProps) {
                   <img
                     src={article.author.avatar}
                     alt={article.author.name}
-                    width="44"
-                    height="44"
+                    width={44}
+                    height={44}
                     style={{ objectFit: "cover" }}
                   />
                 ) : (
@@ -326,7 +326,7 @@ export default async function Image({ params }: ImageProps) {
                 }}
               >
                 <span style={{ fontSize: 12, fontWeight: 800, color: "#fbbf24" }}>
-                  {article.rating.count ? `★ ${article.rating.average} / 5 (${article.rating.count} ratings)` : `★ New · ${article.readTimeMinutes} min read`}
+                  {article.rating.count ? `${article.rating.average} / 5 (${article.rating.count} ratings)` : `New · ${article.readTimeMinutes} min read`}
                 </span>
               </div>
 
@@ -381,7 +381,7 @@ export default async function Image({ params }: ImageProps) {
               🔒 masterclassbuddy.com/tech-buzz/{article.slug}
             </span>
             <span style={{ fontSize: 12, fontWeight: 700, color: "#94a3b8" }}>
-              Medium • daily.dev • Dev.to • Hashnode • Substack • Indie Hackers
+              Tech Buzz • Reader-rated technology stories
             </span>
           </div>
         </div>

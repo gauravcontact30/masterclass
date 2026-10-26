@@ -77,6 +77,16 @@ describe("SuperAdminTransactions", () => {
   });
 
   it("deletes a transaction from the table when confirmed in the delete dialog", async () => {
+    let deleted = false;
+    jest.mocked(global.fetch).mockImplementation(async (_url, init) => {
+      if (init?.method === "DELETE") {
+        deleted = true;
+        return { ok: true, json: async () => ({ success: true, id: failed.id }) } as Response;
+      }
+      return { ok: true, json: async () => deleted ? {
+        ...result, rows: [paid], total: 1, summary: { ...result.summary, count: 1, failed: 0 }, insights: undefined,
+      } : result } as Response;
+    });
     render(<SuperAdminTransactions />);
     const deleteBtn = await screen.findByRole("button", { name: "Delete transaction record pay_fail" });
     fireEvent.click(deleteBtn);
@@ -84,7 +94,29 @@ describe("SuperAdminTransactions", () => {
     const confirmBtn = screen.getByRole("button", { name: "Delete Transaction" });
     fireEvent.click(confirmBtn);
     await waitFor(() => {
-      expect(screen.queryByText("pay_fail")).not.toBeInTheDocument();
+      expect(screen.queryByRole("button", { name: "Delete transaction record pay_fail" })).not.toBeInTheDocument();
+      expect(screen.getByText("1 records")).toBeInTheDocument();
     });
+    expect(global.fetch).toHaveBeenCalledWith("/api/super-admin/transactions", expect.objectContaining({ method: "DELETE", body: JSON.stringify({ id: failed.id }) }));
+    expect(screen.queryByRole("heading", { name: /why payments failed/i })).not.toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: /refresh/i }));
+    await waitFor(() => expect(global.fetch).toHaveBeenCalledTimes(4));
+    expect(screen.queryByRole("button", { name: "Delete transaction record pay_fail" })).not.toBeInTheDocument();
+  });
+
+  it("keeps the transaction when the backend deletion fails", async () => {
+    const alert = jest.spyOn(window, "alert").mockImplementation(() => {});
+    jest.mocked(global.fetch).mockImplementation(async (_url, init) => ({
+      ok: init?.method !== "DELETE",
+      json: async () => init?.method === "DELETE" ? { error: "transaction_delete_failed" } : result,
+    }) as Response);
+    render(<SuperAdminTransactions />);
+    fireEvent.click(await screen.findByRole("button", { name: "Delete transaction record pay_fail" }));
+    fireEvent.click(screen.getByRole("button", { name: "Delete Transaction" }));
+    await waitFor(() => expect(alert).toHaveBeenCalledWith("transaction_delete_failed"));
+    fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
+    expect(screen.getByRole("button", { name: "Delete transaction record pay_fail" })).toBeInTheDocument();
+    expect(screen.queryByText(/deleted successfully/i)).not.toBeInTheDocument();
+    alert.mockRestore();
   });
 });

@@ -133,7 +133,7 @@ export default function Image() {
                 }}
               >
                 <span style={{ fontSize: 11, fontWeight: 700, color: "#e2e8f0" }}>
-                  medium.com · daily.dev · indiehackers.com
+                  Reader-rated technology stories
                 </span>
               </div>
 
@@ -190,7 +190,7 @@ export default function Image() {
                 marginTop: 8,
               }}
             >
-              Zero-noise precision of daily.dev, typographic craft of Medium &amp; Ghost, and builder revenue metrics of Indie Hackers. Deep dives into MCP, React 19, Rust Tokio &amp; PG17.
+              Practical deep dives on every technology in the Learning Dashboard: Next.js 16, React 19, LangChain, AI agents, Node.js, Python, Docker, AWS and system design.
             </span>
           </div>
 
@@ -219,7 +219,7 @@ export default function Image() {
               <span style={{ fontSize: 12, fontWeight: 700, color: "#ffffff", marginTop: 4 }}>
                 The Rise of Agentic AI &amp; Anthropic MCP
               </span>
-              <span style={{ fontSize: 11, color: "#94a3b8", marginTop: 2 }}>4.96★ · Dr. Priya Sharma · 894 upvotes</span>
+              <span style={{ fontSize: 11, color: "#94a3b8", marginTop: 2 }}>4.96/5 · Dr. Priya Sharma · 894 upvotes</span>
             </div>
 
             <div
@@ -237,7 +237,7 @@ export default function Image() {
               <span style={{ fontSize: 12, fontWeight: 700, color: "#ffffff", marginTop: 4 }}>
                 React Compiler &amp; Async Request APIs
               </span>
-              <span style={{ fontSize: 11, color: "#94a3b8", marginTop: 2 }}>4.94★ · Marcus Vance · 742 upvotes</span>
+              <span style={{ fontSize: 11, color: "#94a3b8", marginTop: 2 }}>4.94/5 · Marcus Vance · 742 upvotes</span>
             </div>
 
             <div
@@ -255,7 +255,7 @@ export default function Image() {
               <span style={{ fontSize: 12, fontWeight: 700, color: "#ffffff", marginTop: 4 }}>
                 Scaling to 10M WebSockets with Tokio
               </span>
-              <span style={{ fontSize: 11, color: "#94a3b8", marginTop: 2 }}>4.98★ · Taro Tanaka · 920 upvotes</span>
+              <span style={{ fontSize: 11, color: "#94a3b8", marginTop: 2 }}>4.98/5 · Taro Tanaka · 920 upvotes</span>
             </div>
           </div>
 

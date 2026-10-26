@@ -1,14 +1,15 @@
 "use client";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Briefcase, Camera, Check, CircleDot, Copy, GraduationCap, Link2, MessageCircle, PenLine, Pencil, Pin, PlayCircle, Plus, Send, ThumbsUp, Trash2, AtSign, type LucideIcon } from "lucide-react";
 import { Alert, AlertDescription } from "./ui/alert";
 import { Card } from "./ui/card";
 import { AdminTable } from "./super-admin-table";
 import { DEFAULT_FORMAT, LINK_HINT, PLATFORMS, PLATFORM_LABEL, PLATFORM_METRICS, PROMOTION_FORMATS, PROMOTION_STATUSES, campaignSlug, derivedRates, hasPlatformMetrics, utmLink, type Attribution, type MetricKey, type Platform, type PlatformStats, type Promotion, type PromotionFormat } from "@/lib/promotions";
 import { SuperAdminDailySocial } from "./super-admin-daily-social";
+import { SuperAdminOverallVisitors } from "./super-admin-overall-visitors";
 import styles from "./super-admin-promotions.module.css";
 
-type Data = Attribution & { promotions: Promotion[]; days: number; capped: boolean; generatedAt: string };
+type Data = Attribution & { promotions: Promotion[]; days: number; capped: boolean; generatedAt: string; retentionDays: number };
 export const PLATFORM_ICON: Record<Platform, LucideIcon> = { instagram: Camera, facebook: ThumbsUp, linkedin: Briefcase, telegram: Send, medium: PenLine, pinterest: Pin, coursera: GraduationCap, youtube: PlayCircle, x: AtSign, whatsapp: MessageCircle, other: CircleDot };
 /** Validated categorical palette (dataviz default order); stacking order follows it, so colour follows the platform. */
 const PLATFORM_COLOR: Record<Platform, string> = { facebook: "#2a78d6", instagram: "#eb6834", telegram: "#1baf7a", linkedin: "#eda100", x: "#e87ba4", whatsapp: "#008300", other: "#6250d6", youtube: "#e34948", medium: "#3d3d3a", pinterest: "#a3176a", coursera: "#00838f" };
@@ -37,15 +38,29 @@ export function SuperAdminPromotions({ days, query }: Readonly<{ days: number; q
   const [draft, setDraft] = useState<Draft | null>(null);
   const [saving, setSaving] = useState(false);
   const [confirm, setConfirm] = useState<string | null>(null);
+  const requestVersion = useRef(0);
   const load = useCallback(async (signal?: AbortSignal) => {
+    const version = ++requestVersion.current;
     try {
       const response = await fetch(`/api/super-admin/promotions?days=${days}`, { cache: "no-store", signal });
       const body = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(body.error === "migration_required" ? "Apply migration 0024_promotions.sql to start tracking promotions." : "Promotional tracking is unavailable right now.");
-      if (!signal?.aborted) { setData(body); setError(""); }
-    } catch (e) { if (!signal?.aborted && !(e instanceof DOMException)) setError(e instanceof Error ? e.message : "Unable to load promotions."); }
+      if (!signal?.aborted && version === requestVersion.current) { setData(body); setError(""); }
+    } catch (e) { if (!signal?.aborted && version === requestVersion.current) setError(e instanceof Error ? e.message : "Unable to load promotions."); }
   }, [days]);
-  useEffect(() => { const controller = new AbortController(); queueMicrotask(() => void load(controller.signal)); return () => controller.abort(); }, [load]);
+  useEffect(() => {
+    const controller = new AbortController();
+    let pending = false;
+    const run = async () => {
+      if (pending || controller.signal.aborted || document.visibilityState === "hidden") return;
+      pending = true; await load(controller.signal); pending = false;
+    };
+    queueMicrotask(() => void run());
+    const timer = setInterval(() => void run(), 30_000);
+    const visible = () => { void run(); };
+    document.addEventListener("visibilitychange", visible);
+    return () => { controller.abort(); clearInterval(timer); document.removeEventListener("visibilitychange", visible); };
+  }, [load]);
 
   async function save() {
     if (!draft) return;
@@ -74,25 +89,27 @@ export function SuperAdminPromotions({ days, query }: Readonly<{ days: number; q
 
   return <div className={styles.page}>
     <SuperAdminDailySocial query={query} />
+    <SuperAdminOverallVisitors query={query} />
     {error && <Alert variant="destructive"><AlertDescription>{error}</AlertDescription></Alert>}
-    {data?.capped && <Alert><AlertDescription>This window has more than 20,000 page views; the figures cover the first 20,000. Choose a shorter reporting window for exact numbers.</AlertDescription></Alert>}
     {!data && !error && <p className={styles.loading} role="status">Loading promotional tracking…</p>}
     {data && <>
       <section aria-labelledby="promo-funnel" className={styles.kpis}>
         <h2 id="promo-funnel" className={styles.srOnly}>Social funnel</h2>
-        {[["Social visits", num(data.totals.visits), `Page views from social, blogging and course platforms in the last ${data.days} days`], ["Unique visitors", num(data.totals.visitors), "Browsers counted once"], ["Sign-ups", num(data.totals.signups), "New accounts whose first visit came from social"], ["Paying members", num(data.totals.members), "Of those sign-ups, with an active membership"], ["Spend", money(data.totals.spend), "Entered on registered promotions"], ["Cost per sign-up", data.totals.spend && data.totals.signups ? money(data.totals.spend / data.totals.signups) : "—", "Spend ÷ social sign-ups"]].map(([label, value, note]) =>
+        {[["Platform page views", num(data.totals.visits), `Recorded traffic in the selected ${data.days}-day window`], ["Unique visitors", num(data.totals.visitors), "Browsers deduplicated across platforms"], ["New accounts observed", num(data.totals.signups), "Accounts created in this window and observed via a platform"], ["Active members", num(data.totals.members), "Of those accounts, with an unexpired active membership"], ["Registered spend", money(data.totals.spend), "Manually entered totals; may cover a different period"], ["Sessions", num(data.totals.sessions), "Distinct recorded browser sessions"]].map(([label, value, note]) =>
           <Card key={label} className={styles.kpi}><span>{label}</span><strong>{value}</strong><small>{note}</small></Card>)}
       </section>
 
       <section aria-labelledby="promo-platforms">
         <h2 id="promo-platforms" className={styles.heading}>Platforms</h2>
+        <p className={styles.note} role="status">Website traffic refreshes every 30 seconds while visible. Last successful refresh: {new Date(data.generatedAt).toLocaleString("en-IN", { timeZone: "Asia/Kolkata" })} IST.{error && " Refresh failed; figures below may be stale."}</p>
+        <p className={styles.note}>Visits are measured on this website using UTM links and referrers. Retention is {data.retentionDays} days, even when a longer window is selected. Platform reach, impressions, engagements and spend are manually entered promotion totals, not live platform API data. Missing referrals cannot be reconstructed.</p>
         <div className={styles.platforms}>{data.platforms.map(item => { const Icon = PLATFORM_ICON[item.platform]; return <Card key={item.platform} className={styles.platform} style={{ "--brand": PLATFORM_COLOR[item.platform] } as React.CSSProperties}>
-          <header><span className={styles.platformIcon} aria-hidden="true"><Icon size={18} /></span><b>{PLATFORM_LABEL[item.platform]}</b><span className={styles.live}>{item.live} live · {item.promotions} total</span></header>
+          <header><span className={styles.platformIcon} aria-hidden="true"><Icon size={18} /></span><b>{PLATFORM_LABEL[item.platform]}</b><span className={styles.live}>{item.live} marked live · {item.promotions} promotions</span></header>
           <dl>
-            <div><dt>Visits</dt><dd>{num(item.visits)}</dd></div><div><dt>Visitors</dt><dd>{num(item.visitors)}</dd></div>
-            <div><dt>Sign-ups</dt><dd>{num(item.signups)}</dd></div><div><dt>Members</dt><dd>{num(item.members)}</dd></div>
-            <div><dt>Reach</dt><dd>{num(item.reach)}</dd></div><div><dt>Engagements</dt><dd>{num(item.engagements)}</dd></div>
-            <div><dt>Spend</dt><dd>{money(item.spend)}</dd></div><div><dt>Cost / sign-up</dt><dd>{item.costPerSignup ? money(item.costPerSignup) : "—"}</dd></div>
+            <div><dt>Website page views</dt><dd>{num(item.visits)}</dd></div><div><dt>Unique browsers</dt><dd>{num(item.visitors)}</dd></div>
+            <div><dt>New accounts observed</dt><dd>{num(item.signups)}</dd></div><div><dt>Active members</dt><dd>{num(item.members)}</dd></div>
+            <div><dt>Entered reach total</dt><dd>{item.promotions ? num(item.reach) : "Not entered"}</dd></div><div><dt>Entered engagements</dt><dd>{item.promotions ? num(item.engagements) : "Not entered"}</dd></div>
+            <div><dt>Entered spend</dt><dd>{item.promotions ? money(item.spend) : "Not entered"}</dd></div><div><dt>Website sessions</dt><dd>{num(item.sessions)}</dd></div>
             {item.followers > 0 && <div><dt>Followers gained</dt><dd>{num(item.followers)}</dd></div>}
           </dl>
           <PlatformAnalytics stats={item} />
@@ -163,7 +180,7 @@ function PlatformAnalytics({ stats }: Readonly<{ stats: PlatformStats }>) {
   if (!hasPlatformMetrics(stats.platform)) return null;
   const rates = derivedRates(stats.platform, stats.metrics, stats.impressions);
   return <div className={styles.analytics}>
-    <h3>{PLATFORM_LABEL[stats.platform]} analytics</h3>
+    <h3>{PLATFORM_LABEL[stats.platform]} figures (manual)</h3>
     <dl>
       {PLATFORM_METRICS[stats.platform].map(def => <div key={def.key}><dt>{def.label}</dt><dd>{metricValue(stats.platform, def.key as MetricKey, stats.metrics[def.key as MetricKey])}</dd></div>)}
       {stats.platform === "pinterest" && <div><dt>Impressions</dt><dd>{num(stats.impressions)}</dd></div>}

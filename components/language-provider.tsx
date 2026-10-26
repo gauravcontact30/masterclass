@@ -7,6 +7,8 @@ import {
   translations,
   SUPPORTED_LANGUAGES,
   COUNTRY_TO_LANGUAGE,
+  isLanguageAvailable,
+  usableLanguage,
   type TranslationKey,
   type SupportedLanguage,
 } from "@/lib/i18n";
@@ -75,11 +77,12 @@ function subscribe(callback: () => void) {
 function snapshot(): Language {
   try {
     const saved = localStorage.getItem("masterclass:language");
+    // A saved or detected language without localized content yet falls back to English.
     if (saved && (LANGUAGES as readonly string[]).includes(saved)) {
-      return saved as Language;
+      return usableLanguage(saved);
     }
     if (process.env.NODE_ENV !== "test" && typeof window !== "undefined") {
-      const detected = detectBrowserLocale();
+      const detected = usableLanguage(detectBrowserLocale());
       memoryLanguage = detected;
       return detected;
     }
@@ -114,7 +117,7 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
         if (!data) return;
         if (data.country) setDetectedCountry(data.country);
         const geoLang = data.language as Language | undefined;
-        if (geoLang && (LANGUAGES as readonly string[]).includes(geoLang)) {
+        if (geoLang && isLanguageAvailable(geoLang)) {
           const manual = localStorage.getItem("masterclass:language-manual") === "1";
           const currentSaved = localStorage.getItem("masterclass:language");
           if (!manual && !currentSaved && geoLang !== memoryLanguage) {
@@ -131,7 +134,8 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     return () => controller.abort();
   }, []);
 
-  const setLanguage = useCallback((value: Language, persist = true) => {
+  const setLanguage = useCallback((requested: Language, persist = true) => {
+    const value = usableLanguage(requested);
     memoryLanguage = value;
     try {
       localStorage.setItem("masterclass:language", value);

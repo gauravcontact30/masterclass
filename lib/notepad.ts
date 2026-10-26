@@ -30,13 +30,15 @@ export const PAPER_COLORS = [
 /** Keep imported/pasted documents inert, including documents restored from browser storage. */
 export function sanitizeNotepadHtml(html: string): string {
   const source = new DOMParser().parseFromString(html, "text/html");
-  const allowed = new Set("P DIV SPAN BR B STRONG I EM U S STRIKE SUB SUP H1 H2 H3 H4 H5 H6 UL OL LI BLOCKQUOTE PRE CODE HR TABLE THEAD TBODY TFOOT TR TH TD IMG A FONT".split(" "));
-  const styles = new Set(["color", "background-color", "font-family", "font-size", "font-weight", "font-style", "text-decoration", "text-align", "margin-left", "line-height", "white-space", "break-before", "page-break-before"]);
+  const allowed = new Set("P DIV SPAN BR B STRONG I EM U S STRIKE SUB SUP H1 H2 H3 H4 H5 H6 UL OL LI BLOCKQUOTE PRE CODE HR TABLE THEAD TBODY TFOOT TR TH TD IMG A FONT MARK SMALL KBD INPUT".split(" "));
+  const styles = new Set(["color", "background-color", "font-family", "font-size", "font-weight", "font-style", "text-decoration", "text-align", "margin-left", "line-height", "white-space", "break-before", "page-break-before", "letter-spacing", "text-transform", "border", "border-left", "border-radius", "padding", "margin", "display"]);
   function clean(node: Node): Node {
     if (node.nodeType === Node.TEXT_NODE) return document.createTextNode(node.textContent || "");
     if (!(node instanceof HTMLElement) || !allowed.has(node.tagName)) return document.createTextNode("");
     const el = document.createElement(node.tagName.toLowerCase());
     if (["workflow", "decision"].includes(node.getAttribute("data-notepad-diagram") || "")) el.setAttribute("data-notepad-diagram", node.getAttribute("data-notepad-diagram")!);
+    if (node.getAttribute("data-notepad-callout")) el.setAttribute("data-notepad-callout", node.getAttribute("data-notepad-callout")!);
+    if (node.getAttribute("data-notepad-checklist")) el.setAttribute("data-notepad-checklist", "true");
     for (const property of styles) {
       const value = node.style.getPropertyValue(property);
       if (value && !/url\s*\(|expression|var\s*\(/i.test(value)) el.style.setProperty(property, value);
@@ -49,6 +51,10 @@ export function sanitizeNotepadHtml(html: string): string {
     if (node.tagName === "A" && /^(https?:|mailto:)/i.test(node.getAttribute("href") || "")) el.setAttribute("href", node.getAttribute("href")!);
     for (const attr of ["colspan", "rowspan"]) if (/^\d{1,2}$/.test(node.getAttribute(attr) || "")) el.setAttribute(attr, node.getAttribute(attr)!);
     if (node.tagName === "FONT") for (const attr of ["color", "face", "size"]) if (node.hasAttribute(attr)) el.setAttribute(attr, node.getAttribute(attr)!);
+    if (node.tagName === "INPUT" && node.getAttribute("type") === "checkbox") {
+      el.setAttribute("type", "checkbox");
+      if (node.hasAttribute("checked") || (node as HTMLInputElement).checked) el.setAttribute("checked", "");
+    }
     node.childNodes.forEach(child => el.append(clean(child)));
     return el;
   }
@@ -60,5 +66,5 @@ export function sanitizeNotepadHtml(html: string): string {
 export function notepadDocument(title: string, html: string, background = "#ffffff") {
   const paper = PAPER_COLORS.some(color => color.value === background) ? background : "#ffffff";
   const escaped = title.replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]!));
-  return `<!doctype html><html><head><meta charset="utf-8"><meta name="notepad-paper" content="${paper}"><title>${escaped}</title><style>body{background:${paper};print-color-adjust:exact;max-width:800px;margin:40px auto;font:16px/1.6 Arial;padding:24px;overflow-wrap:anywhere}table{border-collapse:collapse;width:100%}td,th{border:1px solid #888;padding:8px;min-width:40px}img{max-width:100%;height:auto}ul{list-style:disc}ol{list-style:decimal}@media print{body{margin:0;padding:0}hr{break-after:page}}</style></head><body>${sanitizeNotepadHtml(html)}</body></html>`;
+  return `<!doctype html><html><head><meta charset="utf-8"><meta name="notepad-paper" content="${paper}"><title>${escaped}</title><style>body{background:${paper};print-color-adjust:exact;max-width:800px;margin:40px auto;font:16px/1.6 Arial;padding:24px;overflow-wrap:anywhere}table{border-collapse:collapse;width:100%}td,th{border:1px solid #888;padding:8px;min-width:40px}img{max-width:100%;height:auto}ul{list-style:disc}ol{list-style:decimal}pre{background:#f4f3ef;padding:12px;border-radius:6px;overflow-x:auto}code{background:#f4f3ef;padding:2px 5px;border-radius:4px;font-family:monospace}[data-notepad-callout]{padding:12px 16px;border-radius:6px;margin:14px 0}[data-notepad-callout="info"]{background:#eff6ff;border-left:4px solid #2563eb}[data-notepad-callout="tip"]{background:#ecfdf5;border-left:4px solid #059669}[data-notepad-callout="warning"]{background:#fffbeb;border-left:4px solid #d97706}[data-notepad-callout="alert"]{background:#fef2f2;border-left:4px solid #dc2626}[data-notepad-callout="note"]{background:#f5f3ff;border-left:4px solid #7c3aed}@media print{body{margin:0;padding:0}hr{break-after:page}}</style></head><body>${sanitizeNotepadHtml(html)}</body></html>`;
 }

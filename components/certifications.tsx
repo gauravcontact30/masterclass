@@ -2,7 +2,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useId, useMemo, useState, useSyncExternalStore } from "react";
-import { ArrowRight, Award, BadgeCheck, BookOpen, Bot, CalendarClock, Check, ChevronsDownUp, ChevronsUpDown, Cloud, ClipboardCheck, GraduationCap, Hammer, Layers, Lightbulb, ListChecks, Search, Sparkles, Users, X } from "lucide-react";
+import { ArrowRight, Award, BadgeCheck, BookOpen, Bot, CalendarClock, Check, CheckCircle2, ChevronsDownUp, ChevronsUpDown, Cloud, ClipboardCheck, Clock, GraduationCap, Hammer, HelpCircle, Info, Layers, Lightbulb, ListChecks, Search, Sparkles, Target, Users, Wallet, X, type LucideIcon } from "lucide-react";
 import { CERT_CATEGORIES, CERTIFICATION_TRACKS, certificationTrack, type CertCategory, type CertLevel, type CertTrack } from "@/lib/certifications";
 import { MockExam, StepStudy, useTrackContent } from "./certification-study";
 import { ListenButton } from "./listen-button";
@@ -128,6 +128,15 @@ export function Certifications({ initialTrack }: { initialTrack?: string }) {
   </div>;
 }
 
+/** An exam fact ("65 questions", "130 minutes", "USD 150", "pass 720/1000") with an icon that says what it is. */
+function factIcon(fact: string): LucideIcon {
+  if (/question/i.test(fact)) return HelpCircle;
+  if (/minute|hour/i.test(fact)) return Clock;
+  if (/usd|inr|eur|₹|\$|free|fee/i.test(fact)) return Wallet;
+  if (/pass|score/i.test(fact)) return Target;
+  return CheckCircle2;
+}
+
 function TrackDetail({ track, done, onToggle }: { track: CertTrack; done: Set<number>; onToggle: (step: number) => void }) {
   const percent = Math.round((done.size / track.steps.length) * 100);
   const next = track.steps.findIndex((_, at) => !done.has(at));
@@ -158,11 +167,14 @@ function TrackDetail({ track, done, onToggle }: { track: CertTrack; done: Set<nu
           <div><dt><BadgeCheck size={14} aria-hidden="true" />Certificates</dt><dd>{track.certificates.length} from {new Set(track.certificates.map(cert => cert.provider)).size === 1 ? track.certificates[0].provider : `${new Set(track.certificates.map(cert => cert.provider)).size} providers`}</dd></div>
         </dl>
       </div>
+      <div className={styles.side}>
+      <span className={styles.overviewCover}><Image src={`/images/landing/certifications/${track.id}.webp`} alt="" fill sizes="(max-width: 760px) 100vw, 300px" /></span>
       <div className={styles.progress}>
         <p><b>{percent}%</b> complete</p>
         <div className={styles.bar} role="progressbar" aria-label={`${track.title} progress`} aria-valuemin={0} aria-valuemax={100} aria-valuenow={percent}><span style={{ width: `${percent}%` }} /></div>
         <small>{next === -1 ? "Every step done. Time to book the exam." : `Next: step ${next + 1}, ${track.steps[next].title}`}</small>
         {next !== -1 && <button type="button" className={styles.nextButton} onClick={goToNext}>Go to step {next + 1}<ArrowRight size={14} aria-hidden="true" /></button>}
+      </div>
       </div>
     </div>
 
@@ -175,12 +187,15 @@ function TrackDetail({ track, done, onToggle }: { track: CertTrack; done: Set<nu
 
     <h3 id="cert-certificates" className={styles.heading}><BadgeCheck size={17} aria-hidden="true" />Certificates on this path<span className={styles.headingNote}>From first level to most advanced</span></h3>
     <ul className={styles.certs}>
-      {certificates.map(cert => <li key={cert.name} className={styles.cert}>
-        <span className={styles.level} data-level={cert.level}>{cert.level}</span>
+      {certificates.map(cert => <li key={cert.name} className={styles.cert} data-level={cert.level}>
+        <div className={styles.certTop}>
+          <span className={styles.certBadge} aria-hidden="true"><Award size={18} /></span>
+          <span className={styles.level} data-level={cert.level}>{cert.level}</span>
+        </div>
         <h4>{cert.name}</h4>
         <p className={styles.provider}>{cert.provider}{cert.code && <> · <code>{cert.code}</code></>}</p>
-        <p className={styles.format}>{cert.format}</p>
-        {cert.note && <p className={styles.note}>{cert.note}</p>}
+        <ul className={styles.format} aria-label="Exam format">{cert.format.split(/\s*·\s*/).filter(Boolean).map(fact => { const FactIcon = factIcon(fact); return <li key={fact}><FactIcon size={13} aria-hidden="true" />{fact}</li>; })}</ul>
+        {cert.note && <p className={styles.note}><Info size={14} aria-hidden="true" /><span>{cert.note}</span></p>}
       </li>)}
     </ul>
 
@@ -205,11 +220,11 @@ function TrackDetail({ track, done, onToggle }: { track: CertTrack; done: Set<nu
             <span className={styles.stepState}>{finished ? "Done" : at === next ? "Up next" : ""}</span>
           </summary>
           <div className={styles.stepBody}>
-            <p className={styles.stepListen}><ListenButton id={`cert:${track.id}:step:${at + 1}`} title={`Step ${at + 1}: ${step.title}`} compact
+            <p className={`${styles.stepListen} ${styles.stepWide}`}><ListenButton id={`cert:${track.id}:step:${at + 1}`} title={`Step ${at + 1}: ${step.title}`} compact
               text={() => [`Step ${at + 1}. ${step.title}`, `What to learn: ${step.learn.join(". ")}`, `Build: ${step.practice}`, `Checkpoint: ${step.checkpoint}`].join(". ")} />Listen to this step</p>
-            <div><h5><Lightbulb size={14} aria-hidden="true" />Learn</h5><ul>{step.learn.map(item => <li key={item}>{item}</li>)}</ul></div>
-            <div><h5><Hammer size={14} aria-hidden="true" />Build</h5><p>{step.practice}</p></div>
-            <div><h5><ClipboardCheck size={14} aria-hidden="true" />Checkpoint</h5><p>{step.checkpoint}</p></div>
+            <div className={styles.panel} data-kind="learn"><h5><Lightbulb size={14} aria-hidden="true" />Learn</h5><ul className={styles.checks}>{step.learn.map(item => <li key={item}><Check size={13} aria-hidden="true" /><span>{item}</span></li>)}</ul></div>
+            <div className={styles.panel} data-kind="build"><h5><Hammer size={14} aria-hidden="true" />Build</h5><p>{step.practice}</p></div>
+            <div className={styles.panel} data-kind="check"><h5><ClipboardCheck size={14} aria-hidden="true" />Checkpoint</h5><p>{step.checkpoint}</p></div>
             {content?.steps[at] && <StepStudy step={content.steps[at]} number={at + 1} listenId={`cert:${track.id}:step:${at + 1}`} />}
             <label className={styles.doneToggle}><input type="checkbox" checked={finished} onChange={() => onToggle(at)} />Mark step {at + 1} as done</label>
           </div>
@@ -220,7 +235,7 @@ function TrackDetail({ track, done, onToggle }: { track: CertTrack; done: Set<nu
     {content && <div id="cert-mock" className={styles.mockAnchor}><MockExam content={content} title={track.title} /></div>}
 
     <h3 id="cert-tips" className={styles.heading}><Award size={17} aria-hidden="true" />Exam-day tips<ListenButton id={`cert:${track.id}:tips`} title={`${track.title}: exam-day tips`} text={() => ["Exam-day tips", ...track.examTips].join(". ")} compact /></h3>
-    <ul className={styles.tips}>{track.examTips.map(tip => <li key={tip}>{tip}</li>)}</ul>
+    <ul className={styles.tips}>{track.examTips.map(tip => <li key={tip}><Lightbulb size={16} aria-hidden="true" /><span>{tip}</span></li>)}</ul>
     {track.source && <p className={styles.source}>{track.source}</p>}
   </section>;
 }

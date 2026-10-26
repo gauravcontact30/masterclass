@@ -1,28 +1,33 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
 import { siteName, siteUrl } from "@/lib/seo";
-import { TechBuzzBlog, type TechBuzzTopic } from "@/components/tech-buzz-blog";
-import { listPublishedTechBuzzArticles } from "@/lib/server/tech-buzz-storage";
-import { communityPosts } from "@/lib/server/community-feed";
+import { TechBuzzBlog, type TechBuzzGroup } from "@/components/tech-buzz-blog";
+import { listPublishedTechBuzzArticles, withUnsplashCovers } from "@/lib/server/tech-buzz-storage";
 import { isTechnologyStory, toCard, topicLabel } from "@/lib/tech-buzz-public";
 
-const DESCRIPTION = "Reader-rated technology blogs on Next.js 16, React 19, TypeScript, LangChain, LangGraph, AI agents, Node.js, Python, Docker, AWS, testing and system design, plus fresh developer community headlines.";
+const DESCRIPTION = "Reader-rated technology blogs on Next.js 16, React 19, TypeScript, LangChain, LangGraph, AI agents, Node.js, Python, Docker, AWS, testing and system design.";
 
 /**
- * Stories as light cards (bodies stay behind the member paywall), technology topics with their story counts, and
- * community headlines, all rendered on the server so the HTML carries every story link; an ItemList lists them too.
+ * Stories as light cards (bodies stay behind the member paywall) and technology topics with their story counts,
+ * rendered on the server so the HTML carries every story link; an ItemList lists them too.
  */
 async function Blog() {
-  const [articles, community] = await Promise.all([listPublishedTechBuzzArticles(), communityPosts().catch(() => [])]);
-  const cards = articles.filter(isTechnologyStory).map(toCard);
-  const counts = new Map<string, TechBuzzTopic>();
+  const articles = await listPublishedTechBuzzArticles();
+  const cards = await withUnsplashCovers(articles.filter(isTechnologyStory).map(toCard));
+  // Categories (largest first), each with the technologies written about in it.
+  const byCategory = new Map<string, TechBuzzGroup>();
   for (const card of cards) {
-    const id = card.techId ?? card.category;
-    const topic = counts.get(id) ?? { id, label: topicLabel(card), count: 0 };
-    topic.count += 1;
-    counts.set(id, topic);
+    const group = byCategory.get(card.category) ?? { category: card.category, count: 0, topics: [] };
+    group.count += 1;
+    if (card.techId) {
+      let topic = group.topics.find(item => item.id === card.techId);
+      if (!topic) group.topics.push(topic = { id: card.techId, label: topicLabel(card), count: 0 });
+      topic.count += 1;
+    }
+    byCategory.set(card.category, group);
   }
-  const topics = [...counts.values()].sort((a, b) => b.count - a.count || a.label.localeCompare(b.label));
+  const groups = [...byCategory.values()].sort((a, b) => b.count - a.count || a.category.localeCompare(b.category))
+    .map(group => ({ ...group, topics: group.topics.sort((a, b) => b.count - a.count || a.label.localeCompare(b.label)) }));
   const origin = siteUrl().href;
   const itemList = {
     "@context": "https://schema.org",
@@ -33,7 +38,7 @@ async function Blog() {
   };
   return <>
     <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(itemList).replace(/</g, "\\u003c") }} />
-    <TechBuzzBlog cards={cards} topics={topics} community={community} />
+    <TechBuzzBlog cards={cards} groups={groups} />
   </>;
 }
 

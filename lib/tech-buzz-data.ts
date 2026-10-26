@@ -598,7 +598,7 @@ spec:
       verified: true
     },
     coverImage: "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=1200&auto=format&fit=crop&q=80",
-    tags: ["Rust", "Micro-SaaS", "Indie Hackers", "Supabase", "Zero-Waste Architecture"],
+    tags: ["Rust", "Micro-SaaS", "Supabase", "Zero-Waste Architecture"],
     rankingScore: 98.4,
     source: {
       name: "Indie Hackers Builder Community",
@@ -1113,7 +1113,7 @@ ws.onmessage = (event) => {
       verified: true
     },
     coverImage: "https://images.unsplash.com/photo-1544383835-bda2bc66a55d?w=1200&auto=format&fit=crop&q=80",
-    tags: ["PostgreSQL 17", "pgvector", "Vector Search", "Database Scaling", "Medium"],
+    tags: ["PostgreSQL 17", "pgvector", "Vector Search", "Database Scaling"],
     rankingScore: 97.8,
     source: {
       name: "Medium Engineering Publications",

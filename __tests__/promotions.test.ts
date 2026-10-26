@@ -36,7 +36,7 @@ test("attribution follows the session, counts new sign-ups and paying members, a
       visit({ session_id: "s4", visitor_id: "v4", referrer_host: "google.com" }),
     ],
     profiles: [{ id: "u1", created_at: "2026-10-10T10:06:00Z" }, { id: "u2", created_at: "2025-01-01T00:00:00Z" }],
-    subscriptions: [{ user_id: "u1", status: "active", tier: "monthly" }],
+    subscriptions: [{ user_id: "u1", status: "active", tier: "monthly", current_period_end: "2099-01-01T00:00:00Z" }],
   });
   const instagram = result.platforms.find(p => p.platform === "instagram")!;
   expect(instagram).toMatchObject({ visits: 3, visitors: 2, sessions: 2, signups: 1, members: 1, spend: 1000, promotions: 1, live: 1, costPerSignup: 1000 });
@@ -47,4 +47,23 @@ test("attribution follows the session, counts new sign-ups and paying members, a
   expect(result.landingPages[0]).toMatchObject({ path: "/compare", platform: "instagram" });
   expect(result.totals).toMatchObject({ visits: 4, signups: 1, members: 1, spend: 1000 });
   expect(result.daily.map(point => point.day)).toEqual(["2026-10-10", "2026-10-11"]);
+});
+
+test("deduplicates browsers across platforms and never attributes earlier direct views to later referrals", () => {
+  const result = attribute({ since: "2026-10-01T00:00:00Z", profiles: [], subscriptions: [], promotions: [], visits: [
+    visit({ created_at: "2026-10-10T10:00:00Z" }),
+    visit({ created_at: "2026-10-10T10:01:00Z", utm_source: "instagram" }),
+    visit({ created_at: "2026-10-10T10:02:00Z", utm_source: "telegram", session_id: "s2" }),
+  ] });
+  expect(result.totals).toMatchObject({ visitors: 1, visits: 2, sessions: 2 });
+  expect(result.platforms.find(row => row.platform === "instagram")?.visits).toBe(1);
+  expect(result.platforms).toHaveLength(11);
+  expect(result.landingPages.some(row => row.platform === "instagram")).toBe(false);
+});
+
+test("explicit non-social UTM overrides a social referrer and daily counts use IST", () => {
+  expect(classifyPlatform({ utm_source: "newsletter", referrer_host: "instagram.com" })).toBeNull();
+  expect(classifyPlatform({ utm_source: "other", referrer_host: null })).toBe("other");
+  const result = attribute({ since: "2026-10-01T00:00:00Z", profiles: [], subscriptions: [], promotions: [], visits: [visit({ created_at: "2026-10-10T19:00:00Z", utm_source: "instagram" })] });
+  expect(result.daily[0].day).toBe("2026-10-11");
 });

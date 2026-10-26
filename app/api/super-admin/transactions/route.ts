@@ -1,5 +1,6 @@
 import { z } from "zod";
-import { api, HttpError } from "@/lib/server/http";
+import { api, HttpError, jsonBody, sameOrigin } from "@/lib/server/http";
+import { db } from "@/lib/server/db";
 import { requireSuperAdmin } from "@/lib/server/super-admin";
 import { razorpay } from "@/lib/server/billing";
 import { explainFailure, describeStep, type FailureExplanation } from "@/lib/payment-failures";
@@ -172,7 +173,17 @@ function csv(rows: Transaction[]) {
   return [head.join(","), ...body].join("\r\n");
 }
 
-const deletedIds = new Set<string>();
+// Read deletion markers on every request, including when Razorpay results are cached.
+// Query only this window's IDs in batches to stay below PostgREST's row/URL limits.
+async function withoutDeleted(rows: Transaction[]) {
+  const deleted = new Set<string>();
+  for (let start = 0; start < rows.length; start += 200) {
+    const { data, error } = await db().from("deleted_transactions").select("payment_id").in("payment_id", rows.slice(start, start + 200).map(row => row.id));
+    if (error) throw new HttpError(503, "transaction_deletions_unavailable");
+    for (const row of data ?? []) deleted.add(row.payment_id);
+  }
+  return rows.filter(row => !deleted.has(row.id));
+}
 
 export async function GET(request: Request) {
   return api(async () => {
@@ -180,11 +191,11 @@ export async function GET(request: Request) {
     const input = querySchema.parse(Object.fromEntries(new URL(request.url).searchParams));
     let all: Transaction[];
     try { all = await payments(input.window); } catch (error) { if (error instanceof HttpError && error.status === 503) throw error; throw new HttpError(502, "razorpay_unavailable"); }
+    all = await withoutDeleted(all);
     const q = input.q.toLowerCase();
     const from = input.from ? new Date(`${input.from}T00:00:00+05:30`).getTime() : -Infinity;
     const to = input.to ? new Date(`${input.to}T23:59:59.999+05:30`).getTime() : Infinity;
-    const rows = all.filter(row => !deletedIds.has(row.id)
-      && (input.status === "all" || row.status === input.status) && (input.type === "all" || row.type === input.type)
+    const rows = all.filter(row => (input.status === "all" || row.status === input.status) && (input.type === "all" || row.type === input.type)
       && (input.method === "all" || row.method === input.method)
       && new Date(row.createdAt).getTime() >= from && new Date(row.createdAt).getTime() <= to
       && (!q || [row.id, row.orderId, row.invoiceId, row.email, row.contact, row.item, row.methodDetail, row.failure?.title, row.failure?.reason].some(value => value?.toLowerCase().includes(q))));
@@ -196,8 +207,8 @@ export async function GET(request: Request) {
       summary: { count: rows.length, captured: sum(captured), refunded: rows.reduce((total, row) => total + row.refundedInr, 0), failed: rows.filter(row => row.status === "failed").length, unlocks: rows.filter(row => row.type === "Card unlock" && row.status === "captured").length },
       insights: insights(rows, all),
       // Suggestions for the search box: distinct emails, phones, items and ids containing what was typed.
-      suggestions: q ? [...new Set(all.filter(row => !deletedIds.has(row.id)).flatMap(row => [row.email, row.contact, row.item, row.id, row.orderId]).filter((value): value is string => !!value && value.toLowerCase().includes(q) && value.toLowerCase() !== q))].sort((x, y) => x.length - y.length).slice(0, 6) : [],
-      facets: { statuses: [...new Set(all.filter(row => !deletedIds.has(row.id)).map(row => row.status))].sort(), types: [...new Set(all.filter(row => !deletedIds.has(row.id)).map(row => row.type))].sort(), methods: [...new Set(all.filter(row => !deletedIds.has(row.id)).map(row => row.method))].filter(m => m !== "—").sort() },
+      suggestions: q ? [...new Set(all.flatMap(row => [row.email, row.contact, row.item, row.id, row.orderId]).filter((value): value is string => !!value && value.toLowerCase().includes(q) && value.toLowerCase() !== q))].sort((x, y) => x.length - y.length).slice(0, 6) : [],
+      facets: { statuses: [...new Set(all.map(row => row.status))].sort(), types: [...new Set(all.map(row => row.type))].sort(), methods: [...new Set(all.map(row => row.method))].filter(m => m !== "—").sort() },
       generatedAt: new Date().toISOString(),
     });
   }, request);
@@ -205,14 +216,14 @@ export async function GET(request: Request) {
 
 export async function DELETE(request: Request) {
   return api(async () => {
-    await requireSuperAdmin();
-    const body = await request.json().catch(() => ({}));
-    const id = typeof body?.id === "string" ? body.id.trim() : "";
-    if (!id) throw new HttpError(400, "missing_transaction_id");
-    deletedIds.add(id);
-    for (const entry of cache.values()) {
-      entry.rows = entry.rows.filter(r => r.id !== id);
-    }
+    sameOrigin(request);
+    const admin = await requireSuperAdmin();
+    const { id } = z.object({ id: z.string().trim().regex(/^pay_[A-Za-z0-9]+$/).max(80) }).parse(await jsonBody(request));
+    const payment = paymentSchema.parse(await razorpay(`payments/${id}`));
+    if (payment.id !== id || !ours(payment)) throw new HttpError(404, "transaction_not_found");
+    const { error } = await db().rpc("delete_transaction", { p_payment_id: id, p_actor: admin.id });
+    if (error) throw new HttpError(503, "transaction_delete_failed");
+    cache.clear();
     return Response.json({ success: true, id });
   }, request);
 }

@@ -212,63 +212,41 @@
   transform: scale(1.05);
 }
 
-.deleteConfirmOverlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.45);
-  backdrop-filter: blur(2px);
-  z-index: 9999;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 1rem;
-}
-
-.deleteConfirmBox {
-  background: #ffffff;
-  border: 1px solid #e2e8f0;
-  border-radius: 12px;
-  padding: 1.5rem;
-  max-width: 420px;
-  width: 100%;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-}
-
-.deleteCancelBtn {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  padding: 6px 12px;
-  border-radius: 6px;
-  font-size: 12px;
-  font-weight: 600;
-  color: #475569;
-  background: #f1f5f9;
-  border: 1px solid #cbd5e1;
-  cursor: pointer;
-}
-
-.deleteCancelBtn:hover {
-  background: #e2e8f0;
-  color: #0f172a;
-}
-
-.deleteConfirmBtn {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  padding: 6px 12px;
-  border-radius: 6px;
-  font-size: 12px;
-  font-weight: 600;
-  color: #ffffff;
-  background: #dc2626;
-  border: 1px solid #b91c1c;
-  cursor: pointer;
-}
-
-.deleteConfirmBtn:hover {
-  background: #b91c1c;
+/* Delete confirmation (components/notepad-delete-dialog.tsx): a soft red header band with an icon badge, the document
+   being deleted as a card, a warning line and two full-size buttons. `.notepad .x` selectors outrank the toolbar's
+   36px `.notepad button` rule, which had squeezed these buttons into icon-sized boxes. */
+.deleteConfirmOverlay { position: fixed; inset: 0; z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 16px; background: rgba(20, 20, 19, .48); backdrop-filter: blur(4px); animation: deleteFade .18s ease both; }
+.deleteConfirmBox { width: 100%; max-width: 460px; max-height: calc(100vh - 32px); max-height: calc(100dvh - 32px); overflow: auto; border: 1px solid #f1d4cd; border-radius: 20px; background: #fff; box-shadow: 0 32px 64px -24px rgba(127, 29, 29, .45), 0 2px 6px rgba(20, 20, 19, .08); animation: deletePop .24s cubic-bezier(.16, 1, .3, 1) both; }
+.deleteHead { position: relative; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 14px; align-items: center; padding: 22px 52px 18px 22px; border-bottom: 1px solid #f6dfd9; background: linear-gradient(135deg, #fdecea 0%, #fff5f0 60%, #fff 100%); border-radius: 20px 20px 0 0; }
+.deleteHead h2 { margin: 0; font-size: 19px; font-weight: 700; line-height: 1.25; color: #7f1d1d; }
+.deleteHead p { margin: 3px 0 0; font-size: 13.5px; line-height: 1.45; color: #7a5c55; }
+.deleteBadge { display: grid; place-items: center; width: 48px; height: 48px; border-radius: 14px; background: linear-gradient(145deg, #ef4444, #b91c1c); color: #fff; box-shadow: 0 0 0 6px rgba(239, 68, 68, .14), 0 10px 18px -8px rgba(185, 28, 28, .7); }
+.notepad .deleteClose { position: absolute; top: 14px; right: 14px; display: grid; place-items: center; width: 32px; height: 32px; min-height: 32px; padding: 0; border: 0; border-radius: 10px; background: transparent; color: #8a6a63; cursor: pointer; }
+.notepad .deleteClose:hover { background: rgba(127, 29, 29, .08); color: #7f1d1d; }
+.deleteDoc { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 12px; align-items: start; margin: 18px 22px 0; padding: 14px; border: 1px solid #ebe8df; border-radius: 14px; background: linear-gradient(160deg, #faf9f5, #fff); }
+.deleteDocIcon { display: grid; place-items: center; width: 38px; height: 38px; border-radius: 11px; background: #fbe6dc; color: #9a4a2c; }
+.deleteDocText { display: grid; gap: 4px; min-width: 0; }
+.deleteDocText b { font-size: 15px; line-height: 1.35; color: #141413; overflow-wrap: anywhere; }
+.deleteDocText small { font-size: 12.5px; color: #6b6a64; text-transform: capitalize; }
+.deleteDocTags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 2px; }
+.deleteDocTags span { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 999px; background: #eef3e6; color: #4d6b22; font-size: 11.5px; font-weight: 600; }
+.deleteWarning { display: flex; align-items: flex-start; gap: 8px; margin: 14px 22px 0; padding: 10px 12px; border-radius: 12px; background: #fdf6dc; color: #7a5a0c; font-size: 13px; line-height: 1.45; }
+.deleteWarning svg { flex-shrink: 0; margin-top: 1px; color: #b7791f; }
+.deleteActions { display: flex; justify-content: flex-end; gap: 10px; padding: 18px 22px 22px; }
+.notepad .deleteCancelBtn, .notepad .deleteConfirmBtn { display: inline-flex; align-items: center; justify-content: center; gap: 7px; width: auto; height: 44px; min-height: 44px; padding: 0 18px; border-radius: 12px; font: inherit; font-size: 14px; font-weight: 700; white-space: nowrap; cursor: pointer; transition: background .15s ease, border-color .15s ease, box-shadow .15s ease, transform .15s ease; }
+.notepad .deleteCancelBtn { border: 1px solid #dedbd2; background: #fff; color: #3d3d3a; }
+.notepad .deleteCancelBtn:hover { border-color: #c9c6bc; background: #f5f4ed; }
+.notepad .deleteConfirmBtn { border: 1px solid #b91c1c; background: linear-gradient(180deg, #ef4444, #dc2626); color: #fff; box-shadow: 0 8px 18px -10px rgba(185, 28, 28, .8); }
+.notepad .deleteConfirmBtn:hover { background: linear-gradient(180deg, #dc2626, #b91c1c); transform: translateY(-1px); }
+.deleteConfirmBox :is(button):focus-visible { outline: 3px solid #f59e0b; outline-offset: 2px; }
+@keyframes deleteFade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes deletePop { from { opacity: 0; transform: translateY(10px) scale(.97); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .deleteConfirmOverlay, .deleteConfirmBox { animation: none; } }
+@media (max-width: 480px) {
+  .deleteHead { padding: 18px 48px 16px 16px; }
+  .deleteDoc, .deleteWarning { margin-left: 16px; margin-right: 16px; }
+  .deleteActions { flex-direction: column-reverse; padding: 16px; }
+  .notepad .deleteCancelBtn, .notepad .deleteConfirmBtn { width: 100%; }
 }
 
 
@@ -308,4 +286,200 @@
 @media (prefers-reduced-motion: reduce) {
   .documentCard, .documentCardHoverActions, .cardActionBtn { transition: none; }
   .documentCard:hover, .documentCard:focus-within, .cardActionBtn:hover { transform: none; }
+}
+
+/* Callout boxes */
+.paper [data-notepad-callout] {
+  padding: 14px 18px;
+  border-radius: 8px;
+  margin: 16px 0;
+  font-size: 15px;
+  line-height: 1.6;
+}
+.paper [data-notepad-callout] p { margin: 0 0 6px; }
+.paper [data-notepad-callout] p:last-child { margin-bottom: 0; }
+.paper [data-notepad-callout="info"] { background: #eff6ff; border-left: 4px solid #2563eb; color: #1e3a8a; }
+.paper [data-notepad-callout="tip"] { background: #ecfdf5; border-left: 4px solid #059669; color: #064e3b; }
+.paper [data-notepad-callout="warning"] { background: #fffbeb; border-left: 4px solid #d97706; color: #78350f; }
+.paper [data-notepad-callout="alert"] { background: #fef2f2; border-left: 4px solid #dc2626; color: #7f1d1d; }
+.paper [data-notepad-callout="note"] { background: #f5f3ff; border-left: 4px solid #7c3aed; color: #4c1d95; }
+
+/* Inline code and code blocks */
+.paper code {
+  background: #f1f0eb;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 0.9em;
+  color: #b53d27;
+}
+.paper pre code {
+  background: transparent;
+  padding: 0;
+  color: inherit;
+  font-size: 13.5px;
+}
+.paper pre {
+  background: #1e293b;
+  color: #f1f5f9;
+  padding: 16px 18px;
+  border-radius: 8px;
+  overflow-x: auto;
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  margin: 16px 0;
+  line-height: 1.5;
+}
+
+/* Checklists */
+.paper [data-notepad-checklist="true"] {
+  list-style: none;
+  padding-left: 4px;
+  margin: 12px 0;
+}
+.paper [data-notepad-checklist="true"] li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 8px 0;
+  font-size: 15px;
+}
+.paper [data-notepad-checklist="true"] input[type="checkbox"] {
+  width: 17px;
+  height: 17px;
+  accent-color: #d97757;
+  cursor: pointer;
+  margin: 0;
+}
+
+/* Find and replace toolbar */
+.findBar {
+  padding: 10px 16px;
+  background: #fdfaf6;
+  border-bottom: 1px solid #eedfd7;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.findBar label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #595852;
+  font-weight: 500;
+}
+.findBar input[type="text"] {
+  padding: 6px 10px;
+  border: 1px solid #dedbd2;
+  border-radius: 6px;
+  font-size: 12px;
+  min-width: 140px;
+  max-width: 220px;
+  background: #fff;
+  color: #262624;
+}
+.findBar input[type="text"]:focus {
+  outline: 2px solid #d9775760;
+  border-color: #d97757;
+}
+.findBarActions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.findStatus {
+  font-size: 11px;
+  color: #8b402b;
+  margin-left: 6px;
+  font-weight: 500;
+}
+
+/* Symbols palette */
+.symbolsPanel {
+  padding: 12px 16px;
+  background: #fff8ef;
+  border-bottom: 1px solid #e8e6dc;
+  display: grid;
+  gap: 8px;
+}
+.symbolsHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+  font-weight: 600;
+  color: #595852;
+}
+.symbolsGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  max-height: 180px;
+  overflow-y: auto;
+  padding: 4px 0;
+}
+.notepad .symbolBtn {
+  width: auto;
+  min-width: 36px;
+  height: 36px;
+  min-height: 36px;
+  padding: 0 8px;
+  font-size: 15px;
+  gap: 4px;
+  border: 1px solid #dedbd2;
+  border-radius: 6px;
+  background: #fff;
+  cursor: pointer;
+}
+.notepad .symbolBtn:hover {
+  background: #f7e7de;
+  border-color: #d97757;
+  color: #8b402b;
+}
+
+/* Detailed word stats popup / drawer */
+.statsTrigger {
+  position: relative;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 5px;
+  transition: background 0.15s ease;
+}
+.statsTrigger:hover {
+  background: #edebe4;
+}
+.statsDrawer {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 50;
+  background: #fff;
+  border: 1px solid #dedbd2;
+  border-radius: 10px;
+  box-shadow: 0 10px 28px rgba(38,38,36,0.18);
+  padding: 14px 16px;
+  min-width: 220px;
+  display: grid;
+  gap: 8px;
+  font-size: 12px;
+  color: #3d3d3a;
+}
+.statsRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px dashed #e8e6dc;
+  padding-bottom: 5px;
+}
+.statsRow:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+.statsRow span {
+  color: #73716a;
+}
+.statsRow strong {
+  color: #262624;
+  font-weight: 700;
 }
