@@ -49,6 +49,9 @@
 .toolsToggle[aria-expanded=false]>svg:last-child{transform:rotate(-90deg)}
 .status{display:flex;align-items:center;gap:6px 16px;flex-wrap:wrap;flex:1;min-width:0;font-size:11px;color:#73716a}
 .status [role=status]{margin-left:auto}
+.toolsHeadFont{display:inline-flex;align-items:center;gap:8px;margin-left:auto;flex-shrink:0;position:relative}
+.toolsHeadFont::before{content:"";display:inline-block;width:1px;height:20px;background:#dedbd2;margin-right:4px}
+@media(max-width:900px){.toolsHeadFont::before{display:none}}
 .paperPicker{position:relative}
 .notepad .paperTrigger{width:auto;gap:7px;padding:6px 9px}
 .paperTrigger span{min-width:62px;text-align:left}

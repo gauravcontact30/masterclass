@@ -5,7 +5,7 @@ import { TechBuzzBlog, type TechBuzzGroup } from "@/components/tech-buzz-blog";
 import { listPublishedTechBuzzArticles, withUnsplashCovers } from "@/lib/server/tech-buzz-storage";
 import { isTechnologyStory, toCard, topicLabel } from "@/lib/tech-buzz-public";
 
-const DESCRIPTION = "Reader-rated technology blogs on Next.js 16, React 19, TypeScript, LangChain, LangGraph, AI agents, Node.js, Python, Docker, AWS, testing and system design.";
+const DESCRIPTION = "Reader-rated technology blogs and engineering masterclasses on Agentic AI, LangChain, LangGraph, LangSmith, LangFlow, n8n, Next.js 16+, React 19+, System Design, TypeScript, and Cloud Architecture.";
 
 /**
  * Stories as light cards (bodies stay behind the member paywall) and technology topics with their story counts,
@@ -46,9 +46,10 @@ export const metadata: Metadata = {
   title: "Tech Buzz: Technology Blogs Rated by Developers",
   description: DESCRIPTION,
   keywords: [
-    "technology blogs", "developer blog India", "Next.js 16 blog", "React 19 tutorial", "TypeScript guide", "LangChain tutorial",
-    "LangGraph agents", "AI agents blog", "Node.js best practices", "Python backend", "Docker best practices", "AWS for developers",
-    "Playwright testing", "system design interview", "DSA patterns", "Zustand vs Redux", "TanStack Query", "n8n automation"
+    "technology blogs", "developer blog India", "Agentic AI tutorial", "LangChain tutorial", "LangGraph agents",
+    "LangSmith evals", "LangFlow visual", "n8n automation", "Next.js 16 blog", "React 19 tutorial", "System Design interview",
+    "TypeScript guide", "Node.js best practices", "Python backend", "Docker best practices", "AWS for developers",
+    "Playwright testing", "DSA patterns", "Zustand vs Redux", "TanStack Query", "PostgreSQL 17 vector"
   ],
   alternates: { canonical: "/tech-buzz" },
   openGraph: {

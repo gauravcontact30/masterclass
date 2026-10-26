@@ -71,14 +71,14 @@ test("LanguageSwitcher opens popover with country codes and changes language to 
   const trigger = screen.getByRole("button", { expanded: false });
   fireEvent.click(trigger);
 
-  // Check that all country badges US, IN, ES, JP, DE, FR, CN are in popover
-  expect(screen.getByText("US")).toBeInTheDocument();
-  expect(screen.getByText("IN")).toBeInTheDocument();
+  // Check that all language badges EN, HI, ES, JA, DE, FR, ZH are in popover
+  expect(screen.getByText("EN")).toBeInTheDocument();
+  expect(screen.getByText("HI")).toBeInTheDocument();
   expect(screen.getByText("ES")).toBeInTheDocument();
-  expect(screen.getByText("JP")).toBeInTheDocument();
+  expect(screen.getByText("JA")).toBeInTheDocument();
   expect(screen.getByText("DE")).toBeInTheDocument();
   expect(screen.getByText("FR")).toBeInTheDocument();
-  expect(screen.getByText("CN")).toBeInTheDocument();
+  expect(screen.getByText("ZH")).toBeInTheDocument();
 
   // Click Spanish (ES)
   const esButton = screen.getByRole("option", { name: /Español/i });

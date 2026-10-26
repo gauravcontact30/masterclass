@@ -5,6 +5,7 @@ import { useNearViewport } from "./use-near-viewport";
 import { useVisiblePlayback } from "./use-visible-playback";
 import { ArrowUpRight, Bot, CircleHelp, Hammer, GraduationCap, Lightbulb, ListChecks, Boxes, BrainCircuit, ChevronLeft, ChevronRight, Cloud, Code2, MessagesSquare, Newspaper, Pause, Play, Rocket, ShoppingCart, Sparkles, Star, TrendingUp, type LucideIcon } from "lucide-react";
 import { NEWS_BASICS, NEWS_PER_SLIDE, NEWS_PRACTICE, NEWS_SLIDES, QUESTIONS_PER_SLIDE, type InterviewAsk, type LandingNews as LandingNewsData, type NewsLogo, type NewsSlideData, type NewsSlideId, type NewsSlideMeta, type NewsStory } from "@/lib/landing-news";
+import { DEFAULT_LANDING_NEWS } from "@/lib/landing-news-fallback";
 import { NEWS_MORE_BASICS, NEWS_QUICK_CHECKS } from "@/lib/landing-news-study";
 import Image from "next/image";
 import Link from "next/link";
@@ -120,7 +121,8 @@ export function LandingNews() {
 
         <div className={styles.slides} aria-live={rotating ? "off" : "polite"}>
           {NEWS_SLIDES.map((meta, i) => {
-            const data = news?.slides.find(slide => slide.id === meta.id);
+            const fallbackSlide = DEFAULT_LANDING_NEWS.slides.find(s => s.id === meta.id);
+            const data = news?.slides.find(slide => slide.id === meta.id) ?? fallbackSlide;
             return <article key={meta.id} className={styles.slide} data-tone={TONES[i % TONES.length]} hidden={i !== index} aria-roledescription="slide" aria-label={`${i + 1} / ${total}: ${hi ? meta.hiTitle : meta.title}`}>
               {/* Only the slide on show is built: the hidden ones were ~3,000 nodes to hydrate on every visit. */}
               {i === index && <><Cover meta={meta} hi={hi} eager={false} data={data} />
@@ -129,8 +131,8 @@ export function LandingNews() {
                 {data?.kind === "questions" && data.questions.length > 0 && <Questions questions={data.questions.slice(0, QUESTIONS_PER_SLIDE)} hi={hi} slide={i} />}
                 {data?.kind === "news" && data.stories.length > NEWS_PER_SLIDE && <Headlines stories={data.stories.slice(NEWS_PER_SLIDE)} hi={hi} />}
                 {data?.kind === "questions" && data.questions.length > QUESTIONS_PER_SLIDE && <AlsoAsked questions={data.questions.slice(QUESTIONS_PER_SLIDE)} hi={hi} />}
-                {news && <Practice id={meta.id} hi={hi} />}
-                {news && <QuickCheck id={meta.id} hi={hi} />}
+                <Practice id={meta.id} hi={hi} />
+                <QuickCheck id={meta.id} hi={hi} />
                 {!news && <div className={styles.loading} role="status">{hi ? "ताज़ा खबरें लोड हो रही हैं…" : "Loading this week's stories…"}<span /><span /><span /></div>}
                 {news && !(data?.kind === "news" ? data.stories.length : data?.kind === "questions" ? data.questions.length : 0) && <Newsrooms meta={meta} hi={hi} />}
               </div></>}

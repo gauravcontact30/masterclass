@@ -2,13 +2,16 @@
 
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from "react";
 import Link from "next/link";
-import { ArrowRight, BookOpen, BookmarkCheck, CodeXml, Crown, Flame, GraduationCap, Layers, Library, LogIn, Menu, Sparkles, Terminal, Trophy, UserPlus, UserRound, X, type LucideIcon } from "lucide-react";
+import { ArrowRight, BookOpen, BookmarkCheck, CodeXml, Crown, Flame, GraduationCap, Layers, Library, LogIn, Menu, Sparkles, Terminal, Trophy, Type, UserPlus, UserRound, X, type LucideIcon } from "lucide-react";
 import { Wordmark } from "./brand-mark";
 import { SuggestionBox } from "./suggestion-box";
 import { LandingPlansMenu } from "./landing-plans-menu";
 import { scrollToSection } from "./hashless-navigation";
 import { useLanguage } from "./language-provider";
 import { LanguageSwitcher } from "./language-switcher";
+import { useAppFont } from "./app-font-provider";
+import { FontFamilyDropdown } from "./font-family-dropdown";
+import { READING_FONTS } from "@/lib/tech-buzz-public";
 import styles from "./landing-home.module.css";
 import type { Currency } from "@/lib/pricing";
 import type { PlansMenuPrices } from "./landing-plans-menu";
@@ -97,6 +100,7 @@ export function LandingNavbar({ links, prices = null, onCurrency }: { links: [st
   const [menu, setMenu] = useState(false);
   const [account, setAccount] = useState(false);
   const [plans, setPlans] = useState(false);
+  const { appFontId, setAppFont } = useAppFont();
   const openPlans = useCallback((value: boolean) => { setPlans(value); if (value) { setAccount(false); setMenu(false); } }, []);
   const accountRef = useRef<HTMLDivElement>(null);
   const [active, setActive] = useState<string | null>(null);
@@ -177,16 +181,6 @@ export function LandingNavbar({ links, prices = null, onCurrency }: { links: [st
             <UserRound size={19} strokeWidth={1.9} aria-hidden="true" />
           </button>
           {account && <div id="landing-account-menu" className={styles.accountMenu}>
-            {/* Top band: why a free account is worth it (language lives in the navbar's own switcher). */}
-            <div className={styles.accountTop}>
-              <span className={styles.accountKicker}><Sparkles size={12} strokeWidth={2.2} aria-hidden="true" />{text("New here?", "पहली बार?")}</span>
-              <strong className={styles.accountTitle}>{text("Learn tech skills free, in English or हिन्दी", "टेक स्किल्स मुफ़्त सीखें, English या हिन्दी में")}</strong>
-              <ul className={styles.accountPerks}>
-                <li data-tone="mint"><span aria-hidden="true"><BookmarkCheck size={14} strokeWidth={2} /></span>{text("Progress & bookmarks saved on every device", "हर डिवाइस पर सेव प्रोग्रेस और बुकमार्क")}</li>
-                <li data-tone="lavender"><span aria-hidden="true"><Sparkles size={14} strokeWidth={2} /></span>{text("AI Study Buddy answers your doubts", "AI स्टडी बडी आपके सवालों का जवाब देता है")}</li>
-                <li data-tone="butter"><span aria-hidden="true"><Trophy size={14} strokeWidth={2} /></span>{text("Timed interview & certification practice", "टाइम्ड इंटरव्यू और सर्टिफ़िकेशन प्रैक्टिस")}</li>
-              </ul>
-            </div>
             <div className={styles.accountActions}>
               <Link className={styles.accountPrimary} href="/sign-up" onClick={() => setAccount(false)}>
                 <UserPlus size={16} strokeWidth={2} aria-hidden="true" />{text("Create free account", "मुफ़्त खाता बनाएँ")}<ArrowRight size={15} strokeWidth={2} aria-hidden="true" />
@@ -196,7 +190,31 @@ export function LandingNavbar({ links, prices = null, onCurrency }: { links: [st
                 <span><strong>{text("Sign in", "साइन इन")}</strong><small aria-hidden="true">{text("Already have an account? Welcome back", "पहले से खाता है? फिर से स्वागत है")}</small></span>
               </Link>
             </div>
-            {/* Bottom band: a no-commitment way in. */}
+            {/* Google font-family dropdown as shadcn ui: changes font-family of entire application */}
+            <div className={styles.accountTypography}>
+              <div className={styles.accountTypographyHead}>
+                <span className={styles.accountTypographyIcon} aria-hidden="true">
+                  <Type size={15} strokeWidth={2.2} />
+                </span>
+                <div className={styles.accountTypographyMeta}>
+                  <strong>{text("Application Typography", "एप्लिकेशन फ़ॉन्ट")}</strong>
+                  <small>{text("Google fonts for Landing, Dashboards & Blogs", "पूरे ऐप (लैंडिंग, डैशबोर्ड और ब्लॉग्स) का फ़ॉन्ट")}</small>
+                </div>
+              </div>
+              <div className={styles.accountTypographyPicker}>
+                <FontFamilyDropdown
+                  value={appFontId}
+                  onChange={setAppFont}
+                  fonts={READING_FONTS}
+                  ariaLabel="Application font family"
+                  variant="pill"
+                  valueType="id"
+                  defaultVal="inter"
+                  matchTriggerWidth={true}
+                />
+              </div>
+            </div>
+            {/* Bottom band: a no-commitment way in positioned below the font dropdown. */}
             <Link className={styles.accountBrowse} href="/library" onClick={() => setAccount(false)}>
               <span className={styles.accountBrowseIcon} aria-hidden="true"><Library size={15} strokeWidth={2} /></span>
               <span><strong>{text("Just browsing?", "बस देख रहे हैं?")}</strong><small>{text("Read the free library, no account needed", "फ़्री लाइब्रेरी पढ़ें, खाते की ज़रूरत नहीं")}</small></span>

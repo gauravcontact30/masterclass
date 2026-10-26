@@ -10,18 +10,63 @@ export type Section = TechBuzzArticle["contentSections"][number];
 export type TechBuzzSeed = {
   techId: string; technology: string; category: string; color: string; date: string; minutes: number;
   title: string; subtitle: string; tags: string[]; summary: string[]; stack: string[]; sections: Section[]; takeaway: string;
+  coverImage?: string;
+};
+
+const TECH_COVERS: Record<string, string> = {
+  langchain: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=1200&auto=format&fit=crop&q=80",
+  langgraph: "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=1200&auto=format&fit=crop&q=80",
+  langflow: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=1200&auto=format&fit=crop&q=80",
+  langsmith: "https://images.unsplash.com/photo-1504868584819-f8e8b4b6d7e3?w=1200&auto=format&fit=crop&q=80",
+  openrouter: "https://images.unsplash.com/photo-1544197150-b99a580bb7a8?w=1200&auto=format&fit=crop&q=80",
+  "ai-gateway": "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=1200&auto=format&fit=crop&q=80",
+  n8n: "https://images.unsplash.com/photo-1518770660439-4636190af475?w=1200&auto=format&fit=crop&q=80",
+  "agentic-ai": "https://images.unsplash.com/photo-1677442136019-21780ecad995?w=1200&auto=format&fit=crop&q=80",
+  nextjs: "https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=1200&auto=format&fit=crop&q=80",
+  react: "https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=1200&auto=format&fit=crop&q=80",
+  angular: "https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?w=1200&auto=format&fit=crop&q=80",
+  vue: "https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=1200&auto=format&fit=crop&q=80",
+  tanstack: "https://images.unsplash.com/photo-1504639725590-34d0984388bd?w=1200&auto=format&fit=crop&q=80",
+  "tanstack-start": "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=1200&auto=format&fit=crop&q=80",
+  zustand: "https://images.unsplash.com/photo-1518770660439-4636190af475?w=1200&auto=format&fit=crop&q=80",
+  "redux-toolkit": "https://images.unsplash.com/photo-1581291518857-4e27b48ff24e?w=1200&auto=format&fit=crop&q=80",
+  javascript: "https://images.unsplash.com/photo-1579468118864-dd23ce2f1126?w=1200&auto=format&fit=crop&q=80",
+  nodejs: "https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=1200&auto=format&fit=crop&q=80",
+  express: "https://images.unsplash.com/photo-1516259762381-22954d7d3ad2?w=1200&auto=format&fit=crop&q=80",
+  nestjs: "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=1200&auto=format&fit=crop&q=80",
+  graphql: "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=1200&auto=format&fit=crop&q=80",
+  python: "https://images.unsplash.com/photo-1526379095098-d400fd0bf935?w=1200&auto=format&fit=crop&q=80",
+  redis: "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=1200&auto=format&fit=crop&q=80",
+  postgresql: "https://images.unsplash.com/photo-1544383835-bda2bc66a55d?w=1200&auto=format&fit=crop&q=80",
+  salesforce: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1200&auto=format&fit=crop&q=80",
+  docker: "https://images.unsplash.com/photo-1605745341112-85968b19335b?w=1200&auto=format&fit=crop&q=80",
+  aws: "https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=1200&auto=format&fit=crop&q=80",
+  git: "https://images.unsplash.com/photo-1618401471353-b98afee0b2eb?w=1200&auto=format&fit=crop&q=80",
+  "github-actions": "https://images.unsplash.com/photo-1518770660439-4636190af475?w=1200&auto=format&fit=crop&q=80",
+  playwright: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=1200&auto=format&fit=crop&q=80",
+  cypress: "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=1200&auto=format&fit=crop&q=80",
+  jest: "https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=1200&auto=format&fit=crop&q=80",
+  vitest: "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=1200&auto=format&fit=crop&q=80",
+  rtl: "https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?w=1200&auto=format&fit=crop&q=80",
+  "system-design": "https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=1200&auto=format&fit=crop&q=80",
+  dsa: "https://images.unsplash.com/photo-1509228468518-180dd4864904?w=1200&auto=format&fit=crop&q=80",
+  oops: "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1200&auto=format&fit=crop&q=80",
+  typescript: "https://images.unsplash.com/photo-1517694712202-14dd9538aa97?w=1200&auto=format&fit=crop&q=80",
+  kubernetes: "https://images.unsplash.com/photo-1667372393119-3d4c48d07fc9?w=1200&auto=format&fit=crop&q=80",
+  rust: "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=1200&auto=format&fit=crop&q=80",
+  supabase: "https://images.unsplash.com/photo-1544383835-bda2bc66a55d?w=1200&auto=format&fit=crop&q=80",
 };
 
 const COVER: Record<string, string> = {
-  "Artificial Intelligence": "/images/news/agentic.webp",
-  "Frontend Engineering": "/images/news/frontend.webp",
-  "Backend & APIs": "/images/news/questions-tech.webp",
-  "Cloud & DevOps": "/images/news/aws.webp",
-  "Testing & Quality": "/images/news/trending.webp",
-  "Computer Science": "/images/news/system-design.webp",
-  "Full-Stack Development": "/images/news/frontend.webp",
-  "System Architecture": "/images/news/system-design.webp",
-  "Enterprise Platforms": "/images/news/ai-labs.webp",
+  "Artificial Intelligence": "https://images.unsplash.com/photo-1677442136019-21780ecad995?w=1200&auto=format&fit=crop&q=80",
+  "Frontend Engineering": "https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=1200&auto=format&fit=crop&q=80",
+  "Backend & APIs": "https://images.unsplash.com/photo-1516259762381-22954d7d3ad2?w=1200&auto=format&fit=crop&q=80",
+  "Cloud & DevOps": "https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=1200&auto=format&fit=crop&q=80",
+  "Testing & Quality": "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=1200&auto=format&fit=crop&q=80",
+  "Computer Science": "https://images.unsplash.com/photo-1509228468518-180dd4864904?w=1200&auto=format&fit=crop&q=80",
+  "Full-Stack Development": "https://images.unsplash.com/photo-1498050108023-c5249f4df085?w=1200&auto=format&fit=crop&q=80",
+  "System Architecture": "https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=1200&auto=format&fit=crop&q=80",
+  "Enterprise Platforms": "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1200&auto=format&fit=crop&q=80",
 };
 
 /** URL slug from the title, at most 80 characters and cut at a word boundary. */
@@ -33,8 +78,9 @@ function slugify(text: string) {
 /** A seed becomes a full story with honest defaults: editorial author, no ratings, claps or comments yet. */
 export function article(seed: TechBuzzSeed, index: number): TechBuzzArticle {
   const slug = slugify(seed.title);
+  const coverImage = seed.coverImage ?? TECH_COVERS[seed.techId] ?? COVER[seed.category] ?? "https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=1200&auto=format&fit=crop&q=80";
   return {
-    id: `tb-tech-${seed.techId}`,
+    id: `tb-tech-${seed.techId}-${index}`,
     slug,
     title: seed.title,
     subtitle: seed.subtitle,
@@ -50,7 +96,7 @@ export function article(seed: TechBuzzSeed, index: number): TechBuzzArticle {
     claps: 0,
     rating: { average: 0, count: 0, breakdown: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 } },
     author: { name: "MasterClass Buddy Editorial", role: "Engineering editorial team", avatar: "/icon.svg", handle: "@masterclassbuddy", verified: true },
-    coverImage: COVER[seed.category] ?? "/images/news/trending.webp",
+    coverImage,
     tags: seed.tags,
     rankingScore: 90 - index * 0.1,
     source: { name: "MasterClass Buddy", domain: "masterclass", trustScore: "" },

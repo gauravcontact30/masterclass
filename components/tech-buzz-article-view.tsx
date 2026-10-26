@@ -23,8 +23,10 @@ import {
   Layers,
   Flame
 } from "lucide-react";
-import type { TechBuzzCard, TechBuzzMemberContent, TechBuzzPreview } from "@/lib/tech-buzz-public";
+import { techLogo, type TechBuzzCard, type TechBuzzMemberContent, type TechBuzzPreview } from "@/lib/tech-buzz-public";
 import { isUnsplash, unsplashLoader } from "@/lib/image-loaders";
+import { LanguageSwitcher } from "./language-switcher";
+import { useLanguage } from "./language-provider";
 import styles from "./tech-buzz-article.module.css";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
@@ -45,6 +47,7 @@ const hasSessionCookie = () => /(?:^|;\s*)sb-[^=]+-auth-token/.test(document.coo
 const noSubscription = () => () => {};
 
 export function TechBuzzArticleView({ article, related, prevStory, nextStory }: Props) {
+  const { t, language } = useLanguage();
   // Membership: "checking" while the member body loads, then the body or the reason it is locked.
   // Without a session cookie the visitor cannot be a member, so no request is made and the preview stays locked.
   const signedIn = useSyncExternalStore(noSubscription, hasSessionCookie, () => null);
@@ -336,14 +339,15 @@ export function TechBuzzArticleView({ article, related, prevStory, nextStory }: 
         <div className={styles.stickyNavInner}>
           <Link href="/tech-buzz" className={styles.backLink}>
             <ArrowLeft size={16} />
-            <span>Back to Tech Buzz</span>
+            <span>{t("techBuzzBackToGuides")}</span>
           </Link>
 
           <div className={styles.stickyNavRight}>
+            <LanguageSwitcher size="sm" />
             {isSubscribed ? (
               <span className={styles.subscribedPill}>
                 <CheckCircle2 size={13} />
-                <span>Member</span>
+                <span>{t("techBuzzMemberOnly")}</span>
               </span>
             ) : access !== "checking" && (
               <Link href={unlockHref} className={styles.subscribeTopBtn}>
@@ -395,12 +399,25 @@ export function TechBuzzArticleView({ article, related, prevStory, nextStory }: 
             <span>/</span>
             <span>{article.category}</span>
             <span>/</span>
-            <span style={{ color: "#0f172a", fontWeight: 600 }}>{article.technology}</span>
+            <span style={{ color: "#0f172a", fontWeight: 600, display: "inline-flex", alignItems: "center", gap: "0.35rem" }}>
+              {techLogo(article.techId) && (
+                <Image src={techLogo(article.techId)!} alt="" width={15} height={15} style={{ borderRadius: 3 }} />
+              )}
+              <span>{article.technology}</span>
+            </span>
           </nav>
 
-          <div className={styles.categoryBadge}>
-            <Flame size={12} />
-            <span>{article.category}</span>
+          <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: "0.5rem", marginBottom: "0.75rem" }}>
+            <div className={styles.categoryBadge}>
+              <Flame size={12} />
+              <span>{article.category}</span>
+            </div>
+            <div style={{ display: "inline-flex", alignItems: "center", gap: "0.35rem", padding: "0.25rem 0.65rem", borderRadius: "9999px", background: "#f8fafc", border: "1px solid #e2e8f0", fontSize: "0.75rem", fontWeight: 700, color: "#334155" }}>
+              {techLogo(article.techId) && (
+                <Image src={techLogo(article.techId)!} alt="" width={15} height={15} style={{ borderRadius: 2 }} />
+              )}
+              <span>{article.technology}</span>
+            </div>
           </div>
 
           <h1 className={styles.articleTitle}>{article.title}</h1>
@@ -879,6 +896,9 @@ export function TechBuzzArticleView({ article, related, prevStory, nextStory }: 
                   </div>
                   <h4 className={styles.storyNavTitle}>{prevStory.title}</h4>
                   <div className={styles.storyNavMeta}>
+                    {techLogo(prevStory.techId) && (
+                      <Image src={techLogo(prevStory.techId)!} alt="" width={15} height={15} style={{ borderRadius: 2 }} />
+                    )}
                     <span>{prevStory.technology}</span>
                     <span>•</span>
                     <span>{prevStory.readTimeMinutes} min read</span>
@@ -894,6 +914,9 @@ export function TechBuzzArticleView({ article, related, prevStory, nextStory }: 
                   </div>
                   <h4 className={styles.storyNavTitle}>{nextStory.title}</h4>
                   <div className={styles.storyNavMeta} style={{ justifyContent: "flex-end" }}>
+                    {techLogo(nextStory.techId) && (
+                      <Image src={techLogo(nextStory.techId)!} alt="" width={15} height={15} style={{ borderRadius: 2 }} />
+                    )}
                     <span>{nextStory.technology}</span>
                     <span>•</span>
                     <span>{nextStory.readTimeMinutes} min read</span>
@@ -958,6 +981,11 @@ export function TechBuzzArticleView({ article, related, prevStory, nextStory }: 
                     sizes="(max-width: 640px) 100vw, 33vw"
                     loader={loaderFor(rel.coverImage)} unoptimized={remote(rel.coverImage)}
                   />
+                  {techLogo(rel.techId) && (
+                    <div style={{ position: "absolute", bottom: "8px", left: "8px", width: "28px", height: "28px", borderRadius: "8px", background: "#ffffff", display: "grid", placeItems: "center", boxShadow: "0 2px 8px rgba(0,0,0,0.2)", zIndex: 2 }}>
+                      <Image src={techLogo(rel.techId)!} alt="" width={18} height={18} />
+                    </div>
+                  )}
                 </div>
                 <div className={styles.moreBlogCardBody}>
                   <div style={{ fontSize: "0.75rem", fontWeight: 700, color: "#ea580c", textTransform: "uppercase", marginBottom: "0.35rem" }}>

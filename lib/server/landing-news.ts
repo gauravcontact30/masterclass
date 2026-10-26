@@ -9,6 +9,7 @@ import {
   siUber, siVercel, siWipro, siX, siZoho, siZomato, type SimpleIcon,
 } from "simple-icons";
 import { NEWS_EXTRA, NEWS_PER_SLIDE, NEWS_SLIDES, QUESTIONS_PER_SLIDE, type InterviewAsk, type LandingNews, type NewsLogo, type NewsSlideData, type NewsSlideId, type NewsStory } from "@/lib/landing-news";
+import { DEFAULT_LANDING_NEWS } from "@/lib/landing-news-fallback";
 
 /*
  * Fills the landing page's "Fresh in tech" slides with this week's stories, searched live by Perplexity (sonar).
@@ -215,6 +216,8 @@ async function searchSlide(id: NewsSlideId): Promise<NewsSlideData> {
       console.warn(`landing news "${id}" attempt ${attempt} failed: ${String(error).slice(0, 200)}`);
     }
   }
+  const fallback = DEFAULT_LANDING_NEWS.slides.find(s => s.id === id);
+  if (fallback) return fallback;
   return kind === "news" ? { id, kind, fresh: false, stories: [] } : { id, kind, fresh: false, questions: [] };
 }
 

@@ -16,6 +16,9 @@ import {
 import { sanitizeNotepadHtml, notepadDocument, PAPER_COLORS } from "@/lib/notepad";
 import { newNotepadFile, readNotepadCollection, workflowHtml, type NotepadFile } from "@/lib/notepad-library";
 import { downloadNotepadPdf } from "@/lib/notepad-pdf";
+import { READING_FONTS } from "@/lib/tech-buzz-public";
+import { loadGoogleFont } from "@/lib/google-fonts";
+import { FontFamilyDropdown } from "./font-family-dropdown";
 import { NotepadLibrary } from "./notepad-library";
 import { PaperPicker } from "./notepad-paper-picker";
 import styles from "./super-admin-notepad.module.css";
@@ -435,8 +438,23 @@ export function SuperAdminNotepad({ userId }: { userId: string }) {
   function applyFontFamily(fontName: string) {
     restore();
     setFontFamilyVal(fontName);
+    loadGoogleFont(fontName);
     command("fontName", fontName);
     applyInlineStyle({ "font-family": fontName });
+    if (editor.current) {
+      editor.current.style.fontFamily = `"${fontName}", sans-serif`;
+      const pages = editor.current.querySelectorAll('[data-notepad-page="true"]');
+      pages.forEach(p => {
+        (p as HTMLElement).style.fontFamily = `"${fontName}", sans-serif`;
+      });
+      changed();
+    }
+  }
+
+  function insertNewPage() {
+    restore();
+    const family = fontFamilyVal ? `"${fontFamilyVal}", sans-serif` : "inherit";
+    command("insertHTML", `<div data-notepad-page="true" style="break-before:page;page-break-before:always;font-family:${family};margin-top:40px;padding-top:20px;min-height:300px;"><p style="font-family:${family};"><br></p></div>`);
   }
 
   function applyLineHeight(spacing: string) {
@@ -757,6 +775,17 @@ export function SuperAdminNotepad({ userId }: { userId: string }) {
         <span role="status">{status}</span>
         <span className={styles.shortcut}>Ctrl/⌘+S saves · Ctrl+F finds · Shift+Ctrl/⌘+S exports</span>
       </div>
+      <div className={styles.toolsHeadFont}>
+        <FontFamilyDropdown
+          value={fontFamilyVal}
+          onChange={applyFontFamily}
+          fonts={READING_FONTS}
+          ariaLabel="Font family"
+          variant="toolbar"
+          valueType="name"
+          defaultVal="Arial"
+        />
+      </div>
     </div>
     <div id="notepad-tools" className={styles.ribbon} role="group" aria-label="Document formatting" hidden={!toolsOpen}>
       <div className={styles.group} aria-label="Clipboard and history">
@@ -772,14 +801,6 @@ export function SuperAdminNotepad({ userId }: { userId: string }) {
           <select aria-label="Paragraph style" defaultValue="p" onChange={e => command("formatBlock", e.target.value)}>
             {["p", "h1", "h2", "h3", "blockquote", "pre"].map((tag, i) => (
               <option key={tag} value={tag}>{["Normal text", "Heading 1", "Heading 2", "Heading 3", "Quote", "Code block"][i]}</option>
-            ))}
-          </select>
-        </label>
-        <label className={styles.iconField} data-tooltip="Font family">
-          <Type size={18} aria-hidden="true"/>
-          <select aria-label="Font family" value={fontFamilyVal} onChange={e => applyFontFamily(e.target.value)}>
-            {FONT_FAMILIES.map(font => (
-              <option key={font} value={font} style={{ fontFamily: font }}>{font}</option>
             ))}
           </select>
         </label>
@@ -849,7 +870,7 @@ export function SuperAdminNotepad({ userId }: { userId: string }) {
         <IconButton label="Insert code block" icon={Code2} onMouseDown={e => e.preventDefault()} onClick={insertCodeBlock} />
         <IconButton label="Insert special symbol" icon={Sparkles} onClick={() => setSymbolsOpen(v => !v)} />
         <IconButton label="Insert current date and time" icon={Clock} onMouseDown={e => e.preventDefault()} onClick={insertDateTime} />
-        {tool("New page", "insertHTML", '<div style="break-before:page;page-break-before:always"><br></div>')}
+        <IconButton label="New page" icon={FilePlus} onMouseDown={e => e.preventDefault()} onClick={insertNewPage} />
         {tool("Horizontal rule", "insertHorizontalRule")}
         <IconButton type="button" label="Insert link" icon={Link2} onMouseDown={e => e.preventDefault()} onClick={() => { const url = window.prompt("Link URL (https://…)"); if (url && /^https?:\/\//i.test(url)) command("createLink", url); else if (url) setError("Use an http:// or https:// link."); }} />
         {tool("Remove link", "unlink")}

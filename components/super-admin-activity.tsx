@@ -1,6 +1,6 @@
 "use client";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { AppWindow, ArrowLeft, Clock, Compass, Download, Globe, Laptop, Megaphone, Monitor, MonitorSmartphone, Smartphone, Tablet, Terminal, MousePointerClick, Radio, RefreshCw, UserPlus, UserRound, Users } from "lucide-react";
+import { Activity, AppWindow, ArrowLeft, Calendar, Clock, Compass, Download, ExternalLink, Eye, Globe, Laptop, LogOut, MapPin, Megaphone, Monitor, MonitorSmartphone, MousePointerClick, Radio, RefreshCw, ShieldCheck, Smartphone, Tablet, Terminal, UserPlus, UserRound, Users } from "lucide-react";
 import { Card } from "./ui/card";
 import { Button } from "./ui/button";
 import { AdminError, AdminLoading } from "./super-admin-feedback";
@@ -13,6 +13,8 @@ import { AudienceExplorer } from "./super-admin-audience";
 import { siAndroid, siApple, siBrave, siFacebook, siFirefoxbrowser, siGoogle, siGooglechrome, siInstagram, siIos, siLinux, siMacos, siOpera, siSafari, siSamsung, siUbuntu, siWhatsapp, siYoutube, type SimpleIcon } from "simple-icons";
 import shell from "./super-admin-dashboard.module.css";
 import styles from "./super-admin-activity.module.css";
+
+const LIGHT_TONES = ["sky", "mint", "lavender", "peach", "butter", "rose", "sage", "aqua"] as const;
 
 type Row = Record<string, unknown>;
 type Activity = {
@@ -240,22 +242,215 @@ function PersonTimeline({ person, onBack }: { person: { key: string; label: stri
         <div className={styles.profileStats}><span><strong>{views.length}</strong>page views</span><span><strong>{sessions}</strong>sessions</span><span><strong>{duration(read)}</strong>time read</span><span><strong>{data.logins.length}</strong>sign-in events</span></div>
       </Card>
       <div className={styles.timelineGrid}>
-        <Card className={shell.panel}><h2>Journey</h2>
-          {data.visits.length ? <ol className={styles.timeline}>{data.visits.slice(0, 200).map((visit, i) => <li key={i} data-event={String(visit.event)}>
-            <time title={when(visit.created_at)}>{when(visit.created_at)}</time>
-            <span>{visit.event === "page_view" ? "Viewed" : `Left after ${duration(Number(visit.duration_ms) / 1000)}`} <b>{show(visit.path)}</b>{visit.title ? <small>{show(visit.title)}</small> : null}</span>
-            <small>{[visit.device, visit.browser, locationLabel(visit)].filter(Boolean).join(" · ")}{visit.referrer_host ? ` · from ${show(visit.referrer_host)}` : ""}{visit.utm_source ? ` · campaign ${show(visit.utm_source)}` : ""}</small>
-          </li>)}</ol> : <p className={shell.empty}>No visits recorded.</p>}
+        <Card className={`${shell.panel} ${styles.journeyPanel}`}>
+          <div className={styles.sectionHeader}>
+            <div className={styles.sectionTitleRow}>
+              <span className={styles.sectionIcon}><Compass size={18} aria-hidden="true" /></span>
+              <div>
+                <h2>Journey</h2>
+                <p className={shell.note}>Step-by-step visitor trail with duration, hardware, and acquisition touchpoints</p>
+              </div>
+            </div>
+            <div className={styles.journeyBadgeStrip}>
+              <span className={styles.journeyCountBadge}><Activity size={13} aria-hidden="true" />{data.visits.length} {data.visits.length === 1 ? "step" : "steps"}</span>
+              <span className={styles.journeyCountBadge}><Clock size={13} aria-hidden="true" />{duration(read)} read</span>
+            </div>
+          </div>
+
+          {data.visits.length ? (
+            <div className={styles.journeyWrapper}>
+              <ol className={styles.journeyList}>
+                {data.visits.slice(0, 200).map((visit, i) => {
+                  const tone = LIGHT_TONES[i % LIGHT_TONES.length];
+                  const isView = visit.event === "page_view";
+                  const durSec = Number(visit.duration_ms) / 1000;
+                  const loc = locationLabel(visit);
+
+                  return (
+                    <li key={i} className={styles.journeyItem} data-tone={tone}>
+                      <div className={styles.journeySpine}>
+                        <span className={styles.journeyNodeDot} />
+                        <span className={styles.journeyLine} />
+                      </div>
+
+                      <div className={styles.journeyCard} data-tone={tone}>
+                        <div className={styles.journeyCardHeader}>
+                          <div className={styles.journeyCardMetaLeft}>
+                            <span className={styles.stepIndexPill}>#{i + 1}</span>
+                            <span className={styles.actionPill} data-event={String(visit.event)}>
+                              {isView ? <Eye size={12} aria-hidden="true" /> : <LogOut size={12} aria-hidden="true" />}
+                              <span>{isView ? "Viewed Page" : "Left Page"}</span>
+                            </span>
+                            {!isView && durSec > 0 && (
+                              <span className={styles.durationPill}>
+                                <Clock size={11} aria-hidden="true" />
+                                <span>{duration(durSec)}</span>
+                              </span>
+                            )}
+                          </div>
+
+                          <span className={styles.timePill} title={when(visit.created_at)}>
+                            <Calendar size={11} aria-hidden="true" />
+                            <time dateTime={String(visit.created_at)}>{when(visit.created_at)}</time>
+                          </span>
+                        </div>
+
+                        <div className={styles.journeyCardBody}>
+                          <div className={styles.journeyPathRow}>
+                            <code className={styles.journeyPathCode} title={show(visit.path)}>{show(visit.path)}</code>
+                          </div>
+                          {visit.title ? <h4 className={styles.journeyPageTitle}>{show(visit.title)}</h4> : null}
+                        </div>
+
+                        <div className={styles.journeyCardFooter}>
+                          {(visit.device || visit.browser) ? (
+                            <span className={styles.metaChip} title="Hardware & Browser">
+                              {deviceIcon(show(visit.device))}
+                              <span>{[visit.device, visit.browser].filter(Boolean).map(show).join(" · ")}</span>
+                            </span>
+                          ) : null}
+                          {loc ? (
+                            <span className={styles.metaChip} title="Visitor Location">
+                              <MapPin size={11} aria-hidden="true" />
+                              <span>{loc}</span>
+                            </span>
+                          ) : null}
+                          {visit.referrer_host ? (
+                            <span className={styles.metaChip} title="Referrer Host">
+                              <ExternalLink size={11} aria-hidden="true" />
+                              <span>from {show(visit.referrer_host)}</span>
+                            </span>
+                          ) : null}
+                          {visit.utm_source ? (
+                            <span className={`${styles.metaChip} ${styles.campaignChip}`} title="Campaign Source">
+                              <Megaphone size={11} aria-hidden="true" />
+                              <span>campaign: {show(visit.utm_source)}</span>
+                            </span>
+                          ) : null}
+                        </div>
+                      </div>
+                    </li>
+                  );
+                })}
+              </ol>
+            </div>
+          ) : (
+            <p className={shell.empty}>No visits recorded.</p>
+          )}
         </Card>
+
         <div className={styles.sideStack}>
-          <Card className={shell.panel}><h2>Devices &amp; locations</h2>
-            {data.devices.length ? <ul className={styles.deviceList}>{data.devices.map((device, i) => <li key={i}><b>{[device.device, device.browser, device.os].filter(Boolean).join(" · ")}</b><small>{locationLabel(device)} · {show(device.ip_masked)} · {show(device.screen)}</small><small>{show(device.hits)} events · last {ago(device.last_seen)}</small></li>)}</ul> : <p className={shell.empty}>None recorded.</p>}
+          <Card className={`${shell.panel} ${styles.devicesPanel}`}>
+            <div className={styles.sectionHeader}>
+              <div className={styles.sectionTitleRow}>
+                <span className={styles.sectionIcon}><Laptop size={18} aria-hidden="true" /></span>
+                <div>
+                  <h2>Devices &amp; locations</h2>
+                  <p className={shell.note}>Hardware fingerprints, browsers, geolocations, and telemetry</p>
+                </div>
+              </div>
+              <span className={styles.journeyCountBadge}>{data.devices.length} {data.devices.length === 1 ? "device" : "devices"}</span>
+            </div>
+
+            {data.devices.length ? (
+              <div className={styles.deviceCardsGrid}>
+                {data.devices.map((device, i) => {
+                  const tone = LIGHT_TONES[i % LIGHT_TONES.length];
+                  const loc = locationLabel(device);
+
+                  return (
+                    <div key={i} className={styles.deviceCard} data-tone={tone}>
+                      <div className={styles.deviceCardTop}>
+                        <div className={styles.deviceIconBox}>
+                          {deviceIcon(show(device.device))}
+                        </div>
+                        <div className={styles.deviceMainInfo}>
+                          <b className={styles.deviceTitle}>{[device.device, device.browser, device.os].filter(Boolean).join(" · ") || "Unknown Device"}</b>
+                          <span className={styles.deviceHitsBadge}>
+                            <Activity size={11} aria-hidden="true" />
+                            {show(device.hits)} events
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className={styles.deviceCardMid}>
+                        {loc ? (
+                          <span className={styles.deviceMetaTag} title="Location">
+                            <MapPin size={12} aria-hidden="true" />
+                            <span>{loc}</span>
+                          </span>
+                        ) : null}
+                        {device.ip_masked ? (
+                          <span className={styles.deviceMetaTag} title="Masked IP Address">
+                            <ShieldCheck size={12} aria-hidden="true" />
+                            <code>{show(device.ip_masked)}</code>
+                          </span>
+                        ) : null}
+                        {device.screen ? (
+                          <span className={styles.deviceMetaTag} title="Display Resolution">
+                            <Monitor size={12} aria-hidden="true" />
+                            <span>{show(device.screen)}</span>
+                          </span>
+                        ) : null}
+                      </div>
+
+                      <div className={styles.deviceCardBottom}>
+                        <span className={styles.deviceLastSeen}>
+                          <Clock size={11} aria-hidden="true" />
+                          <span>Last seen {ago(device.last_seen)} ({when(device.last_seen)})</span>
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <p className={shell.empty}>None recorded.</p>
+            )}
           </Card>
-          <Card className={shell.panel}><h2>Sign-ins</h2>
-            {data.logins.length ? <ul className={styles.deviceList}>{data.logins.slice(0, 20).map((login, i) => <li key={i}><b>{show(login.action)}</b><small>{when(login.created_at)} · {show(login.ip_address)}</small></li>)}</ul> : <p className={shell.empty}>{account ? "No sign-in events in the Auth log." : "Not signed in."}</p>}
+
+          <Card className={shell.panel}>
+            <h2>Sign-ins</h2>
+            {data.logins.length ? (
+              <ul className={styles.sideEventList}>
+                {data.logins.slice(0, 20).map((login, i) => {
+                  const tone = LIGHT_TONES[i % LIGHT_TONES.length];
+                  return (
+                    <li key={i} className={styles.sideEventCard} data-tone={tone}>
+                      <div className={styles.sideEventHeader}>
+                        <b>{show(login.action)}</b>
+                        <time>{ago(login.created_at)}</time>
+                      </div>
+                      <small>{when(login.created_at)} · {show(login.ip_address)}</small>
+                    </li>
+                  );
+                })}
+              </ul>
+            ) : (
+              <p className={shell.empty}>{account ? "No sign-in events in the Auth log." : "Not signed in."}</p>
+            )}
           </Card>
-          <Card className={shell.panel}><h2>Account &amp; admin events</h2>
-            {data.events.length ? <ul className={styles.deviceList}>{data.events.slice(0, 30).map((event, i) => <li key={i}><b>{show(event.kind)} · {show(event.action)}</b><small>{when(event.created_at)} · {show(event.resource)}</small></li>)}</ul> : <p className={shell.empty}>None recorded.</p>}
+
+          <Card className={shell.panel}>
+            <h2>Account &amp; admin events</h2>
+            {data.events.length ? (
+              <ul className={styles.sideEventList}>
+                {data.events.slice(0, 30).map((event, i) => {
+                  const tone = LIGHT_TONES[i % LIGHT_TONES.length];
+                  return (
+                    <li key={i} className={styles.sideEventCard} data-tone={tone}>
+                      <div className={styles.sideEventHeader}>
+                        <b>{show(event.kind)} · {show(event.action)}</b>
+                        <time>{ago(event.created_at)}</time>
+                      </div>
+                      <small>{when(event.created_at)} · {show(event.resource)}</small>
+                    </li>
+                  );
+                })}
+              </ul>
+            ) : (
+              <p className={shell.empty}>None recorded.</p>
+            )}
           </Card>
         </div>
       </div>

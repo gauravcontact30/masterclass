@@ -1,0 +1,551 @@
+/* Creative & Professional Shadcn UI Font Family Dropdown Styles */
+
+.wrapper {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+/* ── Hidden Native Select (Accessible & Test-Compliant) ────────── */
+.accessibleSelect {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+  pointer-events: none;
+  opacity: 0;
+}
+
+/* ── Trigger: Pill Variant (Tech Buzz Deck) ────────────────────── */
+.pillTrigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 42px;
+  padding: 0 12px 0 14px;
+  border: 1px solid var(--line, #e2e8f0);
+  border-radius: 999px;
+  background: #ffffff;
+  color: var(--ink, #0f172a);
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
+  cursor: pointer;
+  outline: none;
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+  box-sizing: border-box;
+  flex-shrink: 0;
+  user-select: none;
+}
+
+.pillTrigger:hover {
+  border-color: var(--accent, #f97316);
+  background: #fffaf5;
+  box-shadow: 0 3px 8px rgba(249, 115, 22, 0.12);
+  transform: translateY(-0.5px);
+}
+
+.pillTrigger:focus-visible,
+.pillTrigger[data-state="open"] {
+  border-color: var(--accent, #f97316);
+  box-shadow: 0 0 0 3px var(--accent-soft, rgba(249, 115, 22, 0.18));
+}
+
+/* ── Trigger: Toolbar Variant (Super Admin Notepad) ────────────── */
+.toolbarTrigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  height: 36px;
+  padding: 0 10px;
+  border: 1px solid #dedbd2;
+  border-radius: 6px;
+  background: #ffffff;
+  color: #3d3d3a;
+  cursor: pointer;
+  outline: none;
+  font-size: 13px;
+  font-weight: 500;
+  transition: all 0.15s ease;
+  box-sizing: border-box;
+  user-select: none;
+}
+
+.toolbarTrigger:hover {
+  background: #f7e7de;
+  border-color: #d97757;
+  color: #d97757;
+}
+
+.toolbarTrigger:focus-visible,
+.toolbarTrigger[data-state="open"] {
+  background: #f7e7de;
+  border-color: #d97757;
+  box-shadow: 0 0 0 2px rgba(217, 119, 87, 0.2);
+}
+
+/* Trigger Inner Elements */
+.triggerIcon {
+  color: var(--accent, #ea580c);
+  flex-shrink: 0;
+}
+
+.fontName {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #0f172a;
+  max-width: 140px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  letter-spacing: -0.01em;
+}
+
+.badgePill {
+  display: inline-flex;
+  align-items: center;
+  padding: 1.5px 6.5px;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  border-radius: 999px;
+  background: #f1f5f9;
+  color: #64748b;
+  border: 1px solid #e2e8f0;
+}
+
+.triggerRating {
+  display: inline-flex;
+  align-items: center;
+  gap: 3.5px;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: #fefce8;
+  color: #854d0e;
+  border: 1px solid #fef08a;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  flex-shrink: 0;
+}
+
+.starIcon {
+  color: #eab308;
+  flex-shrink: 0;
+}
+
+.badgePill[data-cat="Serif"] {
+  background: #fef3c7;
+  color: #92400e;
+  border-color: #fde68a;
+}
+
+.badgePill[data-cat="Sans-Serif"] {
+  background: #eff6ff;
+  color: #1e40af;
+  border-color: #dbeafe;
+}
+
+.badgePill[data-cat="Monospace"] {
+  background: #f0fdf4;
+  color: #166534;
+  border-color: #dcfce7;
+}
+
+.badgePill[data-cat="Display/Creative"] {
+  background: #fdf2f8;
+  color: #9d174d;
+  border-color: #fbcfe8;
+}
+
+.chevron {
+  color: #94a3b8;
+  transition: transform 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  flex-shrink: 0;
+}
+
+[data-state="open"] .chevron {
+  transform: rotate(180deg);
+  color: var(--accent, #ea580c);
+}
+
+/* ── Popover Content (Shadcn UI Floating Card) ─────────────────── */
+.popoverCard {
+  width: 430px;
+  max-width: calc(100vw - 24px);
+  padding: 0;
+  border-radius: 14px;
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 16px 40px -8px rgba(15, 23, 42, 0.18), 0 0 0 1px rgba(15, 23, 42, 0.04);
+  color: #0f172a;
+  overflow: hidden;
+  font-family: inherit;
+  z-index: 1000;
+}
+
+/* Top Header */
+.popoverHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px 10px;
+  background: linear-gradient(to bottom, #f8fafc, #ffffff);
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.popoverTitleGroup {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.popoverTitle {
+  font-size: 13px;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+.headerBadges {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.starHeaderBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 3.5px;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: #fefce8;
+  color: #854d0e;
+  border: 1px solid #fef08a;
+}
+
+.countBadge {
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: #eff6ff;
+  color: #2563eb;
+  border: 1px solid #bfdbfe;
+}
+
+/* Search Bar */
+.searchBox {
+  position: relative;
+  display: flex;
+  align-items: center;
+  padding: 8px 12px;
+  border-bottom: 1px solid #f1f5f9;
+  background: #ffffff;
+}
+
+.searchIcon {
+  color: #94a3b8;
+  flex-shrink: 0;
+  margin-right: 8px;
+}
+
+.searchInput {
+  flex: 1;
+  border: 0;
+  outline: none;
+  font-size: 13px;
+  color: #0f172a;
+  background: transparent;
+  padding: 2px 0;
+}
+
+.searchInput::placeholder {
+  color: #94a3b8;
+}
+
+.clearSearchBtn {
+  border: 0;
+  background: #f1f5f9;
+  color: #64748b;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  padding: 0;
+  transition: all 0.15s ease;
+}
+
+.clearSearchBtn:hover {
+  background: #e2e8f0;
+  color: #0f172a;
+}
+
+/* Category Filter Chips - Wrapped cleanly to prevent right-side cropping */
+.categoryBar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 5px;
+  padding: 8px 12px;
+  background: #fafaf9;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.categoryChip {
+  border: 1px solid #e7e5e4;
+  border-radius: 999px;
+  padding: 3px 8px;
+  font-size: 11px;
+  font-weight: 600;
+  background: #ffffff;
+  color: #57534e;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.12s ease;
+  flex-shrink: 0;
+}
+
+.categoryChip:hover {
+  border-color: #d6d3d1;
+  background: #f5f5f4;
+  color: #292524;
+}
+
+.categoryChip[data-active="true"] {
+  border-color: #0f172a;
+  background: #0f172a;
+  color: #ffffff;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.2);
+}
+
+/* Scrollable Font List */
+.fontList {
+  max-height: 275px;
+  overflow-y: auto;
+  padding: 6px;
+  scroll-behavior: smooth;
+  overscroll-behavior: contain;
+}
+
+.fontList::-webkit-scrollbar {
+  width: 6px;
+}
+
+.fontList::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+
+.fontList::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+.fontItem {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.12s ease;
+  user-select: none;
+}
+
+.fontItem:hover {
+  background: #f8fafc;
+  border-color: #e2e8f0;
+}
+
+.fontItem[data-selected="true"] {
+  background: #fff7ed;
+  border-color: #fdba74;
+}
+
+.fontItemText {
+  min-width: 0;
+  flex: 1;
+}
+
+.fontItemHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 2px;
+}
+
+.fontItemName {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #0f172a;
+  letter-spacing: -0.01em;
+}
+
+.fontItemPreview {
+  font-size: 13px;
+  color: #475569;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 260px;
+  line-height: 1.35;
+}
+
+.fontItemRight {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.checkIcon {
+  color: var(--accent, #ea580c);
+  flex-shrink: 0;
+}
+
+.emptyState {
+  padding: 30px 16px;
+  text-align: center;
+  color: #64748b;
+  font-size: 13px;
+}
+
+/* Footer Section */
+.popoverFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 12px;
+  background: #f8fafc;
+  border-top: 1px solid #f1f5f9;
+  font-size: 11.5px;
+  color: #64748b;
+}
+
+.activeFontSample {
+  font-size: 12px;
+  font-weight: 600;
+  color: #1e293b;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 220px;
+}
+
+.resetBtn {
+  border: 0;
+  background: transparent;
+  color: #2563eb;
+  font-size: 11.5px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 3px 6px;
+  border-radius: 4px;
+  transition: background 0.12s ease;
+}
+
+.resetBtn:hover {
+  background: #dbeafe;
+  text-decoration: underline;
+}
+
+/* ── Full Width & Anchor Match Variant (Landing Navbar Auth Dropdown) ── */
+.wrapperFullWidth {
+  width: 100% !important;
+  display: flex !important;
+  box-sizing: border-box !important;
+}
+
+.triggerFullWidth {
+  width: 100% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: 8px !important;
+  box-sizing: border-box !important;
+}
+
+.triggerFullWidth .fontName {
+  flex: 1;
+  text-align: left;
+}
+
+.triggerFullWidth .chevron {
+  margin-left: auto;
+}
+
+.popoverCard.popoverMatchAnchor {
+  width: var(--anchor-width, 292px) !important;
+  max-width: min(var(--anchor-width, 292px), calc(100vw - 32px)) !important;
+  min-width: 0 !important;
+  box-sizing: border-box !important;
+}
+
+.popoverMatchAnchor .popoverHeader {
+  padding: 8px 10px;
+  gap: 6px;
+}
+
+.popoverMatchAnchor .popoverTitle {
+  font-size: 12px;
+}
+
+.popoverMatchAnchor .starHeaderBadge,
+.popoverMatchAnchor .countBadge {
+  font-size: 10px;
+  padding: 1.5px 5px;
+}
+
+.popoverMatchAnchor .categoryBar {
+  padding: 5px 8px;
+  gap: 3.5px;
+}
+
+.popoverMatchAnchor .categoryChip {
+  padding: 2px 6px;
+  font-size: 10px;
+}
+
+.popoverMatchAnchor .fontList {
+  max-height: 230px;
+  padding: 4px;
+}
+
+.popoverMatchAnchor .fontItem {
+  padding: 6px 8px;
+  gap: 6px;
+}
+
+.popoverMatchAnchor .fontItemName {
+  font-size: 12.5px;
+}
+
+.popoverMatchAnchor .fontItemPreview {
+  font-size: 11.5px;
+  max-width: 155px;
+}
+
+.popoverMatchAnchor .starRatingBadge {
+  font-size: 10px;
+  padding: 1px 4px;
+}
+
+.popoverMatchAnchor .reviewsCount {
+  display: none;
+}
+
