@@ -1,0 +1,86 @@
+import "server-only";
+
+/**
+ * Where each generated in-depth course is researched from (official documentation only; Perplexity's domain filter
+ * takes at most 20) and the language its examples are written in. Pages credit these in plain text, never as links.
+ */
+export type CourseSource = { sites: string[]; language: string; file: string };
+
+const ts = (sites: string[]): CourseSource => ({ sites, language: "TypeScript", file: "index.ts" });
+const tsx = (sites: string[]): CourseSource => ({ sites, language: "TypeScript with React (TSX)", file: "App.tsx" });
+const py = (sites: string[]): CourseSource => ({ sites, language: "Python", file: "main.py" });
+
+export const COURSE_SOURCES: Record<string, CourseSource> = {
+  ai: py(["platform.openai.com", "docs.anthropic.com", "ai.google.dev", "huggingface.co", "docs.langchain.com"]),
+  aitools: ts(["docs.anthropic.com", "platform.openai.com", "ai-sdk.dev", "vercel.com", "docs.github.com"]),
+  agents: py(["docs.langchain.com", "langchain-ai.github.io", "docs.anthropic.com", "platform.openai.com", "modelcontextprotocol.io"]),
+  nextjs: tsx(["nextjs.org", "react.dev", "vercel.com"]),
+  react: tsx(["react.dev"]),
+  typescript: ts(["typescriptlang.org"]),
+  javascript: { sites: ["developer.mozilla.org", "tc39.es", "nodejs.org"], language: "JavaScript", file: "index.js" },
+  jspuzzles: { sites: ["developer.mozilla.org", "tc39.es"], language: "JavaScript", file: "puzzle.js" },
+  node: ts(["nodejs.org"]),
+  express: { sites: ["expressjs.com", "nodejs.org"], language: "JavaScript (Node.js)", file: "server.js" },
+  python: py(["docs.python.org", "peps.python.org"]),
+  numpy: py(["numpy.org"]),
+  pandas: py(["pandas.pydata.org"]),
+  polars: py(["docs.pola.rs", "pola.rs"]),
+  scipy: py(["docs.scipy.org", "scipy.org"]),
+  sklearn: py(["scikit-learn.org"]),
+  tensorflow: py(["tensorflow.org"]),
+  pytorch: py(["pytorch.org", "docs.pytorch.org"]),
+  keras: py(["keras.io"]),
+  fastapi: py(["fastapi.tiangolo.com", "docs.pydantic.dev"]),
+  seaborn: py(["seaborn.pydata.org"]),
+  plotly: py(["plotly.com"]),
+  requests: py(["requests.readthedocs.io", "docs.python-requests.org"]),
+  httpx: py(["www.python-httpx.org"]),
+  scrapy: py(["docs.scrapy.org"]),
+  pydantic: py(["docs.pydantic.dev"]),
+  graphql: ts(["graphql.org", "the-guild.dev", "apollographql.com"]),
+  tanstack: tsx(["tanstack.com"]),
+  zustand: tsx(["zustand.docs.pmnd.rs", "github.com"]),
+  redux: tsx(["redux.js.org", "redux-toolkit.js.org"]),
+  zod: ts(["zod.dev"]),
+  conform: tsx(["conform.guide"]),
+  authjs: ts(["authjs.dev", "next-auth.js.org"]),
+  clerk: tsx(["clerk.com"]),
+  kinde: tsx(["docs.kinde.com"]),
+  betterauth: ts(["better-auth.com", "www.better-auth.com"]),
+  drizzle: ts(["orm.drizzle.team"]),
+  prisma: ts(["prisma.io", "www.prisma.io"]),
+  neon: ts(["neon.com", "neon.tech"]),
+  redis: { sites: ["redis.io"], language: "Redis commands and TypeScript", file: "index.ts" },
+  upstash: ts(["upstash.com"]),
+  inngest: ts(["inngest.com"]),
+  arcjet: ts(["docs.arcjet.com"]),
+  jest: ts(["jestjs.io"]),
+  vitest: ts(["vitest.dev"]),
+  rtl: tsx(["testing-library.com"]),
+  playwright: ts(["playwright.dev"]),
+  cypress: ts(["docs.cypress.io"]),
+  t3: tsx(["create.t3.gg", "trpc.io", "nextjs.org", "orm.drizzle.team"]),
+  angular: ts(["angular.dev"]),
+  systemdesign: { sites: ["aws.amazon.com", "docs.aws.amazon.com", "learn.microsoft.com", "cloud.google.com", "kafka.apache.org", "redis.io"], language: "pseudo-code and TypeScript", file: "design.ts" },
+  aws: { sites: ["docs.aws.amazon.com", "aws.amazon.com"], language: "AWS CLI, CloudFormation/CDK and TypeScript", file: "stack.ts" },
+  devops: { sites: ["docs.github.com", "docs.docker.com", "kubernetes.io", "developer.hashicorp.com", "prometheus.io"], language: "YAML, shell and Dockerfiles", file: "pipeline.yml" },
+  docker: { sites: ["docs.docker.com"], language: "Dockerfiles, Compose YAML and shell", file: "Dockerfile" },
+  kubernetes: { sites: ["kubernetes.io", "helm.sh"], language: "Kubernetes YAML and kubectl", file: "deployment.yaml" },
+  postgresql: { sites: ["postgresql.org", "www.postgresql.org"], language: "SQL", file: "query.sql" },
+  supabase: ts(["supabase.com"]),
+  git: { sites: ["git-scm.com", "docs.github.com"], language: "shell (git commands)", file: "commands.sh" },
+  linux: { sites: ["man7.org", "kernel.org", "gnu.org", "ubuntu.com"], language: "Bash", file: "script.sh" },
+  rust: { sites: ["doc.rust-lang.org", "rust-lang.org"], language: "Rust", file: "main.rs" },
+  go: { sites: ["go.dev"], language: "Go", file: "main.go" },
+  vue: { sites: ["vuejs.org", "router.vuejs.org", "pinia.vuejs.org"], language: "Vue single-file components and TypeScript", file: "App.vue" },
+  flutter: { sites: ["docs.flutter.dev", "dart.dev"], language: "Dart", file: "main.dart" },
+  django: py(["docs.djangoproject.com", "www.django-rest-framework.org"]),
+  nestjs: ts(["docs.nestjs.com"]),
+  langchain: py(["docs.langchain.com", "reference.langchain.com", "python.langchain.com"]),
+  langgraph: py(["docs.langchain.com", "langchain-ai.github.io", "reference.langchain.com"]),
+  langsmith: py(["docs.smith.langchain.com", "docs.langchain.com"]),
+  langflow: py(["docs.langflow.org"]),
+  n8n: { sites: ["docs.n8n.io"], language: "n8n workflow JSON and JavaScript (Code node)", file: "workflow.json" },
+};
+
+export const courseSource = (trackId: string): CourseSource => COURSE_SOURCES[trackId] ?? { sites: [], language: "the technology's main language", file: "example.txt" };

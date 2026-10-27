@@ -70,6 +70,22 @@
   min-width: 0;
 }
 
+.writeLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: auto;
+  min-height: 36px;
+  padding: 0 16px;
+  border-radius: 999px;
+  background: #1a8917;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  text-decoration: none;
+}
+.writeLink:hover { background: #156d12; }
+
 .badgeRow {
   display: flex;
   flex-wrap: wrap;

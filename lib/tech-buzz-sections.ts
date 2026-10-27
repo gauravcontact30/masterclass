@@ -16,6 +16,8 @@ export type DailyTrack = {
   short: string;
   /** Stories on these Learning Dashboard technologies stand in for the track until its first daily story exists. */
   techIds: string[];
+  /** The technology logos shown beside the track's name. */
+  logoIds: string[];
   /** What the writer covers, in rotation, one angle per day. */
   angles: string[];
   /** The story's own category, technology label and Learning Dashboard technology. */
@@ -25,27 +27,49 @@ export type DailyTrack = {
   color: string;
   /** The official documentation the daily story is researched from (at most 20 domains, Perplexity's limit). */
   officialSites: string[];
+  /** Extra instructions for the track's writer: the shape every story of the track takes. */
+  brief?: string;
 };
 
 export const DAILY_TRACKS: DailyTrack[] = [
   {
-    id: "agentic-ai", label: "Agentic AI with LangChain, LangGraph, LangSmith & LangFlow", short: "Agentic AI",
-    techIds: ["agentic-ai", "langchain", "langgraph", "langsmith", "langflow"],
+    id: "agentic-ai", label: "Agentic AI - LangChain, LangGraph, LangSmith, LangFlow and n8n", short: "Agentic AI - LangChain, LangGraph, LangSmith, LangFlow and n8n",
+    techIds: ["agentic-ai", "langchain", "langgraph", "langsmith", "langflow", "n8n"],
+    logoIds: ["langchain", "langgraph", "langsmith", "langflow", "n8n"],
+    // Each angle is a real-life problem solved end to end by one agentic workflow across the whole stack.
     angles: [
-      "a LangGraph agent with human-in-the-loop approval and durable checkpoints",
-      "tracing and evaluating a LangChain agent with LangSmith datasets and online evals",
-      "prototyping a retrieval agent visually in LangFlow and shipping it as an API",
-      "multi-agent supervisor patterns in LangGraph with tool calling and memory",
-      "guardrails, retries and cost control for production LangChain agents",
-      "agentic RAG with query planning, re-ranking and self-correction",
-      "streaming agent steps to a web UI and measuring them in LangSmith",
+      "a customer-support triage agent: n8n receives the ticket, a LangGraph agent classifies it and drafts the reply, a human approves risky answers, LangSmith traces every run",
+      "an invoice and expense processing workflow: n8n watches the mailbox, a LangChain extraction chain reads the PDF, a LangGraph agent validates and posts it, LangSmith evaluates accuracy",
+      "a recruiting assistant: a LangFlow prototype for resume screening, a LangGraph agent that shortlists and schedules interviews, n8n for calendar and email, LangSmith datasets for fairness checks",
+      "an on-call incident responder: n8n turns alerts into runs, a LangGraph agent queries logs and runbooks and proposes a fix that waits for human approval, LangSmith tracks latency and cost",
+      "a sales lead research agent: n8n pulls new CRM leads, a LangChain tool-calling agent researches each company, LangGraph writes and scores the outreach, LangSmith compares prompt versions",
+      "an internal knowledge assistant: agentic RAG over company docs with LangChain retrievers, LangGraph query planning and self-correction, a LangFlow playground for admins, n8n keeping the index fresh",
+      "an e-commerce returns and refunds agent: a LangGraph state machine with checkpoints, n8n connectors to the store and payments, guardrails for refunds above a limit, LangSmith online evaluations",
+      "a multi-agent content pipeline: a LangGraph supervisor with researcher, writer and reviewer agents, n8n for scheduling and publishing, LangSmith comparing model versions",
+      "a pull request review assistant: n8n listens to repository webhooks, a LangGraph agent reviews diffs with tools and posts comments, LangSmith measures review quality",
+      "a personal finance and bill reminder agent: n8n schedules and reads statements, a LangChain agent categorises spending, LangGraph memory keeps preferences, LangSmith monitors failures",
+      "a clinic appointment and follow-up assistant: a LangGraph conversation flow with human hand-off, n8n for SMS and calendar, strict guardrails on medical advice, LangSmith auditing every answer",
+      "a data analyst agent: natural language to SQL with LangChain tools, LangGraph retries on failing queries, a LangFlow demo for business users, n8n emailing the weekly report",
+      "a travel planning agent: LangGraph parallel tool calls for flights, hotels and weather, n8n booking webhooks, human confirmation before payment, LangSmith tracing cost per plan",
+      "a contract compliance checker: LangChain structured output over contracts, a LangGraph reviewer loop, n8n routing flagged clauses to legal, LangSmith regression datasets",
     ],
-    category: "Agentic AI", technology: "Agentic AI & LangChain", techId: "agentic-ai", color: "#7c3aed",
-    officialSites: ["docs.langchain.com", "reference.langchain.com", "langchain-ai.github.io", "docs.smith.langchain.com", "docs.langflow.org"],
+    category: "Agentic AI", technology: "Agentic AI - LangChain, LangGraph, LangSmith, LangFlow and n8n", techId: "agentic-ai", color: "#7c3aed",
+    officialSites: ["docs.langchain.com", "reference.langchain.com", "langchain-ai.github.io", "docs.smith.langchain.com", "docs.langflow.org", "docs.n8n.io"],
+    brief: [
+      "Every story solves one real-life problem end to end with an agentic workflow built on LangChain, LangGraph, LangSmith, LangFlow and n8n, each used for what it does best.",
+      "Use these sections, in this order:",
+      "1. 'Description': the real-life problem, who has it, what it costs today, and what the finished agent does.",
+      "2. 'Topic summary': the agentic concepts the story teaches (for example tool calling, state, checkpoints, human-in-the-loop, memory, evaluation) and where each tool fits, as bulletPoints.",
+      "3. 'The workflow': the flow from trigger to result as numbered steps, naming which of LangChain, LangGraph, LangSmith, LangFlow or n8n handles each step.",
+      "4. 'Building the agent': the LangChain and LangGraph code, with a complete runnable multi-file example.",
+      "5. 'Automating and observing it': the n8n workflow that triggers and connects the agent, the LangFlow prototype, and LangSmith tracing and evaluation, as steps or bulletPoints.",
+      "6. 'Solving the real problem': results, edge cases, guardrails, cost and what to watch in production, as bulletPoints.",
+      "Never repeat a problem or workflow from an earlier day: each story teaches something new.",
+    ].join("\n"),
   },
   {
     id: "system-design", label: "System Design Workflows", short: "System Design",
-    techIds: ["system-design"],
+    techIds: ["system-design"], logoIds: ["system-design"],
     angles: [
       "designing a URL shortener that serves a billion redirects a day",
       "an event-driven order pipeline with Kafka, idempotency and the outbox pattern",
@@ -60,7 +84,7 @@ export const DAILY_TRACKS: DailyTrack[] = [
   },
   {
     id: "aws", label: "AWS, DevOps & AI-powered AWS services", short: "AWS & DevOps",
-    techIds: ["aws"],
+    techIds: ["aws"], logoIds: ["aws"],
     angles: [
       "building a generative AI app on Amazon Bedrock with Knowledge Bases and Guardrails",
       "a serverless API with Lambda, API Gateway and DynamoDB, deployed by CDK",
@@ -75,7 +99,7 @@ export const DAILY_TRACKS: DailyTrack[] = [
   },
   {
     id: "kubernetes", label: "Kubernetes & Docker", short: "Kubernetes & Docker",
-    techIds: ["kubernetes", "docker"],
+    techIds: ["kubernetes", "docker"], logoIds: ["kubernetes", "docker"],
     angles: [
       "slim, secure Docker images with multi-stage builds and distroless bases",
       "Kubernetes autoscaling: HPA, VPA and KEDA on real traffic",
@@ -90,7 +114,7 @@ export const DAILY_TRACKS: DailyTrack[] = [
   },
   {
     id: "nextjs", label: "Next.js 16+ & React 19+", short: "Next.js & React",
-    techIds: ["nextjs", "react"],
+    techIds: ["nextjs", "react"], logoIds: ["nextjs", "react"],
     angles: [
       "Cache Components in Next.js 16: use cache, cacheLife and Partial Prerendering",
       "React 19 Actions, useActionState and useOptimistic for forms",
@@ -104,6 +128,11 @@ export const DAILY_TRACKS: DailyTrack[] = [
     officialSites: ["nextjs.org", "react.dev"],
   },
 ];
+
+/** The technology logos shown beside a daily track's name. */
+export function dailyTrackTechIds(idOrShort: string): string[] {
+  return DAILY_TRACKS.find(t => t.id === idOrShort || t.short === idOrShort)?.logoIds ?? [];
+}
 
 export type TechGroup = { id: string; label: string; blurb: string; techIds: string[]; categories: RegExp; color: string; tint: string };
 

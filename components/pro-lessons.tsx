@@ -16,6 +16,7 @@ import { BrandOrGlyph } from "./topic-media";
 import { LearningResources } from "./learning-resources";
 import { LearningPath, RecallDeck, StatStrip } from "./learning-studio";
 import { TechnologySections } from "./technology-sections";
+import { DeepCourseTopics } from "./deep-course-topics";
 import { AiProviderPicker, useAiProvider } from "./ai-provider-picker";
 
 const DONE_KEY = "masterclass:lessons-done";
@@ -140,6 +141,7 @@ export function ProLessons({ lessons, aiReady }: { lessons: ProLesson[]; aiReady
     <ProHero eyebrow="Professional learning / Lessons" title={track.name} icon={<BrandOrGlyph label={track.name} glyph={track.icon} size={20}/>} aside={<TrackSelect value={track.id} onChange={id => { setTrack(id); setFilter("All"); setGeneration(null); }}/>}>
       Hand-written lessons on {track.focus}, plus fresh lessons generated on any syllabus topic — all read right here.
     </ProHero>
+    <DeepCourseTopics trackId={track.id}/>
 
     <StatStrip items={[
       { value: `${completed}`, unit: `/ ${trackLessons.length}`, label: "Lessons completed" },

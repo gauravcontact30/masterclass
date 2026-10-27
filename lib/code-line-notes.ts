@@ -9,7 +9,7 @@ export function fileLanguage(code: string, path: string): CodeLanguage {
   if (/^dockerfile(?:\.|$)/.test(filename)) return "dockerfile";
   if (/^\.env(?:\.|$)/.test(filename) || filename === ".gitignore") return "text";
   const extension = path.split(".").at(-1)?.toLowerCase() ?? "";
-  const languages: Record<string, CodeLanguage> = { js: "javascript", mjs: "javascript", cjs: "javascript", ts: "typescript", mts: "typescript", cts: "typescript", tsx: "tsx", jsx: "jsx", py: "python", json: "json", yaml: "yaml", yml: "yaml", css: "css", html: "html", htm: "html", sh: "bash", bash: "bash", sql: "text", go: "text", rs: "text", toml: "text", md: "markdown", mdx: "markdown", tf: "hcl", hcl: "hcl", vue: "text", svelte: "text", scss: "text", sass: "text", less: "text" };
+  const languages: Record<string, CodeLanguage> = { js: "javascript", mjs: "javascript", cjs: "javascript", ts: "typescript", mts: "typescript", cts: "typescript", tsx: "tsx", jsx: "jsx", py: "python", json: "json", yaml: "yaml", yml: "yaml", css: "css", html: "html", htm: "html", sh: "bash", bash: "bash", sql: "text", java: "java", cpp: "cpp", cc: "cpp", cxx: "cpp", hpp: "cpp", h: "cpp", go: "text", rs: "text", toml: "text", md: "markdown", mdx: "markdown", tf: "hcl", hcl: "hcl", vue: "text", svelte: "text", scss: "text", sass: "text", less: "text" };
   return languages[extension] ?? inferLanguage(code);
 }
 

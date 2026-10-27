@@ -1,0 +1,790 @@
+{
+ "core-java": [
+  {
+   "id": "jdk-jre-jvm",
+   "title": "JDK, JRE, JVM and how a Java program runs",
+   "module": "Foundations",
+   "level": "Beginner",
+   "minutes": 14,
+   "summary": "Source code becomes platform-neutral bytecode, and the JVM loads, verifies and executes it — interpreting first, then compiling hot code."
+  },
+  {
+   "id": "data-types",
+   "title": "Data types, variables, wrappers and casting",
+   "module": "Foundations",
+   "level": "Beginner",
+   "minutes": 16,
+   "summary": "Eight primitives, reference types, widening and narrowing conversions, autoboxing and the Integer cache."
+  },
+  {
+   "id": "operators-control-flow",
+   "title": "Operators and control flow",
+   "module": "Foundations",
+   "level": "Beginner",
+   "minutes": 15,
+   "summary": "Precedence, short-circuiting, increment pitfalls, switch expressions, labelled break/continue and the enhanced for loop."
+  },
+  {
+   "id": "arrays-strings",
+   "title": "Arrays, String, StringBuilder and the string pool",
+   "module": "Foundations",
+   "level": "Beginner",
+   "minutes": 18,
+   "summary": "Fixed-size arrays, 2-D arrays, immutable Strings, interning, and when to use StringBuilder."
+  },
+  {
+   "id": "classes-objects",
+   "title": "Classes, objects, constructors, this and static",
+   "module": "Object-oriented programming",
+   "level": "Beginner",
+   "minutes": 18,
+   "summary": "How objects are created and initialized, constructor chaining, and the difference between instance and class members."
+  },
+  {
+   "id": "encapsulation-packages",
+   "title": "Encapsulation, access modifiers and packages",
+   "module": "Object-oriented programming",
+   "level": "Beginner",
+   "minutes": 13,
+   "summary": "Hide state behind methods, choose the narrowest visibility, and organize code into packages."
+  },
+  {
+   "id": "inheritance-polymorphism",
+   "title": "Inheritance, overriding and polymorphism",
+   "module": "Object-oriented programming",
+   "level": "Intermediate",
+   "minutes": 20,
+   "summary": "extends and super, method overriding versus overloading, dynamic method dispatch and upcasting/downcasting."
+  },
+  {
+   "id": "abstraction-interfaces",
+   "title": "Abstraction: abstract classes and interfaces",
+   "module": "Object-oriented programming",
+   "level": "Intermediate",
+   "minutes": 18,
+   "summary": "When to use an abstract class versus an interface, default/static/private interface methods, and functional interfaces."
+  },
+  {
+   "id": "object-methods-enums",
+   "title": "Object class methods, immutability, enums and nested classes",
+   "module": "Object-oriented programming",
+   "level": "Intermediate",
+   "minutes": 20,
+   "summary": "The equals/hashCode contract, toString, final, immutable classes, records, enums and the four kinds of nested classes."
+  },
+  {
+   "id": "exceptions",
+   "title": "Exception handling",
+   "module": "Core APIs",
+   "level": "Intermediate",
+   "minutes": 20,
+   "summary": "The Throwable hierarchy, checked vs unchecked, try/catch/finally, try-with-resources, custom exceptions and best practices."
+  },
+  {
+   "id": "collections-list-set",
+   "title": "Collections Framework: List, Set, Queue and iteration",
+   "module": "Core APIs",
+   "level": "Intermediate",
+   "minutes": 22,
+   "summary": "The Collection hierarchy, ArrayList vs LinkedList, HashSet vs LinkedHashSet vs TreeSet, Deque, and fail-fast iterators."
+  },
+  {
+   "id": "maps-hashing-comparators",
+   "title": "Maps, HashMap internals, Comparable and Comparator",
+   "module": "Core APIs",
+   "level": "Advanced",
+   "minutes": 22,
+   "summary": "How HashMap stores entries, load factor and resizing, treeification, TreeMap/LinkedHashMap, and sorting objects two ways."
+  },
+  {
+   "id": "generics",
+   "title": "Generics, wildcards and type erasure",
+   "module": "Core APIs",
+   "level": "Advanced",
+   "minutes": 18,
+   "summary": "Type parameters for classes and methods, bounded types, ? extends / ? super (PECS), and what erasure means at run time."
+  },
+  {
+   "id": "lambdas-streams",
+   "title": "Lambdas, method references and the Stream API",
+   "module": "Core APIs",
+   "level": "Intermediate",
+   "minutes": 22,
+   "summary": "Java 8's functional style: lambda syntax, effectively final captures, the four core functional interfaces and stream pipelines."
+  },
+  {
+   "id": "file-io",
+   "title": "File I/O, NIO.2 and serialization",
+   "module": "Core APIs",
+   "level": "Intermediate",
+   "minutes": 16,
+   "summary": "Byte vs character streams, buffering, the Files and Path APIs, and object serialization with its risks."
+  },
+  {
+   "id": "multithreading-basics",
+   "title": "Multithreading basics and synchronization",
+   "module": "JVM and concurrency",
+   "level": "Intermediate",
+   "minutes": 22,
+   "summary": "Creating threads, thread states, race conditions, synchronized, volatile, wait/notify and deadlock."
+  },
+  {
+   "id": "jvm-memory-gc",
+   "title": "JVM architecture, memory areas and garbage collection",
+   "module": "JVM and concurrency",
+   "level": "Advanced",
+   "minutes": 20,
+   "summary": "Class loading, heap vs stack vs metaspace, how objects become garbage, generational GC, G1/ZGC and reference types."
+  }
+ ],
+ "advanced-java": [
+  {
+   "id": "jdbc-basics",
+   "title": "JDBC architecture, drivers and CRUD with PreparedStatement",
+   "module": "Database access with JDBC",
+   "level": "Intermediate",
+   "minutes": 20,
+   "summary": "How Java talks to a relational database: DriverManager, Connection, Statement vs PreparedStatement, ResultSet and SQL injection."
+  },
+  {
+   "id": "jdbc-transactions-batch",
+   "title": "Transactions, isolation levels, savepoints and batch updates",
+   "module": "Database access with JDBC",
+   "level": "Advanced",
+   "minutes": 18,
+   "summary": "ACID, auto-commit, commit/rollback, isolation anomalies, savepoints and sending many statements in one round trip."
+  },
+  {
+   "id": "connection-pooling",
+   "title": "DataSource, connection pooling and the DAO pattern",
+   "module": "Database access with JDBC",
+   "level": "Intermediate",
+   "minutes": 14,
+   "summary": "Why opening connections is expensive, how HikariCP pools them, JNDI lookups, and structuring persistence code."
+  },
+  {
+   "id": "servlet-lifecycle",
+   "title": "Servlets: architecture, lifecycle and configuration",
+   "module": "Web tier: Servlets and JSP",
+   "level": "Intermediate",
+   "minutes": 18,
+   "summary": "What a servlet container does, init/service/destroy, one instance many threads, annotations vs web.xml, and init/context parameters."
+  },
+  {
+   "id": "request-response",
+   "title": "Requests, responses, forward vs redirect",
+   "module": "Web tier: Servlets and JSP",
+   "level": "Intermediate",
+   "minutes": 16,
+   "summary": "Reading parameters and headers, writing responses and status codes, RequestDispatcher forward/include and sendRedirect, Post/Redirect/Get."
+  },
+  {
+   "id": "session-management",
+   "title": "Session tracking: cookies, HttpSession and URL rewriting",
+   "module": "Web tier: Servlets and JSP",
+   "level": "Intermediate",
+   "minutes": 16,
+   "summary": "HTTP is stateless; the four tracking techniques, HttpSession lifecycle, secure cookie flags and session fixation."
+  },
+  {
+   "id": "filters-listeners",
+   "title": "Filters and listeners",
+   "module": "Web tier: Servlets and JSP",
+   "level": "Intermediate",
+   "minutes": 14,
+   "summary": "Cross-cutting request processing with Filter and FilterChain, and reacting to application, session and request events."
+  },
+  {
+   "id": "jsp-el-jstl",
+   "title": "JSP, Expression Language and JSTL",
+   "module": "Web tier: Servlets and JSP",
+   "level": "Intermediate",
+   "minutes": 18,
+   "summary": "How JSPs become servlets, scripting elements and directives, implicit objects, EL and JSTL tags, and why scriptlets are discouraged."
+  },
+  {
+   "id": "mvc-pattern",
+   "title": "MVC with Servlets and JSP (Model 2)",
+   "module": "Web tier: Servlets and JSP",
+   "level": "Intermediate",
+   "minutes": 15,
+   "summary": "Separating model, view and controller in a classic Java web app — the architecture Spring MVC later standardized."
+  },
+  {
+   "id": "jpa-hibernate-basics",
+   "title": "ORM, JPA and Hibernate fundamentals",
+   "module": "Persistence with JPA and Hibernate",
+   "level": "Advanced",
+   "minutes": 22,
+   "summary": "Mapping classes to tables, EntityManager operations, persistence context, entity states and dirty checking."
+  },
+  {
+   "id": "jpa-relationships-queries",
+   "title": "Relationships, fetching, the N+1 problem and JPQL",
+   "module": "Persistence with JPA and Hibernate",
+   "level": "Advanced",
+   "minutes": 22,
+   "summary": "@OneToMany/@ManyToOne/@ManyToMany, owning side, cascade and orphan removal, LAZY vs EAGER, JOIN FETCH and Criteria API."
+  },
+  {
+   "id": "concurrency-executors",
+   "title": "java.util.concurrent: executors, futures, locks and concurrent collections",
+   "module": "Concurrency, reflection and networking",
+   "level": "Advanced",
+   "minutes": 24,
+   "summary": "Thread pools, Callable/Future, CompletableFuture pipelines, ReentrantLock, BlockingQueue, ConcurrentHashMap, latches and virtual threads."
+  },
+  {
+   "id": "reflection-annotations",
+   "title": "Reflection and custom annotations",
+   "module": "Concurrency, reflection and networking",
+   "level": "Advanced",
+   "minutes": 16,
+   "summary": "Inspecting and invoking classes at run time, writing annotations with retention and targets, and how frameworks use both."
+  },
+  {
+   "id": "networking",
+   "title": "Networking: sockets, URLs and the HTTP Client",
+   "module": "Concurrency, reflection and networking",
+   "level": "Intermediate",
+   "minutes": 16,
+   "summary": "TCP client/server with Socket and ServerSocket, UDP datagrams, and calling REST APIs with java.net.http.HttpClient."
+  }
+ ],
+ "spring-boot": [
+  {
+   "id": "spring-boot-intro",
+   "title": "What Spring Boot is: starters, auto-configuration and the main class",
+   "module": "Spring core",
+   "level": "Beginner",
+   "minutes": 16,
+   "summary": "Why Boot exists, how starters and @SpringBootApplication work, the embedded server and the project layout."
+  },
+  {
+   "id": "ioc-dependency-injection",
+   "title": "IoC container, beans and dependency injection",
+   "module": "Spring core",
+   "level": "Beginner",
+   "minutes": 20,
+   "summary": "Inversion of control, stereotypes, constructor injection, @Bean methods, qualifiers, scopes and the bean lifecycle."
+  },
+  {
+   "id": "configuration-profiles",
+   "title": "Externalized configuration, @ConfigurationProperties and profiles",
+   "module": "Spring core",
+   "level": "Intermediate",
+   "minutes": 16,
+   "summary": "application.yml, property precedence, type-safe configuration classes, validation of settings, and environment-specific profiles."
+  },
+  {
+   "id": "aop",
+   "title": "Aspect-oriented programming and proxies",
+   "module": "Spring core",
+   "level": "Advanced",
+   "minutes": 16,
+   "summary": "Cross-cutting concerns with @Aspect, advice types, pointcut expressions, and the proxy limitations that also affect @Transactional."
+  },
+  {
+   "id": "rest-controllers",
+   "title": "REST controllers, request mapping and ResponseEntity",
+   "module": "Building REST APIs",
+   "level": "Beginner",
+   "minutes": 20,
+   "summary": "Designing resources, @RestController and mapping annotations, path variables, query parameters, request bodies, status codes and pagination."
+  },
+  {
+   "id": "validation-error-handling",
+   "title": "Bean Validation, DTOs and global exception handling",
+   "module": "Building REST APIs",
+   "level": "Intermediate",
+   "minutes": 20,
+   "summary": "Constraint annotations, @Valid and groups, custom validators, @RestControllerAdvice and RFC 9457 ProblemDetail responses."
+  },
+  {
+   "id": "spring-data-jpa",
+   "title": "Spring Data JPA: entities, repositories and queries",
+   "module": "Data access",
+   "level": "Intermediate",
+   "minutes": 22,
+   "summary": "JpaRepository, derived query methods, @Query, projections, pagination and sorting, and auditing."
+  },
+  {
+   "id": "transactions",
+   "title": "@Transactional: propagation, isolation, rollback rules and pitfalls",
+   "module": "Data access",
+   "level": "Advanced",
+   "minutes": 18,
+   "summary": "Declarative transactions in services, propagation types, read-only transactions, which exceptions roll back, and concurrency control."
+  },
+  {
+   "id": "spring-security",
+   "title": "Spring Security fundamentals: filter chain, users and authorization",
+   "module": "Security",
+   "level": "Intermediate",
+   "minutes": 22,
+   "summary": "How SecurityFilterChain works, password encoding, UserDetailsService, URL and method security, CSRF and CORS."
+  },
+  {
+   "id": "jwt-auth",
+   "title": "Stateless authentication with JWT and the OAuth2 resource server",
+   "module": "Security",
+   "level": "Advanced",
+   "minutes": 20,
+   "summary": "Structure of a JWT, issuing tokens at login, validating them with spring-boot-starter-oauth2-resource-server, scopes and refresh strategy."
+  },
+  {
+   "id": "testing",
+   "title": "Testing Spring Boot applications",
+   "module": "Quality and production",
+   "level": "Intermediate",
+   "minutes": 20,
+   "summary": "Unit tests with Mockito, slice tests (@WebMvcTest, @DataJpaTest), full @SpringBootTest, MockMvc, and Testcontainers."
+  },
+  {
+   "id": "actuator-observability",
+   "title": "Actuator, logging, metrics and observability",
+   "module": "Quality and production",
+   "level": "Intermediate",
+   "minutes": 15,
+   "summary": "Health, info and metrics endpoints, readiness/liveness probes, custom health indicators, Micrometer metrics and structured logs."
+  },
+  {
+   "id": "caching-scheduling-async",
+   "title": "Caching, scheduling and asynchronous methods",
+   "module": "Quality and production",
+   "level": "Intermediate",
+   "minutes": 16,
+   "summary": "@Cacheable/@CacheEvict with Caffeine or Redis, @Scheduled jobs and cron expressions, @Async with a bounded executor."
+  },
+  {
+   "id": "microservices-rest-client",
+   "title": "Calling other services: RestClient, resilience and API documentation",
+   "module": "Quality and production",
+   "level": "Advanced",
+   "minutes": 18,
+   "summary": "RestClient and HTTP interfaces, timeouts, retries and circuit breakers with Resilience4j, and OpenAPI docs with springdoc."
+  },
+  {
+   "id": "packaging-deployment",
+   "title": "Packaging and deployment: executable JARs, Docker and native images",
+   "module": "Quality and production",
+   "level": "Intermediate",
+   "minutes": 14,
+   "summary": "Building the fat JAR, layered Docker images, Cloud Native Buildpacks, GraalVM native images, graceful shutdown and virtual threads."
+  }
+ ],
+ "cpp": [
+  {
+   "id": "compilation-basics",
+   "title": "How a C++ program is built: preprocessing, compiling, linking",
+   "module": "Foundations",
+   "level": "Beginner",
+   "minutes": 15,
+   "summary": "Source and header files, the four build stages, main, iostream, namespaces and the one-definition rule."
+  },
+  {
+   "id": "types-control-functions",
+   "title": "Types, control flow and functions",
+   "module": "Foundations",
+   "level": "Beginner",
+   "minutes": 18,
+   "summary": "Fundamental types, auto and const, references in parameters, overloading, default arguments, inline and constexpr functions."
+  },
+  {
+   "id": "arrays-strings-vector",
+   "title": "Arrays, std::string, std::vector and std::array",
+   "module": "Foundations",
+   "level": "Beginner",
+   "minutes": 16,
+   "summary": "Built-in arrays and their decay to pointers, safe alternatives, string operations and vector growth."
+  },
+  {
+   "id": "pointers-references",
+   "title": "Pointers and references",
+   "module": "Memory",
+   "level": "Intermediate",
+   "minutes": 20,
+   "summary": "Addresses, dereferencing, pointer arithmetic, nullptr, const with pointers, references, and pointers to pointers and functions."
+  },
+  {
+   "id": "dynamic-memory",
+   "title": "Dynamic memory: stack vs heap, new/delete and RAII",
+   "module": "Memory",
+   "level": "Intermediate",
+   "minutes": 16,
+   "summary": "Storage durations, new and delete (and their array forms), memory leaks, double frees, and the RAII idiom."
+  },
+  {
+   "id": "classes-objects",
+   "title": "Classes, constructors, destructors and member initializer lists",
+   "module": "Object-oriented programming",
+   "level": "Beginner",
+   "minutes": 20,
+   "summary": "Access specifiers, constructors of every kind, initializer lists, this, const member functions, static members and friends."
+  },
+  {
+   "id": "copy-control",
+   "title": "Copy control: rule of three, five and zero",
+   "module": "Object-oriented programming",
+   "level": "Advanced",
+   "minutes": 20,
+   "summary": "Copy constructor, copy assignment, destructor, shallow vs deep copy, copy-and-swap, and when to write none of them."
+  },
+  {
+   "id": "operator-overloading",
+   "title": "Operator overloading",
+   "module": "Object-oriented programming",
+   "level": "Intermediate",
+   "minutes": 16,
+   "summary": "Member vs non-member operators, arithmetic and compound assignment, comparison (and C++20 <=>), stream operators, subscript and function-call operators."
+  },
+  {
+   "id": "inheritance-virtual",
+   "title": "Inheritance, virtual functions and runtime polymorphism",
+   "module": "Object-oriented programming",
+   "level": "Intermediate",
+   "minutes": 22,
+   "summary": "Access in inheritance, constructor order, virtual dispatch and vtables, override/final, pure virtual functions, virtual destructors, object slicing and multiple/diamond inheritance."
+  },
+  {
+   "id": "templates",
+   "title": "Templates: function, class, specialization and concepts",
+   "module": "Generic programming and the STL",
+   "level": "Advanced",
+   "minutes": 20,
+   "summary": "Generic code with templates, type deduction, class templates, specialization, variadic templates and C++20 concepts."
+  },
+  {
+   "id": "stl-containers",
+   "title": "STL containers and their complexities",
+   "module": "Generic programming and the STL",
+   "level": "Intermediate",
+   "minutes": 22,
+   "summary": "Sequence containers, associative and unordered containers, container adapters, choosing the right one, and iterator invalidation."
+  },
+  {
+   "id": "stl-algorithms-lambdas",
+   "title": "Iterators, algorithms and lambdas",
+   "module": "Generic programming and the STL",
+   "level": "Intermediate",
+   "minutes": 20,
+   "summary": "Iterator categories, <algorithm> essentials (sort, find, accumulate, transform, partition…), lambda captures, and C++20 ranges."
+  },
+  {
+   "id": "smart-pointers",
+   "title": "Smart pointers: unique_ptr, shared_ptr and weak_ptr",
+   "module": "Modern C++",
+   "level": "Intermediate",
+   "minutes": 18,
+   "summary": "Ownership semantics, make_unique/make_shared, transferring ownership, reference counting, cycles and custom deleters."
+  },
+  {
+   "id": "move-semantics",
+   "title": "Move semantics, rvalue references and perfect forwarding",
+   "module": "Modern C++",
+   "level": "Advanced",
+   "minutes": 18,
+   "summary": "lvalues and rvalues, T&&, std::move, move constructors in practice, forwarding references and std::forward."
+  },
+  {
+   "id": "exceptions-files",
+   "title": "Exception handling and file streams",
+   "module": "Modern C++",
+   "level": "Intermediate",
+   "minutes": 16,
+   "summary": "throw/try/catch, standard exception hierarchy, stack unwinding, noexcept, exception-safety guarantees, and fstream I/O."
+  },
+  {
+   "id": "concurrency",
+   "title": "Concurrency: threads, mutexes, atomics and async",
+   "module": "Modern C++",
+   "level": "Advanced",
+   "minutes": 20,
+   "summary": "std::thread and jthread, data races, mutex and lock guards, condition variables, std::atomic, futures and async."
+  }
+ ],
+ "dsa": [
+  {
+   "id": "complexity",
+   "title": "Time and space complexity: Big-O, Ω and Θ",
+   "module": "Foundations",
+   "level": "Beginner",
+   "minutes": 18,
+   "summary": "Counting operations as input grows, asymptotic notations, common growth rates, amortized analysis and the master theorem."
+  },
+  {
+   "id": "arrays-two-pointers",
+   "title": "Arrays, prefix sums and the two-pointer technique",
+   "module": "Foundations",
+   "level": "Beginner",
+   "minutes": 18,
+   "summary": "Array operations and costs, prefix sums for range queries, two pointers on sorted data, Kadane's algorithm and in-place tricks."
+  },
+  {
+   "id": "sliding-window-hashing",
+   "title": "Sliding window and hashing patterns",
+   "module": "Foundations",
+   "level": "Intermediate",
+   "minutes": 18,
+   "summary": "Fixed and variable windows, frequency maps, longest substring without repeats, anagram search, and how hash tables work."
+  },
+  {
+   "id": "recursion-backtracking",
+   "title": "Recursion and backtracking",
+   "module": "Foundations",
+   "level": "Intermediate",
+   "minutes": 20,
+   "summary": "Base cases and recursive cases, the call stack, subsets and permutations, N-Queens, pruning and complexity of exhaustive search."
+  },
+  {
+   "id": "linked-lists",
+   "title": "Linked lists",
+   "module": "Linear data structures",
+   "level": "Beginner",
+   "minutes": 20,
+   "summary": "Singly and doubly linked lists, insert/delete, reversal, fast and slow pointers, cycle detection, merging and the dummy node trick."
+  },
+  {
+   "id": "stacks-queues",
+   "title": "Stacks, queues, deques and monotonic structures",
+   "module": "Linear data structures",
+   "level": "Intermediate",
+   "minutes": 20,
+   "summary": "LIFO and FIFO, balanced brackets, expression evaluation, next greater element with a monotonic stack, sliding window maximum with a deque."
+  },
+  {
+   "id": "binary-search",
+   "title": "Binary search and searching on the answer",
+   "module": "Searching and sorting",
+   "level": "Intermediate",
+   "minutes": 18,
+   "summary": "Iterative binary search, lower/upper bounds, rotated arrays, and binary search over a monotonic answer space."
+  },
+  {
+   "id": "sorting",
+   "title": "Sorting algorithms",
+   "module": "Searching and sorting",
+   "level": "Intermediate",
+   "minutes": 24,
+   "summary": "Bubble, selection and insertion sort; merge sort and quick sort; heap sort; counting sort; stability and what libraries actually use."
+  },
+  {
+   "id": "binary-trees",
+   "title": "Binary trees and traversals",
+   "module": "Trees",
+   "level": "Intermediate",
+   "minutes": 22,
+   "summary": "Terminology, recursive and iterative DFS traversals, level-order BFS, height, diameter, lowest common ancestor and tree construction."
+  },
+  {
+   "id": "bst",
+   "title": "Binary search trees and balanced trees",
+   "module": "Trees",
+   "level": "Intermediate",
+   "minutes": 18,
+   "summary": "BST property, search/insert/delete, validation, k-th smallest, floor/ceiling, and why AVL and red–black trees exist."
+  },
+  {
+   "id": "heaps",
+   "title": "Heaps and priority queues",
+   "module": "Trees",
+   "level": "Intermediate",
+   "minutes": 18,
+   "summary": "Binary heap operations, heapify in O(n), top-k elements, merging k sorted lists and the two-heap running median."
+  },
+  {
+   "id": "tries",
+   "title": "Tries (prefix trees)",
+   "module": "Trees",
+   "level": "Intermediate",
+   "minutes": 14,
+   "summary": "Insert and search in O(word length), prefix queries, autocomplete, word search and XOR maximization with a binary trie."
+  },
+  {
+   "id": "graphs-bfs-dfs",
+   "title": "Graphs: representation, BFS, DFS and connectivity",
+   "module": "Graphs",
+   "level": "Intermediate",
+   "minutes": 22,
+   "summary": "Adjacency lists and matrices, BFS shortest paths in unweighted graphs, DFS, connected components, cycle detection, grids and bipartite checks."
+  },
+  {
+   "id": "shortest-paths-topo",
+   "title": "Topological sort and shortest paths: Dijkstra, Bellman–Ford, Floyd–Warshall",
+   "module": "Graphs",
+   "level": "Advanced",
+   "minutes": 24,
+   "summary": "Kahn's algorithm and DFS ordering for DAGs, Dijkstra with a priority queue, negative edges with Bellman–Ford, and all-pairs Floyd–Warshall."
+  },
+  {
+   "id": "union-find-mst",
+   "title": "Union-Find and minimum spanning trees",
+   "module": "Graphs",
+   "level": "Advanced",
+   "minutes": 18,
+   "summary": "Disjoint set union with path compression and union by rank, Kruskal's and Prim's algorithms for MSTs."
+  },
+  {
+   "id": "dynamic-programming",
+   "title": "Dynamic programming",
+   "module": "Algorithm design",
+   "level": "Advanced",
+   "minutes": 28,
+   "summary": "Overlapping subproblems and optimal substructure, memoization vs tabulation, 1-D, knapsack, LCS/edit distance, LIS and grid DP."
+  },
+  {
+   "id": "greedy",
+   "title": "Greedy algorithms",
+   "module": "Algorithm design",
+   "level": "Intermediate",
+   "minutes": 16,
+   "summary": "Locally optimal choices with proofs: activity selection, interval scheduling and merging, fractional knapsack, jump game and Huffman coding."
+  }
+ ],
+ "java-basic-to-advanced": [
+  {
+   "id": "setup-first-program",
+   "title": "Setting up Java and writing your first programs",
+   "module": "Stage 1 · Getting started",
+   "level": "Beginner",
+   "minutes": 14,
+   "summary": "Installing a JDK, choosing an IDE, project layout, comments and naming conventions, and reading input with Scanner."
+  },
+  {
+   "id": "methods-recursion",
+   "title": "Methods, parameters, varargs and recursion",
+   "module": "Stage 1 · Getting started",
+   "level": "Beginner",
+   "minutes": 16,
+   "summary": "Breaking programs into methods, return values, overloading, varargs, variable scope, and thinking recursively."
+  },
+  {
+   "id": "problem-solving-arrays-strings",
+   "title": "Problem solving with arrays, strings and matrices",
+   "module": "Stage 1 · Getting started",
+   "level": "Beginner",
+   "minutes": 18,
+   "summary": "Practice patterns every beginner needs: searching, counting, reversing, frequency tables, palindromes, anagrams and 2-D matrix operations."
+  },
+  {
+   "id": "oop-project",
+   "title": "Designing a small application with OOP: library management",
+   "module": "Stage 2 · Object-oriented programming in practice",
+   "level": "Intermediate",
+   "minutes": 22,
+   "summary": "Turning requirements into classes, choosing responsibilities, using inheritance and interfaces, and keeping the domain consistent."
+  },
+  {
+   "id": "design-patterns",
+   "title": "Essential design patterns in Java",
+   "module": "Stage 2 · Object-oriented programming in practice",
+   "level": "Intermediate",
+   "minutes": 22,
+   "summary": "Singleton, Factory, Builder, Strategy, Observer, Adapter and Decorator — the problem each solves and a modern Java implementation."
+  },
+  {
+   "id": "solid-clean-code",
+   "title": "SOLID principles and clean code",
+   "module": "Stage 2 · Object-oriented programming in practice",
+   "level": "Intermediate",
+   "minutes": 16,
+   "summary": "Single responsibility, open/closed, Liskov substitution, interface segregation and dependency inversion, with before/after refactoring."
+  },
+  {
+   "id": "collections-in-practice",
+   "title": "Collections in practice: choosing and using the right one",
+   "module": "Stage 3 · Intermediate Java",
+   "level": "Intermediate",
+   "minutes": 18,
+   "summary": "A decision guide for List, Set, Map and Queue, real-world usage in a grade book, Iterator, Collections utilities, SequencedCollection and immutability."
+  },
+  {
+   "id": "exceptions-logging-optional",
+   "title": "Robust code: exceptions, logging and Optional",
+   "module": "Stage 3 · Intermediate Java",
+   "level": "Intermediate",
+   "minutes": 18,
+   "summary": "Designing an exception strategy, translating and chaining exceptions, logging with SLF4J, and using Optional instead of null returns."
+  },
+  {
+   "id": "functional-programming",
+   "title": "Functional programming: lambdas, functional interfaces and composition",
+   "module": "Stage 3 · Intermediate Java",
+   "level": "Intermediate",
+   "minutes": 18,
+   "summary": "The java.util.function catalogue, composing functions, higher-order methods, method references, and writing your own functional APIs."
+  },
+  {
+   "id": "streams-collectors",
+   "title": "Streams and collectors in depth",
+   "module": "Stage 3 · Intermediate Java",
+   "level": "Advanced",
+   "minutes": 22,
+   "summary": "Building pipelines, reduce, multi-level groupingBy, downstream collectors, teeing, flatMap, mapMulti, custom collectors and parallel streams."
+  },
+  {
+   "id": "date-time-api",
+   "title": "Dates and times with java.time",
+   "module": "Stage 3 · Intermediate Java",
+   "level": "Intermediate",
+   "minutes": 14,
+   "summary": "LocalDate, LocalDateTime, Instant, ZonedDateTime, Duration and Period, formatting and parsing, and time-zone pitfalls."
+  },
+  {
+   "id": "records-sealed-patterns",
+   "title": "Records, sealed types and pattern matching",
+   "module": "Stage 4 · Modern Java (17–21)",
+   "level": "Advanced",
+   "minutes": 20,
+   "summary": "Modelling data with records, closed hierarchies with sealed interfaces, and pattern matching with instanceof, switch and record deconstruction."
+  },
+  {
+   "id": "modern-syntax-apis",
+   "title": "Modern syntax and APIs: var, text blocks, switch expressions and more",
+   "module": "Stage 4 · Modern Java (17–21)",
+   "level": "Intermediate",
+   "minutes": 14,
+   "summary": "A tour of the everyday improvements from Java 10 to 21: var, text blocks, switch expressions, helpful NPEs, new String/Files/Collection methods and HttpClient."
+  },
+  {
+   "id": "virtual-threads",
+   "title": "Virtual threads and modern concurrency",
+   "module": "Stage 4 · Modern Java (17–21)",
+   "level": "Advanced",
+   "minutes": 18,
+   "summary": "Why platform threads limit servers, how virtual threads work, structured concurrency, and pitfalls such as pinning and pooling."
+  },
+  {
+   "id": "modules-jpms",
+   "title": "The module system (JPMS) and jlink",
+   "module": "Stage 4 · Modern Java (17–21)",
+   "level": "Advanced",
+   "minutes": 14,
+   "summary": "module-info.java, requires/exports/opens, strong encapsulation, services with uses/provides, and building small runtimes with jlink."
+  },
+  {
+   "id": "build-tools",
+   "title": "Build tools: Maven and Gradle",
+   "module": "Stage 5 · Professional Java",
+   "level": "Intermediate",
+   "minutes": 16,
+   "summary": "Project layout, coordinates and dependencies, scopes, the Maven lifecycle, Gradle tasks, wrappers and multi-module builds."
+  },
+  {
+   "id": "testing-junit-mockito",
+   "title": "Testing with JUnit 5, AssertJ and Mockito",
+   "module": "Stage 5 · Professional Java",
+   "level": "Intermediate",
+   "minutes": 20,
+   "summary": "Writing unit tests, the test pyramid, lifecycle annotations, parameterized tests, assertions, mocking dependencies and test-driven development."
+  },
+  {
+   "id": "jvm-performance",
+   "title": "JVM performance: profiling, GC tuning and benchmarking",
+   "module": "Stage 5 · Professional Java",
+   "level": "Advanced",
+   "minutes": 18,
+   "summary": "How the JIT optimizes code, choosing a garbage collector, finding hot spots with JFR, writing correct microbenchmarks with JMH, and common performance mistakes."
+  }
+ ]
+}

@@ -10,7 +10,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { DASHBOARD_ROUTES, type WorkspaceTab } from "@/lib/dashboard-routes";
 import { toast } from "sonner";
-import { ArrowUpRight,Award,Bookmark,BookMarked,BookOpen,BookOpenText,Coffee,CircleHelp,Code2,ChevronRight,Compass,FileCode2,Languages,Layers,Library as LibraryIcon,Link2,LogOut,MessagesSquare,ListOrdered,PanelLeftClose,PanelLeftOpen,Search,Sparkles,Sun,RefreshCw,Users,Workflow } from "lucide-react";
+import { ArrowUpRight,Award,Bookmark,BookMarked,BookOpen,BookOpenText,Coffee,CircleHelp,Code2,ChevronRight,Compass,FileCode2,Languages,Layers,Library as LibraryIcon,Link2,LogOut,MessagesSquare,ListOrdered,PanelLeftClose,PanelLeftOpen,Search,Sparkles,SquareTerminal,Sun,RefreshCw,Users,Workflow } from "lucide-react";
 import type { DocumentRecord,GenerationRequest,Language,Progress,Technology,Tier,Topic } from "@/lib/domain";
 import dynamic from "next/dynamic";
 import { uniqueLibraryDocuments } from "@/lib/library";
@@ -59,7 +59,7 @@ function Identity({email,isSuperAdmin,onNavigate}:{email:string|null;isSuperAdmi
   </Popover>;}
 export type { WorkspaceTab } from "@/lib/dashboard-routes";
 // Professional learning sections render their own page content instead of the study catalog.
-const PRO_SECTIONS=[{id:"official-docs",key:"officialDocs",label:"Official Docs",icon:BookMarked},{id:"techy",key:"techy",label:"Techy",icon:Code2},{id:"api-docs",key:"apiDocs",label:"API Docs",icon:FileCode2},{id:"workflow",key:"workflow",label:"Workflow",icon:Workflow},{id:"certifications",key:"certifications",label:"Certifications",icon:Award},{id:"lessons",key:"lessons",label:"Lessons",icon:BookOpenText},{id:"quiz",key:"quiz",label:"Quiz",icon:CircleHelp},{id:"interview",key:"interview",label:"Interview",icon:MessagesSquare}] as const;
+const PRO_SECTIONS=[{id:"official-docs",key:"officialDocs",label:"Official Docs",icon:BookMarked},{id:"techy",key:"techy",label:"Techy",icon:Code2},{id:"api-docs",key:"apiDocs",label:"API Docs",icon:FileCode2},{id:"workflow",key:"workflow",label:"Workflow",icon:Workflow},{id:"certifications",key:"certifications",label:"Certifications",icon:Award},{id:"lessons",key:"lessons",label:"Lessons",icon:BookOpenText},{id:"quiz",key:"quiz",label:"Quiz",icon:CircleHelp},{id:"interview",key:"interview",label:"Interview",icon:MessagesSquare},{id:"compiler",key:"compiler",label:"Compiler",icon:SquareTerminal}] as const;
 /**
  * The catalogue is the same on every dashboard page, and each page mounts its own Workspace, so one request is shared
  * across navigations for a minute instead of refetching 40 KB on every click. Refresh asks for a fresh copy.
@@ -93,13 +93,13 @@ function SearchNavRow({collapsed,active}:{collapsed:boolean;active:boolean}){con
       <span className="sidebar-tooltip">{label}</span>
     </button>
   </div>;}
-export function Workspace({authEnabled,configured,billingEnabled,userEmail=null,initialTab="dashboard",initialAccount=null,initialCategory,initialPreparation="",initialCourse,initialStudyCourses,notesContent,learning,learnSlug,learnTitle}:{learnSlug?:string;learnTitle?:string;notesContent?:React.ReactNode;learning?:React.ReactNode;initialStudyCourses?:StudyCourse[];initialPreparation?:string;initialCourse?:string;initialCategory?:string;authEnabled:boolean;configured:boolean;billingEnabled:boolean;userEmail?:string|null;initialTab?:WorkspaceTab;initialAccount?:AccountData|null}) {
+export function Workspace({authEnabled,configured,billingEnabled,userEmail=null,initialTab="dashboard",initialAccount=null,initialCategory,initialPreparation="",initialCourse,initialStudyCourses,notesContent,learning,learnSlug,learnTitle,autoCollapse=false}:{/** Start with the sidebar collapsed (pages with their own sidebar, like an in-depth course), without changing the saved preference. */autoCollapse?:boolean;learnSlug?:string;learnTitle?:string;notesContent?:React.ReactNode;learning?:React.ReactNode;initialStudyCourses?:StudyCourse[];initialPreparation?:string;initialCourse?:string;initialCategory?:string;authEnabled:boolean;configured:boolean;billingEnabled:boolean;userEmail?:string|null;initialTab?:WorkspaceTab;initialAccount?:AccountData|null}) {
   const {t,language,setLanguage}=useLanguage();const router=useRouter();const tab=initialTab;
   const [learningQuery,setLearningQuery]=useState("");const [sidebarQuery,setSidebarQuery]=useState("");
   const [notesSelected,setNotesSelected]=useState<DocumentRecord|null>(null);const [refreshing,setRefreshing]=useState(false);
-  const [collapsed,setCollapsed]=useState(false);const category=initialCategory;
+  const [collapsed,setCollapsed]=useState(autoCollapse);const category=initialCategory;
   // eslint-disable-next-line react-hooks/set-state-in-effect -- Reads a client-only preference after mount; initial `false` must match SSR output.
-  useEffect(()=>{try{setCollapsed(localStorage.getItem("masterclass:sidebar-collapsed")==="1");}catch{}},[]);
+  useEffect(()=>{if(autoCollapse)return;try{setCollapsed(localStorage.getItem("masterclass:sidebar-collapsed")==="1");}catch{}},[autoCollapse]);
   function toggleCollapsed(){setCollapsed(prev=>{const next=!prev;try{localStorage.setItem("masterclass:sidebar-collapsed",next?"1":"0");}catch{}return next;});}
   function navigate(next:WorkspaceTab){router.push(DASHBOARD_ROUTES[next]);}
   const [catalog,setCatalog]=useState<{technologies:Technology[];topics:Topic[]}>({technologies:[],topics:[]});

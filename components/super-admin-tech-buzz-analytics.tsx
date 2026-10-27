@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useMemo, useState, type CSSProperties, type ReactNode } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { BookOpen, CalendarCheck, CheckCircle2, Clock, Eye, Flame, Heart, Layers, LockKeyhole, MousePointerClick, Newspaper, RefreshCw, Sparkles, Star, Sunrise, Timer, Trophy, ThumbsDown, Users, UserPlus, UserRoundCheck } from "lucide-react";
 import { Alert, AlertDescription } from "./ui/alert";
@@ -7,6 +8,8 @@ import { Button } from "./ui/button";
 import { AdminLoading } from "./super-admin-feedback";
 import { AdminTable } from "./super-admin-table";
 import type { TechBuzzReport } from "@/lib/tech-buzz-analytics";
+import { dailyTrackTechIds } from "@/lib/tech-buzz-sections";
+import { techLogo } from "@/lib/tech-buzz-public";
 import styles from "./super-admin-tech-buzz-analytics.module.css";
 
 /*
@@ -21,6 +24,12 @@ const pct = (n: number | null) => n === null ? "—" : `${(n * 100).toFixed(n < 
 const duration = (ms: number | null) => { if (ms === null) return "—"; const s = Math.round(ms / 1000); return s < 60 ? `${s}s` : `${Math.floor(s / 60)}m ${String(s % 60).padStart(2, "0")}s`; };
 const DAY = new Intl.DateTimeFormat("en-IN", { day: "numeric", month: "short", timeZone: "UTC" });
 const dayLabel = (date: string) => DAY.format(Date.parse(`${date}T00:00:00Z`));
+
+/** The track's real technology logos (public/images/tech), shown after its name. */
+function TrackLogos({ track, size = 18 }: { track: string; size?: number }) {
+  const logos = dailyTrackTechIds(track).map(id => techLogo(id)).filter((src): src is string => !!src);
+  return logos.length ? <span className={styles.trackLogos} aria-hidden="true">{logos.map(src => <Image key={src} src={src} alt="" width={size} height={size} />)}</span> : null;
+}
 
 function StatCard({ tone, icon, label, value, note }: { tone: string; icon: ReactNode; label: string; value: ReactNode; note: string }) {
   return <article className={styles.stat} data-tone={tone}>
@@ -79,7 +88,7 @@ function EditionPanel({ daily, generatedAt }: { daily: Data["daily"]; generatedA
 
     <ol className={styles.todayGrid}>
       {today.tracks.map((track, index) => <li key={track.id} className={styles.todayTile} style={{ "--track": track.color } as CSSProperties} data-empty={track.slug ? undefined : "true"}>
-        <span className={styles.todayTrack}><i aria-hidden="true">{index + 1}</i>{track.label}</span>
+        <span className={styles.todayTrack}><i aria-hidden="true">{index + 1}</i><span>{track.label}</span><TrackLogos track={track.id} /></span>
         {track.slug
           ? <Link href={`/tech-buzz/${track.slug}`} target="_blank" className={styles.todayTitle}>{track.title ?? track.label}</Link>
           : <span className={styles.todayTitle}>Not written yet</span>}
@@ -92,7 +101,7 @@ function EditionPanel({ daily, generatedAt }: { daily: Data["daily"]; generatedA
     <div className={styles.boardScroll}>
       <table className={styles.board}>
         <caption>Last 7 days, by track</caption>
-        <thead><tr><th scope="col">Day</th>{today.tracks.map(track => <th key={track.id} scope="col"><span className={styles.boardDot} style={{ background: track.color }} aria-hidden="true" />{track.label}</th>)}<th scope="col">Done</th></tr></thead>
+        <thead><tr><th scope="col">Day</th>{today.tracks.map(track => <th key={track.id} scope="col"><span className={styles.boardDot} style={{ background: track.color }} aria-hidden="true" />{track.label}<TrackLogos track={track.id} size={14} /></th>)}<th scope="col">Done</th></tr></thead>
         <tbody>{daily.map(day => <tr key={day.date}>
           <th scope="row">{dayLabel(day.date)}</th>
           {day.tracks.map(track => <td key={track.id}>{track.slug
@@ -223,7 +232,7 @@ export function SuperAdminTechBuzzAnalytics({ days, query }: Readonly<{ days: nu
         { key: "ratingShown", label: "Rating", render: row => Number(row.ratingCount) ? `${Number(row.rating).toFixed(1)} (${row.ratingCount})` : "—" },
         { key: "editorScore", label: "Editor", render: row => row.editorScore == null ? "—" : `${Number(row.editorScore).toFixed(1)}/5` },
         { key: "comments", label: "Comments" },
-        { key: "daily", label: "Daily track", render: row => row.daily ? <Sticker tone="peach">{String(row.daily)}</Sticker> : "—" },
+        { key: "daily", label: "Daily track", render: row => row.daily ? <Sticker tone="peach">{String(row.daily)}<TrackLogos track={String(row.daily)} size={14} /></Sticker> : "—" },
         { key: "topicList", label: "Topics" },
         { key: "publishedAt", label: "Published", render: row => row.publishedAt ? new Date(String(row.publishedAt)).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }) : "—" },
       ]} />

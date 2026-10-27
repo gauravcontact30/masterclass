@@ -291,6 +291,7 @@ export const en = {
   "lessons": "Lessons",
   "quiz": "Quiz",
   "interview": "Interview",
+  "compiler": "Compiler",
   "askAi": "Ask AI",
   "askAiTooltip": "Ask Study Buddy about this page or anything you are learning",
   "searchAiModeOn": "AI Mode on",

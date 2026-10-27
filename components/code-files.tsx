@@ -47,7 +47,11 @@ export function CodeFiles({ files, label = "Code example", className, annotate =
   const rows = useMemo(() => buildTree(files), [files]);
   const tabs = files.map((entry, index) => ({ entry, index })).filter(({ entry }) => isCodeExampleTab(entry.path, includeConfigTabs));
   const file = files[Math.min(active, files.length - 1)];
-  const language = useMemo(() => (lineComments || hoverComments) ? fileLanguage(file?.code ?? "", file?.path ?? "") : inferLanguage(file?.code ?? ""), [file?.code, file?.path, lineComments, hoverComments]);
+  const language = useMemo(() => {
+    const byPath = fileLanguage(file?.code ?? "", file?.path ?? "");
+    // Java and C++ read as JavaScript to the content sniffer, so their extension always wins.
+    return (lineComments || hoverComments || byPath === "java" || byPath === "cpp") ? byPath : inferLanguage(file?.code ?? "");
+  }, [file?.code, file?.path, lineComments, hoverComments]);
   const annotatedCode = file?.code ?? "";
   const comments = useMemo(() => (lineComments || hoverComments) ? codeLineNotes(file?.code ?? "", file?.path ?? "", undefined, { explainFormatting }) : [], [file?.code, file?.path, lineComments, hoverComments, explainFormatting]);
   const lines = useMemo(() => highlightLines(annotatedCode, language), [annotatedCode, language]);

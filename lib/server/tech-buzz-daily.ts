@@ -7,7 +7,7 @@ import { DAILY_TAG, DAILY_TRACKS, dailyDateTag, dailyTrackTag, isInternalTag, is
 import type { TechBuzzArticle } from "@/lib/tech-buzz-data";
 import { providerConfigured, providerModel } from "./ai-providers";
 import { paint, store } from "./learning-study-pack";
-import { createTechBuzzArticle, dailyEditionSlugs, expireTechBuzzCache, getTechBuzzArticleBySlug, updateTechBuzzContent } from "./tech-buzz-storage";
+import { createTechBuzzArticle, dailyEditionSlugs, expireTechBuzzCache, getTechBuzzArticleBySlug, recentDailyTitles, updateTechBuzzContent } from "./tech-buzz-storage";
 
 /*
  * The daily Tech Buzz edition: at 5:00 AM IST (vercel.json → /api/cron/tech-buzz-daily) one new story per track in
@@ -128,9 +128,11 @@ async function research(track: DailyTrack, angle: string): Promise<Research> {
   }
 }
 
-async function draft(track: DailyTrack, angle: string, date: string, notes: string, fixes: string[], timeoutMs: number, current?: string): Promise<Draft> {
+async function draft(track: DailyTrack, angle: string, date: string, notes: string, fixes: string[], timeoutMs: number, current?: string, earlier: string[] = []): Promise<Draft> {
   const prompt = [
     `Track: ${track.label}.`, `Today's angle: ${angle}.`, `Date: ${date}.`,
+    track.brief && !current ? `How every story of this track is shaped:\n${track.brief}` : "",
+    earlier.length ? `Earlier stories of this track (do not repeat their problem, workflow or headline):\n${earlier.map(title => `- ${title}`).join("\n")}` : "",
     current ? `This is a rewrite of a published story. Keep its topic and its headline's promise, correct anything the notes contradict, and make it the best lesson on the subject:
 ${current}` : "",
     notes ? `Official documentation notes (source of truth):\n${notes}` : "No documentation notes are available today: stay with APIs you are certain of.",
@@ -211,11 +213,12 @@ async function writeStory(track: DailyTrack, date: string, runStarted = Date.now
 /** The steps writeStory and refineTechBuzzStory share: research, draft, review, one rewrite below the bar. */
 async function researchedDraft(track: DailyTrack, angle: string, date: string, current?: string, { draftMs = 150_000, rewriteBeforeMs = REWRITE_BEFORE_MS } = {}) {
   const started = Date.now();
-  const { notes, sources } = await research(track, angle);
-  let output = await draft(track, angle, date, notes, [], draftMs, current);
+  // A rewrite keeps its own topic; a new story is told which topics the track has already covered.
+  const [{ notes, sources }, earlier] = await Promise.all([research(track, angle), current ? Promise.resolve([]) : recentDailyTitles(dailyTrackTag(track.id))]);
+  let output = await draft(track, angle, date, notes, [], draftMs, current, earlier);
   let verdict = await review(output, notes);
   if (verdict.score < MIN_SCORE && Date.now() - started < rewriteBeforeMs) {
-    output = await draft(track, angle, date, notes, verdict.issues.slice(0, 8), Math.max(60_000, Math.min(draftMs, rewriteBeforeMs + 80_000 - (Date.now() - started))), current);
+    output = await draft(track, angle, date, notes, verdict.issues.slice(0, 8), Math.max(60_000, Math.min(draftMs, rewriteBeforeMs + 80_000 - (Date.now() - started))), current, earlier);
     verdict = await review(output, notes);
   }
   if (verdict.score < MIN_SCORE) throw new Error(`below_quality_bar ${verdict.score.toFixed(1)}: ${verdict.issues.slice(0, 2).join("; ")}`);
@@ -271,7 +274,7 @@ export async function refineTechBuzzStory(slug: string, { dryRun = false } = {})
  */
 export async function writeFavouriteStory(topic: FavouriteTopic, date = istDate()) {
   const track: DailyTrack = {
-    id: topic.id, label: topic.label, short: topic.label, techIds: [topic.techId], angles: [topic.angle],
+    id: topic.id, label: topic.label, short: topic.label, techIds: [topic.techId], logoIds: [topic.techId], angles: [topic.angle],
     category: topic.category, technology: topic.technology, techId: topic.techId, color: topic.color, officialSites: topic.officialSites,
   };
   // No route limit here: a run start ten minutes ahead leaves the pictures all the time they need.

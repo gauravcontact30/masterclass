@@ -1,0 +1,39 @@
+/* The Technology picker: a shadcn Popover + Command with search, family icon filters and suggestions. */
+.field { display: grid; gap: 6px; min-width: min(100%, 260px); }
+.label { font-size: 12px; font-weight: 700; color: #6e6e73; }
+.trigger { display: flex; align-items: center; gap: 8px; width: 100%; min-height: 40px; padding: 0 12px; border: 1px solid #d2d2d7; border-radius: 10px; background: #fff; color: #1d1d1f; font: inherit; font-size: 14px; font-weight: 600; text-align: left; cursor: pointer; }
+.trigger:hover { border-color: #a1a1a6; }
+.trigger:focus-visible { outline: 2px solid #0071e3; outline-offset: 1px; }
+.triggerIcon { display: grid; place-items: center; width: 22px; }
+.triggerText { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.chevron { color: #86868b; }
+
+.popover { width: min(440px, calc(100vw - 24px)) !important; padding: 0 !important; overflow: hidden; border-radius: 14px !important; background: #fff !important; box-shadow: 0 18px 50px -12px rgba(0,0,0,.28), 0 0 0 1px rgba(0,0,0,.08) !important; }
+.command { display: flex; flex-direction: column; max-height: min(560px, 70vh); background: #fff; }
+.search { display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-bottom: 1px solid #ececf0; color: #86868b; }
+.search input { flex: 1; min-width: 0; border: 0; outline: none; background: transparent; color: #1d1d1f; font: inherit; font-size: 14px; }
+.clear { display: inline-flex; align-items: center; gap: 4px; padding: 3px 8px; border: 0; border-radius: 999px; background: #f0f0f3; color: #424245; font: inherit; font-size: 12px; font-weight: 600; cursor: pointer; }
+.clear:hover { background: #e3e3e8; }
+
+.filters { display: flex; gap: 6px; padding: 8px 10px; overflow-x: auto; border-bottom: 1px solid #ececf0; scrollbar-width: thin; }
+.filters button { display: inline-flex; flex-shrink: 0; align-items: center; gap: 5px; min-height: 28px; padding: 0 10px; border: 1px solid #e3e3e8; border-radius: 999px; background: #fafafc; color: #424245; font: inherit; font-size: 12px; font-weight: 600; cursor: pointer; }
+.filters button:hover { border-color: #c7c7cc; }
+.filters button[aria-pressed="true"] { border-color: #0071e3; background: #e8f1fc; color: #0062c4; }
+
+.list { max-height: none !important; flex: 1; overflow-y: auto; padding: 4px 6px 6px; }
+.groupHeading { display: inline-flex; align-items: center; gap: 6px; }
+.item { display: flex !important; align-items: center; gap: 10px; padding: 8px 10px !important; border-radius: 10px !important; cursor: pointer; }
+.item[data-selected="true"] { background: #f0f5fd !important; }
+.item[data-checked] { background: #e8f1fc; }
+.itemIcon { display: grid; flex-shrink: 0; place-items: center; width: 30px; height: 30px; border-radius: 8px; background: #f5f5f7; font-size: 16px; }
+.itemText { display: grid; flex: 1; min-width: 0; gap: 1px; }
+.itemText b { font-size: 14px; font-weight: 600; color: #1d1d1f; }
+.itemText small { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; color: #86868b; }
+.itemCheck { flex-shrink: 0; color: #0071e3; }
+.mark { padding: 0 1px; border-radius: 3px; background: #fff1b8; color: inherit; }
+
+.empty { display: grid; gap: 8px; padding: 18px 14px; font-size: 13.5px; color: #6e6e73; }
+.empty p { margin: 0; }
+.didYouMean button, .linkButton { padding: 0; border: 0; background: none; color: #0062c4; font: inherit; font-weight: 600; cursor: pointer; text-decoration: underline; }
+.linkButton { justify-self: start; }
+.footer { margin: 0; padding: 7px 12px; border-top: 1px solid #ececf0; background: #fafafc; font-size: 11.5px; color: #86868b; }

@@ -846,5 +846,454 @@
    "Blue-green deploys",
    "GitOps"
   ]
+ },
+ {
+  "id": "core-java",
+  "name": "Core Java",
+  "icon": "☕",
+  "focus": "The Java language: types, OOP, exceptions, collections, generics, streams, I/O and the JVM.",
+  "syllabus": [
+   "JDK, JRE and JVM",
+   "Data types and casting",
+   "Control flow",
+   "Arrays and Strings",
+   "Classes and objects",
+   "Inheritance and polymorphism",
+   "Interfaces and abstraction",
+   "Exception handling",
+   "Collections Framework",
+   "HashMap internals",
+   "Generics",
+   "Lambdas and streams",
+   "File I/O and NIO.2",
+   "Multithreading",
+   "JVM memory and GC"
+  ]
+ },
+ {
+  "id": "advanced-java",
+  "name": "Advanced Java",
+  "icon": "🧩",
+  "focus": "Server-side Java: JDBC, Servlets, JSP, sessions, filters, JPA/Hibernate, concurrency and networking.",
+  "syllabus": [
+   "JDBC and PreparedStatement",
+   "Transactions and batch updates",
+   "Connection pooling and DAO",
+   "Servlet lifecycle",
+   "Forward vs redirect",
+   "Session management",
+   "Filters and listeners",
+   "JSP, EL and JSTL",
+   "MVC with Servlets and JSP",
+   "JPA and Hibernate",
+   "Relationships and N+1",
+   "Executors and concurrent collections",
+   "Reflection and annotations",
+   "Sockets and HTTP Client"
+  ]
+ },
+ {
+  "id": "spring-boot",
+  "name": "Spring Boot",
+  "icon": "🍃",
+  "focus": "Production REST services with Spring Boot: DI, configuration, Web MVC, Data JPA, security, testing and Actuator.",
+  "syllabus": [
+   "Starters and auto-configuration",
+   "IoC and dependency injection",
+   "Configuration and profiles",
+   "AOP and proxies",
+   "REST controllers",
+   "Validation and error handling",
+   "Spring Data JPA",
+   "@Transactional",
+   "Spring Security",
+   "JWT authentication",
+   "Testing Spring Boot",
+   "Actuator and observability",
+   "Caching, scheduling and async",
+   "RestClient and resilience",
+   "Packaging and Docker"
+  ]
+ },
+ {
+  "id": "cpp",
+  "name": "C++",
+  "icon": "➕",
+  "focus": "Modern C++ from fundamentals: pointers, classes, RAII, templates, the STL, move semantics and concurrency.",
+  "syllabus": [
+   "Compilation and linking",
+   "Types and functions",
+   "Arrays, string and vector",
+   "Pointers and references",
+   "Dynamic memory and RAII",
+   "Classes and constructors",
+   "Rule of three, five and zero",
+   "Operator overloading",
+   "Virtual functions",
+   "Templates and concepts",
+   "STL containers",
+   "Algorithms and lambdas",
+   "Smart pointers",
+   "Move semantics",
+   "Exceptions and file streams",
+   "Threads and atomics"
+  ]
+ },
+ {
+  "id": "dsa",
+  "name": "DSA",
+  "icon": "🌳",
+  "focus": "Data structures and algorithms for coding interviews, with complexity analysis and patterns in Java and C++.",
+  "syllabus": [
+   "Big-O analysis",
+   "Two pointers and prefix sums",
+   "Sliding window and hashing",
+   "Recursion and backtracking",
+   "Linked lists",
+   "Stacks and queues",
+   "Binary search",
+   "Sorting",
+   "Binary trees",
+   "Binary search trees",
+   "Heaps",
+   "Tries",
+   "Graphs: BFS and DFS",
+   "Shortest paths",
+   "Union-Find and MST",
+   "Dynamic programming",
+   "Greedy algorithms"
+  ]
+ },
+ {
+  "id": "java-basic-to-advanced",
+  "name": "Java Basic to Advanced",
+  "icon": "🚀",
+  "focus": "One guided path from your first Java program to modern Java 21: OOP, streams, records, virtual threads, builds and tests.",
+  "syllabus": [
+   "First programs",
+   "Methods and recursion",
+   "Arrays and strings",
+   "OOP project",
+   "Design patterns",
+   "SOLID and clean code",
+   "Collections in practice",
+   "Exceptions, logging and Optional",
+   "Functional programming",
+   "Streams and collectors",
+   "java.time",
+   "Records and sealed types",
+   "Modern syntax",
+   "Virtual threads",
+   "Modules (JPMS)",
+   "Maven and Gradle",
+   "JUnit and Mockito",
+   "JVM performance"
+  ]
+ },
+ {
+  "id": "docker",
+  "name": "Docker",
+  "icon": "🐳",
+  "focus": "Containers for development and production: images, Dockerfiles, Compose, networking and security.",
+  "syllabus": [
+   "Containers vs virtual machines",
+   "Images and layers",
+   "Writing a Dockerfile",
+   "Multi-stage builds",
+   "Volumes and bind mounts",
+   "Container networking",
+   "Docker Compose",
+   "Registries and tagging",
+   "Image security and scanning",
+   "Debugging containers"
+  ]
+ },
+ {
+  "id": "kubernetes",
+  "name": "Kubernetes",
+  "icon": "☸️",
+  "focus": "Running containers at scale: pods, deployments, services, config, autoscaling and observability.",
+  "syllabus": [
+   "Cluster architecture",
+   "Pods and deployments",
+   "Services and Ingress",
+   "ConfigMaps and Secrets",
+   "Probes and rollouts",
+   "Autoscaling with HPA",
+   "Persistent volumes",
+   "Helm charts",
+   "RBAC and security",
+   "Troubleshooting with kubectl"
+  ]
+ },
+ {
+  "id": "postgresql",
+  "name": "PostgreSQL",
+  "icon": "🐘",
+  "focus": "Relational data done well: schema design, SQL, indexes, transactions and performance in PostgreSQL.",
+  "syllabus": [
+   "Tables, types and constraints",
+   "Joins and subqueries",
+   "Window functions",
+   "Indexes and EXPLAIN",
+   "Transactions and isolation",
+   "JSONB",
+   "Full-text search",
+   "Row level security",
+   "Partitioning",
+   "Backup and replication"
+  ]
+ },
+ {
+  "id": "supabase",
+  "name": "Supabase",
+  "icon": "🟩",
+  "focus": "Postgres as a backend: auth, row level security, storage, realtime and edge functions with Supabase.",
+  "syllabus": [
+   "Projects and the client library",
+   "Auth and sessions",
+   "Row level security policies",
+   "Database functions and RPC",
+   "Storage buckets",
+   "Realtime subscriptions",
+   "Edge Functions",
+   "Migrations and the CLI",
+   "Supabase with Next.js",
+   "Performance and advisors"
+  ]
+ },
+ {
+  "id": "git",
+  "name": "Git",
+  "icon": "🌿",
+  "focus": "Version control every engineer needs: commits, branches, merging, rebasing, history and team workflows.",
+  "syllabus": [
+   "Commits and the staging area",
+   "Branches",
+   "Merging and conflicts",
+   "Rebasing",
+   "Remotes and pull requests",
+   "Undoing changes",
+   "Stash and cherry-pick",
+   "History and blame",
+   "Tags and releases",
+   "Team workflows"
+  ]
+ },
+ {
+  "id": "linux",
+  "name": "Linux",
+  "icon": "🐧",
+  "focus": "The Linux command line for developers: files, permissions, processes, networking, shell scripting and services.",
+  "syllabus": [
+   "Filesystem and navigation",
+   "Permissions and users",
+   "Text processing with grep, sed and awk",
+   "Processes and signals",
+   "Package management",
+   "Networking tools",
+   "Shell scripting",
+   "systemd services",
+   "Logs and monitoring",
+   "SSH and remote work"
+  ]
+ },
+ {
+  "id": "rust",
+  "name": "Rust",
+  "icon": "🦀",
+  "focus": "Safe, fast systems code: ownership, borrowing, traits, error handling, concurrency and async in Rust.",
+  "syllabus": [
+   "Ownership and borrowing",
+   "Structs and enums",
+   "Pattern matching",
+   "Traits and generics",
+   "Error handling with Result",
+   "Collections",
+   "Lifetimes",
+   "Smart pointers",
+   "Fearless concurrency",
+   "Async Rust"
+  ]
+ },
+ {
+  "id": "go",
+  "name": "Go",
+  "icon": "🐹",
+  "focus": "Simple, concurrent services in Go: types, interfaces, goroutines, channels, testing and HTTP servers.",
+  "syllabus": [
+   "Packages and modules",
+   "Types and structs",
+   "Interfaces",
+   "Error handling",
+   "Slices and maps",
+   "Goroutines",
+   "Channels and select",
+   "Context",
+   "Testing in Go",
+   "HTTP servers"
+  ]
+ },
+ {
+  "id": "vue",
+  "name": "Vue.js",
+  "icon": "💚",
+  "focus": "Building interfaces with Vue 3: the Composition API, reactivity, components, routing and state.",
+  "syllabus": [
+   "Components and templates",
+   "Reactivity with ref and reactive",
+   "Computed and watchers",
+   "Props and events",
+   "Composition API",
+   "Composables",
+   "Vue Router",
+   "Pinia state",
+   "Forms",
+   "Testing Vue components"
+  ]
+ },
+ {
+  "id": "flutter",
+  "name": "Flutter",
+  "icon": "🦋",
+  "focus": "Cross-platform apps with Flutter and Dart: widgets, layout, state, navigation and platform services.",
+  "syllabus": [
+   "Dart essentials",
+   "Widgets and the widget tree",
+   "Layout",
+   "Stateful widgets",
+   "State management",
+   "Navigation and routing",
+   "Networking and JSON",
+   "Local storage",
+   "Animations",
+   "Testing and release"
+  ]
+ },
+ {
+  "id": "django",
+  "name": "Django",
+  "icon": "🎸",
+  "focus": "Full-stack Python web apps with Django: models, ORM, views, templates, forms, auth and REST APIs.",
+  "syllabus": [
+   "Projects and apps",
+   "Models and migrations",
+   "The ORM and querysets",
+   "Views and URLs",
+   "Templates",
+   "Forms and validation",
+   "Authentication",
+   "Admin",
+   "Django REST Framework",
+   "Deployment"
+  ]
+ },
+ {
+  "id": "nestjs",
+  "name": "NestJS",
+  "icon": "🐈",
+  "focus": "Structured Node.js back ends with NestJS: modules, controllers, providers, pipes, guards and testing.",
+  "syllabus": [
+   "Modules and dependency injection",
+   "Controllers and routing",
+   "Providers and services",
+   "Pipes and validation",
+   "Guards and authentication",
+   "Interceptors",
+   "Exception filters",
+   "Database with TypeORM or Prisma",
+   "Configuration",
+   "Testing NestJS"
+  ]
+ },
+ {
+  "id": "langchain",
+  "name": "LangChain",
+  "icon": "🦜",
+  "focus": "Building LLM applications with LangChain: models, prompts, tools, retrieval and agents.",
+  "syllabus": [
+   "Chat models and messages",
+   "Prompt templates",
+   "Structured output",
+   "Tools and tool calling",
+   "Retrievers and vector stores",
+   "RAG pipelines",
+   "Agents",
+   "Memory",
+   "Streaming",
+   "Evaluation basics"
+  ]
+ },
+ {
+  "id": "langgraph",
+  "name": "LangGraph",
+  "icon": "🕸️",
+  "focus": "Stateful, controllable agents with LangGraph: graphs, state, checkpoints, human-in-the-loop and multi-agent systems.",
+  "syllabus": [
+   "Graphs, nodes and edges",
+   "State and reducers",
+   "Conditional edges",
+   "Tool-calling agents",
+   "Checkpointing and persistence",
+   "Human-in-the-loop",
+   "Memory",
+   "Subgraphs",
+   "Multi-agent supervisors",
+   "Deployment"
+  ]
+ },
+ {
+  "id": "langsmith",
+  "name": "LangSmith",
+  "icon": "🔍",
+  "focus": "Observing and evaluating LLM apps with LangSmith: tracing, datasets, evaluators and monitoring.",
+  "syllabus": [
+   "Tracing runs",
+   "Projects and metadata",
+   "Datasets",
+   "Evaluators",
+   "Experiments and comparisons",
+   "Online evaluation",
+   "Prompt management",
+   "Feedback",
+   "Monitoring dashboards",
+   "Cost and latency"
+  ]
+ },
+ {
+  "id": "langflow",
+  "name": "LangFlow",
+  "icon": "🌊",
+  "focus": "Visual LLM workflows with LangFlow: components, flows, RAG, agents and serving flows as APIs.",
+  "syllabus": [
+   "The LangFlow canvas",
+   "Components and connections",
+   "Prompts and models",
+   "RAG flows",
+   "Agents and tools",
+   "Custom components",
+   "Variables and secrets",
+   "Flows as APIs",
+   "Playground testing",
+   "Deployment"
+  ]
+ },
+ {
+  "id": "n8n",
+  "name": "n8n",
+  "icon": "🔗",
+  "focus": "Workflow automation with n8n: triggers, nodes, data mapping, AI agent nodes and self-hosting.",
+  "syllabus": [
+   "Workflows and triggers",
+   "Nodes and credentials",
+   "Data mapping and expressions",
+   "Branching and merging",
+   "Webhooks",
+   "Error handling",
+   "AI Agent node",
+   "Code node",
+   "Scheduling",
+   "Self-hosting and scaling"
+  ]
  }
 ]

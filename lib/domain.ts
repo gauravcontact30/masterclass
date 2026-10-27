@@ -58,7 +58,7 @@ export type VocabularyEntry = z.infer<typeof vocabularyEntrySchema>;
 export type ApiReference = z.infer<typeof apiReferenceSchema>;
 export const exampleFileSchema = z.object({
   path: z.string().min(1).max(200).refine(path => !path.startsWith("/") && !path.includes("\\") && !path.split("/").includes(".."), "Use a project-relative file path"),
-  language: z.enum(["typescript", "tsx", "javascript", "jsx", "python", "json", "yaml", "bash", "css", "html", "markdown", "text", "hcl", "dockerfile"]),
+  language: z.enum(["typescript", "tsx", "javascript", "jsx", "python", "json", "yaml", "bash", "css", "html", "markdown", "text", "hcl", "dockerfile", "java", "cpp"]),
   code: z.string().min(1).max(16000),
   description: z.string().min(1).max(500),
 });

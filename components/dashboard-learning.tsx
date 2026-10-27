@@ -10,6 +10,7 @@ import { LandingInterview } from "./landing-interview";
 import { LandingComparisons } from "./landing-comparisons";
 import { LandingTechDocs } from "./landing-tech-docs";
 import { DashboardCoach } from "./dashboard-coach";
+import { DeepCourseShelf } from "./deep-course-shelf";
 import { ContentProvider } from "./content-editing";
 import type { ContentOverrides } from "@/lib/content-overrides";
 import type { OfficialTechDocs } from "@/lib/tech-docs-official";
@@ -32,6 +33,7 @@ export function DashboardLearning({ daily, techDocs, concepts, locked = false, o
         (interview prep, blueprints), then reference depth (comparisons, docs), and the day's words last. */}
     <DashboardCoach />
     {daily && <LandingAiPulse expanded cards={daily.pulse} day={daily.day} locked={daily.locked.pulse} />}
+    <DeepCourseShelf id="dashboard-deep-courses" inSheet />
     <LandingInterview expanded />
     <LandingWorkflows workflows={WORKFLOWS} expanded />
     {/* Without a membership (trial over), the full Tech Topics and Technology docs stay behind the plans screen. */}

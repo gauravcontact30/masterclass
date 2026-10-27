@@ -507,4 +507,11 @@ export async function dailyEditionSlugs(date: string): Promise<string[]> {
   return (result.data ?? []).map(row => row.slug as string);
 }
 
+/** Titles of a daily track's most recent stories, newest first, so the writer never repeats a topic. */
+export async function recentDailyTitles(trackTag: string, limit = 30): Promise<string[]> {
+  const result = await db().from("tech_buzz_articles").select("title").contains("tags", [trackTag]).order("published_at", { ascending: false }).limit(limit);
+  if (result.error) return [];
+  return (result.data ?? []).map(row => row.title as string);
+}
+
 export { expirePublic as expireTechBuzzCache };

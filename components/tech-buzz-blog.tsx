@@ -7,7 +7,7 @@ import Link from "next/link";
 import {
   ArrowRight, Binary, Bookmark, BookmarkCheck, BookOpen, Bot, Building2, CheckCircle2, ChevronDown, ChevronLeft, ChevronRight, Cloud, Clock,
   Compass, FlaskConical, Flame, Hash, Heart, Layers, LayoutGrid, LayoutList, Maximize2, MessageCircle, Minimize2, Network,
-  PanelsTopLeft, Rocket, Search, Server, ShieldCheck, Sparkles, Star, TrendingUp, Trophy, X, Zap, type LucideIcon,
+  PanelsTopLeft, PenLine, Rocket, Search, Server, ShieldCheck, Sparkles, Star, TrendingUp, Trophy, X, Zap, type LucideIcon,
 } from "lucide-react";
 import { LanguageSwitcher } from "./language-switcher";
 import { BrandMark } from "./brand-mark";
@@ -395,6 +395,7 @@ export function TechBuzzBlog({ cards, groups, showcase = false }: { cards: TechB
         <div className={styles.badgeRow}>
           <p className={styles.kicker}><BrandMark size={18} />MCB - Tech Buzz</p>
           <span className={styles.verifiedKicker}><Sparkles size={13} aria-hidden="true" />Engineering Masterclasses</span>
+          <Link href="/tech-buzz/write" className={styles.writeLink}><PenLine size={15} aria-hidden="true" />Write</Link>
         </div>
         <h1>{t("techBuzzTitle")}</h1>
         <p className={styles.lede}>

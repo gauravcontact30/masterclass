@@ -48,6 +48,8 @@ const LABELS: Partial<Record<CodeLanguage, string>> = {
   text: "plain text",
   hcl: "HCL",
   dockerfile: "Dockerfile",
+  java: "Java",
+  cpp: "C++",
 };
 
 export const languageLabel = (language: CodeLanguage) => LABELS[language] ?? language;

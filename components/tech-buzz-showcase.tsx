@@ -5,7 +5,7 @@ import Link from "next/link";
 import { ArrowRight, CalendarDays, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Clock, Crown, Flame, Heart, Sparkles, Star, Sunrise, ThumbsDown, ThumbsUp, Workflow, Zap } from "lucide-react";
 import { BrandMark } from "./brand-mark";
 import { pageWindow } from "./pager";
-import { DAILY_TRACKS, OTHER_GROUP, TECH_BUZZ_TRACKED, TECH_GROUPS, techGroupOf, type TechGroup } from "@/lib/tech-buzz-sections";
+import { DAILY_TRACKS, OTHER_GROUP, TECH_BUZZ_TRACKED, TECH_GROUPS, dailyTrackTechIds, techGroupOf, type DailyTrack, type TechGroup } from "@/lib/tech-buzz-sections";
 import { logoOf, techLogo, type TechBuzzCard } from "@/lib/tech-buzz-public";
 import { TechIcon } from "./tech-icon";
 import { FAVOURITE_TOPICS } from "@/lib/tech-buzz-favourites";
@@ -15,7 +15,8 @@ import { isUnsplash, unoptimizedRemote, unsplashLoader } from "@/lib/image-loade
 import { ClapButton, useClaps } from "./clap-button";
 
 /*
- * The curated half of /tech-buzz, above the searchable feed: the daily 5:00 AM (IST) edition, Fresh & Latest, Star
+ * The curated half of /tech-buzz, above the searchable feed: the daily 5:00 AM (IST) edition, Fresh & Latest (earlier
+ * editions, by technology), Star
  * Rated, n8n Workflow Blogs and Most Liked, then one section per technology group (lib/tech-buzz-sections.ts) with
  * every story landed in its group. Each block has its own look. Likes, dislikes and claps are shared by every copy of
  * a story on the page and posted to /api/tech-buzz/action; this browser's own votes are remembered locally.
@@ -114,29 +115,40 @@ function RatingBadge({ card }: { card: TechBuzzCard }) {
   return <span className={styles.rating} aria-label={`Rated ${card.rating.average.toFixed(1)} out of 5`}><Star size={12} fill="currentColor" aria-hidden="true" />{card.rating.average.toFixed(1)}</span>;
 }
 
-/* ── 1. Today's 5 at 5 ─────────────────────────────────────────────────────────────────────────────────────────── */
+/* ── 1. Today's 5 at 5: only the newest edition (today's, once the 5:00 AM IST run has written it). Earlier editions
+   move down to Fresh & Latest. Until any edition exists, each track shows its newest story as a stand-in. ─────── */
+/** The newest daily edition on the page (YYYY-MM-DD), or undefined before the first one is written. */
+const latestEdition = (cards: TechBuzzCard[]) => cards.map(card => card.daily?.date).filter((date): date is string => !!date).sort().at(-1);
+const newestFirst = (a: TechBuzzCard, b: TechBuzzCard) => b.publishedAt.localeCompare(a.publishedAt);
+
+function TrackLogos({ track }: { track: string }) {
+  const logos = dailyTrackTechIds(track).map(id => techLogo(id)).filter((src): src is string => !!src);
+  return logos.length ? <span className={styles.trackLogos} aria-hidden="true">{logos.map(src => <Image key={src} src={src} alt="" width={16} height={16} />)}</span> : null;
+}
+
 function DailyEdition({ cards }: { cards: TechBuzzCard[] }) {
+  const edition = latestEdition(cards);
   const picks = DAILY_TRACKS.map(track => {
-    const daily = cards.filter(card => card.daily?.track === track.id).sort((a, b) => b.publishedAt.localeCompare(a.publishedAt))[0];
-    const stand = daily ?? cards.filter(card => card.techId && track.techIds.includes(card.techId)).sort((a, b) => b.publishedAt.localeCompare(a.publishedAt))[0];
+    const stand = edition
+      ? cards.filter(card => card.daily?.date === edition && card.daily.track === track.id).sort(newestFirst)[0]
+      : cards.filter(card => card.techId && track.techIds.includes(card.techId)).sort(newestFirst)[0];
     return stand ? { track, card: stand } : null;
   }).filter((pick): pick is NonNullable<typeof pick> => !!pick);
   if (!picks.length) return null;
-  const edition = picks.map(pick => pick.card.daily?.date).filter(Boolean).sort().at(-1);
   const [lead, ...rest] = picks;
   return <section data-track-topic={TECH_BUZZ_TRACKED.daily} className={styles.daily} aria-labelledby="tb-daily">
     <div className={styles.dailyGlow} aria-hidden="true" />
     <header className={styles.dailyHead}>
       <p className={styles.dailyKicker}><Sunrise size={15} aria-hidden="true" />Fresh every morning · 5:00 AM IST</p>
       <h2 id="tb-daily">Today&rsquo;s <em>5 at 5</em></h2>
-      <p>Five new blogs every day on Agentic AI, System Design, AWS &amp; DevOps, Kubernetes &amp; Docker, and Next.js &amp; React.</p>
+      <p>Five new blogs every day on Agentic AI with LangChain, LangGraph, LangSmith, LangFlow and n8n, System Design, AWS &amp; DevOps, Kubernetes &amp; Docker, and Next.js &amp; React.</p>
       {edition && <span className={styles.edition}><CalendarDays size={13} aria-hidden="true" />Edition of {formatDate(`${edition}T05:00:00+05:30`)}</span>}
     </header>
     <div className={styles.dailyGrid}>
       <article className={styles.dailyLead} style={{ "--tone": lead.track.color } as CSSProperties}>
         <Link href={`/tech-buzz/${lead.card.slug}`} className={styles.dailyLeadLink}>
           <Cover card={lead.card} className={styles.dailyLeadCover} sizes="(max-width: 900px) 92vw, 680px" />
-          <span className={styles.trackChip}>01 · {lead.track.short}</span>
+          <span className={styles.trackChip}>01 · {lead.track.short}<TrackLogos track={lead.track.id} /></span>
           <h3>{lead.card.title}</h3>
           <p>{lead.card.subtitle}</p>
         </Link>
@@ -146,7 +158,7 @@ function DailyEdition({ cards }: { cards: TechBuzzCard[] }) {
         <Link href={`/tech-buzz/${card.slug}`} className={styles.dailyCardLink}>
           <Cover card={card} className={styles.dailyCardCover} sizes="96px" />
           <span className={styles.dailyCardBody}>
-            <span className={styles.trackChip}>{String(i + 2).padStart(2, "0")} · {track.short}</span>
+            <span className={styles.trackChip}>{String(i + 2).padStart(2, "0")} · {track.short}<TrackLogos track={track.id} /></span>
             <strong>{card.title}</strong>
             <span className={styles.meta}><CalendarDays size={12} aria-hidden="true" />{formatDate(card.publishedAt)}<Clock size={12} aria-hidden="true" />{card.readTimeMinutes} min</span>
           </span>
@@ -194,13 +206,32 @@ function Pagination({ paged, label, anchor, sizes, tone = "light" }: { paged: Pa
   </nav>;
 }
 
-/* ── 2. Fresh & Latest (a timeline grid) ───────────────────────────────────────────────────────────────────────── */
+/* ── 2. Fresh & Latest: every earlier daily edition, kept for later reading, one block per daily track so each
+   technology holds only its own stories (newest first, paginated per block). ────────────────────────────────── */
 function FreshLatest({ cards }: { cards: TechBuzzCard[] }) {
-  const latest = useMemo(() => [...cards].sort((a, b) => b.publishedAt.localeCompare(a.publishedAt)), [cards]);
-  const paged = usePaged(latest, 8);
-  if (!latest.length) return null;
+  const tracks = useMemo(() => {
+    const edition = latestEdition(cards);
+    const past = edition ? cards.filter(card => card.daily && card.daily.date < edition) : [];
+    return DAILY_TRACKS.map(track => ({ track, items: past.filter(card => card.daily?.track === track.id).sort(newestFirst) })).filter(entry => entry.items.length);
+  }, [cards]);
+  if (!tracks.length && !latestEdition(cards)) return null;
   return <section data-track-topic={TECH_BUZZ_TRACKED.fresh} className={styles.fresh} aria-labelledby="tb-fresh">
-    <SectionHead id="tb-fresh" icon={<Zap size={16} aria-hidden="true" />} kicker="Just published" title="Fresh & Latest" lede="The newest blogs on the most popular technologies, newest first." />
+    <SectionHead id="tb-fresh" icon={<Zap size={16} aria-hidden="true" />} kicker="From earlier editions" title="Fresh & Latest" lede="Every 5:00 AM blog moves here the next day and stays for later reading, sorted by technology." />
+    {!tracks.length && <p className={styles.freshEmpty}><Sunrise size={15} aria-hidden="true" />Today&rsquo;s 5 at 5 blogs move here tomorrow at 5:00 AM IST, when the next edition is published.</p>}
+    {tracks.length > 0 && <nav className={styles.freshJump} aria-label="Fresh & Latest technologies">
+      {tracks.map(({ track, items }) => <a key={track.id} href={`#tb-fresh-${track.id}`} style={{ "--tone": track.color } as CSSProperties}><TrackLogos track={track.id} />{track.short}<span>{items.length}</span></a>)}
+    </nav>}
+    <div className={styles.freshTracks}>
+      {tracks.map(({ track, items }) => <FreshTrack key={track.id} track={track} items={items} />)}
+    </div>
+  </section>;
+}
+
+function FreshTrack({ track, items }: { track: DailyTrack; items: TechBuzzCard[] }) {
+  const paged = usePaged(items, 4);
+  const heading = `tb-fresh-${track.id}-title`;
+  return <section id={`tb-fresh-${track.id}`} className={styles.freshTrack} style={{ "--tone": track.color } as CSSProperties} aria-labelledby={heading}>
+    <h3 id={heading} tabIndex={-1} className={styles.freshTrackHead}><TrackLogos track={track.id} />{track.short}<span>{items.length} {items.length === 1 ? "blog" : "blogs"}</span></h3>
     <ol className={styles.timeline}>
       {paged.rows.map(card => <li key={card.id} style={{ "--tone": card.color } as CSSProperties}>
         <span className={styles.timelineHead}><span className={styles.timelineDot} aria-hidden="true" /><time dateTime={card.publishedAt}>{formatDate(card.publishedAt)}</time></span>
@@ -212,7 +243,7 @@ function FreshLatest({ cards }: { cards: TechBuzzCard[] }) {
         <ReactionBar card={card} />
       </li>)}
     </ol>
-    <Pagination paged={paged} label="Fresh & Latest" anchor="tb-fresh" sizes={[4, 8, 12]} />
+    <Pagination paged={paged} label={`Fresh & Latest: ${track.short}`} anchor={heading} sizes={[4, 8, 12]} />
   </section>;
 }
 
@@ -269,9 +300,12 @@ function N8nWorkflows({ cards }: { cards: TechBuzzCard[] }) {
    (WAI-ARIA tabs: arrow keys, Home and End); the topic's #1 is featured, the rest ranked beside it. Readers' likes
    rank each topic; stories nobody has liked yet follow, by the editor's score, then rating, then date. ──────────── */
 const ALL_TOPICS = "all";
+/** Topic pills shown per page; the rest are reached with the arrows beside them. */
+const TABS_PER_PAGE = 5;
 function CommunityFavourites({ cards }: { cards: TechBuzzCard[] }) {
   const api = useContext(Reactions)!;
   const [topic, setTopic] = useState(ALL_TOPICS);
+  const [tabPage, setTabPage] = useState(0);
   const ranked = useMemo(() => cards.map(card => ({ card, likes: api.counts(card).likes })).sort((a, b) =>
     b.likes - a.likes || (b.card.editorScore ?? 0) - (a.card.editorScore ?? 0) || b.card.rating.average - a.card.rating.average || b.card.publishedAt.localeCompare(a.card.publishedAt)), [cards, api]);
   const tabs = useMemo(() => [
@@ -288,21 +322,32 @@ function CommunityFavourites({ cards }: { cards: TechBuzzCard[] }) {
     const next = event.key === "ArrowRight" ? index + 1 : event.key === "ArrowLeft" ? index - 1 : event.key === "Home" ? 0 : event.key === "End" ? tabs.length - 1 : null;
     if (next == null) return;
     event.preventDefault();
-    const target = tabs[(next + tabs.length) % tabs.length];
+    const targetIndex = (next + tabs.length) % tabs.length;
+    const target = tabs[targetIndex];
     pick(target.id);
-    document.getElementById(`tb-fav-tab-${target.id}`)?.focus();
+    // Keyboard moves can cross a page of pills: show that page, then focus the pill once it is rendered.
+    setTabPage(Math.floor(targetIndex / TABS_PER_PAGE));
+    requestAnimationFrame(() => document.getElementById(`tb-fav-tab-${target.id}`)?.focus());
   };
+  const tabPages = Math.ceil(tabs.length / TABS_PER_PAGE);
+  const shownPage = Math.min(tabPage, tabPages - 1);
+  const shownTabs = tabs.slice(shownPage * TABS_PER_PAGE, shownPage * TABS_PER_PAGE + TABS_PER_PAGE);
   const pick = (id: string) => { setTopic(id); paged.setPage(0); };
   const share = (likes: number) => `${Math.max(6, (likes / top) * 100)}%`;
   const likesLine = (likes: number) => likes ? `${compact(likes)} ${likes === 1 ? "like" : "likes"}` : "No likes yet · be the first";
   return <section data-track-topic={TECH_BUZZ_TRACKED.favourites} className={styles.favourites} aria-labelledby="tb-liked">
     <SectionHead id="tb-liked" icon={<Heart size={16} fill="currentColor" aria-hidden="true" />} kicker="Community favourites" title={<>Most Liked on <span className={styles.mcb}><BrandMark size={22} />MCB - Tech Buzz</span></>}
       lede="The topics engineers read most, from React and Next.js to Claude Code, OpenAI, Google and Microsoft AI. Pick a topic; readers' likes rank its stories." />
-    <div className={styles.favTabs} role="tablist" aria-label="Favourite topics">
-      {tabs.map((tab, index) => <button key={tab.id} id={`tb-fav-tab-${tab.id}`} type="button" role="tab" aria-selected={tab.id === active.id} aria-controls="tb-fav-panel"
-        tabIndex={tab.id === active.id ? 0 : -1} style={{ "--tone": tab.color } as CSSProperties} onClick={() => pick(tab.id)} onKeyDown={event => onKey(event, index)}>
-        {tab.logo ? <Image src={tab.logo} alt="" width={16} height={16} /> : <i aria-hidden="true" />}{tab.label}<span>{tab.items.length}</span>
-      </button>)}
+    <div className={styles.favTabRow}>
+      {tabPages > 1 && <button type="button" className={styles.favTabArrow} onClick={() => setTabPage(shownPage - 1)} disabled={shownPage === 0} aria-label="Previous topics"><ChevronLeft size={16} aria-hidden="true" /></button>}
+      <div className={styles.favTabs} role="tablist" aria-label="Favourite topics">
+        {shownTabs.map(tab => { const index = tabs.indexOf(tab); return <button key={tab.id} id={`tb-fav-tab-${tab.id}`} type="button" role="tab" aria-selected={tab.id === active.id} aria-controls="tb-fav-panel"
+          tabIndex={tab.id === active.id || (!shownTabs.some(item => item.id === active.id) && tab === shownTabs[0]) ? 0 : -1} style={{ "--tone": tab.color } as CSSProperties} onClick={() => pick(tab.id)} onKeyDown={event => onKey(event, index)}>
+          {tab.logo ? <Image src={tab.logo} alt="" width={16} height={16} /> : <i aria-hidden="true" />}{tab.label}<span>{tab.items.length}</span>
+        </button>; })}
+      </div>
+      {tabPages > 1 && <button type="button" className={styles.favTabArrow} onClick={() => setTabPage(shownPage + 1)} disabled={shownPage >= tabPages - 1} aria-label="More topics"><ChevronRight size={16} aria-hidden="true" /></button>}
+      {tabPages > 1 && <span className={styles.favTabCount} aria-live="polite">{shownPage + 1} / {tabPages}</span>}
     </div>
     <div id="tb-fav-panel" role="tabpanel" aria-labelledby={`tb-fav-tab-${active.id}`} className={styles.favBody}>
       <article className={styles.favFeature} style={{ "--tone": first.card.color, "--share": share(first.likes) } as CSSProperties}>

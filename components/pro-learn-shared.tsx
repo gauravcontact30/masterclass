@@ -8,6 +8,7 @@ import { useState, useSyncExternalStore, type ReactNode } from "react";
 import { PRO_LEVELS, PRO_TRACKS, trackById, type ProTrack } from "@/lib/pro-learn/tracks";
 import styles from "./pro-learn.module.css";
 import { DashboardPageHeader } from "./dashboard-page-header";
+import { TrackPicker } from "./track-picker";
 
 /* Preferences shared by Lessons, Quiz, Interview and Mentors, kept in this browser. */
 const TRACK_KEY = "masterclass:pro-track";
@@ -35,8 +36,9 @@ export function useProLevel(): [typeof PRO_LEVELS[number], (level: string) => vo
 export function readList<T>(key: string): T[] { try { const value = JSON.parse(localStorage.getItem(key) || "[]"); return Array.isArray(value) ? value : []; } catch { return []; } }
 export function writeList<T>(key: string, items: T[], cap = 40) { try { localStorage.setItem(key, JSON.stringify(items.slice(0, cap))); } catch { /* optional */ } }
 
+/** The Technology picker (components/track-picker.tsx): search with suggestions, clear search and family icon filters. */
 export function TrackSelect({ value, onChange, label = "Technology", tracks = PRO_TRACKS }: { value: string; onChange: (id: string) => void; label?: string; tracks?: ProTrack[] }) {
-  return <Label className={styles.field}><span>{label}</span><div className={styles.select}><NativeSelect aria-label={label} value={value} onChange={event => onChange(event.target.value)}>{tracks.map(track => <NativeSelectOption key={track.id} value={track.id}>{track.icon} {track.name}</NativeSelectOption>)}</NativeSelect></div></Label>;
+  return <TrackPicker value={value} onChange={onChange} tracks={tracks} label={label}/>;
 }
 export function Select({ label, value, options, onChange }: { label: string; value: string; options: readonly (string | { value: string; label: string })[]; onChange: (value: string) => void }) {
   return <Label className={styles.field}><span>{label}</span><div className={styles.select}><NativeSelect aria-label={label} value={value} onChange={event => onChange(event.target.value)}>{options.map(option => typeof option === "string" ? <NativeSelectOption key={option}>{option}</NativeSelectOption> : <NativeSelectOption key={option.value} value={option.value}>{option.label}</NativeSelectOption>)}</NativeSelect></div></Label>;
