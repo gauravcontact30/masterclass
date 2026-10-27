@@ -22,21 +22,21 @@ export const LABS_2: Record<string, TopicLab> = {
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
 
-<p>Hello, <c:out value="${user.name}" default="guest"/></p>   <!-- escaped output -->
-<p>Search: ${fn:escapeXml(param.q)}</p>                        <!-- request parameter -->
+<p>Hello, <c:out value="${"$"}{user.name}" default="guest"/></p>   <!-- escaped output -->
+<p>Search: ${"$"}{fn:escapeXml(param.q)}</p>                        <!-- request parameter -->
 
-<c:if test="${cart.size() > 0}"> ... </c:if>
+<c:if test="${"$"}{cart.size() > 0}"> ... </c:if>
 
 <c:choose>
-  <c:when test="${user.admin}">Admin</c:when>
+  <c:when test="${"$"}{user.admin}">Admin</c:when>
   <c:otherwise>Member</c:otherwise>
 </c:choose>
 
-<c:forEach var="item" items="${items}" varStatus="s">
-  ${s.index + 1}. ${item.name}
+<c:forEach var="item" items="${"$"}{items}" varStatus="s">
+  ${"$"}{s.index + 1}. ${"$"}{item.name}
 </c:forEach>
 
-<fmt:formatNumber value="${total}" type="currency" currencySymbol="₹"/>
+<fmt:formatNumber value="${"$"}{total}" type="currency" currencySymbol="₹"/>
 <a href="<c:url value='/orders'/>">Orders</a>
 `, [
       "EL searches scopes in order: page, request, session, application.",
@@ -50,14 +50,14 @@ export const LABS_2: Record<string, TopicLab> = {
 <%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
 <html>
 <body>
-  <h1>Products (${products.size()})</h1>
+  <h1>Products (${"$"}{products.size()})</h1>
   <table>
-    <c:forEach var="p" items="${products}" varStatus="row">
-      <tr class="${row.index % 2 == 0 ? 'even' : 'odd'}">
-        <td>${row.count}</td>
-        <td><c:out value="${p.name}"/></td>
-        <td><fmt:formatNumber value="${p.price}" type="number" groupingUsed="true"/></td>
-        <td><c:if test="${p.price > 5000}">Premium</c:if></td>
+    <c:forEach var="p" items="${"$"}{products}" varStatus="row">
+      <tr class="${"$"}{row.index % 2 == 0 ? 'even' : 'odd'}">
+        <td>${"$"}{row.count}</td>
+        <td><c:out value="${"$"}{p.name}"/></td>
+        <td><fmt:formatNumber value="${"$"}{p.price}" type="number" groupingUsed="true"/></td>
+        <td><c:if test="${"$"}{p.price > 5000}">Premium</c:if></td>
       </tr>
     </c:forEach>
   </table>
@@ -76,9 +76,9 @@ export const LABS_2: Record<string, TopicLab> = {
     simple: ex("EL reading request parameters and scopes", "greet.jsp", code`
 <%@ page contentType="text/html;charset=UTF-8" %>
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
-<c:set var="visits" value="${empty sessionScope.visits ? 1 : sessionScope.visits + 1}" scope="session"/>
-<p>Hello, <c:out value="${param.name}" default="guest"/>!</p>
-<p>This is visit number ${visits} in your session.</p>
+<c:set var="visits" value="${"$"}{empty sessionScope.visits ? 1 : sessionScope.visits + 1}" scope="session"/>
+<p>Hello, <c:out value="${"$"}{param.name}" default="guest"/>!</p>
+<p>This is visit number ${"$"}{visits} in your session.</p>
 `, code`
 GET /app/greet.jsp?name=Asha
 <p>Hello, Asha!</p>
@@ -94,16 +94,16 @@ GET /app/greet.jsp?name=<script>alert(1)</script>
 <%@ include file="/WEB-INF/fragments/header.jspf" %>
 
 <c:choose>
-  <c:when test="${empty sessionScope.user}">
+  <c:when test="${"$"}{empty sessionScope.user}">
     <a href="<c:url value='/login'/>">Please log in</a>
   </c:when>
-  <c:when test="${sessionScope.user.role == 'ADMIN'}">
+  <c:when test="${"$"}{sessionScope.user.role == 'ADMIN'}">
     <h2>Admin dashboard</h2>
-    <p>${pendingOrders} orders awaiting approval</p>
+    <p>${"$"}{pendingOrders} orders awaiting approval</p>
   </c:when>
   <c:otherwise>
-    <h2>Welcome, <c:out value="${sessionScope.user.name}"/></h2>
-    <p>You have ${empty cart ? 0 : cart.size()} items in your cart.</p>
+    <h2>Welcome, <c:out value="${"$"}{sessionScope.user.name}"/></h2>
+    <p>You have ${"$"}{empty cart ? 0 : cart.size()} items in your cart.</p>
   </c:otherwise>
 </c:choose>
 `, code`
@@ -114,7 +114,7 @@ GET /app/greet.jsp?name=<script>alert(1)</script>
     complex: ex("What the container generates from a JSP", "hello_jsp.java", code`
 // For hello.jsp:
 //   <%@ page contentType="text/html;charset=UTF-8" %>
-//   <p>Hello, ${param.name}! Today is <%= java.time.LocalDate.now().getDayOfWeek() %></p>
+//   <p>Hello, ${"$"}{param.name}! Today is <%= java.time.LocalDate.now().getDayOfWeek() %></p>
 //
 // Tomcat translates it into a servlet roughly like this (simplified):
 public final class hello_jsp extends org.apache.jasper.runtime.HttpJspBase {
@@ -126,7 +126,7 @@ public final class hello_jsp extends org.apache.jasper.runtime.HttpJspBase {
         JspWriter out = pageContext.getOut();
         try {
             out.write("<p>Hello, ");
-            out.write((String) PageContextImpl.proprietaryEvaluate("${param.name}", String.class, pageContext, null));
+            out.write((String) PageContextImpl.proprietaryEvaluate("${"$"}{param.name}", String.class, pageContext, null));
             out.write("! Today is ");
             out.print(java.time.LocalDate.now().getDayOfWeek());
             out.write("</p>\n");
@@ -141,9 +141,9 @@ GET /app/hello.jsp?name=Meera   (on a Wednesday)
 `, "A JSP is a servlet in disguise: static text becomes out.write calls, EL is evaluated at run time and scriptlet expressions become out.print. Knowing this explains why the first request to a JSP is slower (translation and compilation) and why JSPs share servlet threading rules."),
     assignments: [
       task("Render a numbered list of students with their marks, showing 'Distinction' for marks of 75 or more, using JSTL only.", "Use c:forEach with varStatus for numbering and c:if for the condition.", code`
-<c:forEach var="s" items="${students}" varStatus="st">
-  <p>${st.count}. <c:out value="${s.name}"/> - ${s.marks}
-     <c:if test="${s.marks >= 75}"><strong>Distinction</strong></c:if></p>
+<c:forEach var="s" items="${"$"}{students}" varStatus="st">
+  <p>${"$"}{st.count}. <c:out value="${"$"}{s.name}"/> - ${"$"}{s.marks}
+     <c:if test="${"$"}{s.marks >= 75}"><strong>Distinction</strong></c:if></p>
 </c:forEach>
 `),
       task("Why are scriptlets discouraged, and what replaces them?", "Scriptlets put Java logic inside HTML, making pages hard to read, test and reuse, encouraging business logic in the view and making it easy to forget output escaping. EL and JSTL handle display logic declaratively, servlets or controllers prepare the data (MVC), and custom tags or tag files package reusable view pieces."),
@@ -152,11 +152,11 @@ GET /app/hello.jsp?name=Meera   (on a Wednesday)
     alternates: [
       alt("Thymeleaf templates in Spring Boot", "Thymeleaf templates are valid HTML that browsers can open directly, and escape output by default.", "products.html", code`
 <table>
-  <tr th:each="p, row : ${products}">
-    <td th:text="${row.count}">1</td>
-    <td th:text="${p.name}">Keyboard</td>
-    <td th:text="${#numbers.formatInteger(p.price, 1, 'COMMA')}">1,499</td>
-    <td th:if="${p.price > 5000}">Premium</td>
+  <tr th:each="p, row : ${"$"}{products}">
+    <td th:text="${"$"}{row.count}">1</td>
+    <td th:text="${"$"}{p.name}">Keyboard</td>
+    <td th:text="${"$"}{#numbers.formatInteger(p.price, 1, 'COMMA')}">1,499</td>
+    <td th:if="${"$"}{p.price > 5000}">Premium</td>
   </tr>
 </table>
 `),
@@ -226,7 +226,7 @@ public class ProductController extends HttpServlet {
 //   List<Product> cheaperThan(int max)  -> filter by price
 //
 // /WEB-INF/views/products.jsp: display only
-//   <c:forEach var="p" items="${products}"><li>${p.name} - ${p.price}</li></c:forEach>
+//   <c:forEach var="p" items="${"$"}{products}"><li>${"$"}{p.name} - ${"$"}{p.price}</li></c:forEach>
 `, code`
 GET /app/products
 <li>Keyboard - 1499</li>
