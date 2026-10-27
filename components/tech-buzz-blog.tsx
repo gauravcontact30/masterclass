@@ -13,7 +13,7 @@ import { BrandMark } from "./brand-mark";
 import { useLanguage } from "./language-provider";
 import { getDiwaliFestiveSaleInfo } from "@/lib/festive-sale";
 import { DEFAULT_READING_FONT_ID, popularity, READING_FONTS, techLogo, type TechBuzzCard } from "@/lib/tech-buzz-public";
-import { isUnsplash, unsplashLoader } from "@/lib/image-loaders";
+import { isUnsplash, unoptimizedRemote, unsplashLoader } from "@/lib/image-loaders";
 import { loadGoogleFont } from "@/lib/google-fonts";
 import { FontFamilyDropdown } from "./font-family-dropdown";
 import styles from "./tech-buzz-blog.module.css";
@@ -153,7 +153,7 @@ const dateLabel = (iso: string) => {
   return Number.isNaN(date.getTime()) ? iso : date.toLocaleDateString("en-IN", { day: "numeric", month: "short" });
 };
 const compact = (n: number) => (n >= 1000 ? `${(n / 1000).toFixed(n >= 10000 ? 0 : 1)}k` : String(n));
-const remote = (src: string) => /^https?:/.test(src) && !isUnsplash(src);
+const remote = unoptimizedRemote;
 const loaderFor = (src: string) => (isUnsplash(src) ? unsplashLoader : undefined);
 const toneOf = (key: string) => TONES[[...key].reduce((sum, ch) => sum + ch.charCodeAt(0), 0) % TONES.length];
 

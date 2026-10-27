@@ -2,7 +2,8 @@ import { render, screen, waitFor, fireEvent } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { LanguageProvider, useLanguage } from "@/components/language-provider";
 import { LanguageSwitcher } from "@/components/language-switcher";
-import { en, hi, es, ja, de, fr, zh, SUPPORTED_LANGUAGES } from "@/lib/i18n";
+import { en, SUPPORTED_LANGUAGES } from "@/lib/i18n";
+import { hi, es, ja, de, fr, zh } from "@/lib/i18n-locales";
 
 function Probe() {
   const { language, setLanguage, t } = useLanguage();

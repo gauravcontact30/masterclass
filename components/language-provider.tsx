@@ -1,9 +1,8 @@
 "use client";
 import { createContext, useContext, useSyncExternalStore, useEffect, useCallback, useState } from "react";
-import { LANGUAGES, type Language } from "@/lib/domain";
+import { LANGUAGES, type Language } from "@/lib/languages";
 import {
   en,
-  translations,
   SUPPORTED_LANGUAGES,
   usableLanguage,
   type TranslationKey,
@@ -93,10 +92,19 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
+  // English ships with every page; another language's dictionary is fetched the first time it is chosen.
+  const [dictionaries, setDictionaries] = useState<Partial<Record<Language, Record<TranslationKey, string>>>>({ en });
+  useEffect(() => {
+    if (dictionaries[language]) return;
+    let live = true;
+    void import("@/lib/i18n-locales").then(module => { if (live) setDictionaries(current => ({ ...current, ...module.translations })); });
+    return () => { live = false; };
+  }, [language, dictionaries]);
+
   const t = useCallback((key: TranslationKey): string => {
-    const dict = translations[language] ?? en;
+    const dict = dictionaries[language] ?? en;
     return dict[key] ?? en[key] ?? (key as string);
-  }, [language]);
+  }, [language, dictionaries]);
 
   return (
     <Context.Provider

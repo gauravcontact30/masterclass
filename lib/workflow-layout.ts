@@ -1,4 +1,4 @@
-import { NODE_HEIGHT, NODE_WIDTH, WORKFLOW_HEIGHT, WORKFLOW_WIDTH, type Workflow, type WorkflowEdge, type WorkflowNode } from "./landing-workflows";
+import { NODE_HEIGHT, NODE_WIDTH, WORKFLOW_HEIGHT, WORKFLOW_WIDTH, type Workflow, type WorkflowEdge, type WorkflowNode } from "./landing-workflows-shape";
 
 /*
  * Where a workflow diagram's arrows and labels go (components/workflow-diagram draws the result). Arrows bend

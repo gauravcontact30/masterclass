@@ -7,8 +7,8 @@ import { z } from "zod";
  */
 import { DOCUMENT_FORMAT } from "./document-format";
 export { DOCUMENT_FORMAT, labelledOption, optionLetter } from "./document-format";
-export const LANGUAGES = ["en", "hi", "es", "ja", "de", "fr", "zh"] as const;
-export type Language = (typeof LANGUAGES)[number];
+import { LANGUAGES, type Language } from "./languages";
+export { LANGUAGES, type Language };
 export const requestSchema = z.object({
   technologyId: z.string().min(1).max(80),
   topicId: z.string().min(1).max(80),

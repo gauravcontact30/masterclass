@@ -143,7 +143,7 @@ export function OverviewLive({ snapshot, onRefreshSnapshot }: { snapshot: Overvi
   // clocks move each second, so the grouping runs when the data changes and the timing pass on every tick.
   // Indexes visits and presence; includes all live visitors and active sessions.
   const index = useMemo(() => indexVisits(streamRows, stream ? stream.presence && [...stream.presence.values()] : null), [streamRows, stream]);
-  const everyone = useMemo(() => streamVisitors(index, clockNow, stream?.emails, false), [index, clockNow, stream]);
+  const everyone = useMemo(() => streamVisitors(index, clockNow, stream?.emails), [index, clockNow, stream]);
   const counts = useMemo(() => ({
     all: everyone.length, live: everyone.filter(v => v.live).length, signed: everyone.filter(v => v.signedIn).length,
     new: everyone.filter(v => v.first.new_visitor && !v.signedIn).length,

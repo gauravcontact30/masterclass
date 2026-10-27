@@ -1,3 +1,4 @@
+import { connection } from "next/server";
 import { getPublishedTechBuzzArticle, listPublishedTechBuzzArticles } from "@/lib/server/tech-buzz-storage";
 import { getTopPlatformsComparison } from "@/lib/tech-buzz-data";
 import { isTechnologyStory, toCard, toPreview } from "@/lib/tech-buzz-public";
@@ -5,6 +6,9 @@ import { isTechnologyStory, toCard, toPreview } from "@/lib/tech-buzz-public";
 /** Public and cacheable, so it returns cards and free previews only; members read bodies from ./[slug]/member. */
 
 export async function GET(request: Request) {
+  // Request-time only: during the build the try/catch below swallowed Next's prerender bail-out (logged as
+  // "Tech Buzz GET error") and could have frozen an error response into the build.
+  await connection();
   try {
     const { searchParams } = new URL(request.url);
     const slug = searchParams.get("slug");

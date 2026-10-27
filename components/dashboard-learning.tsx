@@ -5,6 +5,7 @@ import { useLanguage } from "./language-provider";
 import { LandingAiPulse } from "./landing-ai-pulse";
 import { LandingVocabulary } from "./landing-vocabulary";
 import { LandingWorkflows } from "./landing-workflows";
+import { WORKFLOWS } from "@/lib/landing-workflows";
 import { LandingInterview } from "./landing-interview";
 import { LandingComparisons } from "./landing-comparisons";
 import { LandingTechDocs } from "./landing-tech-docs";
@@ -32,7 +33,7 @@ export function DashboardLearning({ daily, techDocs, concepts, locked = false, o
     <DashboardCoach />
     {daily && <LandingAiPulse expanded cards={daily.pulse} day={daily.day} locked={daily.locked.pulse} />}
     <LandingInterview expanded />
-    <LandingWorkflows expanded />
+    <LandingWorkflows workflows={WORKFLOWS} expanded />
     {/* Without a membership (trial over), the full Tech Topics and Technology docs stay behind the plans screen. */}
     <LandingComparisons expanded={!locked} preview={locked} locked={locked} official={techDocs} />
     <LandingTechDocs official={techDocs} preview={locked} locked={locked} concepts={locked ? undefined : concepts} />

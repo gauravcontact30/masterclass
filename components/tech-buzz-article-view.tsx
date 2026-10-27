@@ -16,7 +16,6 @@ import {
   Play,
   Pause,
   CheckCircle2,
-  Copy,
   Check,
   MessageSquare,
   Sparkles,
@@ -24,13 +23,25 @@ import {
   Flame
 } from "lucide-react";
 import { techLogo, type TechBuzzCard, type TechBuzzMemberContent, type TechBuzzPreview } from "@/lib/tech-buzz-public";
-import { isUnsplash, unsplashLoader } from "@/lib/image-loaders";
+import { isUnsplash, unoptimizedRemote, unsplashLoader } from "@/lib/image-loaders";
 import { LanguageSwitcher } from "./language-switcher";
 import { useLanguage } from "./language-provider";
 import styles from "./tech-buzz-article.module.css";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { ClapButton, useClaps } from "./clap-button";
+import dynamic from "next/dynamic";
+import { ProseText } from "./tech-buzz-prose";
+import type { TechBuzzMemberContent as MemberContent } from "@/lib/tech-buzz-public";
+
+/** The light, Apple-style code editor (file tree + tabs): loaded with the member body, not with the page. */
+const CodeFiles = dynamic(() => import("./code-files").then(module => module.CodeFiles), { loading: () => <div className={styles.codeLoading} aria-hidden="true" /> });
+
+type Snippet = NonNullable<MemberContent["sections"][number]["codeSnippet"]>;
+const EXTENSIONS: Record<string, string> = { typescript: "ts", ts: "ts", tsx: "tsx", javascript: "js", js: "js", jsx: "jsx", python: "py", py: "py", go: "go", rust: "rs", java: "java", sql: "sql", bash: "sh", shell: "sh", sh: "sh", json: "json", yaml: "yml", yml: "yml", css: "css", html: "html", dockerfile: "Dockerfile" };
+/** A snippet's files for the editor: its own tabs when it has several, otherwise one file named after it. */
+const snippetFiles = (snippet: Snippet) => (snippet.files?.length ? snippet.files : [{ filename: snippet.filename || `example.${EXTENSIONS[snippet.language.toLowerCase()] ?? "txt"}`, language: snippet.language, code: snippet.code }])
+  .map(file => ({ path: file.filename, code: file.code, note: "" }));
 
 interface Props {
   /** The free preview only; the member body is fetched from /api/tech-buzz/[slug]/member after a server-side check. */
@@ -41,7 +52,7 @@ interface Props {
 }
 
 /** Local images go through the optimizer, Unsplash through its own CDN (unsplashLoader); any other remote host as is. */
-const remote = (src: string) => /^https?:/.test(src) && !isUnsplash(src);
+const remote = unoptimizedRemote;
 const loaderFor = (src: string) => (isUnsplash(src) ? unsplashLoader : undefined);
 /** Whether this browser holds a Supabase session cookie; null during the server render. */
 const hasSessionCookie = () => /(?:^|;\s*)sb-[^=]+-auth-token/.test(document.cookie);
@@ -61,7 +72,6 @@ export function TechBuzzArticleView({ article, related, prevStory, nextStory }: 
   const [userReactions, setUserReactions] = useState<{ heart: number; unicorn: number; rocket: number; mindblown: number }>(article.reactions);
   const [bookmarked, setBookmarked] = useState<boolean>(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
-  const [copiedCodeId, setCopiedCodeId] = useState<string | null>(null);
   const [readingProgress, setReadingProgress] = useState<number>(0);
 
   // Audio voiceover state with speech synthesis & active reading sync
@@ -170,15 +180,6 @@ export function TechBuzzArticleView({ article, related, prevStory, nextStory }: 
     }
   };
 
-  const copyCode = (code: string, id: string) => {
-    if (typeof navigator !== "undefined" && navigator.clipboard) {
-      navigator.clipboard.writeText(code);
-      setCopiedCodeId(id);
-      showToast("Code copied to clipboard!");
-      setTimeout(() => setCopiedCodeId(null), 2500);
-    }
-  };
-
   const handleAddComment = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newCommentText.trim()) return;
@@ -235,6 +236,12 @@ export function TechBuzzArticleView({ article, related, prevStory, nextStory }: 
   // Flatten all paragraphs for sequential voiceover reading
   // The voiceover reads what this reader may see: the whole story for members, the preview for everyone else.
   const visibleSections = useMemo(() => memberContent?.sections ?? [article.teaser], [memberContent, article.teaser]);
+  // Every code file in the member body, the last version of each path winning, for the "Complete project" editor.
+  const projectFiles = useMemo(() => {
+    const byPath = new Map<string, { path: string; code: string; note: string }>();
+    for (const section of memberContent?.sections ?? []) if (section.codeSnippet) for (const file of snippetFiles(section.codeSnippet)) byPath.set(file.path, file);
+    return [...byPath.values()];
+  }, [memberContent]);
   const allParagraphs = useMemo(() => visibleSections.flatMap(sec => sec.paragraphs), [visibleSections]);
 
   const stopAudio = useCallback(() => {
@@ -602,15 +609,14 @@ export function TechBuzzArticleView({ article, related, prevStory, nextStory }: 
               {visibleSections[0].paragraphs.map((para, i) => {
                 const isReading = isPlayingAudio && activeParagraphIndex === i;
                 return (
-                  <p
+                  <div
                     key={i}
-                    className={`${styles.proseParagraph} ${isReading ? styles.activeReadingHighlight : ""}`}
+                    className={`${styles.proseBlock} ${isReading ? styles.activeReadingHighlight : ""}`}
                     onClick={() => playFromParagraph(i)}
                     title="Click to listen from here"
-                    style={{ cursor: "pointer" }}
                   >
-                    {para}
-                  </p>
+                    <ProseText text={para} paragraphClass={styles.proseParagraph} listClass={styles.proseList} orderedClass={styles.proseOrdered} />
+                  </div>
                 );
               })}
               {visibleSections[0].quote && (
@@ -689,57 +695,45 @@ export function TechBuzzArticleView({ article, related, prevStory, nextStory }: 
                       const isReading = isPlayingAudio && activeParagraphIndex === globalIdx;
 
                       return (
-                        <p
+                        <div
                           key={pIdx}
-                          className={`${styles.proseParagraph} ${isReading ? styles.activeReadingHighlight : ""}`}
+                          className={`${styles.proseBlock} ${isReading ? styles.activeReadingHighlight : ""}`}
                           onClick={() => playFromParagraph(globalIdx)}
                           title="Click to listen from here"
-                          style={{ cursor: "pointer" }}
                         >
-                          {p}
-                        </p>
+                          <ProseText text={p} paragraphClass={styles.proseParagraph} listClass={styles.proseList} orderedClass={styles.proseOrdered} />
+                        </div>
                       );
                     })}
 
-                  {/* Syntax Highlighted Code Snippet */}
+                  {/* Code example: a light, Apple-style editor with a tab per file */}
                   {section.codeSnippet && (
-                    <div className={styles.codeCard}>
-                      <div className={styles.codeHeader}>
-                        <span>{section.codeSnippet.filename ?? section.codeSnippet.language}</span>
-                        <button
-                          type="button"
-                          onClick={() => copyCode(section.codeSnippet!.code, `code-${idx + 1}`)}
-                          className={styles.codeCopyBtn}
-                        >
-                          {copiedCodeId === `code-${idx + 1}` ? (
-                            <>
-                              <Check size={14} color="#22c55e" />
-                              <span>Copied</span>
-                            </>
-                          ) : (
-                            <>
-                              <Copy size={14} />
-                              <span>Copy</span>
-                            </>
-                          )}
-                        </button>
-                      </div>
-                      <pre className={styles.codePre}>
-                        <code>{section.codeSnippet.code}</code>
-                      </pre>
+                    <div className={styles.codeWindow}>
+                      <CodeFiles files={snippetFiles(section.codeSnippet)} skin="apple" annotate={false} label={section.heading || "Code example"} />
                     </div>
                   )}
 
                   {section.bulletPoints && (
-                    <ul style={{ paddingLeft: "1.5rem", margin: "1rem 0 1.5rem", lineHeight: 1.8, fontSize: "1.0625rem" }}>
+                    <ul className={styles.proseList}>
                       {section.bulletPoints.map((pt, ptIdx) => (
-                        <li key={ptIdx} style={{ marginBottom: "0.5rem" }}>{pt}</li>
+                        <li key={ptIdx}>{pt}</li>
                       ))}
                     </ul>
                   )}
                 </section>
               );
             })}
+
+              {/* Every file from the story's examples in one editor, so the whole project can be read and copied end to end */}
+              {projectFiles.length > 1 && (
+                <section className={styles.codeProject} aria-label="Complete project">
+                  <h2 className={styles.proseHeading}>Complete project</h2>
+                  <p className={styles.proseParagraph}>All {projectFiles.length} files from this story together, ready to copy into a project and run.</p>
+                  <div className={styles.codeWindow}>
+                    <CodeFiles files={projectFiles} skin="apple" annotate={false} label={`${article.title} · source`} />
+                  </div>
+                </section>
+              )}
 
               {/* Founder Architectural Takeaway */}
               {memberContent.founderTakeaway && (

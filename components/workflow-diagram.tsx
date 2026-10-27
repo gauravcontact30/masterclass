@@ -1,5 +1,5 @@
 import { useId } from "react";
-import { NODE_HEIGHT, NODE_WIDTH, WORKFLOW_WIDTH, type Workflow, type WorkflowNode } from "@/lib/landing-workflows";
+import { NODE_HEIGHT, NODE_WIDTH, WORKFLOW_WIDTH, type Workflow, type WorkflowNode } from "@/lib/landing-workflows-shape";
 import { diagramLayout, labelWidth } from "@/lib/workflow-layout";
 import styles from "./landing-workflows.module.css";
 

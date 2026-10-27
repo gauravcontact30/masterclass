@@ -130,6 +130,8 @@ export interface TechBuzzArticle {
       language: string;
       code: string;
       filename?: string;
+      /** A runnable example split across files (shown as editor tabs); `code`/`filename` mirror the first one. */
+      files?: { filename: string; language: string; code: string }[];
     };
     callout?: {
       type: "tip" | "insight" | "warning";

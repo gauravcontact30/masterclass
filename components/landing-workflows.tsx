@@ -2,7 +2,7 @@
 import { useMemo, useState, type ReactNode } from "react";
 import dynamic from "next/dynamic";
 import { Boxes, Building2, FlaskConical, GitBranch, Layers, Network, Workflow as WorkflowIcon, Zap, type LucideIcon } from "lucide-react";
-import { WORKFLOW_HEIGHT, WORKFLOW_WIDTH, WORKFLOWS, type Workflow, type WorkflowNodeKind } from "@/lib/landing-workflows";
+import { WORKFLOW_HEIGHT, WORKFLOW_WIDTH, type Workflow, type WorkflowNodeKind } from "@/lib/landing-workflows-shape";
 import { WORKFLOW_LESSONS } from "@/lib/workflow-learning";
 import { STEP_TONES, WorkflowDiagram, two } from "./workflow-diagram";
 import { learningImageUrl } from "@/lib/learning-image";
@@ -22,8 +22,8 @@ const workflowKey = (workflow: Workflow) => contentKey("workflow", workflow.id);
 
 /** The official-docs learning paths (~180 KB of curriculum and guides) only show on /learning, so they are their own chunk. */
 const WorkflowLearning = dynamic(() => import("./workflow-learning").then(module => module.WorkflowLearning), { loading: () => <LearningLoader size="inline" label="Loading the learning paths…" /> });
-/** Full detail and interview questions: about 200 Q&As, so they load as their own chunk after the page. */
-import WorkflowPrep from "./landing-workflow-prep";
+/** Full detail and interview questions: about 200 Q&As (lib/workflow-prep), so they load as their own chunk after the page. */
+const WorkflowPrep = dynamic(() => import("./landing-workflow-prep"), { loading: () => <LearningLoader size="inline" label="Loading the interview questions…" /> });
 
 /** The landing preview shows this many of the most asked subjective and objective questions per blueprint; /learning shows all. */
 const LANDING_QUESTIONS = 3;
@@ -44,11 +44,14 @@ const KIND_LABEL: Record<WorkflowNodeKind, string> = { actor: "Person / client",
  * `preview` (the landing page) shows the first three blueprints of each category, each with its 7 most asked
  * subjective and 7 most asked objective interview questions; /learning carries every blueprint with its full set.
  */
-export function LandingWorkflows({ expanded = false, preview = false }: Readonly<{ expanded?: boolean; preview?: boolean }>) {
+export function LandingWorkflows({ workflows: source, total = source.length, industries: industryCount, expanded = false, preview = false }: Readonly<{
+  /** Every blueprint on /learning; on the landing page only the previewed ones (lib/landing-workflows-preview.ts). */
+  workflows: Workflow[]; total?: number; industries?: number; expanded?: boolean; preview?: boolean;
+}>) {
   const { language } = useLanguage(); const hi = language === "hi"; const text: Text = (en, hindi) => hi ? hindi : en;
   const [group, setGroup] = useState<string>("All");
   // The landing preview leaves out the dashboard-only blueprints (the URL shortener and the company slides).
-  const pool = useMemo(() => preview ? WORKFLOWS.filter(workflow => !workflow.dashboardOnly) : WORKFLOWS, [preview]);
+  const pool = useMemo(() => preview ? source.filter(workflow => !workflow.dashboardOnly) : source, [preview, source]);
   // A category tab appears only when it has something to show (a blueprint, or on /learning a learning path).
   const groups = expanded ? [...new Set([...GROUPS.filter(option => pool.some(workflow => workflow.group === option) || WORKFLOW_LESSONS.some(lesson => lesson.group === option)), ...WORKFLOW_LESSONS.map(lesson => lesson.group)])] : GROUPS.filter(option => pool.some(workflow => workflow.group === option));
   const lessons = expanded ? WORKFLOW_LESSONS.filter(lesson => group === "All" || lesson.group === group) : [];
@@ -59,17 +62,17 @@ export function LandingWorkflows({ expanded = false, preview = false }: Readonly
     const all = group === "All" ? visible : visible.filter(workflow => workflow.group === group);
     return preview ? all.slice(0, PREVIEW_COUNT) : all;
   }, [group, preview, overrides, editing, pool]);
-  const industries = new Set(WORKFLOWS.map(workflow => workflow.industry)).size;
+  const industries = industryCount ?? new Set(source.map(workflow => workflow.industry)).size;
 
   if (section.hidden) return null;
   return <section id="workflows" className={styles.section} aria-labelledby="workflows-title" {...section.props}>{section.toolbar}<div className={home.inner}>
-    {preview && <DashboardMore href="/learning" title={text(`See all ${WORKFLOWS.length} blueprints`, `सभी ${WORKFLOWS.length} ब्लूप्रिंट देखें`)} detail={text("Every blueprint with 30+ subjective and 30+ objective interview questions.", "हर ब्लूप्रिंट के साथ 30+ विषयगत और 30+ वस्तुनिष्ठ इंटरव्यू प्रश्न।")} />}
+    {preview && <DashboardMore href="/learning" title={text(`See all ${total} blueprints`, `सभी ${total} ब्लूप्रिंट देखें`)} detail={text("Every blueprint with 30+ subjective and 30+ objective interview questions.", "हर ब्लूप्रिंट के साथ 30+ विषयगत और 30+ वस्तुनिष्ठ इंटरव्यू प्रश्न।")} />}
     <div className={styles.head} data-learning-header>
       <p className={styles.kicker}><Layers size={14} aria-hidden="true" />{text("Workflow blueprints", "वर्कफ़्लो ब्लूप्रिंट")}</p>
       <h2 id="workflows-title"><Editable k="section:workflows" f={`heading.${language}`}>{text("How real systems and ", "असली सिस्टम और ")}</Editable><em><Editable k="section:workflows" f={`emphasis.${language}`}>{text("AI agents get work done", "AI एजेंट काम कैसे करते हैं")}</Editable></em></h2>
       <p className={styles.lede} data-learning-intro><Editable k="section:workflows" f={`lede.${language}`} multiline>{text(
-        `${WORKFLOWS.length} step-by-step blueprints: the system design behind apps you use every day, and LangChain, LangGraph, LangFlow and LangSmith agents solving real problems across ${industries} industries, from e-commerce and banking to hospitals. Each comes with its tech stack, design decisions, common mistakes and the interview questions most asked about it.`,
-        `${WORKFLOWS.length} चरण-दर-चरण ब्लूप्रिंट: रोज़ इस्तेमाल होने वाले ऐप्स के पीछे का सिस्टम डिज़ाइन, और LangChain, LangGraph, LangFlow व LangSmith एजेंट जो ई-कॉमर्स, बैंकिंग से लेकर अस्पतालों तक ${industries} उद्योगों की असली समस्याएँ हल करते हैं। हर एक के साथ टेक स्टैक, डिज़ाइन निर्णय, आम गलतियाँ और सबसे ज़्यादा पूछे जाने वाले इंटरव्यू प्रश्न।`)}</Editable></p>
+        `${total} step-by-step blueprints: the system design behind apps you use every day, and LangChain, LangGraph, LangFlow and LangSmith agents solving real problems across ${industries} industries, from e-commerce and banking to hospitals. Each comes with its tech stack, design decisions, common mistakes and the interview questions most asked about it.`,
+        `${total} चरण-दर-चरण ब्लूप्रिंट: रोज़ इस्तेमाल होने वाले ऐप्स के पीछे का सिस्टम डिज़ाइन, और LangChain, LangGraph, LangFlow व LangSmith एजेंट जो ई-कॉमर्स, बैंकिंग से लेकर अस्पतालों तक ${industries} उद्योगों की असली समस्याएँ हल करते हैं। हर एक के साथ टेक स्टैक, डिज़ाइन निर्णय, आम गलतियाँ और सबसे ज़्यादा पूछे जाने वाले इंटरव्यू प्रश्न।`)}</Editable></p>
     </div>
     {/* Remounted per filter so the page count and position start fresh. */}
     <div className={styles.filters} role="group" aria-label={text("Filter workflows", "वर्कफ़्लो छाँटें")}>

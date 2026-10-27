@@ -68,6 +68,9 @@ export function VisitTracker() {
       });
       referrerSent = true;
       open.current = { path: pathname, since: opened };
+      // The first heartbeat goes with the view, so the Live stream shows this reader's real time at once instead of
+      // 0 s until the next HEARTBEAT_MS tick.
+      beat();
     };
     // The first page counts from navigation start, so the seconds before hydration count towards the minimum.
     const seen = () => { clearTimeout(timer); if (document.visibilityState === "visible") timer = setTimeout(record, Math.max(400, MIN_SEEN_MS - (performance.now() - opened))); };

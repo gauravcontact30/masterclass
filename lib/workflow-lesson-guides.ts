@@ -1,4 +1,4 @@
-import type { WorkflowNodeKind } from "./landing-workflows";
+import type { WorkflowNodeKind } from "./landing-workflows-shape";
 
 type Stage = [label: string, kind: WorkflowNodeKind];
 export type WorkflowLessonGuide = {

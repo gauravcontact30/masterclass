@@ -15,3 +15,8 @@ export function unsplashLoader({ src, width, quality }: ImageLoaderProps) {
 }
 
 export const isUnsplash = (src: string) => src.startsWith("https://images.unsplash.com/");
+
+/** Public files in Supabase Storage (Tech Buzz daily covers): resized by next/image (next.config.ts remotePatterns). */
+export const isSupabaseStorage = (src: string) => /^https:\/\/[a-z0-9-]+\.supabase\.co\/storage\/v1\/object\/public\//.test(src);
+/** A remote image next/image cannot resize: any host that is neither Unsplash nor Supabase Storage. */
+export const unoptimizedRemote = (src: string) => /^https?:/.test(src) && !isUnsplash(src) && !isSupabaseStorage(src);

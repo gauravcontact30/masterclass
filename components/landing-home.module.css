@@ -587,6 +587,9 @@
   .buzzPointerReveal { stroke-dashoffset: 0; }
 }
 
+/* Holds the typography picker's place while it loads (components/landing-navbar.tsx). */
+.accountTypographyLoading { display: block; height: 40px; border-radius: 999px; background: rgba(31, 30, 28, .06); }
+
 /* ---------- Subject ribbon: index tabs ---------- */
 .ribbon { overflow: hidden; padding: 14px 0; background: var(--nb-sheet); border-bottom: 1px solid var(--nb-rule); -webkit-mask-image: linear-gradient(90deg, transparent, #000 48px, #000 calc(100% - 48px), transparent); mask-image: linear-gradient(90deg, transparent, #000 48px, #000 calc(100% - 48px), transparent); }
 .ribbonTrack { display: flex; width: max-content; animation: ribbon 55s linear infinite; }

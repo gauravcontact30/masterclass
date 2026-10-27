@@ -161,17 +161,21 @@ export function getCleanTitle(title: string | null | undefined, path: string): s
     .replace(/\b\w/g, c => c.toUpperCase());
 }
 
-/** Determines if a visitor had active visible engagement, live presence, or recorded page views. */
-export function isEngagedVisitor(v: { engagedMs: number; live?: boolean; page?: { ms: number } | null; views?: number }): boolean {
-  return Boolean(v.live) || Math.round(v.engagedMs / 1000) > 0 || (v.page?.ms ?? 0) > 0 || (v.views ?? 0) > 0;
+/**
+ * Whether a visitor spent at least a second on the site: their recorded visible time, or the open page's clock while
+ * they are still here. Visitors under a second are not shown anywhere in Super Admin (user rule 2026-10-27). It used to
+ * accept any visitor with a page view, which is every visitor, so 0-second visitors were never filtered out.
+ */
+export function isEngagedVisitor(v: { engagedMs: number; page?: { ms: number } | null }): boolean {
+  return Math.max(v.engagedMs, v.page?.ms ?? 0) >= 1000;
 }
 
 /**
  * One row per visitor (the signed-in person, or the anonymous browser): visitors on the site now first, then the most
  * recently active. `emails` maps account ids to emails for visitors whose rows did not carry one.
- * When `filterZeroSeconds` is true, visitors with 0 seconds of active engagement are excluded.
+ * Visitors with under a second of engagement are left out unless `filterZeroSeconds` is false.
  */
-export function streamVisitors(index: VisitIndex, now: number, emails: Record<string, string> = {}, filterZeroSeconds = false): StreamVisitor[] {
+export function streamVisitors(index: VisitIndex, now: number, emails: Record<string, string> = {}, filterZeroSeconds = true): StreamVisitor[] {
   const list = index.people.map(person => {
     const { views } = person, first = views[0], last = views.at(-1)!;
     const times = views.map(view => ({ view, time: pageTime(index.facts.get(view), now) }));

@@ -34,6 +34,7 @@ import { LandingPathFinder } from "./landing-path-finder";
 import type { BlogTeaser } from "@/lib/coffee-and-code";
 import { ContentProvider } from "./content-editing";
 import type { ContentOverrides } from "@/lib/content-overrides";
+import type { WorkflowPreview } from "@/lib/landing-workflows-preview";
 import frame from "./landing-section.module.css";
 import { useLanguage } from "./language-provider";
 import styles from "./learn-landing.module.css";
@@ -60,7 +61,7 @@ const LandingTechy = dynamic(() => import("./landing-pro-sections").then(m => m.
 /** `international`: other currencies are offered, so the page re-prices itself where the visitor is (it is cached in rupees). */
 export type LandingPrices = { monthly: number; yearly: number; enabled: boolean; currency?: Currency; currencies?: Currency[]; local?: Currency; inr?: { monthly: number; yearly: number }; international?: boolean; sale?: SaleInfo | null };
 /** `today`: the India-calendar day number (istDay); the sections that turn over daily pick their content from it. */
-export function LandingPage({ pro, library, prices: initialPrices, daily, techDocs, copyrightYear, overrides, coffee, today = 0, featuredDoc, fresh = null }: { fresh?: LandingFresh | null; today?: number; featuredDoc?: string; overrides?: ContentOverrides; coffee?: BlogTeaser[]; copyrightYear?: number; pro?: LandingProPreview; library?: LandingLibrary; prices?: LandingPrices; techDocs?: OfficialTechDocs | null; daily?: { day: string; pulse: PulseCard[]; words: DailyWord[]; locked?: { pulse: LockedTeaser | null; word: LockedTeaser | null }; totals?: { pulse: number; words: number } } }) {
+export function LandingPage({ workflows, pro, library, prices: initialPrices, daily, techDocs, copyrightYear, overrides, coffee, today = 0, featuredDoc, fresh = null }: { workflows: WorkflowPreview; fresh?: LandingFresh | null; today?: number; featuredDoc?: string; overrides?: ContentOverrides; coffee?: BlogTeaser[]; copyrightYear?: number; pro?: LandingProPreview; library?: LandingLibrary; prices?: LandingPrices; techDocs?: OfficialTechDocs | null; daily?: { day: string; pulse: PulseCard[]; words: DailyWord[]; locked?: { pulse: LockedTeaser | null; word: LockedTeaser | null }; totals?: { pulse: number; words: number } } }) {
   const { language, t } = useLanguage(); const hi = language === "hi"; const text = (en: string, hindi: string) => hi ? hindi : en;
   const [cycle, setCycle] = useState<"monthly" | "yearly">("monthly");
   // Prices rendered on the server arrive in the HTML, so the plan card never paints "—" and then shifts; the fetch is only the fallback.
@@ -98,7 +99,7 @@ export function LandingPage({ pro, library, prices: initialPrices, daily, techDo
     {library && <SubjectRibbon entries={library.entries} />}
     <LandingInterview preview day={today} fresh={fresh?.interview} />
     {daily && <LandingAiPulse cards={daily.pulse} total={daily.totals?.pulse} day={daily.day} locked={daily.locked?.pulse} preview />}
-    <LandingWorkflows preview />
+    <LandingWorkflows {...workflows} preview />
     <LandingCertifications />
     {coffee && <LandingCoffee posts={coffee} />}
     <LearningSlot surface="landing" page="home" section="middle" className={styles.learningSlot} />

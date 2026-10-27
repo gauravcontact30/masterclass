@@ -10,9 +10,12 @@ import { scrollToSection } from "./hashless-navigation";
 import { useLanguage } from "./language-provider";
 import { LanguageSwitcher } from "./language-switcher";
 import { useAppFont } from "./app-font-provider";
-import { FontFamilyDropdown } from "./font-family-dropdown";
-import { READING_FONTS } from "@/lib/tech-buzz-public";
+import dynamic from "next/dynamic";
 import styles from "./landing-home.module.css";
+
+/** The typography picker lives in the account menu, which opens on click: its popover (Base UI), font list and the
+ *  Google Fonts loader download then, not with the landing page. */
+const FontFamilyDropdown = dynamic(() => import("./font-family-dropdown").then(module => module.FontFamilyDropdown), { ssr: false, loading: () => <span className={styles.accountTypographyLoading} aria-hidden="true" /> });
 import type { Currency } from "@/lib/pricing";
 import type { PlansMenuPrices } from "./landing-plans-menu";
 
@@ -212,7 +215,6 @@ export function LandingNavbar({ links, prices = null, onCurrency }: { links: [st
                   value={appFontId}
                   onChange={setAppFont}
                   onReset={resetAppFont}
-                  fonts={READING_FONTS}
                   ariaLabel="Application font family"
                   variant="pill"
                   valueType="id"

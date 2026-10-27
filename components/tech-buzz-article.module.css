@@ -366,6 +366,26 @@
   margin: 0 0 1.5rem 0;
 }
 
+/* One paragraph string from the story (components/tech-buzz-prose.tsx splits it into paragraphs and lists). */
+.proseBlock { cursor: pointer; border-radius: 8px; }
+.proseBlock > :last-child { margin-bottom: 1.5rem; }
+.proseParagraph { text-align: left; text-wrap: pretty; overflow-wrap: break-word; hyphens: auto; }
+.proseList, .proseOrdered {
+  margin: 0 0 1.5rem; padding-left: 1.6em; font-size: clamp(1.0625rem, 1.8vw, 1.1875rem); line-height: 1.75; color: #242424;
+  text-align: left;
+}
+.proseList { list-style: disc; }
+.proseOrdered { list-style: decimal; }
+.proseList li, .proseOrdered li { margin: 0 0 .6em; padding-left: .3em; overflow-wrap: break-word; }
+.proseList li::marker { color: #ff5a36; }
+.proseOrdered li::marker { color: #ff5a36; font-weight: 700; font-variant-numeric: tabular-nums; }
+.proseList ul, .proseOrdered ol { margin: .5em 0 0; }
+
+/* Code examples: the shared Apple-skin editor (components/code-files.tsx), full width on every screen. */
+.codeWindow { margin: 1.5rem 0 2rem; min-width: 0; max-width: 100%; }
+.codeLoading { height: 260px; border: 1px solid #d2d2d7; border-radius: 12px; background: linear-gradient(#f6f6f8 0 40px, #ffffff 40px); }
+.codeProject { margin: 3rem 0 1rem; padding-top: 2rem; border-top: 1px solid #ececf0; }
+
 .proseQuote {
   border-left: 4px solid #ff5a36;
   padding: 0.75rem 0 0.75rem 1.5rem;
@@ -1419,3 +1439,5 @@
 .proseHeading, .paywallHeading { font-size: 18px; line-height: 1.35; }
 .articleSubtitle { font-size: 16px; line-height: 1.55; }
 .proseParagraph { font-size: 16px; line-height: 1.75; }
+.proseList, .proseOrdered { font-size: 16px; padding-left: 1.35em; }
+.codeWindow { margin-inline: -4px; }

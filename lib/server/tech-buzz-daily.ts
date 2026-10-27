@@ -17,7 +17,7 @@ import { createTechBuzzArticle, dailyEditionSlugs, expireTechBuzzCache } from ".
 
 const SYSTEM = [
   "You are the senior editor of MCB - Tech Buzz, the engineering blog of MasterClass Buddy, read by Indian software engineers preparing for better roles.",
-  "Write one original, highly engaging, technically accurate blog post. Open with a hook from a real production situation, then teach: concrete steps, trade-offs, numbers, a short correct code sample where it helps, and pitfalls.",
+  "Write one original, highly engaging, technically accurate blog post. Open with a hook from a real production situation, then teach: concrete steps, trade-offs, numbers, a complete, runnable multi-file code example where it helps (every file needed to run it), and pitfalls.",
   "Use current versions (Next.js 16+, React 19+, current LangChain/LangGraph APIs, current AWS service names). Never invent APIs; if unsure, describe the idea instead of naming a function.",
   "Plain prose, no markdown symbols, no emojis, no citations or source lists, never mention other blog platforms or publications.",
 ].join("\n");
@@ -36,7 +36,8 @@ const schema = z.object({
     heading: z.string(),
     paragraphs: z.array(z.string()).describe("2-4 paragraphs of 2-5 sentences."),
     bulletPoints: z.array(z.string()).nullable().describe("Optional 3-5 short points, or null."),
-    code: z.object({ language: z.string(), filename: z.string(), code: z.string().describe("At most 25 lines, correct and runnable in spirit.") }).nullable(),
+    code: z.object({ files: z.array(z.object({ filename: z.string().describe("A real path, e.g. src/app/page.tsx or package.json"), language: z.string(), code: z.string().describe("Complete file contents, at most 60 lines: real imports, no placeholders or '...'.") })).min(1).max(4) })
+      .describe("A complete, end-to-end runnable example: every file a reader needs to run it (for example package.json, the entry file and one module), shown as editor tabs.").nullable(),
     callout: z.object({ type: z.enum(["tip", "insight", "warning"]), text: z.string() }).nullable(),
   })).describe("5-6 sections; at least one has code when the topic is about code or configuration."),
 });
@@ -90,7 +91,7 @@ async function writeStory(track: DailyTrack, date: string): Promise<TechBuzzArti
       heading: section.heading,
       paragraphs: section.paragraphs,
       ...(section.bulletPoints?.length ? { bulletPoints: section.bulletPoints } : {}),
-      ...(section.code ? { codeSnippet: { language: section.code.language, filename: section.code.filename, code: section.code.code } } : {}),
+      ...(section.code?.files.length ? { codeSnippet: { language: section.code.files[0].language, filename: section.code.files[0].filename, code: section.code.files[0].code, files: section.code.files } } : {}),
       ...(section.callout ? { callout: section.callout } : {}),
       // The blog image opens the second section, after the hook.
       ...(i === 1 && inlineUrl ? { image: { src: inlineUrl, alt: `Illustration: ${output.title}` } } : {}),

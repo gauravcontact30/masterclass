@@ -8,6 +8,8 @@ import { pageWindow } from "./pager";
 import { DAILY_TRACKS, OTHER_GROUP, TECH_GROUPS, techGroupOf, type TechGroup } from "@/lib/tech-buzz-sections";
 import { techLogo, type TechBuzzCard } from "@/lib/tech-buzz-public";
 import styles from "./tech-buzz-showcase.module.css";
+import Image from "next/image";
+import { isUnsplash, unoptimizedRemote, unsplashLoader } from "@/lib/image-loaders";
 import { ClapButton, useClaps } from "./clap-button";
 
 /*
@@ -95,12 +97,12 @@ function CardClap({ card, tone }: { card: TechBuzzCard; tone: "light" | "dark" }
   return <ClapButton slug={card.slug} claps={claps} size="small" tone={tone} label={`Clap for ${card.title}`} />;
 }
 
-function Cover({ card, className }: { card: TechBuzzCard; className?: string }) {
+/** A story cover through next/image, so each card downloads a picture sized for it (`sizes`), not the stored original. */
+function Cover({ card, className, sizes }: { card: TechBuzzCard; className?: string; sizes: string }) {
   const logo = techLogo(card.techId);
-  // eslint-disable-next-line @next/next/no-img-element -- covers come from Unsplash, Supabase Storage or /public
   return <span className={`${styles.cover} ${className ?? ""}`} style={{ "--tone": card.color } as CSSProperties}>
-    {card.coverImage ? <img src={card.coverImage} alt="" loading="lazy" decoding="async" /> : null}
-    {logo && <span className={styles.coverLogo}>{/* eslint-disable-next-line @next/next/no-img-element */}<img src={logo} alt="" width={20} height={20} /></span>}
+    {card.coverImage ? <Image src={card.coverImage} alt="" fill sizes={sizes} quality={75} loader={isUnsplash(card.coverImage) ? unsplashLoader : undefined} unoptimized={unoptimizedRemote(card.coverImage)} /> : null}
+    {logo && <span className={styles.coverLogo}><Image src={logo} alt="" width={20} height={20} /></span>}
   </span>;
 }
 
@@ -130,7 +132,7 @@ function DailyEdition({ cards }: { cards: TechBuzzCard[] }) {
     <div className={styles.dailyGrid}>
       <article className={styles.dailyLead} style={{ "--tone": lead.track.color } as CSSProperties}>
         <Link href={`/tech-buzz/${lead.card.slug}`} className={styles.dailyLeadLink}>
-          <Cover card={lead.card} className={styles.dailyLeadCover} />
+          <Cover card={lead.card} className={styles.dailyLeadCover} sizes="(max-width: 900px) 92vw, 680px" />
           <span className={styles.trackChip}>01 · {lead.track.short}</span>
           <h3>{lead.card.title}</h3>
           <p>{lead.card.subtitle}</p>
@@ -139,7 +141,7 @@ function DailyEdition({ cards }: { cards: TechBuzzCard[] }) {
       </article>
       {rest.map(({ track, card }, i) => <article key={track.id} className={styles.dailyCard} style={{ "--tone": track.color } as CSSProperties}>
         <Link href={`/tech-buzz/${card.slug}`} className={styles.dailyCardLink}>
-          <Cover card={card} className={styles.dailyCardCover} />
+          <Cover card={card} className={styles.dailyCardCover} sizes="96px" />
           <span className={styles.dailyCardBody}>
             <span className={styles.trackChip}>{String(i + 2).padStart(2, "0")} · {track.short}</span>
             <strong>{card.title}</strong>
@@ -200,7 +202,7 @@ function FreshLatest({ cards }: { cards: TechBuzzCard[] }) {
       {paged.rows.map(card => <li key={card.id} style={{ "--tone": card.color } as CSSProperties}>
         <span className={styles.timelineHead}><span className={styles.timelineDot} aria-hidden="true" /><time dateTime={card.publishedAt}>{formatDate(card.publishedAt)}</time></span>
         <Link href={`/tech-buzz/${card.slug}`} className={styles.freshCard}>
-          <Cover card={card} className={styles.freshCover} />
+          <Cover card={card} className={styles.freshCover} sizes="(max-width: 640px) 90vw, 240px" />
           <span className={styles.freshTech}>{card.technology}</span>
           <strong className={styles.cardTitle}>{card.title}</strong>
         </Link>
@@ -223,7 +225,7 @@ function StarRated({ cards }: { cards: TechBuzzCard[] }) {
       {paged.rows.map((card, i) => { const rank = paged.offset + i + 1; return <li key={card.id} data-rank={rank}>
         <span className={styles.starRank} aria-hidden="true">{rank === 1 ? <Crown size={18} /> : rank}</span>
         <Link href={`/tech-buzz/${card.slug}`} className={styles.starCard}>
-          <Cover card={card} className={styles.starCover} />
+          <Cover card={card} className={styles.starCover} sizes="72px" />
           <span className={styles.starBody}>
             <span className={styles.starScore}><span className={styles.starRow} style={{ "--fill": `${(card.rating.average / 5) * 100}%` } as CSSProperties} aria-hidden="true">★★★★★</span><b>{card.rating.average.toFixed(2)}</b><small>{compact(card.rating.count)} ratings</small></span>
             <strong className={styles.cardTitle}>{card.title}</strong>
@@ -333,7 +335,7 @@ function TechGroupSection({ group, items }: { group: TechGroup; items: TechBuzzC
     <ul className={styles.groupGrid}>
       {paged.rows.map(card => <li key={card.id}>
         <Link href={`/tech-buzz/${card.slug}`} className={styles.groupCard}>
-          <Cover card={card} className={styles.groupCover} />
+          <Cover card={card} className={styles.groupCover} sizes="(max-width: 640px) 80vw, 240px" />
           <span className={styles.groupBody}>
             <span className={styles.groupTech}>{card.technology}<RatingBadge card={card} /></span>
             <strong className={styles.cardTitle}>{card.title}</strong>

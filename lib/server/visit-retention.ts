@@ -1,5 +1,6 @@
 import "server-only";
 import { db } from "./db";
+import { pruneZeroEngagement } from "./zero-engagement";
 import { VISIT_RETENTION_DAYS } from "@/lib/visit-retention";
 
 /** Permanently deletes site_visits rows older than VISIT_RETENTION_DAYS; a missing table (before migration 0023) is not an error. */
@@ -11,7 +12,9 @@ export async function pruneVisits(now = Date.now()) {
   await db().from("site_presence").delete().lt("seen_at", cutoff);
   // Frontend vitals and script errors (components/client-monitor.tsx) are kept 30 days; prune_monitoring predates them.
   await db().from("monitor_events").delete().in("kind", ["web_vitals", "client_error"]).lt("created_at", new Date(now - 30 * 86_400_000).toISOString());
-  return { ok: true as const, cutoff, deleted: count ?? 0 };
+  // Finished sessions with 0 seconds of engaged time never count as visitors (lib/server/zero-engagement.ts).
+  const zero = await pruneZeroEngagement(now).catch(() => ({ ok: false, sessions: 0 }));
+  return { ok: true as const, cutoff, deleted: count ?? 0, zeroEngagementSessions: zero.sessions };
 }
 
 /** Vercel Cron calls with `Authorization: Bearer $CRON_SECRET`; without the secret set, every call is refused. */
