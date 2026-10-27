@@ -1990,8 +1990,20 @@ LIMIT 10;`
 
 ];
 
+/**
+ * Reader counters start at zero (reset 2026-10-27): the sample likes, dislikes, claps, ratings and comments written
+ * into the stories above are dropped here, so every page and the Super Admin analytics count real readers only.
+ */
+const withoutSampleCounters = (article: TechBuzzArticle): TechBuzzArticle => ({
+  ...article,
+  likes: 0, dislikes: 0, upvotes: 0, claps: 0,
+  rating: { average: article.rating.average, count: 0, breakdown: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 } },
+  reactions: { heart: 0, unicorn: 0, rocket: 0, mindblown: 0 },
+  commentsCount: 0, comments: [],
+});
+
 /** The built-in stories: the original features, then one guide per Learning Dashboard technology. */
-export const TECH_BUZZ_ARTICLES: TechBuzzArticle[] = [...FEATURE_ARTICLES, ...TECHNOLOGY_ARTICLES];
+export const TECH_BUZZ_ARTICLES: TechBuzzArticle[] = [...FEATURE_ARTICLES, ...TECHNOLOGY_ARTICLES].map(withoutSampleCounters);
 
 export function getTechBuzzArticles(): TechBuzzArticle[] {
   return TECH_BUZZ_ARTICLES;

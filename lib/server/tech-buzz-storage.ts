@@ -78,8 +78,8 @@ function rowToArticle(row: TechBuzzRow): TechBuzzArticle {
     rating: {
       average: Number(row.rating_average) || 4.9,
       // 0 means not rated yet (daily stories start there).
-      count: row.rating_count == null ? 1 : Number(row.rating_count),
-      breakdown: (row.rating_breakdown as any) || { 1: 0, 2: 0, 3: 2, 4: 15, 5: 80 },
+      count: row.rating_count == null ? 0 : Number(row.rating_count),
+      breakdown: (row.rating_breakdown as any) || { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 },
     },
     author: row.author || {
       name: "Study Buddy Team",
@@ -141,8 +141,8 @@ function articleToRow(article: Partial<TechBuzzArticle>, userId?: string) {
     trending_rank: article.trendingRank || null,
     claps: article.claps || 0,
     rating_average: article.rating?.average || 4.95,
-    rating_count: article.rating?.count || 1,
-    rating_breakdown: article.rating?.breakdown || { 1: 0, 2: 0, 3: 2, 4: 15, 5: 80 },
+    rating_count: article.rating?.count ?? 0,
+    rating_breakdown: article.rating?.breakdown || { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 },
     author: article.author || {
       name: "Study Buddy Team",
       role: "Principal Systems Architect",

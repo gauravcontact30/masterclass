@@ -29,7 +29,8 @@ const formatDate = (iso: string) => { const t = Date.parse(iso); return Number.i
 const compact = (n: number) => n >= 10_000 ? `${Math.round(n / 1000)}k` : n >= 1000 ? `${(n / 1000).toFixed(1)}k` : String(n);
 
 /* ── This browser's likes and dislikes (localStorage; claps are per reader in Supabase), read through useSyncExternalStore so SSR and hydration agree ── */
-const VOTES_KEY = "mcb:tech-buzz-votes";
+// v2: counters were reset on 2026-10-27, so votes saved before then no longer match a count and are forgotten.
+const VOTES_KEY = "mcb:tech-buzz-votes:v2";
 type Mine = Record<string, { vote?: Vote }>;
 const listeners = new Set<() => void>();
 let cache: string | null = null;
