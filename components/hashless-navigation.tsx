@@ -13,12 +13,42 @@ const PENDING = "masterclass:pending-section";
 
 function prefersReducedMotion() { return typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches; }
 
+let settling: (() => void) | undefined;
+
+/**
+ * Sections below the fold skip rendering until they near the viewport (content-visibility in the landing styles), so
+ * their heights are estimates until the scroll passes them and the target can drift as they render. Once scrolling
+ * settles, this re-aligns the target until it stays put; the reader scrolling themselves cancels it.
+ */
+function settleOn(target: HTMLElement) {
+  settling?.();
+  let tries = 0, aligned = 0, lastY = -1, timer: ReturnType<typeof setTimeout> | undefined;
+  const stop = () => { clearTimeout(timer); for (const type of ["wheel", "touchstart", "keydown"]) removeEventListener(type, stop); settling = undefined; };
+  const check = () => {
+    // About six seconds: client-loaded sections above the target keep growing the page for a while after load.
+    if (++tries > 50 || !target.isConnected) return stop();
+    const settled = Math.abs(scrollY - lastY) < 1;
+    lastY = scrollY;
+    if (settled) {
+      const off = target.getBoundingClientRect().top - (parseFloat(getComputedStyle(target).scrollMarginTop) || 0);
+      // Aligned twice in a row (or as close as it gets: a section near the end of the page cannot reach the top).
+      if (Math.abs(off) <= 4 || (off > 0 && innerHeight + scrollY >= document.documentElement.scrollHeight - 2)) { if (++aligned >= 2) return stop(); }
+      else { aligned = 0; target.scrollIntoView({ behavior: "auto", block: "start" }); }
+    }
+    timer = setTimeout(check, 120);
+  };
+  for (const type of ["wheel", "touchstart", "keydown"]) addEventListener(type, stop, { passive: true });
+  settling = stop;
+  timer = setTimeout(check, 120);
+}
+
 /** Scrolls to a section and moves focus there for keyboard and screen-reader users. Returns false if it is not on the page. */
 export function scrollToSection(id: string) {
   if (!id || id === "top") { window.scrollTo({ top: 0, behavior: prefersReducedMotion() ? "auto" : "smooth" }); return true; }
   const target = document.getElementById(id);
   if (!target) return false;
   target.scrollIntoView({ behavior: prefersReducedMotion() ? "auto" : "smooth", block: "start" });
+  settleOn(target);
   if (!target.hasAttribute("tabindex") && !/^(A|BUTTON|INPUT|SELECT|TEXTAREA)$/.test(target.tagName)) target.setAttribute("tabindex", "-1");
   target.focus({ preventScroll: true });
   return true;

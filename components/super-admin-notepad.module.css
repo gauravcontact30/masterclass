@@ -49,9 +49,6 @@
 .toolsToggle[aria-expanded=false]>svg:last-child{transform:rotate(-90deg)}
 .status{display:flex;align-items:center;gap:6px 16px;flex-wrap:wrap;flex:1;min-width:0;font-size:11px;color:#73716a}
 .status [role=status]{margin-left:auto}
-.toolsHeadFont{display:inline-flex;align-items:center;gap:8px;margin-left:auto;flex-shrink:0;position:relative}
-.toolsHeadFont::before{content:"";display:inline-block;width:1px;height:20px;background:#dedbd2;margin-right:4px}
-@media(max-width:900px){.toolsHeadFont::before{display:none}}
 .paperPicker{position:relative}
 .notepad .paperTrigger{width:auto;gap:7px;padding:6px 9px}
 .paperTrigger span{min-width:62px;text-align:left}
@@ -61,8 +58,19 @@
 .paperList li span{flex:1}
 .paperList li[data-highlight]{background:#f7e7de}
 .paperList li[aria-selected=true]{font-weight:600;color:#8b402b}
+.colorPanel{position:absolute;top:calc(100% + 6px);left:0;z-index:40;width:236px;padding:10px;background:#fff;border:1px solid #dedbd2;border-radius:8px;box-shadow:0 8px 22px #26262420}
+.colorGrid{display:grid;grid-template-columns:repeat(6,30px);gap:6px;outline:none}
+.colorGrid:focus-visible{outline:2px solid #d97757;outline-offset:3px;border-radius:4px}
+.colorGrid button{display:grid;place-items:center;width:30px;height:30px;padding:0;border:1px solid #0000001f;border-radius:6px;color:#fff;cursor:pointer;transition:transform .12s}
+.colorGrid button:hover,.colorGrid button[data-highlight]{transform:scale(1.12);box-shadow:0 0 0 2px #fff,0 0 0 4px #d97757}
+.colorGrid button[aria-selected=true] svg{filter:drop-shadow(0 0 1px #000)}
+.colorFoot{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:10px;padding-top:9px;border-top:1px solid #e8e6dc}
+.colorFoot button{padding:5px 10px;border:1px solid #dedbd2;border-radius:5px;background:#fff;font-size:12px;cursor:pointer}
+.colorFoot button:hover{background:#f7e7de;border-color:#d97757}
+.group .colorFoot label{flex-direction:row;align-items:center;gap:6px;font-size:12px;color:#3d3d3a}
+.group .colorFoot input[type=color]{width:34px;height:26px}
 .error{padding:12px 18px;background:#fff0ed;color:#9c3425;font-size:13px}.error button{margin-left:12px}
-@media(max-width:760px){.canvas{padding:12px}.paper{padding:28px 20px;min-height:700px}.ribbon{padding:8px}.filebar{padding:14px}.group{border-right:0}.status{font-size:10px}.shortcut{display:none}.paperList{left:0;right:auto;width:min(280px,calc(100vw - 48px))}}
+@media(max-width:760px){.canvas{padding:12px}.paper{padding:28px 20px;min-height:700px}.ribbon{padding:8px}.filebar{padding:14px}.group{border-right:0}.status{font-size:10px}.shortcut{display:none}.paperList{left:0;right:auto;width:min(280px,calc(100vw - 48px))}.colorPanel{left:auto;right:-60px}}
 
 .library{padding:18px 20px;background:#f6f7f4;border-bottom:1px solid #dedbd2}
 .libraryHead{display:flex;gap:14px;align-items:center;flex-wrap:wrap}.libraryHead>div:first-child{margin-right:auto}.libraryHead strong{font-size:15px}.libraryHead small{display:block;font-size:11px;color:#73716a;margin-top:4px}
@@ -486,3 +494,11 @@
   color: #262624;
   font-weight: 700;
 }
+
+/* The font picker's trigger, freed from the 36px icon-box `.notepad button` rules (they squeezed its name, rating and
+   badge on top of each other). Centred in the library's pagination row; its own row on narrow screens. */
+.pagination{position:relative}
+.pagination .fontSlot{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:2}
+.notepad .fontSlot button[aria-expanded]{display:inline-flex;align-items:center;gap:7px;width:auto;max-width:min(320px,100%);height:36px;min-height:36px;padding:0 10px;border-radius:6px;font-size:13px;white-space:nowrap;overflow:hidden}
+.notepad .fontSlot button[aria-expanded] > span{flex-shrink:1;min-width:0;overflow:hidden;text-overflow:ellipsis}
+@media(max-width:900px){.pagination{flex-wrap:wrap}.pagination .fontSlot{position:static;transform:none;flex:1 0 100%;display:flex;justify-content:center;order:-1}}

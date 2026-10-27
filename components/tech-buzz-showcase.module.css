@@ -195,3 +195,6 @@ a:hover .cover > img, a:focus-visible .cover > img { transform: scale(1.05); }
 .head h2, .dailyHead h2 { font-size: 25px; letter-spacing: -.4px; }
 .groupHead h3, .dailyLead h3, .cardTitle, .dailyCardBody strong { font-size: 18px; line-height: 1.35; }
 .lede, .dailyHead > p, .dailyLead p, .groupHead p { font-size: 15px; }
+
+/* Each technology group renders only near the viewport (≈2,000 of the page's nodes sit in these groups). */
+.group { content-visibility: auto; contain-intrinsic-size: auto 720px; }

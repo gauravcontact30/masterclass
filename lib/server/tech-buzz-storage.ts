@@ -334,6 +334,17 @@ export async function updateTechBuzzArticle(idOrSlug: string, input: Partial<Tec
   return rowToArticle(result.data as TechBuzzRow);
 }
 
+/** Replaces only a story's written content (refined stories keep their slug, pictures, counters and ratings). */
+export async function updateTechBuzzContent(slug: string, content: Pick<TechBuzzArticle, "subtitle" | "summaryBullets" | "founderTakeaway" | "contentSections" | "source" | "techStack" | "readTimeMinutes">) {
+  const { error } = await db().from("tech_buzz_articles").update({
+    subtitle: content.subtitle, summary_bullets: content.summaryBullets, founder_takeaway: content.founderTakeaway,
+    content_sections: content.contentSections, source: content.source, tech_stack: content.techStack,
+    read_time_minutes: content.readTimeMinutes, updated_at: new Date().toISOString(),
+  }).eq("slug", slug);
+  if (error) throw new Error(error.message);
+  expirePublic();
+}
+
 /**
  * Delete a Tech Buzz article by ID or slug from Supabase.
  */

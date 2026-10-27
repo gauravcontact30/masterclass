@@ -2,14 +2,15 @@ import { generateTechBuzzDaily } from "@/lib/server/tech-buzz-daily";
 import { cronAuthorized } from "@/lib/server/visit-retention";
 import { istDate } from "@/lib/tech-buzz-sections";
 
-// Five stories written and ten pictures painted in parallel take two to four minutes.
+// Five stories researched, written, reviewed and painted in parallel take three to five minutes; see SAVE_BY_MS.
 export const maxDuration = 300;
 
 /*
- * The daily Tech Buzz edition (vercel.json, 23:30 UTC = 5:00 AM IST): five new stories, one per track in
- * lib/tech-buzz-sections.ts, each with a thumbnail and a blog image. Re-running the same IST day only writes the
- * tracks still missing, so the 05:00 UTC (10:30 IST) `?retry=1` entry only fills tracks that failed or timed out at
- * dawn. `?date=YYYY-MM-DD` writes another day. Needs the cron secret.
+ * The daily Tech Buzz edition (lib/tech-buzz-sections.ts tracks): five researched, editor-reviewed stories, each with a
+ * thumbnail and a blog image. vercel.json runs it once a day at 23:30 UTC = 5:00 AM IST, the only run: the Hobby plan
+ * allows one run per cron job per day and may start it anywhere within that hour (23:00-23:59 UTC, 4:30-5:29 IST).
+ * A run only writes the tracks still missing for the IST day, so calling it again by hand (with the cron secret)
+ * fills a track that timed out or stayed below the editor's 4/5 bar. `?date=YYYY-MM-DD` writes another day.
  */
 export async function GET(request: Request) {
   if (!cronAuthorized(request)) return new Response(null, { status: 401 });

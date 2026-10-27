@@ -6,7 +6,7 @@ import {
   Scissors, Copy, ClipboardPaste, List, ListOrdered, AlignLeft, AlignCenter,
   AlignRight, AlignJustify, IndentIncrease, IndentDecrease, Eraser, Highlighter,
   Minus, Unlink, Link2, FilePlus2, Save, FileDown, Printer, ImagePlus, Table2,
-  FilePlus, Download, X, Check, Type, Heading, ALargeSmall, PaintBucket, Star,
+  FilePlus, Download, X, Check, Heading, ALargeSmall, PaintBucket, Star,
   Files, Trash2, GitBranch, ZoomIn, ZoomOut, Upload, type LucideIcon, ChevronDown,
   ChevronUp, Wrench, Maximize2, Minimize2, FolderOpen,
   AArrowUp, AArrowDown, Baseline, CaseUpper, CaseLower, WrapText,
@@ -21,6 +21,7 @@ import { loadGoogleFont } from "@/lib/google-fonts";
 import { FontFamilyDropdown } from "./font-family-dropdown";
 import { NotepadLibrary } from "./notepad-library";
 import { PaperPicker } from "./notepad-paper-picker";
+import { TextColorPicker } from "./notepad-text-color-picker";
 import styles from "./super-admin-notepad.module.css";
 
 const COMMAND_ICONS: Record<string, LucideIcon> = {
@@ -704,6 +705,8 @@ export function SuperAdminNotepad({ userId }: { userId: string }) {
 
   const tool = (label: string, name: string, value?: string) => <IconButton key={name} label={label} icon={COMMAND_ICONS[name]} aria-pressed={["bold", "italic", "underline", "strikeThrough", "insertUnorderedList", "insertOrderedList"].includes(name) ? active.includes(name) : undefined} onMouseDown={e => e.preventDefault()} onClick={() => command(name, value)} />;
 
+  // One font picker: centred in the documents library's pagination row, or in the Typography tools while the library is hidden.
+  const fontPicker = <FontFamilyDropdown value={fontFamilyVal} onChange={applyFontFamily} fonts={READING_FONTS} ariaLabel="Font family" variant="toolbar" valueType="name" defaultVal="Arial" />;
   return <section className={styles.notepad} data-maximized={maximized || undefined} aria-label="Notepad">
     <div className={styles.libraryToggleBar}>
       <button
@@ -731,7 +734,7 @@ export function SuperAdminNotepad({ userId }: { userId: string }) {
         </button>
       </div>
     </div>
-    {libraryOpen && <NotepadLibrary files={files} activeId={activeId} activeTitle={title} onOpen={openDocument} onDelete={deleteDocument} onSave={saveDocumentCopy}/>}
+    {libraryOpen && <NotepadLibrary files={files} activeId={activeId} activeTitle={title} onOpen={openDocument} onDelete={deleteDocument} onSave={saveDocumentCopy} center={fontPicker}/>}
     <div id="notepad-document-panel" role="tabpanel" aria-label={title || "Untitled document"}>
     <div className={styles.filebar}>
       <label className={styles.title}>Document name<input aria-label="Document name" value={title} maxLength={120} onChange={e => { titleRef.current = e.target.value; setTitle(e.target.value); changed(); }} /></label>
@@ -775,17 +778,6 @@ export function SuperAdminNotepad({ userId }: { userId: string }) {
         <span role="status">{status}</span>
         <span className={styles.shortcut}>Ctrl/⌘+S saves · Ctrl+F finds · Shift+Ctrl/⌘+S exports</span>
       </div>
-      <div className={styles.toolsHeadFont}>
-        <FontFamilyDropdown
-          value={fontFamilyVal}
-          onChange={applyFontFamily}
-          fonts={READING_FONTS}
-          ariaLabel="Font family"
-          variant="toolbar"
-          valueType="name"
-          defaultVal="Arial"
-        />
-      </div>
     </div>
     <div id="notepad-tools" className={styles.ribbon} role="group" aria-label="Document formatting" hidden={!toolsOpen}>
       <div className={styles.group} aria-label="Clipboard and history">
@@ -804,6 +796,7 @@ export function SuperAdminNotepad({ userId }: { userId: string }) {
             ))}
           </select>
         </label>
+        {!libraryOpen && <div className={styles.fontSlot}>{fontPicker}</div>}
         <label className={styles.iconField} data-tooltip="Font style">
           <Baseline size={18} aria-hidden="true"/>
           <select aria-label="Font style" value={fontStyleVal} onChange={e => applyFontStyle(e.target.value)}>
@@ -844,7 +837,7 @@ export function SuperAdminNotepad({ userId }: { userId: string }) {
         {tool("Clear formatting", "removeFormat")}
       </div>
       <div className={styles.group} aria-label="Colors">
-        <label className={styles.iconField} data-tooltip="Text color"><Type size={18} aria-hidden="true"/><input aria-label="Text color" type="color" defaultValue="#262624" onChange={e => command("foreColor", e.target.value)} /></label>
+        <TextColorPicker onPick={color => command("foreColor", color)} />
         <label className={styles.iconField} data-tooltip="Highlight color"><Highlighter size={18} aria-hidden="true"/><input aria-label="Highlight color" type="color" defaultValue="#fff176" onChange={e => command("hiliteColor", e.target.value)} /></label>
         {tool("Yellow marker", "hiliteColor", "#fff176")}
         <label className={styles.iconField} data-tooltip="Text background color"><PaintBucket size={18} aria-hidden="true"/><input aria-label="Text background color" type="color" defaultValue="#e4efff" onChange={e => command("hiliteColor", e.target.value)} /></label>

@@ -31,7 +31,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { ClapButton, useClaps } from "./clap-button";
 import dynamic from "next/dynamic";
-import { ProseText } from "./tech-buzz-prose";
+import { KeyTakeaways, ProseText, SectionLists } from "./tech-buzz-prose";
 import type { TechBuzzMemberContent as MemberContent } from "@/lib/tech-buzz-public";
 
 /** The light, Apple-style code editor (file tree + tabs): loaded with the member body, not with the page. */
@@ -42,6 +42,7 @@ const EXTENSIONS: Record<string, string> = { typescript: "ts", ts: "ts", tsx: "t
 /** A snippet's files for the editor: its own tabs when it has several, otherwise one file named after it. */
 const snippetFiles = (snippet: Snippet) => (snippet.files?.length ? snippet.files : [{ filename: snippet.filename || `example.${EXTENSIONS[snippet.language.toLowerCase()] ?? "txt"}`, language: snippet.language, code: snippet.code }])
   .map(file => ({ path: file.filename, code: file.code, note: "" }));
+const LIST_CLASSES = { ordered: styles.proseOrdered, list: styles.proseList, label: styles.proseListLabel, callout: styles.proseCallout };
 
 interface Props {
   /** The free preview only; the member body is fetched from /api/tech-buzz/[slug]/member after a server-side check. */
@@ -592,6 +593,9 @@ export function TechBuzzArticleView({ article, related, prevStory, nextStory }: 
             </div>
           )}
 
+          <KeyTakeaways takeaways={article.summaryBullets} editorScore={article.source?.editorScore} basedOn={article.source?.basedOn}
+            classes={{ box: styles.takeaways, heading: styles.takeawaysHeading, ordered: styles.proseOrdered, score: styles.editorScore, sources: styles.takeawaysSources }} />
+
           {/* Series banner */}
           {article.series && (
             <div style={{ display: "inline-flex", alignItems: "center", gap: "0.5rem", background: "#eff6ff", border: "1px solid #bfdbfe", padding: "0.4rem 0.85rem", borderRadius: "9999px", color: "#1d4ed8", fontSize: "0.8125rem", fontWeight: 600, marginBottom: "2rem" }}>
@@ -625,6 +629,14 @@ export function TechBuzzArticleView({ article, related, prevStory, nextStory }: 
                   <cite>— {visibleSections[0].quote.attribution}</cite>
                 </blockquote>
               )}
+              {memberContent && <>
+                {visibleSections[0].codeSnippet && (
+                  <div className={styles.codeWindow}>
+                    <CodeFiles files={snippetFiles(visibleSections[0].codeSnippet)} skin="apple" annotate={false} label={visibleSections[0].heading || "Code example"} />
+                  </div>
+                )}
+                <SectionLists section={visibleSections[0]} classes={LIST_CLASSES} />
+              </>}
             </section>
           )}
 
@@ -713,12 +725,12 @@ export function TechBuzzArticleView({ article, related, prevStory, nextStory }: 
                     </div>
                   )}
 
-                  {section.bulletPoints && (
-                    <ul className={styles.proseList}>
-                      {section.bulletPoints.map((pt, ptIdx) => (
-                        <li key={ptIdx}>{pt}</li>
-                      ))}
-                    </ul>
+                  <SectionLists section={section} classes={LIST_CLASSES} />
+                  {section.quote && (
+                    <blockquote className={styles.proseQuote}>
+                      &ldquo;{section.quote.text}&rdquo;
+                      <cite>— {section.quote.attribution}</cite>
+                    </blockquote>
                   )}
                 </section>
               );

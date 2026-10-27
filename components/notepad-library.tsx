@@ -29,7 +29,8 @@ export function NotepadLibrary({
   activeTitle,
   onOpen,
   onDelete,
-  onSave
+  onSave,
+  center
 }: {
   files: NotepadFile[];
   activeId: string;
@@ -37,6 +38,8 @@ export function NotepadLibrary({
   onOpen: (id: string) => void;
   onDelete?: (id: string) => void;
   onSave?: (id: string) => void;
+  /** Shown in the middle of the pagination row (the notepad's font picker). */
+  center?: React.ReactNode;
 }) {
   const [deletingFile, setDeletingFile] = useState<NotepadFile | null>(null);
   const closeDelete = useCallback(() => setDeletingFile(null), []);
@@ -166,6 +169,6 @@ export function NotepadLibrary({
 
     {deletingFile && <NotepadDeleteDialog file={deletingFile} onCancel={closeDelete} onConfirm={() => { const id = deletingFile.id; setDeletingFile(null); onDelete?.(id); }} />}
     {!results.length && <p className={styles.libraryEmpty}>No documents match your search and filters.</p>}
-    <div className={styles.pagination}><Pager page={current} pages={totalPages} total={results.length} size={PER_PAGE} onPage={setPage}/></div>
+    <div className={styles.pagination}>{center && <div className={styles.fontSlot}>{center}</div>}<Pager page={current} pages={totalPages} total={results.length} size={PER_PAGE} onPage={setPage}/></div>
   </div>;
 }

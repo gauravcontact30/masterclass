@@ -1441,3 +1441,38 @@
 .proseParagraph { font-size: 16px; line-height: 1.75; }
 .proseList, .proseOrdered { font-size: 16px; padding-left: 1.35em; }
 .codeWindow { margin-inline: -4px; }
+
+/* Learning structure: "What you will learn" box, step labels and callouts (components/tech-buzz-prose.tsx). */
+.takeaways { margin: 0 0 2rem; padding: 1.15rem 1.35rem 1.2rem; border: 1px solid #f1d9cc; border-radius: 14px; background: linear-gradient(180deg, #fff8f3, #fffdfb); }
+.takeawaysHeading { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: .5rem 1rem; margin-bottom: .75rem;
+  color: #c2410c; font-size: .75rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+.editorScore { display: inline-flex; align-items: center; gap: .35rem; padding: .2rem .6rem; border-radius: 999px; background: #fff3d6; color: #92400e;
+  font-size: .75rem; font-weight: 700; letter-spacing: normal; text-transform: none; font-variant-numeric: tabular-nums; }
+.editorScore > span { color: #f59e0b; letter-spacing: .05em; }
+.takeaways .proseOrdered { margin: 0; color: #1f2937; }
+.takeaways .proseOrdered li:last-child { margin-bottom: 0; }
+.takeawaysSources { margin-top: 1rem; padding-top: .85rem; border-top: 1px dashed #f1d9cc; color: #57534e; font-size: .8125rem; line-height: 1.5; }
+.takeawaysSources > span { display: block; margin-bottom: .35rem; font-weight: 700; color: #44403c; }
+.takeawaysSources ul { margin: 0; padding-left: 1.1em; list-style: disc; }
+.takeawaysSources li { margin: 0 0 .2rem; overflow-wrap: anywhere; }
+.takeawaysSources li::marker { color: #ff5a36; }
+.takeawaysSources small { color: #78716c; }
+
+.proseListLabel { margin: .25rem 0 .5rem; color: #c2410c; font-size: .75rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+.proseCallout { margin: 0 0 1.5rem; padding: .9rem 1.1rem; border-left: 4px solid #0ea5e9; border-radius: 0 10px 10px 0; background: #f0f9ff;
+  color: #1e293b; font-size: 1rem; line-height: 1.65; overflow-wrap: break-word; }
+.proseCallout strong { margin-right: .35rem; color: #0369a1; }
+.proseCallout[data-type="tip"] { border-left-color: #10b981; background: #ecfdf5; }
+.proseCallout[data-type="tip"] strong { color: #047857; }
+.proseCallout[data-type="warning"] { border-left-color: #f59e0b; background: #fffbeb; }
+.proseCallout[data-type="warning"] strong { color: #b45309; }
+
+:global([data-theme="dark"]) .takeaways { border-color: #3f2a20; background: #1f1813; }
+:global([data-theme="dark"]) .takeaways .proseOrdered, :global([data-theme="dark"]) .proseCallout { color: #e7e5e4; }
+:global([data-theme="dark"]) .takeawaysSources, :global([data-theme="dark"]) .takeawaysSources > span { color: #d6d3d1; border-color: #3f2a20; }
+:global([data-theme="dark"]) .proseCallout { background: #172033; }
+
+@media (max-width: 600px) {
+  .takeaways { padding: 1rem 1rem 1.05rem; border-radius: 12px; }
+  .proseCallout { font-size: .9375rem; padding: .8rem .9rem; }
+}

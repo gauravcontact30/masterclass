@@ -33,3 +33,8 @@
 /* Sections past the first screens skip layout and paint until they near the viewport; the remembered size keeps the
    scrollbar and #section links steady once each has been seen. */
 .page main>section:nth-of-type(n+4){content-visibility:auto;contain-intrinsic-size:auto 900px}
+
+/* Below-the-fold sections skip style, layout and paint until they near the viewport: on a mid-range phone most of
+   the first-load main-thread time was rendering ~4,000 nodes nobody had scrolled to yet. The intrinsic size keeps
+   the scrollbar and #anchor jumps steady; `auto` remembers each section's real height once it has rendered. */
+.page main > section:nth-of-type(n+4) { content-visibility: auto; contain-intrinsic-size: auto 900px; }

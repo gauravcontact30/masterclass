@@ -15,10 +15,6 @@
     {
       "path": "/api/cron/tech-buzz-daily",
       "schedule": "30 23 * * *"
-    },
-    {
-      "path": "/api/cron/tech-buzz-daily?retry=1",
-      "schedule": "0 5 * * *"
     }
   ]
 }

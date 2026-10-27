@@ -44,3 +44,47 @@ export function ProseText({ text, paragraphClass, listClass, orderedClass }: { t
       ? <ol key={index} className={orderedClass} start={block.start === 1 ? undefined : block.start}>{block.items.map((item, i) => <li key={i}>{item}</li>)}</ol>
       : <ul key={index} className={listClass}>{block.items.map((item, i) => <li key={i}>{item}</li>)}</ul>);
 }
+
+/** A list item without the "1." or "-" a writer may have typed before it (the list draws its own). */
+export const listItem = (text: string) => text.replace(NUMBERED, "").replace(BULLET, "").trim();
+
+type SectionLists = { steps?: string[]; bulletPoints?: string[]; callout?: { type: "tip" | "insight" | "warning"; text: string } };
+const CALLOUT_LABEL = { tip: "Tip", insight: "Insight", warning: "Watch out" } as const;
+
+/** A section's numbered steps, bullet points and callout, in that order, with the article's prose classes. */
+export function SectionLists({ section, classes }: { section: SectionLists; classes: { ordered: string; list: string; label: string; callout: string } }): ReactNode {
+  return <>
+    {section.steps?.length ? <>
+      <p className={classes.label}>Step by step</p>
+      <ol className={classes.ordered}>{section.steps.map((step, i) => <li key={i}>{listItem(step)}</li>)}</ol>
+    </> : null}
+    {section.bulletPoints?.length ? <ul className={classes.list}>{section.bulletPoints.map((point, i) => <li key={i}>{listItem(point)}</li>)}</ul> : null}
+    {section.callout?.text ? <aside className={classes.callout} data-type={section.callout.type}>
+      <strong>{CALLOUT_LABEL[section.callout.type] ?? "Note"}</strong> {section.callout.text}
+    </aside> : null}
+  </>;
+}
+
+/**
+ * The story's learning summary, open to every reader: its key takeaways as a numbered list, the editor's score from
+ * the pre-publish review, and the official documentation it was researched from (named, never linked).
+ */
+export function KeyTakeaways({ takeaways, editorScore, basedOn, classes }: {
+  takeaways: string[]; editorScore?: number; basedOn?: { title: string; site: string }[];
+  classes: { box: string; heading: string; ordered: string; score: string; sources: string };
+}): ReactNode {
+  if (!takeaways.length && !basedOn?.length) return null;
+  return <section className={classes.box} aria-label="Key takeaways">
+    <div className={classes.heading}>
+      <span>What you will learn</span>
+      {editorScore ? <span className={classes.score} title="Score from the editor's review before publishing; stories need 4 out of 5 to go live">
+        <span aria-hidden="true">{"★".repeat(Math.round(editorScore))}{"☆".repeat(5 - Math.round(editorScore))}</span> {editorScore.toFixed(1)}/5 editor review
+      </span> : null}
+    </div>
+    {takeaways.length ? <ol className={classes.ordered}>{takeaways.map((item, i) => <li key={i}>{listItem(item)}</li>)}</ol> : null}
+    {basedOn?.length ? <div className={classes.sources}>
+      <span>Researched from the official documentation</span>
+      <ul>{basedOn.map(source => <li key={`${source.site}${source.title}`}>{source.title} <small>({source.site})</small></li>)}</ul>
+    </div> : null}
+  </section>;
+}

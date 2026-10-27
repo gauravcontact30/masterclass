@@ -17,6 +17,7 @@
     "images:aws": "tsx --env-file-if-exists=.env scripts/generate-card-images.ts --set aws",
     "images:topics": "tsx --env-file-if-exists=.env scripts/generate-card-images.ts --set topics",
     "images:api": "tsx --env-file-if-exists=.env scripts/generate-card-images.ts --set api",
+    "tech-buzz:refine": "tsx --conditions=react-server --env-file-if-exists=.env scripts/refine-tech-buzz.ts",
     "official:search": "tsx --env-file-if-exists=.env scripts/generate-official-content.ts --set search",
     "official:api": "tsx --env-file-if-exists=.env scripts/generate-official-content.ts --set api",
     "official:status": "tsx scripts/generate-official-content.ts --set search --status",

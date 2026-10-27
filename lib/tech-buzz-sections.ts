@@ -23,6 +23,8 @@ export type DailyTrack = {
   technology: string;
   techId: string;
   color: string;
+  /** The official documentation the daily story is researched from (at most 20 domains, Perplexity's limit). */
+  officialSites: string[];
 };
 
 export const DAILY_TRACKS: DailyTrack[] = [
@@ -39,6 +41,7 @@ export const DAILY_TRACKS: DailyTrack[] = [
       "streaming agent steps to a web UI and measuring them in LangSmith",
     ],
     category: "Agentic AI", technology: "Agentic AI & LangChain", techId: "agentic-ai", color: "#7c3aed",
+    officialSites: ["docs.langchain.com", "reference.langchain.com", "langchain-ai.github.io", "docs.smith.langchain.com", "docs.langflow.org"],
   },
   {
     id: "system-design", label: "System Design Workflows", short: "System Design",
@@ -53,6 +56,7 @@ export const DAILY_TRACKS: DailyTrack[] = [
       "designing a video upload and transcoding pipeline",
     ],
     category: "System Design", technology: "System Design", techId: "system-design", color: "#0f766e",
+    officialSites: ["aws.amazon.com", "docs.aws.amazon.com", "learn.microsoft.com", "cloud.google.com", "kafka.apache.org", "redis.io", "postgresql.org"],
   },
   {
     id: "aws", label: "AWS, DevOps & AI-powered AWS services", short: "AWS & DevOps",
@@ -67,6 +71,7 @@ export const DAILY_TRACKS: DailyTrack[] = [
       "cost optimisation: Graviton, Savings Plans, S3 tiers and right-sizing",
     ],
     category: "Cloud & DevOps", technology: "AWS & DevOps", techId: "aws", color: "#d97706",
+    officialSites: ["docs.aws.amazon.com", "aws.amazon.com"],
   },
   {
     id: "kubernetes", label: "Kubernetes & Docker", short: "Kubernetes & Docker",
@@ -81,6 +86,7 @@ export const DAILY_TRACKS: DailyTrack[] = [
       "Docker Compose to Kubernetes: what changes and why",
     ],
     category: "Cloud & DevOps", technology: "Kubernetes & Docker", techId: "kubernetes", color: "#2563eb",
+    officialSites: ["kubernetes.io", "docs.docker.com", "helm.sh"],
   },
   {
     id: "nextjs", label: "Next.js 16+ & React 19+", short: "Next.js & React",
@@ -95,6 +101,7 @@ export const DAILY_TRACKS: DailyTrack[] = [
       "measuring and fixing Core Web Vitals in a Next.js 16 app",
     ],
     category: "Frontend", technology: "Next.js 16 & React 19", techId: "nextjs", color: "#111827",
+    officialSites: ["nextjs.org", "react.dev"],
   },
 ];
 

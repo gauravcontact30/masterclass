@@ -40,6 +40,10 @@ export interface DailyDevSource {
   domain: string;
   trustScore: string; // e.g. "98.4"
   url?: string;
+  /** Official documentation pages a daily story was researched from, named as plain text (never linked). */
+  basedOn?: { title: string; site: string }[];
+  /** The editor's score out of 5 from the pre-publish review; daily stories are published only at 4 or above. */
+  editorScore?: number;
   platformKey?: "medium" | "daily-dev" | "indianexpress" | "elevenlabs" | "technologymagazine" | "theinformation" | "bain" | "indiehackers" | "dev-to" | "hashnode" | "substack" | "ghost";
   verifiedBadge?: string;
 }
@@ -142,6 +146,8 @@ export interface TechBuzzArticle {
       attribution: string;
     };
     bulletPoints?: string[];
+    /** Numbered, do-this-next steps (rendered as an ordered list). */
+    steps?: string[];
     /** An illustration shown under the section heading (the daily edition's blog image). */
     image?: { src: string; alt: string };
   }[];
