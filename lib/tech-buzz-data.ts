@@ -91,6 +91,8 @@ export interface TechBuzzArticle {
   dislikes: number;
   upvotes: number; // synced with likes for backward compatibility
   claps: number;
+  /** The starting count before readers' claps (tech_buzz_claps) were added to `claps`; set on published lists only. */
+  baseClaps?: number;
   rating: BlogRating;
   author: BlogAuthor;
   coverImage: string;

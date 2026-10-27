@@ -18,6 +18,9 @@ export default async function proxy(request: NextRequest) {
   const startTime = Date.now();
   const { pathname } = request.nextUrl;
   if (PUBLIC_DATA.has(pathname) && request.method === "GET") return NextResponse.next();
+  // Vercel Cron jobs carry the cron secret, which each /api/cron route checks itself (lib/server/visit-retention.ts).
+  // Bot detection and the per-IP API budget are for visitors: the cron user agent was refused as a bot.
+  if (pathname.startsWith("/api/cron/") && request.headers.has("authorization")) return NextResponse.next({ headers: { "Cache-Control": "no-store" } });
 
   // 1. Arcjet Bot Detection & Security Shield
   // These remote checks are independent; authorization still follows both decisions.

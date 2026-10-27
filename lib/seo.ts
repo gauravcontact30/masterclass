@@ -16,9 +16,12 @@ export function isIndexable(): boolean {
     !["localhost", "127.0.0.1", "[::1]"].includes(url.hostname);
 }
 
-export const siteName = "Master Class Buddy";
-export const siteTitle = "MasterClass Buddy | Tech Learning, AI Agents & Interview Prep";
-export const siteDescription = "Technology learning for professionals in English and Hindi, with an AI tutor and audio lectures: coding, cloud, system design, AI agents, certifications and interview questions.";
+// One name everywhere (title, og:site_name, WebSite and Organization data): Google picks the site name it shows in
+// results from these, and mixed spellings ("Master Class Buddy") left it falling back to the bare domain.
+export const siteName = "MasterClass Buddy";
+export const siteTitle = "MasterClass Buddy | Agentic AI, LangChain, n8n & Next.js";
+/** Under 160 characters so Google shows it whole; it names what the site teaches today (the search snippet and link previews). */
+export const siteDescription = "Learn Agentic AI, LangChain, LangGraph, LangSmith, LangFlow, n8n, Next.js, TanStack Start & Zustand with daily Tech Buzz blogs, system design and interview prep.";
 /**
  * Site-wide keywords, grouped by what MasterClass sells: bilingual learning, the AI tutor, coding and interview
  * preparation, AI engineering, certifications and the membership. Google ignores the keywords tag; Bing and others
@@ -26,7 +29,10 @@ export const siteDescription = "Technology learning for professionals in English
  */
 export const siteKeywords = [
   // Brand & Platform
-  "MasterClass", "MasterClass Buddy", "masterclassbuddy.com",
+  "MasterClass", "MasterClass Buddy", "Master Class Buddy", "masterclassbuddy.com",
+  // Headline technologies (the home page's Open Graph card and title)
+  "Agentic AI course", "LangChain course", "LangGraph course", "LangSmith tutorial", "LangFlow course", "n8n workflow automation course",
+  "Next.js course", "TanStack Start tutorial", "Zustand tutorial", "Tech Buzz blogs", "daily tech blogs",
   // Bilingual & AI-assisted Learning
   "online learning platform India", "learn in Hindi and English", "Hindi medium study notes", "study notes in Hindi", "AI tutor", "AI study assistant", "ask doubts online", "personalised study plan", "audio lectures", "listen to lessons online", "learn by listening", "AI search for students",
   // Modern Frontend & Web Frameworks
@@ -67,7 +73,7 @@ export const PUBLIC_PAGES: readonly PublicPage[] = [
   { path: "/contact", title: "Contact & support", label: "Contact", description: "Get help with your MasterClass account, membership, billing or study content, and find answers to common questions.", changeFrequency: "yearly", priority: 0.5 },
   { path: "/privacy", title: "Privacy policy", label: "Privacy", description: "How MasterClass collects, uses and protects your account, payment and learning data, and what stays only in your browser.", changeFrequency: "yearly", priority: 0.3 },
   { path: "/terms", title: "Terms & conditions", label: "Terms", description: "The terms that apply when you create a MasterClass account, buy a membership and use study content and AI-assisted answers.", changeFrequency: "yearly", priority: 0.3 },
-  { path: "/tech-buzz", title: "Tech Buzz — Trending Technology Blogs & Deep Dives", label: "Tech Buzz", description: "Read community-rated blogs on the most popular modern technologies: Agentic AI, Next.js 15, TypeScript 5.8, Rust, Cloud Architecture, and Distributed Systems.", changeFrequency: "daily", priority: 0.95 },
+  { path: "/tech-buzz", title: "Tech Buzz — Daily Technology Blogs on Agentic AI, LangChain & Next.js", label: "Tech Buzz", description: "Five new tech blogs every morning at 5 AM IST on Agentic AI, LangChain, LangGraph, n8n, Next.js, TanStack Start and Zustand, rated and clapped by developers.", changeFrequency: "daily", priority: 0.95 },
   { path: "/refund-policy", title: "Cancellation & refund policy", label: "Refunds", description: "How to cancel a MasterClass membership, how long your access continues, and when payments are refunded, including duplicate and failed charges.", changeFrequency: "yearly", priority: 0.3 },
 ];
 
@@ -77,7 +83,7 @@ export function publicPage(path: PublicPage["path"]): PublicPage {
   return page;
 }
 
-const ogImage = { url: "/opengraph-image", width: 1200, height: 630, alt: `${siteName} — Master Coding, Cloud, System Design & Agentic AI in English and Hindi` };
+const ogImage = { url: "/opengraph-image", width: 1200, height: 630, alt: `${siteName} — Agentic AI, LangChain, LangGraph, LangSmith, LangFlow, n8n, Next.js, TanStack Start and Zustand` };
 
 /**
  * Complete metadata for a public page. Next.js replaces (not merges) nested
@@ -110,9 +116,9 @@ const PAGE_KEYWORDS: Partial<Record<PublicPage["path"], string[]>> = {
     "MasterClass terms and conditions", "membership terms", "AI learning terms of service", "user agreement", "tech course membership terms"
   ],
   "/tech-buzz": [
-    "tech buzz", "technology blogs", "medium tech blogs", "popular technologies", "star rated tech blogs",
-    "Agentic AI MCP", "Next.js 15 React 19", "TypeScript 5.8", "Rust distributed systems",
-    "PostgreSQL 17 vector search", "AWS Bedrock", "zero trust cybersecurity", "Kubernetes IDP"
+    "tech buzz", "technology blogs", "daily tech blogs", "medium style tech blogs", "star rated tech blogs",
+    "Agentic AI blogs", "LangChain blogs", "LangGraph blogs", "n8n automation blogs", "Next.js 16 blogs",
+    "TanStack Start blogs", "Zustand blogs", "system design blogs", "AI engineering news"
   ],
   "/refund-policy": [
     "MasterClass refund policy", "membership cancellation", "course refund policy", "billing policy", "subscription cancellation"
@@ -129,7 +135,7 @@ export function pageMetadata(path: PublicPage["path"]): Metadata {
     description,
     ...(keywords ? { keywords } : {}),
     alternates: { canonical: path },
-    openGraph: { type: "website", url: path, siteName, title: home ? title : `${title} | ${siteName}`, description, locale: "en_IN", alternateLocale: ["hi_IN"], images: [ogImage] },
+    openGraph: { type: "website", url: path, siteName, title: home ? title : `${title} | ${siteName}`, description, locale: "en_IN", images: [ogImage] },
     twitter: { card: "summary_large_image", title: home ? title : `${title} | ${siteName}`, description, images: [ogImage.url] },
   };
 }
@@ -161,7 +167,7 @@ export function breadcrumbSchema(trail: readonly (readonly [string, `/${string}`
 
 export function websiteSchema() {
   const url = siteUrl().href;
-  return { "@context": "https://schema.org", "@type": "WebSite", "@id": `${url}#website`, url, name: siteName, alternateName: "MasterClass Buddy", description: siteDescription, inLanguage: ["en", "hi"], keywords: siteKeywords.join(", "), publisher: { "@id": `${url}#organization` } };
+  return { "@context": "https://schema.org", "@type": "WebSite", "@id": `${url}#website`, url, name: siteName, alternateName: ["Master Class Buddy", "masterclassbuddy.com"], description: siteDescription, inLanguage: "en", keywords: siteKeywords.join(", "), publisher: { "@id": `${url}#organization` } };
 }
 
 export function organizationSchema(prices?: { monthly:number; yearly:number; endsAt?:string }) {
@@ -172,11 +178,14 @@ export function organizationSchema(prices?: { monthly:number; yearly:number; end
     priceSpecification: { "@type": "UnitPriceSpecification", price: String(price), priceCurrency: "INR", unitCode: unit, referenceQuantity: { "@type": "QuantitativeValue", value: 1, unitCode: unit } },
   });
   return {
-    "@context": "https://schema.org", "@type": "EducationalOrganization", "@id": `${url}#organization`, name: siteName, alternateName: "MasterClass Buddy", url,
-    logo: new URL("/icon.svg", url).href, description: siteDescription, slogan: "Learn in English and Hindi, with an AI tutor beside you.", areaServed: "IN", knowsLanguage: ["en", "hi"],
+    "@context": "https://schema.org", "@type": "EducationalOrganization", "@id": `${url}#organization`, name: siteName, alternateName: ["Master Class Buddy", "masterclassbuddy.com"], url,
+    // A raster logo (Google's logo guidance asks for a crawlable image of at least 112×112); the SVG stays the favicon.
+    logo: { "@type": "ImageObject", url: new URL("/brand/masterclass-mark-512.png", url).href, width: 512, height: 512 },
+    image: new URL("/opengraph-image", url).href,
+    description: siteDescription, slogan: "Your buddy for mastering Agentic AI and the modern web stack.", areaServed: "IN", knowsLanguage: ["en"],
     knowsAbout: [
       "React 19", "Next.js 16", "TypeScript", "JavaScript", "Python 3.12", "Node.js", "System design",
-      "Agentic AI", "AI agents", "Model Context Protocol MCP", "Claude Code", "LangChain", "LangGraph", "LangSmith", "LangFlow", "n8n",
+      "Agentic AI", "AI agents", "Model Context Protocol MCP", "Claude Code", "LangChain", "LangGraph", "LangSmith", "LangFlow", "n8n", "TanStack Start",
       "AWS", "Docker", "Kubernetes", "Linux", "Git", "PostgreSQL", "Redis", "FastAPI", "Go", "Rust", "Zustand", "TanStack Query",
       "Vitest", "Playwright", "Tech interview preparation", "English vocabulary with Hindi meanings"
     ],

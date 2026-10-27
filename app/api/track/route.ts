@@ -46,6 +46,9 @@ export async function POST(request: Request) {
   // Super admin pages are not part of the audience being measured.
   if (/^\/(?:dashboard\/)?super-admin(?:\/|$)/.test(input.path) || input.path.startsWith("/api/")) return noContent();
 
+  // A page left in under a second is a 0-second bounce, not a visit (components/visit-tracker.tsx never sends its view).
+  if (input.type === "leave" && (input.duration ?? 0) < 1000) return noContent();
+
   const ip = clientIp(request.headers);
   // The site's own development server is not audience (it shares the production database); TRACK_LOCAL=1 records it.
   if (isOwnTraffic(ip)) return noContent();

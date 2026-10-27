@@ -8,7 +8,8 @@ export const maxDuration = 300;
 /*
  * The daily Tech Buzz edition (vercel.json, 23:30 UTC = 5:00 AM IST): five new stories, one per track in
  * lib/tech-buzz-sections.ts, each with a thumbnail and a blog image. Re-running the same IST day only writes the
- * tracks still missing; `?date=YYYY-MM-DD` writes another day. Needs the cron secret.
+ * tracks still missing, so the 05:00 UTC (10:30 IST) `?retry=1` entry only fills tracks that failed or timed out at
+ * dawn. `?date=YYYY-MM-DD` writes another day. Needs the cron secret.
  */
 export async function GET(request: Request) {
   if (!cronAuthorized(request)) return new Response(null, { status: 401 });

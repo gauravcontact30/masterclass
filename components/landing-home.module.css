@@ -312,26 +312,35 @@
 .heroArrow:active { transform: scale(.94); }
 .heroSlider :focus-visible { outline-color: var(--nb-highlight); }
 
-/* Floating Tech Buzz button on the hero slider */
-.floatingTechBuzz {
+/* Floating Tech Buzz button on the hero slider: a circle that expands leftwards into its label on hover/focus, with a
+   dashed "Blogs" arrow that flies in from a different side each round and lands pointing at it. */
+.buzzDock {
   position: absolute;
   top: 96px;
   right: max(24px, calc((100% - 1240px) / 2));
   z-index: 4;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  animation: floatPulse 4s ease-in-out infinite;
+}
+
+.floatingTechBuzz {
+  position: relative;
   isolation: isolate;
   overflow: hidden;
   display: inline-flex;
   align-items: center;
-  gap: 10px;
-  padding: 6px 14px 6px 8px;
+  /* The same height as the navbar's Subscribe button (40 px; 38 px on phones). */
+  height: 40px;
+  min-width: 40px;
+  padding: 0;
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(251, 146, 60, 0.45);
+  border: 1.5px solid rgba(251, 146, 60, 0.45);
   border-radius: 9999px;
   text-decoration: none;
-  box-shadow: 0 8px 22px -12px rgba(40, 22, 12, 0.7), inset 0 1px 0 rgba(255, 255, 255, 0.18);
-  transition: background 1s ease, background-color 1s ease, border-color 0.8s ease, color 0.6s ease, box-shadow 0.8s ease, transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
-  animation: floatPulse 4s ease-in-out infinite;
+  transition: background 1s ease, border-color 0.8s ease, color 0.6s ease, box-shadow 0.8s ease, transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .floatingTechBuzz::after {
@@ -345,79 +354,156 @@
   animation: sb-shimmer 5s cubic-bezier(0.45, 0, 0.2, 1) infinite;
 }
 
-.floatingTechBuzz:hover {
-  transform: translateY(-2px) scale(1.03);
-}
+.floatingTechBuzz:hover, .floatingTechBuzz:focus-visible { transform: scale(1.04); }
 
-.floatingTechBuzzBellWrap {
+.buzzFace {
+  position: relative;
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 37px;
+  height: 37px;
+  border-radius: 50%;
+  box-shadow: 0 2px 10px rgba(234, 88, 12, 0.4);
+}
+/* A soft ring keeps radiating from the circle while it is collapsed. */
+.buzzFace::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px solid currentColor;
+  opacity: 0;
+  animation: buzzRing 2.4s ease-out infinite;
+}
+.floatingTechBuzz:hover .buzzFace::before, .floatingTechBuzz:focus-visible .buzzFace::before { animation: none; }
+
+.buzzLabel {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  position: relative;
-  width: 20px;
-  height: 20px;
+  gap: 8px;
+  max-width: 0;
+  overflow: hidden;
+  opacity: 0;
+  white-space: nowrap;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  transition: max-width 0.5s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.3s ease, padding 0.5s cubic-bezier(0.16, 1, 0.3, 1);
 }
+.floatingTechBuzz:hover .buzzLabel, .floatingTechBuzz:focus-visible .buzzLabel { max-width: 340px; opacity: 1; padding: 0 10px 0 16px; transition-delay: 0s, 0.08s, 0s; }
+
+.buzzPointer {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+  pointer-events: none;
+  color: #fff;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-shadow: 0 1px 6px rgba(0, 0, 0, 0.55);
+  transform-origin: 100% 50%;
+  animation: buzzArrive 21s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+  transition: opacity 0.25s ease;
+}
+.buzzDock:has(.floatingTechBuzz:hover, .floatingTechBuzz:focus-visible) .buzzPointer { opacity: 0 !important; animation-play-state: paused; }
+/* The words sit on a dark gradient chip (cycling with the arrow) so they read on light and dark slides alike. A light
+   sweeps round its border through dark gradient tones, and a star glint rides the edge. */
+@property --buzz-angle { syntax: "<angle>"; inherits: false; initial-value: 0deg; }
+.buzzPointerText {
+  position: relative;
+  padding: 5px 11px;
+  border: 1.5px solid transparent;
+  border-radius: 999px;
+  background:
+    var(--chip) padding-box,
+    conic-gradient(from var(--buzz-angle), #0f172a 0%, #1e1b4b 18%, #4c1d95 30%, #f0abfc 36%, #ffffff 38%, #fde68a 40%, #7c2d12 48%, #0f172a 60%, #134e4a 78%, #67e8f9 84%, #0f172a 92%) border-box;
+  text-shadow: none;
+  box-shadow: 0 6px 18px -8px rgba(0, 0, 0, 0.7), 0 0 12px -4px rgba(240, 171, 252, 0.45);
+  animation: buzzBorder 7s linear infinite;
+  transition: color 1s ease;
+}
+.buzzPointerText::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 11px;
+  height: 11px;
+  background: radial-gradient(circle, #fff 0 22%, #fde68a 40%, #f0abfc 75%);
+  clip-path: polygon(50% 0, 61% 39%, 100% 50%, 61% 61%, 50% 100%, 39% 61%, 0 50%, 39% 39%);
+  translate: -50% -50%;
+  animation: buzzStar 7s linear infinite, buzzTwinkle 1.4s ease-in-out infinite alternate;
+}
+@keyframes buzzBorder { to { --buzz-angle: 360deg; } }
+/* The glint traces the pill's outline: along the top, round the right end, back along the bottom, round the left. */
+@keyframes buzzStar {
+  0%, 100% { left: 0; top: 50%; }
+  10% { left: 9%; top: 0; }
+  40% { left: 91%; top: 0; }
+  50% { left: 100%; top: 50%; }
+  60% { left: 91%; top: 100%; }
+  90% { left: 9%; top: 100%; }
+}
+@keyframes buzzTwinkle { from { opacity: 0.55; scale: 0.8; } to { opacity: 1; scale: 1.25; } }
+.buzzPointerArrow stop { transition: stop-color 1s ease; }
+.buzzPointerArrow { stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.5)); animation: buzzNudge 0.9s ease-in-out infinite alternate; }
+.buzzPointerDash { stroke-dasharray: 4 3.5; animation: buzzDashes 0.8s linear infinite; }
+/* Each 7-second round draws the swirl on in slow motion, then the arrowhead pops in at the circle. */
+.buzzPointerReveal { stroke-dasharray: 1 1; stroke-dashoffset: 1; animation: buzzDraw 7s cubic-bezier(0.37, 0, 0.63, 1) infinite; }
+.buzzPointerHead { opacity: 0; animation: buzzHead 7s ease-out infinite; transform-origin: 153px 24px; transform-box: view-box; }
+
+/* Three 7-second arrivals per cycle: from the left, from above-left and from below-left. The arrow pivots on its
+   tip, so it always ends pointing straight at the circle. */
+@keyframes buzzArrive {
+  0% { opacity: 0; transform: translate(-80px, 0); }
+  7%, 30% { opacity: 1; transform: translate(0, 0) rotate(0); }
+  33% { opacity: 0; transform: translate(0, 0) rotate(0); }
+  33.4% { opacity: 0; transform: translate(-46px, -50px) rotate(28deg); }
+  40%, 63% { opacity: 1; transform: translate(0, 0) rotate(0); }
+  66.3% { opacity: 0; transform: translate(0, 0) rotate(0); }
+  66.7% { opacity: 0; transform: translate(-46px, 50px) rotate(-28deg); }
+  73%, 97% { opacity: 1; transform: translate(0, 0) rotate(0); }
+  100% { opacity: 0; transform: translate(0, 0) rotate(0); }
+}
+@keyframes buzzDraw { 0%, 5% { stroke-dashoffset: 1; } 76%, 100% { stroke-dashoffset: 0; } }
+@keyframes buzzHead { 0%, 73% { opacity: 0; transform: scale(0.4); } 80% { opacity: 1; transform: scale(1.25); } 85%, 100% { opacity: 1; transform: scale(1); } }
+@keyframes buzzNudge { from { transform: translateX(0); } to { transform: translateX(5px); } }
+@keyframes buzzDashes { to { stroke-dashoffset: -9; } }
+@keyframes buzzRing { 0% { transform: scale(1); opacity: 0.55; } 100% { transform: scale(1.45); opacity: 0; } }
 
 .floatingTechBuzzBell {
+  flex: none;
   animation: bellRingAnimation 2.2s cubic-bezier(0.36, 0.07, 0.19, 0.97) infinite;
   transform-origin: top center;
   display: block;
 }
 
 @keyframes bellRingAnimation {
-  0%, 100% {
-    transform: rotate(0);
-  }
-  8%, 24% {
-    transform: rotate(22deg);
-  }
-  16%, 32% {
-    transform: rotate(-22deg);
-  }
-  40% {
-    transform: rotate(10deg);
-  }
-  48% {
-    transform: rotate(-6deg);
-  }
-  56% {
-    transform: rotate(0);
-  }
+  0%, 100% { transform: rotate(0); }
+  8%, 24% { transform: rotate(22deg); }
+  16%, 32% { transform: rotate(-22deg); }
+  40% { transform: rotate(10deg); }
+  48% { transform: rotate(-6deg); }
+  56% { transform: rotate(0); }
 }
 
 .bellRingingDot {
   position: absolute;
-  top: 0px;
-  right: 0px;
-  width: 6px;
-  height: 6px;
+  top: 3px;
+  right: 3px;
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
+  border: 1.5px solid #fff;
   animation: bellDotPulse 1.8s ease-in-out infinite alternate;
 }
 
 @keyframes bellDotPulse {
-  0% {
-    transform: scale(0.8);
-    opacity: 0.6;
-  }
-  100% {
-    transform: scale(1.3);
-    opacity: 1;
-  }
-}
-
-.floatingTechBuzzBadge {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  background: linear-gradient(135deg, #ea580c 0%, #f59e0b 100%);
-  color: #fff;
-  padding: 4px 10px;
-  border-radius: 9999px;
-  font-size: 13px;
-  font-weight: 700;
-  letter-spacing: 0.02em;
-  box-shadow: 0 2px 8px rgba(234, 88, 12, 0.4);
+  0% { transform: scale(0.8); opacity: 0.6; }
+  100% { transform: scale(1.3); opacity: 1; }
 }
 
 .floatingTechBuzzFlame {
@@ -429,7 +515,7 @@
 .floatingTechBuzzRating {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
   font-size: 13px;
   font-weight: 600;
   color: #fed7aa;
@@ -440,33 +526,14 @@
   font-size: 14px;
 }
 
-.floatingTechBuzzTag {
-  font-size: 11px;
-  font-weight: 600;
-  color: rgba(255, 255, 255, 0.7);
-  background: rgba(255, 255, 255, 0.12);
-  padding: 2px 7px;
-  border-radius: 6px;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
-
 @keyframes floatPulse {
-  0%, 100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-4px);
-  }
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
 }
 
 @keyframes flameFlicker {
-  0% {
-    transform: scale(1) rotate(0deg);
-  }
-  100% {
-    transform: scale(1.15) rotate(5deg);
-  }
+  0% { transform: scale(1) rotate(0deg); }
+  100% { transform: scale(1.15) rotate(5deg); }
 }
 
 @keyframes sb-shimmer {
@@ -475,19 +542,49 @@
 }
 
 @media (max-width: 768px) {
-  .floatingTechBuzz {
-    top: 76px;
-    right: 16px;
-    padding: 4px 10px 4px 6px;
-    gap: 6px;
-  }
-  .floatingTechBuzzBadge {
-    font-size: 11.5px;
-    padding: 3px 8px;
-  }
-  .floatingTechBuzzTag {
-    display: none;
-  }
+  .buzzDock { top: 76px; right: 16px; }
+  .buzzPointer { font-size: 13px; }
+  .buzzPointerArrow { width: 100px; height: 30px; }
+  /* The label never fits beside a phone-width hero: touch goes straight to /tech-buzz. */
+  .floatingTechBuzz:hover .buzzLabel, .floatingTechBuzz:focus-visible .buzzLabel { max-width: min(250px, calc(100vw - 110px)); font-size: 12.5px; padding: 0 8px 0 14px; }
+}
+
+/* Phones: the learning-path badge takes the left of the first row, so the Blogs arrow gets a row of its own. */
+/* Widescreens: the arrow and its words step up with the page; the circle keeps the Subscribe button's 40 px. */
+@media (min-width: 1536px) {
+  .buzzPointer { font-size: 16px; }
+  .buzzPointerText { padding: 6px 14px; }
+  .buzzPointerArrow { width: 188px; height: 56px; }
+}
+@media (min-width: 1920px) {
+  .buzzPointer { font-size: 17px; }
+  .buzzPointerArrow { width: 210px; height: 63px; }
+}
+
+/* Phones: the learning-path badge shares the first row with the arrow and shortens with an ellipsis. */
+@media (max-width: 640px) {
+  /* The words stack above the swirl, right-aligned, so its tip still meets the circle. */
+  .buzzDock { top: 80px; }
+  .buzzPointer { flex-direction: column; align-items: flex-end; gap: 0; font-size: 11px; letter-spacing: 0.03em; }
+  .buzzPointerText { padding: 3px 9px; }
+  .heroKicker { max-width: calc(100% - 216px); }
+}
+@media (max-width: 400px) {
+  .buzzPointerArrow { width: 80px; height: 24px; }
+  .buzzPointer { font-size: 10px; }
+  .heroKicker { max-width: calc(100% - 184px); }
+}
+@media (max-width: 480px) {
+  .floatingTechBuzz { height: 38px; min-width: 38px; }
+  .buzzFace { width: 35px; height: 35px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .buzzDock, .buzzPointer, .buzzPointerArrow, .buzzPointerDash, .buzzFace::before, .floatingTechBuzz::after, .floatingTechBuzzBell, .floatingTechBuzzFlame, .bellRingingDot { animation: none; }
+  .buzzPointer, .buzzPointerHead { opacity: 1; }
+  .buzzPointerText, .buzzPointerText::after { animation: none; }
+  .buzzPointerText::after { display: none; }
+  .buzzPointerReveal { stroke-dashoffset: 0; }
 }
 
 /* ---------- Subject ribbon: index tabs ---------- */
@@ -622,7 +719,8 @@
 .heroKicker { justify-self: start; display: inline-flex; align-items: center; gap: 8px; margin: 0; padding: 7px 14px 7px 10px; border-radius: 999px;
   border: 1px solid rgba(255, 255, 255, .32); background: rgba(20, 20, 19, .5); backdrop-filter: blur(10px); box-shadow: 0 12px 30px -16px rgba(0, 0, 0, .6);
   color: #fff; font-size: 13px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; }
-.heroKicker > span { width: 8px; height: 8px; border-radius: 50%; background: var(--kick); box-shadow: 0 0 0 4px color-mix(in srgb, var(--kick) 30%, transparent); }
+.heroKickerText { min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.heroKicker > span:first-child { flex: none; width: 8px; height: 8px; border-radius: 50%; background: var(--kick); box-shadow: 0 0 0 4px color-mix(in srgb, var(--kick) 30%, transparent); }
 .heroKicker[data-tone="clay"] { --kick: #ffb48f; }
 .heroKicker[data-tone="sage"] { --kick: #8fe3b9; }
 .heroKicker[data-tone="violet"] { --kick: #c7b8ff; }
@@ -635,7 +733,7 @@
 .heroKicker { position: absolute; z-index: 2; right: max(32px, calc((100% - 1240px) / 2)); top: 50%; translate: 24px -50%; opacity: 0;
   transition: opacity .7s var(--ease-out) .5s, translate .7s var(--ease-out) .5s; padding: 10px 18px 10px 14px; font-size: 14px; }
 .heroSlide[data-active] .heroKicker { opacity: 1; translate: 0 -50%; }
-@media (max-width: 640px) { .heroKicker { right: 16px; top: 96px; translate: 24px 0; padding: 6px 12px 6px 9px; font-size: 11.5px; }
+@media (max-width: 640px) { .heroKicker { left: 16px; right: auto; top: 86px; translate: -24px 0; padding: 6px 12px 6px 9px; font-size: 11.5px; }
   .heroSlide[data-active] .heroKicker { translate: 0 0; } }
 @media (prefers-reduced-motion: reduce) { .heroKicker { transition: none; } }
 

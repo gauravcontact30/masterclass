@@ -8,6 +8,7 @@ import { pageWindow } from "./pager";
 import { DAILY_TRACKS, OTHER_GROUP, TECH_GROUPS, techGroupOf, type TechGroup } from "@/lib/tech-buzz-sections";
 import { techLogo, type TechBuzzCard } from "@/lib/tech-buzz-public";
 import styles from "./tech-buzz-showcase.module.css";
+import { ClapButton, useClaps } from "./clap-button";
 
 /*
  * The curated half of /tech-buzz, above the searchable feed: the daily 5:00 AM (IST) edition, Fresh & Latest, Star
@@ -22,11 +23,10 @@ type Vote = "like" | "dislike";
 const DATE = new Intl.DateTimeFormat("en-IN", { day: "numeric", month: "short", year: "numeric", timeZone: "Asia/Kolkata" });
 const formatDate = (iso: string) => { const t = Date.parse(iso); return Number.isFinite(t) ? DATE.format(t) : ""; };
 const compact = (n: number) => n >= 10_000 ? `${Math.round(n / 1000)}k` : n >= 1000 ? `${(n / 1000).toFixed(1)}k` : String(n);
-const MAX_CLAPS = 20;
 
-/* ── This browser's votes and claps (localStorage), read through useSyncExternalStore so SSR and hydration agree ── */
+/* ── This browser's likes and dislikes (localStorage; claps are per reader in Supabase), read through useSyncExternalStore so SSR and hydration agree ── */
 const VOTES_KEY = "mcb:tech-buzz-votes";
-type Mine = Record<string, { vote?: Vote; claps?: number }>;
+type Mine = Record<string, { vote?: Vote }>;
 const listeners = new Set<() => void>();
 let cache: string | null = null;
 const readMine = () => { try { return cache ??= localStorage.getItem(VOTES_KEY) ?? "{}"; } catch { return "{}"; } };
@@ -34,7 +34,7 @@ const writeMine = (next: Mine) => { cache = JSON.stringify(next); try { localSto
 const subscribe = (fn: () => void) => { listeners.add(fn); return () => listeners.delete(fn); };
 const parseMine = (raw: string): Mine => { try { return JSON.parse(raw) as Mine; } catch { return {}; } };
 
-type ReactionApi = { counts: (card: TechBuzzCard) => Counts; mine: Mine; vote: (card: TechBuzzCard, vote: Vote) => void; clap: (card: TechBuzzCard) => void };
+type ReactionApi = { counts: (card: TechBuzzCard) => Counts; mine: Mine; vote: (card: TechBuzzCard, vote: Vote) => void };
 const Reactions = createContext<ReactionApi | null>(null);
 
 function ReactionProvider({ children }: { children: ReactNode }) {
@@ -73,16 +73,7 @@ function ReactionProvider({ children }: { children: ReactNode }) {
     void send(card, { action: next, delta: 1 }, optimistic);
   }, [counts, send]);
 
-  const clap = useCallback((card: TechBuzzCard) => {
-    const all = parseMine(readMine());
-    const given = all[card.id]?.claps ?? 0;
-    if (given >= MAX_CLAPS) return;
-    writeMine({ ...all, [card.id]: { ...all[card.id], claps: given + 1 } });
-    const now = counts(card);
-    void send(card, { action: "clap", count: 1 }, { ...now, claps: now.claps + 1 });
-  }, [counts, send]);
-
-  const api = useMemo(() => ({ counts, mine, vote, clap }), [counts, mine, vote, clap]);
+  const api = useMemo(() => ({ counts, mine, vote }), [counts, mine, vote]);
   return <Reactions.Provider value={api}>{children}</Reactions.Provider>;
 }
 
@@ -90,12 +81,18 @@ function ReactionBar({ card, tone = "light" }: { card: TechBuzzCard; tone?: "lig
   const api = useContext(Reactions)!;
   const counts = api.counts(card);
   const mine = api.mine[card.id];
-  const clapsLeft = MAX_CLAPS - (mine?.claps ?? 0);
   return <div className={styles.reactions} data-tone={tone} role="group" aria-label={`Reactions to ${card.title}`}>
     <button type="button" aria-pressed={mine?.vote === "like"} onClick={() => api.vote(card, "like")} aria-label={`Like, ${counts.likes} likes`}><ThumbsUp size={14} aria-hidden="true" /><span>{compact(counts.likes)}</span></button>
     <button type="button" aria-pressed={mine?.vote === "dislike"} onClick={() => api.vote(card, "dislike")} aria-label={`Dislike, ${counts.dislikes} dislikes`}><ThumbsDown size={14} aria-hidden="true" /><span>{compact(counts.dislikes)}</span></button>
-    <button type="button" data-clap aria-pressed={(mine?.claps ?? 0) > 0} disabled={clapsLeft <= 0} onClick={() => api.clap(card)} aria-label={`Clap, ${counts.claps} claps`} title={clapsLeft > 0 ? `Clap (up to ${MAX_CLAPS})` : "You gave all your claps"}><span aria-hidden="true">👏</span><span>{compact(counts.claps)}</span></button>
+    <CardClap card={card} tone={tone} />
   </div>;
+}
+
+/** Medium-style claps, stored per signed-in reader (components/clap-button.tsx). Cards skip the live fetch; the
+ *  reader's own count arrives with their first clap. */
+function CardClap({ card, tone }: { card: TechBuzzCard; tone: "light" | "dark" }) {
+  const claps = useClaps(card.slug, card.claps, { live: false });
+  return <ClapButton slug={card.slug} claps={claps} size="small" tone={tone} label={`Clap for ${card.title}`} />;
 }
 
 function Cover({ card, className }: { card: TechBuzzCard; className?: string }) {

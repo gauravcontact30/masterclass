@@ -116,7 +116,7 @@ export default async function TechBuzzArticlePage({ params }: PageProps) {
       "@type": "Organization",
       name: siteName,
       url: origin,
-      logo: { "@type": "ImageObject", url: new URL("/apple-icon", origin).href }
+      logo: { "@type": "ImageObject", url: new URL("/brand/masterclass-mark-512.png", origin).href, width: 512, height: 512 }
     },
     mainEntityOfPage: {
       "@type": "WebPage",

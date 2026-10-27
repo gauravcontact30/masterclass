@@ -16,6 +16,8 @@ function send(body: Record<string, unknown>) {
   fetch("/api/track", { method: "POST", body: data, keepalive: true, headers: { "content-type": "application/json" } }).catch(() => {});
 }
 
+/** A page must stay visible this long before it counts as a visit: 0-second bounces are never recorded (lib/early-track.ts). */
+const MIN_SEEN_MS = 1000;
 /** How often a visible page tells the Live visitor stream it is still being read (see app/api/track). */
 const HEARTBEAT_MS = 45_000;
 
@@ -42,15 +44,21 @@ export function VisitTracker() {
     // The first page's view was already sent by the early beacon in <head> (lib/early-track.ts): adopt it, timing the
     // page from navigation start so the seconds before hydration count too.
     const early = window.__mcEarly;
+    // The page load itself (not a later client-side navigation), whose view the early beacon has not sent yet.
+    const firstPage = !!early && !early.taken && early.path === pathname;
     if (early && !early.taken && early.sent && early.path === pathname) {
       early.taken = true;
       referrerSent = true;
       open.current = { path: pathname, since: document.visibilityState === "hidden" ? null : 0 };
     }
     if (early) early.taken = true;
-    // Wait a moment so document.title is the new page's, not the previous one's.
-    const timer = setTimeout(() => {
+    // Send the view once the page has been visible for MIN_SEEN_MS (which also lets document.title become the new
+    // page's): a page closed or left sooner is not recorded at all. Time on page still counts from when it opened.
+    const opened = firstPage ? 0 : performance.now();
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const record = () => {
       if (open.current?.path === pathname) return;
+      if (document.visibilityState === "hidden") return;
       const params = new URLSearchParams(location.search);
       send({
         type: "view", path: pathname, title: document.title,
@@ -59,14 +67,19 @@ export function VisitTracker() {
         language: navigator.language, timezone: Intl.DateTimeFormat().resolvedOptions().timeZone, screen: `${screen.width}x${screen.height}`,
       });
       referrerSent = true;
-      open.current = { path: pathname, since: document.visibilityState === "hidden" ? null : performance.now() };
-    }, 400);
+      open.current = { path: pathname, since: opened };
+    };
+    // The first page counts from navigation start, so the seconds before hydration count towards the minimum.
+    const seen = () => { clearTimeout(timer); if (document.visibilityState === "visible") timer = setTimeout(record, Math.max(400, MIN_SEEN_MS - (performance.now() - opened))); };
+    seen();
     const beat = () => {
       const page = open.current;
       if (page?.since != null && document.visibilityState === "visible") send({ type: "ping", path: page.path, duration: Math.round(performance.now() - page.since) });
     };
     const heartbeat = setInterval(beat, HEARTBEAT_MS);
     const onVisibility = () => {
+      // Hidden before it counted: nothing is sent until the page is visible again.
+      if (!open.current) return document.visibilityState === "hidden" ? clearTimeout(timer) : seen();
       if (document.visibilityState === "hidden") return pause();
       if (open.current && open.current.since == null) { open.current.since = performance.now(); beat(); }
     };

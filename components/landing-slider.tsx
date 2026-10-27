@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useId, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Bell, ChevronLeft, ChevronRight, Flame, Pause, Play } from "lucide-react";
@@ -8,6 +8,16 @@ import { useLanguage } from "./language-provider";
 import styles from "./landing-home.module.css";
 import { useVisiblePlayback } from "./use-visible-playback";
 
+/** Three loops of a prolate cycloid running into a straight tail: the "TECH BUZZ - BLOGS" swirl arrow (viewBox 0 0 160 48). */
+const SWIRL = "M16.0 24.0 16.9 21.7 17.3 19.4 17.3 17.3 16.9 15.5 16.2 14.0 15.2 12.9 14.0 12.2 12.8 12.0 11.6 12.2 10.4 12.9 9.4 14.0 8.7 15.5 8.3 17.3 8.3 19.4 8.7 21.7 9.6 24.0 10.9 26.3 12.7 28.6 14.9 30.7 17.5 32.5 20.4 34.0 23.6 35.1 26.9 35.8 30.4 36.0 33.8 35.8 37.2 35.1 40.4 34.0 43.3 32.5 45.9 30.7 48.1 28.6 49.9 26.3 51.2 24.0 52.1 21.7 52.5 19.4 52.5 17.3 52.1 15.5 51.4 14.0 50.4 12.9 49.2 12.2 48.0 12.0 46.7 12.2 45.6 12.9 44.6 14.0 43.9 15.5 43.5 17.3 43.5 19.4 43.9 21.7 44.8 24.0 46.1 26.3 47.9 28.6 50.1 30.7 52.7 32.5 55.6 34.0 58.8 35.1 62.1 35.8 65.6 36.0 69.0 35.8 72.4 35.1 75.5 34.0 78.5 32.5 81.1 30.7 83.3 28.6 85.0 26.3 86.4 24.0 87.2 21.7 87.7 19.4 87.6 17.3 87.3 15.5 86.5 14.0 85.6 12.9 84.4 12.2 83.2 12.0 81.9 12.2 80.8 12.9 79.8 14.0 79.1 15.5 78.7 17.3 78.7 19.4 79.1 21.7 80.0 24.0 81.3 26.3 83.1 28.6 85.3 30.7 87.9 32.5 90.8 34.0 94.0 35.1 97.3 35.8 100.8 36.0 104.2 35.8 107.6 35.1 110.7 34.0 113.6 32.5 116.2 30.7 118.4 28.6 120.2 26.3 121.6 24.0 152.0 24.0";
+const POINTER_COLORS = [
+  { from: "#ffd166", to: "#ff5d8f", chip: "linear-gradient(135deg, #1e1b4b, #4c1d95)" },
+  { from: "#5eead4", to: "#38bdf8", chip: "linear-gradient(135deg, #0f172a, #134e4a)" },
+  { from: "#f9a8d4", to: "#c4b5fd", chip: "linear-gradient(135deg, #3b0764, #831843)" },
+  { from: "#bef264", to: "#22d3ee", chip: "linear-gradient(135deg, #052e16, #1e3a8a)" },
+  { from: "#fdba74", to: "#f43f5e", chip: "linear-gradient(135deg, #1c1917, #7c2d12)" },
+  { from: "#93c5fd", to: "#a78bfa", chip: "linear-gradient(135deg, #082f49, #312e81)" },
+];
 const SUGGESTION_BOX_PALETTES = [
   {
     // Tone 1: Terracotta Roasted Coffee (matches Suggestion Box #3a2118 / #f0b89c)
@@ -287,6 +297,74 @@ function slidesFor(technologies: number | undefined): Slide[] {
   ];
 }
 
+/** The floating Tech Buzz dock on the hero. Its 5-second colour beat lives here, so it re-renders only itself, not the
+ *  whole carousel. */
+function TechBuzzDock() {
+  const { t } = useLanguage();
+  const [buzzColorIndex, setBuzzColorIndex] = useState(0);
+
+  // Change Master Class Buddy - Tech Buzz button background color every 5 seconds (Suggestion Box palette)
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setBuzzColorIndex(prev => (prev + 1) % SUGGESTION_BOX_PALETTES.length);
+    }, 5000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const currentBuzzColor = SUGGESTION_BOX_PALETTES[buzzColorIndex];
+  // The "TECH BUZZ - BLOGS" swirl arrow and its words take a new vivid pair on the same 5-second beat.
+  const pointerColor = POINTER_COLORS[buzzColorIndex % POINTER_COLORS.length];
+  const pointerId = useId();
+  // A circular button (5-second cycling Suggestion Box palette). The "TECH BUZZ - BLOGS" swirl arrow flies in from a
+  // different side each round and lands pointing at it; hover or focus expands the button leftwards into its label.
+  return (
+    <div className={styles.buzzDock}>
+      <span className={styles.buzzPointer} aria-hidden="true">
+        <span className={styles.buzzPointerText} style={{ color: pointerColor.from, "--chip": pointerColor.chip } as React.CSSProperties}>TECH BUZZ - BLOGS</span>
+        <svg className={styles.buzzPointerArrow} width="160" height="48" viewBox="0 0 160 48" fill="none">
+          <defs>
+            <linearGradient id={`${pointerId}g`} x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0" style={{ stopColor: pointerColor.from }} />
+              <stop offset="1" style={{ stopColor: pointerColor.to }} />
+            </linearGradient>
+            {/* A solid copy of the swirl, drawn on slowly, reveals the dashed one underneath. */}
+            <mask id={`${pointerId}m`} maskUnits="userSpaceOnUse">
+              <path className={styles.buzzPointerReveal} d={SWIRL} pathLength={1} stroke="#fff" strokeWidth="5" />
+            </mask>
+          </defs>
+          <g stroke={`url(#${pointerId}g)`}>
+            <path className={styles.buzzPointerDash} d={SWIRL} mask={`url(#${pointerId}m)`} />
+            <path className={styles.buzzPointerHead} d="M144 16 153 24 144 32" />
+          </g>
+        </svg>
+      </span>
+      <Link
+        href="/tech-buzz"
+        className={styles.floatingTechBuzz}
+        style={{
+          background: currentBuzzColor.bg,
+          borderColor: currentBuzzColor.border,
+          color: currentBuzzColor.color,
+          boxShadow: `0 8px 24px -4px rgba(0, 0, 0, 0.35), 0 0 16px -2px ${currentBuzzColor.glow}`
+        }}
+        aria-label={t("techBuzzFloatingAria") || "Master Class Buddy - Tech Buzz"}
+      >
+        <span className={styles.buzzLabel}>
+          <span>{t("techBuzzBadge") || "Master Class Buddy - Tech Buzz"}</span>
+          <Bell size={14} className={styles.floatingTechBuzzBell} style={{ color: currentBuzzColor.bellColor }} aria-hidden="true" />
+          <span className={styles.floatingTechBuzzRating} style={{ color: currentBuzzColor.ratingColor }}>
+            <span className={styles.floatingTechBuzzStar}>★</span>4.9
+          </span>
+        </span>
+        <span className={styles.buzzFace} style={{ background: currentBuzzColor.badgeBg, color: currentBuzzColor.badgeColor }}>
+          <Flame size={18} className={styles.floatingTechBuzzFlame} aria-hidden="true" />
+          <span className={styles.bellRingingDot} style={{ background: currentBuzzColor.bellColor }} />
+        </span>
+      </Link>
+    </div>
+  );
+}
+
 export function LandingSlider({ technologies }: { technologies?: number }) {
   const { language, t } = useLanguage();
   const pick = (record: MultiLang) => record[language] ?? record.en;
@@ -324,17 +402,6 @@ export function LandingSlider({ technologies }: { technologies?: number }) {
 
   const pad = (value: number) => String(value).padStart(2, "0");
 
-  const [buzzColorIndex, setBuzzColorIndex] = useState(0);
-
-  // Change Master Class Buddy - Tech Buzz button background color every 5 seconds (Suggestion Box palette)
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setBuzzColorIndex(prev => (prev + 1) % SUGGESTION_BOX_PALETTES.length);
-    }, 5000);
-    return () => clearInterval(timer);
-  }, []);
-
-  const currentBuzzColor = SUGGESTION_BOX_PALETTES[buzzColorIndex];
 
   return <section ref={regionRef} className={styles.heroSlider} aria-roledescription="carousel" aria-label={t("heroSliderLabel") || "Learning with MasterClass"}
     onMouseEnter={() => setHeld(true)} onMouseLeave={() => setHeld(false)}
@@ -350,42 +417,7 @@ export function LandingSlider({ technologies }: { technologies?: number }) {
       if (start === null || end === undefined || Math.abs(end - start) < 48) return;
       go(end < start ? index + 1 : index - 1);
     }}>
-    {/* Floating Master Class Buddy - Tech Buzz button with animated bell and 5-second cycling Suggestion Box palette background */}
-    <Link
-      href="/tech-buzz"
-      className={styles.floatingTechBuzz}
-      style={{
-        background: currentBuzzColor.bg,
-        borderColor: currentBuzzColor.border,
-        color: currentBuzzColor.color,
-        boxShadow: `0 8px 24px -4px rgba(0, 0, 0, 0.35), 0 0 16px -2px ${currentBuzzColor.glow}`
-      }}
-      aria-label={t("techBuzzFloatingAria") || "Master Class Buddy - Tech Buzz"}
-    >
-      <span
-        className={styles.floatingTechBuzzBadge}
-        style={{
-          background: currentBuzzColor.badgeBg,
-          color: currentBuzzColor.badgeColor
-        }}
-      >
-        <Flame size={14} className={styles.floatingTechBuzzFlame} />
-        <span className={styles.floatingTechBuzzText}>
-          {t("techBuzzBadge") || "Master Class Buddy - Tech Buzz"}
-        </span>
-      </span>
-      <span className={styles.floatingTechBuzzBellWrap} title="Latest updates notification">
-        <Bell size={14} className={styles.floatingTechBuzzBell} style={{ color: currentBuzzColor.bellColor }} />
-        <span className={styles.bellRingingDot} style={{ background: currentBuzzColor.bellColor }} />
-      </span>
-      <span
-        className={styles.floatingTechBuzzRating}
-        style={{ color: currentBuzzColor.ratingColor }}
-      >
-        <span className={styles.floatingTechBuzzStar}>★</span>
-        <span>4.9</span>
-      </span>
-    </Link>
+    <TechBuzzDock />
     <div className={styles.heroStage} aria-live={running ? "off" : "polite"}>
       {slides.map((slide, position) => {
         const current = position === index;
@@ -398,7 +430,7 @@ export function LandingSlider({ technologies }: { technologies?: number }) {
             className={styles.heroImage} style={{ "--focus": slide.focus } as React.CSSProperties} />}
           <div className={styles.heroShade} />
           <div className={styles.heroTint} data-tone={slide.tone} />
-          <p className={styles.heroKicker} data-tone={slide.tone}><span aria-hidden="true" />{pick(slide.tool)}</p>
+          <p className={styles.heroKicker} data-tone={slide.tone}><span aria-hidden="true" /><span className={styles.heroKickerText}>{pick(slide.tool)}</span></p>
           <div className={styles.heroCopy}>
             <h2>{pick(slide.title)}</h2>
             <p className={styles.heroBody}>{pick(slide.body)}</p>

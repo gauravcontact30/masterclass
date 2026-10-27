@@ -23,7 +23,7 @@ export function updateArticleState(
  * Handles user interactions across platforms:
  * - daily.dev: upvotes
  * - dev.to: reactions (heart, unicorn, rocket, mindblown), comments
- * - medium: claps, ratings
+ * - medium: ratings (claps: /api/tech-buzz/[slug]/claps)
  * - substack: newsletter subscriptions
  */
 export async function POST(request: Request) {
@@ -53,13 +53,14 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Missing articleId" }, { status: 400 });
     }
 
-    // Likes, dislikes and claps on a stored story (the daily edition, admin posts) persist in the database; built-in
-    // stories have no row and fall through to the in-memory handlers below.
-    if (action === "like" || action === "upvote" || action === "dislike" || action === "clap") {
-      const field: TechBuzzCounter = action === "clap" ? "claps" : action === "dislike" ? "dislikes" : "likes";
-      const delta = action === "clap"
-        ? (typeof body.count === "number" ? Math.min(50, Math.max(1, Math.round(body.count))) : 1)
-        : body.delta === -1 ? -1 : 1;
+    // Claps are per reader (signed in, at most 50 a story) and live at /api/tech-buzz/[slug]/claps since migration 0042.
+    if (action === "clap") return NextResponse.json({ error: "Claps moved to /api/tech-buzz/[slug]/claps" }, { status: 410 });
+
+    // Likes and dislikes on a stored story (the daily edition, admin posts) persist in the database; built-in stories
+    // have no row and fall through to the in-memory handlers below.
+    if (action === "like" || action === "upvote" || action === "dislike") {
+      const field: TechBuzzCounter = action === "dislike" ? "dislikes" : "likes";
+      const delta = body.delta === -1 ? -1 : 1;
       const limited = await rateLimit(`tech-buzz:${field}:${clientIp(request)}`, 60, 60).then(() => false, error => (error as { status?: number }).status === 429);
       if (limited) return NextResponse.json({ error: "Too many reactions, slow down a little." }, { status: 429 });
       const stored = await bumpTechBuzzCounter(String(articleId), field, delta).catch(() => null);
@@ -117,19 +118,6 @@ export async function POST(request: Request) {
       return NextResponse.json({
         success: true,
         reactions: updated.reactions,
-      });
-    }
-
-    // 4. Claps action (medium style)
-    if (action === "clap") {
-      const count = typeof body.count === "number" ? Math.min(50, Math.max(1, body.count)) : 1;
-      const updated = updateArticleState(articleId, (article: TechBuzzArticle) => {
-        article.claps = (article.claps || 0) + count;
-      });
-      if (!updated) return NextResponse.json({ error: "Article not found" }, { status: 404 });
-      return NextResponse.json({
-        success: true,
-        claps: updated.claps,
       });
     }
 

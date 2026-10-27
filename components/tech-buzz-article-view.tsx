@@ -30,6 +30,7 @@ import { useLanguage } from "./language-provider";
 import styles from "./tech-buzz-article.module.css";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
+import { ClapButton, useClaps } from "./clap-button";
 
 interface Props {
   /** The free preview only; the member body is fetched from /api/tech-buzz/[slug]/member after a server-side check. */
@@ -55,7 +56,8 @@ export function TechBuzzArticleView({ article, related, prevStory, nextStory }: 
   const access = signedIn === false ? "signin_required" : memberAccess;
   const [memberContent, setMemberContent] = useState<TechBuzzMemberContent | null>(null);
   const isSubscribed = access === "member" && !!memberContent;
-  const [claps, setClaps] = useState<number>(article.claps);
+  // Claps are stored per reader in Supabase (components/clap-button.tsx); both buttons on the page share this state.
+  const claps = useClaps(article.slug, article.claps);
   const [userReactions, setUserReactions] = useState<{ heart: number; unicorn: number; rocket: number; mindblown: number }>(article.reactions);
   const [bookmarked, setBookmarked] = useState<boolean>(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -85,11 +87,9 @@ export function TechBuzzArticleView({ article, related, prevStory, nextStory }: 
   const [comments, setComments] = useState<TechBuzzMemberContent["comments"]>([]);
   const [newCommentText, setNewCommentText] = useState<string>("");
 
-  // Restore claps and bookmarks saved in this browser.
+  // Restore bookmarks saved in this browser.
   useEffect(() => {
     try {
-      const savedClaps = localStorage.getItem(`masterclass:claps:${article.id}`);
-      if (savedClaps) setClaps(Number(savedClaps));
       const savedBookmarks = localStorage.getItem("masterclass:tech-buzz-bookmarks");
       if (savedBookmarks && JSON.parse(savedBookmarks)[article.id]) setBookmarked(true);
     } catch {}
@@ -136,23 +136,6 @@ export function TechBuzzArticleView({ article, related, prevStory, nextStory }: 
   const articlePath = `/tech-buzz/${article.slug}`;
   const unlockHref = access === "subscription_required" ? "/learning/plans" : `/sign-in?redirect=${encodeURIComponent(articlePath)}`;
   const unlockLabel = access === "subscription_required" ? "Choose a plan to keep reading" : "Sign in to keep reading";
-
-  const handleClap = () => {
-    const next = claps + 1;
-    setClaps(next);
-    try {
-      localStorage.setItem(`masterclass:claps:${article.id}`, String(next));
-    } catch {}
-    showToast("Clapped! 👏 Thank you for supporting the author.");
-
-    if (typeof fetch !== "undefined") {
-      fetch("/api/tech-buzz/action", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "clap", articleId: article.id, count: 1 })
-      }).catch(() => {});
-    }
-  };
 
   const handleReaction = (type: "heart" | "unicorn" | "rocket" | "mindblown") => {
     setUserReactions(prev => ({ ...prev, [type]: prev[type] + 1 }));
@@ -356,16 +339,7 @@ export function TechBuzzArticleView({ article, related, prevStory, nextStory }: 
               </Link>
             )}
 
-            <button
-              type="button"
-              className={styles.clapBtnBig}
-              onClick={handleClap}
-              title="Clap for this story"
-              style={{ padding: "0.35rem 0.85rem", fontSize: "0.8125rem" }}
-            >
-              <span>👏</span>
-              <span>{claps}</span>
-            </button>
+            <ClapButton slug={article.slug} claps={claps} size="small" />
 
             <button
               type="button"
@@ -842,15 +816,7 @@ export function TechBuzzArticleView({ article, related, prevStory, nextStory }: 
 
           {/* Claps & Dev Reactions Floating Strip */}
           <div className={styles.engagementStrip}>
-            <button
-              type="button"
-              className={styles.clapBtnBig}
-              onClick={handleClap}
-              title="Clap for this blog"
-            >
-              <span>👏</span>
-              <span>{claps} Claps</span>
-            </button>
+            <ClapButton slug={article.slug} claps={claps} label="Clap for this blog" />
 
             <div className={styles.devReactionsBig}>
               <button

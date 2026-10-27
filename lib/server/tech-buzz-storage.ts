@@ -3,6 +3,7 @@ import { cacheLife, cacheTag, revalidateTag } from "next/cache";
 import { db } from "./db";
 import { TECH_BUZZ_ARTICLES, type TechBuzzArticle } from "@/lib/tech-buzz-data";
 import { HttpError } from "./http";
+import { withReaderClaps } from "./tech-buzz-claps";
 
 const isMissing = (err: { code?: string; message: string } | null) =>
   !err ? false : (
@@ -237,7 +238,8 @@ export async function listPublishedTechBuzzArticles(): Promise<TechBuzzArticle[]
   "use cache";
   cacheLife("minutes");
   cacheTag(TECH_BUZZ_TAG);
-  return listTechBuzzArticles(false);
+  // Readers' claps (migration 0042) join each story's count here, so lists stay within minutes of the live total.
+  return withReaderClaps(await listTechBuzzArticles(false));
 }
 
 /** One published article by slug or id, from the cached list; drafts are never served publicly. */

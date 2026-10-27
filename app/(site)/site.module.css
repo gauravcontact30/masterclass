@@ -51,16 +51,25 @@
   .actions { margin-left: auto; }
   .footer small { margin-left: 0; }
 }
-/* Phones: logo and both actions stay on one row. */
+/* Phones: logo and both actions share the first row; the main links get a swipeable row of their own below. */
 @media (max-width: 480px) {
-  .header { flex-wrap: nowrap; gap: 10px; padding-block: 12px; }
+  .header { gap: 10px 10px; padding-block: 12px; }
   .header :global(.brand-name) { font-size: 20px; }
   .header :global(.brand-mark) { width: 32px; height: 32px; }
+  .nav { gap: 18px; font-size: 13px; scrollbar-width: none; -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 24px), transparent); mask-image: linear-gradient(90deg, #000 calc(100% - 24px), transparent); }
+  .nav a { flex: none; white-space: nowrap; }
   .actions { gap: 10px; font-size: 13px; flex-shrink: 0; }
   .cta { padding: 8px 12px; white-space: nowrap; }
 }
+/* 320–359 px: the brand keeps its mark and drops the wordmark text, so "Sign in" stays reachable. */
 @media (max-width: 359px) {
-  .actions a:not(.cta) { display: none; }
+  .header :global(.brand-name) { display: none; }
+  .actions { gap: 8px; }
+  .cta { padding: 8px 10px; }
+}
+/* Widescreens: the header and footer content line up with a centred column instead of the far window edges. */
+@media (min-width: 1536px) {
+  .header, .footer { padding-inline: max(48px, calc((100% - 1440px) / 2)); }
 }
 
 /* A learning-path picture runs flush across the top of its card, inside the padding. */

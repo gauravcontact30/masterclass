@@ -19,6 +19,7 @@ export const aj = env.ARCJET_KEY
           allow: [
             "CATEGORY:SEARCH_ENGINE", // Google, Bing, etc.
             "CATEGORY:MONITOR", // Uptime checkers
+            "CATEGORY:VERCEL", // Vercel Cron (vercel-cron/1.0): without it every scheduled job in vercel.json got a 403
           ],
         }),
         // Sliding window rate limit: max 100 requests per 60 seconds per IP
