@@ -61,6 +61,8 @@ const nextConfig: NextConfig = {
       { source: "/dashboard/super-admin", destination: "/super-admin", permanent: true },
       { source: "/dashboard/:path*", destination: "/learning/:path*", permanent: true },
       { source: "/dashboard", destination: "/learning", permanent: true },
+      // A page-level redirect() here was prerendered as a 200 shell, which Google saw as a duplicate of the home page.
+      { source: "/notes", destination: "/learning/notes", permanent: true },
     ];
   },
   async headers() {

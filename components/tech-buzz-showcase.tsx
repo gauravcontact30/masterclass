@@ -317,17 +317,18 @@ function CommunityFavourites({ cards }: { cards: TechBuzzCard[] }) {
       </article>
       {rest.length > 0 && <div className={styles.favSide}>
         <ol className={styles.likedList} start={paged.offset + 2}>
-          {paged.rows.map(({ card, likes }, i) => <li key={card.id} style={{ "--share": share(likes), "--tone": card.color } as CSSProperties}>
+          {paged.rows.map(({ card, likes }, i) => { const logo = logoOf(card); return <li key={card.id} style={{ "--share": share(likes), "--tone": card.color } as CSSProperties}>
             <span className={styles.likedRank}>#{paged.offset + i + 2}</span>
+            <span className={styles.likedLogo} title={card.technology}>{logo ? <Image src={logo} alt={card.technology} width={26} height={26} /> : <b aria-hidden="true">{card.technology.charAt(0)}</b>}</span>
             <Link href={`/tech-buzz/${card.slug}`} className={styles.likedLink}>
               <strong className={styles.cardTitle}>{card.title}</strong>
               <span className={styles.likedBar} aria-hidden="true"><i /></span>
               <span className={styles.meta}>{card.technology} · {likesLine(likes)}</span>
             </Link>
             <ReactionBar card={card} />
-          </li>)}
+          </li>; })}
         </ol>
-        <Pagination paged={paged} label={`${active.label} favourites`} anchor="tb-liked" />
+        <Pagination paged={paged} label={`${active.label} favourites`} anchor="tb-liked" sizes={[5, 10, 20]} />
       </div>}
     </div>
   </section>;

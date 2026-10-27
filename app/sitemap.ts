@@ -1,30 +1,33 @@
 import type { MetadataRoute } from "next";
-import { cacheLife } from "next/cache";
+import { cacheLife, cacheTag } from "next/cache";
 import { PUBLIC_PAGES, isIndexable, siteUrl } from "@/lib/seo";
 import { COMPARISONS } from "@/lib/comparisons";
-import { listPublishedTechBuzzArticles } from "@/lib/server/tech-buzz-storage";
+import { TECH_BUZZ_TAG, listPublishedTechBuzzArticles } from "@/lib/server/tech-buzz-storage";
 import { apiPackageEntries, apiPackages, handbookSlug, handbooks, interviewTechs, vocabularyGroups, workflows } from "@/lib/public-learning";
 
 /**
  * Every indexable URL: the registered public pages plus the whole learning library (interview questions,
  * blueprints, handbooks, API reference and vocabulary), read from the same catalogues the pages prerender from.
- * Cached for a day, so a content release appears in the sitemap without a rebuild of this route.
+ * Cached for a day, so a content release appears in the sitemap without a rebuild of this route; publishing a
+ * Tech Buzz story expires the tag at once, so the 5:00 AM stories are listed the morning they go live.
  */
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   "use cache";
   cacheLife("days");
+  cacheTag(TECH_BUZZ_TAG);
   if (!isIndexable()) return [];
   const origin = siteUrl();
   const url = (path: string) => new URL(path, origin).href;
   const library = (path: string, priority: number, changeFrequency: MetadataRoute.Sitemap[number]["changeFrequency"] = "monthly") => ({ url: url(path), changeFrequency, priority });
   const api = await Promise.all(apiPackages().map(async pkg => [
     library(`/api-reference/${pkg.id}`, 0.6),
-    ...(await apiPackageEntries(pkg.id)).filter(entry => entry.card).map(entry => library(`/api-reference/${pkg.id}/${entry.slug}`, 0.5)),
+    ...(await apiPackageEntries(pkg.id)).filter(entry => entry.card).map(entry => ({ ...library(`/api-reference/${pkg.id}/${entry.slug}`, 0.5), lastModified: new Date(entry.card!.checkedAt) })),
   ]));
   // Tech Buzz articles change daily; lastModified lets crawlers pick up new ones without recrawling the rest.
   const buzz = (await listPublishedTechBuzzArticles()).map(article => ({ url: url(`/tech-buzz/${article.slug}`), lastModified: new Date(article.publishedAt), changeFrequency: "weekly" as const, priority: article.featured ? 0.85 : 0.75 }));
+  const latestStory = buzz.reduce<Date | undefined>((latest, story) => !latest || story.lastModified > latest ? story.lastModified : latest, undefined);
   return [
-    ...PUBLIC_PAGES.map(({ path, changeFrequency, priority }) => ({ url: url(path), changeFrequency, priority })),
+    ...PUBLIC_PAGES.map(({ path, changeFrequency, priority }) => ({ url: url(path), changeFrequency, priority, ...(path === "/tech-buzz" && latestStory ? { lastModified: latestStory } : {}) })),
     library("/interview-questions", 0.9, "weekly"), ...interviewTechs().map(tech => library(`/interview-questions/${tech.id}`, 0.8)),
     library("/workflows", 0.9, "weekly"), ...workflows().map(item => library(`/workflows/${item.id}`, 0.8)),
     library("/learn", 0.9, "weekly"), ...handbooks().map(item => library(`/learn/${handbookSlug(item)}`, 0.7)),

@@ -227,7 +227,7 @@ export async function listTechBuzzArticles(includeDrafts = false): Promise<TechB
 }
 
 /** Cache tag for every public Tech Buzz read; admin writes expire it so a publish shows at once. */
-const TECH_BUZZ_TAG = "tech-buzz";
+export const TECH_BUZZ_TAG = "tech-buzz";
 const expirePublic = () => { try { revalidateTag(TECH_BUZZ_TAG, { expire: 0 }); } catch { /* outside a request (scripts) */ } };
 
 /**

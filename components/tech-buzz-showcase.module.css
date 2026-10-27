@@ -227,6 +227,13 @@ a:hover .cover > img, a:focus-visible .cover > img { transform: scale(1.05); }
 .favSide { display: grid; gap: 12px; min-width: 0; }
 .favSide .likedList li { background: #fff; border: 1px solid #f6e6ea; }
 .favSide .likedList li:hover { border-color: #f3c4cd; }
+/* The story's technology logo sits at the right of its row, across the title and the reactions. */
+.favSide .likedList li { grid-template-columns: 40px minmax(0, 1fr) 44px; }
+.likedLogo { grid-column: 3; grid-row: 1 / span 2; justify-self: end; display: grid; place-items: center; width: 44px; height: 44px; border-radius: 12px; background: #fff; border: 1px solid color-mix(in srgb, var(--tone, #be123c) 22%, #ece7e2); box-shadow: 0 6px 14px -10px color-mix(in srgb, var(--tone, #be123c) 70%, transparent); }
+.likedLogo img { width: 26px; height: 26px; object-fit: contain; }
+.likedLogo b { font-size: 18px; font-weight: 800; color: var(--tone, #be123c); }
+.favourites .pagination { --tone: #be123c; }
+@media (max-width: 480px) { .favSide .likedList li { grid-template-columns: 32px minmax(0, 1fr) 36px; } .likedLogo { grid-row: 1; width: 36px; height: 36px; border-radius: 10px; } .likedLogo img { width: 22px; height: 22px; } .favSide .likedList li > .reactions { grid-column: 2 / 4; } }
 
 @media (max-width: 960px) { .favBody { grid-template-columns: minmax(0, 1fr); } }
 @media (max-width: 480px) { .favTabs button { min-height: 34px; padding: 0 10px; font-size: 12.5px; } .favFeature { padding: 10px; } }
