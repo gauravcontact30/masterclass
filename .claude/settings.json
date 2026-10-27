@@ -17,7 +17,8 @@
       "Bash(node __TRACKED_VAR__/ac.js)",
       "Bash(node __TRACKED_VAR__/an.js)",
       "Bash(grep -n 'ipynb\\)\\)' __TRACKED_VAR__/an.js)",
-      "Bash(node __TRACKED_VAR__/ne.js)"
+      "Bash(node __TRACKED_VAR__/ne.js)",
+      "mcp__plugin_vercel_vercel__add_project_domain"
     ]
   }
 }

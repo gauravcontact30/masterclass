@@ -1,5 +1,6 @@
 "use client";
 
+import { TECH_BUZZ_TRACKED } from "@/lib/tech-buzz-sections";
 import { useEffect, useMemo, useState, useSyncExternalStore, type CSSProperties } from "react";
 import Image from "next/image";
 import Link from "next/link";
@@ -12,7 +13,8 @@ import { LanguageSwitcher } from "./language-switcher";
 import { BrandMark } from "./brand-mark";
 import { useLanguage } from "./language-provider";
 import { getDiwaliFestiveSaleInfo } from "@/lib/festive-sale";
-import { DEFAULT_READING_FONT_ID, popularity, READING_FONTS, techLogo, type TechBuzzCard } from "@/lib/tech-buzz-public";
+import { DEFAULT_READING_FONT_ID, popularity, READING_FONTS, logoOf, techLogo, type TechBuzzCard } from "@/lib/tech-buzz-public";
+import { TechIcon } from "./tech-icon";
 import { isUnsplash, unoptimizedRemote, unsplashLoader } from "@/lib/image-loaders";
 import { loadGoogleFont } from "@/lib/google-fonts";
 import { FontFamilyDropdown } from "./font-family-dropdown";
@@ -167,7 +169,7 @@ function Stars({ rating }: { rating: TechBuzzCard["rating"] }) {
 }
 
 function Thumb({ card, size }: { card: TechBuzzCard; size: "list" | "grid" | "hero" }) {
-  const logo = techLogo(card.techId);
+  const logo = logoOf(card);
   return <span className={styles.thumb} data-size={size} style={{ "--tone": toneOf(card.technology) } as CSSProperties} title={card.photoCredit}>
     <Image src={card.coverImage} loader={loaderFor(card.coverImage)} alt="" fill sizes={size === "hero" ? "(max-width: 900px) 100vw, 640px" : size === "grid" ? "(max-width: 640px) 100vw, 360px" : "140px"}
       unoptimized={remote(card.coverImage)} className={styles.thumbImage} preload={size === "hero"} />
@@ -481,7 +483,7 @@ export function TechBuzzBlog({ cards, groups, showcase = false }: { cards: TechB
     {showcase && <TechBuzzShowcase cards={cards} />}
 
     {/* 2. Featured Technology Learning Tracks Bar with Proper Pagination */}
-    <section className={styles.techTracksSection} aria-label={t("techBuzzPopularTracks")}>
+    <section data-track-topic={TECH_BUZZ_TRACKED.tracks} className={styles.techTracksSection} aria-label={t("techBuzzPopularTracks")}>
       <div className={styles.techTracksHeader}>
         <div className={styles.techTracksTitleGroup}>
           <span className={styles.techTracksTitle}><Zap size={15} aria-hidden="true" />{t("techBuzzPopularTracks")}</span>
@@ -558,7 +560,7 @@ export function TechBuzzBlog({ cards, groups, showcase = false }: { cards: TechB
 
     {/* 3. Curated Learning Roadmaps */}
     {!filtered && (
-      <section className={styles.roadmapsSection} aria-label="Curated technology learning roadmaps">
+      <section data-track-topic={TECH_BUZZ_TRACKED.roadmaps} className={styles.roadmapsSection} aria-label="Curated technology learning roadmaps">
         <div className={styles.roadmapsHeader}>
           <div>
             <span className={styles.roadmapsKicker}><Compass size={14} aria-hidden="true" />{t("techBuzzRoadmapsKicker")}</span>
@@ -638,6 +640,7 @@ export function TechBuzzBlog({ cards, groups, showcase = false }: { cards: TechB
     >
       {/* Left Sidebar: Categories & Topic Navigation with Collapse / Expand */}
       <aside
+        data-track-topic={TECH_BUZZ_TRACKED.topics}
         className={`${styles.topics} ${leftCollapsed ? styles.railCollapsed : ""}`}
         data-collapsed={leftCollapsed ? "true" : "false"}
         aria-label="Topics and reading list"
@@ -775,7 +778,7 @@ export function TechBuzzBlog({ cards, groups, showcase = false }: { cards: TechB
       </aside>
 
       {/* Main Feed */}
-      <main className={styles.feed} aria-label="Stories">
+      <main data-track-topic={TECH_BUZZ_TRACKED.feed} className={styles.feed} aria-label="Stories">
         {/* Active Filter Notification */}
         {(topic || activeRoadmap || query.trim()) && (
           <div className={styles.filterNote} role="status">
@@ -792,10 +795,10 @@ export function TechBuzzBlog({ cards, groups, showcase = false }: { cards: TechB
 
         {/* Hero Featured Masterclass Card */}
         {hero && (
-          <article className={styles.hero}>
+          <article data-track-topic={TECH_BUZZ_TRACKED.featured} className={styles.hero}>
             <div className={styles.heroBadgeRow}>
               <span className={styles.heroFeaturedPill}><Flame size={13} />Featured Masterclass</span>
-              <span className={styles.heroEyebrow} style={{ color: hero.color }}>{hero.technology} · {hero.category}</span>
+              <span className={styles.heroEyebrow} style={{ color: hero.color }}><TechIcon item={hero} size={16} />{hero.technology} · {hero.category}</span>
             </div>
 
             <Link href={`/tech-buzz/${hero.slug}`} className={styles.heroLink}>
@@ -846,7 +849,7 @@ export function TechBuzzBlog({ cards, groups, showcase = false }: { cards: TechB
 
         {/* Explore By Category: Tabs format with pagination (5 tabs per page) */}
         {!filtered && spotlight.length > 0 && (
-          <section className={styles.categorySection} aria-labelledby="explore-heading">
+          <section data-track-topic={TECH_BUZZ_TRACKED.categories} className={styles.categorySection} aria-labelledby="explore-heading">
             <div className={styles.categorySectionHeader}>
               <div className={styles.categoryTitleGroup}>
                 <h2 id="explore-heading" className={styles.categorySectionTitle}>
@@ -981,7 +984,7 @@ export function TechBuzzBlog({ cards, groups, showcase = false }: { cards: TechB
                           />
                           <span>{card.author.name}</span>
                         </span>
-                        <span className={styles.eyebrow} style={{ color: card.color }}>{card.technology}</span>
+                        <span className={styles.eyebrow} style={{ color: card.color }}><TechIcon item={card} />{card.technology}</span>
                       </div>
 
                       <h3>{card.title}</h3>
@@ -1014,6 +1017,7 @@ export function TechBuzzBlog({ cards, groups, showcase = false }: { cards: TechB
 
       {/* Right Sidebar: Highlights & Top Rated with Collapse / Expand */}
       <aside
+        data-track-topic={TECH_BUZZ_TRACKED.highlights}
         className={`${styles.sidebar} ${rightCollapsed ? styles.railCollapsed : ""}`}
         data-collapsed={rightCollapsed ? "true" : "false"}
         aria-label="Highlights and top rated"
@@ -1161,7 +1165,7 @@ export function TechBuzzBlog({ cards, groups, showcase = false }: { cards: TechB
                       <Link href={`/tech-buzz/${card.slug}`}>
                         <small>{card.milestone!.label}</small>
                         <b>{card.milestone!.value}</b>
-                        <span>{card.technology}</span>
+                        <span><TechIcon item={card} size={13} />{card.technology}</span>
                       </Link>
                     </li>
                   ))}

@@ -2,6 +2,7 @@ import "server-only";
 import { generateText, gateway, Output } from "ai";
 import { z } from "zod";
 import { learningScenePrompt } from "@/lib/learning-image";
+import { favouriteTag, type FavouriteTopic } from "@/lib/tech-buzz-favourites";
 import { DAILY_TAG, DAILY_TRACKS, dailyDateTag, dailyTrackTag, isInternalTag, istDate, type DailyTrack } from "@/lib/tech-buzz-sections";
 import type { TechBuzzArticle } from "@/lib/tech-buzz-data";
 import { providerConfigured, providerModel } from "./ai-providers";
@@ -157,9 +158,11 @@ async function review(story: Draft, notes: string) {
 const slugify = (text: string) => text.toLowerCase().normalize("NFKD").replace(/[^\w\s-]/g, "").trim().replace(/[\s_]+/g, "-").replace(/-+/g, "-");
 const dayNumber = (date: string) => Math.floor(Date.parse(`${date}T00:00:00Z`) / 86_400_000);
 
-async function writeStory(track: DailyTrack, date: string, runStarted = Date.now()): Promise<TechBuzzArticle> {
-  const angle = track.angles[dayNumber(date) % track.angles.length];
-  const { output, verdict, sources } = await researchedDraft(track, angle, date);
+type StoryOptions = { angle?: string; tags?: string[]; daily?: boolean; budget?: { draftMs: number; rewriteBeforeMs: number } };
+
+async function writeStory(track: DailyTrack, date: string, runStarted = Date.now(), { angle: ownAngle, tags = [], daily = true, budget }: StoryOptions = {}): Promise<TechBuzzArticle> {
+  const angle = ownAngle ?? track.angles[dayNumber(date) % track.angles.length];
+  const { output, verdict, sources } = await researchedDraft(track, angle, date, undefined, budget);
   const slug = `${track.id}-${date}-${slugify(output.title)}`.slice(0, 99).replace(/-+$/, "");
   // Thumbnail and blog image are painted together; a failed picture keeps the story (the page shows the technology logo).
   const paintMs = SAVE_BY_MS - (Date.now() - runStarted);
@@ -189,7 +192,7 @@ async function writeStory(track: DailyTrack, date: string, runStarted = Date.now
     rating: { average: 5, count: 0, breakdown: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 } },
     author: { name: "MCB Editorial", role: "Tech Buzz Daily Desk", avatar: "/images/brand/mcb-avatar.svg", handle: "@mcb", verified: true },
     coverImage: coverUrl,
-    tags: [...output.tags.slice(0, 6), DAILY_TAG, dailyDateTag(date), dailyTrackTag(track.id)],
+    tags: [...output.tags.slice(0, 6), ...(daily ? [DAILY_TAG, dailyDateTag(date), dailyTrackTag(track.id)] : []), ...tags],
     rankingScore: 95,
     source: { name: "MasterClass Buddy", domain: "masterclass", trustScore: "", editorScore: Math.round(verdict.score * 10) / 10, ...(sources.length ? { basedOn: sources } : {}) },
     summaryBullets: output.summaryBullets.slice(0, 5),
@@ -259,6 +262,24 @@ export async function refineTechBuzzStory(slug: string, { dryRun = false } = {})
   };
   if (!dryRun) await updateTechBuzzContent(slug, content);
   return { slug, score: verdict.score, sources: sources.length, sections: content.contentSections.length, issues: verdict.issues };
+}
+
+/**
+ * Writes the researched, editor-reviewed story for one "Community favourites" topic (lib/tech-buzz-favourites.ts),
+ * tagged `fav:<id>` and kept out of the daily edition. Run from scripts/write-favourite-stories.ts, so it has no
+ * 300 s route limit.
+ */
+export async function writeFavouriteStory(topic: FavouriteTopic, date = istDate()) {
+  const track: DailyTrack = {
+    id: topic.id, label: topic.label, short: topic.label, techIds: [topic.techId], angles: [topic.angle],
+    category: topic.category, technology: topic.technology, techId: topic.techId, color: topic.color, officialSites: topic.officialSites,
+  };
+  // No route limit here: a run start ten minutes ahead leaves the pictures all the time they need.
+  const story = await writeStory(track, date, Date.now() + 10 * 60_000, {
+    angle: topic.angle, tags: [favouriteTag(topic.id)], daily: false, budget: { draftMs: 420_000, rewriteBeforeMs: Infinity },
+  });
+  expireTechBuzzCache();
+  return story;
 }
 
 export type DailyRun = { date: string; written: string[]; skipped: string[]; failed: { track: string; error: string }[] };

@@ -1,5 +1,6 @@
 "use client";
 
+import { TECH_BUZZ_TRACKED } from "@/lib/tech-buzz-sections";
 import { useState, useEffect, useCallback, useMemo, useSyncExternalStore } from "react";
 import Image from "next/image";
 import Link from "next/link";
@@ -22,7 +23,7 @@ import {
   Layers,
   Flame
 } from "lucide-react";
-import { techLogo, type TechBuzzCard, type TechBuzzMemberContent, type TechBuzzPreview } from "@/lib/tech-buzz-public";
+import { logoOf, type TechBuzzCard, type TechBuzzMemberContent, type TechBuzzPreview } from "@/lib/tech-buzz-public";
 import { isUnsplash, unoptimizedRemote, unsplashLoader } from "@/lib/image-loaders";
 import { LanguageSwitcher } from "./language-switcher";
 import { useLanguage } from "./language-provider";
@@ -58,6 +59,11 @@ const loaderFor = (src: string) => (isUnsplash(src) ? unsplashLoader : undefined
 /** Whether this browser holds a Supabase session cookie; null during the server render. */
 const hasSessionCookie = () => /(?:^|;\s*)sb-[^=]+-auth-token/.test(document.cookie);
 const noSubscription = () => () => {};
+/** Medium's byline date, "Oct 27, 2026", in IST so the server and browser agree. */
+const storyDate = (iso: string) => {
+  const time = Date.parse(iso);
+  return Number.isNaN(time) ? iso : new Date(time).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "Asia/Kolkata" });
+};
 
 export function TechBuzzArticleView({ article, related, prevStory, nextStory }: Props) {
   const { t, language } = useLanguage();
@@ -326,7 +332,7 @@ export function TechBuzzArticleView({ article, related, prevStory, nextStory }: 
       </div>
 
       {/* 2. Top Sticky Navigation */}
-      <nav className={styles.stickyArticleNav} aria-label="Article navigation">
+      <nav data-track-topic={TECH_BUZZ_TRACKED.storyNav} className={styles.stickyArticleNav} aria-label="Article navigation">
         <div className={styles.stickyNavInner}>
           <Link href="/tech-buzz" className={styles.backLink} aria-label={t("techBuzzBackToGuides")}>
             <ArrowLeft size={16} aria-hidden="true" />
@@ -371,7 +377,7 @@ export function TechBuzzArticleView({ article, related, prevStory, nextStory }: 
       </nav>
 
       {/* 3. Hero Header Section */}
-      <header className={styles.articleHeroContainer}>
+      <header data-track-topic={TECH_BUZZ_TRACKED.storyHeader} className={styles.articleHeroContainer}>
         <div className={styles.articleHeroInner}>
           {/* Breadcrumbs */}
           <nav aria-label="Breadcrumbs" className={styles.breadcrumbs}>
@@ -382,8 +388,8 @@ export function TechBuzzArticleView({ article, related, prevStory, nextStory }: 
             <span>{article.category}</span>
             <span>/</span>
             <span style={{ color: "#0f172a", fontWeight: 600, display: "inline-flex", alignItems: "center", gap: "0.35rem" }}>
-              {techLogo(article.techId) && (
-                <Image src={techLogo(article.techId)!} alt="" width={15} height={15} style={{ borderRadius: 3 }} />
+              {logoOf(article) && (
+                <Image src={logoOf(article)!} alt="" width={15} height={15} style={{ borderRadius: 3 }} />
               )}
               <span>{article.technology}</span>
             </span>
@@ -395,8 +401,8 @@ export function TechBuzzArticleView({ article, related, prevStory, nextStory }: 
               <span>{article.category}</span>
             </div>
             <div style={{ display: "inline-flex", alignItems: "center", gap: "0.35rem", padding: "0.25rem 0.65rem", borderRadius: "9999px", background: "#f8fafc", border: "1px solid #e2e8f0", fontSize: "0.75rem", fontWeight: 700, color: "#334155" }}>
-              {techLogo(article.techId) && (
-                <Image src={techLogo(article.techId)!} alt="" width={15} height={15} style={{ borderRadius: 2 }} />
+              {logoOf(article) && (
+                <Image src={logoOf(article)!} alt="" width={15} height={15} style={{ borderRadius: 2 }} />
               )}
               <span>{article.technology}</span>
             </div>
@@ -426,7 +432,7 @@ export function TechBuzzArticleView({ article, related, prevStory, nextStory }: 
                   )}
                 </div>
                 <div className={styles.authorMetaSub}>
-                  {article.author.role} • {article.publishedAt} • {article.readTimeMinutes} min read
+                  {article.author.role} · {article.readTimeMinutes} min read · <time dateTime={article.publishedAt}>{storyDate(article.publishedAt)}</time>
                 </div>
               </div>
             </div>
@@ -462,7 +468,7 @@ export function TechBuzzArticleView({ article, related, prevStory, nextStory }: 
             fill
             className={styles.coverImage}
             preload
-            sizes="(max-width: 900px) 100vw, 900px"
+            sizes="(max-width: 712px) 100vw, 680px"
             loader={loaderFor(article.coverImage)} unoptimized={remote(article.coverImage)}
           />
           {article.photoCredit && <small className={styles.coverCredit}>{article.photoCredit}</small>}
@@ -642,7 +648,7 @@ export function TechBuzzArticleView({ article, related, prevStory, nextStory }: 
 
           {/* Member paywall: the rest of the story is never sent to non-members */}
           {!isSubscribed ? (
-            <div className={`${styles.paywallCurtain} paywalled-story`}>
+            <div data-track-topic={TECH_BUZZ_TRACKED.paywall} className={`${styles.paywallCurtain} paywalled-story`}>
               <div className={styles.paywallFade} />
 
               {article.outline.length > 0 && (
@@ -678,7 +684,7 @@ export function TechBuzzArticleView({ article, related, prevStory, nextStory }: 
             </div>
           ) : memberContent && (
             /* Members: the rest of the story */
-            <div>
+            <div data-track-topic={TECH_BUZZ_TRACKED.storyBody}>
               <div className={styles.unlockedBanner}>
                 <CheckCircle2 size={16} color="#059669" />
                 <span>Member access: the full story, code examples and discussion.</span>
@@ -696,9 +702,10 @@ export function TechBuzzArticleView({ article, related, prevStory, nextStory }: 
                     )}
 
                     {section.image && (
-                      <figure style={{ margin: "0 0 1.5rem" }}>
+                      <figure className={styles.proseFigure}>
                         {/* eslint-disable-next-line @next/next/no-img-element -- generated blog images live in Supabase Storage */}
-                        <img src={section.image.src} alt={section.image.alt} loading="lazy" decoding="async" style={{ width: "100%", height: "auto", aspectRatio: "3 / 2", objectFit: "cover", borderRadius: 14, display: "block" }} />
+                        <img src={section.image.src} alt={section.image.alt} loading="lazy" decoding="async" />
+                        {section.image.alt && <figcaption>{section.image.alt}</figcaption>}
                       </figure>
                     )}
 
@@ -760,7 +767,7 @@ export function TechBuzzArticleView({ article, related, prevStory, nextStory }: 
               )}
 
               {/* Developer Discussion Comments Thread */}
-              <section className={styles.commentsContainer}>
+              <section data-track-topic={TECH_BUZZ_TRACKED.discussion} className={styles.commentsContainer}>
                 <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "1.25rem", fontWeight: 700, color: "#0f172a", marginBottom: "1.5rem" }}>
                   <MessageSquare size={20} color="#ea580c" />
                   <span>Discussion ({comments.length})</span>
@@ -875,8 +882,8 @@ export function TechBuzzArticleView({ article, related, prevStory, nextStory }: 
                   </div>
                   <h4 className={styles.storyNavTitle}>{prevStory.title}</h4>
                   <div className={styles.storyNavMeta}>
-                    {techLogo(prevStory.techId) && (
-                      <Image src={techLogo(prevStory.techId)!} alt="" width={15} height={15} style={{ borderRadius: 2 }} />
+                    {logoOf(prevStory) && (
+                      <Image src={logoOf(prevStory)!} alt="" width={15} height={15} style={{ borderRadius: 2 }} />
                     )}
                     <span>{prevStory.technology}</span>
                     <span>•</span>
@@ -893,8 +900,8 @@ export function TechBuzzArticleView({ article, related, prevStory, nextStory }: 
                   </div>
                   <h4 className={styles.storyNavTitle}>{nextStory.title}</h4>
                   <div className={styles.storyNavMeta} style={{ justifyContent: "flex-end" }}>
-                    {techLogo(nextStory.techId) && (
-                      <Image src={techLogo(nextStory.techId)!} alt="" width={15} height={15} style={{ borderRadius: 2 }} />
+                    {logoOf(nextStory) && (
+                      <Image src={logoOf(nextStory)!} alt="" width={15} height={15} style={{ borderRadius: 2 }} />
                     )}
                     <span>{nextStory.technology}</span>
                     <span>•</span>
@@ -931,7 +938,7 @@ export function TechBuzzArticleView({ article, related, prevStory, nextStory }: 
       </main>
 
       {/* 5. More from Master Class Buddy Blogs - Full Width Section */}
-      <section className={styles.moreBlogsSection} aria-label="More tech buzz articles">
+      <section data-track-topic={TECH_BUZZ_TRACKED.more} className={styles.moreBlogsSection} aria-label="More tech buzz articles">
         <div className={styles.moreBlogsInner}>
           <div className={styles.moreBlogsHeader}>
             <h2 className={styles.moreBlogsTitle}>More from Master Class Buddy — Blogs</h2>
@@ -960,9 +967,9 @@ export function TechBuzzArticleView({ article, related, prevStory, nextStory }: 
                     sizes="(max-width: 640px) 100vw, 33vw"
                     loader={loaderFor(rel.coverImage)} unoptimized={remote(rel.coverImage)}
                   />
-                  {techLogo(rel.techId) && (
+                  {logoOf(rel) && (
                     <div style={{ position: "absolute", bottom: "8px", left: "8px", width: "28px", height: "28px", borderRadius: "8px", background: "#ffffff", display: "grid", placeItems: "center", boxShadow: "0 2px 8px rgba(0,0,0,0.2)", zIndex: 2 }}>
-                      <Image src={techLogo(rel.techId)!} alt="" width={18} height={18} />
+                      <Image src={logoOf(rel)!} alt="" width={18} height={18} />
                     </div>
                   )}
                 </div>

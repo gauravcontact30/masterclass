@@ -1476,3 +1476,30 @@
   .takeaways { padding: 1rem 1rem 1.05rem; border-radius: 12px; }
   .proseCallout { font-size: .9375rem; padding: .8rem .9rem; }
 }
+
+/* ── Medium-style reading layout (2026-10-27): one centred 680px column for the title, byline, cover and every part
+   of the story, Medium's paragraph rhythm and quiet quotes. Font sizes stay on the 25/18/16 scale above. ── */
+.articleHeroContainer { padding: clamp(1.25rem, 3vw, 2.75rem) 24px 0; }
+.articleHeroInner, .articleBodyInner { max-width: 680px; margin-inline: auto; }
+.articleBodyLayout { padding: 0 24px; }
+.articleTitle { margin-bottom: .6rem; letter-spacing: -.016em; color: #242424; }
+.articleSubtitle { margin-bottom: 1.75rem; color: #6b6b6b; }
+.authorBylineBar { margin-bottom: 2rem; padding: .9rem 0; border-color: #f2f2f2; }
+.coverImageWrapper { max-width: 680px; aspect-ratio: 16 / 9; margin: 0 auto 2.5rem; border-radius: 4px; box-shadow: none; }
+.proseFigure { margin: 2.25em 0; }
+.proseFigure img { display: block; width: 100%; height: auto; aspect-ratio: 3 / 2; object-fit: cover; border-radius: 4px; background: #f2f2f2; }
+.proseFigure figcaption { margin-top: 10px; color: #6b6b6b; font-size: 14px; line-height: 1.45; text-align: center; }
+.proseHeading { margin: 2.25em 0 .55em; color: #242424; letter-spacing: -.012em; }
+.proseParagraph { margin: 0 0 1.55em; color: #242424; letter-spacing: -.003em; }
+.proseList, .proseOrdered { margin-bottom: 1.55em; color: #242424; }
+.proseQuote { margin: 2em 0; padding: 0 0 0 20px; border-left: 3px solid #242424; border-radius: 0; background: none; color: #242424; font-style: italic; font-size: 18px; line-height: 1.6; }
+.proseQuote cite { color: #6b6b6b; }
+.takeaways { margin-bottom: 2.25rem; }
+@media (max-width: 600px) {
+  .articleHeroContainer { padding-inline: 16px; }
+  .articleBodyLayout { padding-inline: 16px; }
+  .coverImageWrapper { margin-bottom: 2rem; border-radius: 0; margin-inline: -16px; width: calc(100% + 32px); max-width: none; }
+  .proseFigure { margin-inline: -16px; }
+  .proseFigure img { border-radius: 0; }
+  .proseFigure figcaption { padding-inline: 16px; }
+}

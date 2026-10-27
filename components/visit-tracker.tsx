@@ -88,7 +88,7 @@ export function VisitTracker() {
     };
     // Only UI labels and route paths: never typed text, form values or query strings.
     const onClick = (event: MouseEvent) => {
-      if (pathname !== "/" && !pathname.startsWith("/learning")) return;
+      if (pathname !== "/" && !pathname.startsWith("/learning") && !pathname.startsWith("/tech-buzz")) return;
       const control = event.target instanceof Element ? event.target.closest<HTMLElement>("a,button,summary,[data-track-option]") : null;
       if (!control || control.closest('form,[contenteditable="true"],[data-track-ignore]')) return;
       const option = (control.dataset.trackOption || control.getAttribute("aria-label") || control.textContent || "").trim().replace(/\s+/g, " ").slice(0, 100);
@@ -97,7 +97,8 @@ export function VisitTracker() {
       if (control instanceof HTMLAnchorElement) {
         try { const url = new URL(control.href); if (url.origin === location.origin) targetPath = `${url.pathname}${url.hash}`.slice(0, 300); } catch { /* not navigable */ }
       }
-      const container = control.closest("[data-track-topic],article,section");
+      // A named section (data-track-topic) wins over a card's own <article> inside it.
+      const container = control.closest("[data-track-topic]") ?? control.closest("article,section");
       const topic = (container?.getAttribute("data-track-topic") || container?.querySelector("h2,h3,h1")?.textContent || container?.id || pathname.split("/").filter(Boolean).slice(1).join(" / ") || "General").trim().slice(0, 120);
       send({ type: "interaction", path: pathname, topic, option, target_path: targetPath });
     };

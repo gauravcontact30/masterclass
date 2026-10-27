@@ -312,6 +312,7 @@ export const en = {
   "yourPreparation": "Your preparation. Your next step.",
   "focusedLearningSpace": "A focused learning space for the preparation you choose.",
   "techBuzz": "Tech Buzz",
+  "techBuzzBlogs": "Tech-Buzz - Blogs",
   "starRating": "Star Rating",
   "rateThisBlog": "Rate this blog",
   "startLearning": "Start learning",

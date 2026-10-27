@@ -1,5 +1,6 @@
 import type { ArticleComment, TechBuzzArticle } from "./tech-buzz-data";
 import { DAILY_TAG, isInternalTag } from "./tech-buzz-sections";
+import { topicsOf } from "./tech-buzz-favourites";
 
 /**
  * What each Tech Buzz audience may receive. Lists get light cards, everyone gets the free preview of an article, and
@@ -29,6 +30,8 @@ const ownText = (text: string | undefined) => (text && !PLATFORM.test(text) ? te
 
 /** Learning Dashboard technology ids for stories saved before techId existed, matched on their technology label. */
 const TECH_IDS: [RegExp, string][] = [
+  [/claude|anthropic/i, "claude"], [/openai|\bgpt/i, "openai"], [/google|gemini|vertex/i, "google"], [/microsoft|azure|copilot|semantic kernel|autogen/i, "microsoft"],
+  [/agent frameworks?|crewai|llamaindex/i, "langgraph"], [/ai trends|emerging/i, "agentic-ai"],
   [/next\.?js/i, "nextjs"], [/typescript/i, "typescript"], [/postgres/i, "postgresql"], [/agentic|mcp|rag|reasoning/i, "agentic-ai"],
   [/rust/i, "rust"], [/kubernetes|crossplane|platform engineering|ebpf/i, "kubernetes"],
   [/react/i, "react"], [/python/i, "python"], [/docker/i, "docker"], [/\baws\b/i, "aws"],
@@ -41,7 +44,7 @@ const TOPIC_LABELS: Record<string, string> = {
   nextjs: "Next.js 16+", react: "React 19+", typescript: "TypeScript", postgresql: "PostgreSQL 17", "agentic-ai": "Agentic AI",
   rust: "Rust", kubernetes: "Kubernetes", aws: "AWS Cloud", python: "Python", docker: "Docker", "system-design": "System Design",
   langchain: "LangChain", langgraph: "LangGraph", langsmith: "LangSmith", langflow: "LangFlow", n8n: "n8n", redis: "Redis",
-  playwright: "Playwright", vitest: "Vitest", graphql: "GraphQL",
+  playwright: "Playwright", vitest: "Vitest", graphql: "GraphQL", claude: "Claude Code", openai: "OpenAI", google: "Google AI", microsoft: "Microsoft AI",
 };
 export const topicLabel = (card: Pick<TechBuzzCard, "techId" | "technology" | "category">) =>
   card.techId ? TOPIC_LABELS[card.techId] ?? card.technology.replace(/\s+(&|\d).*$/, "") : card.category;
@@ -58,6 +61,10 @@ export type TechBuzzCard = {
   photoCredit?: string;
   /** Set on stories of the daily 5:00 AM (IST) edition. */
   daily?: { date: string; track: string };
+  /** The "Community favourites" topics it belongs to (lib/tech-buzz-favourites.ts). */
+  topics: string[];
+  /** The editor's pre-publish score out of 5, when it had one. */
+  editorScore?: number;
 };
 
 export function toCard(article: TechBuzzArticle): TechBuzzCard {
@@ -73,6 +80,8 @@ export function toCard(article: TechBuzzArticle): TechBuzzCard {
     milestone: article.builderMetrics && ownText(article.builderMetrics.metricLabel) && ownText(article.builderMetrics.metricValue)
       ? { label: article.builderMetrics.metricLabel, value: article.builderMetrics.metricValue } : undefined,
     daily: dailyOf(article.tags ?? []),
+    topics: topicsOf({ title: article.title, technology: article.technology, tags: article.tags ?? [] }),
+    editorScore: article.source?.editorScore,
   };
 }
 
@@ -106,12 +115,14 @@ export const popularity = (card: Pick<TechBuzzCard, "claps" | "likes" | "reactio
   card.claps + card.likes * 3 + card.reactions * 2 + card.commentsCount * 5 + card.rating.average * Math.log10(card.rating.count + 1) * 40;
 
 /** Technologies with a logo in public/images/tech (64px PNGs); TanStack Start shares TanStack's. */
-const LOGOS = new Set(["agentic-ai","angular","aws","claude","django","docker","express","fastapi","flutter","git","go","graphql","javascript","kubernetes","langchain","langflow","langgraph","langsmith","linux","n8n","nestjs","nextjs","nodejs","playwright","postgresql","python","react","redis","rust","supabase","system-design","tanstack","typescript","vitest","vue","zustand"]);
+const LOGOS = new Set(["agentic-ai","angular","aws","claude","django","docker","express","fastapi","flutter","git","go","google","graphql","javascript","kubernetes","langchain","langflow","langgraph","langsmith","linux","microsoft","n8n","nestjs","nextjs","nodejs","openai","playwright","postgresql","python","react","redis","rust","supabase","system-design","tanstack","typescript","vitest","vue","zustand"]);
 const LOGO_ALIAS: Record<string, string> = { "tanstack-start": "tanstack" };
 export function techLogo(techId?: string) {
   const id = techId && (LOGO_ALIAS[techId] ?? techId);
   return id && LOGOS.has(id) ? `/images/tech/${id}.png` : undefined;
 }
+/** A story's or card's logo, resolving stories saved without a techId from their technology label. */
+export const logoOf = (item: Pick<TechBuzzArticle, "techId" | "technology">) => techLogo(techIdOf(item));
 
 /** The font-family choices offered everywhere (Application Typography, Tech Buzz, Notepad): Inter and faces like it. */
 export interface FontOption {

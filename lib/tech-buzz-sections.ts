@@ -8,7 +8,7 @@
 export const DAILY_TAG = "mcb-daily";
 export const dailyDateTag = (date: string) => `daily:${date}`;
 export const dailyTrackTag = (track: string) => `daily-track:${track}`;
-export const isInternalTag = (tag: string) => tag === DAILY_TAG || tag.startsWith("daily:") || tag.startsWith("daily-track:");
+export const isInternalTag = (tag: string) => tag === DAILY_TAG || tag.startsWith("daily:") || tag.startsWith("daily-track:") || tag.startsWith("fav:");
 
 export type DailyTrack = {
   id: string;
@@ -109,7 +109,7 @@ export type TechGroup = { id: string; label: string; blurb: string; techIds: str
 
 /** The technology sections of the page, in order; a story lands in the first group that matches it. */
 export const TECH_GROUPS: TechGroup[] = [
-  { id: "agentic", label: "Agentic AI & LLM Apps", blurb: "LangChain, LangGraph, LangSmith, LangFlow, RAG and agents in production.", techIds: ["agentic-ai", "langchain", "langgraph", "langsmith", "langflow", "claude"], categories: /agentic|\bai\b|llm|rag/i, color: "#7c3aed", tint: "#f3effe" },
+  { id: "agentic", label: "Agentic AI & LLM Apps", blurb: "LangChain, LangGraph, LangSmith, LangFlow, RAG and agents in production.", techIds: ["agentic-ai", "langchain", "langgraph", "langsmith", "langflow", "claude", "openai", "google", "microsoft"], categories: /agentic|\bai\b|llm|rag/i, color: "#7c3aed", tint: "#f3effe" },
   { id: "automation", label: "Workflow Automation (n8n)", blurb: "n8n workflows, triggers, AI nodes and self-hosting.", techIds: ["n8n"], categories: /automation|n8n/i, color: "#ea4b71", tint: "#fdeef2" },
   { id: "system-design", label: "System Design & Architecture", blurb: "Scalable systems, event streams, caching and real-world blueprints.", techIds: ["system-design"], categories: /system|architecture|design/i, color: "#0f766e", tint: "#e6f4f1" },
   { id: "cloud", label: "Cloud, DevOps & Containers", blurb: "AWS, Docker, Kubernetes, CI/CD and platform engineering.", techIds: ["aws", "docker", "kubernetes"], categories: /cloud|devops|platform|infra/i, color: "#d97706", tint: "#fdf3e3" },
@@ -128,3 +128,14 @@ export function techGroupOf(story: { techId?: string; category: string }): TechG
 
 /** The IST calendar date (YYYY-MM-DD) for a moment. */
 export const istDate = (now = Date.now()) => new Date(now + 5.5 * 3600_000).toISOString().slice(0, 10);
+
+/**
+ * The named parts of /tech-buzz and its stories, set as data-track-topic so the visit tracker can say which part a
+ * click came from (components/visit-tracker.tsx); the Super Admin "Tech-Buzz - Blogs" page reports them in this order.
+ */
+export const TECH_BUZZ_TRACKED = {
+  daily: "Today's 5 at 5", fresh: "Fresh & Latest", stars: "Star Rated", favourites: "Community favourites", n8n: "n8n Workflow Blogs",
+  technologies: "Technology sections", tracks: "Popular tracks", roadmaps: "Learning roadmaps", topics: "Topics sidebar", featured: "Featured story",
+  categories: "Explore categories", feed: "Story feed", highlights: "Highlights sidebar",
+  storyNav: "Story top bar", storyHeader: "Story header", storyBody: "Story body", paywall: "Member paywall", discussion: "Discussion", more: "More stories",
+} as const;

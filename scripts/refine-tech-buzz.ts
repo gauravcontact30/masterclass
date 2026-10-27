@@ -8,14 +8,14 @@
  *   npm run tech-buzz:refine -- --limit 5                 # the 5 newest published stories
  */
 import { refineTechBuzzStory } from "../lib/server/tech-buzz-daily";
-import { listPublishedTechBuzzArticles } from "../lib/server/tech-buzz-storage";
+import { listTechBuzzArticles } from "../lib/server/tech-buzz-storage";
 
 const option = (name: string) => { const i = process.argv.indexOf(`--${name}`); return i > 0 ? process.argv[i + 1] : undefined; };
 const dryRun = process.argv.includes("--dry-run");
 
 async function main() {
   const one = option("slug");
-  const slugs = one ? [one] : (await listPublishedTechBuzzArticles())
+  const slugs = one ? [one] : (await listTechBuzzArticles(false))
     .sort((a, b) => Date.parse(b.publishedAt) - Date.parse(a.publishedAt))
     .slice(0, Number(option("limit") ?? 1000)).map(story => story.slug);
   console.log(`${dryRun ? "Dry run: " : ""}${slugs.length} stories`);

@@ -5,8 +5,10 @@ import Link from "next/link";
 import { ArrowRight, CalendarDays, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Clock, Crown, Flame, Heart, Sparkles, Star, Sunrise, ThumbsDown, ThumbsUp, Workflow, Zap } from "lucide-react";
 import { BrandMark } from "./brand-mark";
 import { pageWindow } from "./pager";
-import { DAILY_TRACKS, OTHER_GROUP, TECH_GROUPS, techGroupOf, type TechGroup } from "@/lib/tech-buzz-sections";
-import { techLogo, type TechBuzzCard } from "@/lib/tech-buzz-public";
+import { DAILY_TRACKS, OTHER_GROUP, TECH_BUZZ_TRACKED, TECH_GROUPS, techGroupOf, type TechGroup } from "@/lib/tech-buzz-sections";
+import { logoOf, techLogo, type TechBuzzCard } from "@/lib/tech-buzz-public";
+import { TechIcon } from "./tech-icon";
+import { FAVOURITE_TOPICS } from "@/lib/tech-buzz-favourites";
 import styles from "./tech-buzz-showcase.module.css";
 import Image from "next/image";
 import { isUnsplash, unoptimizedRemote, unsplashLoader } from "@/lib/image-loaders";
@@ -99,7 +101,7 @@ function CardClap({ card, tone }: { card: TechBuzzCard; tone: "light" | "dark" }
 
 /** A story cover through next/image, so each card downloads a picture sized for it (`sizes`), not the stored original. */
 function Cover({ card, className, sizes }: { card: TechBuzzCard; className?: string; sizes: string }) {
-  const logo = techLogo(card.techId);
+  const logo = logoOf(card);
   return <span className={`${styles.cover} ${className ?? ""}`} style={{ "--tone": card.color } as CSSProperties}>
     {card.coverImage ? <Image src={card.coverImage} alt="" fill sizes={sizes} quality={75} loader={isUnsplash(card.coverImage) ? unsplashLoader : undefined} unoptimized={unoptimizedRemote(card.coverImage)} /> : null}
     {logo && <span className={styles.coverLogo}><Image src={logo} alt="" width={20} height={20} /></span>}
@@ -121,7 +123,7 @@ function DailyEdition({ cards }: { cards: TechBuzzCard[] }) {
   if (!picks.length) return null;
   const edition = picks.map(pick => pick.card.daily?.date).filter(Boolean).sort().at(-1);
   const [lead, ...rest] = picks;
-  return <section className={styles.daily} aria-labelledby="tb-daily">
+  return <section data-track-topic={TECH_BUZZ_TRACKED.daily} className={styles.daily} aria-labelledby="tb-daily">
     <div className={styles.dailyGlow} aria-hidden="true" />
     <header className={styles.dailyHead}>
       <p className={styles.dailyKicker}><Sunrise size={15} aria-hidden="true" />Fresh every morning · 5:00 AM IST</p>
@@ -196,14 +198,14 @@ function FreshLatest({ cards }: { cards: TechBuzzCard[] }) {
   const latest = useMemo(() => [...cards].sort((a, b) => b.publishedAt.localeCompare(a.publishedAt)), [cards]);
   const paged = usePaged(latest, 8);
   if (!latest.length) return null;
-  return <section className={styles.fresh} aria-labelledby="tb-fresh">
+  return <section data-track-topic={TECH_BUZZ_TRACKED.fresh} className={styles.fresh} aria-labelledby="tb-fresh">
     <SectionHead id="tb-fresh" icon={<Zap size={16} aria-hidden="true" />} kicker="Just published" title="Fresh & Latest" lede="The newest blogs on the most popular technologies, newest first." />
     <ol className={styles.timeline}>
       {paged.rows.map(card => <li key={card.id} style={{ "--tone": card.color } as CSSProperties}>
         <span className={styles.timelineHead}><span className={styles.timelineDot} aria-hidden="true" /><time dateTime={card.publishedAt}>{formatDate(card.publishedAt)}</time></span>
         <Link href={`/tech-buzz/${card.slug}`} className={styles.freshCard}>
           <Cover card={card} className={styles.freshCover} sizes="(max-width: 640px) 90vw, 240px" />
-          <span className={styles.freshTech}>{card.technology}</span>
+          <span className={styles.freshTech}><TechIcon item={card} />{card.technology}</span>
           <strong className={styles.cardTitle}>{card.title}</strong>
         </Link>
         <ReactionBar card={card} />
@@ -219,7 +221,7 @@ function StarRated({ cards }: { cards: TechBuzzCard[] }) {
   const rated = useMemo(() => cards.filter(card => card.rating.count > 0).sort((a, b) => bayes(b) - bayes(a)), [cards]);
   const paged = usePaged(rated, 5);
   if (!rated.length) return null;
-  return <section className={styles.stars} aria-labelledby="tb-stars">
+  return <section data-track-topic={TECH_BUZZ_TRACKED.stars} className={styles.stars} aria-labelledby="tb-stars">
     <SectionHead id="tb-stars" icon={<Star size={16} fill="currentColor" aria-hidden="true" />} kicker="Reader rated" title="Star Rating Blogs" lede="Ranked by readers' stars, weighted by how many rated them." />
     <ol className={styles.starList} start={paged.offset + 1}>
       {paged.rows.map((card, i) => { const rank = paged.offset + i + 1; return <li key={card.id} data-rank={rank}>
@@ -244,7 +246,7 @@ function N8nWorkflows({ cards }: { cards: TechBuzzCard[] }) {
   const flows = useMemo(() => cards.filter(card => card.techId === "n8n" || /n8n/i.test(`${card.technology} ${card.tags.join(" ")}`)).sort((a, b) => b.publishedAt.localeCompare(a.publishedAt)), [cards]);
   const paged = usePaged(flows, 6);
   if (!flows.length) return null;
-  return <section className={styles.n8n} aria-labelledby="tb-n8n">
+  return <section data-track-topic={TECH_BUZZ_TRACKED.n8n} className={styles.n8n} aria-labelledby="tb-n8n">
     <SectionHead id="tb-n8n" icon={<Workflow size={16} aria-hidden="true" />} kicker="Automation" title="n8n Workflow Blogs" lede="Triggers, AI agent nodes and production workflows, step by step." />
     <ol className={styles.canvas}>
       {paged.rows.map((card, i) => { const step = paged.offset + i; return <li key={card.id} className={styles.node}>
@@ -262,27 +264,72 @@ function N8nWorkflows({ cards }: { cards: TechBuzzCard[] }) {
   </section>;
 }
 
-/* ── 5. Most Liked on MCB - Tech Buzz (a ranked chart) ─────────────────────────────────────────────────────────── */
-function MostLiked({ cards }: { cards: TechBuzzCard[] }) {
+/* ── 5. Community favourites: the most liked stories, by topic (lib/tech-buzz-favourites.ts). A tab per topic
+   (WAI-ARIA tabs: arrow keys, Home and End); the topic's #1 is featured, the rest ranked beside it. Readers' likes
+   rank each topic; stories nobody has liked yet follow, by the editor's score, then rating, then date. ──────────── */
+const ALL_TOPICS = "all";
+function CommunityFavourites({ cards }: { cards: TechBuzzCard[] }) {
   const api = useContext(Reactions)!;
-  const liked = useMemo(() => cards.map(card => ({ card, likes: api.counts(card).likes })).filter(item => item.likes > 0).sort((a, b) => b.likes - a.likes), [cards, api]);
-  const paged = usePaged(liked, 5);
-  if (!liked.length) return null;
-  const top = liked[0].likes;
-  return <section className={styles.liked} aria-labelledby="tb-liked">
-    <SectionHead id="tb-liked" icon={<Heart size={16} fill="currentColor" aria-hidden="true" />} kicker="Community favourites" title={<>Most Liked on <span className={styles.mcb}><BrandMark size={22} />MCB - Tech Buzz</span></>} lede="The blogs readers liked most. Your likes move this chart." />
-    <ol className={styles.likedList} start={paged.offset + 1}>
-      {paged.rows.map(({ card, likes }, i) => <li key={card.id} style={{ "--share": `${Math.max(8, (likes / top) * 100)}%`, "--tone": card.color } as CSSProperties}>
-        <span className={styles.likedRank}>#{paged.offset + i + 1}</span>
-        <Link href={`/tech-buzz/${card.slug}`} className={styles.likedLink}>
-          <strong className={styles.cardTitle}>{card.title}</strong>
-          <span className={styles.likedBar} aria-hidden="true"><i /></span>
-          <span className={styles.meta}>{card.technology} · {formatDate(card.publishedAt)}</span>
+  const [topic, setTopic] = useState(ALL_TOPICS);
+  const ranked = useMemo(() => cards.map(card => ({ card, likes: api.counts(card).likes })).sort((a, b) =>
+    b.likes - a.likes || (b.card.editorScore ?? 0) - (a.card.editorScore ?? 0) || b.card.rating.average - a.card.rating.average || b.card.publishedAt.localeCompare(a.card.publishedAt)), [cards, api]);
+  const tabs = useMemo(() => [
+    { id: ALL_TOPICS, label: "All topics", color: "#be123c", logo: undefined as string | undefined, items: ranked.filter(item => item.likes > 0 || item.card.topics.length) },
+    ...FAVOURITE_TOPICS.map(entry => ({ id: entry.id, label: entry.label, color: entry.color, logo: techLogo(entry.techId), items: ranked.filter(item => item.card.topics.includes(entry.id)) })),
+  ].filter(tab => tab.items.length), [ranked]);
+  const active = tabs.find(tab => tab.id === topic) ?? tabs[0];
+  const rest = useMemo(() => active?.items.slice(1) ?? [], [active]);
+  const paged = usePaged(rest, 5);
+  if (!active) return null;
+  const [first] = active.items;
+  const top = Math.max(1, active.items[0].likes);
+  const onKey = (event: KeyboardEvent<HTMLButtonElement>, index: number) => {
+    const next = event.key === "ArrowRight" ? index + 1 : event.key === "ArrowLeft" ? index - 1 : event.key === "Home" ? 0 : event.key === "End" ? tabs.length - 1 : null;
+    if (next == null) return;
+    event.preventDefault();
+    const target = tabs[(next + tabs.length) % tabs.length];
+    pick(target.id);
+    document.getElementById(`tb-fav-tab-${target.id}`)?.focus();
+  };
+  const pick = (id: string) => { setTopic(id); paged.setPage(0); };
+  const share = (likes: number) => `${Math.max(6, (likes / top) * 100)}%`;
+  const likesLine = (likes: number) => likes ? `${compact(likes)} ${likes === 1 ? "like" : "likes"}` : "No likes yet · be the first";
+  return <section data-track-topic={TECH_BUZZ_TRACKED.favourites} className={styles.favourites} aria-labelledby="tb-liked">
+    <SectionHead id="tb-liked" icon={<Heart size={16} fill="currentColor" aria-hidden="true" />} kicker="Community favourites" title={<>Most Liked on <span className={styles.mcb}><BrandMark size={22} />MCB - Tech Buzz</span></>}
+      lede="The topics engineers read most, from React and Next.js to Claude Code, OpenAI, Google and Microsoft AI. Pick a topic; readers' likes rank its stories." />
+    <div className={styles.favTabs} role="tablist" aria-label="Favourite topics">
+      {tabs.map((tab, index) => <button key={tab.id} id={`tb-fav-tab-${tab.id}`} type="button" role="tab" aria-selected={tab.id === active.id} aria-controls="tb-fav-panel"
+        tabIndex={tab.id === active.id ? 0 : -1} style={{ "--tone": tab.color } as CSSProperties} onClick={() => pick(tab.id)} onKeyDown={event => onKey(event, index)}>
+        {tab.logo ? <Image src={tab.logo} alt="" width={16} height={16} /> : <i aria-hidden="true" />}{tab.label}<span>{tab.items.length}</span>
+      </button>)}
+    </div>
+    <div id="tb-fav-panel" role="tabpanel" aria-labelledby={`tb-fav-tab-${active.id}`} className={styles.favBody}>
+      <article className={styles.favFeature} style={{ "--tone": first.card.color, "--share": share(first.likes) } as CSSProperties}>
+        <Link href={`/tech-buzz/${first.card.slug}`} className={styles.favFeatureLink}>
+          <Cover card={first.card} className={styles.favCover} sizes="(max-width: 960px) 100vw, 520px" />
+          <span className={styles.favCrown}><Crown size={14} aria-hidden="true" />#1 in {active.id === ALL_TOPICS ? "the community" : active.label}</span>
+          <strong className={styles.favTitle}>{first.card.title}</strong>
+          <span className={styles.favSubtitle}>{first.card.subtitle}</span>
+          <span className={styles.favMeter}><span className={styles.likedBar} aria-hidden="true"><i /></span><small>{likesLine(first.likes)}</small></span>
+          <span className={styles.meta}>{first.card.technology} · {formatDate(first.card.publishedAt)} · {first.card.readTimeMinutes} min <RatingBadge card={first.card} /></span>
         </Link>
-        <ReactionBar card={card} />
-      </li>)}
-    </ol>
-    <Pagination paged={paged} label="Most Liked" anchor="tb-liked" />
+        <ReactionBar card={first.card} />
+      </article>
+      {rest.length > 0 && <div className={styles.favSide}>
+        <ol className={styles.likedList} start={paged.offset + 2}>
+          {paged.rows.map(({ card, likes }, i) => <li key={card.id} style={{ "--share": share(likes), "--tone": card.color } as CSSProperties}>
+            <span className={styles.likedRank}>#{paged.offset + i + 2}</span>
+            <Link href={`/tech-buzz/${card.slug}`} className={styles.likedLink}>
+              <strong className={styles.cardTitle}>{card.title}</strong>
+              <span className={styles.likedBar} aria-hidden="true"><i /></span>
+              <span className={styles.meta}>{card.technology} · {likesLine(likes)}</span>
+            </Link>
+            <ReactionBar card={card} />
+          </li>)}
+        </ol>
+        <Pagination paged={paged} label={`${active.label} favourites`} anchor="tb-liked" />
+      </div>}
+    </div>
   </section>;
 }
 
@@ -300,7 +347,7 @@ function TechnologySections({ cards }: { cards: TechBuzzCard[] }) {
   }, [cards]);
   const [tab, setTab] = useState(ALL_TAB);
   if (!groups.length) return null;
-  const tabs = [{ id: ALL_TAB, label: "All technologies", count: cards.length, color: "#1f1e1c", tint: "#f0eee6" }, ...groups.map(({ group, items }) => ({ id: group.id, label: group.label, count: items.length, color: group.color, tint: group.tint }))];
+  const tabs = [{ id: ALL_TAB, label: "All technologies", count: cards.length, color: "#1f1e1c", tint: "#f0eee6", logo: undefined as string | undefined }, ...groups.map(({ group, items }) => ({ id: group.id, label: group.label, count: items.length, color: group.color, tint: group.tint, logo: techLogo(group.techIds[0]) }))];
   const onKey = (event: KeyboardEvent<HTMLButtonElement>, index: number) => {
     const next = event.key === "ArrowRight" || event.key === "ArrowDown" ? index + 1 : event.key === "ArrowLeft" || event.key === "ArrowUp" ? index - 1 : event.key === "Home" ? 0 : event.key === "End" ? tabs.length - 1 : null;
     if (next == null) return;
@@ -310,12 +357,12 @@ function TechnologySections({ cards }: { cards: TechBuzzCard[] }) {
     document.getElementById(`tb-tab-${target.id}`)?.focus();
   };
   const shown = tab === ALL_TAB ? groups : groups.filter(entry => entry.group.id === tab);
-  return <section className={styles.groups} aria-labelledby="tb-groups">
+  return <section data-track-topic={TECH_BUZZ_TRACKED.technologies} className={styles.groups} aria-labelledby="tb-groups">
     <SectionHead id="tb-groups" icon={<Sparkles size={16} aria-hidden="true" />} kicker="Browse by technology" title="Blogs by Technology" lede="Every blog lands in its technology's own section. Pick a technology, or browse them all." />
     <div className={styles.groupTabs} role="tablist" aria-label="Technologies">
       {tabs.map((item, index) => <button key={item.id} id={`tb-tab-${item.id}`} type="button" role="tab" aria-selected={tab === item.id} aria-controls="tb-tabpanel" tabIndex={tab === item.id ? 0 : -1}
         style={{ "--tone": item.color, "--tint": item.tint } as CSSProperties} onClick={() => setTab(item.id)} onKeyDown={event => onKey(event, index)}>
-        {item.label}<span>{item.count}</span>
+        {item.logo && <Image src={item.logo} alt="" width={16} height={16} />}{item.label}<span>{item.count}</span>
       </button>)}
     </div>
     <div id="tb-tabpanel" role="tabpanel" aria-labelledby={`tb-tab-${tab}`} className={styles.groupPanel}>
@@ -337,7 +384,7 @@ function TechGroupSection({ group, items }: { group: TechGroup; items: TechBuzzC
         <Link href={`/tech-buzz/${card.slug}`} className={styles.groupCard}>
           <Cover card={card} className={styles.groupCover} sizes="(max-width: 640px) 80vw, 240px" />
           <span className={styles.groupBody}>
-            <span className={styles.groupTech}>{card.technology}<RatingBadge card={card} /></span>
+            <span className={styles.groupTech}><TechIcon item={card} />{card.technology}<RatingBadge card={card} /></span>
             <strong className={styles.cardTitle}>{card.title}</strong>
             <span className={styles.meta}><CalendarDays size={12} aria-hidden="true" />{formatDate(card.publishedAt)}<Clock size={12} aria-hidden="true" />{card.readTimeMinutes} min</span>
           </span>
@@ -364,10 +411,10 @@ export function TechBuzzShowcase({ cards }: { cards: TechBuzzCard[] }) {
       <div className={styles.duo}>
         <FreshLatest cards={cards} />
       </div>
-      <div className={styles.duo} data-split>
+      <div className={styles.duo}>
         <StarRated cards={cards} />
-        <MostLiked cards={cards} />
       </div>
+      <CommunityFavourites cards={cards} />
       <N8nWorkflows cards={cards} />
       <TechnologySections cards={cards} />
       <p className={styles.allStories}><Flame size={15} aria-hidden="true" />Search, filter and save every story below<ArrowRight size={15} aria-hidden="true" /></p>
