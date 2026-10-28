@@ -9,7 +9,7 @@ type Props={params:Promise<{packageId:string;name:string}>};
 export async function generateMetadata({params}:Props) { const {packageId,name}=await params;return {title:`${name} · ${packageId} · API Learning`}; }
 export default async function Page({params}:Props) {
   const user=(authConfigured() || process.env.NODE_ENV === "production")?await currentUser():null;
-  if(authConfigured()&&!user) redirect('/sign-in');
+  if(authConfigured()&&!user) redirect(signInFor(`/learning/api-docs/${packageId}/${name}`));
   const {packageId,name}=await params;
   const pkg=API_PACKAGES.find(item=>item.id===packageId),entry=pkg?.entries.find(item=>item.name===name);
   // An entry renamed or removed since a link was shared opens the API Docs instead of a dead end.
