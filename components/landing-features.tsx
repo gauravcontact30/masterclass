@@ -1,9 +1,7 @@
-"use client";
 import Image from "next/image";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { ArrowRight, BookMarked, Check, Compass, Download, GitBranch, History, Images, Layers, ListTree, MessageCircleQuestion, Search, Sparkles, Star, type LucideIcon } from "lucide-react";
-import { useLanguage } from "./language-provider";
 import home from "./landing-home.module.css";
 import frame from "./landing-section.module.css";
 import styles from "./landing-features.module.css";
@@ -17,6 +15,10 @@ import { CoverCarousel, type CarouselSlide } from "./landing-carousel";
  * (scripts/generate-feature-images.ts) with a carousel floating on it that moves every 15 seconds: what AI Search
  * does, the featured lessons (ending with today's AI pulse headline) or what notes and bookmarks do, each card with
  * its own painted cover. Coffee & Code reuses FeatureSection. Learner features only.
+ *
+ * Server components (no hooks): the landing page renders them on the server and passes them in, so their markup is
+ * never re-rendered in the browser; only each carousel's controls and the Listen buttons hydrate. The language comes
+ * in as `hi` (the server renders English, the only language offered today; see lib/i18n.ts SUPPORTED_LANGUAGES).
  */
 export type Copy = [en: string, hi: string];
 export type Feature = {
@@ -109,9 +111,7 @@ const NOTES: Card[] = [
 ];
 
 /** One feature section: copy, details, how it works and a way in, beside its picture with `float` on it. */
-export function FeatureSection({ feature, index, total, float, section }: { feature: Feature; index: number; total: number; float?: ReactNode; section?: { props?: object; toolbar?: ReactNode } }) {
-  const { language } = useLanguage();
-  const hi = language === "hi";
+export function FeatureSection({ feature, index, total, float, section, hi = false }: Readonly<{ feature: Feature; index: number; total: number; float?: ReactNode; section?: { props?: object; toolbar?: ReactNode }; hi?: boolean }>) {
   const pick = ([en, hindi]: Copy) => hi ? hindi : en;
   const Icon = feature.icon, Badge = feature.badge.icon;
   return <section id={feature.id} className={`${frame.section} ${styles.feature}`} data-ground={index % 2 ? "wash" : "paper"} aria-labelledby={`${feature.id}-title`} {...section?.props}>{section?.toolbar}
@@ -128,7 +128,7 @@ export function FeatureSection({ feature, index, total, float, section }: { feat
           <p className={styles.howLabel}>{hi ? "यह कैसे काम करता है" : "How it works"}</p>
           <ol className={styles.howSteps}>{feature.steps.map((step, at) => <li key={step[0]}><span aria-hidden="true">{at + 1}</span>{pick(step)}</li>)}</ol>
         </div>
-        <div className={frame.actions}><Link className={frame.cta} href={feature.cta.href}>{pick(feature.cta.label)}<ArrowRight size={16} aria-hidden="true" /></Link><ListenButton id={`feature:${feature.id}`} title={pick(feature.kicker)} text={() => [pick(feature.title) + pick(feature.emphasis), pick(feature.lede), ...feature.details.map(detail => `${pick(detail.title)}. ${pick(detail.body)}`)].join(" ")} /><small>{pick(feature.note)}</small></div>
+        <div className={frame.actions}><Link className={frame.cta} href={feature.cta.href}>{pick(feature.cta.label)}<ArrowRight size={16} aria-hidden="true" /></Link><ListenButton id={`feature:${feature.id}`} title={pick(feature.kicker)} text={[pick(feature.title) + pick(feature.emphasis), pick(feature.lede), ...feature.details.map(detail => `${pick(detail.title)}. ${pick(detail.body)}`)].join(" ")} /><small>{pick(feature.note)}</small></div>
       </div>
       <div className={styles.visual}>
         <div className={styles.photo} aria-hidden="true"><Image src={feature.image.src} alt="" fill sizes="(max-width: 900px) 92vw, 560px" style={{ objectPosition: feature.image.focus }} /></div>
@@ -139,9 +139,7 @@ export function FeatureSection({ feature, index, total, float, section }: { feat
   </section>;
 }
 
-export function LandingFeatures({ latest }: { latest?: LatestPulse | null }) {
-  const { language } = useLanguage();
-  const hi = language === "hi";
+export function LandingFeatures({ latest, hi = false }: Readonly<{ latest?: LatestPulse | null; hi?: boolean }>) {
   const minutes = (n: number) => hi ? `${n} मिनट पढ़ें` : `${n} min read`;
   const today = (day: string) => new Intl.DateTimeFormat(hi ? "hi-IN" : "en-IN", { day: "numeric", month: "long", year: "numeric", timeZone: "Asia/Kolkata" }).format(new Date(`${day}T12:00:00+05:30`));
   const slides: CarouselSlide[] = [
@@ -152,9 +150,9 @@ export function LandingFeatures({ latest }: { latest?: LatestPulse | null }) {
   const notes = cards(NOTES, "notes", hi ? "नोट्स और बुकमार्क" : "Notes & bookmarks");
   const search = cards(SEARCH, "search", hi ? "AI सर्च" : "AI Search");
   const carousels: Record<string, ReactNode> = {
-    "ai-search": <CoverCarousel slides={search} label={hi ? "AI सर्च" : "AI Search"} />,
-    "lesson-packs": <CoverCarousel slides={slides} label={hi ? "विशेष पाठ" : "Featured lessons"} />,
-    "notes-bookmarks": <CoverCarousel slides={notes} label={hi ? "नोट्स और बुकमार्क" : "Notes & bookmarks"} />,
+    "ai-search": <CoverCarousel slides={search} label={hi ? "AI सर्च" : "AI Search"} hi={hi} />,
+    "lesson-packs": <CoverCarousel slides={slides} label={hi ? "विशेष पाठ" : "Featured lessons"} hi={hi} />,
+    "notes-bookmarks": <CoverCarousel slides={notes} label={hi ? "नोट्स और बुकमार्क" : "Notes & bookmarks"} hi={hi} />,
   };
-  return <>{FEATURES.map((feature, index) => <FeatureSection key={feature.id} feature={feature} index={index} total={FEATURES.length} float={carousels[feature.id]} />)}</>;
+  return <>{FEATURES.map((feature, index) => <FeatureSection key={feature.id} feature={feature} index={index} total={FEATURES.length} float={carousels[feature.id]} hi={hi} />)}</>;
 }

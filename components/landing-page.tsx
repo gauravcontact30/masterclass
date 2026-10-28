@@ -9,7 +9,7 @@
  */
 
 import { usePriceRefresh } from "./use-price-refresh";
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import dynamic from "next/dynamic";
 import { loadPrices } from "./currency-picker";
 import type { Currency, SaleInfo } from "@/lib/pricing";
@@ -42,7 +42,6 @@ import { LandingWorkflows } from "./landing-workflows";
 import { LandingComparisons } from "./landing-comparisons";
 import { LandingInterview } from "./landing-interview";
 import { LandingAiPulse } from "./landing-ai-pulse";
-import { LandingFeatures } from "./landing-features";
 
 // Sections below the first screens are split into their own chunks. They still render on the server (the HTML and
 // what search engines read are unchanged); in the browser each hydrates on its own, so no single long task blocks input.
@@ -53,7 +52,6 @@ const LandingFooter = dynamic(() => import("./landing-footer").then(m => m.Landi
 const LandingVocabulary = dynamic(() => import("./landing-vocabulary").then(m => m.LandingVocabulary));
 const StudentReviews = dynamic(() => import("./student-reviews").then(m => m.StudentReviews));
 const LandingTechDocs = dynamic(() => import("./landing-tech-docs").then(m => m.LandingTechDocs));
-const LandingCertifications = dynamic(() => import("./landing-certifications").then(m => m.LandingCertifications));
 const LandingCoffee = dynamic(() => import("./landing-coffee").then(m => m.LandingCoffee));
 const LandingApiDocs = dynamic(() => import("./landing-pro-sections").then(m => m.LandingApiDocs));
 const LandingTechy = dynamic(() => import("./landing-pro-sections").then(m => m.LandingTechy));
@@ -61,14 +59,15 @@ const LandingTechy = dynamic(() => import("./landing-pro-sections").then(m => m.
 /** `international`: other currencies are offered, so the page re-prices itself where the visitor is (it is cached in rupees). */
 export type LandingPrices = { monthly: number; yearly: number; enabled: boolean; currency?: Currency; currencies?: Currency[]; local?: Currency; inr?: { monthly: number; yearly: number }; international?: boolean; sale?: SaleInfo | null };
 /** `today`: the India-calendar day number (istDay); the sections that turn over daily pick their content from it. */
-export function LandingPage({ workflows, pro, library, prices: initialPrices, daily, techDocs, copyrightYear, overrides, coffee, today = 0, featuredDoc, fresh = null }: { workflows: WorkflowPreview; fresh?: LandingFresh | null; today?: number; featuredDoc?: string; overrides?: ContentOverrides; coffee?: BlogTeaser[]; copyrightYear?: number; pro?: LandingProPreview; library?: LandingLibrary; prices?: LandingPrices; techDocs?: OfficialTechDocs | null; daily?: { day: string; pulse: PulseCard[]; words: DailyWord[]; locked?: { pulse: LockedTeaser | null; word: LockedTeaser | null }; totals?: { pulse: number; words: number } } }) {
+export function LandingPage({ features, certifications, workflows, pro, library, prices: initialPrices, daily, techDocs, copyrightYear, overrides, coffee, today = 0, featuredDoc, fresh = null }: { features?: ReactNode; certifications?: ReactNode; workflows: WorkflowPreview; fresh?: LandingFresh | null; today?: number; featuredDoc?: string; overrides?: ContentOverrides; coffee?: BlogTeaser[]; copyrightYear?: number; pro?: LandingProPreview; library?: LandingLibrary; prices?: LandingPrices; techDocs?: OfficialTechDocs | null; daily?: { day: string; pulse: PulseCard[]; words: DailyWord[]; locked?: { pulse: LockedTeaser | null; word: LockedTeaser | null }; totals?: { pulse: number; words: number } } }) {
   const { language, t } = useLanguage(); const hi = language === "hi"; const text = (en: string, hindi: string) => hi ? hindi : en;
   const [cycle, setCycle] = useState<"monthly" | "yearly">("monthly");
   // Prices rendered on the server arrive in the HTML, so the plan card never paints "—" and then shifts; the fetch is only the fallback.
+  // A failed re-price (to the visitor's currency) keeps the server's rupee prices rather than blanking the card.
   const [prices, setPrices] = useState<LandingPrices>(initialPrices ?? { monthly: 299, yearly: 2999, enabled: false }); const [priceState, setPriceState] = useState<"loading" | "ready" | "error">(initialPrices ? "ready" : "loading");
   usePriceRefresh(prices, setPrices);
   const [libraryRef, libraryReveal] = useReveal<HTMLElement>();
-  useEffect(() => { if (initialPrices && !initialPrices.international) return; let active = true; loadPrices().then(data => { if (active) { setPrices(current => ({ ...current, ...data })); setPriceState("ready"); } }).catch(() => { if (active) setPriceState("error"); }); return () => { active = false; }; }, [initialPrices]);
+  useEffect(() => { if (initialPrices && !initialPrices.international) return; let active = true; loadPrices().then(data => { if (active) { setPrices(current => ({ ...current, ...data })); setPriceState("ready"); } }).catch(() => { if (active && !initialPrices) setPriceState("error"); }); return () => { active = false; }; }, [initialPrices]);
   // The picker's choice re-prices every price on the page (membership, Plans menu, welcome window) at once.
   const reprice = (currency: Currency) => { void loadPrices(currency).then(data => setPrices(current => ({ ...current, ...data }))).catch(() => {}); };
   // [section on this page, label, the section's own crawlable page]: links are real URLs for search engines and
@@ -100,10 +99,10 @@ export function LandingPage({ workflows, pro, library, prices: initialPrices, da
     <LandingInterview preview day={today} fresh={fresh?.interview} />
     {daily && <LandingAiPulse cards={daily.pulse} total={daily.totals?.pulse} day={daily.day} locked={daily.locked?.pulse} preview />}
     <LandingWorkflows {...workflows} preview />
-    <LandingCertifications />
+    {certifications}
     {coffee && <LandingCoffee posts={coffee} />}
     <LearningSlot surface="landing" page="home" section="middle" className={styles.learningSlot} />
-    <LandingFeatures latest={daily?.pulse[0] ? { title: daily.pulse[0].title, text: hi && daily.pulse[0].hiDefinition ? daily.pulse[0].hiDefinition : daily.pulse[0].definition, image: daily.pulse[0].image, day: daily.day } : null} />
+    {features}
     {library && <section ref={libraryRef} id="library" className={`${frame.section} ${home.library}`} data-ground="paper" data-reveal={libraryReveal} aria-labelledby="library-title"><div className={`${home.inner} ${home.libraryInner}`}>
       <header className={frame.head}>
         <div>

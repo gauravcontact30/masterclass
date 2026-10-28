@@ -11,7 +11,7 @@ export const metadata = learningMetadata({
   keywords: [
     "technology handbooks", "React 19 tutorial", "Next.js 16 tutorial", "Python 3.12 tutorial", "AWS services explained",
     "Git commands and workflows", "Docker tutorial for developers", "system design handbook", "Zustand guide",
-    "TanStack Query tutorial", "learn coding in Hindi", "bilingual programming tutorials"
+    "TanStack Query tutorial"
   ],
 });
 

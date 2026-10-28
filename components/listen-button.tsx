@@ -1,6 +1,6 @@
 "use client";
 import { useSyncExternalStore, type MouseEvent } from "react";
-import { Loader2, Pause, Volume2 } from "lucide-react";
+import { Loader2, Pause } from "lucide-react";
 import { audioState, listen, serverAudioState, subscribe } from "@/lib/audio-lecture";
 import { useLanguage } from "./language-provider";
 import styles from "./listen-button.module.css";
@@ -24,10 +24,11 @@ export function ListenButton({ id, title, text, compact = false, tone = "light",
     event.preventDefault(); event.stopPropagation();
     listen(id, title, typeof text === "function" ? text(event.currentTarget) : text);
   };
-  const Icon = status === "playing" ? Pause : status === "loading" ? Loader2 : Volume2;
+  const Icon = status === "playing" ? Pause : status === "loading" ? Loader2 : null;
   return <button type="button" className={`${styles.listen} ${className ?? ""}`} data-tone={tone} data-compact={compact || undefined} data-state={status} onClick={press}
     aria-label={`${label}: ${title}`} aria-pressed={mine && (status === "playing" || status === "loading")} data-tooltip={label} suppressHydrationWarning>
-    <Icon size={compact ? 15 : 16} aria-hidden="true" className={status === "loading" ? styles.spin : undefined} />
+    {/* The idle speaker is a CSS mask, not an inline SVG: the landing page alone renders ~60 of these buttons. */}
+    {Icon ? <Icon size={compact ? 15 : 16} aria-hidden="true" className={status === "loading" ? styles.spin : undefined} /> : <span className={styles.speaker} aria-hidden="true" />}
     {status === "playing" && <span className={styles.bars} aria-hidden="true"><i /><i /><i /></span>}
   </button>;
 }

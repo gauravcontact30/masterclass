@@ -9,7 +9,7 @@ export const metadata = learningMetadata({
   title: "English vocabulary with Hindi meanings",
   description: "Thousands of English words for work, exams and IELTS, grouped by theme, each with its meaning, Hindi meaning, pronunciation, an example sentence, synonyms and antonyms.",
   keywords: [
-    "English vocabulary with Hindi meanings", "IELTS vocabulary preparation", "corporate English words",
+    "English vocabulary with Hindi meanings", "corporate English words",
     "spoken English for software engineers", "synonyms and antonyms in Hindi", "tech industry English communication",
     "daily English words meaning in Hindi", "English vocabulary for developers"
   ],

@@ -12,7 +12,7 @@ export const metadata = learningMetadata({
   keywords: [
     "interview questions with answers", "React 19 interview questions", "Next.js 16 interview questions", "system design interview questions",
     "LangChain interview questions", "LangGraph interview questions", "Python interview questions", "AWS interview questions",
-    "TypeScript interview questions", "Node.js interview questions", "FAANG interview preparation", "coding interview questions"
+    "TypeScript interview questions", "Node.js interview questions", "coding interview questions"
   ],
 });
 

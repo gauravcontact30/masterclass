@@ -7,6 +7,10 @@
 .listen[data-state="playing"], .listen[data-state="paused"] { border-color: #b5573a; background: #b5573a; color: #fff; }
 .listen[data-tone="dark"] { border-color: rgba(255, 255, 255, .25); background: rgba(31, 30, 29, .72); color: #f5f4ee; backdrop-filter: blur(4px); }
 .listen[data-tone="dark"]:hover { border-color: #d97757; background: rgba(31, 30, 29, .9); }
+/* lucide "volume-2", drawn in the text colour through a mask. */
+.speaker { flex: none; width: 16px; height: 16px; background: currentColor; -webkit-mask: var(--speaker) center / contain no-repeat; mask: var(--speaker) center / contain no-repeat;
+  --speaker: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23000' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M11 4.702a.705.705 0 0 0-1.203-.498L6.413 7.587A1.4 1.4 0 0 1 5.416 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.416a1.4 1.4 0 0 1 .997.413l3.383 3.384A.705.705 0 0 0 11 19.298z'/%3E%3Cpath d='M16 9a5 5 0 0 1 0 6'/%3E%3Cpath d='M19.364 18.364a9 9 0 0 0 0-12.728'/%3E%3C/svg%3E"); }
+.listen[data-compact] .speaker { width: 15px; height: 15px; }
 .spin { animation: spin 1s linear infinite; }
 .bars { display: inline-flex; align-items: flex-end; gap: 2px; height: 12px; }
 .bars i { display: block; width: 2px; height: 100%; border-radius: 2px; background: currentColor; animation: bar .9s ease-in-out infinite; }

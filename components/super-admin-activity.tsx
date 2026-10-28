@@ -9,6 +9,7 @@ import { SuperAdminHourly } from "./super-admin-hourly";
 import { SuperAdminLocations } from "./super-admin-locations";
 import { SuperAdminNewUserLocations } from "./super-admin-new-user-locations";
 import { locationLabel } from "@/lib/visitor-location";
+import { VISIT_RETENTION_DAYS } from "@/lib/visit-retention";
 import { AudienceExplorer } from "./super-admin-audience";
 import { siAndroid, siApple, siBrave, siFacebook, siFirefoxbrowser, siGoogle, siGooglechrome, siInstagram, siIos, siLinux, siMacos, siOpera, siSafari, siSamsung, siUbuntu, siWhatsapp, siYoutube, type SimpleIcon } from "simple-icons";
 import shell from "./super-admin-dashboard.module.css";
@@ -75,7 +76,7 @@ export function SuperAdminActivity({ days, query }: { days: number; query: strin
     {error && <AdminError>{error} Showing the last successful snapshot; figures may be out of date.</AdminError>}
     <div className={styles.liveBar}>
       <span className={styles.livePulse} aria-hidden="true" />
-      <strong>{number(t.liveNow)}</strong> on the site now <span className={styles.liveSub}>({number(t.liveSignedIn)} signed in · active in the last 5 minutes)</span>
+      <strong>{number(t.liveNow)}</strong> on the site now <span className={styles.liveSub}>({number(t.liveSignedIn)} signed in · a page open in the last 100 seconds)</span>
       <span className={styles.liveActions}>
         <span className={styles.updated}>Updated {ago(data.generatedAt)}</span>
         <Button variant="outline" size="sm" disabled={busy} onClick={() => void refresh()}><RefreshCw size={14} />Refresh</Button>
@@ -86,12 +87,12 @@ export function SuperAdminActivity({ days, query }: { days: number; query: strin
     <div className={styles.metrics}>
       <Stat tone="sky" index={0} icon={<MousePointerClick size={16} />} label="Page views" value={number(t.pageViews)} note={`${t.pagesPerSession ?? "—"} pages per session`} />
       <Stat tone="lavender" index={1} icon={<Users size={16} />} label="Unique visitors" value={number(t.visitors)} note={`${number(t.people)} people after linking sign-ins`} />
-      <Stat tone="mint" index={2} icon={<UserPlus size={16} />} label="New vs returning" value={`${number(t.newVisitors)} / ${number(returning)}`} note="First visit in this window vs seen before" />
+      <Stat tone="mint" index={2} icon={<UserPlus size={16} />} label="New vs returning" value={`${number(t.newVisitors)} / ${number(returning)}`} note="First-ever visit from that browser vs seen before" />
       <Stat tone="peach" index={3} icon={<UserRound size={16} />} label="Signed-in learners" value={number(t.signedInUsers)} note={`${number(t.newAccounts)} new accounts created`} />
       <Stat tone="butter" index={4} icon={<Radio size={16} />} label="Sessions" value={number(t.sessions)} note="A session ends after 30 idle minutes" />
       <Stat tone="rose" index={5} icon={<Clock size={16} />} label="Avg. session" value={duration(t.avgSessionSeconds)} note="Time between first and last activity, or time read" />
       <Stat tone="sage" index={6} icon={<ArrowLeft size={16} />} label="Bounce rate" value={t.bounceRate == null ? "—" : `${t.bounceRate}%`} note="Sessions that viewed a single page" />
-      <Stat tone="aqua" index={7} icon={<MonitorSmartphone size={16} />} label="Bots filtered" value={number(t.bots)} note="Crawlers and scripts, kept out of every figure" />
+      <Stat tone="aqua" index={7} icon={<MonitorSmartphone size={16} />} label="Bot sessions filtered" value={number(t.bots)} note="Crawlers and automated browsers, kept out of every figure" />
     </div>
 
     <div className={styles.charts}>
@@ -115,7 +116,7 @@ export function SuperAdminActivity({ days, query }: { days: number; query: strin
 
     <People rows={data.people} query={query} onOpen={(key, label) => setPerson({ key, label })} />
     <VisitLog rows={data.recent} query={query} onOpen={(key, label) => setPerson({ key, label })} />
-    <p className={shell.note}>Visits are recorded by a first-party beacon on every page (super admin pages excluded). IP addresses are stored masked; a visitor who signs in is linked to their account for their earlier visits on the same browser. Visits are kept for 180 days.</p>
+    <p className={shell.note}>Visits are recorded by a first-party beacon on every page (super admin pages excluded). IP addresses are stored masked; a visitor who signs in is linked to their account for their earlier visits on the same browser. Visits are kept for {VISIT_RETENTION_DAYS} days, so no window reaches further back than that.</p>
   </div>;
 }
 

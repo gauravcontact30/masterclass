@@ -29,6 +29,17 @@ export function isOwnTraffic(ip: string | null | undefined): boolean {
   return isLocalAddress(ip) || (!ip && process.env.NODE_ENV !== "production");
 }
 
+/** Columns a report must read to judge its rows with isAudience; drop them before anything reaches the browser. */
+export const SIGNAL_COLUMNS = "screen,language,timezone,ip_masked";
+
+/**
+ * Whether a stored page view is a person, by the same rule the Live visitor stream and the activity reports in
+ * supabase/migrations/0046 apply: not an automated browser, and (in production) not the site's own machines.
+ */
+export function isAudience(visit: VisitSignals): boolean {
+  return !looksAutomated(visit) && (process.env.TRACK_LOCAL === "1" || process.env.NODE_ENV !== "production" || !isLocalAddress(visit.ip_masked));
+}
+
 /** A loopback or private network address (masked or full): the site's own machines, not the audience. */
 export function isLocalAddress(ip: string | null | undefined): boolean {
   if (!ip) return false;

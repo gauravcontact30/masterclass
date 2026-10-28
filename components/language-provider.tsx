@@ -1,5 +1,5 @@
 "use client";
-import { createContext, useContext, useSyncExternalStore, useEffect, useCallback, useState } from "react";
+import { createContext, useContext, useSyncExternalStore, useEffect, useCallback, useMemo, useState } from "react";
 import { LANGUAGES, type Language } from "@/lib/languages";
 import {
   en,
@@ -14,8 +14,6 @@ export interface LanguageContextValue {
   setLanguage: (value: Language, persist?: boolean) => void;
   t: (key: TranslationKey) => string;
   languages: readonly SupportedLanguage[];
-  detectedCountry: string | null;
-  isDetected: boolean;
 }
 
 const Context = createContext<LanguageContextValue>({
@@ -23,9 +21,13 @@ const Context = createContext<LanguageContextValue>({
   setLanguage: () => {},
   t: (key) => en[key] ?? key,
   languages: SUPPORTED_LANGUAGES,
-  detectedCountry: null,
-  isDetected: false,
 });
+/*
+ * The visitor's country (for the language picker's badge) lives in its own context. It arrives from /api/geo after
+ * the page loads; inside the language value it re-rendered every component that reads the language (every landing
+ * section) at that moment, for a badge only the language switcher shows.
+ */
+const CountryContext = createContext<string | null>(null);
 
 let memoryLanguage: Language = "en";
 
@@ -106,20 +108,10 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
     return dict[key] ?? en[key] ?? (key as string);
   }, [language, dictionaries]);
 
-  return (
-    <Context.Provider
-      value={{
-        language,
-        setLanguage,
-        t,
-        languages: SUPPORTED_LANGUAGES,
-        detectedCountry,
-        isDetected: Boolean(detectedCountry),
-      }}
-    >
-      {children}
-    </Context.Provider>
-  );
+  const value = useMemo(() => ({ language, setLanguage, t, languages: SUPPORTED_LANGUAGES }), [language, setLanguage, t]);
+  return <Context.Provider value={value}><CountryContext.Provider value={detectedCountry}>{children}</CountryContext.Provider></Context.Provider>;
 }
 
 export const useLanguage = () => useContext(Context);
+/** The visitor's country from /api/geo, or null until it is known. */
+export const useDetectedCountry = () => useContext(CountryContext);

@@ -44,16 +44,33 @@ const KIND_LABEL: Record<WorkflowNodeKind, string> = { actor: "Person / client",
  * `preview` (the landing page) shows the first three blueprints of each category, each with its 7 most asked
  * subjective and 7 most asked objective interview questions; /learning carries every blueprint with its full set.
  */
-export function LandingWorkflows({ workflows: source, total = source.length, industries: industryCount, expanded = false, preview = false }: Readonly<{
-  /** Every blueprint on /learning; on the landing page only the previewed ones (lib/landing-workflows-preview.ts). */
+export function LandingWorkflows({ workflows: initial, total = initial.length, industries: industryCount, groups: groupCounts, expanded = false, preview = false }: Readonly<{
+  /** Every blueprint on /learning; on the landing page only the "All" tab's first screen (lib/landing-workflows-preview.ts). */
   workflows: Workflow[]; total?: number; industries?: number; expanded?: boolean; preview?: boolean;
+  /** The landing page's blueprints per category; the rest of them are fetched the first time a tab is picked. */
+  groups?: Partial<Record<Group, number>>;
 }>) {
   const { language } = useLanguage(); const hi = language === "hi"; const text: Text = (en, hindi) => hi ? hindi : en;
   const [group, setGroup] = useState<string>("All");
+  const [loaded, setLoaded] = useState<Workflow[] | null>(null);
+  const [pending, setPending] = useState(false);
+  const source = loaded ?? initial;
+  const partial = Boolean(groupCounts) && !loaded;
   // The landing preview leaves out the dashboard-only blueprints (the URL shortener and the company slides).
   const pool = useMemo(() => preview ? source.filter(workflow => !workflow.dashboardOnly) : source, [preview, source]);
   // A category tab appears only when it has something to show (a blueprint, or on /learning a learning path).
-  const groups = expanded ? [...new Set([...GROUPS.filter(option => pool.some(workflow => workflow.group === option) || WORKFLOW_LESSONS.some(lesson => lesson.group === option)), ...WORKFLOW_LESSONS.map(lesson => lesson.group)])] : GROUPS.filter(option => pool.some(workflow => workflow.group === option));
+  const groups = expanded ? [...new Set([...GROUPS.filter(option => pool.some(workflow => workflow.group === option) || WORKFLOW_LESSONS.some(lesson => lesson.group === option)), ...WORKFLOW_LESSONS.map(lesson => lesson.group)])]
+    : partial ? GROUPS.filter(option => groupCounts?.[option]) : GROUPS.filter(option => pool.some(workflow => workflow.group === option));
+  const pick = (option: string) => {
+    if (!partial || option === "All") { setGroup(option); return; }
+    if (pending) return;
+    setPending(true);
+    // On failure the tab still switches and shows what the page already has.
+    fetch("/api/landing/workflows").then(response => response.ok ? response.json() : null)
+      .then((full: { workflows?: Workflow[] } | null) => { if (full?.workflows?.length) setLoaded(full.workflows); })
+      .catch(() => {})
+      .finally(() => { setPending(false); setGroup(option); });
+  };
   const lessons = expanded ? WORKFLOW_LESSONS.filter(lesson => group === "All" || lesson.group === group) : [];
   const { overrides, editing } = useContentEditing();
   const section = useContentItem("section:workflows", "section");
@@ -75,12 +92,14 @@ export function LandingWorkflows({ workflows: source, total = source.length, ind
         `${total} चरण-दर-चरण ब्लूप्रिंट: रोज़ इस्तेमाल होने वाले ऐप्स के पीछे का सिस्टम डिज़ाइन, और LangChain, LangGraph, LangFlow व LangSmith एजेंट जो ई-कॉमर्स, बैंकिंग से लेकर अस्पतालों तक ${industries} उद्योगों की असली समस्याएँ हल करते हैं। हर एक के साथ टेक स्टैक, डिज़ाइन निर्णय, आम गलतियाँ और सबसे ज़्यादा पूछे जाने वाले इंटरव्यू प्रश्न।`)}</Editable></p>
     </div>
     {/* Remounted per filter so the page count and position start fresh. */}
-    <div className={styles.filters} role="group" aria-label={text("Filter workflows", "वर्कफ़्लो छाँटें")}>
+    <div className={styles.filters} role="group" aria-label={text("Filter workflows", "वर्कफ़्लो छाँटें")} aria-busy={pending}>
       {["All", ...groups].map(option => {
-        const count = (option === "All" ? pool.length : pool.filter(workflow => workflow.group === option).length)
-          + (expanded ? WORKFLOW_LESSONS.filter(lesson => option === "All" || lesson.group === option).length : 0);
+        const count = partial
+          ? (option === "All" ? Object.values(groupCounts ?? {}).reduce((sum, n) => sum + (n ?? 0), 0) : groupCounts?.[option as Group] ?? 0)
+          : (option === "All" ? pool.length : pool.filter(workflow => workflow.group === option).length)
+            + (expanded ? WORKFLOW_LESSONS.filter(lesson => option === "All" || lesson.group === option).length : 0);
         const Icon = GROUP_ICON[option as Group] ?? Layers;
-        return <button key={option} type="button" aria-pressed={group === option} data-group={option} onClick={() => setGroup(option)}>
+        return <button key={option} type="button" aria-pressed={group === option} data-group={option} onClick={() => pick(option)}>
           <Icon size={14} aria-hidden="true" />{option === "All" ? text("All", "सभी") : option}<span>{count}</span>
         </button>;
       })}

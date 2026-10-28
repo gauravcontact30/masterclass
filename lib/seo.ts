@@ -23,40 +23,28 @@ export const siteTitle = "MasterClass Buddy | Agentic AI, LangChain, n8n & Next.
 /** Under 160 characters so Google shows it whole; it names what the site teaches today (the search snippet and link previews). */
 export const siteDescription = "Learn Agentic AI, LangChain, LangGraph, LangSmith, LangFlow, n8n, Next.js, TanStack Start & Zustand with daily Tech Buzz blogs, system design and interview prep.";
 /**
- * Site-wide keywords, grouped by what MasterClass sells: bilingual learning, the AI tutor, coding and interview
- * preparation, AI engineering, certifications and the membership. Google ignores the keywords tag; Bing and others
- * still read it, and the same terms are used in titles, descriptions and structured data, which do count.
+ * Site-wide keywords: only searches that an indexed page answers (Tech Buzz, /interview-questions, /workflows,
+ * /learn, /compare, /api-reference, /vocabulary), phrased the way people search. Google ignores the keywords tag
+ * and treats long lists as stuffing in the WebSite schema; Bing still reads it. Add a term only with a page behind it.
  */
 export const siteKeywords = [
-  // Brand & Platform
-  "MasterClass", "MasterClass Buddy", "Master Class Buddy", "masterclassbuddy.com",
-  // Headline technologies (the home page's Open Graph card and title)
-  "Agentic AI course", "LangChain course", "LangGraph course", "LangSmith tutorial", "LangFlow course", "n8n workflow automation course",
-  "Next.js course", "TanStack Start tutorial", "Zustand tutorial", "Tech Buzz blogs", "daily tech blogs",
-  // Bilingual & AI-assisted Learning
-  "online learning platform India", "learn in Hindi and English", "Hindi medium study notes", "study notes in Hindi", "AI tutor", "AI study assistant", "ask doubts online", "personalised study plan", "audio lectures", "listen to lessons online", "learn by listening", "AI search for students",
-  // Modern Frontend & Web Frameworks
-  "React 19 tutorial", "React Server Components", "React Server Actions", "Next.js 16 tutorial", "Next.js App Router", "Next.js Partial Prerendering", "Turbopack", "TypeScript tutorial", "modern JavaScript ES2024", "Zustand state management", "TanStack Query tutorial", "TanStack Table", "Angular tutorials", "Vue.js guide", "Flutter development",
-  // AI Engineering & Agentic AI
-  "agentic AI course", "AI agents tutorial", "AI agent workflows", "Model Context Protocol MCP", "Claude Code certification", "LangChain tutorial", "LangGraph tutorial", "LangSmith monitoring", "LangFlow tutorial", "n8n automation tutorial", "generative AI for engineers", "RAG architecture", "LLM application development", "AI agent blueprints",
-  // Backend, Microservices & Programming Languages
-  "Python 3.12 tutorial", "Python for AI and data", "Node.js backend tutorial", "FastAPI tutorial", "Django tutorial", "Express.js REST APIs", "NestJS architecture", "Go Golang programming", "Rust programming language", "microservices architecture", "REST API design", "GraphQL API tutorial",
-  // Cloud, DevOps & Linux
-  "AWS certification preparation", "AWS services explained", "AWS tutorial", "AWS Cloud Practitioner preparation", "AWS Solutions Architect exam", "Docker containers tutorial", "Kubernetes k8s guide", "Linux commands for developers", "Git and GitHub workflows", "CI/CD pipelines", "DevOps certification preparation",
-  // Databases & High-Performance Caching
-  "PostgreSQL tutorial", "Redis caching strategies", "Supabase tutorial", "database indexing and optimization", "SQL query optimization",
-  // System Design & Architecture
-  "system design course", "system design interview questions", "distributed systems architecture", "high level design HLD", "low level design LLD", "microservices patterns", "scalability and load balancing", "rate limiting algorithms", "system design blueprints",
-  // Tech Interview Preparation & Worked Solutions
-  "tech interview preparation", "coding interview questions", "React interview questions", "Next.js interview questions", "Python interview questions", "JavaScript interview questions", "frontend interview questions", "backend interview questions", "Node.js interview questions", "AWS interview questions", "system design interview preparation", "FAANG interview preparation",
-  // Testing & Quality Engineering
-  "Vitest tutorial", "Playwright end to end testing", "Jest testing tutorial", "React Testing Library RTL", "Cypress automation",
-  // Vocabulary & Professional Communication
-  "English vocabulary with Hindi meanings", "spoken English words", "corporate English vocabulary", "word of the day with Hindi meaning", "IELTS vocabulary preparation",
-  // Engineering Articles & Insights
-  "Coffee & Code", "software engineering articles", "web development blog", "technology comparisons",
-  // Membership
-  "affordable online courses", "learning membership India", "tech learning membership",
+  // Brand
+  "MasterClass Buddy", "masterclassbuddy.com",
+  // Agentic AI (the home title, Tech Buzz and /workflows)
+  "agentic AI course", "AI agents tutorial", "LangChain tutorial", "LangGraph tutorial", "LangSmith tutorial", "LangFlow tutorial",
+  "n8n workflow automation tutorial", "RAG tutorial", "Model Context Protocol MCP", "AI agent workflow examples",
+  // Web stack (Tech Buzz, /learn handbooks, /api-reference)
+  "Next.js tutorial", "React tutorial", "TypeScript tutorial", "TanStack Start tutorial", "TanStack Query tutorial", "Zustand tutorial",
+  // Interview preparation (/interview-questions)
+  "interview questions and answers", "React interview questions", "Next.js interview questions", "JavaScript interview questions",
+  "TypeScript interview questions", "Node.js interview questions", "Python interview questions", "AWS interview questions",
+  "LangChain interview questions", "Redis interview questions", "system design interview questions",
+  // System design (/workflows) and comparisons (/compare)
+  "system design examples", "LangChain vs LangGraph",
+  // Blogs (/tech-buzz)
+  "daily tech blogs", "AI engineering blog",
+  // Vocabulary (/vocabulary)
+  "English vocabulary with Hindi meanings", "corporate English vocabulary",
 ];
 export const privateMetadata: Metadata = { robots: { index: false, follow: false } };
 
@@ -89,12 +77,14 @@ const ogImage = { url: "/opengraph-image", width: 1200, height: 630, alt: `${sit
  * Complete metadata for a public page. Next.js replaces (not merges) nested
  * objects such as openGraph between segments, so each page gets the full set.
  */
-/** Keywords for each public page, matched to what that page actually offers. */
+/**
+ * Keywords for each public page, limited to what that page actually shows (checked against the live pages
+ * 2026-10-28). Legal and policy pages carry none: nobody searches for them, and they only inherit the site list.
+ */
 const PAGE_KEYWORDS: Partial<Record<PublicPage["path"], string[]>> = {
   "/courses": [
-    "technology learning paths", "system design course", "agentic AI course", "React 19 and Next.js 16 path",
-    "Python and backend engineering", "AWS cloud certification path", "tech interview preparation",
-    "bilingual tech courses in Hindi and English", "DevOps learning roadmap", "IELTS vocabulary"
+    "system design course", "system design case studies", "payment gateway system design", "WhatsApp system design",
+    "Netflix system design", "React 19 Next.js TypeScript course", "IELTS vocabulary for tech professionals"
   ],
   "/library": [
     "free learning library", "free programming tutorials", "interview questions with answers", "React interview questions",
@@ -102,28 +92,15 @@ const PAGE_KEYWORDS: Partial<Record<PublicPage["path"], string[]>> = {
     "API reference for 60 technologies", "technology handbooks", "English vocabulary with Hindi meanings",
     "LangChain vs LangGraph comparison"
   ],
-  "/about": [
-    "about MasterClass Buddy", "bilingual tech education", "AI study assistant India", "learn coding in Hindi and English",
-    "AI tutor for developers", "MasterClass vision and pedagogy", "personalized developer learning"
-  ],
-  "/contact": [
-    "MasterClass support", "membership assistance", "billing help", "contact MasterClass Buddy", "technical support"
-  ],
-  "/privacy": [
-    "MasterClass privacy policy", "developer learning data protection", "account data security", "user privacy terms", "browser data storage"
-  ],
-  "/terms": [
-    "MasterClass terms and conditions", "membership terms", "AI learning terms of service", "user agreement", "tech course membership terms"
-  ],
+  "/about": ["about MasterClass Buddy", "MasterClass Buddy"],
+  "/contact": ["contact MasterClass Buddy", "MasterClass Buddy support"],
   "/tech-buzz": [
-    "tech buzz", "technology blogs", "daily tech blogs", "medium style tech blogs", "star rated tech blogs",
-    "Agentic AI blogs", "LangChain blogs", "LangGraph blogs", "n8n automation blogs", "Next.js 16 blogs",
-    "TanStack Start blogs", "Zustand blogs", "system design blogs", "AI engineering news"
-  ],
-  "/refund-policy": [
-    "MasterClass refund policy", "membership cancellation", "course refund policy", "billing policy", "subscription cancellation"
+    "Tech Buzz", "daily tech blogs", "Agentic AI blog", "LangChain blog", "LangGraph blog", "n8n automation blog",
+    "Next.js 16 blog", "TanStack Start blog", "Zustand blog", "AI engineering news"
   ],
 };
+/** Pages whose metadata carries no keywords at all (rather than inheriting the site-wide list). */
+const NO_KEYWORDS = new Set<PublicPage["path"]>(["/privacy", "/terms", "/refund-policy"]);
 
 export function pageMetadata(path: PublicPage["path"]): Metadata {
   const { title, description } = publicPage(path);
@@ -133,7 +110,8 @@ export function pageMetadata(path: PublicPage["path"]): Metadata {
     // The home title already carries the brand; skip the "%s | MasterClass" template.
     title: home ? { absolute: title } : title,
     description,
-    ...(keywords ? { keywords } : {}),
+    // A page without its own keywords inherits the root layout's; null clears them.
+    ...(NO_KEYWORDS.has(path) ? { keywords: null } : keywords ? { keywords } : {}),
     alternates: { canonical: path },
     openGraph: { type: "website", url: path, siteName, title: home ? title : `${title} | ${siteName}`, description, locale: "en_IN", images: [ogImage] },
     twitter: { card: "summary_large_image", title: home ? title : `${title} | ${siteName}`, description, images: [ogImage.url] },

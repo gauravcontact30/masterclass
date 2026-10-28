@@ -1,6 +1,4 @@
-"use client";
 import { Award, BadgeCheck, CalendarCheck, ListOrdered, Route } from "lucide-react";
-import { useLanguage } from "./language-provider";
 import { CoverCarousel } from "./landing-carousel";
 import { FeatureSection, type Copy, type Feature } from "./landing-features";
 
@@ -9,7 +7,8 @@ import { FeatureSection, type Copy, type Feature } from "./landing-features";
  * page gives you, four details, how it works and a way in, beside a picture painted through Vercel AI Gateway
  * (scripts/generate-feature-images.ts) with one card per certification track turning every 15 seconds (covers from
  * scripts/generate-lesson-covers.ts, cert:<id>). Each card opens that track's step-by-step path after sign-in.
- * The full paths live in lib/certifications.ts, which only the dashboard imports.
+ * The full paths live in lib/certifications.ts, which only the dashboard imports. A server component, like
+ * components/landing-features.tsx: the landing page passes it in already rendered.
  */
 const FEATURE: Feature = {
   id: "certifications", icon: Award, kicker: ["Certifications", "सर्टिफ़िकेशन"],
@@ -40,13 +39,12 @@ const CARDS: Card[] = [
   { id: "ai-automation-langchain", title: "AI Automation: LangChain, LangGraph, LangSmith, LangFlow", text: ["Document pipelines, human approvals, scheduled and event-driven agents, monitored in LangSmith and prototyped in LangFlow.", "डॉक्यूमेंट पाइपलाइन, मानवीय मंज़ूरी, शेड्यूल और इवेंट से चलने वाले एजेंट, LangSmith में मॉनिटर और LangFlow में प्रोटोटाइप।"], meta: ["9 steps · 10 weeks", "9 कदम · 10 सप्ताह"] },
 ];
 
-export function LandingCertifications() {
-  const { language } = useLanguage(); const hi = language === "hi";
+export function LandingCertifications({ hi = false }: Readonly<{ hi?: boolean }>) {
   const pick = ([en, hindi]: Copy) => hi ? hindi : en;
   const slides = CARDS.map(card => ({
     id: card.id, image: `/images/landing/certifications/${card.id}.webp`, kicker: hi ? "सर्टिफ़िकेशन" : "Certification",
     title: card.title, text: pick(card.text), meta: pick(card.meta),
     href: `/sign-in?redirect=${encodeURIComponent(`/learning/certifications?track=${card.id}`)}`, cta: hi ? "रास्ता देखें" : "See the path",
   }));
-  return <FeatureSection feature={FEATURE} index={0} total={1} float={<CoverCarousel slides={slides} label={hi ? "सर्टिफ़िकेशन रास्ते" : "Certification paths"} />} />;
+  return <FeatureSection feature={FEATURE} index={0} total={1} hi={hi} float={<CoverCarousel slides={slides} label={hi ? "सर्टिफ़िकेशन रास्ते" : "Certification paths"} hi={hi} />} />;
 }

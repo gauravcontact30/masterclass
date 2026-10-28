@@ -157,6 +157,7 @@ export function OverviewLive({ snapshot, onRefreshSnapshot }: { snapshot: Overvi
     new: everyone.filter(v => v.first.new_visitor && !v.signedIn).length,
     liveSigned: everyone.filter(v => v.live && v.signedIn).length,
     recent: everyone.filter(v => v.lastAt >= notBefore(30 * 60_000)).length,
+    recentSigned: everyone.filter(v => v.signedIn && v.lastAt >= notBefore(30 * 60_000)).length,
     // The stream panel's own figures, over the whole stream window.
     engaged: everyone.length ? everyone.reduce((sum, v) => sum + v.engagedMs, 0) / everyone.length : null,
     pages: everyone.length ? Math.round((visits.length / everyone.length) * 10) / 10 : null,
@@ -166,7 +167,9 @@ export function OverviewLive({ snapshot, onRefreshSnapshot }: { snapshot: Overvi
   const today = useMemo(() => {
     const rows = streamRows.filter(v => Date.parse(v.created_at) >= dayStart);
     const views = rows.filter(v => v.event === "page_view"), people = new Set(views.map(v => v.visitor_id)).size;
-    const engagedMs = rows.reduce((sum, v) => sum + (v.event === "page_leave" ? Math.max(0, Number(v.duration_ms) || 0) : 0), 0);
+    // Only time on pages opened today: a page opened before midnight and closed after it is not today's reading.
+    const opened = new Set(views.map(v => `${v.session_id}|${v.path}`));
+    const engagedMs = rows.reduce((sum, v) => sum + (v.event === "page_leave" && opened.has(`${v.session_id}|${v.path}`) ? Math.max(0, Number(v.duration_ms) || 0) : 0), 0);
     return { engaged: people ? engagedMs / people : null, pages: people ? Math.round((views.length / people) * 10) / 10 : null };
   }, [streamRows, dayStart]);
   const visitors = useMemo(() => everyone.filter(v => streamFilter === "all" || (streamFilter === "live" ? v.live : streamFilter === "signed" ? v.signedIn : v.first.new_visitor && !v.signedIn)), [everyone, streamFilter]);
@@ -223,17 +226,17 @@ export function OverviewLive({ snapshot, onRefreshSnapshot }: { snapshot: Overvi
   const kpis: { label: string; value: string; note: string; icon: LucideIcon; tone: string; pulse?: boolean }[] = [
     heartbeats
       ? { label: "On the site now", value: n(counts.live), note: `${n(counts.liveSigned)} signed in · page open now`, icon: Radio, tone: "mint", pulse: true }
-      : { label: "On the site now", value: n(live?.totals.liveNow), note: `${n(live?.totals.liveSignedIn)} signed in · last 5 min`, icon: Radio, tone: "mint", pulse: true },
+      : { label: "On the site now", value: n(live?.totals.liveNow), note: `${n(live?.totals.liveSignedIn)} signed in · page open now`, icon: Radio, tone: "mint", pulse: true },
     { label: "Views, last hour", value: n(lastHour.length), note: `${n(new Set(lastHour.map(v => v.visitor_id)).size)} visitors`, icon: MousePointerClick, tone: "sky" },
     { label: `Views, ${day}`, value: n(live?.totals.pageViews), note: `${n(live?.totals.visitors)} unique visitors`, icon: Users, tone: "lavender" },
     { label: "API requests, 15 min", value: n(recent15.length), note: `${n(snapshot?.requests.count)} in the reporting window`, icon: Route, tone: "peach" },
     { label: "Server errors, 15 min", value: n(errors15), note: errors15 ? "Open Application logs for details" : "All clear", icon: AlertTriangle, tone: errors15 ? "rose" : "sage" },
     { label: "API p95 latency", value: snapshot?.requests.p95 == null ? "—" : `${Math.round(snapshot.requests.p95)} ms`, note: `Database ${n(h?.databaseMs)} ms`, icon: Gauge, tone: "butter" },
-    { label: "Active, last 30 min", value: n(counts.recent), note: `${n(counts.signed)} signed in across the stream`, icon: Flame, tone: "rose" },
+    { label: "Active, last 30 min", value: n(counts.recent), note: `${n(counts.recentSigned)} of them signed in`, icon: Flame, tone: "rose" },
     { label: `New accounts, ${day}`, value: n(live?.totals.newAccounts), note: `${n(live?.totals.signedInUsers)} signed-in learners`, icon: UserPlus, tone: "mint" },
     { label: "Engaged time / visitor, today", value: today.engaged == null ? "—" : spent(today.engaged / 1000), note: `${today.pages ?? "—"} pages per visitor`, icon: Hourglass, tone: "sky" },
     { label: `Bounce rate, ${day}`, value: live?.totals.bounceRate == null ? "—" : `${live.totals.bounceRate}%`, note: live?.totals.avgSessionSeconds == null ? "left after one page" : `avg session ${spent(live.totals.avgSessionSeconds)}`, icon: TrendingDown, tone: "lavender" },
-    { label: `Bots filtered, ${day}`, value: n(live?.totals.bots), note: "excluded from every figure", icon: Bot, tone: "sage" },
+    { label: `Bot sessions filtered, ${day}`, value: n(live?.totals.bots), note: "crawlers and automated browsers, excluded from every figure", icon: Bot, tone: "sage" },
   ];
 
   return <section className={styles.live} aria-label="Live command centre">

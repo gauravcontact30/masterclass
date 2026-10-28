@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type KeyboardEvent } from "react";
 import { createPortal } from "react-dom";
 import { Check, ChevronDown, Languages, MapPin } from "lucide-react";
-import { useLanguage } from "./language-provider";
+import { useLanguage, useDetectedCountry } from "./language-provider";
 import { FlagIcon } from "./flag-icon";
 import type { Language } from "@/lib/domain";
 import styles from "./language-switcher.module.css";
@@ -24,7 +24,8 @@ export interface LanguageSwitcherProps {
  * overflow, a transform or a narrow phone screen can never clip it. Phones show a round flag-only trigger.
  */
 export function LanguageSwitcher({ className = "", persist = true, size = "md", iconOnly = true }: LanguageSwitcherProps) {
-  const { language, setLanguage, languages, detectedCountry, isDetected, t } = useLanguage();
+  const { language, setLanguage, languages, t } = useLanguage();
+  const detectedCountry = useDetectedCountry(), isDetected = Boolean(detectedCountry);
   const [open, setOpen] = useState(false);
   const [place, setPlace] = useState<CSSProperties>({});
   const triggerRef = useRef<HTMLButtonElement>(null);

@@ -4,6 +4,7 @@ import { db } from "@/lib/server/db";
 import { adminError } from "@/lib/server/admin-rpc";
 import { dayBounds, reportDay } from "@/lib/daily-social";
 import { activityHours, type HourClick, type HourVisit } from "@/lib/activity-hours";
+import { isAudience, SIGNAL_COLUMNS, type VisitSignals } from "@/lib/visit-quality";
 
 const LIMIT = 20_000;
 
@@ -17,12 +18,18 @@ export async function GET(request: Request) {
       const visits: HourVisit[] = [];
       for (let offset = 0; offset < LIMIT; offset += 1000) {
         const { data, error } = await db().from("site_visits")
-          .select("id,created_at,visitor_id,session_id,user_id,path,title,new_visitor,city,country,device,browser")
+          .select(`id,created_at,visitor_id,session_id,user_id,path,title,new_visitor,city,country,device,browser,${SIGNAL_COLUMNS}`)
           .eq("event", "page_view").eq("is_bot", false)
           .gte("created_at", since).lt("created_at", until)
           .order("created_at", { ascending: true }).order("id", { ascending: true }).range(offset, offset + 999);
         if (error) adminError(error);
-        visits.push(...(data ?? []) as HourVisit[]);
+        // Automated browsers and the site's own machines are not visitors (lib/visit-quality.ts); their signals stay here.
+        for (const row of (data ?? []) as (HourVisit & VisitSignals)[]) {
+          if (!isAudience(row)) continue;
+          const visit: Partial<VisitSignals> & HourVisit = { ...row };
+          delete visit.screen; delete visit.language; delete visit.timezone; delete visit.ip_masked;
+          visits.push(visit);
+        }
         if (!data || data.length < 1000) return { visits, capped: false };
       }
       return { visits, capped: true };

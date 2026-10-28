@@ -49,5 +49,5 @@ export function LandingCoffee({ posts }: Readonly<{ posts: BlogTeaser[] }>) {
     meta: hi ? `${post.minutes} मिनट पढ़ें` : `${post.minutes} min read`,
     href: `/sign-in?redirect=${encodeURIComponent(`/learning/coffee-and-code/${post.slug}`)}`, cta: hi ? "पूरा पढ़ें" : "Read article",
   }));
-  return <FeatureSection feature={FEATURE} index={1} total={1} section={section} float={<CoverCarousel slides={slides} label={hi ? "Coffee & Code लेख" : "Coffee & Code articles"} />} />;
+  return <FeatureSection feature={FEATURE} index={1} total={1} section={section} hi={hi} float={<CoverCarousel slides={slides} label={hi ? "Coffee & Code लेख" : "Coffee & Code articles"} hi={hi} />} />;
 }

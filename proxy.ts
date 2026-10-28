@@ -12,7 +12,7 @@ import { isUntrackedEmail, UNTRACKED_COOKIE } from "@/lib/server/tracking-exclus
  */
 /** The same public data for every visitor, served from server-side caches: no session, no per-user state. Skipping the
  *  checks below spares each request three network round trips and lets the CDN keep the route's own Cache-Control. */
-const PUBLIC_DATA = new Set(["/api/landing/news", "/api/landing/library"]);
+const PUBLIC_DATA = new Set(["/api/landing/news", "/api/landing/library", "/api/landing/workflows"]);
 
 export default async function proxy(request: NextRequest) {
   const startTime = Date.now();

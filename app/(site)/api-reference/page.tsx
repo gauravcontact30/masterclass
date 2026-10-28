@@ -11,7 +11,7 @@ export const metadata = learningMetadata({
   keywords: [
     "API reference for developers", "React hooks reference", "Next.js API reference", "LangGraph API documentation",
     "LangChain API reference", "Redis commands reference", "pandas functions", "Prisma client API",
-    "Python API reference", "developer syntax cheat sheet", "tech CLI commands"
+    "Python API reference"
   ],
 });
 

@@ -49,7 +49,7 @@ export const metadata: Metadata = {
   description: DESCRIPTION,
   keywords: [
     "technology blogs", "developer blog India", "Agentic AI tutorial", "LangChain tutorial", "LangGraph agents",
-    "LangSmith evals", "LangFlow visual", "n8n automation", "Next.js 16 blog", "React 19 tutorial", "System Design interview",
+    "LangSmith evals", "LangFlow tutorial", "n8n automation", "Next.js 16 blog", "React 19 tutorial", "System Design interview",
     "TypeScript guide", "Node.js best practices", "Python backend", "Docker best practices", "AWS for developers",
     "Playwright testing", "DSA patterns", "Zustand vs Redux", "TanStack Query", "PostgreSQL 17 vector"
   ],

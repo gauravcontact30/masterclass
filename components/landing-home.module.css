@@ -582,6 +582,20 @@
   .buzzFace { width: 35px; height: 35px; }
 }
 
+/* The attention loops run for one 21-second round (three arrivals), then settle on their finished frame: left running,
+   they repainted the hero every frame for as long as the page stayed open (a layout pass for the star's left/top, a
+   full repaint for the conic border and the dashes, and the dock's bob re-blurred the button's backdrop). */
+.buzzDock { animation-iteration-count: 5; }
+.buzzPointer { animation-iteration-count: 1; }
+.buzzPointerText, .buzzPointerText::after, .buzzPointerHead, .buzzPointerReveal { animation-iteration-count: 3; animation-fill-mode: forwards; }
+.buzzPointerText::after { animation-iteration-count: 3, 15; }
+.buzzPointerDash { animation-iteration-count: 26; }
+.buzzPointerArrow { animation-iteration-count: 24; }
+.buzzFace::before { animation-iteration-count: 9; }
+.floatingTechBuzz::after { animation-iteration-count: 4; }
+.floatingTechBuzzBell { animation-iteration-count: 10; }
+.floatingTechBuzzFlame, .bellRingingDot { animation-iteration-count: 12; }
+
 @media (prefers-reduced-motion: reduce) {
   .buzzDock, .buzzPointer, .buzzPointerArrow, .buzzPointerDash, .buzzFace::before, .floatingTechBuzz::after, .floatingTechBuzzBell, .floatingTechBuzzFlame, .bellRingingDot { animation: none; }
   .buzzPointer, .buzzPointerHead { opacity: 1; }
