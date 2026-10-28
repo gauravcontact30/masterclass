@@ -8,6 +8,7 @@ import { providerConfigured, providerModel } from "./ai-providers";
 import { courseSource } from "./course-sources";
 import { trackById } from "@/lib/pro-learn/tracks";
 import { generatedCourseMeta } from "@/lib/deep-courses/catalog";
+import { PLANNED_OUTLINES } from "@/lib/deep-courses/planned-outlines";
 import type { CourseTopic, DeepCourse } from "@/lib/deep-courses/types";
 
 /*
@@ -145,8 +146,15 @@ const stale = (row: { status: string; started_at: string }) => row.status === "f
 
 export type GenerationState = "ready" | "generating" | "failed" | "missing";
 
+/** A planned outline (lib/deep-courses/planned-outlines.ts) replaces a ready course's stored intro and topics. */
+const withPlan = <T extends Pick<CourseRow, "track_id" | "status" | "topics"> & { intro?: string[] }>(row: T): T => {
+  const plan = PLANNED_OUTLINES[row.track_id];
+  return plan && row.status === "ready" ? { ...row, topics: plan.topics, ...(row.intro ? { intro: plan.intro } : {}) } : row;
+};
+
 async function courseRow(trackId: string) {
-  return check(await db().from("generated_courses").select("track_id,status,intro,topics,sources,started_at").eq("track_id", trackId).maybeSingle()) as CourseRow | null;
+  const row = check(await db().from("generated_courses").select("track_id,status,intro,topics,sources,started_at").eq("track_id", trackId).maybeSingle()) as CourseRow | null;
+  return row && withPlan(row);
 }
 
 /** The stored course with every written topic, or null before its outline exists. */
@@ -214,6 +222,13 @@ export async function generateOutline(trackId: string, budget: Budget = { ...ROU
   if (!claimed.length) return "generating";
 
   try {
+    // A planned course needs no AI outline: store the plan so the row is ready (courseRow keeps it current).
+    const plan = PLANNED_OUTLINES[trackId];
+    if (plan) {
+      check(await db().from("generated_courses").update({ status: "ready", intro: plan.intro, topics: plan.topics, sources: [], updated_at: new Date().toISOString() }).eq("track_id", trackId));
+      expireCourse(trackId);
+      return "ready";
+    }
     const source = courseSource(trackId);
     const notes = await research([
       `Technology: ${track.name}. ${track.focus}`,
@@ -310,5 +325,5 @@ export async function generateTopic(trackId: string, topicId: string, budget: Bu
 export async function generatedCatalog(): Promise<Record<string, { status: string; topicIds: string[] }>> {
   const result = await db().from("generated_courses").select("track_id,status,topics");
   if (result.error) return {};
-  return Object.fromEntries((result.data as Pick<CourseRow, "track_id" | "status" | "topics">[]).map(row => [row.track_id, { status: row.status, topicIds: row.status === "ready" ? row.topics.map(topic => topic.id) : [] }]));
+  return Object.fromEntries((result.data as Pick<CourseRow, "track_id" | "status" | "topics">[]).map(withPlan).map(row => [row.track_id, { status: row.status, topicIds: row.status === "ready" ? row.topics.map(topic => topic.id) : [] }]));
 }

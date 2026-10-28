@@ -9,7 +9,6 @@ import { WORKFLOWS } from "@/lib/landing-workflows";
 import { LandingInterview } from "./landing-interview";
 import { LandingComparisons } from "./landing-comparisons";
 import { LandingTechDocs } from "./landing-tech-docs";
-import { DashboardCoach } from "./dashboard-coach";
 import { DeepCourseShelf } from "./deep-course-shelf";
 import { ContentProvider } from "./content-editing";
 import type { ContentOverrides } from "@/lib/content-overrides";
@@ -29,11 +28,10 @@ export function DashboardLearning({ daily, techDocs, concepts, locked = false, o
   const font = landingFont(useLanguage().language === "hi");
   // Super Admin edits (migration 0032) apply here for everyone; only the Super Admin gets the edit switch.
   return <ContentProvider overrides={overrides} canEdit={canEdit}><div className={`${home.home} ${font.variable} ${font.className} ${styles.learning}`}>
-    {/* Order (2026-10-20): today's pulse first (the reason to come back daily), then the highest-intent practice
-        (interview prep, blueprints), then reference depth (comparisons, docs), and the day's words last. */}
-    <DashboardCoach />
-    {daily && <LandingAiPulse expanded cards={daily.pulse} day={daily.day} locked={daily.locked.pulse} />}
+    {/* Order (2026-10-28): the in-depth courses first (the "What next" coach was removed), then today's pulse, the
+        highest-intent practice (interview prep, blueprints), reference depth (comparisons, docs), and the day's words last. */}
     <DeepCourseShelf id="dashboard-deep-courses" inSheet />
+    {daily && <LandingAiPulse expanded cards={daily.pulse} day={daily.day} locked={daily.locked.pulse} />}
     <LandingInterview expanded />
     <LandingWorkflows workflows={WORKFLOWS} expanded />
     {/* Without a membership (trial over), the full Tech Topics and Technology docs stay behind the plans screen. */}

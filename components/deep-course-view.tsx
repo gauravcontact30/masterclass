@@ -1,11 +1,14 @@
 import Link from "next/link";
-import { ArrowLeft, ArrowRight, BookOpenText, Braces, ClipboardList, Clock3, FlaskConical, Footprints, GitFork, Lightbulb, ListChecks, MessageSquareText, Wrench } from "lucide-react";
+import { ArrowLeft, ArrowRight, BookOpenText, Braces, ChevronRight, ClipboardList, Clock3, FlaskConical, Footprints, GitFork, Lightbulb, ListChecks, MessageSquareText, Wrench } from "lucide-react";
 import type { ReactNode } from "react";
 import { CodeFiles } from "./code-files";
 import { DeepCourseObjective } from "./deep-course-objective";
+import { ModuleDone, ModulesToggle, OtherCourses, type SideFamily } from "./deep-course-side";
 import { DeepCourseProgress, DeepTopicCard, DeepTopicChecklist, OpenInCompiler } from "./deep-topic-progress";
 import { GeneratingTopic } from "./deep-course-generating";
-import { DEEP_COURSES, deepCourseHref } from "@/lib/deep-courses";
+import { deepCourseHref } from "@/lib/deep-courses";
+import { COURSE_CATALOG } from "@/lib/deep-courses/catalog";
+import { familyOfTrack, TRACK_FAMILIES } from "@/lib/pro-learn/families";
 import { topicTint } from "@/lib/deep-courses/progress";
 import type { CourseTopic, DeepCourse, LabExample, TopicLab } from "@/lib/deep-courses/types";
 import styles from "./deep-course.module.css";
@@ -15,20 +18,35 @@ function modulesOf(course: DeepCourse) {
   return names.map(name => ({ name, topics: course.topics.filter(topic => topic.module === name) }));
 }
 
+/** Other courses for the sidebar, by family in catalogue order; this course's family comes first as "Related". */
+function otherFamilies(course: DeepCourse): SideFamily[] {
+  const own = familyOfTrack(course.id)?.id;
+  const families = TRACK_FAMILIES.map(family => ({
+    id: family.id, name: family.name, icon: family.icon, related: family.id === own,
+    courses: COURSE_CATALOG.filter(other => other.family === family.id && other.id !== course.id)
+      .map(other => ({ id: other.id, name: other.name, glyph: other.glyph, focus: other.focus, handwritten: other.handwritten })),
+  })).filter(family => family.courses.length);
+  return [...families.filter(family => family.related), ...families.filter(family => !family.related)];
+}
+
 function Sidebar({ course, active }: { course: DeepCourse; active?: string }) {
+  const modules = modulesOf(course);
+  const activeModule = course.topics.find(topic => topic.id === active)?.module;
   return <nav className={styles.side} aria-label={`${course.name} topics`}>
-    <Link href={deepCourseHref(course.id)} className={styles.sideCourse} aria-current={active ? undefined : "page"}><span aria-hidden="true">{course.glyph}</span>{course.name}</Link>
-    {modulesOf(course).map((module, moduleIndex) => <div key={module.name} className={styles.sideModule}>
-      <p>Module {moduleIndex + 1} · {module.name}</p>
+    <div className={styles.sideTop}>
+      <Link href={deepCourseHref(course.id)} className={styles.sideCourse} aria-current={active ? undefined : "page"}><span aria-hidden="true">{course.glyph}</span>{course.name}</Link>
+      {modules.length > 1 && <ModulesToggle key={active ?? ""} allOpen={!activeModule}/>}
+    </div>
+    {/* Modules collapse; the one holding the open topic starts expanded (every module on the course overview). */}
+    {modules.map((module, moduleIndex) => <details key={module.name} className={styles.sideModule} data-module="" open={activeModule ? module.name === activeModule : true}>
+      <summary><ChevronRight size={14} className={styles.sideChevron} aria-hidden="true"/><span className={styles.sideModuleName}>Module {moduleIndex + 1} · {module.name}</span>
+        <ModuleDone courseId={course.id} topicIds={module.topics.map(topic => topic.id)}/></summary>
       {/* Topics are numbered through the whole course and tinted like their cards, so the two always match. */}
       <ol>{module.topics.map(topic => { const number = course.topics.indexOf(topic); const tone = topicTint(number); return <li key={topic.id} style={{ "--tint": tone.tint, "--ink": tone.ink } as React.CSSProperties}>
         <Link href={deepCourseHref(course.id, topic.id)} aria-current={topic.id === active ? "page" : undefined}><span className={styles.sideNumber}>{String(number + 1).padStart(2, "0")}</span><span>{topic.title}</span></Link>
       </li>; })}</ol>
-    </div>)}
-    <div className={styles.sideOthers}>
-      <p>Other courses</p>
-      {DEEP_COURSES.filter(other => other.id !== course.id).map(other => <Link key={other.id} href={deepCourseHref(other.id)}><span aria-hidden="true">{other.glyph}</span>{other.name}</Link>)}
-    </div>
+    </details>)}
+    <OtherCourses currentId={course.id} families={otherFamilies(course)}/>
   </nav>;
 }
 

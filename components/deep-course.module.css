@@ -31,20 +31,60 @@
   position: sticky; top: 80px; max-height: calc(100vh - 100px); overflow-y: auto; padding: 16px 12px;
   border: 1px solid #e5e5ea; border-radius: 16px; background: #fbfbfd; font-size: 13.5px;
 }
-.sideCourse { display: flex; gap: 8px; align-items: center; padding: 6px 8px; border-radius: 10px; font-weight: 700; font-size: 15px; color: #1d1d1f; text-decoration: none; }
+.sideTop { display: flex; align-items: center; gap: 6px; }
+.sideCourse { flex: 1; min-width: 0; display: flex; gap: 8px; align-items: center; padding: 6px 8px; border-radius: 10px; font-weight: 700; font-size: 15px; color: #1d1d1f; text-decoration: none; }
 .sideCourse[aria-current="page"] { background: #e8f1fc; color: #0062c4; }
-.sideModule { margin-top: 14px; }
-.sideModule p, .sideOthers p { margin: 0 0 4px; padding: 0 8px; font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #86868b; }
-.sideModule ol { margin: 0; padding: 0; list-style: none; }
-.sideModule a, .sideOthers a { display: flex; gap: 8px; padding: 6px 8px; border-radius: 8px; color: #424245; text-decoration: none; line-height: 1.35; }
-.sideOthers a:hover { background: #f0f0f3; color: #1d1d1f; }
+.sideToggleAll { flex: none; display: grid; place-items: center; width: 28px; height: 28px; border: 1px solid #e5e5ea; border-radius: 8px; background: #ffffff; color: #6e6e73; cursor: pointer; }
+.sideToggleAll:hover { color: #0071e3; border-color: #b9d6f5; }
+.sideCount { flex: none; min-width: 26px; padding: 1px 7px; border-radius: 999px; background: #ececf0; font-size: 11px; font-weight: 700; text-align: center; font-variant-numeric: tabular-nums; color: #6e6e73; }
+.sideCount[data-done] { background: #e3f5e8; color: #1f7a3a; }
+
+/* Module groups: a native <details>, so they open and close before the page hydrates. */
+.sideModule { margin-top: 10px; }
+.sideModule summary { display: flex; align-items: center; gap: 6px; padding: 6px 8px; border-radius: 8px; cursor: pointer; list-style: none; user-select: none; }
+.sideModule summary::-webkit-details-marker { display: none; }
+.sideModule summary:hover { background: #f0f0f3; }
+.sideModule summary:focus-visible, .sideToggleAll:focus-visible, .otherGroup button:focus-visible, .otherLink:focus-visible, .otherAll:focus-visible { outline: 2px solid #0071e3; outline-offset: 1px; }
+.sideModuleName { flex: 1; min-width: 0; font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #6e6e73; }
+.sideChevron { flex: none; color: #86868b; transition: transform 160ms ease; }
+.sideModule[open] .sideChevron { transform: rotate(90deg); }
+.sideModule ol { display: grid; gap: 4px; margin: 4px 0 0; padding: 0; list-style: none; }
+.sideModule a { display: flex; gap: 8px; padding: 6px 8px; border-radius: 8px; text-decoration: none; line-height: 1.35; }
 /* Each topic has its own light tint (set inline from lib/deep-courses/progress.ts, matching its card) and its number. */
-.sideModule ol { display: grid; gap: 4px; }
 .sideModule a { align-items: flex-start; background: var(--tint, #eef4fd); border: 1px solid transparent; color: #3a3a3c; }
 .sideNumber { flex-shrink: 0; min-width: 22px; font-size: 12px; font-weight: 800; line-height: 1.6; font-variant-numeric: tabular-nums; color: var(--ink, #1d4f91); }
 .sideModule a:hover { border-color: color-mix(in srgb, var(--ink) 25%, transparent); color: var(--ink); }
 .sideModule a[aria-current="page"] { border-color: color-mix(in srgb, var(--ink) 45%, transparent); color: var(--ink); font-weight: 600; box-shadow: inset 3px 0 0 var(--ink); }
-.sideOthers { margin-top: 18px; padding-top: 12px; border-top: 1px solid #e5e5ea; }
+
+/* Other courses: search, then an accordion of "Continue learning" and one group per family. */
+.sideOthers { display: grid; gap: 8px; margin-top: 18px; padding-top: 12px; border-top: 1px solid #e5e5ea; }
+.sideHead { display: flex; align-items: center; justify-content: space-between; padding: 0 8px; }
+.sideHead p { margin: 0; font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #86868b; }
+.otherSearch { display: flex; align-items: center; gap: 6px; padding: 0 8px; height: 34px; border: 1px solid #e5e5ea; border-radius: 10px; background: #ffffff; color: #86868b; }
+.otherSearch:focus-within { border-color: #0071e3; box-shadow: 0 0 0 3px rgba(0, 113, 227, 0.14); }
+.otherSearch input { flex: 1; min-width: 0; border: 0; outline: 0; background: transparent; font: inherit; font-size: 13px; color: #1d1d1f; }
+.otherSearch input::-webkit-search-cancel-button { display: none; }
+.otherSearch button { display: grid; place-items: center; width: 20px; height: 20px; border: 0; border-radius: 50%; background: #ececf0; color: #6e6e73; cursor: pointer; }
+.otherGroup { border: 1px solid #ececf0; border-radius: 12px; background: #ffffff; overflow: hidden; }
+.otherGroup[data-open] { border-color: #dcdce2; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04); }
+.otherGroup h3 { margin: 0; font: inherit; }
+.otherGroup button { display: flex; align-items: center; gap: 8px; width: 100%; padding: 8px 10px; border: 0; background: transparent; font: inherit; font-size: 13px; font-weight: 600; color: #1d1d1f; text-align: left; cursor: pointer; }
+.otherGroup button:hover { background: #f6f6f8; }
+.otherIcon { flex: none; display: grid; place-items: center; width: 22px; height: 22px; border-radius: 6px; background: #f2f2f5; font-size: 12px; color: #0071e3; }
+.otherTitle { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.otherChevron { flex: none; color: #86868b; transition: transform 160ms ease; }
+.otherGroup[data-open] .otherChevron { transform: rotate(180deg); }
+.otherPanel { display: grid; gap: 2px; padding: 2px 6px 8px; border-top: 1px solid #f0f0f3; }
+.otherResults { display: grid; gap: 2px; }
+.otherLink { display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-radius: 8px; color: #424245; text-decoration: none; line-height: 1.35; }
+.otherLink:hover { background: #f0f0f3; color: #1d1d1f; }
+.otherGlyph { flex: none; width: 20px; text-align: center; }
+.otherName { flex: 1; min-width: 0; }
+.otherBadge { flex: none; padding: 1px 6px; border-radius: 999px; background: #fdf1e7; font-size: 10.5px; font-style: normal; font-weight: 700; color: #a4561b; }
+.otherBadge[data-kind="progress"] { background: #e8f1fc; color: #0062c4; }
+.otherEmpty, .otherNote { margin: 0; padding: 4px 8px; font-size: 12.5px; color: #6e6e73; }
+.otherAll { display: flex; align-items: center; justify-content: center; gap: 6px; padding: 8px 10px; border-radius: 10px; background: #f0f5fc; font-size: 13px; font-weight: 600; color: #0062c4; text-decoration: none; }
+.otherAll:hover { background: #e3eefb; }
 
 .main { min-width: 0; }
 .hero { padding: 28px; border: 1px solid #e5e5ea; border-radius: 20px; background: linear-gradient(180deg, var(--tint, #f5f5f7), #ffffff 70%); }
@@ -179,7 +219,7 @@
 
 @media (max-width: 900px) {
   .layout { grid-template-columns: 1fr; gap: 16px; }
-  .side { position: static; max-height: 260px; }
+  .side { position: static; max-height: 420px; }
 }
 @media (max-width: 560px) {
   .shelf { padding: 16px; }
@@ -187,7 +227,7 @@
   .pager { grid-template-columns: 1fr; }
   .pagerNext { text-align: left; align-items: flex-start; }
 }
-@media (prefers-reduced-motion: reduce) { .courseCard, .topicCard { transition: none; } .courseCard:hover { transform: none; } }
+@media (prefers-reduced-motion: reduce) { .courseCard, .topicCard, .sideChevron, .otherChevron { transition: none; } .courseCard:hover { transform: none; } }
 
 /* /learning/lessons: an in-depth course's topic cards under the Technology picker. */
 .lessonCourse { display: grid; gap: 10px; margin: 18px 0 24px; padding: clamp(16px, 2.4vw, 24px); border: 1px solid #e5e5ea; border-radius: 20px; background: #fff; }
