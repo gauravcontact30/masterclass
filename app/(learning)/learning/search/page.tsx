@@ -14,7 +14,7 @@ import { signInFor } from "@/lib/safe-redirect";
 export const metadata = { title: "Search" };
 
 export default async function SearchPage({ searchParams }: { searchParams: Promise<{ q?: string | string[] }> }) {
-  const user = (authConfigured() || process.env.NODE_ENV === "production") ? await currentUser() : null;
+  const user = (authConfigured() || process.env.NODE_ENV === "production") ? await currentUser("/learning/search") : null;
   if (authConfigured() && !user) redirect(signInFor("/learning/search"));
   const { q } = await searchParams;
   const question = typeof q === "string" ? q : "";

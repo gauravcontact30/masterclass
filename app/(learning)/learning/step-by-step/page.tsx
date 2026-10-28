@@ -10,7 +10,7 @@ import { signInFor } from "@/lib/safe-redirect";
 export const metadata = { title: "On The Go" };
 
 export default async function StepByStepPage({ searchParams }: { searchParams: Promise<{ q?: string | string[] }> }) {
-  const user = (authConfigured() || process.env.NODE_ENV === "production") ? await currentUser() : null;
+  const user = (authConfigured() || process.env.NODE_ENV === "production") ? await currentUser("/learning/step-by-step") : null;
   if (authConfigured() && !user) redirect(signInFor("/learning/step-by-step"));
   const { q } = await searchParams;
   const question = typeof q === "string" ? q : "";

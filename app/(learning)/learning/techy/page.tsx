@@ -8,7 +8,7 @@ import { signInFor } from "@/lib/safe-redirect";
 export const metadata = { title: "Techy · Professional Learn" };
 
 export default async function Page() {
-  const user = (authConfigured() || process.env.NODE_ENV === "production") ? await currentUser() : null;
+  const user = (authConfigured() || process.env.NODE_ENV === "production") ? await currentUser("/learning/techy") : null;
   if (authConfigured() && !user) redirect(signInFor("/learning/techy"));
   return <Workspace initialCategory="techy" authEnabled={authConfigured()} configured={databaseConfigured()} billingEnabled={billingConfigured()} userEmail={user?.email ?? null} notesContent={<Techy/>}/>;
 }

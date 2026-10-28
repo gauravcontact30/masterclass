@@ -10,7 +10,7 @@ export const metadata = { title: "Vocabulary" };
 
 export default async function VocabularyPage() {
   const authEnabled = authConfigured();
-  const user = (authEnabled || process.env.NODE_ENV === "production") ? await currentUser() : null;
+  const user = (authEnabled || process.env.NODE_ENV === "production") ? await currentUser("/learning/vocabulary") : null;
   if (authEnabled && !user) redirect(signInFor("/learning/vocabulary"));
 
   return <Workspace initialCategory="vocabulary" authEnabled={authEnabled}

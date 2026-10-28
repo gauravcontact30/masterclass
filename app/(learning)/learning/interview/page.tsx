@@ -8,7 +8,7 @@ import { signInFor } from "@/lib/safe-redirect";
 export const metadata = { title: "Interview · Professional Learn" };
 
 export default async function Page() {
-  const user = (authConfigured() || process.env.NODE_ENV === "production") ? await currentUser() : null;
+  const user = (authConfigured() || process.env.NODE_ENV === "production") ? await currentUser("/learning/interview") : null;
   if (authConfigured() && !user) redirect(signInFor("/learning/interview"));
   return <Workspace initialCategory="interview" authEnabled={authConfigured()} configured={databaseConfigured()} billingEnabled={billingConfigured()} userEmail={user?.email ?? null} notesContent={proSectionContent("interview")}/>;
 }

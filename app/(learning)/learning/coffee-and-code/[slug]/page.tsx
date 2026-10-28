@@ -20,7 +20,7 @@ export default async function CoffeeArticlePage({ params }: { params: Params }) 
   const post = blogPost((await params).slug);
   if (!post) notFound();
   const authEnabled = authConfigured();
-  const user = (authEnabled || process.env.NODE_ENV === "production") ? await currentUser() : null;
+  const user = (authEnabled || process.env.NODE_ENV === "production") ? await currentUser(`/learning/coffee-and-code/${post.slug}`) : null;
   if (authEnabled && !user) redirect(signInFor(`/learning/coffee-and-code/${post.slug}`));
   const overrides = await contentOverrides();
   // Two more articles: same topic first, then the newest others.

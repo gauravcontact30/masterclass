@@ -13,7 +13,7 @@ export const metadata = { title: "Coffee & Code" };
 
 export default async function CoffeeAndCodePage() {
   const authEnabled = authConfigured();
-  const user = (authEnabled || process.env.NODE_ENV === "production") ? await currentUser() : null;
+  const user = (authEnabled || process.env.NODE_ENV === "production") ? await currentUser("/learning/coffee-and-code") : null;
   if (authEnabled && !user) redirect(signInFor("/learning/coffee-and-code"));
   const overrides = await contentOverrides();
   return <Workspace initialCategory="coffee-and-code" authEnabled={authEnabled}

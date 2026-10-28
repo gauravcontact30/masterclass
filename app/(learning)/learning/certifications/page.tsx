@@ -8,7 +8,7 @@ import { signInFor } from "@/lib/safe-redirect";
 export const metadata = { title: "Certifications · Professional Learn" };
 
 export default async function Page({ searchParams }: { searchParams: Promise<{ track?: string | string[] }> }) {
-  const user = (authConfigured() || process.env.NODE_ENV === "production") ? await currentUser() : null;
+  const user = (authConfigured() || process.env.NODE_ENV === "production") ? await currentUser("/learning/certifications") : null;
   if (authConfigured() && !user) redirect(signInFor("/learning/certifications"));
   const { track } = await searchParams;
   return <Workspace initialCategory="certifications" authEnabled={authConfigured()} configured={databaseConfigured()} billingEnabled={billingConfigured()} userEmail={user?.email ?? null}

@@ -13,7 +13,7 @@ const scalar = (value: string | string[] | undefined) => typeof value === "strin
 
 export default async function NotesPage({ searchParams }: { searchParams: Promise<Filters> }) {
   const params = await searchParams;
-  const user = (authConfigured() || process.env.NODE_ENV === "production") ? await currentUser() : null;
+  const user = (authConfigured() || process.env.NODE_ENV === "production") ? await currentUser("/learning/notes") : null;
   if (authConfigured() && !user) redirect(signInFor("/learning/notes"));
   const selected = getStudyNote(scalar(params.note));
   const technology = selected?.technology ?? (NOTES_TECHNOLOGIES.some(item => item.id === scalar(params.technology)) ? scalar(params.technology) : "");

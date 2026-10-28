@@ -15,7 +15,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 }
 export default async function LearningCustomRoute({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const user = (authConfigured() || process.env.NODE_ENV === "production") ? await currentUser() : null;
+  const user = (authConfigured() || process.env.NODE_ENV === "production") ? await currentUser(`/learning/learn/${slug}`) : null;
   if (authConfigured() && !user) redirect(signInFor(`/learning/learn/${slug}`));
   const page = databaseConfigured() && /^[a-z0-9][a-z0-9-]{0,59}$/.test(slug) ? await learningPage(slug) : null;
   if (!page) notFound();

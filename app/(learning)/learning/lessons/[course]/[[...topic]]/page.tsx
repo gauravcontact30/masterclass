@@ -44,7 +44,7 @@ export default async function DeepCoursePage({ params }: { params: Params }) {
   const { course: courseId, topic } = await params;
   if (topic && topic.length > 1) notFound();
   if (!isCourseId(courseId) && !generatedCourseMeta(courseId)) notFound();
-  const user = (authConfigured() || process.env.NODE_ENV === "production") ? await currentUser() : null;
+  const user = (authConfigured() || process.env.NODE_ENV === "production") ? await currentUser(`/learning/lessons/${courseId}${topic?.[0] ? `/${topic[0]}` : ""}`) : null;
   if (authConfigured() && !user) redirect(signInFor(`/learning/lessons/${courseId}${topic?.[0] ? `/${topic[0]}` : ""}`));
   const found = await courseFor(courseId);
   if (!found) notFound();

@@ -8,7 +8,7 @@ import { signInFor } from "@/lib/safe-redirect";
 export const metadata = { title: "Official Docs · Comprehensive Developer Reference" };
 
 export default async function OfficialDocsPage() {
-  const user = (authConfigured() || process.env.NODE_ENV === "production") ? await currentUser() : null;
+  const user = (authConfigured() || process.env.NODE_ENV === "production") ? await currentUser("/learning/official-docs") : null;
   if (authConfigured() && !user) redirect(signInFor("/learning/official-docs"));
 
   return (

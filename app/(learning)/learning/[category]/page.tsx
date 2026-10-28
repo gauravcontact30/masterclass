@@ -13,7 +13,7 @@ export default async function PreparationPage({ params, searchParams }: { params
   const { category } = await params; const {preparation,course}=await searchParams;
   // An unknown or retired category opens the dashboard rather than a dead end.
   if (!Object.hasOwn(CATEGORY_LABELS, category)) redirect("/learning");
-  const user = (authConfigured() || process.env.NODE_ENV === "production") ? await currentUser() : null;
+  const user = (authConfigured() || process.env.NODE_ENV === "production") ? await currentUser(`/learning/${category}`) : null;
   if (authConfigured() && !user) redirect(signInFor(`/learning/${category}`));
   return <Workspace key={category+":"+(preparation??"")+":"+(course??"")} initialCategory={category} initialPreparation={preparation} initialCourse={course} authEnabled={authConfigured()} configured={databaseConfigured()} billingEnabled={billingConfigured()} userEmail={user?.email ?? null} />;
 }

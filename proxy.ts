@@ -61,7 +61,7 @@ export default async function proxy(request: NextRequest) {
     );
     if (process.env.SUPABASE_URL && !hasSessionCookie) {
       const signInUrl = new URL("/sign-in", request.url);
-      signInUrl.searchParams.set("redirect", pathname);
+      signInUrl.searchParams.set("redirect", pathname + request.nextUrl.search);
       return NextResponse.redirect(signInUrl);
     }
   }
@@ -76,7 +76,7 @@ export default async function proxy(request: NextRequest) {
     // No cookie means there is no SSR session to refresh. Avoid a remote auth
     // lookup for anonymous page/API visits, while retaining dashboard guards.
     if (!hasAuthCookie) {
-      const target = redirectFor({ pathname, signedIn: false });
+      const target = redirectFor({ pathname, search: request.nextUrl.search, signedIn: false });
       if (target) {
         const redirected = NextResponse.redirect(new URL(target, request.url));
         redirected.headers.set("Cache-Control", "private, no-store");
@@ -110,7 +110,7 @@ export default async function proxy(request: NextRequest) {
         response.cookies.delete("mc_vid");
         response.cookies.delete("mc_sid");
       }
-      const target = redirectFor({ pathname, signedIn: Boolean(claims?.sub) });
+      const target = redirectFor({ pathname, search: request.nextUrl.search, signedIn: Boolean(claims?.sub) });
       if (target) {
         const redirected = NextResponse.redirect(new URL(target, request.url));
         response.cookies.getAll().forEach((cookie) => redirected.cookies.set(cookie));
