@@ -2,10 +2,14 @@ import { NextResponse } from "next/server";
 import { TECH_BUZZ_ARTICLES, type TechBuzzArticle } from "@/lib/tech-buzz-data";
 import { bumpTechBuzzCounter, type TechBuzzCounter } from "@/lib/server/tech-buzz-storage";
 import { rateLimit } from "@/lib/server/rate-limit";
-import { clientIp } from "@/lib/server/http";
+import { clientIp, HttpError, jsonBody, sameOrigin } from "@/lib/server/http";
 
-// Newsletter subscribers memory list
+// Newsletter subscribers memory list. Anyone can post here, so it is capped: an unbounded Set was a memory leak.
 const newsletterSubscribers: Set<string> = new Set();
+const MAX_SUBSCRIBERS = 5000;
+// Comments live in shared module memory and are shown to every reader served by this instance: cap them per story.
+const MAX_COMMENTS = 50;
+const limited = (key: string, max: number) => rateLimit(key, max, 60).then(() => false, error => (error as { status?: number }).status === 429);
 
 // In-memory state mutation helper
 export function updateArticleState(
@@ -28,20 +32,27 @@ export function updateArticleState(
  */
 export async function POST(request: Request) {
   try {
-    const body = await request.json().catch(() => ({}));
+    // Same-origin only (a cross-site form could otherwise post reactions and comments as the visitor), and a capped body.
+    sameOrigin(request);
+    const body = await jsonBody(request, 4000).catch(error => { if (error instanceof HttpError && error.status === 413) throw error; return {}; });
     const { action, articleId } = body;
 
     if (!action) {
       return NextResponse.json({ error: "Missing action parameter" }, { status: 400 });
     }
 
+    // Every action below writes shared state; likes and dislikes keep their own budget further down.
+    if (!["like", "upvote", "dislike"].includes(action) && await limited(`tech-buzz:action:${clientIp(request)}`, 20)) {
+      return NextResponse.json({ error: "Too many requests, slow down a little." }, { status: 429 });
+    }
+
     // 1. Newsletter subscription action (Substack / Ghost style)
     if (action === "subscribe_newsletter") {
-      const email = typeof body.email === "string" ? body.email.trim().toLowerCase() : "";
-      if (!email || !email.includes("@")) {
+      const email = typeof body.email === "string" ? body.email.trim().toLowerCase().slice(0, 254) : "";
+      if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
         return NextResponse.json({ error: "Please provide a valid email address." }, { status: 400 });
       }
-      newsletterSubscribers.add(email);
+      if (newsletterSubscribers.size < MAX_SUBSCRIBERS) newsletterSubscribers.add(email);
       return NextResponse.json({
         success: true,
         message: "Welcome to MasterClass Tech Dispatch! Check your inbox for this week's deep-dive.",
@@ -61,8 +72,7 @@ export async function POST(request: Request) {
     if (action === "like" || action === "upvote" || action === "dislike") {
       const field: TechBuzzCounter = action === "dislike" ? "dislikes" : "likes";
       const delta = body.delta === -1 ? -1 : 1;
-      const limited = await rateLimit(`tech-buzz:${field}:${clientIp(request)}`, 60, 60).then(() => false, error => (error as { status?: number }).status === 429);
-      if (limited) return NextResponse.json({ error: "Too many reactions, slow down a little." }, { status: 429 });
+      if (await limited(`tech-buzz:${field}:${clientIp(request)}`, 60)) return NextResponse.json({ error: "Too many reactions, slow down a little." }, { status: 429 });
       const stored = await bumpTechBuzzCounter(String(articleId), field, delta).catch(() => null);
       if (stored) return NextResponse.json({ success: true, ...stored, upvotes: stored.likes, netLikes: stored.likes - stored.dislikes });
     }
@@ -152,7 +162,8 @@ export async function POST(request: Request) {
       if (!text) {
         return NextResponse.json({ error: "Comment text cannot be empty" }, { status: 400 });
       }
-      const authorName = typeof body.authorName === "string" ? body.authorName.trim().slice(0, 60) : "Community Developer";
+      // Anonymous comments carry no identity, so the author name is fixed: a caller-chosen one let anyone post as anyone.
+      const authorName = "Community Developer";
       const newComment = {
         id: `c-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
         author: {
@@ -169,6 +180,7 @@ export async function POST(request: Request) {
       const updated = updateArticleState(articleId, (article: TechBuzzArticle) => {
         if (!article.comments) article.comments = [];
         article.comments.unshift(newComment);
+        article.comments.length = Math.min(article.comments.length, MAX_COMMENTS);
         article.commentsCount = article.comments.length;
       });
       if (!updated) return NextResponse.json({ error: "Article not found" }, { status: 404 });
@@ -181,9 +193,9 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ error: "Unrecognized action" }, { status: 400 });
   } catch (error) {
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Internal action error" },
-      { status: 500 }
-    );
+    if (error instanceof HttpError) return NextResponse.json({ error: error.code }, { status: error.status });
+    // Never echo internal error messages to an anonymous caller.
+    console.error(JSON.stringify({ event: "tech_buzz_action_failed", message: error instanceof Error ? error.message.slice(0, 200) : "unknown" }));
+    return NextResponse.json({ error: "Internal action error" }, { status: 500 });
   }
 }

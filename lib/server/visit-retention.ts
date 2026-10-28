@@ -1,5 +1,6 @@
 import "server-only";
 import { db } from "./db";
+import { equalSecret } from "./secrets";
 import { pruneZeroEngagement } from "./zero-engagement";
 import { VISIT_RETENTION_DAYS } from "@/lib/visit-retention";
 
@@ -20,5 +21,6 @@ export async function pruneVisits(now = Date.now()) {
 /** Vercel Cron calls with `Authorization: Bearer $CRON_SECRET`; without the secret set, every call is refused. */
 export const cronAuthorized = (request: Request) => {
   const secret = process.env.CRON_SECRET;
-  return Boolean(secret) && request.headers.get("authorization") === `Bearer ${secret}`;
+  // Constant-time, so response timing does not leak how much of a guessed secret matched.
+  return Boolean(secret) && equalSecret(request.headers.get("authorization") ?? "", `Bearer ${secret}`);
 };
