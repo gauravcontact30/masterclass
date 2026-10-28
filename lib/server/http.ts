@@ -5,12 +5,16 @@ import { supabaseServer } from "./auth";
 import { after } from "next/server";
 import { recordEvent } from "./monitoring";
 import { UNTRACKED_COOKIE } from "./tracking-exclusions";
+import { AUTH_USER, requestOnce, withRequestCache } from "./request-cache";
 export class HttpError extends Error { constructor(public status: number, public code: string) { super(code); } }
 export async function userId() {
   if (!authConfigured()) throw new HttpError(503, "setup_required");
-  const { data } = await (await supabaseServer()).auth.getUser();
-  if (!data.user) throw new HttpError(401, "signin_required");
-  return data.user.id;
+  const user = await requestOnce(AUTH_USER, async () => {
+    const { data } = await (await supabaseServer()).auth.getUser();
+    return data.user;
+  });
+  if (!user) throw new HttpError(401, "signin_required");
+  return user.id;
 }
 export async function jsonBody(request: Request, max = 30000) {
   if (Number(request.headers.get("content-length")) > max) throw new HttpError(413, "request_too_large");
@@ -37,6 +41,7 @@ export async function api(action: () => Promise<Response>, request?: Request) {
   const requestId = crypto.randomUUID();
   function monitor(response: Response, code?: string) {
     response.headers.set("X-Request-ID", requestId);
+    response.headers.append("Server-Timing", `app;dur=${(performance.now() - started).toFixed(1)}`);
     // Opt out of successful-request analytics, but never let a client-set cookie hide security failures.
     const untracked = request?.headers.get("cookie")?.split(/;\s*/).includes(`${UNTRACKED_COOKIE}=1`);
     // Successful admin calls stay out of analytics; failed ones are always recorded, so attacks on the admin API leave a trace.
@@ -54,7 +59,7 @@ export async function api(action: () => Promise<Response>, request?: Request) {
     }
     return response;
   }
-  try { const response = await action(); response.headers.set("Cache-Control", "private, no-store"); return monitor(response); }
+  try { const response = await withRequestCache(action); response.headers.set("Cache-Control", "private, no-store"); return monitor(response); }
   catch (error) {
     const status = error instanceof HttpError ? error.status : error instanceof ZodError ? 400 : error instanceof Error && error.message.startsWith("CONFIG:") ? 503 : 500;
     const code = error instanceof HttpError ? error.code : error instanceof ZodError ? "invalid_request" : status === 503 ? "setup_required" : "service_error";

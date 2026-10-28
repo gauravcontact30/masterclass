@@ -7,6 +7,7 @@ import { requireLearningUser as currentUser } from "@/lib/server/subscription-ac
 import { contentOverrides } from "@/lib/server/content-overrides";
 import { isSuperAdminUser } from "@/lib/study/preparations";
 import { authConfigured, billingConfigured, databaseConfigured } from "@/lib/server/config";
+import { signInFor } from "@/lib/safe-redirect";
 
 type Params = Promise<{ slug: string }>;
 
@@ -20,7 +21,7 @@ export default async function CoffeeArticlePage({ params }: { params: Params }) 
   if (!post) notFound();
   const authEnabled = authConfigured();
   const user = (authEnabled || process.env.NODE_ENV === "production") ? await currentUser() : null;
-  if (authEnabled && !user) redirect("/sign-in");
+  if (authEnabled && !user) redirect(signInFor(`/learning/coffee-and-code/${post.slug}`));
   const overrides = await contentOverrides();
   // Two more articles: same topic first, then the newest others.
   const related = [...BLOG_POSTS.filter(p => p.slug !== post.slug && p.topic === post.topic), ...BLOG_POSTS.filter(p => p.slug !== post.slug && p.topic !== post.topic)]

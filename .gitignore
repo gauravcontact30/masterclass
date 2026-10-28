@@ -54,3 +54,4 @@ next-env.d.ts
 
 # npm run images:vocabulary / images:aws per-card scenes and verdicts
 *-images-report.jsonl
+.cache/

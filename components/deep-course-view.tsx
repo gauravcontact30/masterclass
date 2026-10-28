@@ -81,15 +81,21 @@ function Topic({ course, topic }: { course: DeepCourse; topic: CourseTopic }) {
   </article>;
 }
 
+/** Each part of a topic is its own light card, tinted so a reader can tell the parts apart at a glance. */
+const TONES = {
+  description: "lavender", usage: "sky", steps: "mint", syntax: "butter", example: "peach", simple: "mint", moderate: "sky", complex: "lavender",
+  code: "slate", assignments: "rose", alternates: "sage", tips: "butter", subjective: "sky", objective: "mint",
+} as const;
+
 function TopicBody({ course, topic, index }: { course: DeepCourse; topic: CourseTopic; index: number }) {
   return <>
     <DeepTopicChecklist courseId={course.id} topicId={topic.id} index={index} />
 
-    <section id="description" className={styles.block}>
+    <section id="description" className={styles.block} data-tone={TONES.description}>
       <h2><BookOpenText size={18} aria-hidden="true"/>Description</h2>
-      {topic.description.map(paragraph => <p key={paragraph}>{paragraph}</p>)}
+      <ul className={styles.points}>{topic.description.map(paragraph => <li key={paragraph}>{paragraph}</li>)}</ul>
     </section>
-    <section id="usage" className={styles.block}>
+    <section id="usage" className={styles.block} data-tone={TONES.usage}>
       <h2><Wrench size={18} aria-hidden="true"/>Usage</h2>
       <ul className={styles.usage}>{topic.usage.map(item => <li key={item}>{item}</li>)}</ul>
     </section>
@@ -99,18 +105,18 @@ function TopicBody({ course, topic, index }: { course: DeepCourse; topic: Course
     {topic.lab && <LabExampleBlock id="simple" heading="Simple example" level="Simple" icon={<FlaskConical size={18} aria-hidden="true"/>} example={topic.lab.simple} />}
     {topic.lab && <LabExampleBlock id="moderate" heading="Moderate example" level="Moderate" icon={<FlaskConical size={18} aria-hidden="true"/>} example={topic.lab.moderate} />}
     {topic.lab && <LabExampleBlock id="complex" heading="Complex example" level="Complex" icon={<FlaskConical size={18} aria-hidden="true"/>} example={topic.lab.complex} />}
-    <section id="code" className={styles.block}>
+    <section id="code" className={styles.block} data-tone={TONES.code}>
       <h2><span className={styles.codeIcon} aria-hidden="true">{"</>"}</span>Code examples</h2>
       <p className={styles.hint}>Switch between files with the tabs or the file tree; each tab is a complete file you can copy.</p>
       <CodeFiles skin="apple" label={topic.title} annotate={false} files={topic.files.map(file => ({ path: file.path, code: file.code, note: file.note ?? "" }))}/>
     </section>
     {topic.lab && <LabAssignments lab={topic.lab} />}
     {topic.lab && <LabAlternates lab={topic.lab} />}
-    <section id="tips" className={styles.block}>
+    <section id="tips" className={styles.block} data-tone={TONES.tips}>
       <h2><Lightbulb size={18} aria-hidden="true"/>Tips</h2>
       <ul className={styles.tips}>{topic.tips.map(item => <li key={item}>{item}</li>)}</ul>
     </section>
-    <section id="subjective" className={styles.block}>
+    <section id="subjective" className={styles.block} data-tone={TONES.subjective}>
       <h2><MessageSquareText size={18} aria-hidden="true"/>Interview &amp; exam questions — Subjective</h2>
       <p className={styles.hint}>Try answering aloud or on paper first, then open the model answer.</p>
       <ol className={styles.qa}>{topic.subjective.map((item, number) => <li key={item.q}><details>
@@ -118,7 +124,7 @@ function TopicBody({ course, topic, index }: { course: DeepCourse; topic: Course
         <div className={styles.answer}>{item.a.split("\n\n").map(paragraph => <p key={paragraph}>{paragraph}</p>)}</div>
       </details></li>)}</ol>
     </section>
-    <section id="objective" className={styles.block}>
+    <section id="objective" className={styles.block} data-tone={TONES.objective}>
       <h2><ListChecks size={18} aria-hidden="true"/>Interview &amp; exam questions — Objective</h2>
       <p className={styles.hint}>Choose an option to check it.</p>
       <ol className={styles.mcqs}>{topic.objective.map((question, number) => <DeepCourseObjective key={question.q} question={question} number={number + 1}/>)}</ol>
@@ -135,14 +141,14 @@ function TopicPager({ course, index }: { course: DeepCourse; index: number }) {
 }
 
 function LabSteps({ lab }: { lab: TopicLab }) {
-  return <section id="steps" className={styles.block}>
+  return <section id="steps" className={styles.block} data-tone={TONES.steps}>
     <h2><Footprints size={18} aria-hidden="true"/>Step by step</h2>
     <ol className={styles.steps}>{lab.steps.map(step => <li key={step}>{step}</li>)}</ol>
   </section>;
 }
 
 function LabSyntax({ lab }: { lab: TopicLab }) {
-  return <section id="syntax" className={styles.block}>
+  return <section id="syntax" className={styles.block} data-tone={TONES.syntax}>
     <h2><Braces size={18} aria-hidden="true"/>Syntax</h2>
     <CodeFiles skin="apple" label="Syntax" annotate={false} files={[{ path: lab.syntax.file, code: lab.syntax.code, note: "" }]}/>
     <ul className={styles.usage}>{lab.syntax.notes.map(note => <li key={note}>{note}</li>)}</ul>
@@ -151,7 +157,7 @@ function LabSyntax({ lab }: { lab: TopicLab }) {
 
 /** One runnable example: the code, what it prints, and a button that opens it in the online compiler. */
 function LabExampleBlock({ id, heading, level, icon, example }: { id: string; heading: string; level?: "Simple" | "Moderate" | "Complex"; icon: ReactNode; example: LabExample }) {
-  return <section id={id} className={styles.block}>
+  return <section id={id} className={styles.block} data-tone={TONES[id as keyof typeof TONES]}>
     <h2>{icon}{heading}{level && <i className={styles.levelChip} data-grade={level}>{level}</i>}</h2>
     <p className={styles.exampleTitle}>{example.title}</p>
     {example.explain && <p>{example.explain}</p>}
@@ -162,7 +168,7 @@ function LabExampleBlock({ id, heading, level, icon, example }: { id: string; he
 }
 
 function LabAssignments({ lab }: { lab: TopicLab }) {
-  return <section id="assignments" className={styles.block}>
+  return <section id="assignments" className={styles.block} data-tone={TONES.assignments}>
     <h2><ClipboardList size={18} aria-hidden="true"/>Assignment questions with answers</h2>
     <p className={styles.hint}>Solve each one yourself first, then open the answer to compare.</p>
     <ol className={styles.qa}>{lab.assignments.map((item, number) => <li key={item.q}><details>
@@ -176,7 +182,7 @@ function LabAssignments({ lab }: { lab: TopicLab }) {
 }
 
 function LabAlternates({ lab }: { lab: TopicLab }) {
-  return <section id="alternates" className={styles.block}>
+  return <section id="alternates" className={styles.block} data-tone={TONES.alternates}>
     <h2><GitFork size={18} aria-hidden="true"/>Do it the same in a different way</h2>
     <p className={styles.hint}>The same result, written another way, and when you would choose it.</p>
     {lab.alternates.map(item => <div key={item.title} className={styles.alternate}>

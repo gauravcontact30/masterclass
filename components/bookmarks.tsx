@@ -25,6 +25,8 @@ export function BookmarkSection({ title, children }: { title: string; children: 
   return source ? <BookmarkScope value={{ ...source, title, sourceKey: `${source.sourceKey}:${title}` }}>{children}</BookmarkScope> : children;
 }
 
+const FOCUS_STALE_MS = 60_000;
+
 export function BookmarksProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<State>({ items: [], owner: null, status: "loading" });
   const [busy, setBusy] = useState(false);
@@ -32,11 +34,13 @@ export function BookmarksProvider({ children }: { children: ReactNode }) {
   useEffect(() => { current.current = state; }, [state]);
   const epoch = useRef(0);
   const lock = useRef(false);
-  const refresh = useCallback(async () => {
+  // When the list last loaded: a window regaining focus re-reads it only after FOCUS_STALE_MS, and without blanking it.
+  const loadedAt = useRef(0);
+  const refresh = useCallback(async ({ quiet = false } = {}) => {
     if (lock.current) return;
     const generation = ++epoch.current;
     if (!maybeSignedIn()) { setState({ items: [], owner: null, status: "signin" }); return; }
-    setState({ items: [], owner: null, status: "loading" });
+    if (!quiet) setState({ items: [], owner: null, status: "loading" });
     try {
       let after: number | null = 0;
       let owner: string | null = null;
@@ -54,14 +58,16 @@ export function BookmarksProvider({ children }: { children: ReactNode }) {
         after = result.nextCursor;
       }
       if (owner === "demo") items.push(...(await schemas()).bookmarkSchema.array().parse(JSON.parse(localStorage.getItem(localKey) ?? "[]")));
-      if (generation === epoch.current) setState({ items, owner, status: "ready" });
-    } catch { if (generation === epoch.current) setState({ items: [], owner: null, status: "error" }); }
+      if (generation === epoch.current) { loadedAt.current = Date.now(); setState({ items, owner, status: "ready" }); }
+    } catch { if (generation === epoch.current && !quiet) setState({ items: [], owner: null, status: "error" }); }
   }, []);
   useEffect(() => {
-    void Promise.resolve().then(refresh);
-    const onFocus = () => { void refresh(); };
+    void Promise.resolve().then(() => refresh());
+    // Every tab switch used to re-download the whole list (a quarter of all API calls): now only a stale one, quietly.
+    const onFocus = () => { if (Date.now() - loadedAt.current > FOCUS_STALE_MS) void refresh({ quiet: current.current.status === "ready" }); };
+    const onStorage = (event: StorageEvent) => { if (event.key === localKey) void refresh({ quiet: true }); };
     window.addEventListener("focus", onFocus);
-    window.addEventListener("storage", onFocus);
+    window.addEventListener("storage", onStorage);
     const unsubscribe = onAuthChange(event => {
       if (event === "SIGNED_OUT" || event === "SIGNED_IN") { ++epoch.current; setState({ items: [], owner: null, status: "loading" }); setTimeout(() => void refresh(), 0); }
     });
@@ -69,7 +75,7 @@ export function BookmarksProvider({ children }: { children: ReactNode }) {
     // in-flight refresh. A copy taken when the Effect ran would invalidate a
     // generation that has already passed.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    return () => { ++epoch.current; window.removeEventListener("focus", onFocus); window.removeEventListener("storage", onFocus); unsubscribe(); };
+    return () => { ++epoch.current; window.removeEventListener("focus", onFocus); window.removeEventListener("storage", onStorage); unsubscribe(); };
   }, [refresh]);
   async function mutate(draft: BookmarkDraft, removed?: SavedBookmark) {
     const snapshot = current.current;

@@ -25,26 +25,30 @@ export async function listBookmarks(owner: string, offset: number) {
   const { data, error } = await store.list(folder(owner), { limit: 101, offset, sortBy: { column: "name", order: "asc" } });
   if (error || !data) throw new Error("Cannot load bookmarks");
   const bookmarks: SavedBookmark[] = [];
-  for (let index = 0; index < Math.min(data.length, 100); index += 10) {
-    const results = await Promise.all(data.slice(index, Math.min(index + 10, 100)).map(async file => {
-      const path = `${folder(owner)}/${file.name}`;
-      const result = await store.download(path);
-      if (result.error || !result.data) throw new Error("Cannot load bookmark");
-      const raw = JSON.parse(await result.data.text()) as { href?: unknown };
-      // Saved before the Learning Dashboard moved from /dashboard to /learning (2026-10-25): the stored link no
-      // longer passed the schema, which turned the whole list into a 400. The id does not depend on the link, so the
-      // corrected copy is written back to the same file.
-      const legacy = typeof raw.href === "string" && /^\/dashboard(?:[/?#]|$)/.test(raw.href);
-      if (legacy) raw.href = (raw.href as string).replace(/^\/dashboard(?:\/super-admin)?/, "/learning");
-      const parsed = bookmarkSchema.safeParse(raw);
-      // One unreadable file must not hide every other bookmark.
-      if (!parsed.success || `${parsed.data.id}.json` !== file.name) { console.error("bookmark_unreadable", file.name.slice(0, 16)); return null; }
-      if (legacy) void store.upload(path, JSON.stringify(parsed.data), { upsert: true, contentType: "application/json", cacheControl: "0" }).catch(() => {});
-      return parsed.data;
-    }));
-    bookmarks.push(...results.filter((value): value is SavedBookmark => value !== null));
-  }
+  // Every file at once through a 25-wide pool: the old rounds of ten ran one after another (p95 1.7 s for 100).
+  const files = data.slice(0, 100);
+  const results: (SavedBookmark | null)[] = new Array(files.length).fill(null);
+  let next = 0;
+  await Promise.all(Array.from({ length: Math.min(25, files.length) }, async () => { while (next < files.length) { const at = next++; results[at] = await read(files[at]); } }));
+  bookmarks.push(...results.filter((value): value is SavedBookmark => value !== null));
   return { bookmarks, nextCursor: data.length > 100 ? offset + 100 : null };
+
+  async function read(file: { name: string }): Promise<SavedBookmark | null> {
+    const path = `${folder(owner)}/${file.name}`;
+    const result = await store.download(path);
+    if (result.error || !result.data) throw new Error("Cannot load bookmark");
+    const raw = JSON.parse(await result.data.text()) as { href?: unknown };
+    // Saved before the Learning Dashboard moved from /dashboard to /learning (2026-10-25): the stored link no
+    // longer passed the schema, which turned the whole list into a 400. The id does not depend on the link, so the
+    // corrected copy is written back to the same file.
+    const legacy = typeof raw.href === "string" && /^\/dashboard(?:[/?#]|$)/.test(raw.href);
+    if (legacy) raw.href = (raw.href as string).replace(/^\/dashboard(?:\/super-admin)?/, "/learning");
+    const parsed = bookmarkSchema.safeParse(raw);
+    // One unreadable file must not hide every other bookmark.
+    if (!parsed.success || `${parsed.data.id}.json` !== file.name) { console.error("bookmark_unreadable", file.name.slice(0, 16)); return null; }
+    if (legacy) void store.upload(path, JSON.stringify(parsed.data), { upsert: true, contentType: "application/json", cacheControl: "0" }).catch(() => {});
+    return parsed.data;
+  }
 }
 export async function saveBookmark(owner: string, draft: BookmarkDraft) {
   const id = createHash("sha256").update(bookmarkIdentity(draft)).digest("hex");

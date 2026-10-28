@@ -336,7 +336,7 @@ export const en = {
   "techBuzzBadge": "Master Class Buddy - Tech Buzz",
   "techBuzzTag": "4.9★",
   "campusSlideTitle": "Your campus for the skills companies hire for.",
-  "campusSlideBody": "Step into one place for AI agents, cloud, system design and full-stack development, with interview prep, certification paths and real projects, in English or हिन्दी.",
+  "campusSlideBody": "Turn technical knowledge into working software. Build AI agents, design cloud systems and ship full-stack projects with guided practice that sharpens your skills for interviews and everyday engineering.",
   "campusSlideTool": "MasterClass Buddy campus",
   "buildSlideTitle": "Learn to code by building real projects.",
   "buildSlideTool": "Technology courses",

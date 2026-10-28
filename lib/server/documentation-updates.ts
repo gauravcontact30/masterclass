@@ -72,11 +72,16 @@ export async function listDocumentationUpdates() {
   const { data, error } = await (await storage()).list("", { limit: 1000 });
   if (error || !data) throw new HttpError(503, "documentation_storage_unavailable");
   const names = new Set(data.map(file => file.name));
-  const result: DocumentationUpdate[] = [];
-  for (let index = 0; index < OFFICIAL_DOCS.length; index += 5) {
-    result.push(...await Promise.all(OFFICIAL_DOCS.slice(index, index + 5).map(async doc =>
-      documentationStatus(doc.id, names.has(`${doc.id}.json`) ? await readDocumentation(doc.id) : null))));
-  }
+  // One 20-wide pool instead of rounds of five run one after another: "use cache" is per instance, so every new
+  // instance pays this read (GET p50 was 726 ms, p95 4 s).
+  const result: DocumentationUpdate[] = new Array(OFFICIAL_DOCS.length);
+  let next = 0;
+  await Promise.all(Array.from({ length: Math.min(20, OFFICIAL_DOCS.length) }, async () => {
+    while (next < OFFICIAL_DOCS.length) {
+      const at = next++, doc = OFFICIAL_DOCS[at];
+      result[at] = documentationStatus(doc.id, names.has(`${doc.id}.json`) ? await readDocumentation(doc.id) : null);
+    }
+  }));
   return result;
 }
 

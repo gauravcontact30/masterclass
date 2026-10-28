@@ -10,6 +10,7 @@ import { setAuthNotice } from "@/lib/auth-notice";
 import { ArrowLeft, ArrowUpRight, Eye, EyeOff, Languages, MailCheck, Settings2 } from "lucide-react";
 import { supabaseBrowser } from "@/lib/supabase-browser";
 import { hardNavigate } from "@/lib/hard-navigate";
+import { isSafeRedirect } from "@/lib/safe-redirect";
 import { en, TranslationKey } from "@/lib/i18n";
 import { useLanguage } from "./language-provider";
 import { LanguageToggle } from "./language-toggle";
@@ -27,7 +28,7 @@ function authErrorKey(error: { code?: string; message?: string }): TranslationKe
 }
 
 export function safeRedirect(target: string | undefined) {
-  return target && /^\/(dashboard|notes|subscribe|tech-buzz)(\/|\?|$)/.test(target) && !target.startsWith("//") ? target : "/learning";
+  return isSafeRedirect(target) ? target : "/learning";
 }
 /**
  * A full navigation, not router.replace: the new session cookies then reach the proxy and server on the very

@@ -10,6 +10,7 @@ import { TRACK_FAMILIES } from "@/lib/pro-learn/families";
 import { BrandOrGlyph } from "./topic-media";
 import { pageWindow } from "./pager";
 import { DeepCourseProgress } from "./deep-topic-progress";
+import { ChipPager } from "./chip-pager";
 import styles from "./deep-course.module.css";
 
 /*
@@ -71,10 +72,11 @@ export function DeepCourseShelf({ id = "deep-courses", inSheet = false }: { id?:
         {(Object.keys(STATUS_LABEL) as Status[]).map(item => <button key={item} type="button" role="radio" aria-checked={status === item} onClick={() => { setStatus(item); reset(); }}>{STATUS_LABEL[item]}</button>)}
       </div>
     </div>
-    <div className={styles.catalogFamilies} role="toolbar" aria-label="Filter by family">
-      <button type="button" aria-pressed={!family} onClick={() => { setFamily(null); reset(); }}><span aria-hidden="true">✦</span>All</button>
-      {families.map(item => <button key={item.id} type="button" aria-pressed={family === item.id} onClick={() => { setFamily(family === item.id ? null : item.id); reset(); }}><span aria-hidden="true">{item.icon}</span>{item.name}</button>)}
-    </div>
+    <ChipPager className={styles.catalogFamilies} chipClassName={styles.familyChip} label="Filter by family" chips={[
+      { id: "all", node: <><span aria-hidden="true">✦</span>All</>, selected: !family, onSelect: () => { setFamily(null); reset(); } },
+      ...families.map(item => ({ id: item.id, node: <><span aria-hidden="true">{item.icon}</span>{item.name}</>, selected: family === item.id,
+        onSelect: () => { setFamily(family === item.id ? null : item.id); reset(); } })),
+    ]} />
 
     {shown.length ? <div className={styles.shelfGrid}>
       {shown.map(course => { const ids = topicIds(course.id); const state = statusOf(course.id, course.handwritten); return <Link key={course.id} href={deepCourseHref(course.id)} className={styles.courseCard} style={{ "--tint": course.tint } as React.CSSProperties}>

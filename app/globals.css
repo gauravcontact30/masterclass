@@ -894,3 +894,35 @@ details[open] > [data-slot="accordion-summary"] > [data-slot="accordion-indicato
 @media (min-width:1680px){:root{--landing-max:1400px;--workspace-max:1600px}}
 @media (min-width:1920px){:root{--landing-max:1560px;--workspace-max:1760px}}
 @media (min-width:2400px){:root{--landing-max:1800px;--workspace-max:2080px}}
+
+/* ---------- Mobile drawer (components/mobile-nav.tsx): Learning dashboard and Super Admin at ≤ 760 px ----------
+   The sidebar leaves the page flow and slides in from the left over a scrim; the top bar becomes one compact sticky
+   row: menu, brand mark, the current page and the actions. Inside the drawer the navigation is the desktop list. */
+@media (max-width:760px){
+  .app-shell.compact-workspace>aside.sidebar{position:fixed!important;top:0!important;left:0;bottom:0;z-index:80!important;display:flex!important;flex-direction:column;width:min(86vw,330px)!important;height:100dvh!important;max-height:none!important;margin:0;padding:18px 14px 24px!important;overflow-y:auto!important;overscroll-behavior:contain;border-right:1px solid rgba(255,255,255,.08);border-bottom:0!important;transform:translateX(-104%);visibility:hidden;transition:transform .3s cubic-bezier(.2,.8,.2,1),visibility 0s linear .3s}
+  .app-shell.compact-workspace[data-nav-open]>aside.sidebar{transform:none;visibility:visible;transition:transform .3s cubic-bezier(.2,.8,.2,1),visibility 0s;box-shadow:24px 0 60px -20px rgba(0,0,0,.5)}
+  .mobile-nav-scrim{position:fixed;inset:0;z-index:75;padding:0;border:0;background:rgba(20,20,19,.45);-webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px);animation:mobile-nav-fade .25s ease}
+  @keyframes mobile-nav-fade{from{opacity:0}}
+  .app-shell.compact-workspace .main-shell{margin:0!important;width:100%!important}
+  .app-shell.compact-workspace .topbar{position:sticky;top:0;z-index:50;display:flex;flex-wrap:nowrap!important;align-items:center;gap:10px;height:62px!important;min-height:62px!important;padding:0 12px!important;background:rgba(255,253,248,.9)!important;-webkit-backdrop-filter:saturate(1.4) blur(12px);backdrop-filter:saturate(1.4) blur(12px);border-bottom:1px solid #ebe7dd;box-shadow:0 6px 20px -16px rgba(31,30,28,.35)}
+  .mobile-nav-lead{display:inline-flex;align-items:center;gap:8px;flex-shrink:0}
+  .mobile-nav-button{display:grid;place-items:center;width:40px;height:40px;padding:0;border:1px solid #e8d3c9;border-radius:12px;background:#fff;color:#1f1e1c;cursor:pointer;box-shadow:0 1px 2px rgba(31,30,28,.08);transition:background .15s,border-color .15s}
+  .mobile-nav-button:hover{background:#fbf4ef;border-color:#d97757}
+  .mobile-nav-button:focus-visible{outline:2px solid #d97757;outline-offset:2px}
+  .mobile-nav-mark{display:inline-flex}
+  .mobile-nav-mark .brand-mark{width:30px;height:30px}
+  /* Only the current page: the "Dashboard ›" parent is implied on a phone. */
+  .app-shell.compact-workspace .topbar .breadcrumb{flex:1;min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;font-size:14px;font-weight:600;color:#1f1e1c}
+  .app-shell.compact-workspace .topbar .breadcrumb>:not(:last-child){display:none}
+  .app-shell.compact-workspace .topbar .breadcrumb>:last-child{overflow:hidden;text-overflow:ellipsis}
+  .app-shell.compact-workspace .topbar-actions{margin-left:auto;flex-shrink:0;flex-wrap:nowrap;gap:6px}
+  .app-shell.compact-workspace .topbar-divider{display:none}
+  /* The drawer shows the desktop navigation: vertical rows, section labels, no collapse toggle. */
+  .app-shell.compact-workspace>aside.sidebar .sidebar-toggle{display:none}
+  .app-shell.compact-workspace>aside.sidebar .sidebar-label{display:block!important}
+  .app-shell.compact-workspace>aside.sidebar :is(.sidebar > nav, .sidebar-options > nav){display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:2px}
+  .app-shell.compact-workspace>aside.sidebar :is(.sidebar > nav, .sidebar-options > nav) > :is(button,a){justify-content:flex-start!important;padding:10px 12px!important;font-size:13px!important;min-height:42px}
+}
+@media (max-width:420px){.app-shell.compact-workspace .topbar-actions .super-admin-header-link span{display:none}}
+@media (min-width:761px){.mobile-nav-lead,.mobile-nav-scrim{display:none!important}}
+@media (prefers-reduced-motion:reduce){.app-shell.compact-workspace>aside.sidebar{transition:none!important}.mobile-nav-scrim{animation:none}}

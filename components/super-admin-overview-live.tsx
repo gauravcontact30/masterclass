@@ -13,6 +13,8 @@ type Row = Record<string, unknown>;
 type Visit = { id?: number; created_at: string; event: string; person?: string; email?: string | null; user_id?: string | null; visitor_id: string; session_id: string; new_visitor?: boolean; path: string; title?: string | null; country?: string | null; city?: string | null; region?: string | null; postal_code?: string | null; device?: string | null; browser?: string | null; os?: string | null; duration_ms?: number | null; referrer_host?: string | null; utm_source?: string | null; screen?: string | null; timezone?: string | null; language?: string | null; ip_masked?: string | null };
 type Live = {
   generatedAt: string;
+  /** "today": counted from 00:00 IST (migration 0045); "24h": the rolling day it falls back to. */
+  window?: "today" | "24h";
   totals: { liveNow: number; liveSignedIn: number; pageViews: number; visitors: number; bounceRate: number | null; avgSessionSeconds: number | null; people?: number; sessions?: number; signedInUsers?: number; newVisitors?: number; newAccounts?: number; pagesPerSession?: number | null; bots?: number };
   hours: { hour: number; views: number }[]; recent: Visit[]; people?: Person[];
   pages?: { path: string; views: number; visitors: number; avg_seconds: number | null }[]; referrers?: { referrer: string; views: number; visitors: number }[];
@@ -62,6 +64,8 @@ const quantile = (sorted: number[], q: number) => sorted.length ? sorted[Math.mi
 const pct = (part: number, whole: number) => whole ? `${Math.round((part / whole) * 1000) / 10}%` : "—";
 /** The current hour in India, to match the IST hourly bars whatever this browser's time zone. */
 const istHour = (ms: number) => new Date(ms + 5.5 * 3600_000).getUTCHours();
+/** 00:00 IST of the day containing ms: every card counts from here, so the command centre starts fresh each day. */
+const istMidnight = (ms: number) => Math.floor((ms + 19_800_000) / 86_400_000) * 86_400_000 - 19_800_000;
 const hourLabel = (hour: number) => `${String(hour).padStart(2, "0")}:00–${String((hour + 1) % 24).padStart(2, "0")}:00`;
 const statusTone = (status: number | null) => status == null ? "info" : status >= 500 ? "error" : status >= 400 ? "warn" : "ok";
 
@@ -116,7 +120,7 @@ export function OverviewLive({ snapshot, onRefreshSnapshot }: { snapshot: Overvi
   const load = useCallback(async (signal?: AbortSignal) => {
     void loadStream(signal);
     try {
-      const response = await fetch("/api/super-admin/activity?days=1", { cache: "no-store", signal });
+      const response = await fetch("/api/super-admin/activity?day=today", { cache: "no-store", signal });
       const body = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(body.error ?? "service_error");
       // A malformed payload must degrade this panel, never take the whole dashboard down with it.
@@ -138,6 +142,10 @@ export function OverviewLive({ snapshot, onRefreshSnapshot }: { snapshot: Overvi
   const streamRows = useMemo(() => stream ? [...stream.rows.values()] : live?.recent ?? [], [stream, live]);
   const streamDays = stream?.days ?? 1;
   const clockNow = now + offset;
+  const dayStart = istMidnight(clockNow);
+  // A short window (last hour, 30 or 15 minutes) never reaches back past midnight.
+  const notBefore = (ms: number) => Math.max(clockNow - ms, dayStart);
+  const day = live?.window === "24h" ? "24 h" : "today";
   const visits = useMemo(() => streamRows.filter(v => v.event === "page_view"), [streamRows]);
   // Who each visitor is and what is known about every page they opened (lib/live-visits.ts); only the open pages'
   // clocks move each second, so the grouping runs when the data changes and the timing pass on every tick.
@@ -148,13 +156,22 @@ export function OverviewLive({ snapshot, onRefreshSnapshot }: { snapshot: Overvi
     all: everyone.length, live: everyone.filter(v => v.live).length, signed: everyone.filter(v => v.signedIn).length,
     new: everyone.filter(v => v.first.new_visitor && !v.signedIn).length,
     liveSigned: everyone.filter(v => v.live && v.signedIn).length,
-    recent: everyone.filter(v => clockNow - v.lastAt < 30 * 60_000).length,
+    recent: everyone.filter(v => v.lastAt >= notBefore(30 * 60_000)).length,
+    // The stream panel's own figures, over the whole stream window.
     engaged: everyone.length ? everyone.reduce((sum, v) => sum + v.engagedMs, 0) / everyone.length : null,
     pages: everyone.length ? Math.round((visits.length / everyone.length) * 10) / 10 : null,
-  }), [everyone, clockNow, visits]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- notBefore() reads clockNow and dayStart
+  }), [everyone, clockNow, dayStart, visits]);
+  // Engaged time and pages per visitor for today only, from today's rows of the stream.
+  const today = useMemo(() => {
+    const rows = streamRows.filter(v => Date.parse(v.created_at) >= dayStart);
+    const views = rows.filter(v => v.event === "page_view"), people = new Set(views.map(v => v.visitor_id)).size;
+    const engagedMs = rows.reduce((sum, v) => sum + (v.event === "page_leave" ? Math.max(0, Number(v.duration_ms) || 0) : 0), 0);
+    return { engaged: people ? engagedMs / people : null, pages: people ? Math.round((views.length / people) * 10) / 10 : null };
+  }, [streamRows, dayStart]);
   const visitors = useMemo(() => everyone.filter(v => streamFilter === "all" || (streamFilter === "live" ? v.live : streamFilter === "signed" ? v.signedIn : v.first.new_visitor && !v.signedIn)), [everyone, streamFilter]);
   const heartbeats = Boolean(stream?.presence);
-  const lastHour = useMemo(() => streamRows.filter(v => v.event === "page_view" && clockNow - Date.parse(v.created_at) < 3600_000), [streamRows, clockNow]);
+  const lastHour = useMemo(() => streamRows.filter(v => v.event === "page_view" && Date.parse(v.created_at) >= Math.max(clockNow - 3600_000, dayStart)), [streamRows, clockNow, dayStart]);
   const reading = useMemo(() => {
     const recent = streamRows.filter(v => clockNow - Date.parse(v.created_at) < 30 * 60_000);
     const byPath = new Map<string, { views: number; visitors: Set<string>; readMs: number; reads: number }>();
@@ -173,7 +190,7 @@ export function OverviewLive({ snapshot, onRefreshSnapshot }: { snapshot: Overvi
   }, [lastHour]);
 
   const requests = useMemo(() => (snapshot?.events ?? []).filter(e => e.kind === "request"), [snapshot]);
-  const recent15 = useMemo(() => requests.filter(e => now - Date.parse(String(e.created_at)) < 15 * 60_000), [requests, now]);
+  const recent15 = useMemo(() => requests.filter(e => Date.parse(String(e.created_at)) >= Math.max(now - 15 * 60_000, istMidnight(now))), [requests, now]);
   const errors15 = recent15.filter(e => Number(e.status) >= 500).length;
   const traces = useMemo(() => requests.filter(e => {
     const status = Number(e.status), ms = Number(e.duration_ms);
@@ -208,15 +225,15 @@ export function OverviewLive({ snapshot, onRefreshSnapshot }: { snapshot: Overvi
       ? { label: "On the site now", value: n(counts.live), note: `${n(counts.liveSigned)} signed in · page open now`, icon: Radio, tone: "mint", pulse: true }
       : { label: "On the site now", value: n(live?.totals.liveNow), note: `${n(live?.totals.liveSignedIn)} signed in · last 5 min`, icon: Radio, tone: "mint", pulse: true },
     { label: "Views, last hour", value: n(lastHour.length), note: `${n(new Set(lastHour.map(v => v.visitor_id)).size)} visitors`, icon: MousePointerClick, tone: "sky" },
-    { label: "Views, 24 h", value: n(live?.totals.pageViews), note: `${n(live?.totals.visitors)} unique visitors`, icon: Users, tone: "lavender" },
+    { label: `Views, ${day}`, value: n(live?.totals.pageViews), note: `${n(live?.totals.visitors)} unique visitors`, icon: Users, tone: "lavender" },
     { label: "API requests, 15 min", value: n(recent15.length), note: `${n(snapshot?.requests.count)} in the reporting window`, icon: Route, tone: "peach" },
     { label: "Server errors, 15 min", value: n(errors15), note: errors15 ? "Open Application logs for details" : "All clear", icon: AlertTriangle, tone: errors15 ? "rose" : "sage" },
     { label: "API p95 latency", value: snapshot?.requests.p95 == null ? "—" : `${Math.round(snapshot.requests.p95)} ms`, note: `Database ${n(h?.databaseMs)} ms`, icon: Gauge, tone: "butter" },
     { label: "Active, last 30 min", value: n(counts.recent), note: `${n(counts.signed)} signed in across the stream`, icon: Flame, tone: "rose" },
-    { label: "New accounts, 24 h", value: n(live?.totals.newAccounts), note: `${n(live?.totals.signedInUsers)} signed-in learners`, icon: UserPlus, tone: "mint" },
-    { label: "Engaged time / visitor", value: counts.engaged == null ? "—" : spent(counts.engaged / 1000), note: `${counts.pages ?? "—"} pages per visitor`, icon: Hourglass, tone: "sky" },
-    { label: "Bounce rate, 24 h", value: live?.totals.bounceRate == null ? "—" : `${live.totals.bounceRate}%`, note: live?.totals.avgSessionSeconds == null ? "left after one page" : `avg session ${spent(live.totals.avgSessionSeconds)}`, icon: TrendingDown, tone: "lavender" },
-    { label: "Bots filtered, 24 h", value: n(live?.totals.bots), note: "excluded from every figure", icon: Bot, tone: "sage" },
+    { label: `New accounts, ${day}`, value: n(live?.totals.newAccounts), note: `${n(live?.totals.signedInUsers)} signed-in learners`, icon: UserPlus, tone: "mint" },
+    { label: "Engaged time / visitor, today", value: today.engaged == null ? "—" : spent(today.engaged / 1000), note: `${today.pages ?? "—"} pages per visitor`, icon: Hourglass, tone: "sky" },
+    { label: `Bounce rate, ${day}`, value: live?.totals.bounceRate == null ? "—" : `${live.totals.bounceRate}%`, note: live?.totals.avgSessionSeconds == null ? "left after one page" : `avg session ${spent(live.totals.avgSessionSeconds)}`, icon: TrendingDown, tone: "lavender" },
+    { label: `Bots filtered, ${day}`, value: n(live?.totals.bots), note: "excluded from every figure", icon: Bot, tone: "sage" },
   ];
 
   return <section className={styles.live} aria-label="Live command centre">
@@ -590,7 +607,7 @@ export function OverviewLive({ snapshot, onRefreshSnapshot }: { snapshot: Overvi
       </article>
 
       <article className={styles.panel} data-tone="peach">
-        <h3><Zap size={16} aria-hidden="true" />Last 24 hours<span>page views by hour (IST), bots excluded</span></h3>
+        <h3><Zap size={16} aria-hidden="true" />{day === "today" ? "Today" : "Last 24 hours"}<span>page views by hour (IST){day === "today" ? " since midnight" : ""}, bots excluded</span></h3>
         <div className={styles.spark} role="img" aria-label={`Hourly page views, peak ${n(peak)}`}>{Array.from({ length: 24 }, (_, hour) => { const views = hours.find(x => x.hour === hour)?.views ?? 0; return <span key={hour} style={{ height: `${Math.max(4, (views / peak) * 100)}%` }} data-now={istHour(clockNow) === hour || undefined} title={`${String(hour).padStart(2, "0")}:00 — ${views} views`} />; })}</div>
         <div className={styles.sparkAxis}><span>00</span><span>06</span><span>12</span><span>18</span><span>23</span></div>
         {(() => {

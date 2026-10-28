@@ -272,6 +272,9 @@
 .heroSlide[data-active] { opacity: 1; visibility: visible; transition: opacity 1s var(--ease-out), visibility 0s; }
 .heroImage { object-fit: cover; object-position: var(--focus, 50% 50%); transform: scale(1.08); transition: transform 9s cubic-bezier(.25, .1, .25, 1); }
 .heroSlide[data-active] .heroImage { transform: scale(1); }
+/* An infographic slide is a plain <img> in a <picture> (art direction), so it takes next/image's fill box itself;
+   it covers and zooms like every other slide (.heroImage). */
+.heroInfographic { position: absolute; inset: 0; width: 100%; height: 100%; }
 /* Ink-navy washes: under the navbar, behind the copy, and under the controls. */
 .heroShade { position: absolute; inset: 0; background:
   linear-gradient(180deg, rgba(40, 22, 12, .6) 0%, rgba(40, 22, 12, 0) 24%),

@@ -1,6 +1,7 @@
 import type { EmailOtpType } from "@supabase/supabase-js";
 import { NextResponse, type NextRequest } from "next/server";
 import { supabaseServer } from "@/lib/server/auth";
+import { isSafeRedirect } from "@/lib/safe-redirect";
 
 /*
  * Target of the confirmation email (Supabase template "Confirm signup":
@@ -21,6 +22,6 @@ export async function GET(request: NextRequest) {
   const notice = type === "recovery" ? "recovery" : type === "magiclink" ? "signed_in" : "verified";
   const next = params.get("next") || params.get("redirect");
   const fallback = type === "recovery" ? `/learning/settings?notice=${notice}` : `/learning?notice=${notice}`;
-  const target = next && /^\/(dashboard|notes|subscribe|tech-buzz)(\/|\?|$)/.test(next) && !next.startsWith("//") ? next : fallback;
+  const target = isSafeRedirect(next) ? next : fallback;
   return NextResponse.redirect(new URL(target, request.url));
 }

@@ -6,14 +6,20 @@ import { HttpError } from "./http";
 import { preparationAccess } from "./preparations";
 import { canReadTechnology } from "@/lib/study/preparations";
 export async function profile(id: string) {
+  const client = db();
+  const existing = await client.from("profiles").select("id,name,language,credit_balance,created_at").eq("id", id).single();
+  // Existing accounts need only a read. The old unconditional upsert added a
+  // write round trip (and database contention) to every entitlement check.
+  if (existing.data) return check(existing);
+  if (existing.error && existing.error.code !== "PGRST116") return check(existing);
   check(await db().from("profiles").upsert({ id }, { onConflict: "id", ignoreDuplicates: true }));
   return check(await db().from("profiles").select("id,name,language,credit_balance,created_at").eq("id", id).single());
 }
-export async function account(id: string) {
+export async function account(id: string, knownProfile?: ReturnType<typeof profile>) {
   // These reads are independent. Every paid learning route checks this account,
   // so serial round trips here delay navigation throughout the dashboard.
   const [owner, subscriptionResult, usageResult] = await Promise.all([
-    profile(id),
+    knownProfile ?? profile(id),
     db().from("subscriptions").select("*").eq("user_id", id).maybeSingle(),
     db().from("usage_periods").select("used").eq("user_id", id).eq("period", monthKey()).maybeSingle(),
   ]);

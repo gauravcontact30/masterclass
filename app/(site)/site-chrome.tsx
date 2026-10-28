@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import Link from "next/link";
 import { cacheLife } from "next/cache";
+import { ArrowRight, Flame, Menu } from "lucide-react";
 import { Wordmark } from "@/components/brand-mark";
 import { PUBLIC_PAGES } from "@/lib/seo";
 import styles from "./site.module.css";
@@ -22,9 +23,23 @@ export function SiteChrome({ children }: { children: React.ReactNode }) {
   return <div className={styles.page}>
     <a className={styles.skip} href="#main-content">Skip to content</a>
     <header className={styles.header}>
-      <Link href="/" aria-label="Master Class Buddy home"><Wordmark /></Link>
+      <Link href="/" aria-label="Master Class Buddy home" className={styles.brand}><Wordmark /></Link>
+      {/* Shown on /tech-buzz pages only (site.module.css): where the reader is, and what arrives every morning. */}
+      <Link href="/tech-buzz" className={styles.buzzPill} aria-label="Tech Buzz: 5 fresh blogs every morning at 5:00 AM IST"><Flame size={14} aria-hidden="true" /><span className={styles.buzzLabel}>Tech Buzz</span><small>5 fresh blogs · 5:00 AM IST</small></Link>
       <nav aria-label="Main navigation" className={styles.nav}>{NAV.map(page => <Link key={page.path} href={page.path}>{page.label}</Link>)}</nav>
-      <div className={styles.actions}><Link href="/sign-in">Sign in</Link><Link className={styles.cta} href="/sign-up">Start learning</Link></div>
+      <div className={styles.actions}>
+        <Link href="/sign-in" className={styles.signIn}>Sign in</Link>
+        <Link className={styles.cta} href="/sign-up">Start learning<ArrowRight size={15} aria-hidden="true" /></Link>
+        {/* Phones: the page links fold into a menu (no script: a details disclosure). */}
+        <details className={styles.menu}>
+          <summary aria-label="Menu"><Menu size={18} aria-hidden="true" /></summary>
+          <nav aria-label="Menu" className={styles.menuPanel}>
+            <Link href="/tech-buzz"><Flame size={14} aria-hidden="true" />Tech Buzz blogs</Link>
+            {NAV.map(page => <Link key={page.path} href={page.path}>{page.label}</Link>)}
+            <Link href="/sign-in" className={styles.menuSignIn}>Sign in</Link>
+          </nav>
+        </details>
+      </div>
     </header>
     <main id="main-content" tabIndex={-1} className={styles.main}>{children}</main>
     <footer className={styles.footer}>

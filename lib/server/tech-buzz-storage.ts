@@ -187,34 +187,47 @@ function articleToRow(article: Partial<TechBuzzArticle>, userId?: string) {
  * Fetch all published Tech Buzz articles from Supabase.
  * Falls back to in-memory TECH_BUZZ_ARTICLES if the database table is empty or missing.
  */
-export async function listTechBuzzArticles(includeDrafts = false): Promise<TechBuzzArticle[]> {
+const SUMMARY_COLUMNS = "id,slug,title,subtitle,category,technology,tech_badge_color,read_time_minutes,featured,trending_rank,claps,rating_average,rating_count,author,cover_image,tags,likes,dislikes,upvotes,ranking_score,source,summary_bullets,reactions,comments_count,builder_metrics,published_at,created_at";
+const summarize = (article: TechBuzzArticle): TechBuzzArticle => ({ ...article, contentSections: [], comments: [] });
+
+export async function listTechBuzzArticles(includeDrafts = false, summariesOnly = false): Promise<TechBuzzArticle[]> {
+  const defaults = summariesOnly ? TECH_BUZZ_ARTICLES.map(summarize) : TECH_BUZZ_ARTICLES;
   try {
     const client = db();
-    let query = client.from("tech_buzz_articles").select("*");
+    // Typed as string: Supabase's select parser cannot read a column list chosen at runtime.
+    const columns: string = summariesOnly ? SUMMARY_COLUMNS : "*";
+    let query = client.from("tech_buzz_articles").select(columns);
     if (!includeDrafts) {
       query = query.eq("status", "published");
     }
     query = query.order("published_at", { ascending: false });
 
-    const result = await query;
+    let result = await query;
+    // Older installs can still read summaries before the counters migration.
+    if (summariesOnly && result.error && missingCounterColumns(result.error)) {
+      const legacyColumns: string = SUMMARY_COLUMNS.replace("likes,dislikes,", "");
+      let legacy = client.from("tech_buzz_articles").select(legacyColumns);
+      if (!includeDrafts) legacy = legacy.eq("status", "published");
+      result = await legacy.order("published_at", { ascending: false });
+    }
     if (result.error) {
       if (isMissing(result.error)) {
-        return TECH_BUZZ_ARTICLES;
+        return defaults;
       }
       console.warn("Tech Buzz Supabase query error:", result.error.message);
-      return TECH_BUZZ_ARTICLES;
+      return defaults;
     }
 
     if (!result.data || result.data.length === 0) {
-      return TECH_BUZZ_ARTICLES;
+      return defaults;
     }
 
-    const dbArticles = (result.data as TechBuzzRow[]).map(rowToArticle);
+    const dbArticles = (result.data as unknown as TechBuzzRow[]).map(rowToArticle);
     
     // Merge database articles with default articles (avoid duplicates by slug)
     const existingSlugs = new Set(dbArticles.map(a => a.slug));
     const merged = [...dbArticles];
-    for (const def of TECH_BUZZ_ARTICLES) {
+    for (const def of defaults) {
       if (!existingSlugs.has(def.slug)) {
         merged.push(def);
       }
@@ -222,7 +235,7 @@ export async function listTechBuzzArticles(includeDrafts = false): Promise<TechB
     return merged;
   } catch (err) {
     console.warn("Failed to fetch from tech_buzz_articles table, using default fallback:", err);
-    return TECH_BUZZ_ARTICLES;
+    return defaults;
   }
 }
 
@@ -242,10 +255,28 @@ export async function listPublishedTechBuzzArticles(): Promise<TechBuzzArticle[]
   return withReaderClaps(await listTechBuzzArticles(false));
 }
 
-/** One published article by slug or id, from the cached list; drafts are never served publicly. */
+/** Feed, sitemap and related-card queries exclude article bodies and comment threads. */
+export async function listPublishedTechBuzzSummaries(): Promise<TechBuzzArticle[]> {
+  "use cache";
+  cacheLife("minutes");
+  cacheTag(TECH_BUZZ_TAG);
+  return withReaderClaps(await listTechBuzzArticles(false, true));
+}
+
+/** Fetch only the requested published article, rather than loading the entire archive's bodies. */
 export async function getPublishedTechBuzzArticle(slug: string): Promise<TechBuzzArticle | null> {
-  const articles = await listPublishedTechBuzzArticles();
-  return articles.find(article => article.slug === slug || article.id === slug) ?? null;
+  "use cache";
+  cacheLife("minutes");
+  cacheTag(TECH_BUZZ_TAG);
+  const field = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(slug) ? "id" : "slug";
+  let article: TechBuzzArticle | undefined;
+  try {
+    const result = await db().from("tech_buzz_articles").select("*").eq("status", "published").eq(field, slug).maybeSingle();
+    if (result.data) article = rowToArticle(result.data as TechBuzzRow);
+    else if (result.error && !isMissing(result.error)) console.warn("Tech Buzz article read failed:", result.error.code);
+  } catch { /* Static stories remain available when the database is unavailable. */ }
+  article ??= TECH_BUZZ_ARTICLES.find(item => item.slug === slug || item.id === slug);
+  return article ? (await withReaderClaps([article]))[0] : null;
 }
 
 /**
@@ -454,7 +485,7 @@ async function reportPhotoUse(downloadLocation: string) {
  */
 export async function withUnsplashCovers<T extends CoverFields>(stories: T[]): Promise<(T & { photoCredit?: string })[]> {
   if (!process.env.UNSPLASH_ACCESS_KEY || !stories.some(needsPhoto)) return stories;
-  const everyone = (await listPublishedTechBuzzArticles()).filter(needsPhoto).map(story => ({ slug: story.slug, query: photoQuery(story) }))
+  const everyone = (await listPublishedTechBuzzSummaries()).filter(needsPhoto).map(story => ({ slug: story.slug, query: photoQuery(story) }))
     .sort((a, b) => a.slug.localeCompare(b.slug));
   const queries = [...new Set(stories.filter(needsPhoto).map(photoQuery))];
   const found = new Map(await Promise.all(queries.map(async query => [query, await unsplashSearch(query).catch(() => [] as UnsplashPhoto[])] as const)));

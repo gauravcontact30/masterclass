@@ -198,3 +198,4 @@
   }
 }
 
+@media(max-width:760px){.shell .headerMark{display:none}}

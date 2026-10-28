@@ -3,17 +3,40 @@
 .page { min-height:100vh;min-height:100dvh; display: flex; flex-direction: column; background: #f5f4ed; color: #262624; }
 .skip { position: absolute; left: 16px; top: -48px; padding: 10px 14px; border-radius: 8px; background: #262624; color: #fff; z-index: 10; }
 .skip:focus { top: 12px; }
-.header { display: flex; align-items: center; gap: 28px; padding: 18px clamp(16px, 4vw, 48px); border-bottom: 1px solid #e8e6dc; background: #faf9f5; }
-.nav { display: flex; gap: 22px; margin-right: auto; font-size: 14px; }
-.nav a, .actions a:not(.cta) { display: inline-flex; align-items: center; min-height: 32px; color: #5e5d59; text-decoration: none; }
-.nav a:hover, .actions a:not(.cta):hover { color: #c6613f; }
-.actions { display: flex; align-items: center; gap: 16px; font-size: 14px; }
-.cta { padding: 9px 16px; border-radius: 9px; background: #d97757; color: #fff; font-weight: 600; text-decoration: none; }
-.cta:hover { background: #c6613f; }
+.header { position: relative; z-index: 30; display: flex; align-items: center; gap: 24px; padding: 14px clamp(16px, 4vw, 48px); border-bottom: 1px solid #ebe7dd; background: linear-gradient(180deg, #fffdf8, #faf9f5); box-shadow: 0 8px 24px -22px rgba(31,30,28,.4); }
+.brand { display: inline-flex; flex-shrink: 0; text-decoration: none; }
+.nav { display: flex; gap: 6px; margin-right: auto; font-size: 14px; }
+.nav a { display: inline-flex; align-items: center; min-height: 36px; padding: 0 12px; border-radius: 999px; color: #5e5d59; text-decoration: none; transition: background .15s, color .15s; }
+.nav a:hover { background: #f3ede4; color: #c6613f; }
+.actions { display: flex; align-items: center; gap: 10px; font-size: 14px; }
+.signIn { display: inline-flex; align-items: center; min-height: 40px; padding: 0 16px; border: 1px solid #e3d9cc; border-radius: 10px; background: #fff; color: #3d3d3a; font-weight: 600; text-decoration: none; transition: border-color .15s, color .15s; }
+.signIn:hover { border-color: #d97757; color: #c6613f; }
+.cta { display: inline-flex; align-items: center; gap: 8px; min-height: 40px; padding: 0 18px; border-radius: 10px; background: linear-gradient(135deg, #e08563, #c6613f); color: #fff; font-weight: 700; text-decoration: none; box-shadow: 0 10px 22px -12px rgba(198,97,63,.75); transition: transform .15s, box-shadow .15s; }
+.cta:hover { transform: translateY(-1px); box-shadow: 0 14px 26px -12px rgba(198,97,63,.85); }
+.cta svg { transition: transform .15s; }
+.cta:hover svg { transform: translateX(2px); }
+/* Tech Buzz pages only: a pill naming the section and its 5:00 AM edition. */
+.buzzPill { display: none; align-items: center; gap: 7px; min-height: 34px; padding: 0 14px 0 11px; border: 1px solid #f3c9b3; border-radius: 999px; background: linear-gradient(135deg, #fff4ec, #ffe6d8); color: #b5522f; font-size: 13px; font-weight: 700; text-decoration: none; white-space: nowrap; }
+.buzzPill small { padding-left: 8px; border-left: 1px solid #f0c3ab; color: #8a6a5c; font-size: 12px; font-weight: 500; }
+.buzzPill:hover { border-color: #d97757; }
+.page:has([data-tech-buzz="true"]) .buzzPill { display: inline-flex; }
+/* Tech Buzz pages hide the page links, so the menu carries them at every width. */
+.page:has([data-tech-buzz="true"]) .menu { display: block; }
+/* The phone menu: a disclosure, hidden on wider screens. */
+.menu { position: relative; display: none; }
+.menu summary { display: grid; place-items: center; width: 40px; height: 40px; border: 1px solid #e3d9cc; border-radius: 10px; background: #fff; color: #262624; cursor: pointer; list-style: none; }
+.menu summary::-webkit-details-marker { display: none; }
+.menu[open] summary { border-color: #d97757; color: #c6613f; }
+.menuPanel { position: absolute; right: 0; top: calc(100% + 8px); z-index: 40; display: grid; gap: 2px; min-width: 220px; padding: 8px; border: 1px solid #ebe7dd; border-radius: 14px; background: #fff; box-shadow: 0 22px 44px -20px rgba(31,30,28,.4); }
+.menuPanel a { display: flex; align-items: center; gap: 8px; min-height: 42px; padding: 0 12px; border-radius: 9px; color: #3d3d3a; font-size: 14px; font-weight: 500; text-decoration: none; }
+.menuPanel a:hover { background: #faf3ec; color: #c6613f; }
+.menuPanel a:first-child { color: #b5522f; font-weight: 700; }
+.menuSignIn { display: none !important; border-top: 1px solid #f0ece4; margin-top: 4px; }
 .main { flex: 1; width: 100%; max-width: 920px; margin: 0 auto; padding: 48px clamp(16px, 4vw, 32px) 72px; outline: none; }
 .main:has([data-full-width="true"]) { max-width: 100%; width: 100%; padding: 0; margin: 0; }
 .page:has([data-tech-buzz="true"]) .header .nav { display: none !important; }
 .page:has([data-tech-buzz="true"]) .header .actions { margin-left: auto; }
+.header a:focus-visible, .menu summary:focus-visible { outline: 2px solid #d97757; outline-offset: 2px; }
 .footer { display: flex; flex-wrap: wrap; align-items: center; gap: 18px 36px; padding: 28px clamp(16px, 4vw, 48px); border-top: 1px solid #e8e6dc; background: #faf9f5; font-size: 13px; color: #73726c; }
 .footer ul { display: flex; flex-wrap: wrap; gap: 18px; margin: 0; padding: 0; list-style: none; }
 .footer a { display: inline-flex; align-items: center; min-height: 28px; color: #5e5d59; }
@@ -45,27 +68,31 @@
 .faq summary { cursor: pointer; font-weight: 600; }
 .faq details p { margin: 10px 0 0; }
 
+/* Tablets: the section pill drops its subtitle. */
+@media (max-width: 960px) { .buzzPill small { display: none; } .nav a { padding: 0 9px; } }
+/* Phones: one row of brand, pill and actions; the page links fold into the menu instead of a sideways strip. */
 @media (max-width: 720px) {
-  .header { flex-wrap: wrap; gap: 14px; }
-  .nav { order: 3; width: 100%; margin: 0; overflow-x: auto; }
-  .actions { margin-left: auto; }
+  .header { gap: 10px; padding-block: 10px; }
+  .nav { display: none; }
+  .menu { display: block; }
+  .actions { margin-left: auto; gap: 8px; }
   .footer small { margin-left: 0; }
 }
-/* Phones: logo and both actions share the first row; the main links get a swipeable row of their own below. */
 @media (max-width: 480px) {
-  .header { gap: 10px 10px; padding-block: 12px; }
   .header :global(.brand-name) { font-size: 20px; }
   .header :global(.brand-mark) { width: 32px; height: 32px; }
-  .nav { gap: 18px; font-size: 13px; scrollbar-width: none; -webkit-mask-image: linear-gradient(90deg, #000 calc(100% - 24px), transparent); mask-image: linear-gradient(90deg, #000 calc(100% - 24px), transparent); }
-  .nav a { flex: none; white-space: nowrap; }
-  .actions { gap: 10px; font-size: 13px; flex-shrink: 0; }
-  .cta { padding: 8px 12px; white-space: nowrap; }
+  .signIn { display: none; }
+  .menuSignIn { display: flex !important; }
+  .cta { min-height: 38px; padding: 0 12px; font-size: 13px; white-space: nowrap; }
 }
-/* 320–359 px: the brand keeps its mark and drops the wordmark text, so "Sign in" stays reachable. */
-@media (max-width: 359px) {
+/* Small phones: the pill keeps only its flame. */
+@media (max-width: 520px) {
+  .buzzPill { width: 34px; padding: 0; justify-content: center; }
+  .buzzLabel, .buzzPill small { display: none; }
+}
+/* 320–400 px: the brand keeps its mark and drops the wordmark text. */
+@media (max-width: 400px) {
   .header :global(.brand-name) { display: none; }
-  .actions { gap: 8px; }
-  .cta { padding: 8px 10px; }
 }
 /* Widescreens: the header and footer content line up with a centred column instead of the far window edges. */
 @media (min-width: 1536px) {

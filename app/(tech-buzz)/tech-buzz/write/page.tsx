@@ -19,7 +19,9 @@ export const metadata: Metadata = {
 /** Write (lib/server/tech-buzz-ink.ts): members only. `?id=` opens one of the writer's own stories. */
 export default async function TechBuzzWritePage({ searchParams }: { searchParams: Promise<{ id?: string }> }) {
   const user = await currentUser();
-  if (!user) redirect("/sign-in");
+  const { id } = await searchParams;
+  // Back to this page after signing in (with the story being edited), not to the Learning Dashboard.
+  if (!user) redirect(`/sign-in?redirect=${encodeURIComponent(`/tech-buzz/write${id ? `?id=${encodeURIComponent(id)}` : ""}`)}`);
   if (!(await canWrite(user))) {
     return <div className={styles.page}><div className={styles.gate}>
       <PenLine size={30} aria-hidden="true" />
@@ -28,7 +30,6 @@ export default async function TechBuzzWritePage({ searchParams }: { searchParams
       <Link href="/subscribe">Become a member</Link>
     </div></div>;
   }
-  const { id } = await searchParams;
   const [stories, story] = await Promise.all([listInkStories(user.id), id ? getInkStory(user.id, id) : null]);
   if (id && !story) notFound();
   return <TechBuzzWrite key={story?.id ?? "new"} initial={story} stories={stories} authorName={writerOf(user).author.name} />;

@@ -1,5 +1,6 @@
 import "server-only";
 import { generateText, gateway, Output } from "ai";
+import { cacheLife, cacheTag, revalidateTag } from "next/cache";
 import { z } from "zod";
 import { db } from "./db";
 import { HttpError } from "./http";
@@ -21,6 +22,12 @@ import type { CourseTopic, DeepCourse } from "@/lib/deep-courses/types";
 
 const MIN_SCORE = 4;
 const STALE_MS = 8 * 60_000;
+// The model's default thinking made a topic overrun its 170 s write ("AbortError: Delay was aborted"), so writing
+// thinks "medium". On a visit a topic must finish inside the route; the pre-generation script
+// (scripts/pregenerate-courses.ts) has no route limit and gives each step all the time it needs.
+export type Budget = { writeMs: number; reviewMs: number; rewriteWithinMs: number };
+const ROUTE_BUDGET: Budget = { writeMs: 170_000, reviewMs: 60_000, rewriteWithinMs: 90_000 };
+export const SCRIPT_BUDGET: Budget = { writeMs: 600_000, reviewMs: 180_000, rewriteWithinMs: Infinity };
 const model = () => gateway(providerModel("gateway"));
 
 type Research = { notes: string; sources: { title: string; site: string }[] };
@@ -171,12 +178,30 @@ export async function loadGeneratedCourse(trackId: string): Promise<{ course: De
   return { course: { ...meta, intro: stored.course.intro, topics, sources: stored.course.sources }, state: "ready" };
 }
 
+/** Cache tag of one generated course; writing its outline or a topic expires it so readers see the new part at once. */
+const courseTag = (trackId: string) => `course:${trackId}`;
+const expireCourse = (trackId: string) => { try { revalidateTag(courseTag(trackId), { expire: 0 }); } catch { /* outside a request (scripts) */ } };
+
+/**
+ * loadGeneratedCourse through the cache: a complete course is served from cache for days (it only changes when it is
+ * re-generated); a course still being written is re-read within minutes, so pre-generated parts appear without a visit
+ * having to write them.
+ */
+export async function cachedGeneratedCourse(trackId: string) {
+  "use cache";
+  cacheTag(courseTag(trackId));
+  const loaded = await loadGeneratedCourse(trackId);
+  if (loaded?.state === "ready" && !loaded.course.topics.some(topic => topic.pending)) cacheLife("days");
+  else cacheLife("minutes");
+  return loaded;
+}
+
 function ensureConfigured() {
   if (!providerConfigured("gateway")) throw new HttpError(503, "ai_not_configured");
 }
 
 /** Writes a course's outline unless it exists or another visitor is writing it. */
-export async function generateOutline(trackId: string): Promise<GenerationState> {
+export async function generateOutline(trackId: string, budget: Budget = { ...ROUTE_BUDGET, writeMs: 120_000 }): Promise<GenerationState> {
   const track = trackById(trackId);
   if (!track || !generatedCourseMeta(trackId)) throw new HttpError(404, "not_found");
   ensureConfigured();
@@ -195,7 +220,7 @@ export async function generateOutline(trackId: string): Promise<GenerationState>
       "Using only the official documentation, list the complete learning path for this technology as it is today: the current version, the core concepts in the order the documentation teaches them, the most important APIs or commands, and the advanced and production topics. Plain numbered notes.",
     ].join("\n"), source.sites);
     const { output } = await generateText({
-      model: model(), system: SYSTEM, output: Output.object({ schema: outlineSchema }), maxRetries: 2, abortSignal: AbortSignal.timeout(120_000),
+      model: model(), system: SYSTEM, reasoning: "medium", output: Output.object({ schema: outlineSchema }), maxRetries: 2, abortSignal: AbortSignal.timeout(budget.writeMs),
       prompt: [
         `Course: ${track.name} — in depth, topic by topic.`, `Focus: ${track.focus}.`, `Existing syllabus to cover at least: ${track.syllabus.join("; ")}.`,
         notes.notes ? `Official documentation notes (source of truth):\n${notes.notes}` : "No documentation notes are available: stay with what you are certain of.",
@@ -207,6 +232,7 @@ export async function generateOutline(trackId: string): Promise<GenerationState>
       .map(topic => ({ ...topic, title: topic.title.slice(0, 120), minutes: Math.max(8, Math.min(40, topic.minutes)) }));
     if (topics.length < 6) throw new Error("outline_too_short");
     check(await db().from("generated_courses").update({ status: "ready", intro: output.intro.slice(0, 4), topics, sources: notes.sources, updated_at: new Date().toISOString() }).eq("track_id", trackId));
+    expireCourse(trackId);
     return "ready";
   } catch (error) {
     await db().from("generated_courses").update({ status: "failed", error: String(error).slice(0, 500) }).eq("track_id", trackId);
@@ -215,9 +241,9 @@ export async function generateOutline(trackId: string): Promise<GenerationState>
   }
 }
 
-async function review(draft: TopicDraft, notes: string) {
+async function review(draft: TopicDraft, notes: string, timeoutMs: number) {
   const { output } = await generateText({
-    model: model(), output: Output.object({ schema: reviewSchema }), maxRetries: 1, abortSignal: AbortSignal.timeout(60_000),
+    model: model(), output: Output.object({ schema: reviewSchema }), maxRetries: 1, abortSignal: AbortSignal.timeout(timeoutMs),
     system: "You are the strict technical editor of an engineering course. Score honestly against the rubric; a 4 means you would put your name on it.",
     prompt: `${notes ? `Official documentation notes:\n${notes}\n\n` : ""}Lesson (JSON):\n${JSON.stringify(draft).slice(0, 60_000)}`,
   });
@@ -225,7 +251,7 @@ async function review(draft: TopicDraft, notes: string) {
 }
 
 /** Writes one topic unless it exists or another visitor is writing it. */
-export async function generateTopic(trackId: string, topicId: string): Promise<GenerationState> {
+export async function generateTopic(trackId: string, topicId: string, budget: Budget = ROUTE_BUDGET): Promise<GenerationState> {
   const track = trackById(trackId);
   const course = await courseRow(trackId);
   const outline = course?.status === "ready" ? course.topics.find(topic => topic.id === topicId) : undefined;
@@ -252,7 +278,7 @@ export async function generateTopic(trackId: string, topicId: string): Promise<G
       "5. Minimal working examples in the documentation's own style.",
     ].join("\n"), source.sites);
     const write = (fixes: string[]) => generateText({
-      model: model(), system: SYSTEM, output: Output.object({ schema: topicSchema }), maxRetries: 1, abortSignal: AbortSignal.timeout(170_000),
+      model: model(), system: SYSTEM, reasoning: "medium", output: Output.object({ schema: topicSchema }), maxRetries: 1, abortSignal: AbortSignal.timeout(budget.writeMs),
       prompt: [
         `Course: ${track.name}. Module: ${outline.module}. Topic: ${outline.title} (${outline.level}).`,
         `Learning goal: ${outline.summary}`,
@@ -264,13 +290,14 @@ export async function generateTopic(trackId: string, topicId: string): Promise<G
       ].filter(Boolean).join("\n\n"),
     }).then(result => result.output);
     let draft = await write([]);
-    let verdict = await review(draft, notes.notes);
-    if (verdict.score < MIN_SCORE && Date.now() - started < 90_000) {
+    let verdict = await review(draft, notes.notes, budget.reviewMs);
+    if (verdict.score < MIN_SCORE && Date.now() - started < budget.rewriteWithinMs) {
       draft = await write(verdict.issues.slice(0, 8));
-      verdict = await review(draft, notes.notes);
+      verdict = await review(draft, notes.notes, budget.reviewMs);
     }
     if (verdict.score < MIN_SCORE) throw new Error(`below_quality_bar ${verdict.score.toFixed(1)}: ${verdict.issues.slice(0, 2).join("; ")}`);
     check(await db().from("generated_course_topics").update({ status: "ready", content: draft, editor_score: Math.round(verdict.score * 10) / 10, sources: notes.sources, updated_at: new Date().toISOString() }).eq("track_id", trackId).eq("topic_id", topicId));
+    expireCourse(trackId);
     return "ready";
   } catch (error) {
     await db().from("generated_course_topics").update({ status: "failed", error: String(error).slice(0, 500) }).eq("track_id", trackId).eq("topic_id", topicId);

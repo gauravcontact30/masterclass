@@ -7,13 +7,14 @@ import { requireLearningUser as currentUser } from "@/lib/server/subscription-ac
 import { contentOverrides } from "@/lib/server/content-overrides";
 import { isSuperAdminUser } from "@/lib/study/preparations";
 import { authConfigured, billingConfigured, databaseConfigured } from "@/lib/server/config";
+import { signInFor } from "@/lib/safe-redirect";
 
 export const metadata = { title: "Coffee & Code" };
 
 export default async function CoffeeAndCodePage() {
   const authEnabled = authConfigured();
   const user = (authEnabled || process.env.NODE_ENV === "production") ? await currentUser() : null;
-  if (authEnabled && !user) redirect("/sign-in");
+  if (authEnabled && !user) redirect(signInFor("/learning/coffee-and-code"));
   const overrides = await contentOverrides();
   return <Workspace initialCategory="coffee-and-code" authEnabled={authEnabled}
     configured={databaseConfigured()} billingEnabled={billingConfigured()} userEmail={user?.email ?? null}

@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { supabaseServer } from "@/lib/server/auth";
+import { isSafeRedirect } from "@/lib/safe-redirect";
 // Target of the PKCE links Supabase emails (confirmation with the default template, magic sign-in links) and of
 // OAuth. Exchanging the code here sets the session cookies. It only works in the browser that started the flow;
 // app/auth/confirm handles the cross-device token-hash links.
@@ -16,6 +17,6 @@ export async function GET(request: NextRequest) {
   const confirmedAt = data.user?.email_confirmed_at ? Date.parse(data.user.email_confirmed_at) : 0;
   const notice = Date.now() - confirmedAt < 10 * 60_000 ? "verified" : "signed_in";
   const next = params.get("next") || params.get("redirect");
-  const target = next && /^\/(dashboard|notes|subscribe|tech-buzz)(\/|\?|$)/.test(next) && !next.startsWith("//") ? next : `/learning?notice=${notice}`;
+  const target = isSafeRedirect(next) ? next : `/learning?notice=${notice}`;
   return NextResponse.redirect(new URL(target, request.url));
 }

@@ -5,6 +5,7 @@ import { NOTES_SUMMARIES, NOTES_TECHNOLOGIES, getStudyNote } from "@/lib/server/
 import { STUDY_FILTERS } from "@/lib/notes-study";
 import { requireLearningUser as currentUser } from "@/lib/server/subscription-access";
 import { authConfigured, databaseConfigured, billingConfigured } from "@/lib/server/config";
+import { signInFor } from "@/lib/safe-redirect";
 
 export const metadata = { title: "Notes" };
 type Filters = { q?: string | string[]; technology?: string | string[]; kind?: string | string[]; note?: string | string[] };
@@ -13,7 +14,7 @@ const scalar = (value: string | string[] | undefined) => typeof value === "strin
 export default async function NotesPage({ searchParams }: { searchParams: Promise<Filters> }) {
   const params = await searchParams;
   const user = (authConfigured() || process.env.NODE_ENV === "production") ? await currentUser() : null;
-  if (authConfigured() && !user) redirect("/sign-in");
+  if (authConfigured() && !user) redirect(signInFor("/learning/notes"));
   const selected = getStudyNote(scalar(params.note));
   const technology = selected?.technology ?? (NOTES_TECHNOLOGIES.some(item => item.id === scalar(params.technology)) ? scalar(params.technology) : "");
   return <Workspace initialCategory="notes" authEnabled={authConfigured()} configured={databaseConfigured()} billingEnabled={billingConfigured()} userEmail={user?.email ?? null}

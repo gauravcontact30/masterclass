@@ -9,12 +9,13 @@ import { requireLearningUser as currentUser } from "@/lib/server/subscription-ac
 import { authConfigured, billingConfigured, databaseConfigured } from "@/lib/server/config";
 import { prepareHandbooks, prepareSearchTopics } from "@/lib/server/prepared-catalog";
 import { withApiReference } from "@/lib/server/handbook-api-reference";
+import { signInFor } from "@/lib/safe-redirect";
 
 export const metadata = { title: "Search" };
 
 export default async function SearchPage({ searchParams }: { searchParams: Promise<{ q?: string | string[] }> }) {
   const user = (authConfigured() || process.env.NODE_ENV === "production") ? await currentUser() : null;
-  if (authConfigured() && !user) redirect("/sign-in");
+  if (authConfigured() && !user) redirect(signInFor("/learning/search"));
   const { q } = await searchParams;
   const question = typeof q === "string" ? q : "";
   // Only the first visible handbook is serialized into the initial response.

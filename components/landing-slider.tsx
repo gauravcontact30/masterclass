@@ -1,7 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useId, useRef, useState } from "react";
-import Image from "next/image";
+import Image, { getImageProps } from "next/image";
+import { preload } from "react-dom";
 import Link from "next/link";
 import { Bell, ChevronLeft, ChevronRight, Flame, Pause, Play } from "lucide-react";
 import { useLanguage } from "./language-provider";
@@ -89,17 +90,43 @@ const SUGGESTION_BOX_PALETTES = [
 
 const INTERVAL = 10000;
 type MultiLang = Record<import("@/lib/domain").Language, string>;
-type Slide = {
+type SlideBase = {
   id: string;
   src: string;
   focus: string;
   tone: "clay" | "sage" | "violet" | "sky" | "honey";
   tool: MultiLang;
-  title: MultiLang;
-  body: MultiLang;
-  link: { label: MultiLang; href: string };
   alt: string;
 };
+/** A photograph with its own headline, copy and actions over it. */
+type StorySlide = SlideBase & { infographic?: undefined; title: MultiLang; body: MultiLang; link: { label: MultiLang; href: string } };
+/** An image that carries all its words itself, shown with nothing over it; `portrait` is the phone layout. */
+type InfographicSlide = SlideBase & { infographic: { portrait: string } };
+type Slide = StorySlide | InfographicSlide;
+
+/**
+ * An infographic slide: the landscape file on wide screens, the portrait one on phones (art direction, so each screen
+ * downloads only its own), full-bleed and slowly zoomed like every other slide; its words sit inside the frame's safe
+ * zone (scripts/generate-stack-infographic.ts). The first slide is the LCP image, so both candidates are preloaded for
+ * their own media query.
+ */
+function InfographicImage({ slide, priority, onLoad }: { slide: InfographicSlide; priority: boolean; onLoad?: () => void }) {
+  const common = { alt: slide.alt, sizes: "100vw", quality: 85, loading: priority ? "eager" : "lazy", fetchPriority: priority ? "high" : undefined } as const;
+  const { props: { srcSet: wide } } = getImageProps({ ...common, src: slide.src, width: 1920, height: 1080 });
+  const { props: { srcSet: tall, ...rest } } = getImageProps({ ...common, src: slide.infographic.portrait, width: 1080, height: 1920 });
+  if (priority) {
+    preload(slide.src, { as: "image", imageSrcSet: wide, imageSizes: "100vw", media: PORTRAIT_OFF, fetchPriority: "high" });
+    preload(slide.infographic.portrait, { as: "image", imageSrcSet: tall, imageSizes: "100vw", media: PORTRAIT_ON, fetchPriority: "high" });
+  }
+  return <picture>
+    <source media={PORTRAIT_ON} srcSet={tall} sizes="100vw" />
+    <source media={PORTRAIT_OFF} srcSet={wide} sizes="100vw" />
+    <img {...rest} alt={slide.alt} className={`${styles.heroImage} ${styles.heroInfographic}`} style={{ "--focus": slide.focus } as React.CSSProperties} onLoad={onLoad} />
+  </picture>;
+}
+// Phones and other tall screens get the portrait layout.
+const PORTRAIT_ON = "(max-aspect-ratio: 4/5)";
+const PORTRAIT_OFF = "(min-aspect-ratio: 4.001/5)";
 
 /**
  * The landing hero: four full-HD (1920×1080) study scenes painted by scripts/generate-hero-images.ts (each file's EXIF
@@ -110,6 +137,23 @@ type Slide = {
 function slidesFor(technologies: number | undefined): Slide[] {
   const count = technologies ? String(technologies) : "60+";
   return [
+    {
+      id: "stack",
+      src: "/images/landing/hero-stack.webp",
+      infographic: { portrait: "/images/landing/hero-stack-portrait.webp" },
+      focus: "50% 50%",
+      tone: "sky",
+      tool: {
+        en: "76 technologies",
+        hi: "लोकप्रिय टेक्नोलॉजी",
+        es: "Tecnologías populares",
+        ja: "人気のテクノロジー",
+        de: "Beliebte Technologien",
+        fr: "Technologies populaires",
+        zh: "热门技术"
+      },
+      alt: "The technology universe: all 76 technologies MasterClass Buddy teaches, in 13 families. Java, C++ & DSA: Core Java, Advanced Java, Spring Boot, C++, DSA, Java Basic to Advanced. AI & agents: AI & ML, AI Tools, AI Agents, LangChain, LangGraph, LangSmith, LangFlow, n8n. Frontend frameworks: Next.js 16+, React 19+, T3 Stack, Angular, Vue.js, Flutter. Languages & fundamentals: TypeScript, JavaScript, JS Puzzles, Python, Rust, Go. State & data on the client: TanStack, Zustand, Redux Toolkit. Backend & APIs: Node.js, Express.js, FastAPI, GraphQL, Django, NestJS. Validation & forms: Pydantic, Zod, Conform. Authentication: Auth.js, Clerk, Kinde, Better Auth. Databases & storage: Drizzle ORM, Prisma, Neon, Redis, Upstash, PostgreSQL, Supabase. Python data & ML: NumPy, Pandas, Polars, SciPy, Scikit-Learn, TensorFlow, PyTorch, Keras, Seaborn, Plotly. HTTP & scraping: Requests, HTTPX, Scrapy. Testing & quality: Jest, Vitest, React Testing Library, Playwright, Cypress. Cloud, ops & architecture: Inngest, Arcjet, System Design, AWS Services, DevOps, Docker, Kubernetes, Git, Linux."
+    },
     {
       id: "campus",
       src: "/images/landing/hero-campus-2.webp",
@@ -134,7 +178,7 @@ function slidesFor(technologies: number | undefined): Slide[] {
         zh: "掌握名企青睐核心技能的学习殿堂。"
       },
       body: {
-        en: "Step into one place for AI agents, cloud, system design and full-stack development, with interview prep, certification paths and real projects, in English or हिन्दी.",
+        en: "Turn technical knowledge into working software. Build AI agents, design cloud systems and ship full-stack projects with guided practice that sharpens your skills for interviews and everyday engineering.",
         hi: "AI एजेंट, क्लाउड, सिस्टम डिज़ाइन और फ़ुल-स्टैक डेवलपमेंट के लिए एक ही जगह, इंटरव्यू तैयारी, सर्टिफ़िकेशन रास्तों और असली प्रोजेक्ट्स के साथ, English या हिन्दी में।",
         es: "Un único lugar para agentes de IA, nube, diseño de sistemas y desarrollo full-stack, con preparación para entrevistas, certificaciones y proyectos reales.",
         ja: "AIエージェント、クラウド、システム設計、フルスタック開発を網羅。面接対策、認定資格パス、実践プロジェクトを一箇所で学べます。",
@@ -421,6 +465,11 @@ export function LandingSlider({ technologies }: { technologies?: number }) {
     <div className={styles.heroStage} aria-live={running ? "off" : "polite"}>
       {slides.map((slide, position) => {
         const current = position === index;
+        if (slide.infographic) return <article key={slide.id} className={styles.heroSlide} data-active={current || undefined} aria-roledescription="slide"
+          aria-label={`${position + 1} / ${total}`} aria-hidden={!current} inert={!current}>
+          {requested.has(position) && <InfographicImage slide={slide} priority={position === 0}
+            onLoad={position === 0 ? () => setRequested(previous => previous.has(1) ? previous : new Set([...previous, 1])) : undefined} />}
+        </article>;
         return <article key={slide.id} className={styles.heroSlide} data-active={current || undefined} aria-roledescription="slide"
           aria-label={`${position + 1} / ${total}`} aria-hidden={!current} inert={!current}>
           {/* Only the LCP image is requested initially. Warm the next slide after it loads;

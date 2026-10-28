@@ -33,7 +33,7 @@ export function usePagedCarousel<T extends HTMLElement>(itemCount: number, perSc
   const goTo = useCallback((next: number) => { const el = track.current; if (!el) return; const wrapped = ((next % pages) + pages) % pages; el.scrollTo({ left: wrapped * el.clientWidth, behavior: "smooth" }); }, [pages]);
 
   useEffect(() => {
-    const el = track.current; if (!el) return;
+    const el = track.current; if (!el || !nearViewport) return;
     let frame = 0;
     const schedule = () => {
       if (!frame) frame = requestAnimationFrame(() => { frame = 0; measure(); });
@@ -48,9 +48,9 @@ export function usePagedCarousel<T extends HTMLElement>(itemCount: number, perSc
       observer?.disconnect();
       el.removeEventListener("scroll", schedule); window.removeEventListener("resize", schedule);
     };
-  }, [measure]);
+  }, [measure, nearViewport]);
   useEffect(() => {
-    const el = track.current; if (!fitHeight || !el || typeof ResizeObserver === "undefined") return;
+    const el = track.current; if (!nearViewport || !fitHeight || !el || typeof ResizeObserver === "undefined") return;
     // Slides keep their own height (not the row's), the track clips the rest of the row to the screen on show.
     el.style.alignItems = "start"; el.style.overflowY = "hidden";
     el.style.transition = reduced ? "" : "height .35s ease";

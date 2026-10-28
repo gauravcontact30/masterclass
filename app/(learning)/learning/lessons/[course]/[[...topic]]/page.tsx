@@ -6,10 +6,11 @@ import { GeneratingCourse } from "@/components/deep-course-generating";
 import { deepCourseMeta, isCourseId } from "@/lib/deep-courses";
 import { generatedCourseMeta } from "@/lib/deep-courses/catalog";
 import { loadDeepCourse } from "@/lib/deep-courses/load";
-import { loadGeneratedCourse } from "@/lib/server/course-generator";
+import { cachedGeneratedCourse } from "@/lib/server/course-generator";
 import { requireLearningUser as currentUser } from "@/lib/server/subscription-access";
 import { authConfigured, billingConfigured, databaseConfigured } from "@/lib/server/config";
 import type { DeepCourse } from "@/lib/deep-courses/types";
+import { signInFor } from "@/lib/safe-redirect";
 
 type Params = Promise<{ course: string; topic?: string[] }>;
 
@@ -22,7 +23,7 @@ async function courseFor(id: string): Promise<{ course: DeepCourse; ready: boole
   if (isCourseId(id)) return { course: await loadDeepCourse(id), ready: true };
   if (!generatedCourseMeta(id)) return null;
   try {
-    const loaded = await loadGeneratedCourse(id);
+    const loaded = await cachedGeneratedCourse(id);
     return loaded ? { course: loaded.course, ready: loaded.state === "ready" } : null;
   } catch {
     // Migration 0044 not applied yet: show the course as not available rather than failing the page.
@@ -44,7 +45,7 @@ export default async function DeepCoursePage({ params }: { params: Params }) {
   if (topic && topic.length > 1) notFound();
   if (!isCourseId(courseId) && !generatedCourseMeta(courseId)) notFound();
   const user = (authConfigured() || process.env.NODE_ENV === "production") ? await currentUser() : null;
-  if (authConfigured() && !user) redirect("/sign-in");
+  if (authConfigured() && !user) redirect(signInFor(`/learning/lessons/${courseId}${topic?.[0] ? `/${topic[0]}` : ""}`));
   const found = await courseFor(courseId);
   if (!found) notFound();
   const { course, ready, missingTable } = found;

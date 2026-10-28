@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useCallback, useContext, useMemo, useState, useSyncExternalStore, type CSSProperties, type KeyboardEvent, type ReactNode } from "react";
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, useSyncExternalStore, type CSSProperties, type KeyboardEvent, type ReactNode } from "react";
 import Link from "next/link";
 import { ArrowRight, CalendarDays, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Clock, Crown, Flame, Heart, Sparkles, Star, Sunrise, ThumbsDown, ThumbsUp, Workflow, Zap } from "lucide-react";
 import { BrandMark } from "./brand-mark";
@@ -208,22 +208,51 @@ function Pagination({ paged, label, anchor, sizes, tone = "light" }: { paged: Pa
 
 /* ── 2. Fresh & Latest: every earlier daily edition, kept for later reading, one block per daily track so each
    technology holds only its own stories (newest first, paginated per block). ────────────────────────────────── */
+const FRESH_TABS_PER_PAGE = 5;
 function FreshLatest({ cards }: { cards: TechBuzzCard[] }) {
+  const [selectedTrack, setSelectedTrack] = useState<string | null>(null);
   const tracks = useMemo(() => {
     const edition = latestEdition(cards);
     const past = edition ? cards.filter(card => card.daily && card.daily.date < edition) : [];
     return DAILY_TRACKS.map(track => ({ track, items: past.filter(card => card.daily?.track === track.id).sort(newestFirst) })).filter(entry => entry.items.length);
   }, [cards]);
+  const active = tracks.find(({ track }) => track.id === selectedTrack) ?? tracks[0];
+  const tabPage = Math.floor(Math.max(0, tracks.indexOf(active)) / FRESH_TABS_PER_PAGE);
+  const tabPages = Math.ceil(tracks.length / FRESH_TABS_PER_PAGE);
+  const shownTracks = tracks.slice(tabPage * FRESH_TABS_PER_PAGE, (tabPage + 1) * FRESH_TABS_PER_PAGE);
+  const onKey = (event: KeyboardEvent<HTMLButtonElement>, index: number) => {
+    const next = event.key === "ArrowRight" ? index + 1 : event.key === "ArrowLeft" ? index - 1 : event.key === "Home" ? 0 : event.key === "End" ? tracks.length - 1 : null;
+    if (next === null) return;
+    event.preventDefault();
+    const { track } = tracks[(next + tracks.length) % tracks.length];
+    setSelectedTrack(track.id);
+    requestAnimationFrame(() => document.getElementById(`tb-fresh-tab-${track.id}`)?.focus());
+  };
   if (!tracks.length && !latestEdition(cards)) return null;
   return <section data-track-topic={TECH_BUZZ_TRACKED.fresh} className={styles.fresh} aria-labelledby="tb-fresh">
     <SectionHead id="tb-fresh" icon={<Zap size={16} aria-hidden="true" />} kicker="From earlier editions" title="Fresh & Latest" lede="Every 5:00 AM blog moves here the next day and stays for later reading, sorted by technology." />
     {!tracks.length && <p className={styles.freshEmpty}><Sunrise size={15} aria-hidden="true" />Today&rsquo;s 5 at 5 blogs move here tomorrow at 5:00 AM IST, when the next edition is published.</p>}
-    {tracks.length > 0 && <nav className={styles.freshJump} aria-label="Fresh & Latest technologies">
-      {tracks.map(({ track, items }) => <a key={track.id} href={`#tb-fresh-${track.id}`} style={{ "--tone": track.color } as CSSProperties}><TrackLogos track={track.id} />{track.short}<span>{items.length}</span></a>)}
-    </nav>}
-    <div className={styles.freshTracks}>
-      {tracks.map(({ track, items }) => <FreshTrack key={track.id} track={track} items={items} />)}
-    </div>
+    {tracks.length > 0 && <>
+      {tabPages > 1 && <nav className={styles.freshTabPager} aria-label="Earlier edition technology pages">
+        <span className={styles.pageInfo} aria-live="polite">Technologies {tabPage * FRESH_TABS_PER_PAGE + 1}–{Math.min((tabPage + 1) * FRESH_TABS_PER_PAGE, tracks.length)} of {tracks.length}</span>
+        <div className={styles.pageButtons}>
+          <button type="button" disabled={tabPage === 0} onClick={() => setSelectedTrack(tracks[(tabPage - 1) * FRESH_TABS_PER_PAGE].track.id)} aria-label="Previous technology tabs"><ChevronLeft size={15} aria-hidden="true" />Previous</button>
+          <span className={styles.pageInfo}>{tabPage + 1} / {tabPages}</span>
+          <button type="button" disabled={tabPage === tabPages - 1} onClick={() => setSelectedTrack(tracks[(tabPage + 1) * FRESH_TABS_PER_PAGE].track.id)} aria-label="Next technology tabs">Next<ChevronRight size={15} aria-hidden="true" /></button>
+        </div>
+      </nav>}
+      <div className={styles.freshTabs} role="tablist" aria-label="Fresh & Latest technologies">
+        {shownTracks.map(({ track, items }, index) => <button key={track.id} id={`tb-fresh-tab-${track.id}`} type="button" role="tab"
+          aria-selected={track.id === active.track.id} aria-controls={`tb-fresh-panel-${track.id}`} tabIndex={track.id === active.track.id ? 0 : -1}
+          style={{ "--tone": track.color } as CSSProperties} onClick={() => setSelectedTrack(track.id)} onKeyDown={event => onKey(event, tabPage * FRESH_TABS_PER_PAGE + index)}>
+          <TrackLogos track={track.id} />{track.id === "agentic-ai" ? "Agentic AI" : track.short}<span className={styles.freshCount}>{items.length}</span>
+        </button>)}
+      </div>
+      {tracks.map(({ track, items }) => <div key={track.id} id={`tb-fresh-panel-${track.id}`} role="tabpanel"
+        aria-labelledby={`tb-fresh-tab-${track.id}`} hidden={track.id !== active.track.id}>
+        <FreshTrack track={track} items={items} />
+      </div>)}
+    </>}
   </section>;
 }
 
@@ -247,27 +276,52 @@ function FreshTrack({ track, items }: { track: DailyTrack; items: TechBuzzCard[]
   </section>;
 }
 
-/* ── 3. Star Rated (a gold leaderboard) ────────────────────────────────────────────────────────────────────────── */
+/* ── 3. Star Rated (a gold leaderboard): each page's top story is a feature card, the rest a ranked list beside it,
+   with medals for ranks 2 and 3. ───────────────────────────────────────────────────────────────────────────────── */
 const bayes = (card: TechBuzzCard) => (card.rating.average * card.rating.count + 4.5 * 20) / (card.rating.count + 20);
+function StarScore({ card }: { card: TechBuzzCard }) {
+  const { average, count } = card.rating;
+  return <span className={styles.starScore} aria-label={`Rated ${average.toFixed(2)} out of 5 by ${count} ${count === 1 ? "reader" : "readers"}`}>
+    <span className={styles.starRow} style={{ "--fill": `${(average / 5) * 100}%` } as CSSProperties} aria-hidden="true">★★★★★</span>
+    <b aria-hidden="true">{average.toFixed(2)}</b><small aria-hidden="true">{compact(count)} {count === 1 ? "rating" : "ratings"}</small>
+  </span>;
+}
 function StarRated({ cards }: { cards: TechBuzzCard[] }) {
   const rated = useMemo(() => cards.filter(card => card.rating.count > 0).sort((a, b) => bayes(b) - bayes(a)), [cards]);
   const paged = usePaged(rated, 5);
   if (!rated.length) return null;
   return <section data-track-topic={TECH_BUZZ_TRACKED.stars} className={styles.stars} aria-labelledby="tb-stars">
     <SectionHead id="tb-stars" icon={<Star size={16} fill="currentColor" aria-hidden="true" />} kicker="Reader rated" title="Star Rating Blogs" lede="Ranked by readers' stars, weighted by how many rated them." />
-    <ol className={styles.starList} start={paged.offset + 1}>
-      {paged.rows.map((card, i) => { const rank = paged.offset + i + 1; return <li key={card.id} data-rank={rank}>
-        <span className={styles.starRank} aria-hidden="true">{rank === 1 ? <Crown size={18} /> : rank}</span>
-        <Link href={`/tech-buzz/${card.slug}`} className={styles.starCard}>
-          <Cover card={card} className={styles.starCover} sizes="72px" />
-          <span className={styles.starBody}>
-            <span className={styles.starScore}><span className={styles.starRow} style={{ "--fill": `${(card.rating.average / 5) * 100}%` } as CSSProperties} aria-hidden="true">★★★★★</span><b>{card.rating.average.toFixed(2)}</b><small>{compact(card.rating.count)} ratings</small></span>
-            <strong className={styles.cardTitle}>{card.title}</strong>
-            <span className={styles.meta}>{card.technology} · {formatDate(card.publishedAt)}</span>
-          </span>
-        </Link>
-        <ReactionBar card={card} />
-      </li>; })}
+    <ol className={styles.starBoard} start={paged.offset + 1} style={{ "--rest": Math.max(1, paged.rows.length - 1) } as CSSProperties}>
+      {paged.rows.map((card, i) => {
+        const rank = paged.offset + i + 1;
+        if (i === 0) return <li key={card.id} data-rank={rank} className={styles.starFeature}>
+          <Link href={`/tech-buzz/${card.slug}`} className={styles.starFeatureLink}>
+            <span className={styles.starFeatureMedia}>
+              <Cover card={card} className={styles.starFeatureCover} sizes="(max-width: 900px) 92vw, 600px" />
+              <span className={styles.starRibbon}>{rank === 1 ? <><Crown size={15} aria-hidden="true" />Readers&rsquo; #1</> : `#${rank}`}</span>
+            </span>
+            <span className={styles.starFeatureBody}>
+              <StarScore card={card} />
+              <strong className={styles.cardTitle}>{card.title}</strong>
+              <span className={styles.meta}><TechIcon item={card} />{card.technology} · {formatDate(card.publishedAt)} · {card.readTimeMinutes} min read</span>
+            </span>
+          </Link>
+          <ReactionBar card={card} />
+        </li>;
+        return <li key={card.id} data-rank={rank} className={styles.starItem}>
+          <span className={styles.starRank} aria-hidden="true">{rank}</span>
+          <Link href={`/tech-buzz/${card.slug}`} className={styles.starCard}>
+            <Cover card={card} className={styles.starCover} sizes="64px" />
+            <span className={styles.starBody}>
+              <StarScore card={card} />
+              <strong className={styles.cardTitle}>{card.title}</strong>
+              <span className={styles.meta}>{card.technology} · {formatDate(card.publishedAt)}</span>
+            </span>
+          </Link>
+          <ReactionBar card={card} />
+        </li>;
+      })}
     </ol>
     <Pagination paged={paged} label="Star Rating Blogs" anchor="tb-stars" />
   </section>;
@@ -383,6 +437,25 @@ function CommunityFavourites({ cards }: { cards: TechBuzzCard[] }) {
 /* ── 6. Technology: a tab per group (WAI-ARIA tabs: arrow keys, Home and End), "All" showing every group's own
    section; each section is paginated. ──────────────────────────────────────────────────────────────────────────── */
 const ALL_TAB = "all";
+const TECH_TABS_PER_PAGE = 4;
+// "All technologies" stacks every group (half of the page's 4,500 elements): the first two render at once, the rest
+// mount as they near the viewport, so the server HTML and hydration carry only what is on screen.
+const EAGER_GROUPS = 2;
+
+/** Renders its children once the placeholder comes within 600 px of the viewport; the placeholder holds their space. */
+function WhenNear({ id, children }: { id: string; children: ReactNode }) {
+  const [near, setNear] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const node = ref.current;
+    if (!node || near) return;
+    const observer = new IntersectionObserver(entries => { if (entries.some(entry => entry.isIntersecting)) setNear(true); }, { rootMargin: "600px 0px" });
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [near]);
+  // The placeholder keeps the group's id, so a link to #tb-group-… still lands in the right place.
+  return near ? children : <div ref={ref} id={id} className={styles.groupPlaceholder} aria-hidden="true" />;
+}
 function TechnologySections({ cards }: { cards: TechBuzzCard[] }) {
   const groups = useMemo(() => {
     const byGroup = new Map<string, TechBuzzCard[]>();
@@ -393,6 +466,8 @@ function TechnologySections({ cards }: { cards: TechBuzzCard[] }) {
     return [...TECH_GROUPS, OTHER_GROUP].map(group => ({ group, items: (byGroup.get(group.id) ?? []).sort((a, b) => b.publishedAt.localeCompare(a.publishedAt)) })).filter(entry => entry.items.length);
   }, [cards]);
   const [tab, setTab] = useState(ALL_TAB);
+  // Tabs show TECH_TABS_PER_PAGE at a time; the page holding the selected tab is shown until the reader pages away.
+  const [manualPage, setManualPage] = useState<{ tab: string; page: number } | null>(null);
   if (!groups.length) return null;
   const tabs = [{ id: ALL_TAB, label: "All technologies", count: cards.length, color: "#1f1e1c", tint: "#f0eee6", logo: undefined as string | undefined }, ...groups.map(({ group, items }) => ({ id: group.id, label: group.label, count: items.length, color: group.color, tint: group.tint, logo: techLogo(group.techIds[0]) }))];
   const onKey = (event: KeyboardEvent<HTMLButtonElement>, index: number) => {
@@ -404,16 +479,30 @@ function TechnologySections({ cards }: { cards: TechBuzzCard[] }) {
     document.getElementById(`tb-tab-${target.id}`)?.focus();
   };
   const shown = tab === ALL_TAB ? groups : groups.filter(entry => entry.group.id === tab);
+  const tabPages = Math.ceil(tabs.length / TECH_TABS_PER_PAGE);
+  const homePage = Math.floor(Math.max(0, tabs.findIndex(item => item.id === tab)) / TECH_TABS_PER_PAGE);
+  const tabPage = Math.min(tabPages - 1, manualPage?.tab === tab ? manualPage.page : homePage);
+  const goTabs = (page: number) => setManualPage({ tab, page: Math.max(0, Math.min(tabPages - 1, page)) });
   return <section data-track-topic={TECH_BUZZ_TRACKED.technologies} className={styles.groups} aria-labelledby="tb-groups">
     <SectionHead id="tb-groups" icon={<Sparkles size={16} aria-hidden="true" />} kicker="Browse by technology" title="Blogs by Technology" lede="Every blog lands in its technology's own section. Pick a technology, or browse them all." />
+    <div className={styles.groupTabsRow}>
     <div className={styles.groupTabs} role="tablist" aria-label="Technologies">
-      {tabs.map((item, index) => <button key={item.id} id={`tb-tab-${item.id}`} type="button" role="tab" aria-selected={tab === item.id} aria-controls="tb-tabpanel" tabIndex={tab === item.id ? 0 : -1}
+      {tabs.map((item, index) => Math.floor(index / TECH_TABS_PER_PAGE) !== tabPage ? null : <button key={item.id} id={`tb-tab-${item.id}`} type="button" role="tab" aria-selected={tab === item.id} aria-controls="tb-tabpanel" tabIndex={tab === item.id ? 0 : -1}
         style={{ "--tone": item.color, "--tint": item.tint } as CSSProperties} onClick={() => setTab(item.id)} onKeyDown={event => onKey(event, index)}>
         {item.logo && <Image src={item.logo} alt="" width={16} height={16} />}{item.label}<span>{item.count}</span>
       </button>)}
     </div>
+    {tabPages > 1 && <nav className={styles.tabPager} aria-label="Technology tab pages">
+      <button type="button" onClick={() => goTabs(0)} disabled={tabPage === 0} aria-label="First tabs"><ChevronsLeft size={15} aria-hidden="true" /></button>
+      <button type="button" onClick={() => goTabs(tabPage - 1)} disabled={tabPage === 0} aria-label="Previous tabs"><ChevronLeft size={15} aria-hidden="true" /></button>
+      {Array.from({ length: tabPages }, (_, page) => <button key={page} type="button" onClick={() => goTabs(page)} aria-current={page === tabPage ? "page" : undefined} aria-label={`Tabs page ${page + 1} of ${tabPages}`}>{page + 1}</button>)}
+      <button type="button" onClick={() => goTabs(tabPage + 1)} disabled={tabPage >= tabPages - 1} aria-label="Next tabs"><ChevronRight size={15} aria-hidden="true" /></button>
+      <button type="button" onClick={() => goTabs(tabPages - 1)} disabled={tabPage >= tabPages - 1} aria-label="Last tabs"><ChevronsRight size={15} aria-hidden="true" /></button>
+    </nav>}
+    </div>
     <div id="tb-tabpanel" role="tabpanel" aria-labelledby={`tb-tab-${tab}`} className={styles.groupPanel}>
-      {shown.map(({ group, items }) => <TechGroupSection key={group.id} group={group} items={items} />)}
+      {shown.map(({ group, items }, index) => index < EAGER_GROUPS ? <TechGroupSection key={group.id} group={group} items={items} />
+        : <WhenNear key={group.id} id={`tb-group-${group.id}`}><TechGroupSection group={group} items={items} /></WhenNear>)}
     </div>
   </section>;
 }

@@ -23,6 +23,7 @@ import { AdminTable } from "./super-admin-table";
 import { LearningSlot } from "./learning-slot";
 import styles from "./super-admin-dashboard.module.css";
 import side from "./super-admin-sidebar.module.css";
+import { useMobileNav } from "./mobile-nav";
 import { useLanguage } from "./language-provider";
 import { LanguageSwitcher } from "./language-switcher";
 import { COPILOT_META, isCopilotPage } from "@/lib/admin-pages";
@@ -105,7 +106,10 @@ export function SuperAdminDashboard({ userId = "admin", isOwner = false }: { use
       setSigningOut(false);
     }
   }
-  const [collapsed, setCollapsed] = useState(false);
+  const [savedCollapsed, setCollapsed] = useState(false);
+  // Phones: the sidebar is a drawer (components/mobile-nav.tsx), always shown expanded.
+  const mobileNav = useMobileNav("admin navigation");
+  const collapsed = savedCollapsed && !mobileNav.open;
   const [section, setSection] = useState<Section>("overview");
   const [notepadOpened, setNotepadOpened] = useState(false);
   const [days, setDays] = useState(30); const [query, setQuery] = useState("");
@@ -129,13 +133,13 @@ export function SuperAdminDashboard({ userId = "admin", isOwner = false }: { use
   const events = data?.events ?? [];
   // Writing pages have no reporting window or monitoring snapshot of their own.
   const writing = section === "notepad" || section === "upload-learning";
-  return <div className={`app-shell compact-workspace ${styles.shell}${collapsed ? " sidebar-collapsed" : ""}`}><aside className={`sidebar ${styles.sidebar} ${side.sidebar}`} data-collapsed={collapsed || undefined}><SidebarTooltips collapsed={collapsed}/><div className="sidebar-brand-row"><Link href="/learning" className="wordmark" aria-label={t("learningDashboard")}><Wordmark /></Link><Button variant="ghost" className="sidebar-toggle" aria-label={collapsed ? t("expandSidebar") : t("collapseSidebar")} aria-expanded={!collapsed} onClick={() => setCollapsed(value => !value)}>{collapsed ? <PanelLeftOpen size={17}/> : <PanelLeftClose size={17}/>}</Button></div>{!collapsed && <div className={side.badge}><span className={side.badgeMark}><ShieldCheck size={15} /></span><span><b>{t("superAdmin")}</b><small>{t("controlCentre")}</small></span></div>}<nav aria-label={t("superAdmin")} className={side.nav}>{groups.map(group => <div key={group.key} className={side.group} role="group" aria-label={t(group.key)}>
+  return <div {...mobileNav.shellProps} className={`app-shell compact-workspace ${styles.shell}${collapsed ? " sidebar-collapsed" : ""}`}>{mobileNav.scrim}<aside className={`sidebar ${styles.sidebar} ${side.sidebar}`} data-collapsed={collapsed || undefined} onClick={mobileNav.onAsideClick}><SidebarTooltips collapsed={collapsed}/><div className="sidebar-brand-row"><Link href="/learning" className="wordmark" aria-label={t("learningDashboard")}><Wordmark /></Link><Button variant="ghost" className="sidebar-toggle" aria-label={collapsed ? t("expandSidebar") : t("collapseSidebar")} aria-expanded={!collapsed} onClick={() => setCollapsed(value => !value)}>{collapsed ? <PanelLeftOpen size={17}/> : <PanelLeftClose size={17}/>}</Button></div>{!collapsed && <div className={side.badge}><span className={side.badgeMark}><ShieldCheck size={15} /></span><span><b>{t("superAdmin")}</b><small>{t("controlCentre")}</small></span></div>}<nav aria-label={t("superAdmin")} className={side.nav}>{groups.map(group => <div key={group.key} className={side.group} role="group" aria-label={t(group.key)}>
         {!collapsed && <span className={side.groupLabel}>{t(group.key)}</span>}
         {group.items.filter(item => item.id !== "upload-learning" || isOwner).map(({ id, key, icon: Icon }) => <button type="button" key={id} aria-label={t(key)} title={collapsed ? t(key) : undefined} className={side.item} aria-current={section === id ? "page" : undefined} onClick={() => { if (id === "notepad") setNotepadOpened(true); setSection(id); setQuery(""); }}>
           <span className={side.icon}><Icon size={16} /></span>{!collapsed && <span className={side.label}>{t(key)}</span>}
         </button>)}
       </div>)}</nav><Link className={side.back} href="/learning" aria-label={t("learningDashboard")}><span className={side.icon}><ArrowLeft size={16} /></span>{!collapsed && t("learningDashboard")}</Link></aside>
-    <div className="main-shell"><header className={`topbar ${styles.adminHeader}`}>
+    <div className="main-shell"><header className={`topbar ${styles.adminHeader}`}>{mobileNav.toggle}
       <div className={styles.headerIdentity}>
         <span className={styles.headerMark} aria-hidden="true"><ShieldCheck size={21} /></span>
         <div className={styles.headerLocation}>

@@ -36,6 +36,10 @@ const REWRITE_BEFORE_MS = 170_000;
 // Pictures must be stored by this point of the run, or the story is saved with the technology logo instead: a story
 // lost to the 300 s limit costs a full rewrite on the next run, a missing picture costs nothing.
 const SAVE_BY_MS = 280_000;
+// The model's default thinking (about 6k hidden tokens) made the agentic-ai draft take 127-173 s against its 150 s
+// budget, so that track timed out every morning. Inside the route, drafts think "medium" ("low" took 50 s but its
+// code fell below the editor's 4/5 bar); the bar still decides what is published. Scripts have no route limit and keep the provider's default.
+type Reasoning = "low" | "medium" | "provider-default";
 
 const schema = z.object({
   title: z.string().describe("A specific, curiosity-driven headline, at most 90 characters."),
@@ -128,7 +132,7 @@ async function research(track: DailyTrack, angle: string): Promise<Research> {
   }
 }
 
-async function draft(track: DailyTrack, angle: string, date: string, notes: string, fixes: string[], timeoutMs: number, current?: string, earlier: string[] = []): Promise<Draft> {
+async function draft(track: DailyTrack, angle: string, date: string, notes: string, fixes: string[], timeoutMs: number, reasoning: Reasoning, current?: string, earlier: string[] = []): Promise<Draft> {
   const prompt = [
     `Track: ${track.label}.`, `Today's angle: ${angle}.`, `Date: ${date}.`,
     track.brief && !current ? `How every story of this track is shaped:\n${track.brief}` : "",
@@ -140,7 +144,7 @@ ${current}` : "",
     "Write today's post for this track.",
   ].filter(Boolean).join("\n\n");
   const { output } = await generateText({
-    model: gateway(providerModel("gateway")), system: SYSTEM, prompt,
+    model: gateway(providerModel("gateway")), system: SYSTEM, prompt, reasoning,
     output: Output.object({ schema }), maxRetries: 2, abortSignal: AbortSignal.timeout(timeoutMs),
   });
   return output;
@@ -160,7 +164,10 @@ async function review(story: Draft, notes: string) {
 const slugify = (text: string) => text.toLowerCase().normalize("NFKD").replace(/[^\w\s-]/g, "").trim().replace(/[\s_]+/g, "-").replace(/-+/g, "-");
 const dayNumber = (date: string) => Math.floor(Date.parse(`${date}T00:00:00Z`) / 86_400_000);
 
-type StoryOptions = { angle?: string; tags?: string[]; daily?: boolean; budget?: { draftMs: number; rewriteBeforeMs: number } };
+type Budget = { draftMs: number; rewriteBeforeMs: number; reasoning: Reasoning };
+type StoryOptions = { angle?: string; tags?: string[]; daily?: boolean; budget?: Budget };
+// Run from a script, not the cron route: no 300 s limit.
+const SCRIPT_BUDGET: Budget = { draftMs: 420_000, rewriteBeforeMs: Infinity, reasoning: "provider-default" };
 
 async function writeStory(track: DailyTrack, date: string, runStarted = Date.now(), { angle: ownAngle, tags = [], daily = true, budget }: StoryOptions = {}): Promise<TechBuzzArticle> {
   const angle = ownAngle ?? track.angles[dayNumber(date) % track.angles.length];
@@ -211,14 +218,14 @@ async function writeStory(track: DailyTrack, date: string, runStarted = Date.now
 }
 
 /** The steps writeStory and refineTechBuzzStory share: research, draft, review, one rewrite below the bar. */
-async function researchedDraft(track: DailyTrack, angle: string, date: string, current?: string, { draftMs = 150_000, rewriteBeforeMs = REWRITE_BEFORE_MS } = {}) {
+async function researchedDraft(track: DailyTrack, angle: string, date: string, current?: string, { draftMs, rewriteBeforeMs, reasoning }: Budget = { draftMs: 150_000, rewriteBeforeMs: REWRITE_BEFORE_MS, reasoning: "medium" }) {
   const started = Date.now();
   // A rewrite keeps its own topic; a new story is told which topics the track has already covered.
   const [{ notes, sources }, earlier] = await Promise.all([research(track, angle), current ? Promise.resolve([]) : recentDailyTitles(dailyTrackTag(track.id))]);
-  let output = await draft(track, angle, date, notes, [], draftMs, current, earlier);
+  let output = await draft(track, angle, date, notes, [], draftMs, reasoning, current, earlier);
   let verdict = await review(output, notes);
   if (verdict.score < MIN_SCORE && Date.now() - started < rewriteBeforeMs) {
-    output = await draft(track, angle, date, notes, verdict.issues.slice(0, 8), Math.max(60_000, Math.min(draftMs, rewriteBeforeMs + 80_000 - (Date.now() - started))), current, earlier);
+    output = await draft(track, angle, date, notes, verdict.issues.slice(0, 8), Math.max(60_000, Math.min(draftMs, rewriteBeforeMs + 80_000 - (Date.now() - started))), reasoning, current, earlier);
     verdict = await review(output, notes);
   }
   if (verdict.score < MIN_SCORE) throw new Error(`below_quality_bar ${verdict.score.toFixed(1)}: ${verdict.issues.slice(0, 2).join("; ")}`);
@@ -250,9 +257,7 @@ export async function refineTechBuzzStory(slug: string, { dryRun = false } = {})
   const track = trackOf(story);
   if (!track) throw new Error("no_track");
   const current = JSON.stringify({ title: story.title, subtitle: story.subtitle, tags: story.tags.filter(tag => !isInternalTag(tag)), sections: story.contentSections.map(({ image, ...section }) => { void image; return section; }) }).slice(0, 20_000);
-  const { output, verdict, sources } = await researchedDraft(track, `${story.title}: ${story.subtitle}`, istDate(), current,
-    // Run from a script, not the cron route: no 300 s limit.
-    { draftMs: 420_000, rewriteBeforeMs: Infinity });
+  const { output, verdict, sources } = await researchedDraft(track, `${story.title}: ${story.subtitle}`, istDate(), current, SCRIPT_BUDGET);
   const content = {
     subtitle: output.subtitle.slice(0, 500),
     summaryBullets: output.summaryBullets.slice(0, 5),
@@ -279,7 +284,7 @@ export async function writeFavouriteStory(topic: FavouriteTopic, date = istDate(
   };
   // No route limit here: a run start ten minutes ahead leaves the pictures all the time they need.
   const story = await writeStory(track, date, Date.now() + 10 * 60_000, {
-    angle: topic.angle, tags: [favouriteTag(topic.id)], daily: false, budget: { draftMs: 420_000, rewriteBeforeMs: Infinity },
+    angle: topic.angle, tags: [favouriteTag(topic.id)], daily: false, budget: SCRIPT_BUDGET,
   });
   expireTechBuzzCache();
   return story;

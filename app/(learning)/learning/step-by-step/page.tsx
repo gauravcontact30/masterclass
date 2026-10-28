@@ -5,12 +5,13 @@ import { TECHNOLOGY_HANDBOOKS } from "@/lib/pro-learn/technology-handbooks";
 import { SEARCH_FIXED_CATALOGUES } from "@/lib/step-by-step/technologies";
 import { requireLearningUser as currentUser } from "@/lib/server/subscription-access";
 import { authConfigured, billingConfigured, databaseConfigured } from "@/lib/server/config";
+import { signInFor } from "@/lib/safe-redirect";
 
 export const metadata = { title: "On The Go" };
 
 export default async function StepByStepPage({ searchParams }: { searchParams: Promise<{ q?: string | string[] }> }) {
   const user = (authConfigured() || process.env.NODE_ENV === "production") ? await currentUser() : null;
-  if (authConfigured() && !user) redirect("/sign-in");
+  if (authConfigured() && !user) redirect(signInFor("/learning/step-by-step"));
   const { q } = await searchParams;
   const question = typeof q === "string" ? q : "";
   // The same technologies, in the same order, as the Search page's "Explore
