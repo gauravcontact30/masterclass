@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "predev": "node scripts/prepare-assets.mjs",
-    "prebuild": "node scripts/prepare-assets.mjs",
+    "prebuild": "node scripts/prepare-assets.mjs && tsx scripts/check-dashboard-css.ts",
     "test": "jest --runInBand",
     "test:db": "node scripts/test-database.mjs",
     "worker": "tsx --conditions=react-server --env-file=.env scripts/process-queue.ts",
@@ -13,6 +13,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "check:css": "tsx scripts/check-dashboard-css.ts",
     "images:vocabulary": "tsx --env-file-if-exists=.env scripts/generate-card-images.ts --set vocabulary",
     "images:aws": "tsx --env-file-if-exists=.env scripts/generate-card-images.ts --set aws",
     "images:topics": "tsx --env-file-if-exists=.env scripts/generate-card-images.ts --set topics",

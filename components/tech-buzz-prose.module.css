@@ -1,0 +1,19 @@
+/* The blocks Write's toolbar adds to a Tech Buzz paragraph (components/tech-buzz-prose.tsx): light and quiet, like the prose. */
+.inlineCode { padding: .12em .38em; border: 1px solid #e6e4dc; border-radius: 6px; background: #f6f5f1; color: #9b2c55; font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-size: .86em; word-break: break-word; }
+.link { color: #1a6fd1; text-decoration: underline; text-decoration-color: rgba(26,111,209,.35); text-underline-offset: 3px; }
+.link:hover { text-decoration-color: currentColor; }
+
+.subheading { margin: 1.8em 0 .5em; font-size: 1.22em; font-weight: 700; line-height: 1.35; letter-spacing: -.005em; }
+
+.quote { margin: 1.4em 0; padding: .2em 0 .2em 1.1em; border-left: 3px solid #1f1e1c; font-size: 1.08em; font-style: italic; color: #3b3a36; }
+.quote p { margin: 0 0 .4em; }
+.quote p:last-child { margin-bottom: 0; }
+
+.rule { width: 100%; height: 0; margin: 2.2em 0; border: 0; text-align: center; overflow: visible; }
+.rule::after { content: "· · ·"; display: block; color: #a3a097; font-size: 1.3em; letter-spacing: .5em; line-height: 0; }
+
+.figure { margin: 1.6em 0; }
+.figure img { display: block; width: 100%; height: auto; border-radius: 12px; background: #f5f4ef; }
+.figure figcaption { margin-top: .6em; color: #6b6a64; font-size: .82em; text-align: center; }
+
+.codeBlock { margin: 1.4em 0; font-size: 15px; font-style: normal; cursor: auto; }

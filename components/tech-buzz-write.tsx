@@ -6,6 +6,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowDown, ArrowLeft, ArrowUp, Code2, Eye, ImagePlus, Lightbulb, List, ListOrdered, Loader2, PenLine, Plus, Quote, Send, Trash2, X } from "lucide-react";
 import { CodeFiles } from "./code-files";
+import { RichBody } from "./tech-buzz-rich-body";
+import { ProseText } from "./tech-buzz-prose";
 import { INK_LIMITS, inkWords, WRITE_TECHNOLOGIES, type InkListItem, type InkSection, type InkStatus, type InkStory } from "@/lib/tech-buzz-ink";
 import styles from "./tech-buzz-write.module.css";
 
@@ -13,7 +15,8 @@ import styles from "./tech-buzz-write.module.css";
  * Write: a member's editor for their own Tech Buzz story (lib/tech-buzz-ink.ts). A story is a title, a subtitle, a
  * cover and sections; each section has a heading and paragraphs, plus optional steps, bullet points, code files,
  * a callout, a quote and a picture, the same parts the /tech-buzz story page renders. Drafts autosave to Supabase a
- * few seconds after typing stops; Publish puts the story live on /tech-buzz at once.
+ * few seconds after typing stops; Publish puts the story live on /tech-buzz at once. A section's text has a formatting
+ * toolbar (components/tech-buzz-rich-body.tsx) for marks, lists, quotes, code blocks and pictures anywhere in it.
  */
 
 type CodeFile = { filename: string; language: string; code: string };
@@ -58,12 +61,34 @@ function toDrafts(sections: InkSection[]): Draft[] {
   }));
 }
 
+// A line that is its own block (list item, sub-heading, quote, picture, divider) keeps its line break; plain lines
+// typed one under another join into one paragraph, as before.
+const BLOCK_LINE = /^\s*([-*•]\s|\d{1,2}[.)]\s|#{2,3}\s|>|!\[|-{3,}\s*$|\*{3,}\s*$)/;
+
+/** A section's text as stored paragraphs: blank lines split them, and a code block is one paragraph, kept verbatim. */
+function bodyParagraphs(body: string): string[] {
+  const out: string[] = [];
+  let chunk: string[] = [], fence: string[] | null = null;
+  const flush = () => { if (chunk.length) out.push(chunk.join("\n")); chunk = []; };
+  for (const line of body.replace(/\r\n/g, "\n").split("\n")) {
+    if (fence) { fence.push(line); if (/^\s*```\s*$/.test(line)) { out.push(fence.join("\n")); fence = null; } continue; }
+    if (/^\s*```/.test(line)) { flush(); fence = [line.trim()]; continue; }
+    if (!line.trim()) { flush(); continue; }
+    const previous = chunk.at(-1);
+    if (previous !== undefined && !BLOCK_LINE.test(line) && !BLOCK_LINE.test(previous)) chunk[chunk.length - 1] = `${previous} ${line.trim()}`;
+    else chunk.push(line.trim());
+  }
+  if (fence) out.push([...fence, "```"].join("\n")); // a code block left open is closed for the writer
+  flush();
+  return out.filter(paragraph => paragraph.trim());
+}
+
 const splitLines = (value?: string) => (value ?? "").split("\n").map(line => line.trim()).filter(Boolean);
 
 function toSections(drafts: Draft[]): InkSection[] {
   return drafts.map(draft => ({
     heading: draft.heading.trim(),
-    paragraphs: draft.body.split(/\n\s*\n/).map(paragraph => paragraph.replace(/\s*\n\s*/g, " ").trim()).filter(Boolean),
+    paragraphs: bodyParagraphs(draft.body),
     ...(draft.steps !== undefined ? { steps: splitLines(draft.steps) } : {}),
     ...(draft.bullets !== undefined ? { bulletPoints: splitLines(draft.bullets) } : {}),
     ...(draft.files?.length ? { codeSnippet: { language: draft.files[0].language, filename: draft.files[0].filename, code: draft.files[0].code, files: draft.files } } : {}),
@@ -73,8 +98,8 @@ function toSections(drafts: Draft[]): InkSection[] {
   }));
 }
 
-const TIME = new Intl.DateTimeFormat("en-IN", { hour: "numeric", minute: "2-digit" });
-const DATE = new Intl.DateTimeFormat("en-IN", { day: "numeric", month: "short", year: "numeric" });
+const TIME = new Intl.DateTimeFormat("en-IN", { hour: "numeric", minute: "2-digit", timeZone: "Asia/Kolkata" });
+const DATE = new Intl.DateTimeFormat("en-IN", { day: "numeric", month: "short", year: "numeric", timeZone: "Asia/Kolkata" });
 
 async function readError(response: Response) {
   const body = await response.json().catch(() => null) as { error?: string } | null;
@@ -173,6 +198,15 @@ export function TechBuzzWrite({ initial, stories: initialStories, authorName }: 
   };
   const removeSection = (key: string) => { setSections(current => current.length > 1 ? current.filter(section => section.key !== key) : [blankSection()]); setDirty(true); };
 
+  /** A picture placed inside a section's text: uploaded, and its URL goes into the text; null when it failed (the reason shows). */
+  async function uploadInline(key: string, file: File) {
+    setUploading(key);
+    setError("");
+    try { return await uploadImage(file); }
+    catch (failure) { setError(message(failure instanceof Error ? failure.message : "")); return null; }
+    finally { setUploading(null); }
+  }
+
   async function pickImage(event: ChangeEvent<HTMLInputElement>, target: string, apply: (url: string) => void) {
     const file = event.target.files?.[0];
     event.target.value = "";
@@ -235,7 +269,7 @@ export function TechBuzzWrite({ initial, stories: initialStories, authorName }: 
               <button type="button" onClick={() => removeSection(section.key)} aria-label="Delete section"><Trash2 size={14} /></button>
             </div>
             <AutoText className={styles.heading} value={section.heading} onChange={heading => editSection(section.key, { heading })} placeholder="Section heading" maxLength={200} label={`Section ${index + 1} heading`} />
-            <AutoText className={styles.body} value={section.body} onChange={body => editSection(section.key, { body })} placeholder="Write your story… Leave an empty line between paragraphs." label={`Section ${index + 1} text`} />
+            <RichBody value={section.body} onChange={body => editSection(section.key, { body })} label={`Section ${index + 1} text`} onUpload={file => uploadInline(`${section.key}:inline`, file)} />
 
             {section.steps !== undefined && <Part title="Numbered steps" icon={<ListOrdered size={14} />} onRemove={() => dropPart(section.key, "steps")}>
               <AutoText className={styles.list} value={section.steps} onChange={steps => editSection(section.key, { steps })} placeholder={"One step per line\nInstall the package\nCreate the agent"} label="Steps, one per line" />
@@ -363,7 +397,7 @@ function StoryPreview({ story, authorName, technology, words }: { story: InkStor
     {story.sections.map((section, i) => <section key={i}>
       {section.heading && <h2>{section.heading}</h2>}
       {section.image?.src && <span className={styles.sectionImage}><Image src={section.image.src} alt={section.image.alt} width={720} height={405} /></span>}
-      {section.paragraphs.map((paragraph, j) => <p key={j}>{paragraph}</p>)}
+      {section.paragraphs.map((paragraph, j) => <ProseText key={j} text={paragraph} paragraphClass="" listClass="" orderedClass="" />)}
       {section.quote?.text && <blockquote>{section.quote.text}{section.quote.attribution && <cite>{section.quote.attribution}</cite>}</blockquote>}
       {!!section.steps?.length && <ol>{section.steps.map((step, j) => <li key={j}>{step}</li>)}</ol>}
       {!!section.bulletPoints?.length && <ul>{section.bulletPoints.map((point, j) => <li key={j}>{point}</li>)}</ul>}

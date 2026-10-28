@@ -234,7 +234,7 @@ export function SuperAdminTechBuzzAnalytics({ days, query }: Readonly<{ days: nu
         { key: "comments", label: "Comments" },
         { key: "daily", label: "Daily track", render: row => row.daily ? <Sticker tone="peach">{String(row.daily)}<TrackLogos track={String(row.daily)} size={14} /></Sticker> : "—" },
         { key: "topicList", label: "Topics" },
-        { key: "publishedAt", label: "Published", render: row => row.publishedAt ? new Date(String(row.publishedAt)).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }) : "—" },
+        { key: "publishedAt", label: "Published", render: row => row.publishedAt ? new Date(String(row.publishedAt)).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric", timeZone: "Asia/Kolkata" }) : "—" },
       ]} />
   </div>;
 }

@@ -101,13 +101,13 @@ function WorkflowCarousel({ workflows, text, preview }: Readonly<{ workflows: Wo
     </div>
     <div className={styles.carousel}>
     <ul ref={track} className={styles.track} aria-roledescription="carousel" aria-label={text("Workflow blueprints", "वर्कफ़्लो ब्लूप्रिंट")} {...holdProps}>
-      {workflows.map((workflow, i) => <WorkflowSlide key={workflow.id} workflow={workflow} near={nearViewport && Math.abs(i - page) <= 1} adjacent={Math.abs(i - page) <= 1} index={i} total={workflows.length} text={text} preview={preview} />)}
+      {workflows.map((workflow, i) => <WorkflowSlide key={workflow.id} workflow={workflow} near={nearViewport && Math.abs(i - page) <= 1} index={i} total={workflows.length} text={text} preview={preview} />)}
     </ul>
     <Dots pages={pages} page={page} running={running} goTo={goTo} label={n => text(`Show workflow ${n}`, `वर्कफ़्लो ${n} दिखाएँ`)} />
   </div></>;
 }
 
-function WorkflowSlide({ workflow, near, adjacent, index, total, text, preview }: Readonly<{ workflow: Workflow; near: boolean; adjacent: boolean; index: number; total: number; text: Text; preview: boolean }>) {
+function WorkflowSlide({ workflow, near, index, total, text, preview }: Readonly<{ workflow: Workflow; near: boolean; index: number; total: number; text: Text; preview: boolean }>) {
   const kinds = [...new Set(workflow.nodes.map(node => node.kind))];
   const Icon = GROUP_ICON[workflow.group];
   const k = workflowKey(workflow);
@@ -138,7 +138,9 @@ function WorkflowSlide({ workflow, near, adjacent, index, total, text, preview }
       {workflow.steps.map((step, i) => <li key={step} data-tone={i % STEP_TONES}><b>{two(i + 1)}</b><span>{step}</span></li>)}
     </ol>
     {/* The shown slide and its neighbours always carry their details, so no loader ever stands in for them. */}
-    <div className={styles.prep}>{adjacent && <WorkflowPrep id={workflow.id} text={text} limit={preview ? LANDING_QUESTIONS : undefined} />}</div>
+    {/* Like the diagram, the questions (a ~600 KB chunk of every blueprint's detail) load only as the section nears the
+        screen, so the landing page never fetches them on first load. */}
+    <div className={styles.prep}>{near && <WorkflowPrep id={workflow.id} text={text} limit={preview ? LANDING_QUESTIONS : undefined} />}</div>
   </li>;
 }
 

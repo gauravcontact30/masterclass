@@ -22,7 +22,7 @@ const COPY: Record<"en" | "hi", Copy> = {
 
 const when = (iso: string | null | undefined, hi: boolean) => {
   if (!iso || Number.isNaN(Date.parse(iso))) return null;
-  return new Intl.DateTimeFormat(hi ? "hi-IN" : "en-IN", { day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "2-digit" }).format(new Date(iso));
+  return new Intl.DateTimeFormat(hi ? "hi-IN" : "en-IN", { day: "numeric", month: "short", year: "numeric", hour: "numeric", minute: "2-digit", timeZone: "Asia/Kolkata" }).format(new Date(iso));
 };
 
 export function LearningCards({ blocks }: { blocks: CardBlock[] }) {

@@ -213,16 +213,31 @@
 .courseState { padding: 2px 9px; border-radius: 999px; font-style: normal; font-size: 11px; font-weight: 700; background: rgba(255,255,255,.75); color: #6e6e73; }
 .courseState[data-state="handwritten"] { color: #1b7f3b; }
 .courseState[data-state="ready"] { color: #0062c4; }
+/* Course pages: count, page group and size picker on one quiet bar; it stacks and centres on phones. */
+.catalogPager { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 16px; margin-top: 20px; padding: 10px 12px 10px 16px; border: 1px solid #e8e8ed; border-radius: 14px; background: #fff; font-size: 13px; color: #6e6e73; }
+.catalogPager p { margin: 0; white-space: nowrap; }
+.catalogPager p b { color: #1d1d1f; font-weight: 600; }
+.pageGroup { display: inline-flex; align-items: center; gap: 2px; padding: 3px; border-radius: 11px; background: #f5f5f7; }
+.pageGroup button { display: grid; place-items: center; min-width: 32px; height: 32px; padding: 0 8px; border: 0; border-radius: 8px; background: transparent; color: #1d1d1f; font: inherit; font-size: 13px; font-weight: 600; font-variant-numeric: tabular-nums; cursor: pointer; transition: background .15s, color .15s; }
+.pageGroup button:hover:not(:disabled):not([aria-current="page"]) { background: #fff; }
+.pageGroup button[aria-current="page"] { background: #fff; color: #0071e3; box-shadow: 0 1px 2px rgba(0,0,0,.08), 0 0 0 1px rgba(0,113,227,.25); }
+.pageGroup button:disabled { color: #b8b8bd; cursor: default; }
+.pageGroup button:focus-visible { outline: 2px solid #0071e3; outline-offset: 1px; }
+.pageGroup span { min-width: 20px; text-align: center; color: #86868b; }
+.pageSize { position: relative; display: inline-flex; align-items: center; gap: 8px; white-space: nowrap; }
+.pageSize span { font-size: 13px; color: #6e6e73; }
+.pageSize select { appearance: none; -webkit-appearance: none; width: auto; min-width: 0; height: 32px; margin: 0; padding: 0 28px 0 12px; border: 1px solid #d2d2d7; border-radius: 8px; background: #fff; color: #1d1d1f; font: inherit; font-size: 13px; font-weight: 600; line-height: 1; cursor: pointer; }
+.pageSize select:hover { border-color: #a1a1a6; }
+.pageSize select:focus-visible { outline: 2px solid #0071e3; outline-offset: 1px; }
+.pageSize svg { position: absolute; right: 9px; color: #6e6e73; pointer-events: none; }
+@media (max-width: 640px) {
+  .catalogPager { justify-content: center; padding: 12px; }
+  .catalogPager p { order: 2; width: 100%; text-align: center; }
+  .pageGroup { order: 1; }
+  .pageSize { order: 3; }
+}
 .catalogEmpty { margin: 6px 0 0; padding: 18px; border-radius: 12px; background: #fff; color: #6e6e73; }
 .catalogEmpty button { padding: 0; border: 0; background: none; color: #0062c4; font: inherit; font-weight: 600; text-decoration: underline; cursor: pointer; }
-.catalogPager { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; margin-top: 16px; font-size: 13px; color: #6e6e73; }
-.catalogPager p { margin: 0; }
-.catalogPager div { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 4px; }
-.catalogPager div button { display: grid; place-items: center; min-width: 34px; height: 34px; padding: 0 8px; border: 1px solid #e3e3e8; border-radius: 9px; background: #fff; color: #1d1d1f; font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; }
-.catalogPager div button[aria-current="page"] { border-color: #0071e3; background: #0071e3; color: #fff; }
-.catalogPager div button:disabled { opacity: .45; cursor: default; }
-.catalogPager label { display: inline-flex; align-items: center; gap: 6px; }
-.catalogPager select { min-height: 32px; padding: 0 6px; border: 1px solid #d2d2d7; border-radius: 8px; background: #fff; font: inherit; }
 
 /* A generated course or topic being written on first open. */
 .generating { display: grid; justify-items: center; gap: 10px; margin: 18px 0; padding: 36px 20px; border: 1px solid #e5e5ea; border-radius: 18px; background: #fbfbfd; text-align: center; }

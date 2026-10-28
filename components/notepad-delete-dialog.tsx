@@ -50,7 +50,7 @@ export function NotepadDeleteDialog({ file, onCancel, onConfirm }: { file: Notep
         <span className={styles.deleteDocIcon} aria-hidden="true"><FileText size={18} /></span>
         <div className={styles.deleteDocText}>
           <b>{title}</b>
-          <small>{file.kind} · edited {new Date(file.updatedAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })} · {words.toLocaleString("en-IN")} {words === 1 ? "word" : "words"}</small>
+          <small>{file.kind} · edited {new Date(file.updatedAt).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric", timeZone: "Asia/Kolkata" })} · {words.toLocaleString("en-IN")} {words === 1 ? "word" : "words"}</small>
           {extras.length > 0 && <span className={styles.deleteDocTags}>{extras.map(({ icon: Icon, label }) => <span key={label}><Icon size={12} aria-hidden="true" />{label}</span>)}</span>}
         </div>
       </div>

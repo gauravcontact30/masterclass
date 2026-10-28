@@ -88,7 +88,8 @@ const SUGGESTION_BOX_PALETTES = [
   }
 ];
 
-const INTERVAL = 10000;
+// Each slide stays 15 s before the next one slides in.
+const INTERVAL = 15000;
 type MultiLang = Record<import("@/lib/domain").Language, string>;
 type SlideBase = {
   id: string;
@@ -112,8 +113,8 @@ type Slide = StorySlide | InfographicSlide;
  */
 function InfographicImage({ slide, priority, onLoad }: { slide: InfographicSlide; priority: boolean; onLoad?: () => void }) {
   const common = { alt: slide.alt, sizes: "100vw", quality: 85, loading: priority ? "eager" : "lazy", fetchPriority: priority ? "high" : undefined } as const;
-  const { props: { srcSet: wide } } = getImageProps({ ...common, src: slide.src, width: 1920, height: 1080 });
-  const { props: { srcSet: tall, ...rest } } = getImageProps({ ...common, src: slide.infographic.portrait, width: 1080, height: 1920 });
+  const { props: { srcSet: wide } } = getImageProps({ ...common, src: slide.src, width: 3840, height: 2160 });
+  const { props: { srcSet: tall, ...rest } } = getImageProps({ ...common, src: slide.infographic.portrait, width: 2160, height: 3840 });
   if (priority) {
     preload(slide.src, { as: "image", imageSrcSet: wide, imageSizes: "100vw", media: PORTRAIT_OFF, fetchPriority: "high" });
     preload(slide.infographic.portrait, { as: "image", imageSrcSet: tall, imageSizes: "100vw", media: PORTRAIT_ON, fetchPriority: "high" });
@@ -131,8 +132,9 @@ const PORTRAIT_OFF = "(min-aspect-ratio: 4.001/5)";
 /**
  * The landing hero: four full-HD (1920×1080) study scenes painted by scripts/generate-hero-images.ts (each file's EXIF
  * ImageDescription holds its prompt), full-bleed under the navbar. Each slide
- * carries its own headline and actions; autoplay pauses on hover, on focus,
- * with the pause button, and never starts for visitors who prefer reduced motion.
+ * carries its own headline and actions. Autoplay runs while the mouse is over it (the hero fills the screen, so a hover
+ * pause meant it almost never moved); it pauses for keyboard focus inside it, with the pause button, off screen, and
+ * never starts for visitors who prefer reduced motion.
  */
 function slidesFor(technologies: number | undefined): Slide[] {
   const count = technologies ? String(technologies) : "60+";
@@ -448,8 +450,8 @@ export function LandingSlider({ technologies }: { technologies?: number }) {
 
 
   return <section ref={regionRef} className={styles.heroSlider} aria-roledescription="carousel" aria-label={t("heroSliderLabel") || "Learning with MasterClass"}
-    onMouseEnter={() => setHeld(true)} onMouseLeave={() => setHeld(false)}
-    onFocus={() => setHeld(true)} onBlur={event => { if (!regionRef.current?.contains(event.relatedTarget as Node)) setHeld(false); }}
+    // Only keyboard focus holds the slide (a mouse click on an arrow or dot should not stop the show).
+    onFocus={event => { if (event.target.matches(":focus-visible")) setHeld(true); }} onBlur={event => { if (!regionRef.current?.contains(event.relatedTarget as Node)) setHeld(false); }}
     onKeyDown={event => {
       if (event.key === "ArrowRight") { event.preventDefault(); go(index + 1); }
       if (event.key === "ArrowLeft") { event.preventDefault(); go(index - 1); }

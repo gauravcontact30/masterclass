@@ -28,7 +28,7 @@ function ago(iso: string, hi: boolean) {
   if (minutes < 60) return hi ? `${minutes} मिनट पहले` : `${minutes} min ago`;
   const hours = Math.round(minutes / 60);
   if (hours < 24) return hi ? `${hours} घंटे पहले` : `${hours} h ago`;
-  return new Date(iso).toLocaleDateString(hi ? "hi-IN" : "en-IN", { day: "numeric", month: "short" });
+  return new Date(iso).toLocaleDateString(hi ? "hi-IN" : "en-IN", { day: "numeric", month: "short", timeZone: "Asia/Kolkata" });
 }
 function seen(): Set<string> { try { return new Set(JSON.parse(sessionStorage.getItem(SEEN) ?? "[]")); } catch { return new Set(); } }
 function remember(ids: Set<string>) { try { sessionStorage.setItem(SEEN, JSON.stringify([...ids].slice(-100))); } catch { /* blocked */ } }

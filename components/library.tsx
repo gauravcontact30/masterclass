@@ -53,7 +53,7 @@ export function Library({ externalQuery, onQueryChange, documents: sourceDocumen
 
   const technologyNames = useMemo(() => new Map(technologies.map(item => [item.id, hi ? item.title_hi || item.title : item.title])), [technologies, hi]);
   const progressById = useMemo(() => new Map(progress.map(item => [item.document_id, item])), [progress]);
-  const dateFormat = useMemo(() => new Intl.DateTimeFormat(hi ? "hi-IN" : "en-IN", { dateStyle: "medium" }), [hi]);
+  const dateFormat = useMemo(() => new Intl.DateTimeFormat(hi ? "hi-IN" : "en-IN", { dateStyle: "medium", timeZone: "Asia/Kolkata" }), [hi]);
 
   function clearSearch(refocus = true) {
     (onQueryChange ?? setQuery)("");

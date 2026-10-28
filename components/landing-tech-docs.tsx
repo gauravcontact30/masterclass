@@ -43,7 +43,7 @@ type Suggestion = { key: string; kind: "tech" | "material" | "feature"; label: s
 
 const norm = (text: string) => text.toLowerCase().normalize("NFKD").replace(/[^\p{L}\p{N}.+#@ ]/gu, " ").replace(/\s+/g, " ").trim();
 const host = (url: string) => { try { return new URL(url).host.replace(/^www\./, ""); } catch { return url; } };
-const shortDate = (iso?: string) => iso ? new Intl.DateTimeFormat("en-IN", { day: "numeric", month: "short", year: "numeric" }).format(new Date(iso)) : "";
+const shortDate = (iso?: string) => iso ? new Intl.DateTimeFormat("en-IN", { day: "numeric", month: "short", year: "numeric", timeZone: "Asia/Kolkata" }).format(new Date(iso)) : "";
 
 /** Highlights each search term inside a title. */
 function Marked({ text, terms }: { text: string; terms: string[] }) {

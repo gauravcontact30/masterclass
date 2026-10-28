@@ -3,7 +3,8 @@
  * MasterClass Buddy teaches (lib/deep-courses/catalog.ts), one tile per family with its real logos and every course name.
  * The AI Gateway (openai/gpt-image-2) paints the backdrop; logos, names and headline are composited on top, because
  * image models misspell words and invent logos.
- * Writes public/images/landing/hero-stack.webp (1920×1080) and hero-stack-portrait.webp (1080×1920, phones). Both are
+ * Writes hero-stack-portrait.webp (1080×1920, phones). The landscape slide is now the 4K one from
+ * scripts/generate-hero-variants.ts (variant a); this script no longer writes it. The portrait is
  * cover-cropped and slowly zoomed like the other slides, so every word stays inside the frame's safe zone.
  * Run: npx tsx --env-file=.env scripts/generate-stack-infographic.ts [--reuse]   (--reuse keeps the painted backdrops)
  */
@@ -173,7 +174,7 @@ async function main() {
 
   // Landscape: cover-cropped to 1440×900 it loses ~96 px a side, the zoom another ~4%, the navbar the top ~150 px and
   // the slide controls the bottom ~150 px, so everything sits inside x 170-1750, y 160-915.
-  await compose(wide, {
+  if (process.argv.includes("--landscape-1080")) await compose(wide, {
     width: 1920, height: 1080, out: "public/images/landing/hero-stack.webp",
     head: { x: 170, y: 172, size: 46, lines: [`${total} technologies. One place to master them.`], sub },
     tiles: grid([

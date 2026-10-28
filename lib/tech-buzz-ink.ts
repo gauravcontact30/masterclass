@@ -1,4 +1,5 @@
 import type { TechBuzzArticle } from "./tech-buzz-data";
+import { plainProse } from "./prose-markup";
 
 /*
  * "Write": members write and publish their own Tech Buzz stories (app/(tech-buzz)/tech-buzz/write). Shared by the
@@ -60,10 +61,10 @@ export const writeTechnology = (id: string) => WRITE_TECHNOLOGIES.find(tech => t
 /** Story images must live in this app's Supabase Storage (uploaded through Write) or ship with the site. */
 export const isInkImage = (src: string) => /^https:\/\/[a-z0-9-]+\.supabase\.co\/storage\/v1\/object\/public\//.test(src) || /^\/images\/[\w./-]+$/.test(src);
 
-export const INK_LIMITS = { title: 120, subtitle: 300, sections: 20, paragraph: 4000, listItems: 12, codeFiles: 4, code: 8000, tags: 6, minPublishWords: 120 } as const;
+export const INK_LIMITS = { title: 120, subtitle: 300, sections: 20, paragraph: 8000, paragraphs: 40, listItems: 12, codeFiles: 4, code: 8000, tags: 6, minPublishWords: 120 } as const;
 
 /** Words across a story's text, for the read time and the publish check. */
 export function inkWords(story: Pick<InkStory, "title" | "subtitle" | "sections">) {
-  const text = [story.title, story.subtitle, ...story.sections.flatMap(section => [section.heading, ...section.paragraphs, ...(section.steps ?? []), ...(section.bulletPoints ?? []), section.callout?.text ?? "", section.quote?.text ?? ""])].join(" ");
+  const text = [story.title, story.subtitle, ...story.sections.flatMap(section => [section.heading, ...section.paragraphs.map(plainProse), ...(section.steps ?? []), ...(section.bulletPoints ?? []), section.callout?.text ?? "", section.quote?.text ?? ""])].join(" ");
   return text.split(/\s+/).filter(Boolean).length;
 }

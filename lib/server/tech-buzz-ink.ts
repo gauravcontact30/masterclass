@@ -10,6 +10,7 @@ import { isSuperAdminUser } from "@/lib/study/preparations";
 import { createTechBuzzArticle, expireTechBuzzCache } from "./tech-buzz-storage";
 import { INK_LIMITS, inkWords, isInkImage, writeTechnology, WRITE_TECHNOLOGIES, type InkListItem, type InkStatus, type InkStory } from "@/lib/tech-buzz-ink";
 import type { TechBuzzArticle } from "@/lib/tech-buzz-data";
+import { imageSources } from "@/lib/prose-markup";
 
 /*
  * The server half of Write (lib/tech-buzz-ink.ts): members' own stories in tech_buzz_articles, owned through
@@ -25,7 +26,8 @@ const lines = z.array(text(600)).max(INK_LIMITS.listItems);
 const image = z.object({ src: z.string().refine(isInkImage, "image_not_allowed"), alt: text(200) });
 const sectionSchema = z.object({
   heading: text(200),
-  paragraphs: z.array(text(INK_LIMITS.paragraph)).max(12),
+  // Pictures placed inside the text (![…](…)) follow the same rule as section pictures.
+  paragraphs: z.array(text(INK_LIMITS.paragraph).refine(paragraph => imageSources(paragraph).every(isInkImage), "image_not_allowed")).max(INK_LIMITS.paragraphs),
   steps: lines.optional(),
   bulletPoints: lines.optional(),
   codeSnippet: z.object({ files: z.array(z.object({ filename: text(120), language: text(30), code: z.string().max(INK_LIMITS.code) })).min(1).max(INK_LIMITS.codeFiles) }).optional(),

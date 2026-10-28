@@ -152,7 +152,7 @@ const styleOf = (category: string) => CATEGORY_STYLE[category] ?? { icon: Hash, 
 const time = (iso: string) => Date.parse(iso) || 0;
 const dateLabel = (iso: string) => {
   const date = new Date(`${iso.length === 10 ? `${iso}T00:00:00` : iso}`);
-  return Number.isNaN(date.getTime()) ? iso : date.toLocaleDateString("en-IN", { day: "numeric", month: "short" });
+  return Number.isNaN(date.getTime()) ? iso : date.toLocaleDateString("en-IN", { day: "numeric", month: "short", timeZone: "Asia/Kolkata" });
 };
 const compact = (n: number) => (n >= 1000 ? `${(n / 1000).toFixed(n >= 10000 ? 0 : 1)}k` : String(n));
 const remote = unoptimizedRemote;
@@ -395,7 +395,7 @@ export function TechBuzzBlog({ cards, groups, showcase = false }: { cards: TechB
         <div className={styles.badgeRow}>
           <p className={styles.kicker}><BrandMark size={18} />MCB - Tech Buzz</p>
           <span className={styles.verifiedKicker}><Sparkles size={13} aria-hidden="true" />Engineering Masterclasses</span>
-          <Link href="/tech-buzz/write" className={styles.writeLink}><PenLine size={15} aria-hidden="true" />Write</Link>
+          <Link href="/tech-buzz/write" prefetch={false} className={styles.writeLink}><PenLine size={15} aria-hidden="true" />The Slate - Ink</Link>
         </div>
         <h1>{t("techBuzzTitle")}</h1>
         <p className={styles.lede}>

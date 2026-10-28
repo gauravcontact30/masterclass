@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { ArrowRight, ChevronLeft, ChevronRight, Search, X } from "lucide-react";
+import { ArrowRight, ChevronDown, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Search, X } from "lucide-react";
 import { deepCourseHref } from "@/lib/deep-courses";
 import { COURSE_CATALOG } from "@/lib/deep-courses/catalog";
 import TOPIC_INDEX from "@/lib/deep-courses/topic-index.json";
@@ -93,14 +93,19 @@ export function DeepCourseShelf({ id = "deep-courses", inSheet = false }: { id?:
     </div> : <p className={styles.catalogEmpty}>No course matches{query ? ` “${query}”` : ""}{family || status !== "all" ? " with these filters" : ""}. <button type="button" onClick={() => { setQuery(""); setFamily(null); setStatus("all"); reset(); }}>Show every course</button></p>}
 
     {results.length > 0 && <nav className={styles.catalogPager} aria-label="Course pages">
-      <p aria-live="polite">Showing <b>{current * size + 1}–{Math.min(results.length, current * size + size)}</b> of <b>{results.length}</b></p>
-      <div>
+      <p aria-live="polite">Showing <b>{current * size + 1}–{Math.min(results.length, current * size + size)}</b> of <b>{results.length}</b> courses</p>
+      {pages > 1 && <div className={styles.pageGroup}>
+        <button type="button" onClick={() => setPage(0)} disabled={current === 0} aria-label="First page"><ChevronsLeft size={15} aria-hidden="true" /></button>
         <button type="button" onClick={() => setPage(current - 1)} disabled={current === 0} aria-label="Previous page"><ChevronLeft size={15} aria-hidden="true" /></button>
         {pageWindow(current, pages).map((index, position) => index === "gap" ? <span key={`gap-${position}`} aria-hidden="true">…</span>
           : <button key={index} type="button" onClick={() => setPage(index)} aria-current={index === current ? "page" : undefined} aria-label={`Page ${index + 1}`}>{index + 1}</button>)}
         <button type="button" onClick={() => setPage(current + 1)} disabled={current >= pages - 1} aria-label="Next page"><ChevronRight size={15} aria-hidden="true" /></button>
-      </div>
-      <label>Per page <select value={size} onChange={event => { setSize(Number(event.target.value)); reset(); }}>{[6, 9, 12, 24].map(option => <option key={option} value={option}>{option}</option>)}</select></label>
+        <button type="button" onClick={() => setPage(pages - 1)} disabled={current >= pages - 1} aria-label="Last page"><ChevronsRight size={15} aria-hidden="true" /></button>
+      </div>}
+      <label className={styles.pageSize}><span>Per page</span>
+        <select value={size} onChange={event => { setSize(Number(event.target.value)); reset(); }}>{[6, 9, 12, 24].map(option => <option key={option} value={option}>{option}</option>)}</select>
+        <ChevronDown size={14} aria-hidden="true" />
+      </label>
     </nav>}
   </section>;
 }

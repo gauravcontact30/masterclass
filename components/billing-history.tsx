@@ -23,7 +23,7 @@ export function BillingHistory({ version }: { version:string }) {
     {state==="loading"&&<p role="status">{t("billing_loading")}</p>}
     {state==="error"&&<><p role="alert">{t("billing_history_error")}</p><Button variant="outline" onClick={()=>{setState("loading");setAttempt(value=>value+1);}}>{t("retry")}</Button></>}
     {state==="ready"&&(invoices.length ? <ul style={{listStyle:"none",padding:0}}>{invoices.map(invoice=><li key={invoice.id} style={{display:"flex",alignItems:"center",flexWrap:"wrap",gap:16,padding:"16px 0",borderBottom:"1px solid var(--border)"}}>
-      <time dateTime={invoice.createdAt}>{new Intl.DateTimeFormat(language==="hi"?"hi-IN":"en-IN",{dateStyle:"medium"}).format(new Date(invoice.createdAt))}</time>
+      <time dateTime={invoice.createdAt}>{new Intl.DateTimeFormat(language==="hi"?"hi-IN":"en-IN",{dateStyle:"medium",timeZone:"Asia/Kolkata"}).format(new Date(invoice.createdAt))}</time>
       <span>{invoice.amount===null?"—":new Intl.NumberFormat(language==="hi"?"hi-IN":"en-IN",{style:"currency",currency:invoice.currency}).format(invoice.amount/100)}</span>
       <span>{invoice.status}</span>
       {invoice.url&&<a href={invoice.url} target="_blank" rel="noopener noreferrer" style={{marginLeft:"auto",textDecoration:"underline"}}>{t("view_invoice")}</a>}

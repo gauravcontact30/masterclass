@@ -1,6 +1,7 @@
 import type { ArticleComment, TechBuzzArticle } from "./tech-buzz-data";
 import { DAILY_TAG, isInternalTag } from "./tech-buzz-sections";
 import { topicsOf } from "./tech-buzz-favourites";
+import { countCodeBlocks, withoutCode } from "./prose-markup";
 
 /**
  * What each Tech Buzz audience may receive. Lists get light cards, everyone gets the free preview of an article, and
@@ -99,9 +100,9 @@ export function toPreview(article: TechBuzzArticle): TechBuzzPreview {
     tags: ownTags(rest.tags),
     source: OWN_SOURCE,
     newsletterEdition: ownText(rest.newsletterEdition),
-    teaser: { heading: first?.heading ?? "", paragraphs: (first?.paragraphs ?? []).slice(0, 2), quote: first?.quote, image: first?.image },
+    teaser: { heading: first?.heading ?? "", paragraphs: (first?.paragraphs ?? []).map(withoutCode).filter(Boolean).slice(0, 2), quote: first?.quote, image: first?.image },
     outline: locked.map(section => section.heading).filter(Boolean),
-    lockedCodeSamples: contentSections.filter(section => section.codeSnippet).length,
+    lockedCodeSamples: contentSections.reduce((sum, section) => sum + (section.codeSnippet ? 1 : 0) + section.paragraphs.reduce((n, p) => n + countCodeBlocks(p), 0), 0),
   };
 }
 

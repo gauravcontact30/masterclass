@@ -33,6 +33,7 @@ import { Button } from "@/components/ui/button";
 import { ClapButton, useClaps } from "./clap-button";
 import dynamic from "next/dynamic";
 import { KeyTakeaways, ProseText, SectionLists } from "./tech-buzz-prose";
+import { plainProse } from "@/lib/prose-markup";
 import type { TechBuzzMemberContent as MemberContent } from "@/lib/tech-buzz-public";
 
 /** The light, Apple-style code editor (file tree + tabs): loaded with the member body, not with the page. */
@@ -249,7 +250,8 @@ export function TechBuzzArticleView({ article, related, prevStory, nextStory }: 
     for (const section of memberContent?.sections ?? []) if (section.codeSnippet) for (const file of snippetFiles(section.codeSnippet)) byPath.set(file.path, file);
     return [...byPath.values()];
   }, [memberContent]);
-  const allParagraphs = useMemo(() => visibleSections.flatMap(sec => sec.paragraphs), [visibleSections]);
+  // Read aloud as plain words: no formatting marks, code blocks or picture links.
+  const allParagraphs = useMemo(() => visibleSections.flatMap(sec => sec.paragraphs.map(plainProse)), [visibleSections]);
 
   const stopAudio = useCallback(() => {
     setIsPlayingAudio(false);
@@ -381,7 +383,7 @@ export function TechBuzzArticleView({ article, related, prevStory, nextStory }: 
         <div className={styles.articleHeroInner}>
           {/* Breadcrumbs */}
           <nav aria-label="Breadcrumbs" className={styles.breadcrumbs}>
-            <Link href="/">Home</Link>
+            <Link href="/" prefetch={false}>Home</Link>
             <span>/</span>
             <Link href="/tech-buzz">Tech Buzz</Link>
             <span>/</span>
@@ -678,7 +680,7 @@ export function TechBuzzArticleView({ article, related, prevStory, nextStory }: 
                     <Sparkles size={16} />
                     <span>{unlockLabel}</span>
                   </Link>
-                  {access === "signin_required" && <Link href={`/sign-up?redirect=${encodeURIComponent(articlePath)}`} className={styles.paywallSecondaryBtn}>Create a free account</Link>}
+                  {access === "signin_required" && <Link prefetch={false} href={`/sign-up?redirect=${encodeURIComponent(articlePath)}`} className={styles.paywallSecondaryBtn}>Create a free account</Link>}
                 </div>}
               </div>
             </div>

@@ -70,21 +70,52 @@
   min-width: 0;
 }
 
+/* "The Slate - Ink": a dark ink pill with one quiet effect, a soft shine sweeping across it every few seconds. */
 .writeLink {
+  position: relative;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 7px;
+  flex: none;
+  max-width: 100%;
   margin-left: auto;
-  min-height: 36px;
-  padding: 0 16px;
+  min-height: 38px;
+  padding: 0 clamp(12px, 3.5vw, 18px);
+  overflow: hidden;
   border-radius: 999px;
-  background: #1a8917;
+  background: linear-gradient(135deg, #2b2a27 0%, #1f1e1c 55%, #3a2a1f 100%);
   color: #fff;
-  font-size: 14px;
-  font-weight: 600;
+  font-size: clamp(12.5px, 3.3vw, 14px);
+  font-weight: 700;
+  letter-spacing: .01em;
+  line-height: 1;
   text-decoration: none;
+  white-space: nowrap;
+  box-shadow: 0 6px 16px -8px rgba(31, 30, 28, .7);
+  transition: transform .2s ease, box-shadow .2s ease;
 }
-.writeLink:hover { background: #156d12; }
+.writeLink svg { flex: none; color: #fdba74; transition: transform .2s ease; }
+.writeLink::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(105deg, transparent 35%, rgba(255, 255, 255, .28) 50%, transparent 65%);
+  transform: translateX(-120%);
+  pointer-events: none;
+  animation: inkShine 4.5s ease-in-out infinite;
+}
+.writeLink:hover { transform: translateY(-1px); box-shadow: 0 10px 22px -8px rgba(31, 30, 28, .75); }
+.writeLink:hover svg { transform: rotate(-12deg); }
+.writeLink:focus-visible { outline: 2px solid #fdba74; outline-offset: 3px; }
+@keyframes inkShine { 0%, 60% { transform: translateX(-120%); } 85%, 100% { transform: translateX(120%); } }
+/* Phones: the pill takes its own line under the badges, so its text is never squeezed. */
+@media (max-width: 520px) {
+  .writeLink { margin-left: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .writeLink::after { animation: none; display: none; }
+  .writeLink, .writeLink svg { transition: none; }
+}
 
 .badgeRow {
   display: flex;

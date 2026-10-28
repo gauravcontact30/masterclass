@@ -24,9 +24,9 @@ const ago = (iso: string | null) => {
   const s = Math.max(0, (Date.now() - Date.parse(iso)) / 1000);
   if (s < 60) return "just now"; if (s < 3600) return `${Math.floor(s / 60)} min ago`; if (s < 86400) return `${Math.floor(s / 3600)} h ago`;
   if (s < 86400 * 30) return `${Math.floor(s / 86400)} d ago`;
-  return new Intl.DateTimeFormat("en-IN", { dateStyle: "medium" }).format(new Date(iso));
+  return new Intl.DateTimeFormat("en-IN", { dateStyle: "medium", timeZone: "Asia/Kolkata" }).format(new Date(iso));
 };
-const date = (iso: string | null) => iso ? new Intl.DateTimeFormat("en-IN", { dateStyle: "medium", timeStyle: "short" }).format(new Date(iso)) : "—";
+const date = (iso: string | null) => iso ? new Intl.DateTimeFormat("en-IN", { dateStyle: "medium", timeStyle: "short", timeZone: "Asia/Kolkata" }).format(new Date(iso)) : "—";
 const initials = (user: AdminUser) => (user.name || user.email).split(/[\s@._-]+/).filter(Boolean).slice(0, 2).map(p => p[0]?.toUpperCase()).join("") || "?";
 const TONES = ["clay", "sage", "violet", "sky", "honey", "rose"];
 const toneOf = (id: string) => TONES[[...id].reduce((sum, c) => sum + c.charCodeAt(0), 0) % TONES.length];

@@ -114,7 +114,7 @@ export function NotepadLibrary({
             <span className={styles.documentIcon} aria-hidden="true"><FileText size={17} /></span>
             <span>
               <b>{file.id === activeId ? activeTitle || "Untitled document" : file.title || "Untitled document"}</b>
-              <small>{file.kind} · {new Date(file.updatedAt).toLocaleDateString()}</small>
+              <small>{file.kind} · {new Date(file.updatedAt).toLocaleDateString("en-IN", { timeZone: "Asia/Kolkata" })}</small>
             </span>
             {file.starred && <Star size={13} aria-hidden="true" />}
             {/<img\b/i.test(file.html) && <ImageIcon size={13} aria-hidden="true" />}
