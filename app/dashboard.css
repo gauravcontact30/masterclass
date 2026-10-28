@@ -381,3 +381,43 @@
 @media (max-width:420px){.app-shell.compact-workspace .topbar-actions .super-admin-header-link span{display:none}}
 @media (min-width:761px){.mobile-nav-lead,.mobile-nav-scrim{display:none!important}}
 @media (prefers-reduced-motion:reduce){.mobile-nav-scrim{animation:none}}
+
+/* Collapsed Learning Dashboard sidebar (2026-10-28): an icon rail with livelier tiles and a hairline scrollbar that
+   appears on hover. Chrome uses ::-webkit-scrollbar only while scrollbar-width/color are auto (otherwise it draws the
+   platform scrollbar with arrow buttons), hence the @supports reset. */
+@media (min-width: 761px) {
+  .sidebar-collapsed .learning-sidebar > .sidebar-options {
+    /* Reaches the sidebar's right edge (its 14px padding), so the scrollbar sits on the boundary, not beside the icons. */
+    margin-right: -14px; padding: 4px 11px 4px 0;
+    scrollbar-gutter: auto; scrollbar-width: thin; scrollbar-color: transparent transparent;
+    -webkit-mask-image: linear-gradient(to bottom, transparent, #000 10px, #000 calc(100% - 14px), transparent);
+    mask-image: linear-gradient(to bottom, transparent, #000 10px, #000 calc(100% - 14px), transparent);
+  }
+  .sidebar-collapsed .learning-sidebar > .sidebar-options:is(:hover, :focus-within) { scrollbar-color: #5e5d59 transparent; }
+  @supports selector(::-webkit-scrollbar) {
+    /* The hover rule above outranks a plain reset, and any scrollbar-color makes Chrome draw the wide platform bar. */
+    .sidebar-collapsed .learning-sidebar > .sidebar-options, .sidebar-collapsed .learning-sidebar > .sidebar-options:is(:hover, :focus-within) { scrollbar-width: auto; scrollbar-color: auto; }
+    .sidebar-collapsed .learning-sidebar > .sidebar-options::-webkit-scrollbar { width: 3px; }
+    .sidebar-collapsed .learning-sidebar > .sidebar-options::-webkit-scrollbar-button { display: none; width: 0; height: 0; }
+    .sidebar-collapsed .learning-sidebar > .sidebar-options::-webkit-scrollbar-track { background: transparent; }
+    .sidebar-collapsed .learning-sidebar > .sidebar-options::-webkit-scrollbar-thumb { background: transparent; border: 0; border-radius: 3px; }
+    .sidebar-collapsed .learning-sidebar > .sidebar-options:is(:hover, :focus-within)::-webkit-scrollbar-thumb { background: #5e5d59; }
+    .sidebar-collapsed .learning-sidebar > .sidebar-options::-webkit-scrollbar-thumb:hover { background: #d97757; }
+  }
+  .sidebar-collapsed .learning-sidebar nav :is(.sidebar-notes, button) {
+    position: relative; width: 44px; min-height: 40px; margin-inline: auto; border-radius: 12px;
+    transition: background .18s ease, color .18s ease, transform .18s ease, box-shadow .18s ease;
+  }
+  .sidebar-collapsed .learning-sidebar nav :is(.sidebar-notes, button) svg { transition: transform .18s ease, color .18s ease; }
+  .sidebar-collapsed .learning-sidebar nav :is(.sidebar-notes, button):hover { background: #2b2a27; color: #faf9f5; transform: translateY(-1px); box-shadow: 0 8px 18px -12px rgba(217, 119, 87, .75); }
+  .sidebar-collapsed .learning-sidebar nav :is(.sidebar-notes, button):hover svg { color: #d97757; transform: scale(1.1); }
+  .sidebar-collapsed .learning-sidebar nav :is(.sidebar-notes, button):focus-visible { outline: 2px solid #d97757; outline-offset: 2px; }
+  /* The open page keeps its light tile and gains a clay ring and dot. */
+  .sidebar-collapsed .learning-sidebar nav .sidebar-notes[aria-current="page"] { box-shadow: inset 0 0 0 1px rgba(217, 119, 87, .6), 0 6px 16px -12px rgba(217, 119, 87, .9); }
+  .sidebar-collapsed .learning-sidebar nav .sidebar-notes[aria-current="page"]::after { content: ""; position: absolute; right: 5px; top: 5px; width: 6px; height: 6px; border-radius: 50%; background: #d97757; box-shadow: 0 0 0 2px #141413; }
+  .sidebar-collapsed .learning-sidebar .sidebar-pro-nav { margin-top: 8px; padding-top: 8px; border-top: 1px solid #3d3d3a; }
+}
+@media (min-width: 761px) and (prefers-reduced-motion: reduce) {
+  .sidebar-collapsed .learning-sidebar nav :is(.sidebar-notes, button), .sidebar-collapsed .learning-sidebar nav :is(.sidebar-notes, button) svg { transition: none; }
+  .sidebar-collapsed .learning-sidebar nav :is(.sidebar-notes, button):hover, .sidebar-collapsed .learning-sidebar nav :is(.sidebar-notes, button):hover svg { transform: none; }
+}

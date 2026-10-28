@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useId, useMemo, useState, type MouseEvent } from "react";
-import { ArrowRight, ChevronDown, ChevronsDownUp, ChevronsUpDown, PlayCircle, Search, X } from "lucide-react";
+import { useId, useMemo, useState, useSyncExternalStore, type MouseEvent, type ReactNode } from "react";
+import { ArrowRight, ChevronDown, ChevronsDownUp, ChevronsUpDown, PanelLeftClose, PanelLeftOpen, PlayCircle, Search, X } from "lucide-react";
 import { useDeepProgress } from "./deep-progress-store";
 import { deepCourseHref } from "@/lib/deep-courses";
 import styles from "./deep-course.module.css";
@@ -109,5 +109,41 @@ export function OtherCourses({ currentId, families }: { currentId: string; famil
 
     {current && <p className={styles.otherNote}>{current.done} topic{current.done === 1 ? "" : "s"} completed in this course.</p>}
     <Link href="/learning/lessons" className={styles.otherAll}>Browse all courses<ArrowRight size={14} aria-hidden="true"/></Link>
+  </div>;
+}
+
+/*
+ * The whole course panel folds to a slim rail on the left and slides back out. The choice is remembered in this browser
+ * for every course, read through useSyncExternalStore so the server render (panel open) hydrates without a mismatch.
+ */
+const PANEL_KEY = "mcb:course-panel:v1";
+const panelListeners = new Set<() => void>();
+const readPanel = () => { try { return localStorage.getItem(PANEL_KEY) === "collapsed"; } catch { return false; } };
+const subscribePanel = (listener: () => void) => { panelListeners.add(listener); return () => { panelListeners.delete(listener); }; };
+function setPanel(collapsed: boolean) {
+  try { localStorage.setItem(PANEL_KEY, collapsed ? "collapsed" : "open"); } catch { /* private mode */ }
+  panelListeners.forEach(listener => listener());
+}
+const usePanelCollapsed = () => useSyncExternalStore(subscribePanel, readPanel, () => false);
+
+/** Folds the course panel away; sits in the panel's top row. */
+export function PanelCollapse() {
+  return <button type="button" className={styles.sideToggleAll} onClick={() => setPanel(true)} aria-label="Hide course contents" title="Hide course contents">
+    <PanelLeftClose size={15} aria-hidden="true"/>
+  </button>;
+}
+
+/** The course page grid: the panel (or its rail when folded) and the lesson. */
+export function CoursePanelLayout({ side, glyph, name, children }: { side: ReactNode; glyph: string; name: string; children: ReactNode }) {
+  const collapsed = usePanelCollapsed();
+  return <div className={styles.layout} data-panel={collapsed ? "collapsed" : undefined}>
+    {/* Folded, the panel stays mounted (hidden) so its open modules and search survive. */}
+    <div className={styles.sideWrap} hidden={collapsed}>{side}</div>
+    {collapsed && <div className={styles.rail}>
+      <button type="button" onClick={() => setPanel(false)} aria-label={`Show ${name} contents`} title="Show course contents"><PanelLeftOpen size={16} aria-hidden="true"/></button>
+      <span className={styles.railGlyph} aria-hidden="true">{glyph}</span>
+      <span className={styles.railName}>{name}</span>
+    </div>}
+    {children}
   </div>;
 }

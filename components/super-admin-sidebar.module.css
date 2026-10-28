@@ -17,8 +17,8 @@
 .sidebar .nav .item:focus-visible { outline: 2px solid #d97757; outline-offset: 1px; }
 /* The open page: a sheet of white paper with a clay edge. */
 .sidebar .nav .item[aria-current="page"] { border-color: #e8e6dc; background: #fff; color: #141413; font-weight: 600; box-shadow: 0 1px 0 rgba(20, 20, 19, .02), 0 8px 20px -16px rgba(20, 20, 19, .45); }
-.sidebar .nav .item[aria-current="page"]::before { content: ""; position: absolute; left: -9px; top: 8px; bottom: 8px; width: 3px; border-radius: 0 3px 3px 0; background: #b5573a; }
-.icon { display: grid; flex-shrink: 0; place-items: center; width: 28px; height: 28px; border-radius: 8px; background: rgba(232, 230, 220, .6); color: #73716a; transition: background .2s ease, color .2s ease; }
+.sidebar .nav .item[aria-current="page"]::before { content: ""; position: absolute; left: -7px; top: 8px; bottom: 8px; width: 3px; border-radius: 0 3px 3px 0; background: #b5573a; }
+.icon { display: grid; flex-shrink: 0; place-items: center; width: 28px; height: 28px; border-radius: 8px; background: rgba(232, 230, 220, .6); color: #73716a; transition: background .2s ease, color .2s ease, transform .2s ease; }
 .sidebar .nav .item:hover .icon { background: #f5e6dc; color: #9a4a2c; }
 .sidebar .nav .item[aria-current="page"] .icon { background: linear-gradient(135deg, #f8dccb, #f3cdb6); color: #9a4a2c; }
 .label { min-width: 0; overflow-wrap: anywhere; }
@@ -27,6 +27,45 @@
 .back.back { display: flex; align-items: center; gap: 10px; margin: 12px 8px 18px; padding: 6px 10px 6px 6px; border: 1px dashed #e3d9c6; border-radius: 10px; color: #5e5d59; font-size: 13px; text-decoration: none; transition: background .2s ease, color .2s ease, border-color .2s ease; }
 .back.back:hover { border-color: #d97757; background: #fff; color: #9a4a2c; }
 .sidebar[data-collapsed] .back { justify-content: center; padding: 6px; }
+
+/* The nav scrolls on its own: a warm hairline scrollbar on the cream ground (it inherited the dark sidebar's black track),
+   never a horizontal one. Chrome uses ::-webkit-scrollbar only while scrollbar-width/color are auto, hence @supports. */
+@media (min-width: 761px) {
+  .sidebar .nav { overflow-x: hidden; scrollbar-width: thin; scrollbar-color: #d6d3c8 transparent; }
+  /* Collapsed, the nav reaches the sidebar's right edge (its 14px padding) so the scrollbar sits on the boundary, and its
+     ends fade to show it scrolls. */
+  .sidebar[data-collapsed] .nav {
+    margin-right: -14px; padding: 4px 11px 4px 0; scrollbar-gutter: auto; scrollbar-color: transparent transparent;
+    -webkit-mask-image: linear-gradient(to bottom, transparent, #000 10px, #000 calc(100% - 14px), transparent);
+    mask-image: linear-gradient(to bottom, transparent, #000 10px, #000 calc(100% - 14px), transparent);
+  }
+  .sidebar[data-collapsed] .nav:is(:hover, :focus-within) { scrollbar-color: #d6d3c8 transparent; }
+  @supports selector(::-webkit-scrollbar) {
+    .sidebar .nav, .sidebar[data-collapsed] .nav, .sidebar[data-collapsed] .nav:is(:hover, :focus-within) { scrollbar-width: auto; scrollbar-color: auto; }
+    .sidebar .nav::-webkit-scrollbar { width: 6px; height: 0; }
+    .sidebar[data-collapsed] .nav::-webkit-scrollbar { width: 3px; }
+    .sidebar .nav::-webkit-scrollbar-button { display: none; width: 0; height: 0; }
+    .sidebar .nav::-webkit-scrollbar-track { background: transparent; }
+    .sidebar .nav::-webkit-scrollbar-thumb { background: #d6d3c8; border-radius: 6px; }
+    .sidebar[data-collapsed] .nav::-webkit-scrollbar-thumb { background: transparent; }
+    .sidebar[data-collapsed] .nav:is(:hover, :focus-within)::-webkit-scrollbar-thumb { background: #d6d3c8; }
+    .sidebar .nav::-webkit-scrollbar-thumb:hover, .sidebar[data-collapsed] .nav::-webkit-scrollbar-thumb:hover { background: #d97757; }
+  }
+
+  /* Collapsed: an icon rail of paper tiles that lift on hover. */
+  .sidebar[data-collapsed] .nav .item { width: 46px; min-height: 44px; margin-inline: auto; padding: 0; transition: background .18s ease, transform .18s ease, box-shadow .18s ease, border-color .18s ease; }
+  .sidebar[data-collapsed] .nav .item:hover { border-color: #e8e6dc; background: #fff; transform: translateY(-1px); box-shadow: 0 10px 20px -16px rgba(20, 20, 19, .55); }
+  .sidebar[data-collapsed] .nav .item:hover .icon { transform: scale(1.08); }
+  .sidebar[data-collapsed] .nav .icon { width: 32px; height: 32px; border-radius: 10px; }
+  .sidebar[data-collapsed] .nav .item[aria-current="page"] { border-color: #f0c9b3; box-shadow: 0 0 0 3px rgba(217, 119, 87, .12), 0 10px 22px -14px rgba(181, 87, 58, .6); }
+  .sidebar[data-collapsed] .nav .item[aria-current="page"]::before { left: -1px; }
+  .sidebar[data-collapsed] .nav .item:hover .icon { background: #f5e6dc; color: #9a4a2c; }
+  .sidebar[data-collapsed] .back { width: 46px; margin-inline: auto; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .icon, .sidebar[data-collapsed] .nav .item { transition: none; }
+  .sidebar[data-collapsed] .nav .item:hover, .sidebar[data-collapsed] .nav .item:hover .icon { transform: none; }
+}
 
 /* Phones: the sidebar is a drawer (globals.css "Mobile drawer"), so it keeps the desktop list; only the */
 /* rival module rules (super-admin-dashboard.module.css) that wrap the nav are undone. */

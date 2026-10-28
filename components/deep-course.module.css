@@ -26,7 +26,22 @@
 .courseFoot svg { color: #0071e3; flex: none; }
 
 /* Course and topic pages */
-.layout { display: grid; grid-template-columns: 260px minmax(0, 1fr); gap: 28px; align-items: start; color: #1d1d1f; }
+.layout { display: grid; grid-template-columns: 260px minmax(0, 1fr); gap: 28px; align-items: start; color: #1d1d1f; transition: grid-template-columns 240ms ease; }
+/* The panel folds to a rail on the left (components/deep-course-side.tsx CoursePanelLayout) and slides back out. */
+.layout[data-panel="collapsed"] { grid-template-columns: 52px minmax(0, 1fr); }
+.sideWrap { min-width: 0; position: sticky; top: 80px; animation: panelIn 240ms ease; }
+.sideWrap .side { position: static; }
+@keyframes panelIn { from { opacity: 0; transform: translateX(-16px); } }
+.rail {
+  position: sticky; top: 80px; display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 10px 0 14px;
+  border: 1px solid #e5e5ea; border-radius: 16px; background: #fbfbfd; animation: railIn 240ms ease;
+}
+@keyframes railIn { from { opacity: 0; transform: translateX(12px); } }
+.rail button { display: grid; place-items: center; width: 34px; height: 34px; border: 1px solid #e5e5ea; border-radius: 10px; background: #ffffff; color: #0062c4; cursor: pointer; }
+.rail button:hover { border-color: #b9d6f5; background: #f0f5fc; }
+.rail button:focus-visible { outline: 2px solid #0071e3; outline-offset: 1px; }
+.railGlyph { font-size: 18px; }
+.railName { writing-mode: vertical-rl; transform: rotate(180deg); font-size: 12px; font-weight: 700; letter-spacing: 0.04em; color: #6e6e73; max-height: 260px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .side {
   position: sticky; top: 80px; max-height: calc(100vh - 100px); overflow-y: auto; padding: 16px 12px;
   border: 1px solid #e5e5ea; border-radius: 16px; background: #fbfbfd; font-size: 13.5px;
@@ -220,6 +235,10 @@
 @media (max-width: 900px) {
   .layout { grid-template-columns: 1fr; gap: 16px; }
   .side { position: static; max-height: 420px; }
+  .sideWrap { position: static; }
+  .layout[data-panel="collapsed"] { grid-template-columns: 1fr; }
+  .rail { position: static; flex-direction: row; padding: 8px 10px; }
+  .railName { writing-mode: horizontal-tb; transform: none; }
 }
 @media (max-width: 560px) {
   .shelf { padding: 16px; }
@@ -227,7 +246,7 @@
   .pager { grid-template-columns: 1fr; }
   .pagerNext { text-align: left; align-items: flex-start; }
 }
-@media (prefers-reduced-motion: reduce) { .courseCard, .topicCard, .sideChevron, .otherChevron { transition: none; } .courseCard:hover { transform: none; } }
+@media (prefers-reduced-motion: reduce) { .courseCard, .topicCard, .sideChevron, .otherChevron, .layout { transition: none; } .sideWrap, .rail { animation: none; } .courseCard:hover { transform: none; } }
 
 /* /learning/lessons: an in-depth course's topic cards under the Technology picker. */
 .lessonCourse { display: grid; gap: 10px; margin: 18px 0 24px; padding: clamp(16px, 2.4vw, 24px); border: 1px solid #e5e5ea; border-radius: 20px; background: #fff; }

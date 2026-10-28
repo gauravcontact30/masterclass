@@ -3,7 +3,7 @@ import { ArrowLeft, ArrowRight, BookOpenText, Braces, ChevronRight, ClipboardLis
 import type { ReactNode } from "react";
 import { CodeFiles } from "./code-files";
 import { DeepCourseObjective } from "./deep-course-objective";
-import { ModuleDone, ModulesToggle, OtherCourses, type SideFamily } from "./deep-course-side";
+import { CoursePanelLayout, ModuleDone, ModulesToggle, OtherCourses, PanelCollapse, type SideFamily } from "./deep-course-side";
 import { DeepCourseProgress, DeepTopicCard, DeepTopicChecklist, OpenInCompiler } from "./deep-topic-progress";
 import { GeneratingTopic } from "./deep-course-generating";
 import { deepCourseHref } from "@/lib/deep-courses";
@@ -36,6 +36,7 @@ function Sidebar({ course, active }: { course: DeepCourse; active?: string }) {
     <div className={styles.sideTop}>
       <Link href={deepCourseHref(course.id)} className={styles.sideCourse} aria-current={active ? undefined : "page"}><span aria-hidden="true">{course.glyph}</span>{course.name}</Link>
       {modules.length > 1 && <ModulesToggle key={active ?? ""} allOpen={!activeModule}/>}
+      <PanelCollapse/>
     </div>
     {/* Modules collapse; the one holding the open topic starts expanded (every module on the course overview). */}
     {modules.map((module, moduleIndex) => <details key={module.name} className={styles.sideModule} data-module="" open={activeModule ? module.name === activeModule : true}>
@@ -215,8 +216,7 @@ function LabAlternates({ lab }: { lab: TopicLab }) {
 /** A course overview, or one of its topics when `topicId` is given. */
 export function DeepCourseView({ course, topicId }: { course: DeepCourse; topicId?: string }) {
   const topic = topicId ? course.topics.find(item => item.id === topicId) : undefined;
-  return <div className={styles.layout}>
-    <Sidebar course={course} active={topic?.id}/>
+  return <CoursePanelLayout side={<Sidebar course={course} active={topic?.id}/>} glyph={course.glyph} name={course.name}>
     {topic ? <Topic course={course} topic={topic}/> : <Overview course={course}/>}
-  </div>;
+  </CoursePanelLayout>;
 }
