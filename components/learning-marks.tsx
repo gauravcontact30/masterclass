@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useCallback, useContext, useEffect, useId, useMemo, useRef, useState, type ReactNode } from "react";
+import { createContext, startTransition, useCallback, useContext, useEffect, useId, useMemo, useRef, useState, type ReactNode } from "react";
 import { Highlighter, Eraser, Trash2 } from "lucide-react";
 import { MARKER_COLORS, anchorText, locateAnchor, type LearningMark, type MarkerColor, type TextAnchor } from "@/lib/learning-marks";
 import { renderPersonalText, restorePersonalText, selectionAnchor, textModel, wordAtPoint } from "@/lib/learning-text-dom";
@@ -100,7 +100,9 @@ export function LearningMarksProvider({ children }: { children: ReactNode }) {
     loading.current?.abort();
     const controller = new AbortController(); loading.current = controller;
     const generation = epoch.current;
-    const commit = (next: State) => { stateRef.current = next; setState(next); };
+    // A transition, like the bookmarks provider's loads (components/bookmarks.tsx): this provider wraps every page,
+    // and an urgent context change during the page's hydration makes React re-render the whole page synchronously.
+    const commit = (next: State) => { stateRef.current = next; startTransition(() => setState(next)); };
     if (!maybeSignedIn()) { commit({ userId: null, marks: [], status: "signin" }); return; }
     try {
       const marks: LearningMark[] = [];
@@ -125,12 +127,17 @@ export function LearningMarksProvider({ children }: { children: ReactNode }) {
     const unsubscribe = onAuthChange((_event, session) => {
       const nextUser = session?.user.id ?? null;
       if (knownUser === nextUser) return;
+      const first = knownUser === undefined;
       knownUser = nextUser;
+      // The first event (INITIAL_SESSION, once the SDK has loaded) only confirms what the mount-time load already
+      // found or is still fetching; resetting then re-rendered every page for a guest, mid-hydration.
+      if (first && (stateRef.current.status === "loading" || stateRef.current.userId === nextUser)) return;
       epoch.current++; loading.current?.abort(); mutation.current = false;
-      pendingRef.current = []; setPending([]); removalsRef.current.clear(); setRemovals([]); setErasing(false); brushSaving.current = false; brushFailed.current = false; setBrush(false);
+      pendingRef.current = []; removalsRef.current.clear(); brushSaving.current = false; brushFailed.current = false;
       if (brushTimer.current) clearTimeout(brushTimer.current);
       const next: State = { userId: nextUser, marks: [], status: nextUser ? "loading" : "signin" };
-      stateRef.current = next; setState(next); setSelection(null); setBusy(false); setMessage("");
+      stateRef.current = next;
+      startTransition(() => { setPending([]); setRemovals([]); setErasing(false); setBrush(false); setState(next); setSelection(null); setBusy(false); setMessage(""); });
       if (nextUser) queueMicrotask(() => void load());
     });
     const focus = () => { if (document.visibilityState === "visible") void load(); };

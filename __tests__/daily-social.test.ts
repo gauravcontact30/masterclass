@@ -46,3 +46,16 @@ test("missing duration stays unknown and reading time is clipped at midnight", (
   const data = dailySocial([event({ event: "page_leave", created_at: "2026-10-18T18:31:00.000Z", duration_ms: 300_000 })], "2026-10-19");
   expect(data.visitors[0].duration).toBe(60_000);
 });
+
+test("Google Search and campaign changes persist consistently, while a later non-platform source resets attribution", () => {
+  const data = dailySocial([
+    event({ utm_source: "google", utm_medium: "cpc" }),
+    event({ id: "2", created_at: "2026-10-18T18:31:00Z", utm_source: null, utm_medium: null, utm_campaign: "Follow-Up" }),
+    event({ id: "3", created_at: "2026-10-18T18:32:00Z", utm_source: "newsletter", utm_campaign: null }),
+    event({ id: "4", created_at: "2026-10-18T18:33:00Z", utm_source: null, utm_campaign: null }),
+  ], "2026-10-19");
+  expect(data.platforms.find(p => p.platform === "Google Search")).toMatchObject({ views: 2, visitors: 1 });
+  expect(data.traces.find(p => p.id === "2")).toMatchObject({ platform: "Google Search", campaign: "follow-up" });
+  expect(data.traces.find(p => p.id === "4")?.platform).toBe("Direct / unknown");
+  expect(data.visitors[0].platform).toBe("Direct / unknown");
+});

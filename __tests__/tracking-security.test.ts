@@ -43,6 +43,17 @@ test("an expired session cannot inherit an old platform attribution cookie", asy
   expect(JSON.parse(values.get("mc_attribution")!)).toMatchObject({ source: null, campaign: null });
 });
 
+test("campaign-only tags update the session campaign and Google search persists across routes", async () => {
+  (supabaseServer as jest.Mock).mockResolvedValue({ auth: { getClaims: async () => ({ data: { claims: {} } }) } });
+  const values = new Map([["mc_sid", "session-1234"], ["mc_vid", "browser-1234"]]);
+  (cookies as jest.Mock).mockResolvedValue({ get: (key: string) => values.has(key) ? { value: values.get(key) } : undefined, set: (key: string, value: string) => values.set(key, value) });
+  await POST(request(JSON.stringify({ type: "view", path: "/", referrer: "https://www.google.co.in/search?q=private" })));
+  expect(JSON.parse(values.get("mc_attribution")!)).toMatchObject({ referrer: "google.co.in", source: null });
+  await POST(request(JSON.stringify({ type: "view", path: "/learning", utm: { campaign: "Follow-Up" } })));
+  expect(JSON.parse(values.get("mc_attribution")!)).toMatchObject({ referrer: "google.co.in", campaign: "follow-up" });
+  expect(values.get("mc_attribution")).not.toContain("private");
+});
+
 test("option clicks use the interaction log and retain the visitor session", async () => {
   (supabaseServer as jest.Mock).mockResolvedValue({ auth: { getClaims: async () => ({ data: { claims: { sub: "learner", email: "learner@example.com" } } }) } });
   (after as jest.Mock).mockImplementationOnce(fn => fn());

@@ -1,4 +1,5 @@
 import { classifyPlatform, PLATFORMS, PLATFORM_LABEL, type VisitRow } from "./promotions";
+import { nextTrafficSource, type TrafficSource } from "./traffic-attribution";
 
 export const REPORT_TIMEZONE = "Asia/Kolkata";
 export function reportDay(date = new Date()): string {
@@ -13,15 +14,16 @@ export type Trace = { id: string; time: string; visitor: string; account: string
 export function dailySocial(events: DailyEvent[], day: string) {
   const { since, until } = dayBounds(day);
   const sorted = [...events].sort((a, b) => Date.parse(a.created_at) - Date.parse(b.created_at));
-  const sessions = new Map<string, { platform: string; campaign: string }>();
+  const sessions = new Map<string, TrafficSource>();
   const traces: Trace[] = [];
   const visitors = new Map<string, { id: string; email: string; city: string; region: string; country: string; time: string; duration: number | null; platform: string; pages: string[] }>();
   for (const row of sorted) {
+    if (/^\/(dashboard\/)?super-admin(\/|$)/.test(row.path) || row.path.startsWith("/api/")) continue;
     const sessionKey = `${row.visitor_id}:${row.session_id}`;
-    const source = classifyPlatform(row);
-    const previous = sessions.get(sessionKey);
-    const attribution = row.utm_source || row.referrer_host ? { platform: source ? PLATFORM_LABEL[source] : "Direct / unknown", campaign: row.utm_campaign || "—" } : previous || { platform: "Direct / unknown", campaign: row.utm_campaign || "—" };
-    sessions.set(sessionKey, attribution);
+    const resolved = nextTrafficSource(sessions.get(sessionKey), { source: row.utm_source, medium: row.utm_medium, campaign: row.utm_campaign, referrer: row.referrer_host });
+    const source = classifyPlatform({ utm_source: resolved.source, utm_medium: resolved.medium, referrer_host: resolved.referrer });
+    const attribution = { platform: source ? PLATFORM_LABEL[source] : "Direct / unknown", campaign: resolved.campaign || "—" };
+    sessions.set(sessionKey, resolved);
     if (Date.parse(row.created_at) < Date.parse(since) || Date.parse(row.created_at) >= Date.parse(until) || /^\/(dashboard\/)?super-admin(\/|$)/.test(row.path)) continue;
     const page = row.path === "/" ? "Landing page" : /^\/(learning|dashboard)(\/|$)/.test(row.path) ? "Learning dashboard" : "Other pages";
     const visitor = visitors.get(sessionKey) || { id: sessionKey, email: "Anonymous", city: "Not available", region: "Not available", country: "", time: row.created_at, duration: null, platform: attribution.platform, pages: [] };
@@ -29,7 +31,7 @@ export function dailySocial(events: DailyEvent[], day: string) {
     if (row.city) visitor.city = row.city;
     if (row.region) visitor.region = row.region;
     if (row.country) visitor.country = row.country;
-    if (source) visitor.platform = attribution.platform;
+    visitor.platform = attribution.platform;
     if (!visitor.pages.includes(page)) visitor.pages.push(page);
     if (row.event === "page_leave" && typeof row.duration_ms === "number" && row.duration_ms >= 0) {
       // Only the portion of recorded reading time inside this report day.

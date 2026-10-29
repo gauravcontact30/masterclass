@@ -22,6 +22,11 @@
 .platform dl div { display: grid; }
 .platform dt { font-size: 11.5px; color: #6f6e69; }
 .platform dd { margin: 0; font-size: 16px; font-weight: 600; font-variant-numeric: tabular-nums; color: #141413; }
+.analytics { border-top: 1px solid #e8e6dc; padding-top: 12px; }
+.analytics h3 { margin: 0 0 10px; color: #3d3d3a; font-size: 13px; }
+.analytics p { margin: 10px 0 0; color: #5e5d59; font-size: 12px; line-height: 1.5; }
+.metricsSet { margin: 16px 0 0; padding: 14px; border: 1px solid #e8e6dc; border-radius: 10px; }
+.metricsSet legend { padding: 0 6px; font-size: 14px; font-weight: 600; }
 
 .chartCard[data-slot="card"] { padding: 16px 18px; border: 1px solid #e8e6dc; border-radius: 16px; background: #fff; }
 .chartHead { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; }

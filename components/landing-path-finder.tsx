@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useId, useMemo, useRef, useState, useSyncExternalStore, type CSSProperties, type FormEvent } from "react";
+import { useEffect, useId, useMemo, useRef, useState, useSyncExternalStore, type CSSProperties, type FormEvent, type RefObject } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Check, Flag, Hammer, Layers, Loader2, RotateCcw, Sparkles, type LucideIcon } from "lucide-react";
@@ -150,24 +150,25 @@ const PLANNING: [string, string][] = [["Reading your goal", "आपका लक
 /**
  * The goal box's placeholder types out one example goal after another while the box is empty and unfocused, so a
  * visitor sees the kind of sentence to write. Still for reduced motion: the first example stays.
+ * It writes the input's placeholder directly: as React state it re-rendered the whole planner 20-35 times a second
+ * for as long as the page was open, which kept the main thread busy and pushed back Time to Interactive.
  */
-function useTypedExample(examples: string[], run: boolean) {
-  const [text, setText] = useState(examples[0] ?? "");
+function useTypedExample(input: RefObject<HTMLInputElement | null>, examples: string[], run: boolean) {
   useEffect(() => {
-    if (!run || examples.length < 2) return;
+    const element = input.current;
+    if (!element || !run || examples.length < 2) return;
     let goal = 0, shown = examples[0].length, erasing = true, timer = 0;
     const tick = () => {
       const target = examples[goal];
       if (erasing) { shown -= 1; if (shown <= 0) { erasing = false; goal = (goal + 1) % examples.length; } }
       else if (shown < examples[goal].length) shown += 1;
       else { erasing = true; timer = window.setTimeout(tick, 2200); return; }
-      setText((erasing ? target : examples[goal]).slice(0, Math.max(0, shown)));
+      element.placeholder = (erasing ? target : examples[goal]).slice(0, Math.max(0, shown));
       timer = window.setTimeout(tick, erasing ? 28 : 55);
     };
     timer = window.setTimeout(tick, 2200);
-    return () => window.clearTimeout(timer);
-  }, [examples, run]);
-  return run ? text : examples[0] ?? "";
+    return () => { window.clearTimeout(timer); element.placeholder = examples[0]; };
+  }, [input, examples, run]);
 }
 
 /**
@@ -199,7 +200,7 @@ export function LandingPathFinder({ day = 0, fresh }: { day?: number; fresh?: Fr
   const [phase, setPhase] = useState(0);
   const request = useRef<AbortController | null>(null);
   const input = useRef<HTMLInputElement>(null);
-  const placeholder = useTypedExample(examples, hydrated && !reduced && !focused && !goal);
+  useTypedExample(input, examples, hydrated && !reduced && !focused && !goal);
   useEffect(() => {
     if (state !== "loading") return;
     const timer = window.setInterval(() => setPhase(at => Math.min(at + 1, PLANNING.length - 1)), 1100);
@@ -242,7 +243,7 @@ export function LandingPathFinder({ day = 0, fresh }: { day?: number; fresh?: Fr
         <p className={styles.sentence}>
           <label htmlFor={`${id}-goal`}>{text("I want to", "मैं चाहता/चाहती हूँ")}</label>
           <input ref={input} id={`${id}-goal`} className={styles.goal} value={goal} onChange={e => setGoal(e.target.value)} minLength={3} maxLength={300} autoComplete="off"
-            onFocus={() => setFocused(true)} onBlur={() => setFocused(false)} placeholder={placeholder || text("crack a React interview", "React इंटरव्यू पास करना")} />
+            onFocus={() => setFocused(true)} onBlur={() => setFocused(false)} placeholder={examples[0] || text("crack a React interview", "React इंटरव्यू पास करना")} />
         </p>
         <div className={styles.controls}>
           <fieldset className={styles.length}>

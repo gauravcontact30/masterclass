@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { siteName, siteUrl } from "@/lib/seo";
 import { TechBuzzBlog, type TechBuzzGroup } from "@/components/tech-buzz-blog";
-import { listPublishedTechBuzzArticles, withUnsplashCovers } from "@/lib/server/tech-buzz-storage";
+import { listPublishedTechBuzzSummaries, withUnsplashCovers } from "@/lib/server/tech-buzz-storage";
 import { isTechnologyStory, toCard, topicLabel } from "@/lib/tech-buzz-public";
 
 // Renders only once its content is ready: no loading screen is ever shown in its place (no loading.tsx, no fallback).
@@ -14,7 +14,7 @@ const DESCRIPTION = "Reader-rated technology blogs and engineering masterclasses
  * rendered on the server so the HTML carries every story link; an ItemList lists them too.
  */
 async function Blog() {
-  const articles = await listPublishedTechBuzzArticles();
+  const articles = await listPublishedTechBuzzSummaries();
   const cards = await withUnsplashCovers(articles.filter(isTechnologyStory).map(toCard));
   // Categories (largest first), each with the technologies written about in it.
   const byCategory = new Map<string, TechBuzzGroup>();

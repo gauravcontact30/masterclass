@@ -1,14 +1,15 @@
+import { isGoogleSearchHost, nextTrafficSource, type TrafficSource } from "./traffic-attribution";
 /*
  * Promotional tracking: which social platforms and campaigns bring people to the site, and what they do next.
  * Pure functions over rows the API reads (site_visits, profiles, subscriptions, promotions), so the attribution
  * rules are testable without a database and shared by the super admin page. No zod or server imports here.
  */
 
-export const PLATFORMS = ["instagram", "facebook", "linkedin", "telegram", "medium", "pinterest", "coursera", "youtube", "x", "whatsapp", "other"] as const;
+export const PLATFORMS = ["instagram", "facebook", "linkedin", "telegram", "medium", "pinterest", "coursera", "youtube", "x", "whatsapp", "google_search", "other"] as const;
 export type Platform = (typeof PLATFORMS)[number];
 /** The platforms the team promotes on first; the rest are tracked when traffic arrives from them. */
 export const PRIMARY_PLATFORMS: Platform[] = ["instagram", "facebook", "linkedin", "telegram", "medium", "pinterest", "coursera"];
-export const PLATFORM_LABEL: Record<Platform, string> = { instagram: "Instagram", facebook: "Facebook", linkedin: "LinkedIn", telegram: "Telegram", medium: "Medium", pinterest: "Pinterest", coursera: "Coursera", youtube: "YouTube", x: "X (Twitter)", whatsapp: "WhatsApp", other: "Other" };
+export const PLATFORM_LABEL: Record<Platform, string> = { instagram: "Instagram", facebook: "Facebook", linkedin: "LinkedIn", telegram: "Telegram", medium: "Medium", pinterest: "Pinterest", coursera: "Coursera", youtube: "YouTube", x: "X (Twitter)", whatsapp: "WhatsApp", google_search: "Google Search", other: "Other" };
 export const PROMOTION_FORMATS = ["post", "reel", "story", "video", "ad", "article", "pin", "idea_pin", "board", "course", "lecture", "group", "channel", "live"] as const;
 export const PROMOTION_STATUSES = ["planned", "live", "paused", "ended"] as const;
 export type PromotionFormat = (typeof PROMOTION_FORMATS)[number];
@@ -30,6 +31,13 @@ export type Promotion = {
  */
 export type MetricDef = { key: string; label: string; decimals?: number; max?: number };
 export const PLATFORM_METRICS = {
+  instagram: [{ key: "likes", label: "Likes" }, { key: "comments", label: "Comments" }, { key: "shares", label: "Shares" }, { key: "saves", label: "Saves" }, { key: "profile_visits", label: "Profile visits" }, { key: "link_clicks", label: "Link clicks" }],
+  facebook: [{ key: "reactions", label: "Reactions" }, { key: "comments", label: "Comments" }, { key: "shares", label: "Shares" }, { key: "link_clicks", label: "Link clicks" }, { key: "video_views", label: "Video views" }],
+  linkedin: [{ key: "reactions", label: "Reactions" }, { key: "comments", label: "Comments" }, { key: "reposts", label: "Reposts" }, { key: "link_clicks", label: "Link clicks" }],
+  telegram: [{ key: "views", label: "Post views" }, { key: "reactions", label: "Reactions" }, { key: "shares", label: "Shares" }, { key: "subscribers_gained", label: "Subscribers gained" }],
+  youtube: [{ key: "views", label: "Views" }, { key: "watch_time_hours", label: "Watch time (hours)", decimals: 2 }, { key: "likes", label: "Likes" }, { key: "comments", label: "Comments" }, { key: "subscribers_gained", label: "Subscribers gained" }],
+  x: [{ key: "likes", label: "Likes" }, { key: "replies", label: "Replies" }, { key: "reposts", label: "Reposts" }, { key: "link_clicks", label: "Link clicks" }, { key: "bookmarks", label: "Bookmarks" }],
+  whatsapp: [{ key: "messages_sent", label: "Messages sent" }, { key: "messages_delivered", label: "Messages delivered" }, { key: "messages_read", label: "Messages read" }],
   medium: [{ key: "views", label: "Views" }, { key: "reads", label: "Reads" }, { key: "claps", label: "Claps" }, { key: "responses", label: "Responses" }, { key: "member_reading_minutes", label: "Member reading time (min)" }, { key: "earnings_inr", label: "Partner earnings (₹)", decimals: 2 }],
   pinterest: [{ key: "saves", label: "Saves" }, { key: "pin_clicks", label: "Pin clicks" }, { key: "outbound_clicks", label: "Outbound clicks" }, { key: "video_views", label: "Video views" }],
   coursera: [{ key: "enrollments", label: "Enrolments" }, { key: "active_learners", label: "Active learners" }, { key: "completions", label: "Completions" }, { key: "ratings", label: "Ratings" }, { key: "rating_average", label: "Average rating (of 5)", decimals: 1, max: 5 }, { key: "earnings_inr", label: "Revenue (₹)", decimals: 2 }],
@@ -39,9 +47,17 @@ export type MetricKey = (typeof PLATFORM_METRICS)[MetricPlatform][number]["key"]
 export const METRIC_KEYS = [...new Set(Object.values(PLATFORM_METRICS).flat().map(def => def.key))] as MetricKey[];
 export const hasPlatformMetrics = (platform: Platform): platform is MetricPlatform => platform in PLATFORM_METRICS;
 /** The format a new promotion defaults to on each platform. */
-export const DEFAULT_FORMAT: Partial<Record<Platform, PromotionFormat>> = { medium: "article", pinterest: "pin", coursera: "course", youtube: "video", telegram: "channel" };
+export const DEFAULT_FORMAT: Partial<Record<Platform, PromotionFormat>> = { medium: "article", pinterest: "pin", coursera: "course", youtube: "video", telegram: "channel", google_search: "ad" };
 /** Where to put the tracked link on each platform, so its visits are attributed. */
 export const LINK_HINT: Partial<Record<Platform, string>> = {
+  instagram: "Use a tagged link in your bio, story link or ad. In-app browsers may remove referrers.",
+  facebook: "Use a tagged destination URL in posts and ads; website visits differ from Facebook link clicks.",
+  linkedin: "Use tagged links in posts, articles and ads, including when links are shortened.",
+  telegram: "Use tagged links in channel or group messages; native apps may not send a referrer.",
+  youtube: "Use tagged links in video descriptions and channel links. Video views are not website visits.",
+  x: "Tag the destination before sharing; t.co referrals are also recognized.",
+  whatsapp: "Use tagged links in messages or status links. Private shares often arrive without a referrer.",
+  google_search: "Search referrers are detected automatically. Use the builder for paid search ads only; do not tag organic canonical URLs. Search Console metrics are shown separately below.",
   medium: "Put the tracked link in the article body or its closing call to action; Medium keeps query strings on outbound links.",
   pinterest: "Set the tracked link as the Pin's destination link (Idea Pins: the product or link sticker).",
   coursera: "Add the tracked link to the course's resources, the instructor profile or a reading item.",
@@ -53,7 +69,7 @@ export function derivedRates(platform: Platform, m: Partial<Record<MetricKey, nu
   const rate = (part?: number, whole?: number) => part !== undefined && whole !== undefined && whole > 0 ? part / whole : null;
   if (platform === "medium") return [
     { label: "Read ratio", value: rate(m.reads, m.views), hint: "Reads ÷ views" },
-    { label: "Claps per read", value: m.reads ? (m.claps ?? 0) / m.reads : null, hint: "Claps ÷ reads" },
+    { label: "Claps per read", value: rate(m.claps, m.reads), hint: "Claps ÷ reads" },
   ];
   if (platform === "pinterest") return [
     { label: "Save rate", value: rate(m.saves, impressions), hint: "Saves ÷ impressions" },
@@ -70,7 +86,7 @@ export type ProfileRow = { id: string; created_at: string };
 export type SubscriptionRow = { user_id: string; status: string; tier: string; current_period_end?: string | null };
 
 /** utm_source values and referrer hosts that identify each platform (in-app browsers and link shorteners included). */
-const SOURCES: Record<Exclude<Platform, "other">, { utm: string[]; hosts: RegExp }> = {
+const SOURCES: Record<Exclude<Platform, "other" | "google_search">, { utm: string[]; hosts: RegExp }> = {
   instagram: { utm: ["instagram", "ig", "insta"], hosts: /(^|\.)instagram\.com$/ },
   facebook: { utm: ["facebook", "fb", "meta"], hosts: /(^|\.)(facebook\.com|fb\.com|fb\.me)$/ },
   linkedin: { utm: ["linkedin", "li", "lnkd"], hosts: /(^|\.)(linkedin\.com|lnkd\.in)$/ },
@@ -86,32 +102,39 @@ const SOURCES: Record<Exclude<Platform, "other">, { utm: string[]; hosts: RegExp
 };
 
 /** The social platform a visit came from: its utm_source first (the team's own tagging), then its referrer host. */
-export function classifyPlatform(visit: Pick<VisitRow, "utm_source" | "referrer_host">): Platform | null {
+export function classifyPlatform(visit: Pick<VisitRow, "utm_source" | "referrer_host"> & Partial<Pick<VisitRow, "utm_medium">>): Platform | null {
   const source = visit.utm_source?.trim().toLowerCase();
   const host = visit.referrer_host?.trim().toLowerCase().replace(/^www\./, "");
-  for (const [platform, rule] of Object.entries(SOURCES) as [Exclude<Platform, "other">, (typeof SOURCES)[keyof typeof SOURCES]][]) {
+  const medium = visit.utm_medium?.trim().toLowerCase();
+  if (source === "google_search" || source === "google-search" || source === "google search") return "google_search";
+  // A Google source alone can also mean email, display or another Google product.
+  if (source === "google" && ["organic", "cpc", "ppc", "paid_search", "paidsearch"].includes(medium ?? "")) return "google_search";
+  for (const [platform, rule] of Object.entries(SOURCES) as [keyof typeof SOURCES, (typeof SOURCES)[keyof typeof SOURCES]][]) {
     if (source && rule.utm.includes(source)) return platform;
   }
   if (source) return source === "other" ? "other" : null;
-  if (host) for (const [platform, rule] of Object.entries(SOURCES) as [Exclude<Platform, "other">, (typeof SOURCES)[keyof typeof SOURCES]][]) if (rule.hosts.test(host)) return platform;
+  if (host && isGoogleSearchHost(host)) return "google_search";
+  if (host) for (const [platform, rule] of Object.entries(SOURCES) as [keyof typeof SOURCES, (typeof SOURCES)[keyof typeof SOURCES]][]) if (rule.hosts.test(host)) return platform;
   return null;
 }
 
 /** A campaign slug: lower case, letters, digits, hyphens and underscores, as the promotions table requires. */
-export const campaignSlug = (value: string) => value.normalize("NFKD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/[^a-z0-9_-]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 80);
+export const campaignSlug = (value: string) => value.normalize("NFKD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/[^a-z0-9_-]+/g, "-").replace(/^[-_]+|[-_]+$/g, "").slice(0, 80);
 
 /** A tracked link for a promotion: the landing URL with utm_source, utm_medium and utm_campaign set. */
 const UTM_MEDIUM: Partial<Record<Platform, string>> = { medium: "blog", coursera: "course" };
 export function utmLink(base: string, platform: Platform, format: PromotionFormat, campaign: string): string {
   const url = new URL(base);
-  url.searchParams.set("utm_source", platform);
-  url.searchParams.set("utm_medium", format === "ad" ? "paid_social" : UTM_MEDIUM[platform] ?? "social");
+  if (!["https:", "http:"].includes(url.protocol)) throw new Error("Use an HTTP or HTTPS landing URL");
+  if (platform === "google_search" && format !== "ad") throw new Error("Use untagged canonical URLs for organic search");
+  url.searchParams.set("utm_source", platform === "google_search" ? "google" : platform);
+  url.searchParams.set("utm_medium", platform === "google_search" ? "cpc" : format === "ad" ? "paid_social" : UTM_MEDIUM[platform] ?? "social");
   url.searchParams.set("utm_campaign", campaignSlug(campaign));
   return url.toString();
 }
 
 export type Funnel = { visits: number; visitors: number; sessions: number; signups: number; members: number };
-export type PlatformStats = Funnel & { platform: Platform; promotions: number; live: number; spend: number; reach: number; impressions: number; engagements: number; followers: number; costPerVisit: number | null; costPerSignup: number | null; metrics: Partial<Record<MetricKey, number>> };
+export type PlatformStats = Funnel & { platform: Platform; promotions: number; live: number; spend: number; reach: number; impressions: number; engagements: number; followers: number; costPerVisit: number | null; costPerSignup: number | null; metrics: Partial<Record<MetricKey, number>>; lastSeen: string | null; taggedViews: number; referrerViews: number; paidTaggedViews: number; organicTaggedViews: number };
 export type CampaignStats = Funnel & { campaign: string; platform: Platform | "mixed"; title: string; status: PromotionStatus | "untracked"; spend: number; costPerSignup: number | null };
 export type DailyPoint = { day: string } & Record<Platform, number>;
 export type LandingPage = { path: string; platform: Platform; visits: number; visitors: number };
@@ -144,13 +167,14 @@ const ACTIVE = new Set(["active"]);
  */
 export function attribute({ visits, profiles, subscriptions, promotions, since, until = new Date().toISOString() }: { visits: VisitRow[]; profiles: ProfileRow[]; subscriptions: SubscriptionRow[]; promotions: Promotion[]; since: string; until?: string }): Attribution {
   const sinceTime = new Date(since).getTime();
+  const untilTime = Date.parse(until);
   const created = new Map(profiles.map(profile => [profile.id, new Date(profile.created_at).getTime()]));
   const paying = new Set(subscriptions.filter(sub => ACTIVE.has(sub.status) && !!sub.current_period_end && Date.parse(sub.current_period_end) > Date.parse(until)).map(sub => sub.user_id));
-  const sorted = visits.filter(visit => Date.parse(visit.created_at) >= sinceTime && Date.parse(visit.created_at) < Date.parse(until)).sort((a, b) => a.created_at.localeCompare(b.created_at));
+  const sorted = visits.filter(visit => Date.parse(visit.created_at) >= sinceTime && Date.parse(visit.created_at) < untilTime).sort((a, b) => Date.parse(a.created_at) - Date.parse(b.created_at));
 
   // Apply source changes in time order; a later campaign must never rewrite earlier activity.
-  const sessionPlatform = new Map<string, Platform>();
-  const sessionCampaign = new Map<string, string>();
+  const sessionSources = new Map<string, TrafficSource>();
+  const evidence = new Map<Platform, { lastSeen: string | null; taggedViews: number; referrerViews: number; paidTaggedViews: number; organicTaggedViews: number }>();
 
   const platformFunnel = new Map<Platform, Funnel & { visitorSet: Set<string>; sessionSet: Set<string> }>();
   const campaignFunnel = new Map<string, Funnel & { visitorSet: Set<string>; sessionSet: Set<string>; platforms: Set<Platform> }>();
@@ -162,17 +186,19 @@ export function attribute({ visits, profiles, subscriptions, promotions, since, 
   const allVisitors = new Set<string>(), allSessions = new Set<string>();
 
   for (const visit of sorted) {
-    if (/^\/(?:dashboard\/)?super-admin(?:\/|$)/.test(visit.path)) continue;
+    if (/^\/(?:dashboard\/)?super-admin(?:\/|$)/.test(visit.path) || visit.path.startsWith("/api/")) continue;
     const session = `${visit.visitor_id}:${visit.session_id}`;
-    const source = classifyPlatform(visit);
-    if (visit.utm_source || visit.referrer_host) {
-      if (source) sessionPlatform.set(session, source); else sessionPlatform.delete(session);
-      sessionCampaign.delete(session);
-    }
-    if (visit.utm_campaign) sessionCampaign.set(session, visit.utm_campaign.trim().toLowerCase());
-    const platform = sessionPlatform.get(session);
-    const campaign = sessionCampaign.get(session);
+    const source = nextTrafficSource(sessionSources.get(session), { source: visit.utm_source, medium: visit.utm_medium, campaign: visit.utm_campaign, referrer: visit.referrer_host });
+    sessionSources.set(session, source);
+    const platform = classifyPlatform({ utm_source: source.source, utm_medium: source.medium, referrer_host: source.referrer });
+    const campaign = source.campaign;
     if (platform) {
+      const detail = evidence.get(platform) ?? { lastSeen: null, taggedViews: 0, referrerViews: 0, paidTaggedViews: 0, organicTaggedViews: 0 };
+      detail.lastSeen = visit.created_at;
+      if (source.source) detail.taggedViews++; else detail.referrerViews++;
+      if (source.source && /^(cpc|ppc|paid_search|paidsearch|paid_social|paidsocial)$/.test(source.medium?.toLowerCase() ?? "")) detail.paidTaggedViews++;
+      if (source.source && source.medium?.toLowerCase() === "organic") detail.organicTaggedViews++;
+      evidence.set(platform, detail);
       const f = platformFunnel.get(platform) ?? { ...emptyFunnel(), visitorSet: new Set(), sessionSet: new Set() };
       f.visits++; f.visitorSet.add(visit.visitor_id); f.sessionSet.add(session);
       allVisitors.add(visit.visitor_id); allSessions.add(session);
@@ -207,14 +233,18 @@ export function attribute({ visits, profiles, subscriptions, promotions, since, 
     const c = campaignFunnel.get(campaign)!; c.signups++; if (paying.has(userId)) c.members++;
   }
 
-  const perPlatform = (platform: Platform) => promotions.filter(item => item.platform === platform);
+  const byPlatform = new Map<Platform, Promotion[]>(), byCampaign = new Map<string, Promotion[]>();
+  for (const item of promotions) {
+    const platformItems = byPlatform.get(item.platform) ?? []; platformItems.push(item); byPlatform.set(item.platform, platformItems);
+    const campaignItems = byCampaign.get(item.utm_campaign) ?? []; campaignItems.push(item); byCampaign.set(item.utm_campaign, campaignItems);
+  }
   const platforms: PlatformStats[] = PLATFORMS.map(platform => {
     const f = platformFunnel.get(platform);
-    const items = perPlatform(platform);
+    const items = byPlatform.get(platform) ?? [];
     const spend = items.reduce((sum, item) => sum + Number(item.spend_inr || 0), 0);
     const funnel: Funnel = f ? { visits: f.visits, visitors: f.visitorSet.size, sessions: f.sessionSet.size, signups: f.signups, members: f.members } : emptyFunnel();
     return {
-      platform, ...funnel, promotions: items.length, live: items.filter(item => item.status === "live").length, spend,
+      platform, ...funnel, ...(evidence.get(platform) ?? { lastSeen: null, taggedViews: 0, referrerViews: 0, paidTaggedViews: 0, organicTaggedViews: 0 }), promotions: items.length, live: items.filter(item => item.status === "live").length, spend,
       reach: items.reduce((sum, item) => sum + item.reach, 0), impressions: items.reduce((sum, item) => sum + item.impressions, 0), engagements: items.reduce((sum, item) => sum + item.engagements, 0),
       followers: items.reduce((sum, item) => sum + item.followers_gained, 0), metrics: sumMetrics(platform, items),
       costPerVisit: spend && funnel.visits ? spend / funnel.visits : null, costPerSignup: spend && funnel.signups ? spend / funnel.signups : null,
@@ -224,7 +254,7 @@ export function attribute({ visits, profiles, subscriptions, promotions, since, 
   const campaignNames = new Set([...campaignFunnel.keys(), ...promotions.map(item => item.utm_campaign)]);
   const campaigns: CampaignStats[] = [...campaignNames].map(campaign => {
     const c = campaignFunnel.get(campaign);
-    const items = promotions.filter(item => item.utm_campaign === campaign);
+    const items = byCampaign.get(campaign) ?? [];
     const spend = items.reduce((sum, item) => sum + Number(item.spend_inr || 0), 0);
     const platformsSeen = new Set<Platform>([...(c?.platforms ?? []), ...items.map(item => item.platform)]);
     const funnel: Funnel = c ? { visits: c.visits, visitors: c.visitorSet.size, sessions: c.sessionSet.size, signups: c.signups, members: c.members } : emptyFunnel();

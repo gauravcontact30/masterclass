@@ -1,19 +1,20 @@
 "use client";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Briefcase, Camera, Check, CircleDot, Copy, GraduationCap, Link2, MessageCircle, PenLine, Pencil, Pin, PlayCircle, Plus, Send, ThumbsUp, Trash2, AtSign, type LucideIcon } from "lucide-react";
+import { Briefcase, Camera, Check, CircleDot, Copy, GraduationCap, Link2, MessageCircle, PenLine, Pencil, Pin, PlayCircle, Plus, Search, Send, ThumbsUp, Trash2, AtSign, type LucideIcon } from "lucide-react";
 import { Alert, AlertDescription } from "./ui/alert";
 import { Card } from "./ui/card";
 import { AdminTable } from "./super-admin-table";
 import { DEFAULT_FORMAT, LINK_HINT, PLATFORMS, PLATFORM_LABEL, PLATFORM_METRICS, PROMOTION_FORMATS, PROMOTION_STATUSES, campaignSlug, derivedRates, hasPlatformMetrics, utmLink, type Attribution, type MetricKey, type Platform, type PlatformStats, type Promotion, type PromotionFormat } from "@/lib/promotions";
 import { SuperAdminDailySocial } from "./super-admin-daily-social";
 import { SuperAdminOverallVisitors } from "./super-admin-overall-visitors";
+import { SuperAdminSearchConsole } from "./super-admin-search-console";
 import styles from "./super-admin-promotions.module.css";
 
 type Data = Attribution & { promotions: Promotion[]; days: number; capped: boolean; generatedAt: string; retentionDays: number };
-export const PLATFORM_ICON: Record<Platform, LucideIcon> = { instagram: Camera, facebook: ThumbsUp, linkedin: Briefcase, telegram: Send, medium: PenLine, pinterest: Pin, coursera: GraduationCap, youtube: PlayCircle, x: AtSign, whatsapp: MessageCircle, other: CircleDot };
+export const PLATFORM_ICON: Record<Platform, LucideIcon> = { instagram: Camera, facebook: ThumbsUp, linkedin: Briefcase, telegram: Send, medium: PenLine, pinterest: Pin, coursera: GraduationCap, youtube: PlayCircle, x: AtSign, whatsapp: MessageCircle, google_search: Search, other: CircleDot };
 /** Validated categorical palette (dataviz default order); stacking order follows it, so colour follows the platform. */
-const PLATFORM_COLOR: Record<Platform, string> = { facebook: "#2a78d6", instagram: "#eb6834", telegram: "#1baf7a", linkedin: "#eda100", x: "#e87ba4", whatsapp: "#008300", other: "#6250d6", youtube: "#e34948", medium: "#3d3d3a", pinterest: "#a3176a", coursera: "#00838f" };
-const STACK: Platform[] = ["facebook", "instagram", "telegram", "linkedin", "medium", "pinterest", "coursera", "x", "whatsapp", "other", "youtube"];
+const PLATFORM_COLOR: Record<Platform, string> = { facebook: "#2a78d6", instagram: "#eb6834", telegram: "#1baf7a", linkedin: "#eda100", x: "#e87ba4", whatsapp: "#008300", other: "#6250d6", youtube: "#e34948", medium: "#3d3d3a", pinterest: "#a3176a", coursera: "#00838f", google_search: "#4285f4" };
+const STACK: readonly Platform[] = PLATFORMS;
 const money = (n: number) => new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(n);
 const num = (n: number) => n.toLocaleString("en-IN");
 const pct = (n: number | null) => n === null ? "—" : `${(n * 100).toFixed(n < 0.1 ? 2 : 1)}%`;
@@ -44,7 +45,7 @@ export function SuperAdminPromotions({ days, query }: Readonly<{ days: number; q
     try {
       const response = await fetch(`/api/super-admin/promotions?days=${days}`, { cache: "no-store", signal });
       const body = await response.json().catch(() => ({}));
-      if (!response.ok) throw new Error(body.error === "migration_required" ? "Apply migration 0024_promotions.sql to start tracking promotions." : "Promotional tracking is unavailable right now.");
+      if (!response.ok) throw new Error(body.error === "migration_required" ? "Apply the promotional tracking migrations through 0047_promotions_google_search.sql." : "Promotional tracking is unavailable right now.");
       if (!signal?.aborted && version === requestVersion.current) { setData(body); setError(""); }
     } catch (e) { if (!signal?.aborted && version === requestVersion.current) setError(e instanceof Error ? e.message : "Unable to load promotions."); }
   }, [days]);
@@ -68,18 +69,20 @@ export function SuperAdminPromotions({ days, query }: Readonly<{ days: number; q
     const { id, ...fields } = draft;
     const { platform_metrics: metrics, ...rest } = fields;
     const payload: Record<string, unknown> = Object.fromEntries(Object.entries(rest).map(([key, value]) => [key, value === "" ? null : value]));
-    if (hasPlatformMetrics(draft.platform)) payload.platform_metrics = Object.fromEntries(PLATFORM_METRICS[draft.platform].map(def => [def.key, metrics?.[def.key as MetricKey]]).filter(([, value]) => typeof value === "number" && Number.isFinite(value)));
+    payload.platform_metrics = hasPlatformMetrics(draft.platform) ? Object.fromEntries(PLATFORM_METRICS[draft.platform].map(def => [def.key, metrics?.[def.key as MetricKey]]).filter(([, value]) => typeof value === "number" && Number.isFinite(value))) : {};
     try {
       const response = await fetch("/api/super-admin/promotions", { method: id ? "PATCH" : "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(id ? { id, ...payload } : payload) });
-      if (!response.ok) { const body = await response.json().catch(() => ({})); throw new Error(body.error === "invalid_request" ? "Check the fields: title, campaign and a valid https link are required." : body.error === "promotions_window" ? "The end date must be on or after the start date." : body.error === "migration_required" || hasPlatformMetrics(draft.platform) ? "The promotion could not be saved. Medium, Pinterest and Coursera need migration 0038_promotions_publishing_platforms.sql applied." : "The promotion could not be saved."); }
+      if (!response.ok) { const body = await response.json().catch(() => ({})); throw new Error(body.error === "invalid_request" ? "Check the fields: title, campaign and a valid https link are required." : body.error === "promotions_window" ? "The end date must be on or after the start date." : body.error === "migration_required" ? "Apply the promotional tracking migrations through 0047_promotions_google_search.sql." : body.error === "invalid_platform_metrics" ? "The entered figures do not belong to the selected platform." : "The promotion could not be saved."); }
       setDraft(null); await load();
     } catch (e) { setError(e instanceof Error ? e.message : "The promotion could not be saved."); }
     finally { setSaving(false); }
   }
   async function remove(id: string) {
+    try {
     const response = await fetch(`/api/super-admin/promotions?id=${id}`, { method: "DELETE" });
     setConfirm(null);
     if (!response.ok) setError("The promotion could not be deleted."); else await load();
+    } catch { setError("The promotion could not be deleted. Check your connection and try again."); }
   }
 
   const promotionRows = useMemo(() => (data?.promotions ?? []).map(item => ({ ...item, platform_name: PLATFORM_LABEL[item.platform], cost_per_visit: "",
@@ -91,10 +94,10 @@ export function SuperAdminPromotions({ days, query }: Readonly<{ days: number; q
     <SuperAdminDailySocial query={query} />
     <SuperAdminOverallVisitors query={query} />
     {error && <Alert variant="destructive"><AlertDescription>{error}</AlertDescription></Alert>}
-    {!data && !error && <p className={styles.loading} role="status">Loading promotional tracking…</p>}
-    {data && <>
+    {(!data || data.days !== days) && !error && <p className={styles.loading} role="status">Loading promotional tracking…</p>}
+    {data && data.days === days && <>
       <section aria-labelledby="promo-funnel" className={styles.kpis}>
-        <h2 id="promo-funnel" className={styles.srOnly}>Social funnel</h2>
+        <h2 id="promo-funnel" className={styles.srOnly}>Platform funnel</h2>
         {[["Platform page views", num(data.totals.visits), `Recorded traffic in the selected ${data.days}-day window`], ["Unique visitors", num(data.totals.visitors), "Browsers deduplicated across platforms"], ["New accounts observed", num(data.totals.signups), "Accounts created in this window and observed via a platform"], ["Active members", num(data.totals.members), "Of those accounts, with an unexpired active membership"], ["Registered spend", money(data.totals.spend), "Manually entered totals; may cover a different period"], ["Sessions", num(data.totals.sessions), "Distinct recorded browser sessions"]].map(([label, value, note]) =>
           <Card key={label} className={styles.kpi}><span>{label}</span><strong>{value}</strong><small>{note}</small></Card>)}
       </section>
@@ -112,6 +115,10 @@ export function SuperAdminPromotions({ days, query }: Readonly<{ days: number; q
             <div><dt>Entered spend</dt><dd>{item.promotions ? money(item.spend) : "Not entered"}</dd></div><div><dt>Website sessions</dt><dd>{num(item.sessions)}</dd></div>
             {item.followers > 0 && <div><dt>Followers gained</dt><dd>{num(item.followers)}</dd></div>}
           </dl>
+          <p className={styles.note}>{item.lastSeen ? `Last recorded view: ${new Date(item.lastSeen).toLocaleString("en-IN", { timeZone: "Asia/Kolkata" })} IST.` : "No attributed visits recorded in this window; this does not verify the integration is working."}</p>
+          <dl><div><dt>UTM-attributed views</dt><dd>{num(item.taggedViews)}</dd></div><div><dt>Referrer-attributed views</dt><dd>{num(item.referrerViews)}</dd></div><div><dt>Tagged paid views</dt><dd>{num(item.paidTaggedViews)}</dd></div><div><dt>Tagged organic views</dt><dd>{num(item.organicTaggedViews)}</dd></div><div><dt>Entered impressions</dt><dd>{item.promotions ? num(item.impressions) : "Not entered"}</dd></div></dl>
+          {LINK_HINT[item.platform] && <p className={styles.note}>{LINK_HINT[item.platform]}</p>}
+          {item.platform === "google_search" && <p className={styles.note}>A Google referrer alone cannot prove organic versus paid traffic or reveal a search query. Tagged paid/organic views are subsets of UTM-attributed views.</p>}
           <PlatformAnalytics stats={item} />
         </Card>; })}</div>
       </section>
@@ -140,11 +147,12 @@ export function SuperAdminPromotions({ days, query }: Readonly<{ days: number; q
         note="Matched on utm_campaign. Campaigns marked 'untracked' brought traffic but are not registered as a promotion yet."
         columns={[{ key: "campaign", label: "Campaign" }, { key: "platform", label: "Platform" }, { key: "title", label: "Promotion" }, "status", { key: "visits", filter: false }, { key: "visitors", filter: false }, { key: "signups", label: "Sign-ups", filter: false }, { key: "members", filter: false }, { key: "conversion", label: "Visitor → sign-up", filter: false }, { key: "spend_label", label: "Spend", filter: false }, { key: "cost_per_signup", label: "Cost / sign-up", filter: false }]} />
 
-      <AdminTable title="Top landing pages from social" rows={landingRows} query={query} empty="No social traffic in this window."
+      <AdminTable title="Top landing pages from platforms" rows={landingRows} query={query} empty="No platform traffic in this window."
         columns={[{ key: "path", label: "Page" }, { key: "platform", label: "Platform" }, { key: "visits", label: "Sessions started", filter: false }, { key: "visitors", filter: false }]} />
 
       <LinkBuilder />
     </>}
+    <SuperAdminSearchConsole days={days} query={query} />
   </div>;
 }
 
@@ -156,14 +164,14 @@ function DailyChart({ data }: Readonly<{ data: Data }>) {
   const totals = data.daily.map(point => series.reduce((sum, platform) => sum + point[platform], 0));
   const max = Math.max(1, ...totals);
   return <Card className={styles.chartCard}>
-    <header className={styles.chartHead}><h2 className={styles.heading}>Social visits per day</h2>
+    <header className={styles.chartHead}><h2 className={styles.heading}>Platform page views per day</h2>
       {data.daily.length > 0 && <div className={styles.toggle} role="group" aria-label="View"><button type="button" aria-pressed={!asTable} onClick={() => setAsTable(false)}>Chart</button><button type="button" aria-pressed={asTable} onClick={() => setAsTable(true)}>Table</button></div>}
     </header>
-    {data.daily.length === 0 ? <p className={styles.loading}>No social visits in this window yet.</p> : <>
+    {data.daily.length === 0 ? <p className={styles.loading}>No platform visits in this window yet.</p> : <>
       {series.length > 1 && <ul className={styles.legend}>{series.map(platform => <li key={platform}><i style={{ background: PLATFORM_COLOR[platform] }} aria-hidden="true" />{PLATFORM_LABEL[platform]}</li>)}</ul>}
       {asTable ? <div className={styles.tableScroll}><table className={styles.dataTable}><thead><tr><th scope="col">Day</th>{series.map(platform => <th key={platform} scope="col">{PLATFORM_LABEL[platform]}</th>)}<th scope="col">Total</th></tr></thead>
         <tbody>{data.daily.map((point, i) => <tr key={point.day}><th scope="row">{point.day}</th>{series.map(platform => <td key={platform}>{point[platform]}</td>)}<td>{totals[i]}</td></tr>)}</tbody></table></div>
-        : <div className={styles.chart} role="img" aria-label={`Social visits per day for ${data.daily.length} days, peaking at ${max}. Switch to Table for the numbers.`} onMouseLeave={() => setHover(null)}>
+        : <div className={styles.chart} role="img" aria-label={`Platform page views per day for ${data.daily.length} days, peaking at ${max}. Switch to Table for the numbers.`} onMouseLeave={() => setHover(null)}>
           <span className={styles.axisMax} aria-hidden="true">{max}</span>
           <div className={styles.bars}>{data.daily.map((point, i) => <div key={point.day} className={styles.barSlot} onMouseEnter={() => setHover(i)} onFocus={() => setHover(i)} tabIndex={0} aria-label={`${point.day}: ${totals[i]} visits`}>
             <div className={styles.bar} style={{ height: `${(totals[i] / max) * 100}%` }}>{series.filter(platform => point[platform] > 0).map(platform => <span key={platform} style={{ flexGrow: point[platform], background: PLATFORM_COLOR[platform] }} />)}</div>
@@ -184,7 +192,7 @@ function PlatformAnalytics({ stats }: Readonly<{ stats: PlatformStats }>) {
     <dl>
       {PLATFORM_METRICS[stats.platform].map(def => <div key={def.key}><dt>{def.label}</dt><dd>{metricValue(stats.platform, def.key as MetricKey, stats.metrics[def.key as MetricKey])}</dd></div>)}
       {stats.platform === "pinterest" && <div><dt>Impressions</dt><dd>{num(stats.impressions)}</dd></div>}
-      {rates.map(rate => <div key={rate.label} title={rate.hint}><dt>{rate.label}</dt><dd>{pct(rate.value)}</dd></div>)}
+      {rates.map(rate => <div key={rate.label} title={rate.hint}><dt>{rate.label}</dt><dd>{rate.label === "Claps per read" ? rate.value === null ? "?" : rate.value.toFixed(2) : pct(rate.value)}</dd></div>)}
     </dl>
     {stats.promotions === 0 && <p>Add a {PLATFORM_LABEL[stats.platform]} promotion and enter its figures from {stats.platform === "coursera" ? "the instructor dashboard" : `${PLATFORM_LABEL[stats.platform]} analytics`}.</p>}
   </div>;
@@ -198,7 +206,7 @@ function PromotionForm({ draft, saving, onChange, onCancel, onSave }: Readonly<{
     <form onSubmit={event => { event.preventDefault(); onSave(); }} aria-label={draft.id ? "Edit promotion" : "Add promotion"}>
       <h2 className={styles.heading}>{draft.id ? "Edit promotion" : "Add promotion"}</h2>
       <div className={styles.grid}>
-        <label><span>Platform</span><select value={draft.platform} onChange={event => { const platform = event.target.value as Platform; onChange({ ...draft, platform, format: draft.id ? draft.format : DEFAULT_FORMAT[platform] ?? "post" }); }}>{PLATFORMS.map(p => <option key={p} value={p}>{PLATFORM_LABEL[p]}</option>)}</select></label>
+        <label><span>Platform</span><select value={draft.platform} onChange={event => { const platform = event.target.value as Platform; onChange({ ...draft, platform, format: DEFAULT_FORMAT[platform] ?? "post", platform_metrics: {} }); }}>{PLATFORMS.map(p => <option key={p} value={p}>{PLATFORM_LABEL[p]}</option>)}</select></label>
         <label><span>Format</span><select value={draft.format} onChange={event => set("format", event.target.value as PromotionFormat)}>{PROMOTION_FORMATS.map(f => <option key={f} value={f}>{f}</option>)}</select></label>
         <label><span>Status</span><select value={draft.status} onChange={event => set("status", event.target.value)}>{PROMOTION_STATUSES.map(s => <option key={s} value={s}>{s}</option>)}</select></label>
         {field("title", "Title", "text", true)}
@@ -236,7 +244,7 @@ function LinkBuilder() {
     <p className={styles.note}>Share this link in the post, bio, ad, channel, article, Pin or course. Visits arrive tagged with the platform and campaign above.</p>
     <div className={styles.grid}>
       <label><span>Platform</span><select value={platform} onChange={event => { const next = event.target.value as Platform; setPlatform(next); setFormat(DEFAULT_FORMAT[next] ?? "post"); }}>{PLATFORMS.filter(p => p !== "other").map(p => <option key={p} value={p}>{PLATFORM_LABEL[p]}</option>)}</select></label>
-      <label><span>Format</span><select value={format} onChange={event => setFormat(event.target.value as PromotionFormat)}>{PROMOTION_FORMATS.map(f => <option key={f} value={f}>{f}</option>)}</select></label>
+      <label><span>Format</span><select value={format} onChange={event => setFormat(event.target.value as PromotionFormat)}>{PROMOTION_FORMATS.filter(f => platform !== "google_search" || f === "ad").map(f => <option key={f} value={f}>{f}</option>)}</select></label>
       <label><span>Campaign</span><input value={campaign} onChange={event => setCampaign(event.target.value)} placeholder="e.g. react-interview-week" /></label>
       <label className={styles.wide}><span>Landing page</span><input type="url" value={base} onChange={event => setBase(event.target.value)} /></label>
     </div>

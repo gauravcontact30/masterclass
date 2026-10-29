@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState, useMemo, type ReactNode } from "react";
+import { createContext, startTransition, useContext, useEffect, useState, useMemo, type ReactNode } from "react";
 import { READING_FONTS, type FontOption } from "@/lib/tech-buzz-public";
 import { loadGoogleFont } from "@/lib/google-fonts";
 import { APP_FONT_STORAGE_KEY, APP_FONT_STACK_KEY, DEFAULT_APP_FONT_ID, appFontRecord, appFontStack } from "@/lib/app-font";
@@ -31,8 +31,9 @@ export function AppFontProvider({ children }: { children: ReactNode }) {
       const saved = localStorage.getItem(APP_FONT_STORAGE_KEY);
       const font = saved ? READING_FONTS.find(f => f.id === saved) : undefined;
       if (font) {
-        setAppFontIdState(font.id);
-        setChosen(true);
+        // The pre-paint script already shows this font; a transition keeps the context change from forcing the
+        // still-hydrating page into a synchronous re-render (components/bookmarks.tsx).
+        startTransition(() => { setAppFontIdState(font.id); setChosen(true); });
         // Choices saved before the pre-paint script existed have no record yet.
         localStorage.setItem(APP_FONT_STACK_KEY, appFontRecord(font));
       }

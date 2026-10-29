@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from "react";
+import { createContext, startTransition, useCallback, useContext, useEffect, useRef, useState, type ReactNode } from "react";
 import { Bookmark, BookmarkCheck, BookA } from "lucide-react";
 import { toast } from "sonner";
 import type { BookmarkDraft, BookmarkSource, SavedBookmark } from "@/lib/bookmarks";
@@ -28,7 +28,7 @@ export function BookmarkSection({ title, children }: { title: string; children: 
 const FOCUS_STALE_MS = 60_000;
 
 export function BookmarksProvider({ children }: { children: ReactNode }) {
-  const [state, setState] = useState<State>({ items: [], owner: null, status: "loading" });
+  const [state, setRawState] = useState<State>({ items: [], owner: null, status: "loading" });
   const [busy, setBusy] = useState(false);
   const current = useRef(state);
   useEffect(() => { current.current = state; }, [state]);
@@ -36,11 +36,17 @@ export function BookmarksProvider({ children }: { children: ReactNode }) {
   const lock = useRef(false);
   // When the list last loaded: a window regaining focus re-reads it only after FOCUS_STALE_MS, and without blanking it.
   const loadedAt = useRef(0);
+  // This provider sits above every page. A context change that lands while the page below is still hydrating (its
+  // Activity boundary hydrates last, at the lowest priority) made React throw the server HTML away and re-render the
+  // whole page synchronously, over and over: on the landing page that was most of the Total Blocking Time. As a
+  // transition, React hydrates the page first, in slices, and applies the change after.
+  const setState = useCallback((next: State) => startTransition(() => setRawState(next)), []);
   const refresh = useCallback(async ({ quiet = false } = {}) => {
     if (lock.current) return;
     const generation = ++epoch.current;
     if (!maybeSignedIn()) { setState({ items: [], owner: null, status: "signin" }); return; }
-    if (!quiet) setState({ items: [], owner: null, status: "loading" });
+    // Already loading (the first load): an equal new object would still re-render every consumer.
+    if (!quiet && current.current.status !== "loading") setState({ items: [], owner: null, status: "loading" });
     try {
       let after: number | null = 0;
       let owner: string | null = null;
@@ -60,7 +66,7 @@ export function BookmarksProvider({ children }: { children: ReactNode }) {
       if (owner === "demo") items.push(...(await schemas()).bookmarkSchema.array().parse(JSON.parse(localStorage.getItem(localKey) ?? "[]")));
       if (generation === epoch.current) { loadedAt.current = Date.now(); setState({ items, owner, status: "ready" }); }
     } catch { if (generation === epoch.current && !quiet) setState({ items: [], owner: null, status: "error" }); }
-  }, []);
+  }, [setState]);
   useEffect(() => {
     void Promise.resolve().then(() => refresh());
     // Every tab switch used to re-download the whole list (a quarter of all API calls): now only a stale one, quietly.
@@ -76,7 +82,7 @@ export function BookmarksProvider({ children }: { children: ReactNode }) {
     // generation that has already passed.
     // eslint-disable-next-line react-hooks/exhaustive-deps
     return () => { ++epoch.current; window.removeEventListener("focus", onFocus); window.removeEventListener("storage", onStorage); unsubscribe(); };
-  }, [refresh]);
+  }, [refresh, setState]);
   async function mutate(draft: BookmarkDraft, removed?: SavedBookmark) {
     const snapshot = current.current;
     if (lock.current || snapshot.status !== "ready" || !snapshot.owner) return false;

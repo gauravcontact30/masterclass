@@ -208,13 +208,14 @@ function Pagination({ paged, label, anchor, sizes, tone = "light" }: { paged: Pa
 
 /* ── 2. Fresh & Latest: every earlier daily edition, kept for later reading, one block per daily track so each
    technology holds only its own stories (newest first, paginated per block). ────────────────────────────────── */
-const FRESH_TABS_PER_PAGE = 5;
+const FRESH_TABS_PER_PAGE = 6;
 function FreshLatest({ cards }: { cards: TechBuzzCard[] }) {
-  const [selectedTrack, setSelectedTrack] = useState<string | null>(null);
+  const [selectedTrack, setSelectedTrack] = useState<string | null>("all");
   const tracks = useMemo(() => {
     const edition = latestEdition(cards);
-    const past = edition ? cards.filter(card => card.daily && card.daily.date < edition) : [];
-    return DAILY_TRACKS.map(track => ({ track, items: past.filter(card => card.daily?.track === track.id).sort(newestFirst) })).filter(entry => entry.items.length);
+    const past = edition ? cards.filter(card => card.daily && card.daily.date < edition).sort(newestFirst) : [];
+    if (!past.length) return [];
+    return [{ track: { ...DAILY_TRACKS[0], id: "all", short: "All", color: "#b5573a" }, items: past }, ...DAILY_TRACKS.map(track => ({ track, items: past.filter(card => card.daily?.track === track.id) })).filter(entry => entry.items.length)];
   }, [cards]);
   const active = tracks.find(({ track }) => track.id === selectedTrack) ?? tracks[0];
   const tabPage = Math.floor(Math.max(0, tracks.indexOf(active)) / FRESH_TABS_PER_PAGE);
@@ -250,19 +251,19 @@ function FreshLatest({ cards }: { cards: TechBuzzCard[] }) {
       </div>
       {tracks.map(({ track, items }) => <div key={track.id} id={`tb-fresh-panel-${track.id}`} role="tabpanel"
         aria-labelledby={`tb-fresh-tab-${track.id}`} hidden={track.id !== active.track.id}>
-        <FreshTrack track={track} items={items} />
+        {track.id === active.track.id && <FreshTrack key={track.id} track={track} items={items} showAll={track.id === "all"} />}
       </div>)}
     </>}
   </section>;
 }
 
-function FreshTrack({ track, items }: { track: DailyTrack; items: TechBuzzCard[] }) {
+function FreshTrack({ track, items, showAll = false }: { track: DailyTrack; items: TechBuzzCard[]; showAll?: boolean }) {
   const paged = usePaged(items, 4);
   const heading = `tb-fresh-${track.id}-title`;
   return <section id={`tb-fresh-${track.id}`} className={styles.freshTrack} style={{ "--tone": track.color } as CSSProperties} aria-labelledby={heading}>
     <h3 id={heading} tabIndex={-1} className={styles.freshTrackHead}><TrackLogos track={track.id} />{track.short}<span>{items.length} {items.length === 1 ? "blog" : "blogs"}</span></h3>
     <ol className={styles.timeline}>
-      {paged.rows.map(card => <li key={card.id} style={{ "--tone": card.color } as CSSProperties}>
+      {(showAll ? items : paged.rows).map(card => <li key={card.id} style={{ "--tone": card.color } as CSSProperties}>
         <span className={styles.timelineHead}><span className={styles.timelineDot} aria-hidden="true" /><time dateTime={card.publishedAt}>{formatDate(card.publishedAt)}</time></span>
         <Link href={`/tech-buzz/${card.slug}`} className={styles.freshCard}>
           <Cover card={card} className={styles.freshCover} sizes="(max-width: 640px) 90vw, 240px" />
@@ -272,7 +273,7 @@ function FreshTrack({ track, items }: { track: DailyTrack; items: TechBuzzCard[]
         <ReactionBar card={card} />
       </li>)}
     </ol>
-    <Pagination paged={paged} label={`Fresh & Latest: ${track.short}`} anchor={heading} sizes={[4, 8, 12]} />
+    {!showAll && <Pagination paged={paged} label={`Fresh & Latest: ${track.short}`} anchor={heading} sizes={[4, 8, 12]} />}
   </section>;
 }
 

@@ -1,5 +1,5 @@
 "use client";
-import { createContext, useContext, useSyncExternalStore, useEffect, useCallback, useMemo, useState } from "react";
+import { createContext, startTransition, useContext, useSyncExternalStore, useEffect, useCallback, useMemo, useState } from "react";
 import { LANGUAGES, type Language } from "@/lib/languages";
 import {
   en,
@@ -67,12 +67,14 @@ export function LanguageProvider({ children }: { children: React.ReactNode }) {
   }, [language]);
 
   // The visitor's country is shown in the language picker only; it never changes the language.
+  // A transition: this answer usually lands while the page is still hydrating, and an urgent context change then
+  // makes React re-render the whole page synchronously instead of hydrating it (components/bookmarks.tsx).
   useEffect(() => {
     if (process.env.NODE_ENV === "test") return;
     const controller = new AbortController();
     fetch("/api/geo", { signal: controller.signal })
       .then(res => res.ok ? res.json() : null)
-      .then(data => { if (data?.country) setDetectedCountry(data.country); })
+      .then(data => { if (data?.country) startTransition(() => setDetectedCountry(data.country)); })
       .catch(() => {});
     return () => controller.abort();
   }, []);

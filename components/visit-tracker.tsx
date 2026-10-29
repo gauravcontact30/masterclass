@@ -3,17 +3,19 @@ import { useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
 
 /** Set by the early page-view beacon in <head> (lib/early-track.ts). */
-declare global { interface Window { __mcEarly?: { path: string; sent: boolean; taken: boolean } } }
+declare global { interface Window { __mcEarly?: { path: string; sent: boolean; taken: boolean; pending?: Promise<unknown> } } }
 
 /** The referrer belongs to the page load, not to every client-side navigation after it. */
 let referrerSent = false;
+let pending: Promise<unknown> | undefined;
 
 function send(body: Record<string, unknown>) {
   const data = JSON.stringify(body);
-  try {
-    if (navigator.sendBeacon?.("/api/track", new Blob([data], { type: "application/json" }))) return;
-  } catch { /* fall through */ }
-  fetch("/api/track", { method: "POST", body: data, keepalive: true, headers: { "content-type": "application/json" } }).catch(() => {});
+  // Await the first response's Set-Cookie before sending a heartbeat/leave. Concurrent first beacons
+  // otherwise create different visitor/session IDs and can overwrite the source cookie.
+  pending = (pending ?? window.__mcEarly?.pending ?? Promise.resolve()).then(() =>
+    fetch("/api/track", { method: "POST", body: data, keepalive: true, signal: AbortSignal.timeout(10_000), headers: { "content-type": "application/json" } })
+  ).catch(() => {});
 }
 
 /** A page must stay visible this long before it counts as a visit: 0-second bounces are never recorded (lib/early-track.ts). */
@@ -33,7 +35,7 @@ export function VisitTracker() {
   const open = useRef<{ path: string; since: number | null } | null>(null);
 
   useEffect(() => {
-    if (!pathname || pathname.startsWith("/super-admin")) return;
+    if (!pathname || /^\/(?:dashboard\/)?super-admin(?:\/|$)/.test(pathname)) return;
     const pause = () => {
       const page = open.current; if (page?.since == null) return;
       send({ type: "leave", path: page.path, duration: Math.round(performance.now() - page.since) });

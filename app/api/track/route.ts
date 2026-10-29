@@ -10,6 +10,7 @@ import { isUntrackedEmail, UNTRACKED_COOKIE } from "@/lib/server/tracking-exclus
 import { HttpError, jsonBody, sameOrigin } from "@/lib/server/http";
 import { recordEvent } from "@/lib/server/monitoring";
 import { isOwnTraffic, looksAutomated } from "@/lib/visit-quality";
+import { nextTrafficSource } from "@/lib/traffic-attribution";
 
 /*
  * Page-view beacon for the super admin's User activities page (components/visit-tracker.tsx sends it).
@@ -87,9 +88,8 @@ export async function POST(request: Request) {
   const sourceSchema = z.object({ source: text(80), medium: text(80), campaign: text(120), referrer: text(120) });
   let prior: z.infer<typeof sourceSchema> | null = null;
   try { if (knownSession === sessionId) prior = sourceSchema.parse(JSON.parse(store.get("mc_attribution")?.value || "null")); } catch { /* no valid source */ }
-  const attribution = input.utm?.source || referrerHost
-    ? { source: input.utm?.source || null, medium: input.utm?.medium || null, campaign: input.utm?.campaign || null, referrer: referrerHost }
-    : prior || { source: null, medium: null, campaign: null, referrer: null };
+  const attribution = nextTrafficSource(prior ? { source: prior.source ?? null, medium: prior.medium ?? null, campaign: prior.campaign ?? null, referrer: prior.referrer ?? null } : null,
+    { source: input.utm?.source, medium: input.utm?.medium, campaign: input.utm?.campaign, referrer: referrerHost });
   store.set("mc_attribution", JSON.stringify(attribution), { httpOnly: true, sameSite: "lax", secure, path: "/", maxAge: SESSION_SECONDS });
 
   // A heartbeat from a visible page (components/visit-tracker.tsx): one presence row per open page, so the Live
