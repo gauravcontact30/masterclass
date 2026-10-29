@@ -1,0 +1,203 @@
+import type { TopicEssentials } from "../types";
+
+/** Core Java topics distilled: the idea each rests on, the answer to give when asked, and what to remember. */
+export const ESSENTIALS: Record<string, TopicEssentials> = {
+  "jdk-jre-jvm": {
+    core: "javac turns source into platform-neutral bytecode; a platform-specific JVM loads, verifies and runs that bytecode, JIT-compiling the hot parts to native code.",
+    answer: "The JDK is the development kit (javac, jar, jshell, jdb) plus a runtime. The JRE is the runtime alone: the JVM and the class library. The JVM loads classes, verifies the bytecode, interprets it, and compiles frequently run methods to machine code with the JIT. Java is portable because the bytecode is the same everywhere; only the JVM differs per OS.",
+    keyPoints: [
+      "JDK ⊃ JRE ⊃ JVM; since Java 11, vendors ship only JDKs, and jlink builds a trimmed runtime.",
+      "Bytecode is platform-independent; the JVM itself is platform-specific.",
+      "HotSpot interprets first, then tier-compiles hot methods (C1, then C2) using run-time profiles.",
+      "A public class must live in a file of the same name: public class Hello → Hello.java.",
+      "The classic entry point is public static void main(String[] args); java Hello.java runs a single file without javac.",
+    ],
+  },
+  "data-types": {
+    core: "Java has eight primitives that hold values directly; everything else is a reference to an object on the heap.",
+    answer: "The primitives are byte, short, int, long, float, double, char and boolean, with fixed sizes on every platform. Widening conversions (int → long) are automatic; narrowing (double → int) needs an explicit cast and can lose data. Autoboxing converts primitives to wrapper objects such as Integer and back. Integer.valueOf caches values from -128 to 127, which is why == on wrappers is unreliable.",
+    keyPoints: [
+      "Sizes: byte 8, short 16, char 16 (unsigned), int 32, long 64, float 32, double 64 bits; boolean is true or false.",
+      "Integer literals are int and decimal literals are double by default: write 10L and 3.5f.",
+      "byte + byte is promoted to int, so byte b = a + c; does not compile without a cast.",
+      "Compare wrappers with equals(), never ==; unboxing a null wrapper throws NullPointerException.",
+      "Local variables have no default value; fields default to 0, false or null.",
+      "Use BigDecimal for money: 0.1 + 0.2 != 0.3 in double.",
+    ],
+  },
+  "operators-control-flow": {
+    core: "Expressions are evaluated by precedence and left-to-right; control flow decides which statements run and how often.",
+    answer: "&& and || short-circuit: the right side runs only if it can change the result, whereas & and | always evaluate both sides. i++ yields the old value and ++i the new one. Since Java 14, switch expressions use arrow labels with no fall-through and return a value through yield. Labelled break and continue exit or skip iterations of an outer loop.",
+    keyPoints: [
+      "Precedence: unary > multiplicative > additive > shift > relational > equality > & > ^ > | > && > || > ?: > assignment.",
+      "i = i++ leaves i unchanged: the old value is assigned back.",
+      "Integer division truncates toward zero; % keeps the sign of the dividend (-7 % 3 == -1).",
+      "Compound assignment casts implicitly: byte b = 1; b += 2; compiles, but b = b + 2; does not.",
+      "Arrow-label switch never falls through; a switch expression on an enum must cover every case.",
+      "The enhanced for loop cannot modify the collection's structure or use an index.",
+    ],
+  },
+  "arrays-strings": {
+    core: "Arrays are fixed-size objects of one element type; Strings are immutable, so every modification creates a new object.",
+    answer: "An array's length is fixed at creation, its elements get default values, and indexes are bounds-checked. A 2-D array is an array of arrays, so its rows can have different lengths. String is immutable and final, and literals are interned in the string pool so equal literals share one object. Use StringBuilder to build strings in loops, and compare text with equals(), not ==.",
+    keyPoints: [
+      "array.length is a field; string.length() is a method; a list's size() is a method.",
+      "new String(\"a\") always creates a new object; \"a\" == \"a\" is true because of the pool.",
+      "Concatenating with + in a loop is O(n²); StringBuilder.append makes it O(n).",
+      "StringBuilder is not synchronized and is faster; StringBuffer is synchronized and legacy.",
+      "Arrays.toString, Arrays.sort, Arrays.fill and Arrays.copyOf cover most array chores.",
+      "Strings are immutable so they can be cached, shared across threads and used as safe HashMap keys.",
+    ],
+  },
+  "classes-objects": {
+    core: "A class is a blueprint; new allocates an object on the heap, runs a constructor, and returns a reference to it.",
+    answer: "A constructor initializes a new object. It has the class's name and no return type, and the compiler adds a no-argument one only if you write none. this() chains to another constructor of the same class and super() to the parent's; either must be the first statement. Static members belong to the class and are shared by all objects; instance members belong to each object.",
+    keyPoints: [
+      "Initialization order: static blocks (once, at class load), then for each object instance initializers and the constructor body.",
+      "Static methods cannot use this or instance fields directly.",
+      "Java passes everything by value; for objects, the value passed is the reference.",
+      "Writing any constructor removes the compiler's default no-argument constructor.",
+      "Objects with no remaining references become eligible for garbage collection; there are no destructors.",
+    ],
+  },
+  "encapsulation-packages": {
+    core: "Keep fields private and expose behaviour through methods, so a class controls its own state and can change internally without breaking callers.",
+    answer: "Encapsulation bundles data with the methods that guard it and hides the data with access modifiers. Java has four levels: private (the class only), package-private by default (the same package), protected (the same package plus subclasses), and public (everyone). Packages group related classes, prevent name clashes, and form a boundary for package-private access. Choose the narrowest visibility that works.",
+    keyPoints: [
+      "Visibility from narrow to wide: private < default (package-private) < protected < public.",
+      "A top-level class can only be public or package-private.",
+      "Validate in setters or constructors, and return copies of mutable fields.",
+      "Package names are reversed domains (com.example.app) and mirror the folder structure.",
+      "import saves typing only; it does not include code. java.lang is imported automatically.",
+    ],
+  },
+  "inheritance-polymorphism": {
+    core: "A subclass is a specialised parent; a parent-type reference can point to any subclass object, and the object's actual class decides which overridden method runs.",
+    answer: "Inheritance (extends) reuses and specialises a parent class, and Java allows only one parent class. Overriding redefines an inherited instance method with the same signature and is resolved at run time (dynamic dispatch). Overloading is several methods with the same name and different parameters, resolved at compile time. Upcasting is implicit and safe; downcasting needs a cast and can throw ClassCastException, so check with instanceof first.",
+    keyPoints: [
+      "Overriding rules: same signature, a covariant return type allowed, access no narrower, no broader checked exceptions.",
+      "Static, private and final methods are not overridden: static methods are hidden, private ones are invisible.",
+      "Fields are not polymorphic: the reference type decides which field is read.",
+      "super.method() calls the parent version; super(...) must be the first line of a constructor.",
+      "Use @Override so the compiler catches signature mistakes.",
+      "Prefer composition when the relationship is \"has-a\" rather than \"is-a\".",
+    ],
+  },
+  "abstraction-interfaces": {
+    core: "Abstraction exposes what an object does and hides how; interfaces define capabilities, and abstract classes share partial implementation.",
+    answer: "An abstract class can have state, constructors, and both abstract and concrete methods, and a class extends only one. An interface declares a contract a class implements, and a class can implement many interfaces. Since Java 8, interfaces can have default and static methods, and since Java 9 private methods. A functional interface has exactly one abstract method and can be implemented with a lambda.",
+    keyPoints: [
+      "Interface fields are implicitly public static final; abstract methods are implicitly public abstract.",
+      "Use an abstract class for shared state or code in an is-a family, and an interface for a role many unrelated classes can play.",
+      "When two interfaces give the same default method, the class must override it (and can call X.super.m()).",
+      "An abstract class cannot be instantiated but has constructors, which subclasses call.",
+      "@FunctionalInterface makes the compiler enforce the single-abstract-method rule.",
+    ],
+  },
+  "object-methods-enums": {
+    core: "Every class inherits from Object; equals, hashCode and toString define how objects compare, hash and print.",
+    answer: "If two objects are equal according to equals, they must have the same hashCode, so override both or neither, or hash-based collections break. An immutable class is final, has private final fields, has no setters and makes defensive copies; records generate exactly that shape. Enums are type-safe constants that can have fields, constructors and methods. The nested-class kinds are static nested, inner, local and anonymous.",
+    keyPoints: [
+      "equals must be reflexive, symmetric, transitive, consistent, and false for null.",
+      "Equal hashCodes do not imply equal objects; collisions are allowed.",
+      "Records (Java 16+) give a constructor, accessors, equals, hashCode and toString for free.",
+      "Enum constructors are implicitly private; values() and valueOf() are generated.",
+      "An inner (non-static) class holds a reference to its outer instance; prefer a static nested class when it is not needed.",
+      "final on a reference stops reassignment, not mutation of the object.",
+    ],
+  },
+  exceptions: {
+    core: "An exception moves control from the point of failure to the nearest matching handler, and unwinds the stack as it goes.",
+    answer: "Throwable splits into Error (serious JVM problems you don't catch) and Exception. Checked exceptions such as IOException must be caught or declared with throws. Unchecked exceptions (RuntimeException and its subclasses) signal programming errors and need neither. finally always runs, except on System.exit or a JVM crash. try-with-resources closes AutoCloseable resources automatically, in reverse order.",
+    keyPoints: [
+      "Catch the most specific types first; a broader catch before a narrower one does not compile.",
+      "Multi-catch (catch (A | B e)) needs unrelated types, and e is effectively final.",
+      "A return in finally overrides the try's return and swallows exceptions: avoid it.",
+      "Exceptions raised while closing a resource are attached as suppressed exceptions, not lost.",
+      "Wrap low-level exceptions with a cause (new ServiceException(msg, e)) so the stack trace survives.",
+      "Never write empty catch blocks; log the exception or rethrow it.",
+    ],
+  },
+  "collections-list-set": {
+    core: "The Collections Framework gives you interfaces (List, Set, Queue) with interchangeable implementations; choose by access pattern and ordering needs.",
+    answer: "A List is ordered and allows duplicates. ArrayList gives O(1) random access and amortised O(1) appends; LinkedList gives cheap insertion at the ends but slow indexing. A Set rejects duplicates: HashSet is unordered with O(1) operations, LinkedHashSet keeps insertion order, and TreeSet keeps sorted order in O(log n). ArrayDeque is the preferred stack and queue. Iterators of standard collections are fail-fast and throw ConcurrentModificationException if the collection changes structurally during iteration.",
+    keyPoints: [
+      "Program to interfaces: List<String> names = new ArrayList<>();",
+      "ArrayList grows by about 1.5×; give it an initial capacity when the size is known.",
+      "Remove while iterating with Iterator.remove() or removeIf, never list.remove inside a for-each.",
+      "List.of and Set.of create unmodifiable collections and reject nulls.",
+      "HashSet relies on hashCode and equals; TreeSet relies on compareTo or a Comparator.",
+      "Use ArrayDeque instead of Stack (synchronized, legacy) and instead of LinkedList as a queue.",
+    ],
+  },
+  "maps-hashing-comparators": {
+    core: "A HashMap turns a key's hashCode into a bucket index, so lookup is O(1) on average; ordering needs TreeMap or LinkedHashMap.",
+    answer: "A HashMap stores entries in an array of buckets. It spreads the key's hash, picks a bucket, and resolves collisions with a linked list. Since Java 8, a bucket becomes a red-black tree once its list grows past 8 entries and the table has at least 64 buckets (a smaller table is resized instead). When size exceeds capacity × load factor (default 16 × 0.75), the table doubles. TreeMap keeps keys sorted in O(log n), and LinkedHashMap keeps insertion or access order. Comparable defines an object's natural order; a Comparator defines any external order.",
+    keyPoints: [
+      "HashMap allows one null key and null values; Hashtable and ConcurrentHashMap allow neither.",
+      "Mutating a key's fields after insertion can make the entry unreachable: use immutable keys.",
+      "getOrDefault, putIfAbsent, computeIfAbsent and merge replace most get-then-put code.",
+      "Comparator.comparing(Person::age).thenComparing(Person::name) builds multi-key sorts.",
+      "compareTo should be consistent with equals, or sorted sets will treat unequal objects as duplicates.",
+      "LinkedHashMap with accessOrder=true plus removeEldestEntry is a ready-made LRU cache.",
+    ],
+  },
+  generics: {
+    core: "Generics let the compiler check element types at compile time; the type information is erased at run time.",
+    answer: "Type parameters (class Box<T>, <T> T max(List<T>)) give type-safe reusable code without casts. A bounded type such as <T extends Comparable<T>> restricts which types fit. Wildcards make APIs flexible: ? extends T reads values (a producer) and ? super T accepts values (a consumer), which is the PECS rule. Erasure replaces type parameters with their bounds, so you cannot write new T(), call instanceof List<String>, or overload on List<A> versus List<B>.",
+    keyPoints: [
+      "List<Integer> is not a List<Number>, although Integer is a Number: generics are invariant.",
+      "Producer extends, consumer super: copy(List<? super T> dst, List<? extends T> src).",
+      "Primitives cannot be type arguments: use List<Integer>, not List<int>.",
+      "Raw types (List without <...>) disable checking; they exist only for legacy code.",
+      "The diamond (new ArrayList<>()) infers type arguments from the target type.",
+    ],
+  },
+  "lambdas-streams": {
+    core: "A lambda is a concise implementation of a functional interface; a stream is a lazy pipeline of operations over a data source.",
+    answer: "Lambdas such as (a, b) -> a + b implement single-method interfaces and can capture only effectively final local variables. The four core functional interfaces are Function<T, R>, Predicate<T>, Consumer<T> and Supplier<T>. A stream pipeline has a source, lazy intermediate operations (filter, map, sorted) and one terminal operation (collect, reduce, forEach) that triggers the work. A stream can be consumed only once and never modifies its source.",
+    keyPoints: [
+      "Method references (String::length, System.out::println) are shorthand for lambdas.",
+      "Nothing runs until a terminal operation is called: streams are lazy.",
+      "Use IntStream and other primitive streams to avoid boxing in numeric work.",
+      "Collectors.groupingBy, toMap, joining and counting handle most aggregations.",
+      "Avoid side effects inside stream operations; parallel streams make them unsafe.",
+      "Reusing a consumed stream throws IllegalStateException.",
+    ],
+  },
+  "file-io": {
+    core: "Byte streams move raw bytes and character streams decode text; NIO.2's Path and Files API is the modern way to work with files.",
+    answer: "InputStream and OutputStream handle bytes; Reader and Writer handle characters with an explicit charset. Buffering (BufferedReader, BufferedWriter) reduces system calls. Files.readString, Files.readAllLines, Files.lines and Files.write do most jobs in one line and throw IOException. Serialization (ObjectOutputStream) turns an object graph into bytes, but deserializing untrusted data is a security risk, so prefer JSON or another explicit format.",
+    keyPoints: [
+      "Always open streams in try-with-resources so they close even on failure.",
+      "Specify the charset (StandardCharsets.UTF_8) whenever bytes become text.",
+      "Files.lines returns a lazy stream that must be closed: use it inside try-with-resources.",
+      "Path.of(\"dir\", \"file.txt\") builds paths portably; File is the legacy API.",
+      "A transient field is skipped by serialization; serialVersionUID controls version compatibility.",
+    ],
+  },
+  "multithreading-basics": {
+    core: "Threads share the heap, so unsynchronised access to shared mutable state causes races; synchronisation provides mutual exclusion and visibility.",
+    answer: "Create work with Runnable or Callable and run it on a Thread or, better, an ExecutorService. A thread moves through the states NEW, RUNNABLE, BLOCKED, WAITING, TIMED_WAITING and TERMINATED. synchronized makes a block run under a monitor lock, so only one thread enters at a time and its changes are visible to the next thread holding the same lock. volatile gives visibility but not atomicity. A deadlock happens when threads wait on each other's locks in a cycle.",
+    keyPoints: [
+      "Call start(), not run(); run() executes on the current thread.",
+      "count++ is a read-modify-write and not atomic: use AtomicInteger or a lock.",
+      "Call wait and notify only while holding the object's monitor, and wait in a while loop.",
+      "sleep keeps locks; wait releases the monitor.",
+      "Prevent deadlock by always acquiring locks in the same global order.",
+      "Prefer java.util.concurrent (executors, ConcurrentHashMap) to raw threads.",
+    ],
+  },
+  "jvm-memory-gc": {
+    core: "Objects live on the heap until nothing reachable refers to them; the garbage collector reclaims them, and the generational design exploits the fact that most objects die young.",
+    answer: "Class loaders load classes through parent delegation: bootstrap, then platform, then application. Each thread has its own stack of frames holding local variables and references. Objects live on the shared heap, and class metadata lives in Metaspace (native memory since Java 8). The collector traces reachability from GC roots, so unreachable cycles are collected too. G1 is the default collector and balances throughput and pause time; ZGC aims for sub-millisecond pauses on very large heaps.",
+    keyPoints: [
+      "StackOverflowError comes from deep recursion; OutOfMemoryError from heap or Metaspace exhaustion.",
+      "GC roots include thread stacks, static fields and JNI references.",
+      "System.gc() is only a hint; never rely on finalize(), which is deprecated.",
+      "Reference strength: strong > soft (cleared under memory pressure) > weak (cleared at the next GC) > phantom.",
+      "Size the heap with -Xms and -Xmx, and set them equal for predictable servers.",
+      "Memory leaks in Java are references kept by mistake: static maps, listeners, caches.",
+    ],
+  },
+};

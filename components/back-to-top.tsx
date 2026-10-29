@@ -1,10 +1,11 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import { usePathname } from "next/navigation";
 import { ArrowUp } from "lucide-react";
 import styles from "./back-to-top.module.css";
 
 const RING = 2 * Math.PI * 22;
+const noSubscribe = () => () => {};
 
 /**
  * "Move to top" on the landing page, the learning dashboard, and the super admin dashboard: a round button that appears after the first
@@ -13,6 +14,10 @@ const RING = 2 * Math.PI * 22;
  */
 export function BackToTop() {
   const pathname = usePathname();
+  // The root layout is prerendered once for every route, before the path is known, so the server always renders this
+  // as nothing. Rendering the button from the first client render made React report a hydration mismatch (#418) on
+  // every page load; it now appears right after hydration instead.
+  const hydrated = useSyncExternalStore(noSubscribe, () => true, () => false);
   const enabled = pathname === "/" || pathname?.startsWith("/learning") || pathname?.startsWith("/tech-buzz");
   const [progress, setProgress] = useState(0);
   const [visible, setVisible] = useState(false);
@@ -33,7 +38,7 @@ export function BackToTop() {
     return () => { window.removeEventListener("scroll", onScroll); window.removeEventListener("resize", onScroll); if (frame) cancelAnimationFrame(frame); };
   }, [enabled, pathname]);
 
-  if (!enabled) return null;
+  if (!enabled || !hydrated) return null;
   const toTop = () => {
     const reduce = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
     window.scrollTo({ top: 0, behavior: reduce ? "auto" : "smooth" });

@@ -1,6 +1,6 @@
 "use client";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Activity, AlertTriangle, BookOpen, BookOpenText, Bot, CheckCircle2, Clock, Compass, Cpu, Database, Flame, Gauge, Globe2, Hourglass, Languages, Laptop, Link2, LogIn, LogOut, MapPin, Monitor, MousePointerClick, Network, Pause, Play, Radio, RefreshCw, Route, Server, ShieldCheck, Smartphone, Sparkles, Tablet, Target, Timer, TrendingDown, UserPlus, UserRound, Users, Zap, type LucideIcon } from "lucide-react";
+import { Activity, AlertTriangle, BookOpen, BookOpenText, Bot, CheckCircle2, Clock, Compass, Cpu, Database, EyeOff, Flame, Gauge, Globe2, Hourglass, Languages, Laptop, Link2, LogIn, LogOut, MapPin, Monitor, MousePointerClick, Network, Pause, Play, Radio, RefreshCw, Route, Server, ShieldCheck, Smartphone, Sparkles, Tablet, Target, Timer, TrendingDown, UserPlus, UserRound, Users, Zap, type LucideIcon } from "lucide-react";
 import { Flag, countryName } from "./super-admin-audience";
 import { Pager } from "./super-admin-table";
 import styles from "./super-admin-overview-live.module.css";
@@ -8,9 +8,10 @@ import { VISIT_RETENTION_DAYS } from "@/lib/visit-retention";
 import { indexVisits, streamVisitors, type Presence } from "@/lib/live-visits";
 import { localityPin } from "@/lib/new-user-locations";
 import { FirstLookVisitors } from "./super-admin-first-look";
+import { PrivateVisitors } from "./super-admin-private-visitors";
 
 type Row = Record<string, unknown>;
-type Visit = { id?: number; created_at: string; event: string; person?: string; email?: string | null; user_id?: string | null; visitor_id: string; session_id: string; new_visitor?: boolean; path: string; title?: string | null; country?: string | null; city?: string | null; region?: string | null; postal_code?: string | null; device?: string | null; browser?: string | null; os?: string | null; duration_ms?: number | null; referrer_host?: string | null; utm_source?: string | null; screen?: string | null; timezone?: string | null; language?: string | null; ip_masked?: string | null };
+type Visit = { id?: number; created_at: string; event: string; person?: string; email?: string | null; user_id?: string | null; visitor_id: string; session_id: string; new_visitor?: boolean; path: string; title?: string | null; country?: string | null; city?: string | null; region?: string | null; postal_code?: string | null; device?: string | null; browser?: string | null; os?: string | null; duration_ms?: number | null; referrer_host?: string | null; utm_source?: string | null; screen?: string | null; timezone?: string | null; language?: string | null; ip_masked?: string | null; private_mode?: boolean | null };
 type Live = {
   generatedAt: string;
   /** "today": counted from 00:00 IST (migration 0045); "24h": the rolling day it falls back to. */
@@ -43,7 +44,7 @@ const spent = (seconds: number) => {
 const dayOf = (iso: string | number) => new Intl.DateTimeFormat("en-IN", { day: "2-digit", month: "short", year: "numeric", timeZone: "Asia/Kolkata" }).format(new Date(iso));
 const clock = (iso: string | number) => new Intl.DateTimeFormat("en-IN", { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: true, timeZone: "Asia/Kolkata" }).format(new Date(iso));
 const weekday = (iso: string | number) => new Intl.DateTimeFormat("en-IN", { weekday: "long", timeZone: "Asia/Kolkata" }).format(new Date(iso));
-type StreamFilter = "all" | "live" | "signed" | "new";
+type StreamFilter = "all" | "live" | "signed" | "new" | "private";
 // The stream's own feed, merged across refreshes: rows by id, page heartbeats by session and path.
 type StreamFeed = { rows: Map<string, Visit>; emails: Record<string, string>; presence: Map<string, Presence> | null; days: number; capped: boolean; generatedAt: string; loadedAt: number };
 // The whole window is read again every 10 minutes; in between, each refresh asks only for what is new.
@@ -55,6 +56,7 @@ const DEVICE_ICON: Record<string, LucideIcon> = { mobile: Smartphone, tablet: Ta
 type TraceFilter = "all" | "client" | "server" | "slow";
 const STREAM_FILTERS: { id: StreamFilter; label: string; icon: LucideIcon }[] = [
   { id: "all", label: "All", icon: Users }, { id: "live", label: "On the site now", icon: Radio }, { id: "signed", label: "Signed in", icon: UserRound }, { id: "new", label: "New visitors", icon: Sparkles },
+  { id: "private", label: "Private window", icon: EyeOff },
 ];
 const TRACE_FILTERS: { id: TraceFilter; label: string; icon: LucideIcon }[] = [
   { id: "all", label: "All", icon: Activity }, { id: "client", label: "4xx", icon: AlertTriangle }, { id: "server", label: "5xx", icon: Server }, { id: "slow", label: "Slow ≥1 s", icon: Clock },
@@ -155,6 +157,7 @@ export function OverviewLive({ snapshot, onRefreshSnapshot }: { snapshot: Overvi
   const counts = useMemo(() => ({
     all: everyone.length, live: everyone.filter(v => v.live).length, signed: everyone.filter(v => v.signedIn).length,
     new: everyone.filter(v => v.first.new_visitor && !v.signedIn).length,
+    private: everyone.filter(v => v.privateWindow).length,
     liveSigned: everyone.filter(v => v.live && v.signedIn).length,
     recent: everyone.filter(v => v.lastAt >= notBefore(30 * 60_000)).length,
     recentSigned: everyone.filter(v => v.signedIn && v.lastAt >= notBefore(30 * 60_000)).length,
@@ -172,7 +175,7 @@ export function OverviewLive({ snapshot, onRefreshSnapshot }: { snapshot: Overvi
     const engagedMs = rows.reduce((sum, v) => sum + (v.event === "page_leave" && opened.has(`${v.session_id}|${v.path}`) ? Math.max(0, Number(v.duration_ms) || 0) : 0), 0);
     return { engaged: people ? engagedMs / people : null, pages: people ? Math.round((views.length / people) * 10) / 10 : null };
   }, [streamRows, dayStart]);
-  const visitors = useMemo(() => everyone.filter(v => streamFilter === "all" || (streamFilter === "live" ? v.live : streamFilter === "signed" ? v.signedIn : v.first.new_visitor && !v.signedIn)), [everyone, streamFilter]);
+  const visitors = useMemo(() => everyone.filter(v => streamFilter === "all" || (streamFilter === "live" ? v.live : streamFilter === "signed" ? v.signedIn : streamFilter === "private" ? Boolean(v.privateWindow) : v.first.new_visitor && !v.signedIn)), [everyone, streamFilter]);
   const heartbeats = Boolean(stream?.presence);
   const lastHour = useMemo(() => streamRows.filter(v => v.event === "page_view" && Date.parse(v.created_at) >= Math.max(clockNow - 3600_000, dayStart)), [streamRows, clockNow, dayStart]);
   const reading = useMemo(() => {
@@ -315,6 +318,9 @@ export function OverviewLive({ snapshot, onRefreshSnapshot }: { snapshot: Overvi
                               ) : (
                                 <span className={styles.badgeReturning}>Returning</span>
                               )}
+                              {row.privateWindow && <span className={styles.badgePrivate} title={row.privateWindow === "detected" ? "The browser reported a private window" : "A known device arrived with a brand-new cookie: a private window, or cookies were cleared"}>
+                                <EyeOff size={10} aria-hidden="true" /> {row.privateWindow === "detected" ? "Private window" : "Likely private"}
+                              </span>}
                               <code className={styles.idChip}>ID: {row.key.replace(/^(visitor|device):/, "").slice(0, 8)}</code>
                             </div>
                             <div className={styles.compactMetaLine}>
@@ -467,12 +473,12 @@ export function OverviewLive({ snapshot, onRefreshSnapshot }: { snapshot: Overvi
                             <div className={styles.stayMetricBlock}>
                               <div className={styles.stayHighlightRow}>
                                 <div>
-                                  <small className={styles.stayLabel}>Total Stay</small>
+                                  <small className={styles.stayLabel} title="This visit: from arrival to now while on the site, otherwise to the last activity seen">Total Stay</small>
                                   <strong className={styles.stayValue}>{spent(row.stayDurationMs / 1000)}</strong>
                                 </div>
                                 <div>
-                                  <small className={styles.stayLabel}>Active Reading</small>
-                                  <strong className={styles.readingValue}>{spent(row.engagedMs / 1000)}</strong>
+                                  <small className={styles.stayLabel} title="Time this visit's pages were visible on screen, the open page included">Active Reading</small>
+                                  <strong className={styles.readingValue}>{spent(row.sessionEngagedMs / 1000)}</strong>
                                 </div>
                                 <div className={styles.intensityBadgeWrap}>
                                   {row.intensityTier === "Deep Focus" ? (
@@ -584,6 +590,9 @@ export function OverviewLive({ snapshot, onRefreshSnapshot }: { snapshot: Overvi
 
       {/* Anonymous visitors whose whole stay is one page view, from the same visitor list as the stream above. */}
       <FirstLookVisitors everyone={everyone} now={clockNow} days={streamDays} />
+
+      {/* Visitors in a private (incognito) window: reported by the browser, or inferred from a fresh cookie on a known device. */}
+      <PrivateVisitors everyone={everyone} now={clockNow} days={streamDays} />
 
       <article className={`${styles.panel} ${styles.wide}`} data-tone="lavender">
         <h3><Route size={16} aria-hidden="true" />Request tracing

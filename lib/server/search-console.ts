@@ -12,6 +12,28 @@ const metric = z.object({ clicks: z.number().nonnegative(), impressions: z.numbe
 const responseSchema = z.object({ rows: z.array(metric).default([]) });
 let client: JWT | undefined;
 
+/**
+ * One raw searchAnalytics.query against the configured property (the Ahrefs page's rank tracker asks about its own
+ * keywords with dimension filters). Null when Search Console is not configured.
+ */
+export async function searchConsoleQuery(body: Record<string, unknown>): Promise<z.infer<typeof metric>[] | null> {
+  const property = process.env.GOOGLE_SEARCH_CONSOLE_PROPERTY?.trim() || DEFAULT_SEARCH_PROPERTY;
+  const email = process.env.GOOGLE_SEARCH_CONSOLE_CLIENT_EMAIL, key = process.env.GOOGLE_SEARCH_CONSOLE_PRIVATE_KEY;
+  if (!email || !key) return null;
+  client ??= new JWT({ email, key: key.replace(/\\n/g, "\n"), scopes: ["https://www.googleapis.com/auth/webmasters.readonly"], transporterOptions: { timeout: 10_000, retry: false } });
+  let token: string | null | undefined;
+  try { token = (await client.getAccessToken()).token; } catch { throw new HttpError(502, "search_console_auth_failed"); }
+  if (!token) throw new HttpError(502, "search_console_auth_failed");
+  const response = await fetch(`https://www.googleapis.com/webmasters/v3/sites/${encodeURIComponent(property)}/searchAnalytics/query`, {
+    method: "POST", headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" }, body: JSON.stringify({ type: "web", ...body }),
+    cache: "no-store", signal: AbortSignal.timeout(15_000),
+  }).catch(() => { throw new HttpError(502, "search_console_unavailable"); });
+  if (!response.ok) throw new HttpError(response.status === 429 ? 429 : 502, response.status === 403 ? "search_console_access_denied" : response.status === 429 ? "search_console_rate_limited" : "search_console_unavailable");
+  const parsed = responseSchema.safeParse(await response.json().catch(() => null));
+  if (!parsed.success) throw new HttpError(502, "search_console_invalid_response");
+  return parsed.data.rows;
+}
+
 export async function searchConsoleReport(days: number): Promise<SearchConsoleReport> {
   const property = process.env.GOOGLE_SEARCH_CONSOLE_PROPERTY?.trim() || DEFAULT_SEARCH_PROPERTY;
   const email = process.env.GOOGLE_SEARCH_CONSOLE_CLIENT_EMAIL;

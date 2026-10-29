@@ -275,7 +275,7 @@ export function LandingPathFinder({ day = 0, fresh }: { day?: number; fresh?: Fr
               const value = hi ? hindi : en;
               // Each pill carries its line's colour and the technology's icon; the goal it plans is its tooltip.
               return <li key={label} style={{ "--at": at } as CSSProperties}><button type="button" data-line={goalLine ? LINES.findIndex(option => option.id === goalLine) + 1 : 0} title={value} aria-pressed={path?.goal === value} disabled={loading || !hydrated} onClick={() => void plan(value)}>
-                {icon ? <Image src={`/images/tech/${icon}.png`} alt="" width={16} height={16} /> : <span className={styles.dot} aria-hidden="true" />}{hi ? labelHi : label}
+                {icon ? <Image src={`/images/tech/${icon}.png`} alt={`${label} logo`} aria-hidden="true" width={16} height={16} /> : <span className={styles.dot} aria-hidden="true" />}{hi ? labelHi : label}
               </button></li>;
             })}
           </ul>

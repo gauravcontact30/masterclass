@@ -164,7 +164,7 @@ function Cover({ meta, hi, eager, data }: { meta: NewsSlideMeta; hi: boolean; ea
   return <div className={styles.cover}>
     {/* Painted through the AI Gateway: this 21-day set's own cover when it has one, else the standing cover (scripts/generate-news-covers.ts). */}
     <div className={styles.picture} data-empty={failed}>
-      {!failed && <Image src={data?.cover ?? `/images/news/${meta.id}.webp`} unoptimized={Boolean(data?.cover)} alt="" fill sizes="(max-width: 899px) calc(100vw - 60px), 480px" preload={eager} loading={eager ? undefined : "lazy"} onError={() => setFailed(true)} />}
+      {!failed && <Image src={data?.cover ?? `/images/news/${meta.id}.webp`} unoptimized={Boolean(data?.cover)} alt={meta.kind === "questions" ? (hi ? "इस सप्ताह के इंटरव्यू प्रश्नों का कवर चित्र" : "Cover illustration for this week's interview questions") : (hi ? "इस सप्ताह की टेक खबरों का कवर चित्र" : "Cover illustration for this week's tech news")} fill sizes="(max-width: 899px) calc(100vw - 60px), 480px" preload={eager} loading={eager ? undefined : "lazy"} onError={() => setFailed(true)} />}
       <Icon className={styles.pictureIcon} size={56} strokeWidth={1.2} aria-hidden="true" />
       <span className={styles.kicker}><Icon size={12} aria-hidden="true" />{meta.kind === "questions" ? (hi ? "इंटरव्यू" : "Interviews") : (hi ? "खबरें" : "News")}</span>
     </div>

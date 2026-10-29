@@ -5,7 +5,7 @@ import { LearningPagesNav } from "./learning-pages-nav";
 import referenceStyles from "./reference-workspace.module.css";
 import { ExpandedText } from "@/components/expanded-text";
 
-import { useCallback,useEffect,useMemo,useRef,useState } from "react";
+import { startTransition,useCallback,useEffect,useMemo,useRef,useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { DASHBOARD_ROUTES, type WorkspaceTab } from "@/lib/dashboard-routes";
@@ -46,7 +46,7 @@ type AccountData={preparations?:PreparationAccess;profile:{language:Language};ac
 const tabIcons={dashboard:Compass,library:LibraryIcon,plans:Layers,settings:Link2} as const;
 function Identity({email,isSuperAdmin,onNavigate}:{email:string|null;isSuperAdmin:boolean;onNavigate:(tab:WorkspaceTab)=>void}){const {t}=useLanguage();const router=useRouter();const [busy,setBusy]=useState(false);const [open,setOpen]=useState(false);
   async function signOut(){setBusy(true);try{// The Supabase client loads only when someone signs out, not with the dashboard.
-    const {supabaseBrowser}=await import("@/lib/supabase-browser");const {error}=await supabaseBrowser().auth.signOut();if(error)toast.error(error.message);router.replace("/");router.refresh();}finally{setBusy(false);}}
+    const {supabaseBrowser}=await import("@/lib/supabase-browser");const {error}=await supabaseBrowser().auth.signOut();if(error)toast.error(error.message);try{sessionStorage.removeItem("masterclass:sidebar-collapsed");}catch{}router.replace("/");router.refresh();}finally{setBusy(false);}}
   if(!email)return <Link className="signin-link" href="/sign-in"><ExpandedText text={t("signin")} /><ArrowUpRight size={15}/></Link>;
   return <Popover open={open} onOpenChange={setOpen}>
     <PopoverTrigger className="profile-trigger" aria-label={t("account")}><span className="profile-avatar" aria-hidden="true"><ExpandedText text={email.charAt(0).toUpperCase()} /></span></PopoverTrigger>
@@ -101,12 +101,12 @@ export function Workspace({authEnabled,configured,billingEnabled,userEmail=null,
   const {t,language,setLanguage}=useLanguage();const router=useRouter();const tab=initialTab;
   const [learningQuery,setLearningQuery]=useState("");const [sidebarQuery,setSidebarQuery]=useState("");
   const [notesSelected,setNotesSelected]=useState<DocumentRecord|null>(null);const [refreshing,setRefreshing]=useState(false);
-  const [savedCollapsed,setCollapsed]=useState(autoCollapse);const category=initialCategory;
+  const [savedCollapsed,setCollapsed]=useState(true);const category=initialCategory;
   // Phones: the sidebar is a drawer (components/mobile-nav.tsx), always shown expanded.
   const mobileNav=useMobileNav("navigation");const collapsed=savedCollapsed&&!mobileNav.open;
-  // eslint-disable-next-line react-hooks/set-state-in-effect -- Reads a client-only preference after mount; initial `false` must match SSR output.
-  useEffect(()=>{if(autoCollapse)return;try{setCollapsed(localStorage.getItem("masterclass:sidebar-collapsed")==="1");}catch{}},[autoCollapse]);
-  function toggleCollapsed(){setCollapsed(prev=>{const next=!prev;try{localStorage.setItem("masterclass:sidebar-collapsed",next?"1":"0");}catch{}return next;});}
+  // Collapsed by default on every sign-in; an explicit toggle only lasts for this tab's session.
+  useEffect(()=>{if(autoCollapse)return;try{if(sessionStorage.getItem("masterclass:sidebar-collapsed")==="0")startTransition(()=>setCollapsed(false));}catch{}},[autoCollapse]);
+  function toggleCollapsed(){setCollapsed(prev=>{const next=!prev;try{sessionStorage.setItem("masterclass:sidebar-collapsed",next?"1":"0");}catch{}return next;});}
   function navigate(next:WorkspaceTab){router.push(DASHBOARD_ROUTES[next]);}
   const [catalog,setCatalog]=useState<{technologies:Technology[];topics:Topic[]}>({technologies:[],topics:[]});
   const [data,setData]=useState<AccountData|null>(initialAccount);const [loading,setLoading]=useState(configured);const [busy,setBusy]=useState(false);const [error,setError]=useState<TranslationKey|null>(null);const [confirmId,setConfirmId]=useState<string|null>(null);const [copiedId,setCopiedId]=useState<string|null>(null);const hydrated=useRef(false);

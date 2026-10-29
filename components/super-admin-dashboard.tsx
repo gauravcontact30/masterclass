@@ -13,7 +13,7 @@ import { Input } from "@/components/ui/input";
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { MessageSquarePlus, Newspaper, Activity, HeartPulse, ArrowLeft, ArrowUp, Bot, Layers, Receipt, LifeBuoy, Megaphone, MousePointerClick, TrendingUp, ChevronDown, ChevronRight, CreditCard, Database, ExternalLink, Languages, LogOut, RefreshCw, PanelLeftClose, PanelLeftOpen, Server, ShieldCheck, UploadCloud, UserRound, Users } from "lucide-react";
+import { MessageSquarePlus, Newspaper, Radar, Activity, HeartPulse, ArrowLeft, ArrowUp, Bot, Layers, Receipt, LifeBuoy, Megaphone, MousePointerClick, TrendingUp, ChevronDown, ChevronRight, CreditCard, Database, ExternalLink, Languages, LogOut, RefreshCw, PanelLeftClose, PanelLeftOpen, Server, ShieldCheck, UploadCloud, UserRound, Users } from "lucide-react";
 import { SidebarTooltips } from "./sidebar-tooltips";
 import { DashboardPageHeader } from "./dashboard-page-header";
 import { Wordmark } from "./brand-mark";
@@ -50,6 +50,8 @@ const SuperAdminAskData = dynamic(() => import("./super-admin-ask-data").then(mo
 const SuperAdminNewUserLocations = dynamic(() => import("./super-admin-new-user-locations").then(module => module.SuperAdminNewUserLocations), { loading: sectionLoading });
 const SuperAdminActivity = dynamic(() => import("./super-admin-activity").then(module => module.SuperAdminActivity), { loading: sectionLoading });
 const SuperAdminTransactions = dynamic(() => import("./super-admin-transactions").then(module => module.SuperAdminTransactions), { loading: sectionLoading });
+/** The "SEO Audit" page: site audit, rank tracker, Ahrefs site and keyword explorers, competitors and AI visibility. */
+const SuperAdminSeo = dynamic(() => import("./super-admin-seo").then(module => module.SuperAdminSeo), { loading: sectionLoading });
 const SuperAdminPromotions = dynamic(() => import("./super-admin-promotions").then(module => module.SuperAdminPromotions), { loading: sectionLoading });
 const SuperAdminCopilot = dynamic(() => import("./super-admin-copilot").then(module => module.SuperAdminCopilot), { loading: sectionLoading });
 const SuperAdminAnnouncements = dynamic(() => import("./super-admin-support").then(module => module.SuperAdminAnnouncements), { loading: sectionLoading });
@@ -69,7 +71,7 @@ type Snapshot = {
 const groups = [
   { label: "Monitor", key: "monitor" as const, items: [{ id: "overview", key: "overview" as const, label: "Overview", icon: Activity }, { id: "activity", key: "userActivities" as const, label: "User activities", icon: MousePointerClick }, { id: "live", key: "liveLearners" as const, label: "Live learners", icon: Users }, { id: "analytics", key: "learningAnalytics" as const, label: "Learning analytics", icon: Activity }, { id: "ai", key: "aiAnalytics" as const, label: "AI analytics", icon: Bot }, { id: "insights", key: "growthInsights" as const, label: "Growth insights", icon: TrendingUp }] },
   { label: "People", key: "people" as const, items: [{ id: "users", key: "usersAndAccess" as const, label: "Users & access", icon: Users }, { id: "suggestions", key: "suggestionBox" as const, label: "Suggestion Box", icon: MessageSquarePlus }, { id: "support", key: "learnerSupport" as const, label: "Learner support", icon: LifeBuoy }, { id: "moderation", key: "moderation" as const, label: "Moderation", icon: ShieldCheck }, { id: "announcements", key: "announcements" as const, label: "Announcements", icon: Megaphone }] },
-  { label: "Growth", key: "growth" as const, items: [{ id: "promotions", key: "promotionalTracking" as const, label: "Promotional Tracking", icon: TrendingUp }] },
+  { label: "Growth", key: "growth" as const, items: [{ id: "promotions", key: "promotionalTracking" as const, label: "Promotional Tracking", icon: TrendingUp }, { id: "seo-audit", key: "seoAudit" as const, label: "SEO Audit", icon: Radar }] },
   { label: "Revenue", key: "revenue" as const, items: [{ id: "billing", key: "revenueAndBilling" as const, label: "Revenue & billing", icon: CreditCard }, { id: "transactions", key: "transactions" as const, label: "Transactions", icon: Receipt }] },
   { label: "Content", key: "content" as const, items: [{ id: "tech-buzz", key: "techBuzzBlogs" as const, label: "Tech-Buzz - Blogs", icon: Newspaper }, { id: "content", key: "contentAndAudit" as const, label: "Content & audit", icon: Database }, { id: "queue", key: "generationQueue" as const, label: "Generation queue", icon: Layers }, { id: "notepad", key: "notepad" as const, label: "Notepad", icon: Receipt }, { id: "upload-learning", key: "uploadLearning" as const, label: "Upload Learning", icon: UploadCloud }] },
   { label: "System", key: "system" as const, items: [{ id: "infra", key: "infrastructure" as const, label: "Infrastructure", icon: Server }, { id: "logs-health", key: "logsAndHealth" as const, label: "Logs & Health", icon: HeartPulse }, { id: "security", key: "security" as const, label: "Security", icon: ShieldCheck }] },
@@ -100,6 +102,8 @@ export function SuperAdminDashboard({ userId = "admin", isOwner = false }: { use
       const { supabaseBrowser } = await import("@/lib/supabase-browser");
       const { error } = await supabaseBrowser().auth.signOut();
       if (error) throw error;
+      // The next sign-in starts with the learning sidebar collapsed again.
+      try { sessionStorage.removeItem("masterclass:sidebar-collapsed"); } catch {}
       router.replace("/");
       router.refresh();
     } catch {
@@ -107,7 +111,7 @@ export function SuperAdminDashboard({ userId = "admin", isOwner = false }: { use
       setSigningOut(false);
     }
   }
-  const [savedCollapsed, setCollapsed] = useState(false);
+  const [savedCollapsed, setCollapsed] = useState(true);
   // Phones: the sidebar is a drawer (components/mobile-nav.tsx), always shown expanded.
   const mobileNav = useMobileNav("admin navigation");
   const collapsed = savedCollapsed && !mobileNav.open;
@@ -174,7 +178,7 @@ export function SuperAdminDashboard({ userId = "admin", isOwner = false }: { use
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
-    </header><main className={styles.main}><DashboardPageHeader eyebrow={section === "tech-buzz" ? "Content · Blogs" : section === "upload-learning" ? "Content · Publishing" : section === "notepad" ? "Writing workspace" : section === "suggestions" ? "People · Feedback" : "Application monitoring"} title={section === "overview" ? "Your application, at a glance." : sections.find(s => s.id === section)?.label} description={section === "tech-buzz" ? "Track /tech-buzz end to end: every page and section, the daily 5:00 AM edition, Community favourites topics and every story's reactions." : section === "upload-learning" ? "Publish your Notepad documents to any page of the Learning Dashboard, the landing page, sign in, sign up or this console, and add your own Learning Dashboard pages." : section === "notepad" ? "Write, format and export documents. Drafts autosave in this browser every two minutes." : section === "suggestions" ? "Listen, triage and keep contributors informed. Replies appear in each contributor’s private tracking view." : isCopilotPage(section) ? COPILOT_META[section].description : "Keep a pulse on your learners, subscriptions, and platform."} icon={section === "tech-buzz" ? <Newspaper/> : section === "suggestions" ? <MessageSquarePlus/> : section === "upload-learning" ? <UploadCloud/> : <ShieldCheck/>}/>
+    </header><main className={styles.main}><DashboardPageHeader eyebrow={section === "tech-buzz" ? "Content · Blogs" : section === "upload-learning" ? "Content · Publishing" : section === "notepad" ? "Writing workspace" : section === "suggestions" ? "People · Feedback" : section === "seo-audit" ? "Growth · Search & AI visibility" : "Application monitoring"} title={section === "overview" ? "Your application, at a glance." : sections.find(s => s.id === section)?.label} description={section === "tech-buzz" ? "Track /tech-buzz end to end: every page and section, the daily 5:00 AM edition, Community favourites topics and every story's reactions." : section === "upload-learning" ? "Publish your Notepad documents to any page of the Learning Dashboard, the landing page, sign in, sign up or this console, and add your own Learning Dashboard pages." : section === "notepad" ? "Write, format and export documents. Drafts autosave in this browser every two minutes." : section === "suggestions" ? "Listen, triage and keep contributors informed. Replies appear in each contributor’s private tracking view." : section === "seo-audit" ? "Make the site discoverable in search and AI answers: audit every page, track rankings, research keywords and backlinks with Ahrefs, watch competitors and see when AI search cites you." : isCopilotPage(section) ? COPILOT_META[section].description : "Keep a pulse on your learners, subscriptions, and platform."} icon={section === "tech-buzz" ? <Newspaper/> : section === "suggestions" ? <MessageSquarePlus/> : section === "upload-learning" ? <UploadCloud/> : <ShieldCheck/>}/>
       <LearningSlot surface="super_admin" page={section} section="top" />
       {section !== "suggestions" && !writing && <div className={styles.toolbar}><div className={styles.reportFilter}><Label htmlFor="admin-report-window">Reporting window</Label><AdminSelect id="admin-report-window" label="Reporting window" value={String(days)} onValueChange={value=>setDays(Number(value))} options={[{value:"1",label:"Last 24 hours"},{value:"7",label:"Last 7 days"},{value:"30",label:"Last 30 days"},{value:"90",label:"Last 90 days"}]} /></div><Input aria-label="Search displayed records" placeholder="Search displayed records…" value={query} onChange={e => setQuery(e.target.value)} /></div>}
       {accountError && <Alert variant="destructive" className={styles.error}><AlertDescription>{accountError}</AlertDescription></Alert>}
@@ -195,6 +199,7 @@ export function SuperAdminDashboard({ userId = "admin", isOwner = false }: { use
       {section === "security" && <SuperAdminSecurityCenter days={days} />}
       {section === "announcements" && <SuperAdminAnnouncements />}
       {section === "promotions" && <SuperAdminPromotions days={days} query={query} />}
+      {section === "seo-audit" && <SuperAdminSeo />}
       {section === "tech-buzz" && <SuperAdminTechBuzzAnalytics days={days} query={query} />}
       {(section === "overview" || section === "live") && <OverviewLive snapshot={data} onRefreshSnapshot={refreshQuietly} />}
       {["overview","live","analytics","moderation","security"].includes(section)&&<SuperAdminOperations section={section} days={days} query={query}/>}

@@ -106,7 +106,12 @@ const example = z.object({
   explain: z.string().describe("Two or three sentences on how it works."),
 });
 const topicSchema = z.object({
-  description: z.array(z.string()).describe("3-4 paragraphs: what it is, how it works underneath, and why it matters."),
+  essentials: z.object({
+    core: z.string().describe("The one idea the whole topic rests on, in one or two plain sentences (at most 45 words)."),
+    answer: z.string().describe("The precise answer an interviewer or examiner expects to 'Explain <topic>': definition, how it works, when to use it; 3-4 sentences, no filler."),
+    keyPoints: z.array(z.string()).describe("5-7 facts a learner must remember (defaults, rules, complexities, traps), each one sentence, most important first."),
+  }),
+  description: z.array(z.string()).describe("3-4 paragraphs: what it is, how it works underneath, and why it matters. Every sentence teaches something; no restating the title, no filler."),
   usage: z.array(z.string()).describe("4-6 concrete situations where this is used."),
   files: z.array(z.object({ path: z.string(), code: z.string().describe("Complete file, at most 60 lines.") })).describe("2-3 files of one small real-world example project, shown as editor tabs."),
   tips: z.array(z.string()).describe("4-6 best practices or pitfalls."),
@@ -178,7 +183,8 @@ export async function loadGeneratedCourse(trackId: string): Promise<{ course: De
     const content = row?.status === "ready" ? row.content : null;
     if (!content) return { ...outline, description: [], usage: [], files: [], tips: [], subjective: [], objective: [], pending: true };
     return {
-      ...outline, description: content.description, usage: content.usage, files: content.files, tips: content.tips, subjective: content.subjective,
+      // Topics written before essentials existed have none; the page then starts at the Description.
+      ...outline, ...(content.essentials ? { essentials: content.essentials } : {}), description: content.description, usage: content.usage, files: content.files, tips: content.tips, subjective: content.subjective,
       objective: content.objective.filter(item => item.options.length === 4).map(item => ({ q: item.q, options: item.options as [string, string, string, string], answer: Math.max(0, Math.min(3, item.answer)) as 0 | 1 | 2 | 3, explain: item.explain })),
       lab: { ...content.lab, assignments: content.lab.assignments.map(item => ({ q: item.q, a: item.a, ...(item.code ? { code: item.code } : {}) })) },
     };

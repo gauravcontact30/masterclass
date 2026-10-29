@@ -547,7 +547,7 @@ export function CoursesFeed() {
             <span className={styles.brandDot} />
             <span>MasterClass Buddy · Learning Paths</span>
           </Link>
-          <Link href="/pricing" className={styles.festiveBannerPill}>
+          <Link href="/#pricing" className={styles.festiveBannerPill}>
             <span>🪔</span>
             <span>{festiveSale.title}: <strong>{festiveSale.discountPercent}% OFF (₹{festiveSale.discountedMonthly}/mo)</strong></span>
           </Link>
@@ -929,7 +929,7 @@ export function CoursesFeed() {
           </p>
         </div>
         <div className={styles.proBannerRight}>
-          <Link href="/pricing" className={styles.proBannerBtn}>
+          <Link href="/#pricing" className={styles.proBannerBtn}>
             <span>Get All-Access Pro (25% OFF)</span>
             <ArrowRight size={14} />
           </Link>

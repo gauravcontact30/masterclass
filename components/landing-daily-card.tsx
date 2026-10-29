@@ -12,7 +12,7 @@ export function DailyCard({ kicker, title, image, icon, day, children }: Readonl
   return <article className={styles.card} aria-label={`${kicker}: ${title}`}>
     <div className={styles.picture}>
       {/* eslint-disable-next-line @next/next/no-img-element -- pre-sized WebP from the learning-images bucket. */}
-      {image ? <img src={image} alt="" loading="lazy" decoding="async" /> : <span className={styles.icon} aria-hidden="true">{icon}</span>}
+      {image ? <img src={image} alt={`${kicker}: ${title}`} loading="lazy" decoding="async" /> : <span className={styles.icon} aria-hidden="true">{icon}</span>}
       <span className={styles.badge}><Sparkles size={12} aria-hidden="true" />New today · <time dateTime={day}>{new Date(`${day}T12:00:00Z`).toLocaleDateString("en-IN", { day: "numeric", month: "short", timeZone: "UTC" })}</time></span>
     </div>
     <div className={styles.body}>

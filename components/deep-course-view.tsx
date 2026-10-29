@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowLeft, ArrowRight, BookOpenText, Braces, ChevronRight, ClipboardList, Clock3, FlaskConical, Footprints, GitFork, Lightbulb, ListChecks, MessageSquareText, Wrench } from "lucide-react";
+import { ArrowLeft, ArrowRight, BookOpenText, Braces, ChevronRight, BadgeCheck, ClipboardList, Clock3, Crosshair, GraduationCap, Sparkles, FlaskConical, Footprints, GitFork, Lightbulb, ListChecks, MessageSquareText, Wrench } from "lucide-react";
 import type { ReactNode } from "react";
 import { CodeFiles } from "./code-files";
 import { DeepCourseObjective } from "./deep-course-objective";
@@ -10,7 +10,7 @@ import { deepCourseHref } from "@/lib/deep-courses";
 import { COURSE_CATALOG } from "@/lib/deep-courses/catalog";
 import { familyOfTrack, TRACK_FAMILIES } from "@/lib/pro-learn/families";
 import { topicTint } from "@/lib/deep-courses/progress";
-import type { CourseTopic, DeepCourse, LabExample, TopicLab } from "@/lib/deep-courses/types";
+import type { CourseTopic, DeepCourse, LabExample, TopicEssentials, TopicLab } from "@/lib/deep-courses/types";
 import styles from "./deep-course.module.css";
 
 function modulesOf(course: DeepCourse) {
@@ -73,7 +73,7 @@ function Overview({ course }: { course: DeepCourse }) {
     {modules.map((module, moduleIndex) => <section key={module.name} className={styles.moduleBlock} aria-labelledby={`module-${moduleIndex}`}>
       <h2 id={`module-${moduleIndex}`}><span>Module {moduleIndex + 1}</span>{module.name}</h2>
       <div className={styles.topicGrid}>{module.topics.map(topic => <DeepTopicCard key={topic.id} courseId={course.id} index={course.topics.indexOf(topic)} href={deepCourseHref(course.id, topic.id)}
-        topic={{ id: topic.id, title: topic.title, module: topic.module, level: topic.level, minutes: topic.minutes, summary: topic.summary }} />)}</div>
+        topic={{ id: topic.id, title: topic.title, module: topic.module, level: topic.level, minutes: topic.minutes, summary: topic.summary, takeaway: topic.essentials?.core }} />)}</div>
     </section>)}
   </div>;
 }
@@ -88,7 +88,7 @@ function Topic({ course, topic }: { course: DeepCourse; topic: CourseTopic }) {
       <p className={styles.meta}><i data-level={topic.level}>{topic.level}</i><span><Clock3 size={14} aria-hidden="true"/>{topic.minutes} min</span></p>
       {topic.pending && <GeneratingTopic trackId={course.id} topicId={topic.id} title={topic.title} />}
       {!topic.pending && <nav className={styles.jump} aria-label="On this page">
-        <a href="#description">Description</a><a href="#usage">Usage</a>
+        {topic.essentials && <a href="#essentials">Essentials</a>}<a href="#description">Description</a><a href="#usage">Usage</a>
         {topic.lab && <><a href="#steps">Step by step</a><a href="#syntax">Syntax</a><a href="#example">Example &amp; output</a><a href="#simple">Simple</a><a href="#moderate">Moderate</a><a href="#complex">Complex</a></>}
         <a href="#code">Code</a>
         {topic.lab && <><a href="#assignments">Assignments</a><a href="#alternates">Alternate ways</a></>}
@@ -109,6 +109,8 @@ const TONES = {
 function TopicBody({ course, topic, index }: { course: DeepCourse; topic: CourseTopic; index: number }) {
   return <>
     <DeepTopicChecklist courseId={course.id} topicId={topic.id} index={index} />
+
+    {topic.essentials && <Essentials essentials={topic.essentials} />}
 
     <section id="description" className={styles.block} data-tone={TONES.description}>
       <h2><BookOpenText size={18} aria-hidden="true"/>Description</h2>
@@ -149,6 +151,35 @@ function TopicBody({ course, topic, index }: { course: DeepCourse; topic: Course
       <ol className={styles.mcqs}>{topic.objective.map((question, number) => <DeepCourseObjective key={question.q} question={question} number={number + 1}/>)}</ol>
     </section>
   </>;
+}
+
+/** Light card tones for the exam notes, in turn, so each fact reads as its own revision card. */
+const POINT_TONES = ["mint", "butter", "lavender", "peach", "sky", "sage", "rose"] as const;
+
+/**
+ * The topic as a revision sheet: the key takeaway, the answer to give in an interview, and the exam notes, each on its
+ * own light card. Only the essence is here; the full explanation follows in the Description.
+ */
+function Essentials({ essentials }: { essentials: TopicEssentials }) {
+  return <section id="essentials" className={styles.essentials} aria-labelledby="essentials-title">
+    <header className={styles.essentialsHead}>
+      <h2 id="essentials-title"><Crosshair size={18} aria-hidden="true"/>Essentials</h2>
+      <p>Revise this before an exam or an interview: the whole topic on one screen.</p>
+    </header>
+    <div className={styles.takeawayCard}>
+      <h3><Sparkles size={15} aria-hidden="true"/>Key takeaway</h3>
+      <p>{essentials.core}</p>
+    </div>
+    <div className={styles.interviewCard}>
+      <h3><BadgeCheck size={15} aria-hidden="true"/>Interview answer</h3>
+      <p>{essentials.answer}</p>
+      <small>Answer in this order: what it is, how it works, when to use it.</small>
+    </div>
+    <h3 className={styles.notesHeading}><GraduationCap size={16} aria-hidden="true"/>Exam notes · key points</h3>
+    <ol className={styles.pointCards}>{essentials.keyPoints.map((point, at) => <li key={point} data-tone={POINT_TONES[at % POINT_TONES.length]}>
+      <span aria-hidden="true">{String(at + 1).padStart(2, "0")}</span><p>{point}</p>
+    </li>)}</ol>
+  </section>;
 }
 
 function TopicPager({ course, index }: { course: DeepCourse; index: number }) {

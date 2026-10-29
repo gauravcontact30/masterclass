@@ -1,0 +1,5 @@
+/* The Private-window visitors panel's own pieces; its table and stats reuse super-admin-first-look.module.css. */
+.detected, .likely { display: inline-flex; align-items: center; gap: 5px; padding: 3px 8px; border-radius: 999px; font-size: 11px; font-weight: 700; white-space: nowrap; }
+.detected { background: #f6e3e6; color: #8a2f3f; }
+.likely { background: #f1ece3; color: #6b5527; }
+.note { margin: 12px 0 0; font-size: 12px; line-height: 1.5; color: var(--soft, #73726c); }

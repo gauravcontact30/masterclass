@@ -131,7 +131,7 @@ export function FeatureSection({ feature, index, total, float, section, hi = fal
         <div className={frame.actions}><Link className={frame.cta} href={feature.cta.href}>{pick(feature.cta.label)}<ArrowRight size={16} aria-hidden="true" /></Link><ListenButton id={`feature:${feature.id}`} title={pick(feature.kicker)} text={[pick(feature.title) + pick(feature.emphasis), pick(feature.lede), ...feature.details.map(detail => `${pick(detail.title)}. ${pick(detail.body)}`)].join(" ")} /><small>{pick(feature.note)}</small></div>
       </div>
       <div className={styles.visual}>
-        <div className={styles.photo} aria-hidden="true"><Image src={feature.image.src} alt="" fill sizes="(max-width: 900px) 92vw, 560px" style={{ objectPosition: feature.image.focus }} /></div>
+        <div className={styles.photo}><Image src={feature.image.src} alt={`${pick(feature.kicker)}: ${pick(feature.title)}${pick(feature.emphasis)}`} fill sizes="(max-width: 900px) 92vw, 560px" style={{ objectPosition: feature.image.focus }} /></div>
         <span className={styles.badge} aria-hidden="true"><Badge size={14} />{pick(feature.badge.label)}</span>
         {float && <div className={styles.float}>{float}</div>}
       </div>

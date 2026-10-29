@@ -3,7 +3,7 @@ import { useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
 
 /** Set by the early page-view beacon in <head> (lib/early-track.ts). */
-declare global { interface Window { __mcEarly?: { path: string; sent: boolean; taken: boolean; pending?: Promise<unknown> } } }
+declare global { interface Window { __mcEarly?: { path: string; sent: boolean; taken: boolean; pending?: Promise<unknown>; priv?: boolean | null } } }
 
 /** The referrer belongs to the page load, not to every client-side navigation after it. */
 let referrerSent = false;
@@ -67,6 +67,8 @@ export function VisitTracker() {
         referrer: referrerSent ? null : document.referrer || null,
         utm: { source: params.get("utm_source"), medium: params.get("utm_medium"), campaign: params.get("utm_campaign") },
         language: navigator.language, timezone: Intl.DateTimeFormat().resolvedOptions().timeZone, screen: `${screen.width}x${screen.height}`,
+        // Asked once per page load by the early beacon: a private window stays private across client-side navigation.
+        private: window.__mcEarly?.priv ?? null,
       });
       referrerSent = true;
       open.current = { path: pathname, since: opened };

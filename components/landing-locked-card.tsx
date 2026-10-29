@@ -70,7 +70,7 @@ export function LockedCard({ teaser, index, total, text, render }: { teaser: Loc
   return <li className={`${pulse.card} ${styles.locked}`} data-tone={teaser.tone} aria-roledescription="slide" aria-label={`${index + 1} / ${total}: ${text("Locked card", "लॉक कार्ड")}`}>
     <div className={styles.picture}>
       {teaser.image && /* eslint-disable-next-line @next/next/no-img-element -- the same pre-sized picture as the open cards, blurred. */
-        <img src={teaser.image} alt="" loading="lazy" decoding="async" />}
+        <img src={teaser.image} alt={text("Blurred preview of a bonus card", "बोनस कार्ड का धुंधला पूर्वावलोकन")} loading="lazy" decoding="async" />}
       <span className={styles.ribbon}><Lock size={12} aria-hidden="true" />{text("Bonus card", "बोनस कार्ड")}</span>
     </div>
     <div className={styles.body}>

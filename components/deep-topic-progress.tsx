@@ -16,7 +16,8 @@ import styles from "./deep-course.module.css";
  * State comes from ./deep-progress-store (this browser, synced to Supabase for signed-in learners).
  */
 
-export type TopicCardData = { id: string; title: string; module: string; level: string; minutes: number; summary: string };
+/** takeaway: the topic's core concept (essentials), shown on its card so the overview doubles as a revision sheet. */
+export type TopicCardData = { id: string; title: string; module: string; level: string; minutes: number; summary: string; takeaway?: string };
 
 const percent = (share: number) => Math.round(share * 100);
 
@@ -80,6 +81,7 @@ export function DeepTopicCard({ courseId, topic, index, href }: { courseId: stri
     </header>
     <Link href={href} className={styles.topicCardLink}><b>{topic.title}</b></Link>
     <span className={styles.topicSummary}>{topic.summary}</span>
+    {topic.takeaway && <p className={styles.topicTakeaway}><b>Key takeaway</b>{topic.takeaway}</p>}
     <small className={styles.topicMeta}><i data-level={topic.level}>{topic.level}</i><Clock3 size={12} aria-hidden="true" />{topic.minutes} min</small>
     <details className={styles.cardChecklist}>
       <summary>Checklist · {ticked.size}/{TOPIC_CHECKLIST.length}</summary>

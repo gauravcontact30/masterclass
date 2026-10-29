@@ -1,5 +1,5 @@
 import "server-only";
-import type { CourseId, DeepCourse, TopicLab } from "./types";
+import type { CourseId, DeepCourse, TopicEssentials, TopicLab } from "./types";
 
 // One import per course so a topic page pulls only its own course's content into the server bundle chunk.
 const LOADERS: Record<CourseId, () => Promise<DeepCourse>> = {
@@ -21,7 +21,17 @@ const LABS: Record<CourseId, () => Promise<Record<string, TopicLab>>> = {
   "java-basic-to-advanced": () => import("./labs/java-basic-to-advanced").then(module => module.LABS),
 };
 
+// Each topic's core concept, precise answer and key points, keyed by topic id like the labs.
+const ESSENTIALS: Record<CourseId, () => Promise<Record<string, TopicEssentials>>> = {
+  "core-java": () => import("./essentials/core-java").then(module => module.ESSENTIALS),
+  "advanced-java": () => import("./essentials/advanced-java").then(module => module.ESSENTIALS),
+  "spring-boot": () => import("./essentials/spring-boot").then(module => module.ESSENTIALS),
+  cpp: () => import("./essentials/cpp").then(module => module.ESSENTIALS),
+  dsa: () => import("./essentials/dsa").then(module => module.ESSENTIALS),
+  "java-basic-to-advanced": () => import("./essentials/java-basic-to-advanced").then(module => module.ESSENTIALS),
+};
+
 export async function loadDeepCourse(id: CourseId): Promise<DeepCourse> {
-  const [course, labs] = await Promise.all([LOADERS[id](), LABS[id]()]);
-  return { ...course, topics: course.topics.map(topic => labs[topic.id] ? { ...topic, lab: labs[topic.id] } : topic) };
+  const [course, labs, essentials] = await Promise.all([LOADERS[id](), LABS[id](), ESSENTIALS[id]()]);
+  return { ...course, topics: course.topics.map(topic => ({ ...topic, ...(labs[topic.id] ? { lab: labs[topic.id] } : {}), ...(essentials[topic.id] ? { essentials: essentials[topic.id] } : {}) })) };
 }

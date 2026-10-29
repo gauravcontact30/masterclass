@@ -27,7 +27,7 @@ export function CoverCarousel({ slides, label, interval = 15_000, hi = false }: 
   return <CarouselShell count={count} titles={slides.map(slide => slide.title)} label={label} idBase={idBase} hi={hi} interval={interval}>
     {slides.map((item, at) => <article key={item.id} id={`${idBase}-${at}`} className={styles.slide} data-active={at === 0 || undefined} inert={at !== 0} aria-roledescription="slide" aria-label={`${at + 1} / ${count}: ${item.title}`}>
       <div className={styles.cover} style={item.tone ? { background: item.tone } : undefined}>
-        {item.image && <Image src={item.image} alt="" fill sizes="(max-width: 560px) 90vw, 360px" loading={at === 0 ? undefined : "lazy"} />}
+        {item.image && <Image src={item.image} alt={`${hi ? "चित्र" : "Illustration"}: ${item.title}`} fill sizes="(max-width: 560px) 90vw, 360px" loading={at === 0 ? undefined : "lazy"} />}
         <span className={styles.kicker}>{item.kicker}</span>
       </div>
       <div className={styles.body}>

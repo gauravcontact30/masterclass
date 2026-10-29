@@ -17,6 +17,8 @@ export type StreamVisit = {
   ip_hash?: string | null; screen?: string | null;
   /** Reported by the browser with each page view; ip_masked is the network address with its last part hidden. */
   language?: string | null; timezone?: string | null; ip_masked?: string | null;
+  /** The browser said this page was opened in a private window (lib/early-track.ts); null when it cannot tell. Migration 0048. */
+  private_mode?: boolean | null;
 };
 export type Presence = { session_id: string; path: string; started_at: string; seen_at: string };
 
@@ -42,7 +44,12 @@ export type StreamVisitor = {
   key: string; email: string | null; first: StreamVisit; last: StreamVisit; current: StreamVisit; page: PageTime | null;
   views: number; pages: number; sessions: number; engagedMs: number; trail: string[]; source: string | null;
   arrived: string; lastAt: number; left: number | null; beacon: boolean; live: boolean; signedIn: boolean;
+  /** The latest visit (session): arrival to now while on the site, otherwise to the last activity seen. */
   stayDurationMs: number;
+  /** Visible time on the latest visit's pages, the open page's clock included: never more than stayDurationMs. */
+  sessionEngagedMs: number;
+  /** "detected": the browser reported a private window; "likely": a known device came back with a brand-new cookie. */
+  privateWindow: PrivateSignal | null;
   postalCode: string | null;
   engagedContents: EngagedContent[];
   sessionArrived: string;
@@ -57,6 +64,28 @@ export type StreamVisitor = {
 };
 
 const at = (iso: string) => Date.parse(iso);
+
+export type PrivateSignal = "detected" | "likely";
+/** In-app browsers drop the visitor cookie on their own (see indexVisits), so a fresh cookie there says nothing about private windows. */
+const IN_APP = / app$|WhatsApp|In-app browser/i;
+
+/**
+ * Whether these page views came from a private (incognito) window. Firefox and Safari report it directly
+ * (private_mode, lib/early-track.ts); Chromium browsers hide it, so the fallback is the one trace a private window
+ * leaves: a device already seen here (same network, browser, OS and screen) arriving with a brand-new visitor cookie
+ * that it then keeps. Clearing cookies looks the same, which is why that case is only "likely".
+ */
+export function privateSignal(views: StreamVisit[]): PrivateSignal | null {
+  if (views.some(view => view.private_mode === true)) return "detected";
+  const seen = new Map<string, string>();
+  for (const view of views) {
+    if (!view.ip_hash || !view.screen || IN_APP.test(view.browser ?? "")) continue;
+    const device = `${view.ip_hash}|${view.browser}|${view.os}|${view.screen}`, earlier = seen.get(device);
+    if (earlier && earlier !== view.visitor_id && view.new_visitor && view.private_mode !== false) return "likely";
+    if (!earlier) seen.set(device, view.visitor_id);
+  }
+  return null;
+}
 
 /** What one page view is known to have: its closed stretches, and the stretch still running when there is one. */
 type ViewFacts = { from: number; beaconMs: number; lastLeave: number | null; beacons: number; running: { since: number; seen: number; heartbeat: boolean } | null; legacyOpen: boolean };
@@ -194,7 +223,12 @@ export function streamVisitors(index: VisitIndex, now: number, emails: Record<st
     // Multiple algorithm stay duration calculation:
     const sessionStayMs = Math.max(0, (openNow ? now : lastAt) - sessionArrivedEpoch);
     const totalStayMs = Math.max(0, (openNow ? now : lastAt) - arrivedEpoch);
-    const stayDurationMs = Math.max(sessionStayMs, openNow ? (currentTime?.ms ?? 0) : 0);
+    // Total Stay and Active Reading describe the same visit. Reading used to add up every page of every visit in the
+    // window while Stay covered only the latest one, so a returning reader could show 2m of stay and 15m of reading.
+    const sessionEngagedMs = times.reduce((sum, t) => sum + (t.view.session_id === last.session_id ? t.time?.ms ?? 0 : 0), 0);
+    // The browser times the first page from navigation start, a second or so before the server stamps its view, so the
+    // reading clock can run slightly ahead of arrival: the stay is never shorter than the reading inside it.
+    const stayDurationMs = Math.max(sessionStayMs, sessionEngagedMs);
     const totalStayDurationMs = Math.max(totalStayMs, stayDurationMs);
     const postalCode = views.map(v => v.postal_code).find(Boolean) ?? null;
 
@@ -212,11 +246,11 @@ export function streamVisitors(index: VisitIndex, now: number, emails: Record<st
     const engagedContents = [...contentMap.values()].sort((a, b) => b.durationMs - a.durationMs || b.views - a.views);
 
     const engagedMs = times.reduce((sum, t) => sum + (t.time?.ms ?? 0), 0);
-    const focusRatio = Math.min(100, Math.max(1, Math.round((engagedMs / Math.max(stayDurationMs, engagedMs, 1000)) * 100)));
+    const focusRatio = Math.min(100, Math.max(1, Math.round((sessionEngagedMs / Math.max(stayDurationMs, 1000)) * 100)));
     let intensityTier: "Deep Focus" | "Active Study" | "Exploring" = "Exploring";
-    if (focusRatio >= 70 && engagedMs >= 120_000) {
+    if (focusRatio >= 70 && sessionEngagedMs >= 120_000) {
       intensityTier = "Deep Focus";
-    } else if (engagedMs >= 45_000 || focusRatio >= 40) {
+    } else if (sessionEngagedMs >= 45_000 || focusRatio >= 40) {
       intensityTier = "Active Study";
     }
     const readingVelocity = views.length > 0 ? `${Math.max(1, Math.round(engagedMs / 1000 / views.length))}s / page` : "—";
@@ -262,6 +296,8 @@ export function streamVisitors(index: VisitIndex, now: number, emails: Record<st
       arrived: first.created_at, lastAt, left: openNow ? null : lastAt, beacon: !openNow && Boolean(latest?.time?.beacon),
       live: Boolean(openNow), signedIn: Boolean(person.user),
       stayDurationMs,
+      sessionEngagedMs,
+      privateWindow: privateSignal(views),
       postalCode,
       engagedContents,
       sessionArrived,

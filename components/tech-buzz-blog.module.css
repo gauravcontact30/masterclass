@@ -2539,3 +2539,17 @@
 .brand h1, .roadmapsHeader h2, .heroBody h2, .categorySectionTitle { font-size: 25px; line-height: 1.25; }
 .topics h2, .sidebar h2, .memberCard h2, .blog h3 { font-size: 18px; line-height: 1.35; }
 .lede, .blog article p { font-size: 15px; line-height: 1.6; }
+
+/* ── Semantic pass (2026-10-29): the feed is a region inside the site's one <main>, the story list has its own h2, and
+   "Popular tracks" is a real heading. Sizes stay on the 25/18/15 scale. ── */
+.techTracksTitle { margin: 0; }
+.storiesHead { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 16px; margin: 8px 0 14px; padding-bottom: 10px; border-bottom: 1px solid var(--line); }
+.storiesHead h2 { margin: 0; color: var(--ink); font-size: 18px; font-weight: 700; line-height: 1.35; letter-spacing: -.01em; text-wrap: balance; }
+.storiesCount { color: var(--body); font-size: 13px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.storyText h3, .heroBody h2 { text-wrap: balance; }
+.storyText p, .heroSubtitle { text-wrap: pretty; }
+.blog ::selection { background: #f6d9cb; color: #3b1c10; }
+@media (prefers-reduced-motion: reduce) {
+  .stories[data-view="list"] .storyLink, .stories[data-view="grid"] .storyLink { transition: none; }
+  .stories[data-view="list"] .storyLink:hover, .stories[data-view="grid"] .storyLink:hover { transform: none; }
+}

@@ -109,6 +109,8 @@ export function AuthPage({ mode, enabled, initialEmail = "", redirectTo, linkErr
         // Only a confirmed email may enter, even if the project ever issues a session before confirmation.
         if (!data.user?.email_confirmed_at) { await auth.signOut(); setError("email_not_confirmed"); return; }
         setAuthNotice("signed_in");
+        // Dashboards open with the sidebar collapsed on every sign-in.
+        try { sessionStorage.removeItem("masterclass:sidebar-collapsed"); } catch {}
         leaving = true; enterApp(safeRedirect(redirectTo));
         return;
       } else {

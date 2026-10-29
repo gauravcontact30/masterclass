@@ -76,7 +76,7 @@ export function LandingComparisons({ expanded = false, preview = false, locked =
     </div>
     <nav className={styles.visualPicker} aria-label={text("Browse illustrated comparisons", "चित्रों के साथ तुलनाएँ देखें")}>
       {items.slice(pickerStart, pickerStart + 5).map((item, offset) => { const index = pickerStart + offset; return <button key={item.id} type="button" aria-current={index === page ? "true" : undefined} onClick={() => goTo(index)}>
-        <ChainPicture sources={[learningImageUrl("topics", ["comparisons", item.id]), ...item.techs.map(tech => techPicture(tech.name)).filter((id): id is string => !!id).map(id => learningImageUrl("topics", ["interview", id]))]} alt="" icon={<GitCompareArrows size={24} aria-hidden="true" />}><span className={styles.previewLabel}>{item.techs.map(tech => tech.name).join(" / ")}</span></ChainPicture>
+        <ChainPicture sources={[learningImageUrl("topics", ["comparisons", item.id]), ...item.techs.map(tech => techPicture(tech.name)).filter((id): id is string => !!id).map(id => learningImageUrl("topics", ["interview", id]))]} alt={`${item.techs.map(tech => tech.name).join(" vs ")} comparison illustration`} icon={<GitCompareArrows size={24} aria-hidden="true" />}><span className={styles.previewLabel}>{item.techs.map(tech => tech.name).join(" / ")}</span></ChainPicture>
       </button>; })}
     </nav>
     <div className={styles.pickerPager}><Pager page={pickerPage} pages={Math.ceil(items.length / 5)} total={items.length} size={5} onPage={next => goTo((next - 1) * 5)} /></div></>}

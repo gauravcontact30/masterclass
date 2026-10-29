@@ -1,7 +1,7 @@
 "use client";
 
 import { TECH_BUZZ_TRACKED } from "@/lib/tech-buzz-sections";
-import { useState, useEffect, useCallback, useMemo, useSyncExternalStore } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef, useSyncExternalStore } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -21,15 +21,17 @@ import {
   MessageSquare,
   Sparkles,
   Layers,
-  Flame
+  Heart,
+  Rocket,
+  Brain,
+  Lightbulb,
+  Gauge
 } from "lucide-react";
 import { logoOf, type TechBuzzCard, type TechBuzzMemberContent, type TechBuzzPreview } from "@/lib/tech-buzz-public";
 import { isUnsplash, unoptimizedRemote, unsplashLoader } from "@/lib/image-loaders";
 import { LanguageSwitcher } from "./language-switcher";
 import { useLanguage } from "./language-provider";
 import styles from "./tech-buzz-article.module.css";
-import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/button";
 import { ClapButton, useClaps } from "./clap-button";
 import dynamic from "next/dynamic";
 import { KeyTakeaways, ProseText, SectionLists } from "./tech-buzz-prose";
@@ -66,6 +68,32 @@ const storyDate = (iso: string) => {
   return Number.isNaN(time) ? iso : new Date(time).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "Asia/Kolkata" });
 };
 
+const REACTIONS = [
+  { type: "heart", label: "Love this", icon: Heart },
+  { type: "unicorn", label: "Unicorn", icon: Sparkles },
+  { type: "rocket", label: "Rocket", icon: Rocket },
+  { type: "mindblown", label: "Mind blown", icon: Brain }
+] as const;
+
+/** The reading progress bar, written straight to the DOM once per frame so scrolling never re-renders the story. */
+function ReadingProgress() {
+  const bar = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    let frame = 0;
+    const update = () => {
+      frame = 0;
+      const total = document.documentElement.scrollHeight - window.innerHeight;
+      if (bar.current) bar.current.style.transform = `scaleX(${total > 0 ? Math.min(1, Math.max(0, window.scrollY / total)) : 0})`;
+    };
+    const schedule = () => { if (!frame) frame = requestAnimationFrame(update); };
+    update();
+    window.addEventListener("scroll", schedule, { passive: true });
+    window.addEventListener("resize", schedule);
+    return () => { cancelAnimationFrame(frame); window.removeEventListener("scroll", schedule); window.removeEventListener("resize", schedule); };
+  }, []);
+  return <div className={styles.readingProgressBarContainer} aria-hidden="true"><div ref={bar} className={styles.readingProgressBar} /></div>;
+}
+
 export function TechBuzzArticleView({ article, related, prevStory, nextStory }: Props) {
   const { t, language } = useLanguage();
   // Membership: "checking" while the member body loads, then the body or the reason it is locked.
@@ -80,7 +108,6 @@ export function TechBuzzArticleView({ article, related, prevStory, nextStory }: 
   const [userReactions, setUserReactions] = useState<{ heart: number; unicorn: number; rocket: number; mindblown: number }>(article.reactions);
   const [bookmarked, setBookmarked] = useState<boolean>(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
-  const [readingProgress, setReadingProgress] = useState<number>(0);
 
   // Audio voiceover state with speech synthesis & active reading sync
   const [isPlayingAudio, setIsPlayingAudio] = useState<boolean>(false);
@@ -129,19 +156,6 @@ export function TechBuzzArticleView({ article, related, prevStory, nextStory }: 
       .catch(() => { if (!controller.signal.aborted) setAccess("signin_required"); });
     return () => controller.abort();
   }, [article.slug, signedIn]);
-
-  // Track scroll position for reading progress bar
-  useEffect(() => {
-    const handleScroll = () => {
-      const totalHeight = document.documentElement.scrollHeight - window.innerHeight;
-      if (totalHeight > 0) {
-        const progress = Math.min(100, Math.max(0, (window.scrollY / totalHeight) * 100));
-        setReadingProgress(progress);
-      }
-    };
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
 
   const showToast = useCallback((msg: string) => {
     setToastMessage(msg);
@@ -323,17 +337,12 @@ export function TechBuzzArticleView({ article, related, prevStory, nextStory }: 
   );
 
   return (
-    <article className={styles.articlePageRoot}>
-      {/* 1. Sticky Reading Progress Bar */}
-      <div className={styles.readingProgressBarContainer}>
-        <div
-          className={styles.readingProgressBar}
-          style={{ width: `${readingProgress}%` }}
-          aria-hidden="true"
-        />
-      </div>
+    // The site chrome owns <main>; the story itself is the <article>, with the page's navigation and the related
+    // stories as its siblings so assistive tech reads the article as one self-contained piece.
+    <div className={styles.articlePageRoot}>
+      <ReadingProgress />
 
-      {/* 2. Top Sticky Navigation */}
+      {/* Top sticky navigation */}
       <nav data-track-topic={TECH_BUZZ_TRACKED.storyNav} className={styles.stickyArticleNav} aria-label="Article navigation">
         <div className={styles.stickyNavInner}>
           <Link href="/tech-buzz" className={styles.backLink} aria-label={t("techBuzzBackToGuides")}>
@@ -360,57 +369,44 @@ export function TechBuzzArticleView({ article, related, prevStory, nextStory }: 
             <button
               type="button"
               onClick={toggleBookmark}
-              style={{ background: "transparent", border: "none", cursor: "pointer", color: bookmarked ? "#ea580c" : "#64748b", padding: "0.35rem" }}
+              className={styles.navIconBtn}
+              aria-pressed={bookmarked}
               aria-label="Bookmark story"
+              title={bookmarked ? "Saved to your bookmarks" : "Bookmark story"}
             >
-              <Bookmark size={18} fill={bookmarked ? "currentColor" : "none"} />
+              <Bookmark size={18} fill={bookmarked ? "currentColor" : "none"} aria-hidden="true" />
             </button>
 
             <button
               type="button"
               onClick={handleShare}
-              style={{ background: "transparent", border: "none", cursor: "pointer", color: "#64748b", padding: "0.35rem" }}
+              className={styles.navIconBtn}
               aria-label="Share story"
+              title="Share story"
             >
-              <Share2 size={18} />
+              <Share2 size={18} aria-hidden="true" />
             </button>
           </div>
         </div>
       </nav>
 
-      {/* 3. Hero Header Section */}
+      <article className={styles.story} aria-labelledby="tb-story-title">
       <header data-track-topic={TECH_BUZZ_TRACKED.storyHeader} className={styles.articleHeroContainer}>
         <div className={styles.articleHeroInner}>
-          {/* Breadcrumbs */}
-          <nav aria-label="Breadcrumbs" className={styles.breadcrumbs}>
-            <Link href="/" prefetch={false}>Home</Link>
-            <span>/</span>
-            <Link href="/tech-buzz">Tech Buzz</Link>
-            <span>/</span>
-            <span>{article.category}</span>
-            <span>/</span>
-            <span style={{ color: "#0f172a", fontWeight: 600, display: "inline-flex", alignItems: "center", gap: "0.35rem" }}>
-              {logoOf(article) && (
-                <Image src={logoOf(article)!} alt="" width={15} height={15} style={{ borderRadius: 3 }} />
-              )}
-              <span>{article.technology}</span>
-            </span>
+          {/* The trail carries the category and technology, so no separate chips repeat them above the title. */}
+          <nav aria-label="Breadcrumb" className={styles.breadcrumbs}>
+            <ol>
+              <li><Link href="/" prefetch={false}>Home</Link></li>
+              <li><Link href="/tech-buzz">Tech Buzz</Link></li>
+              <li>{article.category}</li>
+              <li className={styles.crumbTech}>
+                {logoOf(article) && <Image src={logoOf(article)!} alt="" width={16} height={16} />}
+                <span>{article.technology}</span>
+              </li>
+            </ol>
           </nav>
 
-          <div style={{ display: "flex", flexWrap: "wrap", alignItems: "center", gap: "0.5rem", marginBottom: "0.75rem" }}>
-            <div className={styles.categoryBadge}>
-              <Flame size={12} />
-              <span>{article.category}</span>
-            </div>
-            <div style={{ display: "inline-flex", alignItems: "center", gap: "0.35rem", padding: "0.25rem 0.65rem", borderRadius: "9999px", background: "#f8fafc", border: "1px solid #e2e8f0", fontSize: "0.75rem", fontWeight: 700, color: "#334155" }}>
-              {logoOf(article) && (
-                <Image src={logoOf(article)!} alt="" width={15} height={15} style={{ borderRadius: 2 }} />
-              )}
-              <span>{article.technology}</span>
-            </div>
-          </div>
-
-          <h1 className={styles.articleTitle}>{article.title}</h1>
+          <h1 id="tb-story-title" className={styles.articleTitle}>{article.title}</h1>
           <p className={styles.articleSubtitle}>{article.subtitle}</p>
 
           {/* Author Byline */}
@@ -418,24 +414,22 @@ export function TechBuzzArticleView({ article, related, prevStory, nextStory }: 
             <div className={styles.authorLeft}>
               <Image
                 src={article.author.avatar}
-                alt={article.author.name}
+                alt=""
                 width={52}
                 height={52}
                 className={styles.authorAvatar}
                 loader={loaderFor(article.author.avatar)} unoptimized={remote(article.author.avatar)}
               />
               <div className={styles.authorDetails}>
-                <div className={styles.authorName}>
+                <p className={styles.authorName}>
                   <span>{article.author.name}</span>
                   {article.author.verified && (
-                    <span title="Verified Author" style={{ display: "inline-flex", alignItems: "center" }}>
-                      <CheckCircle2 size={14} color="#059669" />
-                    </span>
+                    <CheckCircle2 size={14} className={styles.verifiedMark} role="img" aria-label="Verified author" />
                   )}
-                </div>
-                <div className={styles.authorMetaSub}>
+                </p>
+                <p className={styles.authorMetaSub}>
                   {article.author.role} · {article.readTimeMinutes} min read · <time dateTime={article.publishedAt}>{storyDate(article.publishedAt)}</time>
-                </div>
+                </p>
               </div>
             </div>
 
@@ -452,33 +446,32 @@ export function TechBuzzArticleView({ article, related, prevStory, nextStory }: 
               )}
 
               <div className={styles.starBadge} title={article.rating.count ? `Rated ${article.rating.average}/5 by ${article.rating.count} readers` : "No reader ratings yet"}>
-                <Star size={13} fill="#f59e0b" color="#f59e0b" />
+                <Star size={13} fill="#f59e0b" color="#f59e0b" aria-hidden="true" />
                 {article.rating.count ? <>
                   <span>{article.rating.average}</span>
-                  <span style={{ opacity: 0.7 }}>({article.rating.count})</span>
+                  <span className={styles.starCount}>({article.rating.count})</span>
                 </> : <span>New story</span>}
               </div>
             </div>
           </div>
         </div>
 
-        {/* Cover Image */}
-        <div className={styles.coverImageWrapper}>
+        {/* Cover: a mood picture, not information, so it has no alt text of its own (the title is right above it). */}
+        <figure className={styles.coverImageWrapper}>
           <Image
             src={article.coverImage}
-            alt={article.title}
+            alt=""
             fill
             className={styles.coverImage}
             preload
             sizes="(max-width: 712px) 100vw, 680px"
             loader={loaderFor(article.coverImage)} unoptimized={remote(article.coverImage)}
           />
-          {article.photoCredit && <small className={styles.coverCredit}>{article.photoCredit}</small>}
-        </div>
+          {article.photoCredit && <figcaption className={styles.coverCredit}>{article.photoCredit}</figcaption>}
+        </figure>
       </header>
 
-      {/* 4. Article Body Content */}
-      <main className={styles.articleBodyLayout}>
+      <div className={styles.articleBodyLayout}>
         <div className={styles.articleBodyInner}>
           {/* Enhanced Audio Voiceover Player with Speech Synthesis */}
           {article.audioVoiceover && (
@@ -547,16 +540,16 @@ export function TechBuzzArticleView({ article, related, prevStory, nextStory }: 
           {/* Interactive Learning Objectives & Key Takeaways Checklist */}
           <div className={styles.takeawaysContainer}>
             <div className={styles.takeawaysHeader}>
-              <h3 className={styles.takeawaysTitle}>
-                <Sparkles size={18} color="#ea580c" />
+              <h2 id="tb-objectives" className={styles.takeawaysTitle}>
+                <Sparkles size={18} className={styles.takeawaysIcon} aria-hidden="true" />
                 <span>Learning Objectives & Key Takeaways</span>
-              </h3>
+              </h2>
               <span className={styles.takeawaysCounter}>
                 {completedTakeawaysCount} / {defaultTakeaways.length} Completed
               </span>
             </div>
 
-            <ul className={styles.takeawaysList}>
+            <ul className={styles.takeawaysList} aria-labelledby="tb-objectives">
               {defaultTakeaways.map((takeaway, idx) => {
                 const isChecked = Boolean(checkedTakeaways[idx]);
                 return (
@@ -574,7 +567,7 @@ export function TechBuzzArticleView({ article, related, prevStory, nextStory }: 
                       }
                     }}
                   >
-                    <span className={styles.takeawayCheckbox}>
+                    <span className={styles.takeawayCheckbox} aria-hidden="true">
                       {isChecked && <Check size={12} />}
                     </span>
                     <span>{takeaway}</span>
@@ -588,13 +581,13 @@ export function TechBuzzArticleView({ article, related, prevStory, nextStory }: 
           {article.builderMetrics && (
             <div className={styles.builderMetricsCard}>
               <div className={styles.builderMetricsTitle}>
-                🚀 {article.builderMetrics.metricLabel}
+                <Gauge size={15} aria-hidden="true" /> {article.builderMetrics.metricLabel}
               </div>
               <div className={styles.builderMetricsContent}>
                 {article.builderMetrics.metricValue}
               </div>
               {article.builderMetrics.sla && (
-                <span style={{ fontSize: "0.75rem", color: "#64748b", marginLeft: "auto" }}>
+                <span className={styles.builderMetricsSla}>
                   Verified: {article.builderMetrics.sla}
                 </span>
               )}
@@ -606,15 +599,15 @@ export function TechBuzzArticleView({ article, related, prevStory, nextStory }: 
 
           {/* Series banner */}
           {article.series && (
-            <div style={{ display: "inline-flex", alignItems: "center", gap: "0.5rem", background: "#eff6ff", border: "1px solid #bfdbfe", padding: "0.4rem 0.85rem", borderRadius: "9999px", color: "#1d4ed8", fontSize: "0.8125rem", fontWeight: 600, marginBottom: "2rem" }}>
-              <Layers size={14} />
+            <p className={styles.seriesPill}>
+              <Layers size={14} aria-hidden="true" />
               <span>Series: {article.series.title} (Part {article.series.part} of {article.series.totalParts})</span>
-            </div>
+            </p>
           )}
 
           {/* Section 0: the free preview, or the full first section for members */}
           {visibleSections[0] && (
-            <section>
+            <section className={styles.storySection}>
               {visibleSections[0].heading && (
                 <h2 className={styles.proseHeading}>{visibleSections[0].heading}</h2>
               )}
@@ -698,7 +691,7 @@ export function TechBuzzArticleView({ article, related, prevStory, nextStory }: 
                   .reduce((acc, s) => acc + s.paragraphs.length, 0);
 
                 return (
-                  <section key={idx + 1} style={{ marginBottom: "2.5rem" }}>
+                  <section key={idx + 1} className={styles.storySection}>
                     {section.heading && (
                       <h2 className={styles.proseHeading}>{section.heading}</h2>
                     )}
@@ -758,241 +751,191 @@ export function TechBuzzArticleView({ article, related, prevStory, nextStory }: 
 
               {/* Founder Architectural Takeaway */}
               {memberContent.founderTakeaway && (
-                <div style={{ background: "#f8fafc", borderLeft: "4px solid #ea580c", padding: "1.5rem", borderRadius: "0 12px 12px 0", margin: "2.5rem 0" }}>
-                  <div style={{ fontSize: "0.75rem", fontWeight: 700, textTransform: "uppercase", color: "#ea580c", marginBottom: "0.5rem", letterSpacing: "0.06em" }}>
-                    💡 Architectural Takeaway
+                <aside className={styles.founderTakeaway} aria-label="Architectural takeaway">
+                  <Lightbulb size={20} className={styles.founderIcon} aria-hidden="true" />
+                  <div>
+                    <p className={styles.founderLabel}>Architectural takeaway</p>
+                    <p className={styles.founderQuote}>&ldquo;{memberContent.founderTakeaway}&rdquo;</p>
                   </div>
-                  <p style={{ margin: 0, fontStyle: "italic", color: "#334155", fontSize: "1.0625rem", lineHeight: 1.6 }}>
-                    &ldquo;{memberContent.founderTakeaway}&rdquo;
-                  </p>
-                </div>
+                </aside>
               )}
 
               {/* Developer Discussion Comments Thread */}
-              <section data-track-topic={TECH_BUZZ_TRACKED.discussion} className={styles.commentsContainer}>
-                <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontSize: "1.25rem", fontWeight: 700, color: "#0f172a", marginBottom: "1.5rem" }}>
-                  <MessageSquare size={20} color="#ea580c" />
-                  <span>Discussion ({comments.length})</span>
-                </div>
+              <section data-track-topic={TECH_BUZZ_TRACKED.discussion} className={styles.commentsContainer} aria-labelledby="tb-discussion">
+                <h2 id="tb-discussion" className={styles.discussionTitle}>
+                  <MessageSquare size={20} className={styles.discussionIcon} aria-hidden="true" />
+                  <span>Discussion</span>
+                  <span className={styles.discussionCount}>{comments.length}</span>
+                </h2>
 
-                <form onSubmit={handleAddComment} style={{ background: "#f8fafc", border: "1px solid #e2e8f0", borderRadius: "12px", padding: "1.25rem", marginBottom: "2rem" }}>
-                  <Textarea
+                <form onSubmit={handleAddComment} className={styles.commentForm}>
+                  <label htmlFor="tb-comment" className={styles.srOnly}>Your comment</label>
+                  <textarea
+                    id="tb-comment"
+                    className={styles.commentInput}
                     placeholder="Share your architectural insight, question, or experience with this tech stack..."
                     value={newCommentText}
                     onChange={e => setNewCommentText(e.target.value)}
-                    style={{ width: "100%", minHeight: "85px", padding: "0.75rem", border: "1px solid #cbd5e1", borderRadius: "8px", background: "#ffffff", fontSize: "0.9375rem", color: "#0f172a", outline: "none", resize: "vertical" }}
                     required
                   />
-                  <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "0.75rem" }}>
-                    <Button
-                      type="submit"
-                      style={{ background: "#0f172a", color: "#ffffff", border: "none", fontSize: "0.875rem", fontWeight: 700, padding: "0.5rem 1.25rem", borderRadius: "9999px", cursor: "pointer" }}
-                    >
-                      Post Comment
-                    </Button>
+                  <div className={styles.commentFormActions}>
+                    <button type="submit" className={styles.commentSubmit}>Post comment</button>
                   </div>
                 </form>
 
-                <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+                {comments.length > 0 && <ol className={styles.commentList}>
                   {comments.map(c => (
-                    <div key={c.id} style={{ background: "#ffffff", border: "1px solid #f1f5f9", borderRadius: "10px", padding: "1.15rem" }}>
-                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "0.5rem" }}>
-                        <div style={{ display: "flex", alignItems: "center", gap: "0.6rem" }}>
-                          <Image
-                            src={c.author.avatar}
-                            alt={c.author.name}
-                            width={32}
-                            height={32}
-                            style={{ borderRadius: "50%", objectFit: "cover" }}
-                            unoptimized
-                          />
-                          <div>
-                            <span style={{ fontWeight: 700, fontSize: "0.875rem", color: "#0f172a" }}>{c.author.name}</span>
-                            <span style={{ fontSize: "0.75rem", color: "#64748b", marginLeft: "0.5rem" }}>
-                              {c.author.handle} • {c.createdAt}
-                            </span>
-                          </div>
-                        </div>
-                        {c.author.badge && (
-                          <span style={{ fontSize: "0.6875rem", background: "#f1f5f9", color: "#475569", padding: "0.15rem 0.5rem", borderRadius: "4px", fontWeight: 600 }}>
-                            {c.author.badge}
-                          </span>
-                        )}
-                      </div>
-                      <p style={{ fontSize: "0.9375rem", lineHeight: 1.55, color: "#334155", margin: 0 }}>
-                        {c.text}
-                      </p>
-                    </div>
+                    <li key={c.id}>
+                      <article className={styles.comment} aria-label={`Comment by ${c.author.name}`}>
+                        <header className={styles.commentHead}>
+                          <Image src={c.author.avatar} alt="" width={32} height={32} className={styles.commentAvatar} unoptimized />
+                          <p className={styles.commentWho}>
+                            <b>{c.author.name}</b>
+                            <span>{c.author.handle} · {c.createdAt}</span>
+                          </p>
+                          {c.author.badge && <span className={styles.commentBadge}>{c.author.badge}</span>}
+                        </header>
+                        <p className={styles.commentText}>{c.text}</p>
+                      </article>
+                    </li>
                   ))}
-                </div>
+                </ol>}
               </section>
             </div>
           )}
 
-          {/* Claps & Dev Reactions Floating Strip */}
+          {/* Claps and reactions */}
           <div className={styles.engagementStrip}>
             <ClapButton slug={article.slug} claps={claps} label="Clap for this blog" />
 
-            <div className={styles.devReactionsBig}>
-              <button
-                type="button"
-                className={styles.devReactionBtnBig}
-                onClick={() => handleReaction("heart")}
-                title="Love this"
-              >
-                <span>❤️</span>
-                <span>{userReactions.heart}</span>
-              </button>
-              <button
-                type="button"
-                className={styles.devReactionBtnBig}
-                onClick={() => handleReaction("unicorn")}
-                title="Unicorn"
-              >
-                <span>🦄</span>
-                <span>{userReactions.unicorn}</span>
-              </button>
-              <button
-                type="button"
-                className={styles.devReactionBtnBig}
-                onClick={() => handleReaction("rocket")}
-                title="Rocket"
-              >
-                <span>🚀</span>
-                <span>{userReactions.rocket}</span>
-              </button>
-              <button
-                type="button"
-                className={styles.devReactionBtnBig}
-                onClick={() => handleReaction("mindblown")}
-                title="Mindblown"
-              >
-                <span>🤯</span>
-                <span>{userReactions.mindblown}</span>
-              </button>
+            <div className={styles.devReactionsBig} role="group" aria-label="React to this story">
+              {REACTIONS.map(({ type, label, icon: Icon }) => (
+                <button
+                  key={type}
+                  type="button"
+                  className={styles.devReactionBtnBig}
+                  data-reaction={type}
+                  onClick={() => handleReaction(type)}
+                  title={label}
+                  aria-label={`${label}: ${userReactions[type]}`}
+                >
+                  <Icon size={17} aria-hidden="true" />
+                  <span aria-hidden="true">{userReactions[type]}</span>
+                </button>
+              ))}
             </div>
           </div>
 
-          {/* Previous & Next Story Navigation */}
-          {(prevStory || nextStory) && (
-            <div className={styles.storyNavGrid}>
-              {prevStory ? (
-                <Link href={`/tech-buzz/${prevStory.slug}`} className={styles.storyNavCard}>
-                  <div className={styles.storyNavDirection}>
-                    <ArrowLeft size={13} />
-                    <span>Previous Story</span>
-                  </div>
-                  <h4 className={styles.storyNavTitle}>{prevStory.title}</h4>
-                  <div className={styles.storyNavMeta}>
-                    {logoOf(prevStory) && (
-                      <Image src={logoOf(prevStory)!} alt="" width={15} height={15} style={{ borderRadius: 2 }} />
-                    )}
-                    <span>{prevStory.technology}</span>
-                    <span>•</span>
-                    <span>{prevStory.readTimeMinutes} min read</span>
-                  </div>
-                </Link>
-              ) : <div />}
-
-              {nextStory && (
-                <Link href={`/tech-buzz/${nextStory.slug}`} className={styles.storyNavCard} style={{ textAlign: "right" }}>
-                  <div className={styles.storyNavDirection} style={{ justifyContent: "flex-end" }}>
-                    <span>Next Story</span>
-                    <ArrowRight size={13} />
-                  </div>
-                  <h4 className={styles.storyNavTitle}>{nextStory.title}</h4>
-                  <div className={styles.storyNavMeta} style={{ justifyContent: "flex-end" }}>
-                    {logoOf(nextStory) && (
-                      <Image src={logoOf(nextStory)!} alt="" width={15} height={15} style={{ borderRadius: 2 }} />
-                    )}
-                    <span>{nextStory.technology}</span>
-                    <span>•</span>
-                    <span>{nextStory.readTimeMinutes} min read</span>
-                  </div>
-                </Link>
-              )}
-            </div>
-          )}
-
-          {/* Author Bottom Bio Card */}
-          <div className={styles.authorBottomCard}>
+          {/* The story's byline card closes the article */}
+          <footer className={styles.authorBottomCard}>
             <Image
               src={article.author.avatar}
-              alt={article.author.name}
+              alt=""
               width={64}
               height={64}
-              style={{ borderRadius: "50%", objectFit: "cover" }}
+              className={styles.authorBioAvatar}
               loader={loaderFor(article.author.avatar)} unoptimized={remote(article.author.avatar)}
             />
             <div>
-              <div style={{ fontSize: "0.8125rem", color: "#64748b", textTransform: "uppercase", letterSpacing: "0.05em", fontWeight: 700 }}>
-                Written By
-              </div>
-              <h3 style={{ fontSize: "1.25rem", fontWeight: 700, color: "#0f172a", margin: "0.25rem 0 0.5rem" }}>
-                {article.author.name}
-              </h3>
-              <p style={{ fontSize: "0.9375rem", color: "#475569", lineHeight: 1.5, margin: 0 }}>
+              <p className={styles.authorBioLabel}>Written by</p>
+              <p className={styles.authorBioName}>{article.author.name}</p>
+              <p className={styles.authorBioText}>
                 {article.author.role}. Contributing deep-dive engineering architectures, cloud paradigms, and system design insights to Master Class Buddy.
               </p>
             </div>
-          </div>
+          </footer>
         </div>
-      </main>
+      </div>
+      </article>
 
-      {/* 5. More from Master Class Buddy Blogs - Full Width Section */}
-      <section data-track-topic={TECH_BUZZ_TRACKED.more} className={styles.moreBlogsSection} aria-label="More tech buzz articles">
+      {/* Previous and next stories in the feed */}
+      {(prevStory || nextStory) && (
+        <div className={styles.articleBodyLayout}>
+          <nav className={`${styles.articleBodyInner} ${styles.storyNavGrid}`} aria-label="Previous and next stories">
+            {prevStory ? (
+              <Link href={`/tech-buzz/${prevStory.slug}`} rel="prev" className={styles.storyNavCard}>
+                <span className={styles.storyNavDirection}>
+                  <ArrowLeft size={13} aria-hidden="true" />
+                  <span>Previous story</span>
+                </span>
+                <span className={styles.storyNavTitle}>{prevStory.title}</span>
+                <span className={styles.storyNavMeta}>
+                  {logoOf(prevStory) && <Image src={logoOf(prevStory)!} alt="" width={15} height={15} />}
+                  <span>{prevStory.technology}</span>
+                  <span aria-hidden="true">·</span>
+                  <span>{prevStory.readTimeMinutes} min read</span>
+                </span>
+              </Link>
+            ) : <span />}
+
+            {nextStory && (
+              <Link href={`/tech-buzz/${nextStory.slug}`} rel="next" className={`${styles.storyNavCard} ${styles.storyNavNext}`}>
+                <span className={styles.storyNavDirection}>
+                  <span>Next story</span>
+                  <ArrowRight size={13} aria-hidden="true" />
+                </span>
+                <span className={styles.storyNavTitle}>{nextStory.title}</span>
+                <span className={styles.storyNavMeta}>
+                  {logoOf(nextStory) && <Image src={logoOf(nextStory)!} alt="" width={15} height={15} />}
+                  <span>{nextStory.technology}</span>
+                  <span aria-hidden="true">·</span>
+                  <span>{nextStory.readTimeMinutes} min read</span>
+                </span>
+              </Link>
+            )}
+          </nav>
+        </div>
+      )}
+
+      {/* Related stories, full width */}
+      <section data-track-topic={TECH_BUZZ_TRACKED.more} className={styles.moreBlogsSection} aria-labelledby="tb-more-heading">
         <div className={styles.moreBlogsInner}>
           <div className={styles.moreBlogsHeader}>
-            <h2 className={styles.moreBlogsTitle}>More from Master Class Buddy — Blogs</h2>
-            <Link
-              href="/tech-buzz"
-              style={{ display: "inline-flex", alignItems: "center", gap: "0.35rem", fontSize: "0.875rem", fontWeight: 700, color: "#ea580c", textDecoration: "none" }}
-            >
+            <h2 id="tb-more-heading" className={styles.moreBlogsTitle}>More from Tech Buzz</h2>
+            <Link href="/tech-buzz" className={styles.moreBlogsAll}>
               <span>Explore all blogs</span>
-              <ArrowRight size={14} />
+              <ArrowRight size={14} aria-hidden="true" />
             </Link>
           </div>
 
-          <div className={styles.moreBlogsGrid}>
+          <ul className={styles.moreBlogsGrid}>
             {paginatedMoreArticles.map(rel => (
-              <Link
-                key={rel.id}
-                href={`/tech-buzz/${rel.slug}`}
-                className={styles.moreBlogCard}
-              >
-                <div className={styles.moreBlogCardCover}>
-                  <Image
-                    src={rel.coverImage}
-                    alt={rel.title}
-                    fill
-                    style={{ objectFit: "cover" }}
-                    sizes="(max-width: 640px) 100vw, 33vw"
-                    loader={loaderFor(rel.coverImage)} unoptimized={remote(rel.coverImage)}
-                  />
-                  {logoOf(rel) && (
-                    <div style={{ position: "absolute", bottom: "8px", left: "8px", width: "28px", height: "28px", borderRadius: "8px", background: "#ffffff", display: "grid", placeItems: "center", boxShadow: "0 2px 8px rgba(0,0,0,0.2)", zIndex: 2 }}>
-                      <Image src={logoOf(rel)!} alt="" width={18} height={18} />
-                    </div>
-                  )}
-                </div>
-                <div className={styles.moreBlogCardBody}>
-                  <div style={{ fontSize: "0.75rem", fontWeight: 700, color: "#ea580c", textTransform: "uppercase", marginBottom: "0.35rem" }}>
-                    {rel.category}
-                  </div>
-                  <h3 className={styles.moreBlogCardTitle}>{rel.title}</h3>
-                  <p className={styles.moreBlogCardSubtitle}>{rel.subtitle}</p>
-                  <div className={styles.moreBlogCardFooter}>
-                    <span>{rel.readTimeMinutes} min read</span>
-                    <span>★ {rel.rating.average}</span>
-                  </div>
-                </div>
-              </Link>
+              <li key={rel.id}>
+                <Link href={`/tech-buzz/${rel.slug}`} className={styles.moreBlogCard}>
+                  <span className={styles.moreBlogCardCover}>
+                    <Image
+                      src={rel.coverImage}
+                      alt=""
+                      fill
+                      className={styles.moreBlogCoverImg}
+                      sizes="(max-width: 640px) 100vw, 33vw"
+                      loader={loaderFor(rel.coverImage)} unoptimized={remote(rel.coverImage)}
+                    />
+                    {logoOf(rel) && (
+                      <span className={styles.moreBlogLogo}>
+                        <Image src={logoOf(rel)!} alt="" width={18} height={18} />
+                      </span>
+                    )}
+                  </span>
+                  <span className={styles.moreBlogCardBody}>
+                    <span className={styles.moreBlogCategory}>{rel.category}</span>
+                    <h3 className={styles.moreBlogCardTitle}>{rel.title}</h3>
+                    <span className={styles.moreBlogCardSubtitle}>{rel.subtitle}</span>
+                    <span className={styles.moreBlogCardFooter}>
+                      <span>{rel.readTimeMinutes} min read</span>
+                      {rel.rating.count
+                        ? <span className={styles.moreBlogRating}><Star size={12} fill="currentColor" aria-hidden="true" />{rel.rating.average}<span className={styles.srOnly}> out of 5</span></span>
+                        : <span>New story</span>}
+                    </span>
+                  </span>
+                </Link>
+              </li>
             ))}
-          </div>
+          </ul>
 
           {/* Pagination controls for related blogs */}
           {totalMorePages > 1 && (
-            <div className={styles.moreBlogsPagination} aria-label="Related blogs pagination">
+            <nav className={styles.moreBlogsPagination} aria-label="More stories pages">
               <button
                 type="button"
                 className={styles.moreBlogsPageBtn}
@@ -1000,7 +943,7 @@ export function TechBuzzArticleView({ article, related, prevStory, nextStory }: 
                 disabled={moreBlogsPage === 1}
                 aria-label="Previous page of blogs"
               >
-                <ChevronLeft size={16} />
+                <ChevronLeft size={16} aria-hidden="true" />
                 <span>Prev</span>
               </button>
 
@@ -1011,6 +954,7 @@ export function TechBuzzArticleView({ article, related, prevStory, nextStory }: 
                   className={`${styles.moreBlogsPageBtn} ${pageNum === moreBlogsPage ? styles.moreBlogsPageActive : ""}`}
                   onClick={() => setMoreBlogsPage(pageNum)}
                   aria-current={pageNum === moreBlogsPage ? "page" : undefined}
+                  aria-label={`Page ${pageNum}`}
                 >
                   {pageNum}
                 </button>
@@ -1024,9 +968,9 @@ export function TechBuzzArticleView({ article, related, prevStory, nextStory }: 
                 aria-label="Next page of blogs"
               >
                 <span>Next</span>
-                <ChevronRight size={16} />
+                <ChevronRight size={16} aria-hidden="true" />
               </button>
-            </div>
+            </nav>
           )}
 
           {/* Move to top button in article view */}
@@ -1035,9 +979,8 @@ export function TechBuzzArticleView({ article, related, prevStory, nextStory }: 
               type="button"
               className={styles.articleMoveToTopBtn}
               onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-              aria-label="Move to top"
             >
-              <ArrowUp size={16} />
+              <ArrowUp size={16} aria-hidden="true" />
               <span>Move to top</span>
             </button>
           </div>
@@ -1050,6 +993,6 @@ export function TechBuzzArticleView({ article, related, prevStory, nextStory }: 
           {toastMessage}
         </div>
       )}
-    </article>
+    </div>
   );
 }

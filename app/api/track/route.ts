@@ -26,6 +26,8 @@ const bodySchema = z.object({
   topic: text(120), option: text(100), target_path: z.string().max(300).regex(/^\/(?!\/)[^?]*$/).optional().nullable(),
   title: text(200), referrer: text(500), language: text(35), timezone: text(60), screen: text(20),
   duration: z.number().int().min(0).max(86_400_000).optional(),
+  /** Whether the browser reported a private window (lib/early-track.ts); null when it cannot tell (Chromium). */
+  private: z.boolean().optional().nullable(),
   utm: z.object({ source: text(80), medium: text(80), campaign: text(120) }).partial().optional(),
 });
 
@@ -132,11 +134,15 @@ export async function POST(request: Request) {
     duration_ms: input.type === "leave" ? input.duration ?? null : null,
   };
   const point = geoPoint(request.headers);
+  const privateMode = input.type === "view" ? input.private ?? null : null;
   after(async () => {
     try {
-      let { error } = await db().from("site_visits").insert({ ...row, ...point });
-      // Before migration 0030 the postal code and coordinate columns do not exist: keep the visit without them.
-      if (error && (error.code === "PGRST204" || error.code === "42703")) ({ error } = await db().from("site_visits").insert(row));
+      const missingColumn = (code?: string) => code === "PGRST204" || code === "42703";
+      let { error } = await db().from("site_visits").insert({ ...row, ...point, private_mode: privateMode });
+      // Before migration 0048 there is no private_mode column, and before 0030 no postal code or coordinates: keep the
+      // visit without whichever is missing.
+      if (error && missingColumn(error.code)) ({ error } = await db().from("site_visits").insert({ ...row, ...point }));
+      if (error && missingColumn(error.code)) ({ error } = await db().from("site_visits").insert(row));
       if (error && error.code !== "42P01" && error.code !== "PGRST205") console.error("visit_write_failed", error.code);
     } catch { console.error("visit_write_unavailable"); }
   });

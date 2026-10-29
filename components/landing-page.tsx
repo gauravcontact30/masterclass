@@ -85,7 +85,7 @@ export function LandingPage({ features, certifications, workflows, pro, library,
     <LandingNavbar links={navigation as [string, string, string][]} prices={priceState === "ready" ? prices : null} onCurrency={reprice} />
     <WelcomeModal prices={priceState === "ready" ? prices : null} onCurrency={reprice} />
     <main id="main-content" tabIndex={-1}>
-    <h1 className={home.srOnly}>{t("siteHeadline") || "MasterClass Buddy: technology learning for professionals, in English and Hindi"}</h1>
+    <h1 className={home.srOnly}>{t("siteHeadline") || "MasterClass Buddy: learn Agentic AI, LangChain, LangGraph, n8n and Next.js with courses, Tech Buzz and interview prep"}</h1>
     {/* Order (2026-10-20): the promise (slider, what you get), something to try at once (Study Buddy), the highest-intent
         sections (interview prep, the daily pulse, blueprints, certification paths), a section each for AI Search, featured lessons and notes, proof of depth (library, comparisons,
         docs), then social proof straight before the ask (reviews, membership). */}

@@ -70,7 +70,7 @@ export function LandingTechy({ data }: { data: LandingProPreview["techy"] }) {
         <div className={styles.termBar}><span className={styles.dots} aria-hidden="true"><i/><i/><i/></span><span className={styles.termPath}>~/techy/{topic.id}</span></div>
         <div className={styles.topics} role="group" aria-label={text("Choose a topic", "विषय चुनें")}>
           {data.topics.slice(currentPage * TECHY_PAGE_SIZE, (currentPage + 1) * TECHY_PAGE_SIZE).map(item => <button type="button" key={item.id} aria-pressed={item.id === topic.id} onClick={() => pick(item.id)} title={item.title} aria-label={item.title}>
-            {TECH_PILLS[item.id] && <Image src={`/images/tech/${TECH_PILLS[item.id].icon}.png`} alt="" width={14} height={14} />}
+            {TECH_PILLS[item.id] && <Image src={`/images/tech/${TECH_PILLS[item.id].icon}.png`} alt={`${TECH_PILLS[item.id].label} logo`} aria-hidden="true" width={14} height={14} />}
             {TECH_PILLS[item.id]?.label ?? item.title}
           </button>)}
         </div>

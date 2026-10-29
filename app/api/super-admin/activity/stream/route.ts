@@ -16,7 +16,9 @@ import { isLocalAddress, looksAutomated } from "@/lib/visit-quality";
 const LIMIT = 20_000, PAGE = 1000;
 /** Read only to judge a row (lib/visit-quality.ts); never sent to the browser. */
 const PRIVATE = new Set(["timezone", "language", "ip_masked"]);
-const COLUMNS = "id,created_at,event,visitor_id,session_id,user_id,new_visitor,path,title,referrer_host,utm_source,country,region,city,postal_code,device,browser,os,duration_ms,screen,timezone,language,ip_masked,ip_hash";
+const BASE_COLUMNS = "id,created_at,event,visitor_id,session_id,user_id,new_visitor,path,title,referrer_host,utm_source,country,region,city,postal_code,device,browser,os,duration_ms,screen,timezone,language,ip_masked,ip_hash";
+/** private_mode arrives with migration 0048; until then the stream reads without it and private windows show as "likely" only. */
+const COLUMNS = `${BASE_COLUMNS},private_mode`;
 
 // Account emails change rarely; one lookup per account every ten minutes per server instance is plenty.
 const emailCache = new Map<string, { email: string | null; at: number }>();
@@ -31,11 +33,14 @@ export async function GET(request: Request) {
     const since = asked && Date.parse(asked) > Date.parse(windowStart) ? new Date(asked).toISOString() : windowStart;
 
     const client = db();
-    const page = (offset: number, count = false) => client.from("site_visits").select(COLUMNS, count ? { count: "exact" } : undefined)
+    let columns = COLUMNS;
+    const page = (offset: number, count = false) => client.from("site_visits").select(columns, count ? { count: "exact" } : undefined)
       .eq("is_bot", false).in("event", ["page_view", "page_leave"]).gte("created_at", since)
       .order("created_at", { ascending: false }).order("id", { ascending: false }).range(offset, offset + PAGE - 1);
     // The first page also says how many rows there are; the rest are read four at a time instead of one by one.
-    const [head, presence] = await Promise.all([page(0, true), readPresence(since)]);
+    const [first, presence] = await Promise.all([page(0, true), readPresence(since)]);
+    let head = first;
+    if (head.error?.code === "42703") { columns = BASE_COLUMNS; head = await page(0, true); }
     if (head.error) adminError(head.error);
     const rows: Record<string, unknown>[] = [...(head.data ?? []) as unknown as Record<string, unknown>[]];
     const total = Math.min(head.count ?? rows.length, LIMIT);

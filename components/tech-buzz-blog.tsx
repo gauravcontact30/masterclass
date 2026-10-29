@@ -487,7 +487,7 @@ export function TechBuzzBlog({ cards, groups, showcase = false }: { cards: TechB
     <section data-track-topic={TECH_BUZZ_TRACKED.tracks} className={styles.techTracksSection} aria-label={t("techBuzzPopularTracks")}>
       <div className={styles.techTracksHeader}>
         <div className={styles.techTracksTitleGroup}>
-          <span className={styles.techTracksTitle}><Zap size={15} aria-hidden="true" />{t("techBuzzPopularTracks")}</span>
+          <h2 className={styles.techTracksTitle}><Zap size={15} aria-hidden="true" />{t("techBuzzPopularTracks")}</h2>
           <span className={styles.techTracksSubtitle}>{t("techBuzzPopularTracksSubtitle")}</span>
         </div>
 
@@ -623,7 +623,8 @@ export function TechBuzzBlog({ cards, groups, showcase = false }: { cards: TechB
     </Link>}
 
     {/* 4. Feeds Pills */}
-    <nav className={styles.feeds} aria-label="Story feeds">
+    {/* Feed filters re-sort the list in place, so they are a toggle group, not navigation. */}
+    <div className={styles.feeds} role="group" aria-label="Story feeds">
       {FEEDS.map(item => {
         const Icon = item.icon;
         return <button key={item.id} type="button" aria-pressed={feed === item.id} onClick={() => resetTo(() => setFeed(item.id))}>
@@ -631,7 +632,7 @@ export function TechBuzzBlog({ cards, groups, showcase = false }: { cards: TechB
           {item.id === "saved" && savedCount > 0 && <span className={styles.savedPillCount}>{savedCount}</span>}
         </button>;
       })}
-    </nav>
+    </div>
 
     {/* 5. Main Content Grid Layout */}
     <div
@@ -779,7 +780,8 @@ export function TechBuzzBlog({ cards, groups, showcase = false }: { cards: TechB
       </aside>
 
       {/* Main Feed */}
-      <main data-track-topic={TECH_BUZZ_TRACKED.feed} className={styles.feed} aria-label="Stories">
+      {/* The site chrome already renders the page's one <main>; the feed is a named region inside it. */}
+      <section data-track-topic={TECH_BUZZ_TRACKED.feed} className={styles.feed} aria-label="Stories">
         {/* Active Filter Notification */}
         {(topic || activeRoadmap || query.trim()) && (
           <div className={styles.filterNote} role="status">
@@ -813,7 +815,7 @@ export function TechBuzzBlog({ cards, groups, showcase = false }: { cards: TechB
                   <ul className={styles.heroBullets}>
                     {hero.summary.map(bullet => (
                       <li key={bullet}>
-                        <CheckCircle2 size={15} className={styles.bulletCheckIcon} />
+                        <CheckCircle2 size={15} className={styles.bulletCheckIcon} aria-hidden="true" />
                         <span>{bullet}</span>
                       </li>
                     ))}
@@ -931,7 +933,7 @@ export function TechBuzzBlog({ cards, groups, showcase = false }: { cards: TechB
                       <div className={styles.categoryTabCover}>
                         <Image
                           src={group.cover.coverImage}
-                          alt={group.category}
+                          alt=""
                           fill
                           sizes="(max-width: 640px) 100vw, (max-width: 1140px) 50vw, 320px"
                           loader={loaderFor(group.cover.coverImage)}
@@ -958,20 +960,24 @@ export function TechBuzzBlog({ cards, groups, showcase = false }: { cards: TechB
           </section>
         )}
 
-        {/* Stories List / Grid */}
+        {/* Stories List / Grid, under a heading that names what is listed */}
+        <div className={styles.storiesHead}>
+          <h2 id="tb-stories-heading">{activeRoadmap ? activeRoadmap.title : topicLabel ? `${topicLabel} stories` : FEEDS.find(item => item.id === feed)?.label ?? "Stories"}</h2>
+          <span className={styles.storiesCount}>{stories.length} {stories.length === 1 ? "story" : "stories"}</span>
+        </div>
         {visible.length === 0 ? (
           <div className={styles.empty}>
             <Bookmark size={28} aria-hidden="true" />
             <p>{feed === "saved" ? "Your reading list is empty. Tap the bookmark on any story to save it here." : "No technology stories match yet. Try another technology, roadmap, or search term."}</p>
           </div>
         ) : (
-          <ol className={styles.stories} data-view={view}>
+          <ol className={styles.stories} data-view={view} aria-labelledby="tb-stories-heading">
             {visible.map((card, index) => (
               <li key={card.id} style={{ "--i": index % PAGE } as CSSProperties}>
                 <article className={styles.story}>
                   <Link href={`/tech-buzz/${card.slug}`} className={styles.storyLink}>
                     <Thumb card={card} size={view === "grid" ? "grid" : "list"} />
-                    <span className={styles.storyText}>
+                    <div className={styles.storyText}>
                       <div className={styles.storyHeader}>
                         <span className={styles.byline}>
                           <Image
@@ -1000,7 +1006,7 @@ export function TechBuzzBlog({ cards, groups, showcase = false }: { cards: TechB
                       </span>
 
                       <Meta card={card} />
-                    </span>
+                    </div>
                   </Link>
                   <SaveButton saved={!!saved[card.id]} onToggle={() => toggleSaved(card.id)} title={card.title} />
                 </article>
@@ -1014,7 +1020,7 @@ export function TechBuzzBlog({ cards, groups, showcase = false }: { cards: TechB
             Show more technology masterclasses <small>{stories.length - shown} left</small>
           </button>
         )}
-      </main>
+      </section>
 
       {/* Right Sidebar: Highlights & Top Rated with Collapse / Expand */}
       <aside

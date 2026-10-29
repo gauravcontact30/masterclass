@@ -11,6 +11,12 @@ export type CourseFile = { path: string; code: string; note?: string };
 export type SubjectiveQuestion = { q: string; a: string };
 export type ObjectiveQuestion = { q: string; options: [string, string, string, string]; answer: 0 | 1 | 2 | 3; explain: string };
 
+/**
+ * The topic distilled for revision, shown above the Description: the one idea everything else rests on, the precise
+ * answer to "explain <topic>" an interviewer or examiner expects, and the points a learner must not forget.
+ */
+export type TopicEssentials = { core: string; answer: string; keyPoints: string[] };
+
 export type CourseTopic = {
   id: string;
   title: string;
@@ -19,6 +25,8 @@ export type CourseTopic = {
   level: CourseLevel;
   minutes: number;
   summary: string;
+  /** Core concept, precise answer and key points (./essentials/<course>.ts, or written with a generated topic). */
+  essentials?: TopicEssentials;
   description: string[];
   usage: string[];
   files: CourseFile[];
