@@ -378,7 +378,11 @@
 .mobile-nav-mark{display:inline-flex}
 .app-shell.compact-workspace .topbar-actions{margin-left:auto;flex-shrink:0;flex-wrap:nowrap;gap:6px}
 .app-shell.compact-workspace .topbar-divider{display:none}}
-@media (max-width:420px){.app-shell.compact-workspace .topbar-actions .super-admin-header-link span{display:none}}
+@media (max-width:420px){.app-shell.compact-workspace .topbar-actions .super-admin-header-link span{display:none}
+  /* Search's Refresh rides in the top bar: on a phone it keeps its icon and its label for screen readers only, so the bar fits 320px. */
+  .app-shell.compact-workspace .topbar-actions .refresh-action{width:36px;padding:0 0 0 11px;gap:0;font-size:0;overflow:hidden;justify-content:flex-start}}
+/* 320px phones: the menu button stays; its small logo mark goes, so every top bar action still fits. */
+@media (max-width:360px){.app-shell.compact-workspace .mobile-nav-mark{display:none}.app-shell.compact-workspace .topbar{gap:6px}.app-shell.compact-workspace .topbar-actions{gap:4px}}
 @media (min-width:761px){.mobile-nav-lead,.mobile-nav-scrim{display:none!important}}
 @media (prefers-reduced-motion:reduce){.mobile-nav-scrim{animation:none}}
 
@@ -421,3 +425,8 @@
   .sidebar-collapsed .learning-sidebar nav :is(.sidebar-notes, button), .sidebar-collapsed .learning-sidebar nav :is(.sidebar-notes, button) svg { transition: none; }
   .sidebar-collapsed .learning-sidebar nav :is(.sidebar-notes, button):hover, .sidebar-collapsed .learning-sidebar nav :is(.sidebar-notes, button):hover svg { transform: none; }
 }
+/* Learning dashboard targets of the "Jump to" bar (components/dashboard-section-nav.tsx): clear the sticky top bar and the bar itself. */
+.dashboard-anchor{scroll-margin-top:130px}
+.dashboard-plans{margin-top:28px}
+.dashboard-plans>h2{margin:0 0 6px;font-size:clamp(20px,2.4vw,26px);letter-spacing:-.01em}
+.dashboard-plans>p{margin:0 0 18px;color:#5e5d59;line-height:1.55}

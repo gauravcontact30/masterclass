@@ -60,7 +60,7 @@
 /* Official documentation for each compared technology, under the questions. */
 .officialDocs { display: grid; gap: 10px; margin-top: 18px; }
 .officialDocs h4 { margin: 0; font-size: 15px; color: var(--nb-graphite); }
-.officialDocs ul { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px; margin: 0; padding: 0; list-style: none; }
+.officialDocs ul { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); gap: 10px; margin: 0; padding: 0; list-style: none; }
 .officialDocs li { --chip: #eaf2fd; --chip-edge: #2a5d9f; }
 .officialDocs li[data-tint="1"] { --chip: #e9f6ee; --chip-edge: #2f7a4f; }
 .officialDocs li[data-tint="2"] { --chip: #f1ecfb; --chip-edge: #5b45a8; }

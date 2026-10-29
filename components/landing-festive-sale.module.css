@@ -11,7 +11,7 @@
 .copy h2 span { display: block; margin-top: 6px; background: linear-gradient(90deg, #fde68a, #f59e0b 45%, #fb923c); -webkit-background-clip: text; background-clip: text; color: transparent; }
 .lede { max-width: 54ch; margin: 0; text-align: left; -webkit-hyphens: none; hyphens: none; font-size: 16px; line-height: 1.65; color: #e9e3ff; }
 
-.plans { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; }
+.plans { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); gap: 14px; }
 .plan { display: grid; gap: 6px; padding: 18px 20px; border: 1px solid #fbbf2455; border-radius: 18px; background: linear-gradient(160deg, #ffffff14, #ffffff06); color: var(--ivory); text-decoration: none; backdrop-filter: blur(6px);
   transition: transform .2s ease, border-color .2s ease, box-shadow .2s ease; }
 .plan[data-cycle="yearly"] { border-color: #fbbf24; box-shadow: 0 0 0 1px #fbbf2440, 0 18px 40px -24px #f59e0b; }

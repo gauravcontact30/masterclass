@@ -10,7 +10,7 @@
 .summary b { color: #141413; font-variant-numeric: tabular-nums; }
 
 /* Summary strip: one light tone per figure. */
-.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px; }
+.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 170px), 1fr)); gap: 10px; }
 .stats > div { --tone-fill: #fff; --tone-edge: #e8e6dc; --tone-accent: #5e5d59; display: grid; gap: 2px; padding: 12px 14px; border: 1px solid var(--tone-edge); border-radius: 14px; background: var(--tone-fill); }
 .stats > div[data-tone="mint"] { --tone-fill: #eff9f3; --tone-edge: #c8e8d5; --tone-accent: #2a7a4e; }
 .stats > div[data-tone="sky"] { --tone-fill: #f1f7fe; --tone-edge: #cfe1f6; --tone-accent: #2f6fb5; }

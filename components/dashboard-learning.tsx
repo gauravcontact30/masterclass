@@ -10,6 +10,7 @@ import { LandingInterview } from "./landing-interview";
 import { LandingComparisons } from "./landing-comparisons";
 import { LandingTechDocs } from "./landing-tech-docs";
 import { DeepCourseShelf } from "./deep-course-shelf";
+import { LockedMoreContext } from "./dashboard-more";
 import { ContentProvider } from "./content-editing";
 import type { ContentOverrides } from "@/lib/content-overrides";
 import type { OfficialTechDocs } from "@/lib/tech-docs-official";
@@ -24,19 +25,21 @@ export type DashboardDaily = { day: string; pulse: PulseCard[]; words: DailyWord
  * most-asked interview question) and Interview prep. The landing page previews three cards of each and links
  * here (components/dashboard-more.tsx), so these render the same components, in the landing page's tokens and font.
  */
-export function DashboardLearning({ daily, techDocs, concepts, locked = false, overrides, canEdit = false }: Readonly<{ daily: DashboardDaily | null; techDocs?: OfficialTechDocs | null; concepts?: Record<string, TechConcept[]>; locked?: boolean; overrides?: ContentOverrides; canEdit?: boolean }>) {
+export function DashboardLearning({ daily, today = 0, techDocs, concepts, locked = false, overrides, canEdit = false }: Readonly<{ daily: DashboardDaily | null; /** istDay(): picks the day's interview technologies in the locked preview. */ today?: number; techDocs?: OfficialTechDocs | null; concepts?: Record<string, TechConcept[]>; locked?: boolean; overrides?: ContentOverrides; canEdit?: boolean }>) {
   const font = landingFont(useLanguage().language === "hi");
   // Super Admin edits (migration 0032) apply here for everyone; only the Super Admin gets the edit switch.
-  return <ContentProvider overrides={overrides} canEdit={canEdit}><div className={`${home.home} ${font.variable} ${font.className} ${styles.learning}`}>
+  // After the trial (`locked`), every section shows the landing page's preview and its "see all" link opens the plans
+  // (components/workspace.tsx puts them under this sheet), so the reader sees what membership opens before the price.
+  return <ContentProvider overrides={overrides} canEdit={canEdit}><LockedMoreContext value={locked}><div className={`${home.home} ${font.variable} ${font.className} ${styles.learning}`}>
     {/* Order (2026-10-28): the in-depth courses first (the "What next" coach was removed), then today's pulse, the
         highest-intent practice (interview prep, blueprints), reference depth (comparisons, docs), and the day's words last. */}
     <DeepCourseShelf id="dashboard-deep-courses" inSheet />
-    {daily && <LandingAiPulse expanded cards={daily.pulse} day={daily.day} locked={daily.locked.pulse} />}
-    <LandingInterview expanded />
-    <LandingWorkflows workflows={WORKFLOWS} expanded />
+    {daily && <LandingAiPulse expanded={!locked} preview={locked} cards={daily.pulse} day={daily.day} locked={daily.locked.pulse} />}
+    <LandingInterview expanded={!locked} preview={locked} day={today} />
+    <LandingWorkflows workflows={WORKFLOWS} expanded={!locked} preview={locked} />
     {/* Without a membership (trial over), the full Tech Topics and Technology docs stay behind the plans screen. */}
     <LandingComparisons expanded={!locked} preview={locked} locked={locked} official={techDocs} />
     <LandingTechDocs official={techDocs} preview={locked} locked={locked} concepts={locked ? undefined : concepts} />
-    {daily && <LandingVocabulary words={daily.words} day={daily.day} locked={daily.locked.word} />}
-  </div></ContentProvider>;
+    {daily && <LandingVocabulary preview={locked} words={daily.words} day={daily.day} locked={daily.locked.word} />}
+  </div></LockedMoreContext></ContentProvider>;
 }

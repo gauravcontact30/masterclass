@@ -1153,7 +1153,7 @@
 
 .legend dl {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr));
   gap: 10px 24px;
   margin: 0;
 }
@@ -1267,13 +1267,15 @@
 /* Agentic framework entries as picture cards, like Search's Popular AWS
    services: the generated illustration runs flush across the top. */
 .cardGrid {
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr));
   gap: 12px;
   padding: 10px;
 }
 
 .entry.entryCard {
   flex-direction: column;
+  /* Never wraps: phones give .entry flex-wrap, which made a card's column as wide as its longest line (clipped). */
+  flex-wrap: nowrap;
   align-items: stretch;
   gap: 8px;
   padding: 0 0 10px;
@@ -1309,5 +1311,6 @@
 
 .entryCard .entryMeta {
   padding: 0 10px;
+  margin-left: 0;
   margin-top: auto;
 }

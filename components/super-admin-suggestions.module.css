@@ -19,7 +19,7 @@
 .legacy code { font-size: 12px; overflow-wrap: anywhere; }
 
 /* KPI tiles: each one is also a filter */
-.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(168px, 1fr)); gap: 12px; }
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 168px), 1fr)); gap: 12px; }
 .tile { --tone: var(--clay); --tone-soft: #f8dccb; position: relative; overflow: hidden; display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; column-gap: 10px; row-gap: 4px; padding: 14px 16px; border: 1px solid var(--rule); border-radius: 16px; background: var(--sheet); text-align: left; font: inherit; color: inherit; cursor: pointer; box-shadow: 0 14px 30px -28px rgba(20, 20, 19, .45); transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease; }
 .tile::before { content: ""; position: absolute; inset: 0 auto 0 0; width: 3px; background: var(--tone); opacity: .85; }
 .tile:hover { transform: translateY(-2px); box-shadow: 0 18px 34px -26px rgba(20, 20, 19, .5); }
@@ -68,11 +68,11 @@
 .chip[data-priority="high"], .priority[data-priority="high"] { --c: #8a6212; --c-soft: #f5ecd3; }
 .chip[data-priority="urgent"], .priority[data-priority="urgent"] { --c: #a92f28; --c-soft: #f9e0dc; }
 
-.filters { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px 20px; padding: 18px; border: 1px solid var(--rule); border-radius: 16px; background: var(--sheet); }
+.filters { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)); gap: 16px 20px; padding: 18px; border: 1px solid var(--rule); border-radius: 16px; background: var(--sheet); }
 .filters fieldset { border: 0; margin: 0; padding: 0; min-width: 0; }
 .filters fieldset:disabled { opacity: .55; }
 .filters legend, .filterFields label { display: block; margin-bottom: 8px; font-size: 11px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; color: #8a877d; }
-.filterFields { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; padding-top: 14px; border-top: 1px solid var(--rule); }
+.filterFields { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 170px), 1fr)); gap: 12px; padding-top: 14px; border-top: 1px solid var(--rule); }
 .filterFields label { display: grid; gap: 6px; margin: 0; }
 .filterFields [data-slot="input"], .filterFields select { width: 100%; height: 36px; text-transform: none; letter-spacing: 0; font-weight: 500; }
 

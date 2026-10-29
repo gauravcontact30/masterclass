@@ -49,7 +49,7 @@
 .hoursCard { grid-column: 2; grid-row: 1 / span 2; }
 .detailCard { grid-column: 1; }
 .detailCard .detail { margin-top: 0; }
-.detailCard .detailMetrics { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
+.detailCard .detailMetrics { grid-template-columns: repeat(auto-fill, minmax(min(100%, 140px), 1fr)); }
 .detailHeading h3 { font-size: 15px; }
 .tabPanel h4 { display: flex; align-items: baseline; gap: 8px; margin: 12px 0 6px; font-size: 12px; }
 .tabPanel h4 small { font-weight: 400; color: #59655e; }

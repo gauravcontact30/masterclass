@@ -67,7 +67,7 @@ button.stat:hover { transform: translateY(-1px); box-shadow: 0 10px 22px -18px v
 .sourceTools .search { flex: 1 1 220px; }
 .search { display: flex; align-items: center; gap: 8px; min-height: 40px; padding: 0 12px; border: 1px solid var(--tone-edge, #e8e6dc); border-radius: 10px; background: #fff; color: #5e5d59; }
 .search input { flex: 1; min-width: 0; padding: 9px 0; border: 0; background: transparent; font: inherit; font-size: 13px; outline: none; }
-.files { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 8px; max-height: 360px; overflow-y: auto; padding: 2px; }
+.files { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr)); gap: 8px; max-height: 360px; overflow-y: auto; padding: 2px; }
 .files button { position: relative; display: flex; gap: 10px; width: 100%; height: 100%; padding: 10px 12px; border: 1px solid var(--tone-edge); border-radius: 12px; background: #fff; text-align: left; color: inherit; cursor: pointer; }
 .files button:hover { border-color: var(--tone-accent); }
 .files button[aria-pressed="true"] { border-color: var(--tone-accent); box-shadow: 0 0 0 2px var(--tone-soft); }

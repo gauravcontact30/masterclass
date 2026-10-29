@@ -30,6 +30,7 @@ import { LearningPresence } from "./learning-presence";
 import { TrialBanner } from "./trial-banner";
 import { SidebarTooltips } from "./sidebar-tooltips";
 import { SidebarSearch } from "./sidebar-search";
+import { DashboardSectionNav } from "./dashboard-section-nav";
 const PreparationSetup = dynamic(() => import("./preparation-setup").then(module => module.PreparationSetup), { loading: () => <LearningLoader size="inline" /> });
 import type { StudyCourse } from "@/lib/study/types";
 import { CATEGORY_LABELS, PREPARATIONS, type PreparationAccess } from "@/lib/study/preparations";
@@ -59,8 +60,10 @@ function Identity({email,isSuperAdmin,onNavigate}:{email:string|null;isSuperAdmi
     </PopoverContent>
   </Popover>;}
 export type { WorkspaceTab } from "@/lib/dashboard-routes";
-// Professional learning sections render their own page content instead of the study catalog.
-const PRO_SECTIONS=[{id:"official-docs",key:"officialDocs",label:"Official Docs",icon:BookMarked},{id:"techy",key:"techy",label:"Techy",icon:Code2},{id:"api-docs",key:"apiDocs",label:"API Docs",icon:FileCode2},{id:"workflow",key:"workflow",label:"Workflow",icon:Workflow},{id:"certifications",key:"certifications",label:"Certifications",icon:Award},{id:"lessons",key:"lessons",label:"Lessons",icon:BookOpenText},{id:"quiz",key:"quiz",label:"Quiz",icon:CircleHelp},{id:"interview",key:"interview",label:"Interview",icon:MessagesSquare},{id:"compiler",key:"compiler",label:"Compiler",icon:SquareTerminal}] as const;
+// Professional learning sections render their own page content instead of the study catalog. The sidebar lists them
+// as a learning journey (2026-10-29): learn (Lessons), practise (Quiz, Compiler), prepare (Interview, Certifications),
+// build (Workflow), then the reference shelves (Official Docs, API Docs, Techy).
+const PRO_SECTIONS=[{id:"lessons",key:"lessons",label:"Lessons",icon:BookOpenText},{id:"quiz",key:"quiz",label:"Quiz",icon:CircleHelp},{id:"compiler",key:"compiler",label:"Compiler",icon:SquareTerminal},{id:"interview",key:"interview",label:"Interview",icon:MessagesSquare},{id:"certifications",key:"certifications",label:"Certifications",icon:Award},{id:"workflow",key:"workflow",label:"Workflow",icon:Workflow},{id:"official-docs",key:"officialDocs",label:"Official Docs",icon:BookMarked},{id:"api-docs",key:"apiDocs",label:"API Docs",icon:FileCode2},{id:"techy",key:"techy",label:"Techy",icon:Code2}] as const;
 /**
  * The catalogue is the same on every dashboard page, and each page mounts its own Workspace, so one request is shared
  * across navigations for a minute instead of refetching 40 KB on every click. Refresh asks for a fresh copy.
@@ -125,18 +128,23 @@ export function Workspace({authEnabled,configured,billingEnabled,userEmail=null,
     if (item) { openedDocument.current = target; queueMicrotask(() => setNotesSelected(item)); }
   }, [documents]);
   const access=data?.preparations??{selections:[],isSuperAdmin:false};
+  // Trial over and no membership: pages show the plans; the dashboard shows its sections as previews above them.
+  const lapsed=data?.account.tier==="free"&&!access.isSuperAdmin;
   const showSuperAdmin=authEnabled&&access.isSuperAdmin;
   const activePreparation=category?PREPARATIONS.find(option=>option.id===initialPreparation):undefined;
   const needsPreparation=!!data&&!access.isSuperAdmin&&!access.selections.length;
   const confirmDoc=documents.find(d=>d.id===confirmId);
   async function reload(){setRefreshing(true);try{const result=await loadCatalog(true);setCatalog(result);await refresh();}catch(e){setError(errorKey(e));}finally{setRefreshing(false);}}
+  /** The main dashboard drops the intro line and the plan/refresh row: its learning sections speak for themselves. */
+  const home=!category&&tab==="dashboard";
+  // "Resume" is the quickest way back into learning, so the dashboard puts it first, above the long learning sheet;
+  // My Library and Technology keep it over their own lists.
+  const resume=!learningQuery&&resumeDoc?<button className="resume-strip" onClick={()=>setNotesSelected(resumeDoc)}><BookOpen size={20}/><span><small><ExpandedText text={t("resume")} /></small><strong><ExpandedText text={resumeDoc.title} /></strong></span><ArrowUpRight size={18}/></button>:null;
   // Dashboard and My Library share one search and filters panel (inside StudyCatalog); their libraries render beneath it.
-  const libraries=<>{!category&&tab==="library"&&<NotesLibrary externalQuery={data?learningQuery:undefined} onQueryChange={data?setLearningQuery:undefined} documents={documents} technologies={catalog.technologies} topics={catalog.topics} progress={progress} loading={loading} busy={busy} copiedId={copiedId} onLearn={setNotesSelected} onCopyNotes={item=>void copyNotes(item)} onRetry={request=>void generate(request)} onDelete={item=>setConfirmId(item.id)}/>}{!learningQuery&&resumeDoc&&(!category||category==="technology")&&<button className="resume-strip" onClick={()=>setNotesSelected(resumeDoc)}><BookOpen size={20}/><span><small><ExpandedText text={t("resume")} /></small><strong><ExpandedText text={resumeDoc.title} /></strong></span><ArrowUpRight size={18}/></button>}{(!category&&tab!=="library"||category==="technology")&&(access.isSuperAdmin||access.selections.some(id=>id.startsWith("tech:")))&&<Library externalQuery={learningQuery} onQueryChange={setLearningQuery} documents={initialPreparation.startsWith("tech:")&&category==="technology"?documents.filter(doc=>doc.request.technologyId===initialPreparation.slice(5)):documents} technologies={catalog.technologies} topics={catalog.topics} progress={progress} loading={loading} busy={busy} copiedId={copiedId} onLearn={setNotesSelected} onCopyNotes={item=>void copyNotes(item)} onRetry={request=>void generate(request)} onDelete={item=>setConfirmId(item.id)}/>}</>;
+  const libraries=<>{!category&&tab==="library"&&<NotesLibrary externalQuery={data?learningQuery:undefined} onQueryChange={data?setLearningQuery:undefined} documents={documents} technologies={catalog.technologies} topics={catalog.topics} progress={progress} loading={loading} busy={busy} copiedId={copiedId} onLearn={setNotesSelected} onCopyNotes={item=>void copyNotes(item)} onRetry={request=>void generate(request)} onDelete={item=>setConfirmId(item.id)}/>}{!home&&(!category||category==="technology")&&resume}{(!category&&tab!=="library"||category==="technology")&&(access.isSuperAdmin||access.selections.some(id=>id.startsWith("tech:")))&&<Library externalQuery={learningQuery} onQueryChange={setLearningQuery} documents={initialPreparation.startsWith("tech:")&&category==="technology"?documents.filter(doc=>doc.request.technologyId===initialPreparation.slice(5)):documents} technologies={catalog.technologies} topics={catalog.topics} progress={progress} loading={loading} busy={busy} copiedId={copiedId} onLearn={setNotesSelected} onCopyNotes={item=>void copyNotes(item)} onRetry={request=>void generate(request)} onDelete={item=>setConfirmId(item.id)}/>}</>;
   const pro=isProSection(category)||category==="learn";
   // Upload Learning places content by page: a custom page, a section or category, or the tab.
   const slotPage=category==="learn"?`learn:${learnSlug}`:category??tab;
-  /** The main dashboard drops the intro line and the plan/refresh row: its learning sections speak for themselves. */
-  const home=!category&&tab==="dashboard";
   /**
    * One refresh control, two homes. Every other page gives it a row of its own
    * under the breadcrumb; Search does not, because that row would push the
@@ -153,10 +161,15 @@ export function Workspace({authEnabled,configured,billingEnabled,userEmail=null,
     {!pro&&!home&&category!=="search"&&category!=="step-by-step"&&category!=="vocabulary"&&category!=="coffee-and-code"&&<div className="workspace-quick-actions"><span><ExpandedText text={data?t(data.account.tier):t("free")} /> <ExpandedText text={"\u00b7"} /> <ExpandedText text={t("brandLine")} /></span>{refreshButton}</div>}
     {!pro&&(!configured||!authEnabled)&&<div className="setup-banner" role="status"><BookOpen size={20}/><div><strong><ExpandedText text={t("setupTitle")} /></strong><p><ExpandedText text={t("setupHelp")} /></p></div></div>}
     {error&&<div className="error-banner" role="alert"><ExpandedText text={t(error)} /> {error==="signin_required"?<Link href="/sign-in"><ExpandedText text={t("signin")} /></Link>:<button onClick={()=>void reload()}><ExpandedText text={t("refresh")} /></button>}{error==="quota_exceeded"&&<button onClick={()=>navigate("plans")}><ExpandedText text={t("upgrade")} /></button>}</div>}
-    {category==="notes"||category==="bookmark"||category==="search"||category==="step-by-step"||category==="vocabulary"||category==="coffee-and-code"||pro?notesContent??<Link href="/learning/notes">Open topic cards</Link>:tab==="plans"?<Membership key={access.selections.join(",")} selections={access.focused?access.selections:[]} enabled={billingEnabled} data={data?.account??null} onRefresh={refresh}/>:tab==="settings"?<Connections/>:needsPreparation?<PreparationSetup onSaved={refresh}/>:data?.account.tier==="free"&&!access.isSuperAdmin?<Membership key={access.selections.join(",")} selections={access.focused?access.selections:[]} enabled={billingEnabled} data={data.account} onRefresh={refresh}/>:<>
-    {!category&&tab==="dashboard"&&learning}
+    {category==="notes"||category==="bookmark"||category==="search"||category==="step-by-step"||category==="vocabulary"||category==="coffee-and-code"||pro?notesContent??<Link href="/learning/notes">Open topic cards</Link>:tab==="plans"?<Membership key={access.selections.join(",")} selections={access.focused?access.selections:[]} enabled={billingEnabled} data={data?.account??null} onRefresh={refresh}/>:tab==="settings"?<Connections/>:needsPreparation?<PreparationSetup onSaved={refresh}/>:lapsed&&!home?<Membership key={access.selections.join(",")} selections={access.focused?access.selections:[]} enabled={billingEnabled} data={data.account} onRefresh={refresh}/>:<>
+    {home&&<>{resume}<DashboardSectionNav/>{learning}</>}
+    {/* After the trial the dashboard keeps its sections as previews (app/(learning)/learning/page.tsx locks them), so
+        the reader sees what membership opens; the plans follow, where every section's "see all" link leads. */}
+    {lapsed?<section id="dashboard-plans" className="dashboard-anchor dashboard-plans" aria-labelledby="dashboard-plans-title"><h2 id="dashboard-plans-title"><ExpandedText text={language==="hi"?"ऊपर की हर चीज़ खोलें":"Open everything above"} /></h2><p><ExpandedText text={language==="hi"?"हर कोर्स, सभी इंटरव्यू प्रश्न, ब्लूप्रिंट, तुलनाएँ और डॉक्स: एक सदस्यता में।":"Every course, every interview question, blueprint, comparison and doc: one membership."} /></p>
+    <Membership key={access.selections.join(",")} selections={access.focused?access.selections:[]} enabled={billingEnabled} data={data.account} onRefresh={refresh}/></section>:<>
     {category!=="notes"&&(!data||category==="technology")&&<LearningSearch value={learningQuery} onChange={setLearningQuery}/>}
-    {showCatalog?studyCatalog:libraries}
+    {/* The reader's own guides (their chosen preparation) close the dashboard; "Your guides" in the jump bar lands here. */}
+    {home?<div id="your-guides" className="dashboard-anchor">{showCatalog?studyCatalog:libraries}</div>:showCatalog?studyCatalog:libraries}</>}
     <footer className="workspace-footer"><span>✦ Master Class Buddy</span><span><ExpandedText text={t("brandLine")} /></span></footer></>}<LearningSlot surface="dashboard" page={slotPage} section="bottom"/></main></div>{notesSelected&&<NotesModal key={notesSelected.id} document={notesSelected} initialProgress={progress.find(p=>p.document_id===notesSelected.id)} onClose={()=>{setNotesSelected(null);void refresh();}}/>}
     <Dialog open={confirmId!==null} onOpenChange={open=>{if(!open)setConfirmId(null);}}><DialogContent><DialogHeader><DialogTitle><ExpandedText text={t("deleteConfirm")} /></DialogTitle><DialogDescription><ExpandedText text={confirmDoc?`“${confirmDoc.title}” — `:""} /><ExpandedText text={t("deleteConfirmHelp")} /></DialogDescription></DialogHeader><DialogFooter><Button variant="outline" onClick={()=>setConfirmId(null)}><ExpandedText text={t("close")} /></Button><Button variant="destructive" disabled={busy} onClick={()=>confirmId&&void deleteDocument(confirmId)}><ExpandedText text={t("deleteConfirm")} /></Button></DialogFooter></DialogContent></Dialog>
     </div>;

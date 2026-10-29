@@ -1,7 +1,7 @@
 /* The week-by-week path view shared by the sign-up plan preview and the dashboard coach (learning-path-view.tsx). */
 .path { display: grid; gap: 12px; min-width: 0; }
 .summary { margin: 0; font-size: 14px; line-height: 1.65; color: #3d3d3a; }
-.weeks { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; margin: 0; padding: 0; list-style: none; }
+.weeks { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr)); gap: 12px; margin: 0; padding: 0; list-style: none; }
 .week { display: grid; align-content: start; gap: 8px; min-width: 0; padding: 14px; border: 1px solid #e8e6dc; border-radius: 14px; background: #fff; }
 .weekLabel { margin: 0; font-size: 11px; font-weight: 700; letter-spacing: 1.2px; text-transform: uppercase; color: #2f6f5e; }
 .week h3 { margin: 0; font-size: 15px; line-height: 1.35; font-weight: 650; color: #141413; overflow-wrap: anywhere; }

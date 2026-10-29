@@ -532,7 +532,7 @@
 
 .techTracksGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr));
   gap: 10px;
   padding-top: 4px;
   animation: fadeInTracks 0.25s ease-out;
@@ -680,7 +680,7 @@
 
 .roadmapsGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
   gap: 16px;
 }
 
@@ -2108,7 +2108,7 @@
 
 .categoryTabsList {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 170px), 1fr));
   gap: 12px;
   animation: fadeInTracks 0.25s ease-out;
 }

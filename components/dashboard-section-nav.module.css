@@ -1,0 +1,12 @@
+/* "Jump to": one row of section links pinned under the dashboard's sticky top bar (62px, app/dashboard.css).
+   On narrow screens the row scrolls sideways instead of wrapping, so it never grows taller than one line. */
+.nav { position: sticky; top: 62px; z-index: 40; display: flex; align-items: center; gap: 12px; margin: 20px 0 0; padding: 10px 14px; border: 1px solid #e8e6dc; border-radius: 14px; background: rgba(255, 253, 248, .92); -webkit-backdrop-filter: saturate(1.4) blur(12px); backdrop-filter: saturate(1.4) blur(12px); box-shadow: 0 8px 22px -18px rgba(31, 30, 28, .45); }
+.label { flex: none; font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: #73726c; }
+.nav ul { display: flex; flex: 1; min-width: 0; gap: 6px; margin: 0; padding: 0; list-style: none; overflow-x: auto; scrollbar-width: none; }
+.nav li { flex: none; }
+.nav ul::-webkit-scrollbar { display: none; }
+.nav a { display: inline-flex; align-items: center; gap: 6px; padding: 6px 11px; border: 1px solid transparent; border-radius: 999px; color: #3d3d3a; font-size: 13px; font-weight: 600; line-height: 1.2; text-decoration: none; white-space: nowrap; transition: background .15s ease, border-color .15s ease; }
+.nav a:hover { background: #f0eee6; }
+.nav a[aria-current] { border-color: #e39a6d; background: #f3dccd; color: #141413; }
+.nav a:focus-visible { outline: 2px solid #141413; outline-offset: 2px; }
+@media (max-width: 600px) { .label { display: none; } .nav { padding: 8px 10px; } }

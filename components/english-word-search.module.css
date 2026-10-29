@@ -51,7 +51,7 @@
 .related[data-kind="antonyms"] { --tint-bg: #fdf1ea; --tint-line: #f3dccd; --tint-dot: #c6613f; }
 /* Chips wrap into as many columns as the width allows, so a long list stays
    two or three rows tall instead of one long ladder. */
-.related ul { display: grid; grid-template-columns: repeat(auto-fill, minmax(132px, 1fr)); gap: 8px; padding: 0; margin: 0; list-style: none; }
+.related ul { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 132px), 1fr)); gap: 8px; padding: 0; margin: 0; list-style: none; }
 .related li { display: flex; flex-direction: column; gap: 2px; padding: 8px 10px; border: 1px solid var(--chip-line); border-radius: 10px; background: var(--chip-bg); font-size: 12px; overflow-wrap: anywhere; }
 /* Each chip takes its own light tint so a list of five words reads as five
    distinct items at a glance. The two families stay recognisable: synonyms
