@@ -130,8 +130,9 @@ const PORTRAIT_ON = "(max-aspect-ratio: 4/5)";
 const PORTRAIT_OFF = "(min-aspect-ratio: 4.001/5)";
 
 /**
- * The landing hero: four full-HD (1920×1080) study scenes painted by scripts/generate-hero-images.ts (each file's EXIF
- * ImageDescription holds its prompt), full-bleed under the navbar. Each slide
+ * The landing hero: four Tech Buzz scenes (hero-buzz-*.webp, supplied 2026-10-30), then the stack infographic and the
+ * full-HD (1920×1080) study scenes painted by scripts/generate-hero-images.ts (each file's EXIF ImageDescription holds
+ * its prompt), full-bleed under the navbar. Each slide
  * carries its own headline and actions. Autoplay runs while the mouse is over it (the hero fills the screen, so a hover
  * pause meant it almost never moved); it pauses for keyboard focus inside it, with the pause button, off screen, and
  * never starts for visitors who prefer reduced motion.
@@ -139,6 +140,190 @@ const PORTRAIT_OFF = "(min-aspect-ratio: 4.001/5)";
 function slidesFor(technologies: number | undefined): Slide[] {
   const count = technologies ? String(technologies) : "60+";
   return [
+    {
+      id: "buzz-team",
+      src: "/images/landing/hero-buzz-team.webp",
+      focus: "50% 50%",
+      tone: "clay",
+      tool: {
+        en: "Tech Buzz",
+        hi: "Tech Buzz",
+        es: "Tech Buzz",
+        ja: "Tech Buzz",
+        de: "Tech Buzz",
+        fr: "Tech Buzz",
+        zh: "Tech Buzz"
+      },
+      title: {
+        en: "The tech news your team talks about, every morning.",
+        hi: "वह टेक न्यूज़, जिस पर आपकी टीम हर सुबह बात करती है।",
+        es: "Las noticias tecnológicas de las que habla tu equipo, cada mañana.",
+        ja: "チームで話題になるテックニュースを、毎朝。",
+        de: "Die Tech-News, über die Ihr Team jeden Morgen spricht.",
+        fr: "L'actualité tech dont parle votre équipe, chaque matin.",
+        zh: "每天早晨，团队热议的技术新闻。"
+      },
+      body: {
+        en: "A fresh Tech Buzz edition every morning on System Design, LangGraph, Docker, Kubernetes and Redis, written for engineers.",
+        hi: "हर सुबह Tech Buzz का नया संस्करण: System Design, LangGraph, Docker, Kubernetes और Redis पर, इंजीनियरों के लिए लिखा गया।",
+        es: "Una nueva edición de Tech Buzz cada mañana sobre System Design, LangGraph, Docker, Kubernetes y Redis, escrita para ingenieros.",
+        ja: "System Design、LangGraph、Docker、Kubernetes、Redis を扱う Tech Buzz の最新号を、エンジニアのために毎朝お届け。",
+        de: "Jeden Morgen eine neue Tech-Buzz-Ausgabe zu System Design, LangGraph, Docker, Kubernetes und Redis, geschrieben für Engineers.",
+        fr: "Une nouvelle édition de Tech Buzz chaque matin sur System Design, LangGraph, Docker, Kubernetes et Redis, écrite pour les ingénieurs.",
+        zh: "每天早晨推出新一期 Tech Buzz，涵盖系统设计、LangGraph、Docker、Kubernetes 与 Redis，专为工程师而写。"
+      },
+      link: {
+        label: {
+          en: "Read Tech Buzz",
+          hi: "Tech Buzz पढ़ें",
+          es: "Leer Tech Buzz",
+          ja: "Tech Buzz を読む",
+          de: "Tech Buzz lesen",
+          fr: "Lire Tech Buzz",
+          zh: "阅读 Tech Buzz"
+        },
+        href: "/tech-buzz"
+      },
+      alt: "An engineering team around a boardroom table with Master Class Buddy mugs for LangChain, LangGraph, n8n, System Design, Redis, Playwright, Docker, Kubernetes and FastAPI, and a laptop open on the Tech Buzz landing page"
+    },
+    {
+      id: "buzz-cafe",
+      src: "/images/landing/hero-buzz-cafe.webp",
+      focus: "60% 50%",
+      tone: "honey",
+      tool: {
+        en: "AI agents",
+        hi: "AI एजेंट",
+        es: "Agentes de IA",
+        ja: "AIエージェント",
+        de: "KI-Agenten",
+        fr: "Agents IA",
+        zh: "AI 智能体"
+      },
+      title: {
+        en: "LangChain, LangGraph and LangSmith over a coffee.",
+        hi: "एक कप कॉफ़ी के साथ LangChain, LangGraph और LangSmith।",
+        es: "LangChain, LangGraph y LangSmith con un café.",
+        ja: "コーヒー片手に LangChain、LangGraph、LangSmith。",
+        de: "LangChain, LangGraph und LangSmith bei einem Kaffee.",
+        fr: "LangChain, LangGraph et LangSmith autour d'un café.",
+        zh: "一杯咖啡的时间，掌握 LangChain、LangGraph 与 LangSmith。"
+      },
+      body: {
+        en: "Build, orchestrate and debug AI agents with step-by-step guides, then catch up on what changed this week in the Tech Buzz blog.",
+        hi: "चरण-दर-चरण गाइड से AI एजेंट बनाएँ, ऑर्केस्ट्रेट करें और डीबग करें, फिर Tech Buzz ब्लॉग में इस हफ़्ते के बदलाव पढ़ें।",
+        es: "Crea, orquesta y depura agentes de IA con guías paso a paso, y ponte al día con las novedades de la semana en el blog Tech Buzz.",
+        ja: "ステップバイステップのガイドで AI エージェントを構築・オーケストレーション・デバッグし、今週の変化は Tech Buzz ブログでチェック。",
+        de: "KI-Agenten mit Schritt-für-Schritt-Anleitungen bauen, orchestrieren und debuggen, und im Tech-Buzz-Blog lesen, was sich diese Woche geändert hat.",
+        fr: "Construisez, orchestrez et déboguez des agents IA avec des guides pas à pas, puis découvrez les nouveautés de la semaine sur le blog Tech Buzz.",
+        zh: "通过逐步教程构建、编排并调试 AI 智能体，再到 Tech Buzz 博客了解本周新动态。"
+      },
+      link: {
+        label: {
+          en: "Explore AI courses",
+          hi: "AI कोर्स देखें",
+          es: "Explorar cursos de IA",
+          ja: "AI コースを見る",
+          de: "KI-Kurse entdecken",
+          fr: "Explorer les cours d'IA",
+          zh: "探索 AI 课程"
+        },
+        href: "/courses#technology"
+      },
+      alt: "Three cappuccinos in Master Class Buddy cups for LangChain, LangGraph and LangSmith, and a LangFlow cup, on a café table beside a laptop showing the Tech Buzz blog"
+    },
+    {
+      id: "buzz-frontend",
+      src: "/images/landing/hero-buzz-frontend.webp",
+      focus: "60% 55%",
+      tone: "sage",
+      tool: {
+        en: "Frontend stack",
+        hi: "फ़्रंटएंड स्टैक",
+        es: "Stack frontend",
+        ja: "フロントエンドスタック",
+        de: "Frontend-Stack",
+        fr: "Stack frontend",
+        zh: "前端技术栈"
+      },
+      title: {
+        en: "Next.js, TanStack and Zustand, between classes.",
+        hi: "क्लास के बीच Next.js, TanStack और Zustand।",
+        es: "Next.js, TanStack y Zustand, entre clase y clase.",
+        ja: "授業の合間に Next.js、TanStack、Zustand。",
+        de: "Next.js, TanStack und Zustand, zwischen den Vorlesungen.",
+        fr: "Next.js, TanStack et Zustand, entre deux cours.",
+        zh: "课间时光，学透 Next.js、TanStack 与 Zustand。"
+      },
+      body: {
+        en: "Short Tech Buzz reads and complete guides on the modern React stack, from routing and data fetching to state management.",
+        hi: "आधुनिक React स्टैक पर छोटे Tech Buzz लेख और पूरे गाइड, रूटिंग और डेटा फ़ेचिंग से स्टेट मैनेजमेंट तक।",
+        es: "Lecturas breves de Tech Buzz y guías completas sobre el stack moderno de React, del enrutamiento y la obtención de datos a la gestión de estado.",
+        ja: "ルーティングやデータ取得から状態管理まで、モダンな React スタックを Tech Buzz の短い記事と完全ガイドで。",
+        de: "Kurze Tech-Buzz-Beiträge und vollständige Anleitungen zum modernen React-Stack, von Routing und Data Fetching bis zum State Management.",
+        fr: "Des lectures courtes Tech Buzz et des guides complets sur le stack React moderne, du routage et du chargement de données à la gestion d'état.",
+        zh: "Tech Buzz 精短文章与完整教程，覆盖现代 React 技术栈，从路由、数据获取到状态管理。"
+      },
+      link: {
+        label: {
+          en: "Browse frontend guides",
+          hi: "फ़्रंटएंड गाइड देखें",
+          es: "Ver guías de frontend",
+          ja: "フロントエンドガイドを見る",
+          de: "Frontend-Anleitungen ansehen",
+          fr: "Parcourir les guides frontend",
+          zh: "浏览前端教程"
+        },
+        href: "/courses#technology"
+      },
+      alt: "Students chatting in a busy campus café behind three Master Class Buddy coffee cups for Next.js, TanStack and Zustand, next to a laptop open on the Tech Buzz blog"
+    },
+    {
+      id: "buzz-campus",
+      src: "/images/landing/hero-buzz-campus.webp",
+      focus: "62% 50%",
+      tone: "violet",
+      tool: {
+        en: "DSA, Python & AWS",
+        hi: "DSA, Python और AWS",
+        es: "DSA, Python y AWS",
+        ja: "DSA・Python・AWS",
+        de: "DSA, Python & AWS",
+        fr: "DSA, Python et AWS",
+        zh: "DSA、Python 与 AWS"
+      },
+      title: {
+        en: "Crack DSA, AI with Python and AWS Cloud.",
+        hi: "DSA, Python के साथ AI और AWS Cloud में महारत पाएँ।",
+        es: "Domina DSA, IA con Python y AWS Cloud.",
+        ja: "DSA、Python による AI、AWS クラウドを攻略。",
+        de: "DSA, KI mit Python und AWS Cloud meistern.",
+        fr: "Maîtrisez les DSA, l'IA avec Python et AWS Cloud.",
+        zh: "攻克数据结构与算法、Python AI 与 AWS 云。"
+      },
+      body: {
+        en: "Practise DSA, build AI projects in Python and learn AWS with guided paths, interview questions and daily Tech Buzz reads.",
+        hi: "DSA का अभ्यास करें, Python में AI प्रोजेक्ट बनाएँ और गाइडेड रास्तों, इंटरव्यू प्रश्नों और रोज़ के Tech Buzz से AWS सीखें।",
+        es: "Practica DSA, crea proyectos de IA en Python y aprende AWS con rutas guiadas, preguntas de entrevista y Tech Buzz cada día.",
+        ja: "DSA を練習し、Python で AI プロジェクトを作り、ガイド付きパス、面接質問、毎日の Tech Buzz で AWS を学ぶ。",
+        de: "DSA üben, KI-Projekte in Python bauen und AWS lernen, mit geführten Pfaden, Interviewfragen und täglichem Tech Buzz.",
+        fr: "Entraînez-vous au DSA, créez des projets d'IA en Python et apprenez AWS avec des parcours guidés, des questions d'entretien et Tech Buzz.",
+        zh: "练习 DSA，用 Python 构建 AI 项目，并通过引导式路径、面试题与每日 Tech Buzz 学习 AWS。"
+      },
+      link: {
+        label: {
+          en: "Start learning",
+          hi: "सीखना शुरू करें",
+          es: "Empezar a aprender",
+          ja: "学習を始める",
+          de: "Jetzt lernen",
+          fr: "Commencer à apprendre",
+          zh: "开始学习"
+        },
+        href: "/courses#technology"
+      },
+      alt: "A laptop showing the Tech Buzz blog on a college canteen table beside three red Master Class Buddy cups for AI with Python, DSA and AWS Cloud, with students eating and talking behind"
+    },
     {
       id: "stack",
       src: "/images/landing/hero-stack.webp",
@@ -180,13 +365,13 @@ function slidesFor(technologies: number | undefined): Slide[] {
         zh: "掌握名企青睐核心技能的学习殿堂。"
       },
       body: {
-        en: "Turn technical knowledge into working software. Build AI agents, design cloud systems and ship full-stack projects with guided practice that sharpens your skills for interviews and everyday engineering.",
-        hi: "AI एजेंट, क्लाउड, सिस्टम डिज़ाइन और फ़ुल-स्टैक डेवलपमेंट के लिए एक ही जगह, इंटरव्यू तैयारी, सर्टिफ़िकेशन रास्तों और असली प्रोजेक्ट्स के साथ, English या हिन्दी में।",
-        es: "Un único lugar para agentes de IA, nube, diseño de sistemas y desarrollo full-stack, con preparación para entrevistas, certificaciones y proyectos reales.",
-        ja: "AIエージェント、クラウド、システム設計、フルスタック開発を網羅。面接対策、認定資格パス、実践プロジェクトを一箇所で学べます。",
-        de: "Ein zentraler Ort für KI-Agenten, Cloud, Systemdesign und Full-Stack-Entwicklung mit Vorbereitung auf Vorstellungsgespräche, Zertifizierungspfaden und echten Projekten.",
-        fr: "Un guichet unique pour les agents IA, le cloud, la conception de systèmes et le développement full-stack, avec préparation aux entretiens et projets réels.",
-        zh: "汇聚AI智能体、云计算、系统架构与全栈开发，提供全套面试通关指南、专业认证路径与实战项目。"
+        en: "Build AI agents, design cloud systems and ship full-stack projects with guided practice for interviews and everyday work.",
+        hi: "AI एजेंट बनाएँ, क्लाउड सिस्टम डिज़ाइन करें और फ़ुल-स्टैक प्रोजेक्ट शिप करें, इंटरव्यू और रोज़ के काम के लिए गाइडेड अभ्यास के साथ।",
+        es: "Crea agentes de IA, diseña sistemas en la nube y lanza proyectos full-stack con práctica guiada para entrevistas y el día a día.",
+        ja: "AIエージェントを作り、クラウドシステムを設計し、フルスタック開発を実践。面接にも日々の仕事にも役立つガイド付き演習。",
+        de: "KI-Agenten bauen, Cloud-Systeme entwerfen und Full-Stack-Projekte ausliefern, mit geführter Praxis für Interviews und Alltag.",
+        fr: "Créez des agents IA, concevez des systèmes cloud et livrez des projets full-stack, avec une pratique guidée pour vos entretiens.",
+        zh: "构建 AI 智能体、设计云系统、交付全栈项目，通过引导式练习，为面试与日常工作做好准备。"
       },
       link: {
         label: {
@@ -272,13 +457,13 @@ function slidesFor(technologies: number | undefined): Slide[] {
         zh: "胸有成竹，从容应对每一次技术大厂面试。"
       },
       body: {
-        en: "Real interview questions, tech comparisons, quizzes and a live code lab for your next role.",
-        hi: "आपकी अगली नौकरी के लिए असली इंटरव्यू प्रश्न, तकनीकी तुलना, क्विज़ और लाइव कोड लैब।",
-        es: "Preguntas reales de entrevistas, comparativas técnicas, cuestionarios y laboratorio de código en vivo para tu próximo puesto.",
-        ja: "実践的な面接質問、技術比較、クイズ、ライブコードラボで次のキャリアをサポート。",
-        de: "Echte Interviewfragen, Technologievergleiche, Quizze und ein Live-Codelabor für Ihre nächste Rolle.",
-        fr: "Questions réelles d'entretien, comparaisons techniques, quiz et lab de code en direct pour votre prochain rôle.",
-        zh: "名企高频真题、多维架构技术对比、仿真测试与在线代码实验室，助力斩获心仪 Offer。"
+        en: "Real interview questions, side-by-side tech comparisons, quizzes and a live code lab to get you ready for your next role.",
+        hi: "असली इंटरव्यू प्रश्न, आमने-सामने तकनीकी तुलना, क्विज़ और लाइव कोड लैब, ताकि आप अपनी अगली नौकरी के लिए तैयार रहें।",
+        es: "Preguntas reales de entrevistas, comparativas técnicas lado a lado, cuestionarios y un laboratorio de código en vivo para tu próximo puesto.",
+        ja: "実践的な面接質問、技術の比較、クイズ、ライブコードラボで、次のキャリアへの準備を万全に。",
+        de: "Echte Interviewfragen, Technologievergleiche nebeneinander, Quizze und ein Live-Codelabor, damit Sie für Ihre nächste Rolle bereit sind.",
+        fr: "Questions réelles d'entretien, comparaisons techniques côte à côte, quiz et lab de code en direct pour préparer votre prochain rôle.",
+        zh: "名企高频真题、技术对比、仿真测验与在线代码实验室，助你为下一份工作做好准备。"
       },
       link: {
         label: {
@@ -318,13 +503,13 @@ function slidesFor(technologies: number | undefined): Slide[] {
         zh: "从系统学习到认证通关，尽在 masterclassbuddy.com。"
       },
       body: {
-        en: "Follow step-by-step paths for Agentic AI, AWS, DevOps, Cloud Architecture, AI Automation, n8n, Claude Code and System Design, practise 100+ questions each with mock exams, and walk into your certification ready.",
-        hi: "Agentic AI, AWS, DevOps, क्लाउड आर्किटेक्चर, AI ऑटोमेशन, n8n, Claude Code और सिस्टम डिज़ाइन के चरण-दर-चरण रास्ते अपनाएँ, हर एक के 100+ प्रश्नों और मॉक परीक्षा से अभ्यास करें, और पूरी तैयारी के साथ सर्टिफ़िकेशन दें।",
-        es: "Sigue rutas paso a paso para Agentic AI, AWS, DevOps, arquitectura cloud, automatización con IA, n8n, Claude Code y diseño de sistemas, practica con más de 100 preguntas por ruta y exámenes de prueba.",
-        ja: "Agentic AI、AWS、DevOps、クラウドアーキテクチャ、AI自動化、n8n、Claude Code、システム設計の学習パスを提供。模擬試験と各100問以上の練習問題で万全の準備。",
-        de: "Folgen Sie strukturierten Pfaden für Agentic AI, AWS, DevOps, Cloud-Architektur, KI-Automatisierung, n8n, Claude Code und Systemdesign mit je 100+ Übungsfragen und Probeprüfungen.",
-        fr: "Suivez des parcours pas à pas pour l'IA Agentique, AWS, DevOps, l'architecture Cloud, l'automatisation IA, n8n, Claude Code et la conception système, avec examens blancs.",
-        zh: "涵盖 Agentic AI、AWS、DevOps、云架构、AI自动化、n8n、Claude Code 与系统设计认证专项路径，含100+精选仿真题与全真模考。"
+        en: "Guided paths for Agentic AI, AWS, DevOps, n8n and System Design, each with 100+ practice questions and mock exams.",
+        hi: "Agentic AI, AWS, DevOps, n8n और सिस्टम डिज़ाइन के गाइडेड रास्ते, हर एक में 100+ अभ्यास प्रश्न और मॉक परीक्षाएँ।",
+        es: "Rutas guiadas de Agentic AI, AWS, DevOps, n8n y diseño de sistemas, cada una con más de 100 preguntas y exámenes de prueba.",
+        ja: "Agentic AI、AWS、DevOps、n8n、システム設計の学習パス。各100問以上の練習問題と模擬試験付き。",
+        de: "Geführte Pfade für Agentic AI, AWS, DevOps, n8n und Systemdesign, jeweils mit 100+ Übungsfragen und Probeprüfungen.",
+        fr: "Des parcours guidés en IA agentique, AWS, DevOps, n8n et conception système, chacun avec 100+ questions et examens blancs.",
+        zh: "Agentic AI、AWS、DevOps、n8n 与系统设计认证路径，每条含 100+ 练习题与全真模考。"
       },
       link: {
         label: {

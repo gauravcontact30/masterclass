@@ -1,8 +1,8 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useId, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, ChevronLeft, ChevronRight, Sparkles } from "lucide-react";
+import { ArrowRight, ChevronDown, ChevronLeft, ChevronRight, Gift, Sparkles } from "lucide-react";
 import { formatPrice, salePrice, type Currency, type Cycle, type SaleInfo } from "@/lib/pricing";
 import { useLanguage } from "./language-provider";
 import styles from "./landing-festive-sale.module.css";
@@ -56,6 +56,20 @@ function useCountdown(endsAt: string) {
   return { done: left === 0, days: Math.floor(s / 86400), hours: Math.floor(s / 3600) % 24, minutes: Math.floor(s / 60) % 60, seconds: s % 60 };
 }
 
+/** The ticking clock. Kept apart from the section so each second re-renders these four numbers, not the fireworks,
+ *  carousel and plans; it tells the section once the sale has ended. */
+function SaleCountdown({ endsAt, ends, hi, onDone }: { endsAt: string; ends: string; hi: boolean; onDone: () => void }) {
+  const clock = useCountdown(endsAt);
+  const done = clock?.done ?? false;
+  useEffect(() => { if (done) onDone(); }, [done, onDone]);
+  const text = (en: string, hindi: string) => hi ? hindi : en;
+  return <div className={styles.countdown} role="timer" aria-live="off" aria-label={text(`Offer ends ${ends} IST`, `ऑफ़र ${ends} IST पर समाप्त`)}>
+    <span className={styles.countLabel}>{text("Offer ends in", "ऑफ़र समाप्त होने में")}</span>
+    {([["days", text("days", "दिन")], ["hours", text("hrs", "घंटे")], ["minutes", text("min", "मिनट")], ["seconds", text("sec", "सेकंड")]] as const).map(([key, label]) =>
+      <span key={key} className={styles.unit}><b>{clock ? pad(clock[key]) : "--"}</b><small>{label}</small></span>)}
+  </div>;
+}
+
 /**
  * The festive sale on the landing page (Diwali 2026: 25% off the every payment of either plan). Shown only while a sale
  * is in force for at least one plan (lib/server/festive-sale.ts) and hidden in the browser the moment it ends. Its right-hand
@@ -65,10 +79,29 @@ export function LandingFestiveSale({ prices }: { prices: Prices }) {
   const { language } = useLanguage(); const hi = language === "hi";
   const text = (en: string, hindi: string) => hi ? hindi : en;
   const sale = prices.sale;
-  const clock = useCountdown(sale?.endsAt ?? new Date(0).toISOString());
+  const [ended, setEnded] = useState(false);
+  const markEnded = useCallback(() => setEnded(true), []);
   const [slide, setSlide] = useState(0);
   const [held, setHeld] = useState(false);
+  // The festive prices stay folded away until the visitor unwraps them (user request 2026-10-30).
+  const [open, setOpen] = useState(false);
+  const plansId = useId();
+  // Carousel photos are fetched as they are first shown, not all four on page load.
+  const [shown, setShown] = useState(() => new Set([0]));
+  // The sky's sixty sparks, the diyas and the rangoli animate only while the section is on screen.
+  const [live, setLive] = useState(false);
+  const saleRef = useRef<HTMLElement>(null);
   const artRef = useRef<HTMLElement>(null);
+
+  if (!shown.has(slide)) setShown(new Set([...shown, slide]));
+
+  useEffect(() => {
+    const node = saleRef.current;
+    if (!node) return;
+    const observer = new IntersectionObserver(([entry]) => setLive(entry.isIntersecting));
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [ended]);
 
   // Autoplay after 8 seconds, pausing on hover/focus or when tab is hidden
   useEffect(() => {
@@ -80,13 +113,13 @@ export function LandingFestiveSale({ prices }: { prices: Prices }) {
     return () => window.clearInterval(interval);
   }, [held]);
 
-  if (!sale || clock?.done) return null;
+  if (!sale || ended) return null;
   const cycles = (["yearly", "monthly"] as Cycle[]).filter(cycle => salePrice(sale, cycle) != null);
   if (!cycles.length) return null;
   const money = (amount: number) => formatPrice(amount, prices.currency ?? "INR", hi);
   const ends = new Intl.DateTimeFormat(hi ? "hi-IN" : "en-IN", { day: "numeric", month: "long", hour: "numeric", minute: "2-digit", timeZone: "Asia/Kolkata" }).format(new Date(sale.endsAt));
 
-  return <section id="festive-sale" className={styles.sale} aria-labelledby="festive-sale-title">
+  return <section ref={saleRef} id="festive-sale" className={styles.sale} data-live={live || undefined} aria-labelledby="festive-sale-title">
     <div className={styles.sky} aria-hidden="true">
       {[0, 1, 2, 3, 4].map(i => <span key={i} className={styles.burst} style={{ ["--i" as string]: i }}>{Array.from({ length: 12 }, (_, k) => <i key={k} style={{ ["--k" as string]: k }} />)}</span>)}
     </div>
@@ -96,17 +129,23 @@ export function LandingFestiveSale({ prices }: { prices: Prices }) {
         <h2 id="festive-sale-title">{text("Light up your career this Diwali.", "इस दिवाली अपने करियर को रोशन करें।")} <span>{text(`${sale.percent}% off every payment.`, `हर भुगतान पर ${sale.percent}% छूट।`)}</span></h2>
         <p className={styles.lede}>{text("Every course, AI agent workflow, certification path and interview bank, in one membership. Choose Monthly or Yearly and the festive discount comes off every payment.",
           "हर कोर्स, AI एजेंट वर्कफ़्लो, सर्टिफ़िकेशन पथ और इंटरव्यू बैंक, एक ही सदस्यता में। मासिक या वार्षिक चुनें और हर भुगतान पर त्योहारी छूट पाएँ, नवीनीकरण सहित।")}</p>
+        <button type="button" className={styles.unwrap} aria-expanded={open} aria-controls={plansId} onClick={() => setOpen(value => !value)}>
+          <span className={styles.unwrapIcon} aria-hidden="true"><Gift size={20} /></span>
+          <span className={styles.unwrapText}>
+            <b>{open ? text("Your Diwali prices", "आपकी दिवाली क़ीमतें") : text("Unwrap your Diwali price", "अपनी दिवाली क़ीमत खोलें")}</b>
+            <small>{open ? text("Tap to fold them away", "छिपाने के लिए टैप करें") : text(`Monthly and Yearly, ${sale.percent}% off every payment`, `मासिक और वार्षिक, हर भुगतान पर ${sale.percent}% छूट`)}</small>
+          </span>
+          <ChevronDown className={styles.unwrapChevron} size={18} aria-hidden="true" />
+        </button>
+        <div id={plansId} className={styles.reveal} data-open={open || undefined} inert={!open}>
         <div className={styles.plans}>{cycles.map(cycle => <Link key={cycle} href={`/subscribe?plan=${cycle}`} className={styles.plan} data-cycle={cycle}>
           <span className={styles.planName}>{cycle === "yearly" ? text("Yearly", "वार्षिक") : text("Monthly", "मासिक")}<em>−{sale.percent}%</em></span>
           <span className={styles.planPrice}><s>{money(prices[cycle])}</s><b>{money(salePrice(sale, cycle)!)}</b></span>
           <span className={styles.planNote}>{cycle === "yearly" ? text("every year, including renewals", "हर वर्ष, नवीनीकरण सहित") : text("every month, including renewals", "हर माह, नवीनीकरण सहित")}</span>
           <span className={styles.planCta}>{text("Claim the offer", "ऑफ़र लें")}<ArrowRight size={15} aria-hidden="true" /></span>
         </Link>)}</div>
-        <div className={styles.countdown} role="timer" aria-live="off" aria-label={text(`Offer ends ${ends} IST`, `ऑफ़र ${ends} IST पर समाप्त`)}>
-          <span className={styles.countLabel}>{text("Offer ends in", "ऑफ़र समाप्त होने में")}</span>
-          {([["days", text("days", "दिन")], ["hours", text("hrs", "घंटे")], ["minutes", text("min", "मिनट")], ["seconds", text("sec", "सेकंड")]] as const).map(([key, label]) =>
-            <span key={key} className={styles.unit}><b>{clock ? pad(clock[key]) : "--"}</b><small>{label}</small></span>)}
         </div>
+        <SaleCountdown endsAt={sale.endsAt} ends={ends} hi={hi} onDone={markEnded} />
         <p className={styles.fine}>{text(`The ${sale.percent}% discount applies to every payment of a membership started during this sale, including renewals. Ends ${ends} IST.`, `इस सेल में शुरू की गई सदस्यता के हर भुगतान और नवीनीकरण पर ${sale.percent}% छूट। ${ends} IST पर समाप्त।`)}</p>
       </div>
       <figure
@@ -130,15 +169,14 @@ export function LandingFestiveSale({ prices }: { prices: Prices }) {
                 aria-hidden={!active}
                 inert={!active ? true : undefined}
               >
-                <Image
+                {shown.has(i) && <Image
                   src={item.src}
                   alt={text(item.altEn, item.altHi)}
                   fill
                   sizes="(max-width: 900px) 100vw, 560px"
                   quality={85}
-                  priority={i === 0}
                   className={styles.photo}
-                />
+                />}
               </div>
             );
           })}

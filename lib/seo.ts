@@ -21,7 +21,7 @@ export function isIndexable(): boolean {
 export const siteName = "MasterClass Buddy";
 export const siteTitle = "MasterClass Buddy | Agentic AI, LangChain, n8n & Next.js";
 /** Under 160 characters so Google shows it whole; it names what the site teaches today (the search snippet and link previews). */
-export const siteDescription = "Learn Agentic AI, LangChain, LangGraph, LangSmith, LangFlow, n8n, Next.js, TanStack Start & Zustand with daily Tech Buzz blogs, system design and interview prep.";
+export const siteDescription = "Learn Agentic AI, LangChain, LangGraph, n8n, Next.js, Python, AWS & DSA with daily Tech Buzz blogs, system design and interview questions with answers.";
 /**
  * Site-wide keywords: only searches that an indexed page answers (Tech Buzz, /interview-questions, /workflows,
  * /learn, /compare, /api-reference, /vocabulary), phrased the way people search. Google ignores the keywords tag
@@ -35,6 +35,10 @@ export const siteKeywords = [
   "n8n workflow automation tutorial", "RAG tutorial", "Model Context Protocol MCP", "AI agent workflow examples",
   // Web stack (Tech Buzz, /learn handbooks, /api-reference)
   "Next.js tutorial", "React tutorial", "TypeScript tutorial", "TanStack Start tutorial", "TanStack Query tutorial", "Zustand tutorial",
+  // Python, cloud and DSA (the home slider since 2026-10-30): /learn/docker, /learn/kubernetes, /learn/devops-with-aws-ci-cd,
+  // /compare/docker-kubernetes, the daily Python-with-AI and AWS Tech Buzz stories and the DSA-patterns story
+  "Python for AI tutorial", "AWS tutorial for developers", "Docker tutorial", "Kubernetes tutorial", "Docker vs Kubernetes",
+  "DSA patterns for coding interviews",
   // Interview preparation (/interview-questions)
   "interview questions and answers", "React interview questions", "Next.js interview questions", "JavaScript interview questions",
   "TypeScript interview questions", "Node.js interview questions", "Python interview questions", "AWS interview questions",

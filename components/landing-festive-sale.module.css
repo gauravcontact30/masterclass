@@ -43,10 +43,11 @@
 .carouselNav:hover { background: rgba(251, 191, 36, 0.35); color: var(--marigold); }
 .carouselNav:focus-visible { outline: 2px solid var(--marigold); outline-offset: 1px; }
 
-.carouselDots { display: flex; align-items: center; gap: 6px; }
-.dot { width: 7px; height: 7px; padding: 0; border: 0; border-radius: 999px; background: rgba(255, 255, 255, 0.35); cursor: pointer; transition: width .25s ease, background-color .25s ease; }
+/* Each dot is a 24px touch target (WCAG 2.5.8) drawn as the same 7px pill: the padding is clipped out of the background. */
+.carouselDots { display: flex; align-items: center; gap: 0; }
+.dot { box-sizing: border-box; width: 24px; height: 24px; padding: 8.5px; border: 0; border-radius: 999px; background: rgba(255, 255, 255, 0.35); background-clip: content-box; cursor: pointer; transition: width .25s ease, background-color .25s ease; }
 .dot:hover { background: rgba(251, 191, 36, 0.7); }
-.dot[aria-selected="true"] { width: 20px; background: var(--marigold); box-shadow: 0 0 6px #f59e0b; }
+.dot[aria-selected="true"] { width: 37px; background: var(--marigold); background-clip: content-box; }
 .dot:focus-visible { outline: 2px solid var(--marigold); outline-offset: 1px; }
 
 .rangoli {
@@ -90,3 +91,35 @@
   .rangoli { left: -20px; bottom: -34px; width: 100px; height: 100px; }
 }
 @media (prefers-reduced-motion: reduce) { .diya i, .burst i { animation: none; } .burst i { opacity: 0; } }
+
+/* "Unwrap your Diwali price": the plans stay folded behind a gift tag until asked for. The tag is a ribbon-tied ticket
+   (a saffron edge, a dashed perforation) and the plans unfold beneath it with a grid-rows reveal, prices rising in turn. */
+.unwrap { position: relative; display: flex; align-items: center; gap: 14px; width: min(100%, 460px); padding: 14px 18px 14px 14px; border: 1px solid #fbbf2466; border-radius: 16px;
+  background: linear-gradient(100deg, #f59e0b2e 0%, #ffffff0d 46%), repeating-linear-gradient(90deg, transparent 0 6px, #fbbf2433 6px 9px) left 64px top 0 / 1px 100% no-repeat;
+  color: var(--ivory); font: inherit; text-align: left; cursor: pointer; overflow: hidden; transition: border-color .2s ease, transform .2s ease, box-shadow .2s ease; }
+.unwrap::after { content: ""; position: absolute; inset: 0; background: linear-gradient(110deg, transparent 30%, #fde68a2e 50%, transparent 70%); transform: translateX(-100%); transition: transform .9s ease; pointer-events: none; }
+.unwrap:hover { border-color: var(--marigold); transform: translateY(-1px); box-shadow: 0 16px 36px -22px #f59e0b; }
+.unwrap:hover::after { transform: translateX(100%); }
+.unwrap:focus-visible { outline: 2px solid var(--marigold); outline-offset: 3px; }
+.unwrapIcon { display: grid; place-items: center; flex: none; width: 42px; height: 42px; border-radius: 12px; background: linear-gradient(135deg, var(--ember), var(--saffron)); color: #fff; box-shadow: 0 8px 18px -8px #ea580c; }
+.unwrapText { display: grid; gap: 2px; min-width: 0; }
+.unwrapText b { font-size: 15.5px; font-weight: 700; color: #fff; }
+.unwrapText small { font-size: 12.5px; color: #e9e3ff; }
+.unwrapChevron { flex: none; margin-left: auto; color: var(--marigold); transition: transform .3s ease; }
+.unwrap[aria-expanded="true"] .unwrapChevron { transform: rotate(180deg); }
+.unwrap[aria-expanded="true"] .unwrapIcon { background: linear-gradient(135deg, #a16207, var(--marigold)); }
+
+.reveal { display: grid; grid-template-rows: 0fr; opacity: 0; transition: grid-template-rows .45s cubic-bezier(.22, 1, .36, 1), opacity .3s ease; }
+.reveal > .plans { min-height: 0; overflow: hidden; padding: 2px; margin: -2px; }
+.reveal[data-open] { grid-template-rows: 1fr; opacity: 1; }
+.reveal .plan { opacity: 0; transform: translateY(10px); transition: opacity .35s ease, transform .35s ease, border-color .2s ease, box-shadow .2s ease; }
+.reveal[data-open] .plan { opacity: 1; transform: none; transition-delay: .12s; }
+.reveal[data-open] .plan + .plan { transition-delay: .22s; }
+.reveal[data-open] .plan:hover, .reveal[data-open] .plan:focus-visible { transform: translateY(-2px); transition-delay: 0s; }
+
+/* Off screen, the sky, the diyas and the rangoli hold still (an IntersectionObserver sets data-live). */
+.sale:not([data-live]) .burst i, .sale:not([data-live]) .diya i, .sale:not([data-live]) .rangoli { animation-play-state: paused !important; }
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal, .reveal .plan, .unwrap, .unwrap::after, .unwrapChevron { transition: none; }
+}
