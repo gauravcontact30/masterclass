@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import { AuthPage, type LinkError } from "@/components/auth-page";
 
-const LINK_ERRORS: LinkError[] = ["link_expired", "link_invalid", "link_other_device"];
+const LINK_ERRORS: LinkError[] = ["link_expired", "link_invalid", "link_other_device", "oauth_failed", "oauth_unavailable"];
 import { authConfigured } from "@/lib/server/config";
 
 type SearchParams = Promise<{ [key: string]: string | string[] | undefined }>;

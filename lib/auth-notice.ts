@@ -3,8 +3,8 @@
  * confirm what just happened. Emailed links carry theirs as ?notice= instead (app/auth/confirm, app/auth/callback).
  * Read and cleared by components/auth-notice-toast.tsx. Dependency-free: it ships with the auth page.
  */
-export type AuthNotice = "signed_in" | "created" | "verified" | "recovery";
-export const AUTH_NOTICES: readonly AuthNotice[] = ["signed_in", "created", "verified", "recovery"];
+export type AuthNotice = "signed_in" | "created" | "verified" | "recovery" | "password_updated";
+export const AUTH_NOTICES: readonly AuthNotice[] = ["signed_in", "created", "verified", "recovery", "password_updated"];
 const KEY = "mc:auth-notice";
 
 export function setAuthNotice(notice: AuthNotice) {

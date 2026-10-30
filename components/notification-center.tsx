@@ -19,7 +19,8 @@ const NOTICES: Record<AuthNotice, [en: string, hi: string, enBody: string, hiBod
   signed_in: ["Signed in successfully", "सफलतापूर्वक साइन इन हुआ", "Welcome back. Pick up where you left off.", "वापसी पर स्वागत है। जहाँ छोड़ा था वहीं से शुरू करें।"],
   created: ["Account created successfully", "खाता सफलतापूर्वक बन गया", "Your 1-day free trial has started.", "आपका 1 दिन का निःशुल्क ट्रायल शुरू हो गया है।"],
   verified: ["Email verified. You are signed in", "ईमेल सत्यापित हुआ। आप साइन इन हैं", "Your account is confirmed and ready to use.", "आपका खाता सत्यापित है और उपयोग के लिए तैयार है।"],
-  recovery: ["Signed in from your reset link", "रीसेट लिंक से साइन इन हुआ", "Set a new password in Settings.", "सेटिंग्स में नया पासवर्ड बनाएँ।"],
+  recovery: ["Signed in from your reset link", "रीसेट लिंक से साइन इन हुआ", "Choose a new password at /reset-password.", "/reset-password पर नया पासवर्ड चुनें।"],
+  password_updated: ["Password updated", "पासवर्ड बदल दिया गया", "Use your new password the next time you sign in.", "अगली बार साइन इन करते समय नया पासवर्ड इस्तेमाल करें।"],
 };
 
 function ago(iso: string, hi: boolean) {

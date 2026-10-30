@@ -22,7 +22,7 @@ import { LearningSlot } from "./learning-slot";
 
 // Supabase reports failures with a stable `code`; fall back to a generic message
 // so an unmapped code never surfaces raw English from the API.
-function authErrorKey(error: { code?: string; message?: string }): TranslationKey {
+export function authErrorKey(error: { code?: string; message?: string }): TranslationKey {
   const code = error.code ?? "";
   return code in en ? code as TranslationKey : "service_error";
 }
@@ -37,12 +37,22 @@ export function safeRedirect(target: string | undefined) {
  */
 const enterApp = (target: string) => hardNavigate(target);
 /** Problems with an emailed link, passed back by /auth/confirm and /auth/callback as ?error=. */
-export type LinkError = "link_expired" | "link_invalid" | "link_other_device";
+export type LinkError = "link_expired" | "link_invalid" | "link_other_device" | "oauth_failed" | "oauth_unavailable";
 const LINK_ERRORS: Record<LinkError, [en: string, hi: string]> = {
   link_expired: ["That confirmation link has expired. Sign in to get a new one, or send it again below.", "यह पुष्टि लिंक समाप्त हो गया है। नया लिंक पाने के लिए नीचे से फिर भेजें।"],
   link_invalid: ["That link is not valid or was already used. If your email is confirmed, just sign in.", "यह लिंक मान्य नहीं है या पहले ही उपयोग हो चुका है। ईमेल सत्यापित है तो सीधे साइन इन करें।"],
   link_other_device: ["That link was opened in a different browser from the one you signed up in. Your email may already be confirmed: try signing in.", "यह लिंक उस ब्राउज़र से अलग ब्राउज़र में खुला जिसमें आपने साइन अप किया था। आपका ईमेल शायद सत्यापित हो चुका है: साइन इन करके देखें।"],
+  oauth_failed: ["Google sign-in was cancelled or did not finish. Try again, or use your email and password.", "Google साइन-इन रद्द हुआ या पूरा नहीं हुआ। फिर कोशिश करें, या ईमेल और पासवर्ड से साइन इन करें।"],
+  oauth_unavailable: ["Google sign-in is not available right now. Please use your email and password.", "Google साइन-इन अभी उपलब्ध नहीं है। कृपया ईमेल और पासवर्ड से साइन इन करें।"],
 };
+/** The callback URL for emailed links, carrying the page to return to. */
+const callbackFor = (redirectTo?: string) => `${window.location.origin}/auth/callback${redirectTo ? `?next=${encodeURIComponent(safeRedirect(redirectTo))}` : ""}`;
+const GoogleMark = () => <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true" focusable="false">
+  <path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.4-.4-3.5z"/>
+  <path fill="#FF3D00" d="m6.3 14.7 6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/>
+  <path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-7.9l-6.5 5C9.5 39.6 16.2 44 24 44z"/>
+  <path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.4-.4-3.5z"/>
+</svg>;
 /** Seconds before another confirmation email may be requested. */
 const RESEND_WAIT = 60;
 const noSubscribe = () => () => {};
@@ -59,7 +69,8 @@ export function AuthPage({ mode, enabled, initialEmail = "", redirectTo, linkErr
   const [error, setError] = useState<TranslationKey | null>(null);
   const [showPassword, setShowPassword] = useState(false);
   const [sent, setSent] = useState(false);
-  const [linkSent, setLinkSent] = useState(false);
+  // Which emailed link the "Check your email" screen is about: a magic sign-in link or a password reset.
+  const [linkSent, setLinkSent] = useState<"signin" | "reset" | null>(null);
   const [resendIn, setResendIn] = useState(0);
   const hi = language === "hi";
   useEffect(() => {
@@ -89,12 +100,32 @@ export function AuthPage({ mode, enabled, initialEmail = "", redirectTo, linkErr
     if (!email.trim()) { setError("invalid_request"); return; }
     setBusy(true); setError(null);
     try {
-      const callbackUrl = `${window.location.origin}/auth/callback${redirectTo ? `?next=${encodeURIComponent(safeRedirect(redirectTo))}` : ""}`;
-      const { error } = await supabaseBrowser().auth.signInWithOtp({ email: email.trim(), options: { shouldCreateUser: false, emailRedirectTo: callbackUrl } });
+      const { error } = await supabaseBrowser().auth.signInWithOtp({ email: email.trim(), options: { shouldCreateUser: false, emailRedirectTo: callbackFor(redirectTo) } });
       // Report success either way, so the form does not reveal which emails have accounts.
       if (error && error.status !== 400 && error.status !== 422) { setError(authErrorKey(error)); return; }
-      setLinkSent(true);
+      setLinkSent("signin");
     } catch { setError("service_error"); } finally { setBusy(false); }
+  }
+
+  /** Emails a password-reset link; opening it signs the reader in on /reset-password to choose a new password. */
+  async function sendReset() {
+    if (!email.trim()) { setError("invalid_request"); return; }
+    setBusy(true); setError(null);
+    try {
+      const { error } = await supabaseBrowser().auth.resetPasswordForEmail(email.trim(), { redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent("/reset-password")}` });
+      if (error?.code === "over_email_send_rate_limit") { setError("over_email_send_rate_limit"); return; }
+      // Same screen whether or not the address has an account.
+      if (error && error.status !== 400 && error.status !== 422) { setError(authErrorKey(error)); return; }
+      setLinkSent("reset");
+    } catch { setError("service_error"); } finally { setBusy(false); }
+  }
+
+  /** Leaves for Google's consent screen via app/api/auth/google, which signs the account in (creating it on a first
+   *  visit) when Google returns. A full navigation: the OAuth redirects must happen at the top level. */
+  function continueWithGoogle() {
+    setBusy(true); setError(null);
+    try { sessionStorage.removeItem("masterclass:sidebar-collapsed"); } catch {}
+    hardNavigate(`/api/auth/google${redirectTo ? `?next=${encodeURIComponent(safeRedirect(redirectTo))}` : ""}`);
   }
 
   async function submit(event: React.FormEvent) {
@@ -116,8 +147,7 @@ export function AuthPage({ mode, enabled, initialEmail = "", redirectTo, linkErr
       } else {
         // full_name rides along in the user metadata; the on_auth_user_created
         // trigger copies it into public.profiles.name (migration 0003).
-        const callbackUrl = `${window.location.origin}/auth/callback${redirectTo ? `?next=${encodeURIComponent(safeRedirect(redirectTo))}` : ""}`;
-        const { data, error } = await auth.signUp({ email, password, options: { data: { full_name: name.trim() }, emailRedirectTo: callbackUrl } });
+        const { data, error } = await auth.signUp({ email, password, options: { data: { full_name: name.trim() }, emailRedirectTo: callbackFor(redirectTo) } });
         if (error) { setError(authErrorKey(error)); return; }
         // An already-confirmed address gets a decoy user with no identities and no email at all. Say so, instead
         // of sending the visitor to wait for a confirmation that will never arrive. (An unconfirmed address gets
@@ -159,8 +189,10 @@ export function AuthPage({ mode, enabled, initialEmail = "", redirectTo, linkErr
             <section className={styles.notice}>
               <span className={styles.noticeIcon}><MailCheck size={20} aria-hidden="true" /></span>
               <h1 className={styles.title}><ExpandedText text={hi ? "अपना ईमेल देखें" : "Check your email"} /></h1>
-              <p className={styles.lead}><ExpandedText text={hi ? `अगर ${email.trim()} से कोई खाता है, तो हमने उस पर साइन-इन लिंक भेजा है। लिंक खोलकर साइन इन करें।` : `If an account exists for ${email.trim()}, we have sent it a sign-in link. Open the link to sign in.`} /></p>
-              <button type="button" className={styles.switchLink} onClick={() => setLinkSent(false)}><ExpandedText text={hi ? "वापस जाएँ" : "Back to sign in"} /></button>
+              <p className={styles.lead}><ExpandedText text={linkSent === "reset"
+                ? (hi ? `अगर ${email.trim()} से कोई खाता है, तो हमने उस पर पासवर्ड रीसेट लिंक भेजा है। उसी ब्राउज़र में लिंक खोलें और नया पासवर्ड चुनें (स्पैम फ़ोल्डर भी देखें)।` : `If an account exists for ${email.trim()}, we have sent it a password reset link. Open it in this browser to choose a new password (check spam too).`)
+                : (hi ? `अगर ${email.trim()} से कोई खाता है, तो हमने उस पर साइन-इन लिंक भेजा है। लिंक खोलकर साइन इन करें।` : `If an account exists for ${email.trim()}, we have sent it a sign-in link. Open the link to sign in.`)} /></p>
+              <button type="button" className={styles.switchLink} onClick={() => setLinkSent(null)}><ExpandedText text={hi ? "वापस जाएँ" : "Back to sign in"} /></button>
             </section>
           ) : sent ? (
             <section className={styles.notice}>
@@ -180,6 +212,10 @@ export function AuthPage({ mode, enabled, initialEmail = "", redirectTo, linkErr
               {!error && linkError && <p className={`error-banner ${styles.error}`} role="alert"><ExpandedText text={LINK_ERRORS[linkError][hi ? 1 : 0]} /></p>}
               {error && <p className={`error-banner ${styles.error}`} role="alert"><ExpandedText text={t(error)} /></p>}
               {(error === "email_not_confirmed" || linkError === "link_expired") && <p className={styles.switchRow}>{resendButton}</p>}
+              <button type="button" className={styles.google} disabled={busy || !hydrated} onClick={continueWithGoogle}>
+                <GoogleMark /><ExpandedText text={mode === "signin" ? (hi ? "Google से साइन इन करें" : "Sign in with Google") : (hi ? "Google से साइन अप करें" : "Sign up with Google")} />
+              </button>
+              <p className={styles.divider}><ExpandedText text={hi ? "या ईमेल से" : "or with email"} /></p>
               {/* method="post": even before hydration a submit never puts anything in the URL. */}
               <form method="post" onSubmit={submit} className={styles.form}>
                 {mode === "signup" && (
@@ -205,6 +241,7 @@ export function AuthPage({ mode, enabled, initialEmail = "", redirectTo, linkErr
                   </div>
                   {mode === "signup" && <small className={styles.hint} id="auth-password-hint"><ExpandedText text={t("authPasswordHint")} /></small>}
                 </div>
+                {mode === "signin" && <button type="button" className={`${styles.switchLink} ${styles.forgot}`} disabled={busy} onClick={() => void sendReset()}><ExpandedText text={hi ? "पासवर्ड भूल गए?" : "Forgot password?"} /></button>}
                 <Button className={styles.submit} type="submit" disabled={busy || !hydrated} aria-busy={busy || !hydrated}><ExpandedText text={busy || !hydrated ? t("loading") : t(mode === "signin" ? "signin" : "signup")} /></Button>
               </form>
               {mode === "signup" && error === "user_already_exists" && <p className={styles.switchRow}><Link className={styles.switchLink} href={`/sign-in?email=${encodeURIComponent(email.trim())}${redirectTo ? `&redirect=${encodeURIComponent(safeRedirect(redirectTo))}` : ""}`}><ExpandedText text={t("signin")} /><ArrowUpRight size={15} aria-hidden="true" /></Link></p>}
