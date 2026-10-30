@@ -2,7 +2,8 @@ import "server-only";
 import { db } from "./db";
 import { adminError } from "./admin-rpc";
 import { HttpError } from "./http";
-import { searchConsoleQuery, searchConsoleReport } from "./search-console";
+import { searchConsoleCredentials, searchConsoleQuery, searchConsoleReport, searchConsoleStatus } from "./search-console";
+import { reportCache } from "./report-cache";
 import { searchConsoleWindow } from "../search-console";
 import { siteUrl } from "../seo";
 
@@ -23,7 +24,7 @@ const host = (value: string) => { try { return new URL(value.includes("://") ? v
 export const ownDomain = () => host(siteUrl().href);
 
 export const ahrefsConfigured = () => Boolean(process.env.AHREFS_API_KEY);
-export const searchConsoleConfigured = () => Boolean(process.env.GOOGLE_SEARCH_CONSOLE_CLIENT_EMAIL && process.env.GOOGLE_SEARCH_CONSOLE_PRIVATE_KEY);
+export const searchConsoleConfigured = searchConsoleCredentials;
 export const aiSearchConfigured = () => Boolean(process.env.PERPLEXITY_API_KEY);
 
 /* ───────────────────────── Ahrefs API ───────────────────────── */
@@ -47,6 +48,31 @@ async function ahrefsGet(path: string, params: Record<string, string | number | 
   // Each endpoint wraps its answer in one key (domain_rating, metrics, keywords, refdomains…): return what is inside.
   const values = body ? Object.values(body) : [];
   return values.length === 1 ? values[0] : body;
+}
+
+export type AhrefsStatus = { connected: boolean; error: string | null; plan: string | null; unitsLeft: number | null; unitsLimit: number | null; resetsOn: string | null };
+const ahrefsStatusCache = reportCache<AhrefsStatus>(10 * 60_000, 2);
+
+/**
+ * Whether the key works, and the API units left this period, for the connection card. Ahrefs' limits-and-usage
+ * endpoint costs no units; the answer is cached for ten minutes. Field names are read defensively.
+ */
+export function ahrefsStatus(): Promise<AhrefsStatus> {
+  const empty = { plan: null, unitsLeft: null, unitsLimit: null, resetsOn: null };
+  if (!ahrefsConfigured()) return Promise.resolve({ connected: false, error: "ahrefs_not_configured", ...empty });
+  return ahrefsStatusCache.get("status", async () => {
+    try {
+      const raw = await ahrefsGet("/subscription-info/limits-and-usage", {}) as Record<string, unknown> | null;
+      const num = (key: string) => typeof raw?.[key] === "number" ? raw[key] as number : null;
+      // A key can carry its own limit; otherwise it shares the workspace's.
+      const limit = num("units_limit_api_key") ?? num("units_limit_workspace"), used = num("units_usage_api_key") ?? num("units_usage_workspace");
+      return { connected: true, error: null, plan: typeof raw?.subscription === "string" ? raw.subscription : null,
+        unitsLimit: limit, unitsLeft: limit != null && used != null ? Math.max(0, limit - used) : null,
+        resetsOn: typeof raw?.usage_reset_date === "string" ? raw.usage_reset_date.slice(0, 10) : null };
+    } catch (failure) {
+      return { connected: false, error: failure instanceof HttpError ? failure.message : "ahrefs_unavailable", ...empty };
+    }
+  });
 }
 
 /** One Ahrefs report, fetched and stored as a snapshot (the page shows the latest one without paying again). */
@@ -294,10 +320,15 @@ export async function seoOverview() {
   const pages = lastAudit ? await client.from("seo_audit_pages").select("url,status,load_ms,title,description,h1_count,word_count,images,images_missing_alt,canonical,noindex,internal_links,issues").eq("audit_id", lastAudit.id).order("url") : { data: [] };
   // Search Console totals, top queries and pages for the last 28 days; striking-distance queries (positions 8–20) are the cheapest wins.
   let search: Awaited<ReturnType<typeof searchConsoleReport>> | null = null, searchError: string | null = null;
-  try { search = await searchConsoleReport(28); } catch (failure) { searchError = failure instanceof HttpError ? failure.message : "search_console_unavailable"; }
+  const [, gsc, ahrefs] = await Promise.all([
+    searchConsoleReport(28).then(report => { search = report; }, failure => { searchError = failure instanceof HttpError ? failure.message : "search_console_unavailable"; }),
+    searchConsoleStatus(), ahrefsStatus(),
+  ]);
   return {
     generatedAt: new Date().toISOString(), domain: ownDomain(),
-    connections: { ahrefs: ahrefsConfigured(), searchConsole: searchConsoleConfigured(), aiSearch: aiSearchConfigured() },
+    // A service is "connected" once its credentials actually work, not merely once they are set.
+    connections: { ahrefs: ahrefs.connected, searchConsole: gsc.connected, aiSearch: aiSearchConfigured() },
+    status: { searchConsole: gsc, ahrefs },
     audits: audits.data ?? [], lastAudit, auditPages: pages.data ?? [],
     keywords: keywords.data ?? [], history: history.data ?? [],
     snapshots: latest(snapshots.data ?? []), domainHistory: (snapshots.data ?? []).filter(s => s.tool === "overview" && s.target === ownDomain()).slice(0, 30),

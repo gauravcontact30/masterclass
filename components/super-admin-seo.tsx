@@ -22,6 +22,8 @@ type Check = { id: number; prompt_id: number; checked_at: string; engine: string
 type SearchRow = { clicks: number; impressions: number; ctr: number; position: number; keys: string[] };
 type Overview = {
   generatedAt: string; domain: string; connections: { ahrefs: boolean; searchConsole: boolean; aiSearch: boolean };
+  status: { searchConsole: { connected: boolean; property: string | null; error: string | null };
+    ahrefs: { connected: boolean; error: string | null; plan: string | null; unitsLeft: number | null; unitsLimit: number | null; resetsOn: string | null } };
   audits: Audit[]; lastAudit: Audit | null; auditPages: AuditPage[]; keywords: Keyword[]; history: Rank[];
   snapshots: Snapshot[]; domainHistory: Snapshot[]; competitors: { id: number; domain: string }[]; prompts: Prompt[]; checks: Check[];
   search: { status: string; property: string; startDate: string; endDate: string; totals: { clicks: number; impressions: number; ctr: number; position: number } | null; daily: SearchRow[]; queries: SearchRow[]; pages: SearchRow[]; countries: SearchRow[] } | null;
@@ -45,6 +47,9 @@ const ERRORS: Record<string, string> = {
   ahrefs_rate_limited: "Ahrefs rate limit reached. Try again in a minute.", ahrefs_unavailable: "Ahrefs did not answer. Try again shortly.",
   search_console_not_configured: "Add the GOOGLE_SEARCH_CONSOLE_* service-account variables to use Search Console data.",
   search_console_access_denied: "The service account has no access to this Search Console property. Add it as a user in Search Console.",
+  search_console_auth_failed: "Google rejected the service-account key. Check GOOGLE_SEARCH_CONSOLE_CLIENT_EMAIL and GOOGLE_SEARCH_CONSOLE_PRIVATE_KEY.",
+  search_console_no_property: "The service account can't read any Search Console property for this site yet. Add its email as a user of the property (step 3).",
+  search_console_unavailable: "Google Search Console did not answer. Try again shortly.", search_console_rate_limited: "Search Console rate limit reached. Try again in a minute.",
   ai_search_not_configured: "Add PERPLEXITY_API_KEY to check AI-search visibility.", keywords_required: "Enter at least one keyword.",
   rate_limited: "Too many runs in a short time. Wait a few minutes.",
 };
@@ -112,9 +117,27 @@ function Stat({ label, value, note, tone, icon: Icon }: { label: string; value: 
   return <div className={styles.stat} data-tone={tone}><span className={styles.statIcon}><Icon size={16} aria-hidden="true" /></span><span className={styles.statLabel}>{label}</span><strong>{value}</strong>{note && <small>{note}</small>}</div>;
 }
 
-function Connect({ ok, title, children }: { ok: boolean; title: string; children: ReactNode }) {
-  return <div className={styles.connect} data-ok={ok || undefined}>{ok ? <CheckCircle2 size={16} aria-hidden="true" /> : <TriangleAlert size={16} aria-hidden="true" />}<div><b>{title} {ok ? "connected" : "not connected"}</b><p>{children}</p></div></div>;
+function Connect({ ok, title, children, problem, steps }: { ok: boolean; title: string; children: ReactNode; problem?: string | null; steps?: ReactNode[] }) {
+  return <div className={styles.connect} data-ok={ok || undefined}>{ok ? <CheckCircle2 size={16} aria-hidden="true" /> : <TriangleAlert size={16} aria-hidden="true" />}<div>
+    <b>{title} {ok ? "connected" : "not connected"}</b><p>{children}</p>
+    {!ok && problem && problem !== "search_console_not_configured" && problem !== "ahrefs_not_configured" && <p className={styles.connectProblem} role="status">{say(problem)}</p>}
+    {!ok && steps && <ol className={styles.connectSteps}>{steps.map((step, i) => <li key={i}>{step}</li>)}</ol>}
+  </div></div>;
 }
+
+/* Where each credential comes from. Values go in the server environment (Vercel → Settings → Environment Variables,
+   and .env locally), never into this page. */
+const SEARCH_CONSOLE_STEPS = [
+  <>In Google Cloud Console, create a project, enable the <b>Google Search Console API</b>, then create a <b>service account</b> and a JSON key for it.</>,
+  <>Set <code>GOOGLE_SEARCH_CONSOLE_CLIENT_EMAIL</code> to the key&apos;s <code>client_email</code> and <code>GOOGLE_SEARCH_CONSOLE_PRIVATE_KEY</code> to its <code>private_key</code> (keep the <code>{"\\n"}</code> line breaks).</>,
+  <>In Search Console, open the property for the whole site (best: the <b>Domain</b> property), go to Settings → Users and permissions and add the service-account email as a <b>Restricted</b> user.</>,
+  <>Redeploy. The property is found automatically; set <code>GOOGLE_SEARCH_CONSOLE_PROPERTY</code> (e.g. <code>sc-domain:masterclassbuddy.com</code>) only to pick a different one.</>,
+];
+const AHREFS_STEPS = [
+  <>In Ahrefs, open Account settings → <b>API keys</b> and create a key (API v3 access needs an Enterprise plan or API units).</>,
+  <>Set <code>AHREFS_API_KEY</code> to that key in the server environment and redeploy.</>,
+  <>Back here, press <b>Overview</b> on the Site explorer tab. Each report is saved, so viewing it again costs no units.</>,
+];
 
 function Table({ rows, columns, empty }: { rows: Row[]; columns: { key: string; label: string; render?: (row: Row) => ReactNode; numeric?: boolean }[]; empty: string }) {
   if (!rows.length) return <p className={styles.empty}>{empty}</p>;
@@ -146,8 +169,14 @@ function Dashboard({ data, go, run, running }: ToolProps & { go: (tab: Tab) => v
   const t = data.search?.totals;
   return <>
     <div className={styles.connections}>
-      <Connect ok={data.connections.searchConsole} title="Google Search Console">{data.connections.searchConsole ? `Property ${data.search?.property ?? ""}: queries, clicks, impressions and positions.` : "Set GOOGLE_SEARCH_CONSOLE_CLIENT_EMAIL, GOOGLE_SEARCH_CONSOLE_PRIVATE_KEY and GOOGLE_SEARCH_CONSOLE_PROPERTY, and add the service account as a user of the property."}</Connect>
-      <Connect ok={data.connections.ahrefs} title="Ahrefs API">{data.connections.ahrefs ? "Domain Rating, backlinks, organic keywords, competitors and keyword research." : "Set AHREFS_API_KEY (Ahrefs API v3; needs a plan with API access). Every report is saved, so viewing it again costs no units."}</Connect>
+      <Connect ok={data.connections.searchConsole} title="Google Search Console" problem={data.status.searchConsole.error} steps={SEARCH_CONSOLE_STEPS}>
+        {data.connections.searchConsole ? <>Tracking <b>{data.status.searchConsole.property}</b>: Google queries, clicks, impressions and positions for {data.domain}.</> : <>Tracks how {data.domain} performs in Google Search: queries, clicks, impressions and positions.</>}
+      </Connect>
+      <Connect ok={data.connections.ahrefs} title="Ahrefs API" problem={data.status.ahrefs.error} steps={AHREFS_STEPS}>
+        {data.connections.ahrefs
+          ? <>Tracking {data.domain}: Domain Rating, backlinks, organic keywords and competitors.{data.status.ahrefs.unitsLeft != null && <> {n(data.status.ahrefs.unitsLeft)}{data.status.ahrefs.unitsLimit != null && <> of {n(data.status.ahrefs.unitsLimit)}</>} API units left{data.status.ahrefs.resetsOn && <>, resets {data.status.ahrefs.resetsOn}</>}.</>}</>
+          : <>Tracks {data.domain}&apos;s Domain Rating, backlinks, organic keywords, competitors and keyword research.</>}
+      </Connect>
       <Connect ok={data.connections.aiSearch} title="AI search">{data.connections.aiSearch ? "Tracked questions are asked to Perplexity; answers and citations are stored." : "Set PERPLEXITY_API_KEY to check whether AI answers name and cite the site."}</Connect>
     </div>
     <div className={styles.stats}>
