@@ -18,7 +18,7 @@ export function BackToTop() {
   // as nothing. Rendering the button from the first client render made React report a hydration mismatch (#418) on
   // every page load; it now appears right after hydration instead.
   const hydrated = useSyncExternalStore(noSubscribe, () => true, () => false);
-  const enabled = pathname === "/" || pathname?.startsWith("/learning") || pathname?.startsWith("/tech-buzz");
+  const enabled = pathname === "/" || pathname?.startsWith("/learning") || pathname?.startsWith("/tech-buzz") || pathname?.startsWith("/super-admin");
   const [progress, setProgress] = useState(0);
   const [visible, setVisible] = useState(false);
 
