@@ -38,13 +38,12 @@ const AUTOPLAY_MS = 8000;
 function useCountdown(endsAt: string) {
   const [left, setLeft] = useState<number | null>(null);
   useEffect(() => {
-    let timer: number;
     const tick = () => {
       if (document.hidden) return;
       setLeft(Math.max(0, Date.parse(endsAt) - Date.now()));
     };
     tick();
-    timer = window.setInterval(tick, 1000);
+    const timer = window.setInterval(tick, 1000);
     const onVisibility = () => { if (!document.hidden) tick(); };
     document.addEventListener("visibilitychange", onVisibility);
     return () => {

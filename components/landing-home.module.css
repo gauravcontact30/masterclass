@@ -408,7 +408,10 @@
   letter-spacing: 0.04em;
   text-shadow: 0 1px 6px rgba(0, 0, 0, 0.55);
   transform-origin: 100% 50%;
-  animation: buzzArrive 21s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+  /* Two 21-second cycles (42 s), then it fades out for good. Every animation inside it ends at the same moment, so
+     nothing keeps repainting an invisible pointer (border angle, dash offset and the glint's position can only
+     animate on the main thread). */
+  animation: buzzArrive 21s cubic-bezier(0.22, 1, 0.36, 1) 2 both;
   transition: opacity 0.25s ease;
 }
 .buzzDock:has(.floatingTechBuzz:hover, .floatingTechBuzz:focus-visible) .buzzPointer { opacity: 0 !important; animation-play-state: paused; }
@@ -425,7 +428,7 @@
     conic-gradient(from var(--buzz-angle), #0f172a 0%, #1e1b4b 18%, #4c1d95 30%, #f0abfc 36%, #ffffff 38%, #fde68a 40%, #7c2d12 48%, #0f172a 60%, #134e4a 78%, #67e8f9 84%, #0f172a 92%) border-box;
   text-shadow: none;
   box-shadow: 0 6px 18px -8px rgba(0, 0, 0, 0.7), 0 0 12px -4px rgba(240, 171, 252, 0.45);
-  animation: buzzBorder 7s linear infinite;
+  animation: buzzBorder 7s linear 6;
   transition: color 1s ease;
 }
 .buzzPointerText::after {
@@ -438,7 +441,7 @@
   background: radial-gradient(circle, #fff 0 22%, #fde68a 40%, #f0abfc 75%);
   clip-path: polygon(50% 0, 61% 39%, 100% 50%, 61% 61%, 50% 100%, 39% 61%, 0 50%, 39% 39%);
   translate: -50% -50%;
-  animation: buzzStar 7s linear infinite, buzzTwinkle 1.4s ease-in-out infinite alternate;
+  animation: buzzStar 7s linear 6, buzzTwinkle 1.4s ease-in-out 30 alternate;
 }
 @keyframes buzzBorder { to { --buzz-angle: 360deg; } }
 /* The glint traces the pill's outline: along the top, round the right end, back along the bottom, round the left. */
@@ -452,11 +455,11 @@
 }
 @keyframes buzzTwinkle { from { opacity: 0.55; scale: 0.8; } to { opacity: 1; scale: 1.25; } }
 .buzzPointerArrow stop { transition: stop-color 1s ease; }
-.buzzPointerArrow { stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.5)); animation: buzzNudge 0.9s ease-in-out infinite alternate; }
-.buzzPointerDash { stroke-dasharray: 4 3.5; animation: buzzDashes 0.8s linear infinite; }
+.buzzPointerArrow { stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.5)); animation: buzzNudge 0.9s ease-in-out 46 alternate; }
+.buzzPointerDash { stroke-dasharray: 4 3.5; animation: buzzDashes 0.8s linear 52; }
 /* Each 7-second round draws the swirl on in slow motion, then the arrowhead pops in at the circle. */
-.buzzPointerReveal { stroke-dasharray: 1 1; stroke-dashoffset: 1; animation: buzzDraw 7s cubic-bezier(0.37, 0, 0.63, 1) infinite; }
-.buzzPointerHead { opacity: 0; animation: buzzHead 7s ease-out infinite; transform-origin: 153px 24px; transform-box: view-box; }
+.buzzPointerReveal { stroke-dasharray: 1 1; stroke-dashoffset: 1; animation: buzzDraw 7s cubic-bezier(0.37, 0, 0.63, 1) 6; }
+.buzzPointerHead { opacity: 0; animation: buzzHead 7s ease-out 6; transform-origin: 153px 24px; transform-box: view-box; }
 
 /* Three 7-second arrivals per cycle: from the left, from above-left and from below-left. The arrow pivots on its
    tip, so it always ends pointing straight at the circle. */

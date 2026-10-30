@@ -37,6 +37,8 @@ export type CourseTopic = {
   lab?: TopicLab;
   /** A generated course's topic that has not been written yet (lib/server/course-generator.ts). */
   pending?: boolean;
+  /** A generated topic's editor score (1-5) and the official documentation it was researched from, named not linked. */
+  review?: { score: number | null; sources: { title: string; site: string }[] };
 };
 
 /** A runnable example and exactly what it prints. `file` names the editor tab (Main.java, main.cpp…). */

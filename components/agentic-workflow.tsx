@@ -627,6 +627,7 @@ function WorkflowStudioReader({
                   and follow the Terminal commands below to execute and verify.
                 </p>
                 <CodeFiles
+                  skin="apple"
                   files={codeFiles}
                   label={`${workflow.title} codebase`}
                   hoverComments

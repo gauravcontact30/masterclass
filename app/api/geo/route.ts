@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { COUNTRY_TO_LANGUAGE, type SupportedLanguage, SUPPORTED_LANGUAGES } from "@/lib/i18n";
+import { COUNTRY_TO_LANGUAGE, SUPPORTED_LANGUAGES } from "@/lib/i18n";
 import type { Language } from "@/lib/domain";
 
 /**

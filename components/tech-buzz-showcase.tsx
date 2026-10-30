@@ -128,10 +128,12 @@ function TrackLogos({ track }: { track: string }) {
 
 function DailyEdition({ cards }: { cards: TechBuzzCard[] }) {
   const edition = latestEdition(cards);
+  // A track whose story is missing from the newest edition (it timed out or stayed below the editor's bar) keeps its
+  // slot with its own latest earlier daily story, then its newest story of any kind, so all five tracks always show.
   const picks = DAILY_TRACKS.map(track => {
-    const stand = edition
-      ? cards.filter(card => card.daily?.date === edition && card.daily.track === track.id).sort(newestFirst)[0]
-      : cards.filter(card => card.techId && track.techIds.includes(card.techId)).sort(newestFirst)[0];
+    const stand = (edition && cards.filter(card => card.daily?.date === edition && card.daily.track === track.id).sort(newestFirst)[0])
+      || cards.filter(card => card.daily?.track === track.id).sort(newestFirst)[0]
+      || cards.filter(card => card.techId && track.techIds.includes(card.techId)).sort(newestFirst)[0];
     return stand ? { track, card: stand } : null;
   }).filter((pick): pick is NonNullable<typeof pick> => !!pick);
   if (!picks.length) return null;

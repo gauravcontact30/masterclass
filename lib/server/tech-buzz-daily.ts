@@ -164,14 +164,19 @@ async function review(story: Draft, notes: string) {
 const slugify = (text: string) => text.toLowerCase().normalize("NFKD").replace(/[^\w\s-]/g, "").trim().replace(/[\s_]+/g, "-").replace(/-+/g, "-");
 const dayNumber = (date: string) => Math.floor(Date.parse(`${date}T00:00:00Z`) / 86_400_000);
 
-type Budget = { draftMs: number; rewriteBeforeMs: number; reasoning: Reasoning };
+/** deadline: when set, the first draft may use the time left until then (up to draftMs, never under 150 s). */
+type Budget = { draftMs: number; rewriteBeforeMs: number; reasoning: Reasoning; deadline?: number };
 type StoryOptions = { angle?: string; tags?: string[]; daily?: boolean; budget?: Budget };
 // Run from a script, not the cron route: no 300 s limit.
-const SCRIPT_BUDGET: Budget = { draftMs: 420_000, rewriteBeforeMs: Infinity, reasoning: "provider-default" };
+export const SCRIPT_BUDGET: Budget = { draftMs: 420_000, rewriteBeforeMs: Infinity, reasoning: "provider-default" };
+// Inside the route a medium-thinking agentic-ai draft now runs past 150 s (it timed out on 29 and 30 Oct 2026), so the
+// first draft gets the time left before the review and pictures must start: about 170 s after a typical 40 s research.
+const DRAFT_FLOOR_MS = 150_000;
+const routeBudget = (runStarted: number): Budget => ({ draftMs: 200_000, rewriteBeforeMs: REWRITE_BEFORE_MS, reasoning: "medium", deadline: runStarted + SAVE_BY_MS - 70_000 });
 
 async function writeStory(track: DailyTrack, date: string, runStarted = Date.now(), { angle: ownAngle, tags = [], daily = true, budget }: StoryOptions = {}): Promise<TechBuzzArticle> {
   const angle = ownAngle ?? track.angles[dayNumber(date) % track.angles.length];
-  const { output, verdict, sources } = await researchedDraft(track, angle, date, undefined, budget);
+  const { output, verdict, sources } = await researchedDraft(track, angle, date, undefined, budget ?? routeBudget(runStarted));
   const slug = `${track.id}-${date}-${slugify(output.title)}`.slice(0, 99).replace(/-+$/, "");
   // Thumbnail and blog image are painted together; a failed picture keeps the story (the page shows the technology logo).
   const paintMs = SAVE_BY_MS - (Date.now() - runStarted);
@@ -218,11 +223,12 @@ async function writeStory(track: DailyTrack, date: string, runStarted = Date.now
 }
 
 /** The steps writeStory and refineTechBuzzStory share: research, draft, review, one rewrite below the bar. */
-async function researchedDraft(track: DailyTrack, angle: string, date: string, current?: string, { draftMs, rewriteBeforeMs, reasoning }: Budget = { draftMs: 150_000, rewriteBeforeMs: REWRITE_BEFORE_MS, reasoning: "medium" }) {
+async function researchedDraft(track: DailyTrack, angle: string, date: string, current?: string, { draftMs, rewriteBeforeMs, reasoning, deadline }: Budget = routeBudget(Date.now())) {
   const started = Date.now();
   // A rewrite keeps its own topic; a new story is told which topics the track has already covered.
   const [{ notes, sources }, earlier] = await Promise.all([research(track, angle), current ? Promise.resolve([]) : recentDailyTitles(dailyTrackTag(track.id))]);
-  let output = await draft(track, angle, date, notes, [], draftMs, reasoning, current, earlier);
+  const firstDraftMs = deadline ? Math.max(DRAFT_FLOOR_MS, Math.min(draftMs, deadline - Date.now())) : draftMs;
+  let output = await draft(track, angle, date, notes, [], firstDraftMs, reasoning, current, earlier);
   let verdict = await review(output, notes);
   if (verdict.score < MIN_SCORE && Date.now() - started < rewriteBeforeMs) {
     output = await draft(track, angle, date, notes, verdict.issues.slice(0, 8), Math.max(60_000, Math.min(draftMs, rewriteBeforeMs + 80_000 - (Date.now() - started))), reasoning, current, earlier);
@@ -293,12 +299,13 @@ export async function writeFavouriteStory(topic: FavouriteTopic, date = istDate(
 export type DailyRun = { date: string; written: string[]; skipped: string[]; failed: { track: string; error: string }[] };
 
 /** Writes today's (IST) missing daily stories, all five tracks at once so the run fits the function's time limit. */
-export async function generateTechBuzzDaily(date = istDate()): Promise<DailyRun> {
+export async function generateTechBuzzDaily(date = istDate(), budget?: Budget): Promise<DailyRun> {
   if (!providerConfigured("gateway")) throw new Error("ai_gateway_not_configured");
   const existing = await dailyEditionSlugs(date);
   const todo = DAILY_TRACKS.filter(track => !existing.some(slug => slug.startsWith(`${track.id}-${date}`)));
   const started = Date.now();
-  const results = await Promise.allSettled(todo.map(track => writeStory(track, date, started)));
+  // A script run has no 300 s limit, so its pictures get the same ten extra minutes as favourite stories.
+  const results = await Promise.allSettled(todo.map(track => writeStory(track, date, budget ? started + 10 * 60_000 : started, { budget })));
   const run: DailyRun = { date, written: [], skipped: DAILY_TRACKS.filter(track => !todo.includes(track)).map(track => track.id), failed: [] };
   results.forEach((result, i) => {
     if (result.status === "fulfilled") run.written.push(result.value.slug);

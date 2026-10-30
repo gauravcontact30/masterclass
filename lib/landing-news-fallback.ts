@@ -1,4 +1,4 @@
-import type { LandingNews, NewsSlideData, NewsStory, InterviewAsk, NewsLogo } from "@/lib/landing-news";
+import type { LandingNews, NewsLogo } from "@/lib/landing-news";
 
 // Brand logos with simple branding
 const LOGO_ANTHROPIC: NewsLogo = { name: "Anthropic", hex: "D97706", path: null };

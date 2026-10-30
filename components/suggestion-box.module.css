@@ -9,7 +9,8 @@
   border: 1px solid #f0b89c; border-radius: 999px; background: #3a2118; color: #ffd2bd;
   font: inherit; font-size: 13px; font-weight: 650; line-height: 1; white-space: nowrap; cursor: pointer;
   box-shadow: 0 8px 22px -14px rgba(40, 22, 12, .7), inset 0 1px 0 rgba(255, 255, 255, .18);
-  animation: sb-tones 30s linear infinite;
+  /* Colour can only animate on the main thread, so the six tones play one full round and settle on the first. */
+  animation: sb-tones 30s linear 1;
   transition: transform .25s cubic-bezier(.2, .8, .2, 1), box-shadow .25s ease;
 }
 .trigger::after {
@@ -20,14 +21,16 @@
 .trigger:hover { transform: translateY(-1px); box-shadow: 0 12px 26px -14px rgba(40, 22, 12, .75), inset 0 1px 0 rgba(255, 255, 255, .7); }
 .trigger:active { transform: translateY(0) scale(.98); }
 .trigger:focus-visible { outline: 2px solid #fff; outline-offset: 2px; box-shadow: 0 0 0 4px #b5573a; }
-.triggerIcon { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 50%; background: #bcdcff; box-shadow: 0 0 0 2px rgba(255, 255, 255, .18), 0 2px 6px rgba(0, 0, 0, .25); color: #12314a; animation: sb-float 3.6s ease-in-out infinite, sb-circle 30s linear infinite; transition: rotate .3s ease; }
+.triggerIcon { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 50%; background: #bcdcff; box-shadow: 0 0 0 2px rgba(255, 255, 255, .18), 0 2px 6px rgba(0, 0, 0, .25); color: #12314a; animation: sb-float 3.6s ease-in-out infinite, sb-circle 30s linear 1; transition: rotate .3s ease; }
 .trigger:hover .triggerIcon { rotate: -10deg; }
-.liveDot { width: 7px; height: 7px; border-radius: 50%; background: currentColor; animation: sb-pulse 2.4s ease-out infinite; }
+/* The pulse is a scaled, fading copy of the dot (transform + opacity run on the compositor; a box-shadow would not). */
+.liveDot { position: relative; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+.liveDot::after { content: ""; position: absolute; inset: 0; border-radius: inherit; background: currentColor; animation: sb-pulse 2.4s ease-out infinite; }
 /* The label: a flowing ribbon of light pastel inks (each ≥7:1 on every deep pill tone), drifting left to
    right in a seamless 7s loop. The gradient's first and last stops match, so the loop has no seam. */
 .triggerLabel {
   color: #ffd2bd; font-size: 14px; font-weight: 400; letter-spacing: .01em; line-height: 1; white-space: nowrap;
-  animation: sb-ink 30s linear infinite;
+  animation: sb-ink 30s linear 1;
 }
 /* Every five seconds the text and the icon circle switch to a new light colour (a 30s loop of six, ~0.6s cross-fades);
    the circle always takes a different pastel from the text, so the two read apart. */
@@ -55,8 +58,8 @@
 @keyframes sb-shimmer { 0%, 55% { transform: translateX(-130%); } 85%, 100% { transform: translateX(130%); } }
 @keyframes sb-float { 0%, 100% { translate: 0 0; } 50% { translate: 0 -2px; } }
 @keyframes sb-pulse {
-  0% { box-shadow: 0 0 0 0 color-mix(in srgb, currentColor 55%, transparent); }
-  70%, 100% { box-shadow: 0 0 0 7px transparent; }
+  0% { transform: scale(1); opacity: .55; }
+  70%, 100% { transform: scale(3); opacity: 0; }
 }
 
 /* Narrow desktops, where the link bar needs the room: a slightly smaller one-line label, no live dot. */

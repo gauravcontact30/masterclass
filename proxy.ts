@@ -111,7 +111,20 @@ export default async function proxy(request: NextRequest) {
         response.cookies.delete("mc_vid");
         response.cookies.delete("mc_sid");
       }
-      const target = redirectFor({ pathname, search: request.nextUrl.search, signedIn: Boolean(claims?.sub) });
+      let signedIn = Boolean(claims?.sub);
+      // getClaims only checks the token's signature, so a session ended on the server (signed out elsewhere, revoked)
+      // still looks signed in until the token expires. Pages ask the Auth server (currentUser in lib/server/auth.ts) and
+      // send such a visitor to /sign-in; if the proxy then bounced them back to /learning it would loop forever. So
+      // before sending a "signed-in" visitor away from /sign-in or "/", ask the Auth server too, and drop a dead session's
+      // cookies. Only those two pages pay for the extra call.
+      if (signedIn && redirectFor({ pathname, search: request.nextUrl.search, signedIn: true })) {
+        const { error: userError } = await supabase.auth.getUser();
+        if (userError) {
+          signedIn = false;
+          if (userError.status === 401 || userError.status === 403) await supabase.auth.signOut({ scope: "local" });
+        }
+      }
+      const target = redirectFor({ pathname, search: request.nextUrl.search, signedIn });
       if (target) {
         const redirected = NextResponse.redirect(new URL(target, request.url));
         response.cookies.getAll().forEach((cookie) => redirected.cookies.set(cookie));

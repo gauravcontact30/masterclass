@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import { Workspace } from "@/components/workspace";
 import { DeepCourseView } from "@/components/deep-course-view";
-import { GeneratingCourse } from "@/components/deep-course-generating";
+import { PreparingCourse } from "@/components/deep-course-generating";
 import { deepCourseMeta, isCourseId } from "@/lib/deep-courses";
 import { generatedCourseMeta } from "@/lib/deep-courses/catalog";
 import { loadDeepCourse } from "@/lib/deep-courses/load";
@@ -11,13 +11,16 @@ import { requireLearningUser as currentUser } from "@/lib/server/subscription-ac
 import { authConfigured, billingConfigured, databaseConfigured } from "@/lib/server/config";
 import type { DeepCourse } from "@/lib/deep-courses/types";
 import { signInFor } from "@/lib/safe-redirect";
+// Signed-in page: renders once the user is read, like its layout (instant = false there does not cover pages).
+export const instant = false;
 
 type Params = Promise<{ course: string; topic?: string[] }>;
 
 /**
  * An in-depth course (/learning/lessons/core-java) or one of its topics (/learning/lessons/core-java/oop). The six
- * hand-written courses load from lib/deep-courses; every other technology's course is written on first open
- * (lib/server/course-generator.ts) and read from Supabase afterwards.
+ * hand-written courses load from lib/deep-courses; every other technology's course is written ahead of time
+ * (scripts/pregenerate-courses.ts) and read from Supabase through the cache (cachedGeneratedCourse). Opening a page
+ * never writes anything.
  */
 async function courseFor(id: string): Promise<{ course: DeepCourse; ready: boolean; missingTable?: boolean } | null> {
   if (isCourseId(id)) return { course: await loadDeepCourse(id), ready: true };
@@ -52,7 +55,7 @@ export default async function DeepCoursePage({ params }: { params: Params }) {
   if (ready && topic?.[0] && !course.topics.some(item => item.id === topic[0])) notFound();
   const content = ready
     ? <DeepCourseView course={course} topicId={topic?.[0]}/>
-    : <GeneratingCourse trackId={course.id} name={course.name} glyph={course.glyph} unavailable={missingTable}/>;
+    : <PreparingCourse name={course.name} glyph={course.glyph} unavailable={missingTable}/>;
   return <Workspace initialCategory="lessons" autoCollapse authEnabled={authConfigured()} configured={databaseConfigured()} billingEnabled={billingConfigured()} userEmail={user?.email ?? null}
     notesContent={content}/>;
 }

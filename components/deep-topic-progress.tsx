@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { CSSProperties } from "react";
-import { ArrowRight, CheckCircle2, Clock3, SquareTerminal } from "lucide-react";
+import { ArrowRight, CheckCircle2, Clock3, Gauge, Sparkles, SquareTerminal } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useDeepProgress, setTopicProgress } from "./deep-progress-store";
 import { progressKey, TOPIC_CHECKLIST, topicShare, topicTint, type ChecklistId } from "@/lib/deep-courses/progress";
@@ -37,32 +37,39 @@ function Meter({ value, label }: { value: number; label: string }) {
   return <span className={styles.meter} role="progressbar" aria-valuemin={0} aria-valuemax={100} aria-valuenow={value} aria-label={label}><i style={{ width: `${value}%` }} /></span>;
 }
 
-/** The study checklist at the top of a topic page; each item jumps to its section. */
-export function DeepTopicChecklist({ courseId, topicId, index }: { courseId: string; topicId: string; index: number }) {
+/**
+ * The study checklist at the top of a topic page, drawn like a Tech Buzz story's "Learning Objectives & Key Takeaways":
+ * each objective jumps to its section and ticks off, with an "n / 9 Completed" counter and the topic's progress card.
+ */
+export function DeepTopicChecklist({ courseId, topicId }: { courseId: string; topicId: string; index?: number }) {
   const progress = useDeepProgress()[progressKey(courseId, topicId)];
   const ticked = new Set(progress?.checklist ?? []);
   const value = percent(topicShare(progress));
-  const tone = topicTint(index);
-  return <section className={styles.checklist} style={{ "--tint": tone.tint, "--ink": tone.ink } as CSSProperties} aria-labelledby={`checklist-${topicId}`}>
-    <div className={styles.checklistHead}>
-      <h2 id={`checklist-${topicId}`}>Your checklist</h2>
-      <span>{value}%</span>
-    </div>
-    <Meter value={value} label="Topic progress" />
-    <ul>
-      {TOPIC_CHECKLIST.map(item => <li key={item.id}>
-        <label>
-          <Checkbox checked={ticked.has(item.id)} onCheckedChange={checked => toggleItem(courseId, topicId, item.id, checked === true)} aria-label={item.label} />
+  const done = TOPIC_CHECKLIST.filter(item => ticked.has(item.id)).length;
+  return <>
+    <section className={styles.objectives} aria-labelledby={`checklist-${topicId}`}>
+      <div className={styles.objectivesHead}>
+        <h2 id={`checklist-${topicId}`}><Sparkles size={18} aria-hidden="true" />Learning Objectives &amp; Key Takeaways</h2>
+        <span className={styles.objectivesCounter}>{done} / {TOPIC_CHECKLIST.length} Completed</span>
+      </div>
+      <ul className={styles.objectivesList}>
+        {TOPIC_CHECKLIST.map(item => <li key={item.id} data-checked={ticked.has(item.id) || undefined}>
+          <Checkbox checked={ticked.has(item.id)} onCheckedChange={checked => toggleItem(courseId, topicId, item.id, checked === true)} aria-label={`Done: ${item.label}`} />
           <a href={`#${item.anchor}`}>{item.label}</a>
-        </label>
-      </li>)}
-    </ul>
-    <label className={styles.complete}>
-      <Checkbox checked={!!progress?.completed} onCheckedChange={checked => setCompleted(courseId, topicId, checked === true)} aria-label="Mark this topic complete" />
-      <span>{progress?.completed ? "Topic complete" : "Mark this topic complete"}</span>
-      {progress?.completed && <CheckCircle2 size={16} aria-hidden="true" />}
-    </label>
-  </section>;
+        </li>)}
+      </ul>
+      <label className={styles.complete}>
+        <Checkbox checked={!!progress?.completed} onCheckedChange={checked => setCompleted(courseId, topicId, checked === true)} aria-label="Mark this topic complete" />
+        <span>{progress?.completed ? "Topic complete" : "Mark this topic complete"}</span>
+        {progress?.completed && <CheckCircle2 size={16} aria-hidden="true" />}
+      </label>
+    </section>
+    <div className={styles.readiness}>
+      <span className={styles.readinessLabel}><Gauge size={15} aria-hidden="true" />Topic progress</span>
+      <b>{value}%</b>
+      <Meter value={value} label="Topic progress" />
+    </div>
+  </>;
 }
 
 /** A topic as a coloured card: its own tint, the checklist, a completion checkbox and its progress. */

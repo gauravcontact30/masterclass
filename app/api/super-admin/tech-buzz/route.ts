@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { api, jsonBody, sameOrigin } from "@/lib/server/http";
 import { requireOwner } from "@/lib/server/learning-uploads";
+import type { TechBuzzArticle } from "@/lib/tech-buzz-data";
 import {
   createTechBuzzArticle,
   deleteTechBuzzArticle,
@@ -74,13 +75,13 @@ export async function POST(request: Request) {
     const body = await jsonBody(request, 4_400_000);
 
     // One-click seed / sync defaults
-    if (body && typeof body === "object" && (body as any).syncDefaults) {
+    if (body && typeof body === "object" && (body as { syncDefaults?: unknown }).syncDefaults) {
       const res = await syncDefaultArticlesToSupabase();
       return Response.json({ synced: true, count: res.count });
     }
 
     const validated = articleSchema.parse(body);
-    const created = await createTechBuzzArticle(validated as any, owner.id);
+    const created = await createTechBuzzArticle(validated as Partial<TechBuzzArticle>, owner.id);
     return Response.json({ article: created }, { status: 201 });
   }, request);
 }
@@ -97,7 +98,7 @@ export async function PUT(request: Request) {
       return Response.json({ error: "Missing article id or slug" }, { status: 400 });
     }
 
-    const updated = await updateTechBuzzArticle(target, validated as any);
+    const updated = await updateTechBuzzArticle(target, validated as Partial<TechBuzzArticle>);
     return Response.json({ article: updated });
   }, request);
 }

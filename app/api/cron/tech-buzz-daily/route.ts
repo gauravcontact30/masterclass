@@ -7,10 +7,11 @@ export const maxDuration = 300;
 
 /*
  * The daily Tech Buzz edition (lib/tech-buzz-sections.ts tracks): five researched, editor-reviewed stories, each with a
- * thumbnail and a blog image. vercel.json runs it once a day at 23:30 UTC = 5:00 AM IST, the only run: the Hobby plan
- * allows one run per cron job per day and may start it anywhere within that hour (23:00-23:59 UTC, 4:30-5:29 IST).
- * A run only writes the tracks still missing for the IST day, so calling it again by hand (with the cron secret)
- * fills a track that timed out or stayed below the editor's 4/5 bar. `?date=YYYY-MM-DD` writes another day.
+ * thumbnail and a blog image. vercel.json runs it at 23:30 UTC = 5:00 AM IST and again at 01:30 UTC = 7:00 AM IST: the
+ * Hobby plan allows one run per cron job per day and may start it anywhere within that hour, so the two windows
+ * (4:30-5:29 and 6:30-7:29 IST) never overlap. A run only writes the tracks still missing for the IST day, so the
+ * second run fills a track that timed out or stayed below the editor's 4/5 bar, and is a no-op on a complete edition.
+ * Calling it by hand (with the cron secret) does the same; `?date=YYYY-MM-DD` writes another day.
  */
 export async function GET(request: Request) {
   if (!cronAuthorized(request)) return new Response(null, { status: 401 });

@@ -3,17 +3,21 @@ import { TechBuzzBlog, type TechBuzzGroup } from "@/components/tech-buzz-blog";
 import { LanguageProvider } from "@/components/language-provider";
 import type { TechBuzzCard } from "@/lib/tech-buzz-public";
 
-jest.mock("next/image", () => ({
-  __esModule: true,
-  default: ({ src, alt, loader, unoptimized, priority, preload, fill, ...props }: any) => (
-    // eslint-disable-next-line @next/next/no-img-element
-    <img src={src} alt={alt || ""} {...props} />
-  )
-}));
+jest.mock("next/image", () => {
+  // Props only next/image understands; a plain <img> would warn about them.
+  const imageOnly = new Set(["loader", "unoptimized", "priority", "preload", "fill"]);
+  return {
+    __esModule: true,
+    default: ({ alt, ...props }: { alt?: string } & Record<string, unknown>) => (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img alt={alt || ""} {...Object.fromEntries(Object.entries(props).filter(([key]) => !imageOnly.has(key)))} />
+    )
+  };
+});
 
 jest.mock("next/link", () => ({
   __esModule: true,
-  default: ({ href, children, ...props }: any) => <a href={href} {...props}>{children}</a>
+  default: ({ href, children, ...props }: { href: string; children?: React.ReactNode } & Record<string, unknown>) => <a href={href} {...props}>{children}</a>
 }));
 
 beforeEach(() => {

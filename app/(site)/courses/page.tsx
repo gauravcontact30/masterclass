@@ -1,12 +1,8 @@
-import Link from "next/link";
 import { CATEGORY_LABELS, PREPARATIONS, PREPARATION_GROUPS, courseCategory } from "@/lib/study/preparations";
 import { STUDY_COURSES } from "@/lib/study/catalog";
 import { COURSE_SUMMARIES as SUMMARIES } from "@/lib/study/course-summaries";
 import { pageMetadata, siteUrl } from "@/lib/seo";
 import { PageIntro } from "../page-intro";
-import styles from "../site.module.css";
-import { LearningPicture } from "@/components/learning-picture";
-import { learningImageUrl } from "@/lib/learning-image";
 
 import { Suspense } from "react";
 import { CoursesFeed } from "@/components/courses-feed";

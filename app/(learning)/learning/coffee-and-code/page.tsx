@@ -8,6 +8,8 @@ import { contentOverrides } from "@/lib/server/content-overrides";
 import { isSuperAdminUser } from "@/lib/study/preparations";
 import { authConfigured, billingConfigured, databaseConfigured } from "@/lib/server/config";
 import { signInFor } from "@/lib/safe-redirect";
+// Signed-in page: renders once the user is read, like its layout (instant = false there does not cover pages).
+export const instant = false;
 
 export const metadata = { title: "Coffee & Code" };
 

@@ -11,6 +11,10 @@ import type { AuthChangeEvent, Session } from "@supabase/supabase-js";
  */
 export function onAuthChange(callback: (event: AuthChangeEvent, session: Session | null) => void): () => void {
   if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) return () => {};
+  // A guest has no session to watch, so a guest never downloads the SDK at all (it was ~260 KB of script on every
+  // public page). Signing in ends with a full navigation (components/auth-page.tsx), which mounts the listeners
+  // again with the session cookie present, so nothing is missed.
+  if (!maybeSignedIn()) return () => {};
   let cancelled = false;
   let unsubscribe: (() => void) | undefined;
   void import("./supabase-browser").then(({ supabaseBrowser }) => {

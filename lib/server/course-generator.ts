@@ -1,5 +1,5 @@
 import "server-only";
-import { generateText, gateway, Output } from "ai";
+import { generateText, gateway, NoObjectGeneratedError, Output } from "ai";
 import { cacheLife, cacheTag, revalidateTag } from "next/cache";
 import { z } from "zod";
 import { db } from "./db";
@@ -12,19 +12,19 @@ import { PLANNED_OUTLINES } from "@/lib/deep-courses/planned-outlines";
 import type { CourseTopic, DeepCourse } from "@/lib/deep-courses/types";
 
 /*
- * In-depth courses for every platform technology beyond the six hand-written ones (migration 0044). The first visit
- * to a course writes its outline; the first visit to a topic writes the topic: description, usage, step-by-step
+ * In-depth courses for every platform technology beyond the six hand-written ones (migration 0044), written ahead of
+ * time by scripts/pregenerate-courses.ts (never on a learner's visit): an outline per course, then each topic: description, usage, step-by-step
  * explanation, syntax, a worked example with its output, simple/moderate/complex examples, assignments with
  * answers, alternate ways, a multi-file example, tips and subjective/objective questions. Each piece is researched
  * from the technology's official documentation (Perplexity, domain-restricted), written through the AI Gateway and
  * scored by an editor pass; below 4/5 it is rewritten once, and still below 4 it is not stored. A row's
- * 'generating' status is the lock that stops two visitors paying for the same work.
+ * 'generating' status is the lock that stops two writers paying for the same work.
  */
 
 const MIN_SCORE = 4;
 const STALE_MS = 8 * 60_000;
 // The model's default thinking made a topic overrun its 170 s write ("AbortError: Delay was aborted"), so writing
-// thinks "medium". On a visit a topic must finish inside the route; the pre-generation script
+// thinks "medium". Through the super-admin route a topic must finish inside the route; the pre-generation script
 // (scripts/pregenerate-courses.ts) has no route limit and gives each step all the time it needs.
 export type Budget = { writeMs: number; reviewMs: number; rewriteWithinMs: number };
 const ROUTE_BUDGET: Budget = { writeMs: 170_000, reviewMs: 60_000, rewriteWithinMs: 90_000 };
@@ -130,6 +130,117 @@ const topicSchema = z.object({
 });
 type TopicDraft = z.infer<typeof topicSchema>;
 
+/** The key layout of a reply two levels deep ("lab:string", "usage:array[5]"), for logging one that would not fit. */
+function shapeOf(text: string | undefined): string {
+  const kind = (value: unknown) => Array.isArray(value) ? `array[${value.length}]` : typeof value === "string" ? `string(${value.length})${value.length > 400 ? JSON.stringify(value.slice(0, 60)) : ""}` : typeof value;
+  try {
+    const root = JSON.parse(text ?? "") as Record<string, unknown>;
+    return Object.entries(root).map(([key, value]) => value && typeof value === "object" && !Array.isArray(value)
+      ? `${key}{${Object.entries(value as Record<string, unknown>).map(([inner, v]) => `${inner}:${kind(v)}`).join(",")}}` : `${key}:${kind(value)}`).join(" ");
+  } catch { return `unparsable: ${(text ?? "").slice(-200)}`; }
+}
+
+/** A JSON string inside the reply ("lab": "{...}") parsed back into its value; anything else unchanged. */
+function unstring(value: unknown): unknown {
+  if (typeof value !== "string" || !/^\s*[[{]/.test(value)) return value;
+  try { return JSON.parse(value); } catch { return value; }
+}
+
+/**
+ * The writer sometimes returns a complete lesson in the wrong shape: parts double-encoded as strings ("lab": "{...}",
+ * "description": "[...]") or top-level parts nested inside another part. This parses the strings, lifts misplaced
+ * parts back to where the schema expects them, and validates the result; null when it still does not fit.
+ */
+/**
+ * A part whose string swallowed the rest of the lesson ("description": "[...], \"usage\": [...], \"lab\": {...}"):
+ * re-read as the object it was meant to open, giving that part and every part after it; null when it is not that.
+ */
+function swallowed(key: string, value: string): Record<string, unknown> | null {
+  if (!/^\s*[[{"]/.test(value)) return null;
+  const head = `{${JSON.stringify(key)}:`;
+  // The string may end before the braces of the objects it opened, or carry the braces of the reply around it.
+  for (let cut = 0; cut <= 3; cut++) for (const tail of ["}", "}}", "}}}", ""]) {
+    try {
+      const parsed = JSON.parse(head + value.slice(0, value.length - cut) + tail) as unknown;
+      if (parsed && typeof parsed === "object" && !Array.isArray(parsed) && Object.keys(parsed).length > 1) return parsed as Record<string, unknown>;
+    } catch { /* try the next reading */ }
+  }
+  return null;
+}
+
+const isRecord = (value: unknown): value is Record<string, unknown> => !!value && typeof value === "object" && !Array.isArray(value);
+/** Two halves of one object part merged (the reply's own fields win); anything else keeps the reply's value. */
+const mergeParts = (found: unknown, own: unknown) => isRecord(found) && isRecord(own) ? { ...found, ...own } : own;
+
+/** Long strings in the reply that look like they swallowed JSON ('…", "keyPoints": […'), longest first. */
+function swallowingStrings(value: unknown, found: string[] = []): string[] {
+  if (typeof value === "string") { if (value.length > 200 && /"\s*[,:]\s*[[{"]/.test(value)) found.push(value); }
+  else if (value && typeof value === "object") for (const inner of Object.values(value)) swallowingStrings(inner, found);
+  return found.sort((a, b) => b.length - a.length);
+}
+
+/**
+ * The reply re-read with one swallowing string's contents put back as JSON: the text up to that string's opening
+ * quote, then its contents, whose first escaped quote now closes it. Closing braces the model left after the string
+ * are trimmed or added until it parses; null when no reading parses.
+ */
+function resplice(text: string, value: string): unknown {
+  const opening = JSON.stringify(value.slice(0, 80)).slice(0, -1);
+  const at = text.indexOf(opening);
+  if (at < 0) return null;
+  const base = `${text.slice(0, at)}"${value}`;
+  for (let cut = 0; cut <= 4; cut++) for (const tail of ["", "}", "}}", "]}", "}}}"]) {
+    try { return JSON.parse(base.slice(0, base.length - cut) + tail); } catch { /* next reading */ }
+  }
+  return null;
+}
+
+export function repairTopic(text: string | undefined, depth = 0): TopicDraft | null {
+  if (!text) return null;
+  const clean = text.trim().replace(/^```(?:json)?\s*|\s*```$/g, "");
+  const root = unstring(clean);
+  if (!root || typeof root !== "object" || Array.isArray(root)) return null;
+  const fitted = reshape(root as Record<string, unknown>);
+  if (fitted || depth >= 3) return fitted;
+  // Still not a lesson: a string may have swallowed the parts after it; put each candidate back and try again.
+  for (const value of swallowingStrings(root).slice(0, 4)) {
+    const spliced = resplice(clean, value);
+    const repaired = spliced && typeof spliced === "object" ? repairTopic(JSON.stringify(spliced), depth + 1) : null;
+    if (repaired) return repaired;
+  }
+  return null;
+}
+
+/** Parses double-encoded parts, lifts misplaced ones and validates; null when the lesson still does not fit. */
+function reshape(root: Record<string, unknown>): TopicDraft | null {
+  const draft: Record<string, unknown> = { ...root };
+  const top = Object.keys(topicSchema.shape), labKeys = Object.keys(topicSchema.shape.lab.shape);
+  for (const key of Object.keys(draft)) {
+    const value = draft[key];
+    const rest = typeof value === "string" ? swallowed(key, value) : null;
+    // A part found both inside the string and in the reply (lab split in two) keeps the pieces of both.
+    if (rest) for (const [part, inner] of Object.entries(rest)) draft[part] = part === key || draft[part] === undefined ? inner : mergeParts(inner, draft[part]);
+    draft[key] = unstring(draft[key]);
+  }
+  // Lift parts that ended up one level down (inside essentials, lab or another part).
+  for (const value of Object.values({ ...draft })) {
+    if (!value || typeof value !== "object" || Array.isArray(value)) continue;
+    for (const [key, inner] of Object.entries(value as Record<string, unknown>)) if (top.includes(key) && draft[key] === undefined) draft[key] = unstring(inner);
+  }
+  let lab = unstring(draft.lab);
+  if (!lab || typeof lab !== "object") lab = Object.fromEntries(labKeys.filter(key => draft[key] !== undefined).map(key => [key, draft[key]]));
+  draft.lab = Object.fromEntries(Object.entries(lab as Record<string, unknown>).map(([key, value]) => [key, unstring(value)]));
+  // "code" is nullable but required: an assignment that simply leaves it out has no solution code.
+  const assignments = (draft.lab as Record<string, unknown>).assignments;
+  if (Array.isArray(assignments)) (draft.lab as Record<string, unknown>).assignments = assignments.map(item => isRecord(item) && item.code === undefined ? { ...item, code: null } : item);
+  // Paragraph lists written as one string become their paragraphs.
+  for (const key of ["description", "usage", "tips"]) {
+    if (typeof draft[key] === "string") draft[key] = (draft[key] as string).split(/\n\s*\n|\n(?=\s*[-*•\d])/).map(part => part.replace(/^\s*(?:[-*•]|\d+[.)])\s*/, "").trim()).filter(Boolean);
+  }
+  const parsed = topicSchema.safeParse(Object.fromEntries(top.map(key => [key, draft[key]])));
+  return parsed.success ? parsed.data : null;
+}
+
 const reviewSchema = z.object({
   accuracy: z.number().describe("1-5: agrees with the official notes and current APIs; outputs match the code."),
   teaching: z.number().describe("1-5: a learner can follow it and do the work afterwards."),
@@ -140,7 +251,7 @@ const reviewSchema = z.object({
 
 type OutlineTopic = z.infer<typeof outlineSchema>["topics"][number];
 type CourseRow = { track_id: string; status: string; intro: string[]; topics: OutlineTopic[]; sources: Research["sources"]; started_at: string };
-type TopicRow = { topic_id: string; status: string; content: TopicDraft | null; started_at: string };
+type TopicRow = { topic_id: string; status: string; content: TopicDraft | null; started_at: string; editor_score?: number | null; sources?: Research["sources"] | null };
 
 const missingTable = (error: { code?: string; message: string }) => error.code === "42P01" || error.code === "PGRST205" || /could not find the table|does not exist/i.test(error.message);
 const check = <T,>(result: { data: T; error: { code?: string; message: string } | null }) => {
@@ -166,7 +277,7 @@ async function courseRow(trackId: string) {
 export async function readGeneratedCourse(trackId: string) {
   const course = await courseRow(trackId);
   if (!course) return null;
-  const topics = check(await db().from("generated_course_topics").select("topic_id,status,content,started_at").eq("track_id", trackId)) as TopicRow[];
+  const topics = check(await db().from("generated_course_topics").select("topic_id,status,content,started_at,editor_score,sources").eq("track_id", trackId)) as TopicRow[];
   return { course, topics: new Map(topics.map(row => [row.topic_id, row])) };
 }
 
@@ -187,6 +298,7 @@ export async function loadGeneratedCourse(trackId: string): Promise<{ course: De
       ...outline, ...(content.essentials ? { essentials: content.essentials } : {}), description: content.description, usage: content.usage, files: content.files, tips: content.tips, subjective: content.subjective,
       objective: content.objective.filter(item => item.options.length === 4).map(item => ({ q: item.q, options: item.options as [string, string, string, string], answer: Math.max(0, Math.min(3, item.answer)) as 0 | 1 | 2 | 3, explain: item.explain })),
       lab: { ...content.lab, assignments: content.lab.assignments.map(item => ({ q: item.q, a: item.a, ...(item.code ? { code: item.code } : {}) })) },
+      review: { score: row?.editor_score == null ? null : Number(row.editor_score), sources: row?.sources ?? [] },
     };
   });
   return { course: { ...meta, intro: stored.course.intro, topics, sources: stored.course.sources }, state: "ready" };
@@ -298,7 +410,7 @@ export async function generateTopic(trackId: string, topicId: string, budget: Bu
       "4. Best practices and common pitfalls the documentation warns about.",
       "5. Minimal working examples in the documentation's own style.",
     ].join("\n"), source.sites);
-    const write = (fixes: string[]) => generateText({
+    const writeOnce = (fixes: string[]) => generateText({
       model: model(), system: SYSTEM, reasoning: "medium", output: Output.object({ schema: topicSchema }), maxRetries: 1, abortSignal: AbortSignal.timeout(budget.writeMs),
       prompt: [
         `Course: ${track.name}. Module: ${outline.module}. Topic: ${outline.title} (${outline.level}).`,
@@ -310,6 +422,16 @@ export async function generateTopic(trackId: string, topicId: string, budget: Bu
         "Write the complete lesson.",
       ].filter(Boolean).join("\n\n"),
     }).then(result => result.output);
+    // A reply whose content is all there but mis-shaped is repaired from its text; one that cannot be is written again.
+    const write = async (fixes: string[]): Promise<TopicDraft> => {
+      for (let attempt = 0; ; attempt++) {
+        try { return await writeOnce(fixes); } catch (error) {
+          const repaired = NoObjectGeneratedError.isInstance(error) ? repairTopic(error.text) : null;
+          if (repaired) return repaired;
+          if (attempt >= 1 || !NoObjectGeneratedError.isInstance(error)) throw error;
+        }
+      }
+    };
     let draft = await write([]);
     let verdict = await review(draft, notes.notes, budget.reviewMs);
     if (verdict.score < MIN_SCORE && Date.now() - started < budget.rewriteWithinMs) {
@@ -322,7 +444,10 @@ export async function generateTopic(trackId: string, topicId: string, budget: Bu
     return "ready";
   } catch (error) {
     await db().from("generated_course_topics").update({ status: "failed", error: String(error).slice(0, 500) }).eq("track_id", trackId).eq("topic_id", topicId);
-    console.error(JSON.stringify({ event: "course_topic_failed", trackId, topicId, message: String(error).slice(0, 300) }));
+    // A malformed reply says why: "length" means the lesson outgrew the output budget, anything else a schema mismatch.
+    const detail = NoObjectGeneratedError.isInstance(error)
+      ? { finishReason: error.finishReason, outputTokens: error.usage?.outputTokens, textChars: error.text?.length, shape: shapeOf(error.text), cause: String(error.cause ?? "").slice(-300) } : {};
+    console.error(JSON.stringify({ event: "course_topic_failed", trackId, topicId, message: String(error).slice(0, 300), ...detail }));
     throw new HttpError(502, "generation_failed");
   }
 }

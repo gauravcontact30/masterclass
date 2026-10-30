@@ -5,7 +5,7 @@ import { CodeFiles } from "./code-files";
 import { DeepCourseObjective } from "./deep-course-objective";
 import { CoursePanelLayout, ModuleDone, ModulesToggle, OtherCourses, PanelCollapse, type SideFamily } from "./deep-course-side";
 import { DeepCourseProgress, DeepTopicCard, DeepTopicChecklist, OpenInCompiler } from "./deep-topic-progress";
-import { GeneratingTopic } from "./deep-course-generating";
+import { PreparingTopic } from "./deep-course-generating";
 import { deepCourseHref } from "@/lib/deep-courses";
 import { COURSE_CATALOG } from "@/lib/deep-courses/catalog";
 import { familyOfTrack, TRACK_FAMILIES } from "@/lib/pro-learn/families";
@@ -86,11 +86,11 @@ function Topic({ course, topic }: { course: DeepCourse; topic: CourseTopic }) {
       <h1>{topic.title}</h1>
       <p className={styles.summary}>{topic.summary}</p>
       <p className={styles.meta}><i data-level={topic.level}>{topic.level}</i><span><Clock3 size={14} aria-hidden="true"/>{topic.minutes} min</span></p>
-      {topic.pending && <GeneratingTopic trackId={course.id} topicId={topic.id} title={topic.title} />}
+      {topic.pending && <PreparingTopic title={topic.title} />}
       {!topic.pending && <nav className={styles.jump} aria-label="On this page">
-        {topic.essentials && <a href="#essentials">Essentials</a>}<a href="#description">Description</a><a href="#usage">Usage</a>
+        <a href="#learn">What you will learn</a>{topic.essentials && <a href="#essentials">Essentials</a>}<a href="#description">Description</a><a href="#usage">Usage</a>
         {topic.lab && <><a href="#steps">Step by step</a><a href="#syntax">Syntax</a><a href="#example">Example &amp; output</a><a href="#simple">Simple</a><a href="#moderate">Moderate</a><a href="#complex">Complex</a></>}
-        <a href="#code">Code</a>
+        <a href="#code">Complete codebase</a>
         {topic.lab && <><a href="#assignments">Assignments</a><a href="#alternates">Alternate ways</a></>}
         <a href="#tips">Tips</a><a href="#subjective">Subjective Q&amp;A</a><a href="#objective">Objective MCQs</a>
       </nav>}
@@ -110,6 +110,8 @@ function TopicBody({ course, topic, index }: { course: DeepCourse; topic: Course
   return <>
     <DeepTopicChecklist courseId={course.id} topicId={topic.id} index={index} />
 
+    <WhatYouWillLearn topic={topic} />
+
     {topic.essentials && <Essentials essentials={topic.essentials} />}
 
     <section id="description" className={styles.block} data-tone={TONES.description}>
@@ -127,9 +129,9 @@ function TopicBody({ course, topic, index }: { course: DeepCourse; topic: Course
     {topic.lab && <LabExampleBlock id="moderate" heading="Moderate example" level="Moderate" icon={<FlaskConical size={18} aria-hidden="true"/>} example={topic.lab.moderate} />}
     {topic.lab && <LabExampleBlock id="complex" heading="Complex example" level="Complex" icon={<FlaskConical size={18} aria-hidden="true"/>} example={topic.lab.complex} />}
     <section id="code" className={styles.block} data-tone={TONES.code}>
-      <h2><span className={styles.codeIcon} aria-hidden="true">{"</>"}</span>Code examples</h2>
-      <p className={styles.hint}>Switch between files with the tabs or the file tree; each tab is a complete file you can copy.</p>
-      <CodeFiles skin="apple" label={topic.title} annotate={false} files={topic.files.map(file => ({ path: file.path, code: file.code, note: file.note ?? "" }))}/>
+      <h2><span className={styles.codeIcon} aria-hidden="true">{"</>"}</span>Complete codebase</h2>
+      <p className={styles.hint}>The whole topic as one project: the example project first, then the syntax, every worked example and each alternate way in its own folder. Switch files with the tabs or the file tree; each tab is a complete file you can copy.</p>
+      <CodeFiles skin="apple" label={`${topic.title} codebase`} annotate={false} files={codebaseOf(topic)} initialPath={topic.files[0]?.path}/>
     </section>
     {topic.lab && <LabAssignments lab={topic.lab} />}
     {topic.lab && <LabAlternates lab={topic.lab} />}
@@ -153,12 +155,59 @@ function TopicBody({ course, topic, index }: { course: DeepCourse; topic: Course
   </>;
 }
 
-/** Light card tones for the exam notes, in turn, so each fact reads as its own revision card. */
-const POINT_TONES = ["mint", "butter", "lavender", "peach", "sky", "sage", "rose"] as const;
+/**
+ * The topic's learning summary, drawn like a Tech Buzz story's "What you will learn": the key points to remember as a
+ * numbered list (the essentials' key points, or the usage when a topic has none), the editor's score from the
+ * pre-publish review and the official documentation it was researched from (named, never linked).
+ */
+function WhatYouWillLearn({ topic }: { topic: CourseTopic }) {
+  const points = topic.essentials?.keyPoints.length ? topic.essentials.keyPoints : topic.usage;
+  const score = topic.review?.score;
+  const sources = topic.review?.sources ?? [];
+  if (!points.length) return null;
+  return <section id="learn" className={styles.learn} aria-labelledby="learn-title">
+    <div className={styles.learnHead}>
+      <h2 id="learn-title"><GraduationCap size={15} aria-hidden="true"/>What you will learn</h2>
+      {score ? <span className={styles.learnScore} title="Score from the editor's review before publishing; lessons need 4 out of 5 to go live">
+        <span aria-hidden="true">{"★".repeat(Math.round(score))}{"☆".repeat(5 - Math.round(score))}</span> {score.toFixed(1)}/5 editor review
+      </span> : null}
+    </div>
+    <ol className={styles.learnList}>{points.map(point => <li key={point}>{point}</li>)}</ol>
+    {sources.length ? <div className={styles.learnSources}>
+      <span>Researched from the official documentation</span>
+      <ul>{sources.map(source => <li key={`${source.site}${source.title}`}>{source.title} <small>({source.site})</small></li>)}</ul>
+    </div> : null}
+  </section>;
+}
+
+const extensionOf = (file: string) => file.match(/\.[a-z0-9]+$/i)?.[0] ?? ".txt";
+/** File name of an assignment's solution, in the language of the topic's main example. */
+const solutionFile = (lab: TopicLab, at: number) => `solution-${at + 1}${extensionOf(lab.example.file)}`;
 
 /**
- * The topic as a revision sheet: the key takeaway, the answer to give in an interview, and the exam notes, each on its
- * own light card. Only the essence is here; the full explanation follows in the Description.
+ * Every piece of code a topic teaches, as one multi-file project for the Apple-style editor: the example project's own
+ * files at the root, then the syntax, each worked example, the alternate ways and the assignment solutions in folders,
+ * so files with the same name (Main.java, main.py) never collide.
+ */
+function codebaseOf(topic: CourseTopic) {
+  const files = topic.files.map(file => ({ path: file.path, code: file.code, note: file.note ?? "" }));
+  const lab = topic.lab;
+  if (!lab) return files;
+  const slug = (text: string) => text.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 40) || "example";
+  const name = (file: string) => file.split("/").pop() || file;
+  files.push({ path: `syntax/${name(lab.syntax.file)}`, code: lab.syntax.code, note: "" });
+  for (const [folder, example] of [["example", lab.example], ["simple", lab.simple], ["moderate", lab.moderate], ["complex", lab.complex]] as const) {
+    files.push({ path: `examples/${folder}/${name(example.file)}`, code: example.code, note: example.title });
+  }
+  lab.alternates.forEach((item, at) => files.push({ path: `alternates/${at + 1}-${slug(item.title)}/${name(item.file)}`, code: item.code, note: item.why }));
+  lab.assignments.forEach((item, at) => { if (item.code) files.push({ path: `solutions/${solutionFile(lab, at)}`, code: item.code, note: item.q }); });
+  // A path written twice keeps its first file.
+  return files.filter((file, at) => files.findIndex(other => other.path === file.path) === at);
+}
+
+/**
+ * The topic as a revision sheet: the key takeaway and the answer to give in an interview, each on its own light card.
+ * Only the essence is here; the key points are in "What you will learn" and the full explanation follows.
  */
 function Essentials({ essentials }: { essentials: TopicEssentials }) {
   return <section id="essentials" className={styles.essentials} aria-labelledby="essentials-title">
@@ -175,10 +224,6 @@ function Essentials({ essentials }: { essentials: TopicEssentials }) {
       <p>{essentials.answer}</p>
       <small>Answer in this order: what it is, how it works, when to use it.</small>
     </div>
-    <h3 className={styles.notesHeading}><GraduationCap size={16} aria-hidden="true"/>Exam notes · key points</h3>
-    <ol className={styles.pointCards}>{essentials.keyPoints.map((point, at) => <li key={point} data-tone={POINT_TONES[at % POINT_TONES.length]}>
-      <span aria-hidden="true">{String(at + 1).padStart(2, "0")}</span><p>{point}</p>
-    </li>)}</ol>
   </section>;
 }
 
@@ -225,7 +270,7 @@ function LabAssignments({ lab }: { lab: TopicLab }) {
       <summary><span>A{number + 1}.</span> {item.q}</summary>
       <div className={styles.answer}>
         {item.a.split("\n\n").map(paragraph => <p key={paragraph}>{paragraph}</p>)}
-        {item.code && <pre className={styles.answerCode}>{item.code}</pre>}
+        {item.code && <CodeFiles skin="apple" label={`Solution ${number + 1}`} annotate={false} files={[{ path: `solutions/${solutionFile(lab, number)}`, code: item.code, note: "" }]}/>}
       </div>
     </details></li>)}</ol>
   </section>;

@@ -10,7 +10,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { DASHBOARD_ROUTES, type WorkspaceTab } from "@/lib/dashboard-routes";
 import { toast } from "sonner";
-import { ArrowUpRight,Award,Bookmark,BookMarked,BookOpen,BookOpenText,Coffee,CircleHelp,Code2,ChevronRight,Compass,FileCode2,Languages,Layers,Library as LibraryIcon,Link2,LogOut,MessagesSquare,ListOrdered,PanelLeftClose,PanelLeftOpen,Search,Sparkles,SquareTerminal,Sun,RefreshCw,Users,Workflow } from "lucide-react";
+import { ArrowUpRight,Award,Bookmark,BookMarked,BookOpen,BookOpenText,Coffee,CircleHelp,Code2,ChevronRight,Compass,FileCode2,Layers,Library as LibraryIcon,Link2,LogOut,MessagesSquare,ListOrdered,PanelLeftClose,PanelLeftOpen,Search,Sparkles,SquareTerminal,Sun,RefreshCw,Users,Workflow } from "lucide-react";
 import type { DocumentRecord,GenerationRequest,Language,Progress,Technology,Tier,Topic } from "@/lib/domain";
 import dynamic from "next/dynamic";
 import { uniqueLibraryDocuments } from "@/lib/library";

@@ -5,6 +5,8 @@ import { requireLearningUser as currentUser } from "@/lib/server/subscription-ac
 import { authConfigured, billingConfigured, databaseConfigured } from "@/lib/server/config";
 import styles from "@/components/answer-search.module.css";
 import { signInFor } from "@/lib/safe-redirect";
+// Signed-in page: renders once the user is read, like its layout (instant = false there does not cover pages).
+export const instant = false;
 
 export const metadata = { title: "Vocabulary" };
 

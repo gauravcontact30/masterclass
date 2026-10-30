@@ -6,6 +6,8 @@ import { learningPage } from "@/lib/server/learning-uploads";
 import { requireLearningUser as currentUser } from "@/lib/server/subscription-access";
 import { authConfigured, billingConfigured, databaseConfigured } from "@/lib/server/config";
 import { signInFor } from "@/lib/safe-redirect";
+// Signed-in page: renders once the user is read, like its layout (instant = false there does not cover pages).
+export const instant = false;
 
 /** A page the owner added to the Learning Dashboard from Upload Learning › Learning pages. */
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {

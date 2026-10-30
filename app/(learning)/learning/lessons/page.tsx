@@ -4,6 +4,8 @@ import { requireLearningUser as currentUser } from "@/lib/server/subscription-ac
 import { authConfigured, databaseConfigured, billingConfigured } from "@/lib/server/config";
 import { proSectionContent } from "@/lib/server/pro-learn-pages";
 import { signInFor } from "@/lib/safe-redirect";
+// Signed-in page: renders once the user is read, like its layout (instant = false there does not cover pages).
+export const instant = false;
 
 export const metadata = { title: "Lessons · Professional Learn" };
 

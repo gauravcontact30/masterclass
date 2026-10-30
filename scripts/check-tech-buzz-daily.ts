@@ -12,8 +12,9 @@ async function main() {
     inngest: Boolean(process.env.INNGEST_EVENT_KEY && process.env.INNGEST_SIGNING_KEY),
   }, tracks: DAILY_TRACKS.map(track => ({ track: track.id, articles: result.data.filter(row => row.tags.includes(dailyTrackTag(track.id))) })) }, null, 2));
   if (process.argv.includes("--repair")) {
-    const { generateTechBuzzDaily } = await import("../lib/server/tech-buzz-daily");
-    const run = await generateTechBuzzDaily(date);
+    const { generateTechBuzzDaily, SCRIPT_BUDGET } = await import("../lib/server/tech-buzz-daily");
+    // No route limit here: the draft gets the script's time and the model's own thinking.
+    const run = await generateTechBuzzDaily(date, SCRIPT_BUDGET);
     console.log(JSON.stringify(run, null, 2));
     if (run.failed.length) process.exitCode = 1;
   }

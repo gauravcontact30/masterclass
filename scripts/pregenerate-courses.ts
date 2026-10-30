@@ -5,6 +5,7 @@
  *
  *   npx tsx --conditions=react-server --env-file=.env scripts/pregenerate-courses.ts            # every course
  *   npx tsx --conditions=react-server --env-file=.env scripts/pregenerate-courses.ts langchain  # named courses
+ *   ... langflow/text-splitting                                                                   # one topic
  *   ... --status                                                                                  # report only
  *   ... --topics=2                                                                                # first N topics per course (trial)
  */
@@ -13,12 +14,15 @@ import { SCRIPT_BUDGET, generateOutline, generateTopic, readGeneratedCourse } fr
 
 const args = process.argv.slice(2);
 const named = args.filter(arg => !arg.startsWith("--"));
+// "course/topic" names a single topic; a bare id names a whole course.
+const namedTopics = new Set(named.filter(arg => arg.includes("/")));
+const namedCourses = named.map(arg => arg.split("/")[0]);
 const statusOnly = args.includes("--status");
 const topicLimit = Number(args.find(arg => arg.startsWith("--topics="))?.slice(9)) || Infinity;
 // Topics written at once: research queues itself at three, writing and review overlap with it.
 const PARALLEL = 4;
 
-const courses = COURSE_CATALOG.filter(course => !course.handwritten && (!named.length || named.includes(course.id)));
+const courses = COURSE_CATALOG.filter(course => !course.handwritten && (!named.length || namedCourses.includes(course.id)));
 
 async function pool<T>(items: T[], size: number, run: (item: T) => Promise<void>) {
   let next = 0;
@@ -36,7 +40,8 @@ async function main() {
       stored = await readGeneratedCourse(course.id);
     }
     if (stored?.course.status !== "ready") { console.log(`${course.id}: no outline yet`); continue; }
-    const topics = stored.course.topics.slice(0, topicLimit);
+    const topics = stored.course.topics.slice(0, topicLimit)
+      .filter(topic => !namedTopics.size || namedTopics.has(`${course.id}/${topic.id}`) || named.includes(course.id));
     total += topics.length;
     for (const topic of topics) {
       if (stored.topics.get(topic.id)?.status === "ready") ready++;
@@ -46,15 +51,18 @@ async function main() {
   console.log(`${courses.length} courses, ${ready}/${total} topics ready, ${jobs.length} to write`);
   if (statusOnly) return;
 
-  let done = 0, failed = 0;
+  let done = 0, failed = 0, skipped = 0;
   const started = Date.now();
   await pool(jobs, PARALLEL, async ({ course, topic }) => {
     const at = Date.now();
-    try { await generateTopic(course, topic, SCRIPT_BUDGET); done++; }
+    let state;
+    try { state = await generateTopic(course, topic, SCRIPT_BUDGET); }
     catch (error) { failed++; console.error(`  ✗ ${course}/${topic}: ${String(error).slice(0, 160)}`); return; }
+    if (state !== "ready") { skipped++; console.log(`  … ${course}/${topic}: being written by another run, skipped`); return; }
+    done++;
     const minutes = (Date.now() - started) / 60_000;
     console.log(`  ✓ ${course}/${topic} in ${Math.round((Date.now() - at) / 1000)} s · ${done + failed}/${jobs.length} · ~${Math.round((minutes / (done + failed)) * (jobs.length - done - failed))} min left`);
   });
-  console.log(`written ${done}, failed ${failed} (rerun to retry failures)`);
+  console.log(`written ${done}, failed ${failed}, skipped ${skipped} (rerun to retry failures and skipped topics)`);
 }
 main().catch(error => { console.error(error instanceof Error ? error.message : error); process.exitCode = 1; });

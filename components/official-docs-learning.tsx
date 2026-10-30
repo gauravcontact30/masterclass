@@ -100,7 +100,7 @@ export function OfficialDocsLearning({ doc, idPrefix }: { doc: OfficialTechnolog
             <p className={styles.sectionNote}>{example.summary}</p>
             {example.level === "Hard" && <p className={styles.sectionNote}>Each tab contains the complete file. Use the Terminal commands below to set up and run this project.</p>}
             {example.level === "Complex" && <p className={styles.sectionNote}>Complete codebase: save every file in a separate project folder, including configuration and tests. Follow this card’s setup and verification steps.</p>}
-            <CodeFiles files={example.files} label={example.level === "Hard" ? `${doc.title} codebase` : example.level === "Complex" ? `${doc.title} complex codebase` : `${doc.title} ${example.level.toLowerCase()} example`} lineComments includeConfigTabs explainFormatting={false} className={styles.projectEditor} />
+            <CodeFiles skin="apple" files={example.files} label={example.level === "Hard" ? `${doc.title} codebase` : example.level === "Complex" ? `${doc.title} complex codebase` : `${doc.title} ${example.level.toLowerCase()} example`} lineComments includeConfigTabs explainFormatting={false} className={styles.projectEditor} />
             {example.runbook && example.level !== "Hard" && <div className={styles.complexRunbook}>
               <h5>Before you start</h5>
               <ul className={styles.points}>{example.runbook.prerequisites.map(point => <li key={point}>{point}</li>)}</ul>

@@ -286,7 +286,7 @@ function UseCaseCard({ useCase, index, tone }: { useCase: GuideUseCase; index: n
     </CardHeader>
     <CardContent className={styles.useCaseBody}>
       <ul className={styles.keyPoints}>{useCase.points.map((point, position) => <li key={position}><CheckCircle2 size={14} aria-hidden="true" /><span className={styles.prose}><InlineText text={point} /></span></li>)}</ul>
-      <CodeFiles files={useCase.files} label={`Full implementation: ${useCase.title}`} className={styles.ide} />
+      <CodeFiles skin="apple" files={useCase.files} label={`Full implementation: ${useCase.title}`} className={styles.ide} />
     </CardContent>
   </Card>;
 }
@@ -416,7 +416,7 @@ function GuideDetail({ card, tone, onClose, onRegenerate, onEditAndRegenerate }:
 
       {!!guide.files.length && <section className={styles.section} aria-labelledby="sec-code">
         <h3 id="sec-code"><span className={styles.sectionNo}>{number("code")}</span>Complete codebase</h3>
-        <CodeFiles files={guide.files} label="Complete codebase" className={styles.ide} />
+        <CodeFiles skin="apple" files={guide.files} label="Complete codebase" className={styles.ide} />
       </section>}
 
       {!!guide.useCases.length && <section className={styles.section} aria-labelledby="sec-cases">

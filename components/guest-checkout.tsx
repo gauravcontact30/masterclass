@@ -4,7 +4,7 @@ import { usePriceRefresh } from "./use-price-refresh";
 import { useState } from "react";
 import Link from "next/link";
 import { useEffect, useRef } from "react";
-import { ArrowLeft, ArrowRight, Check, CircleAlert, Languages, LockKeyhole, MailCheck, PartyPopper } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, CircleAlert, LockKeyhole, MailCheck, PartyPopper } from "lucide-react";
 import { Wordmark } from "./brand-mark";
 import { ExpandedText } from "./expanded-text";
 import { useLanguage } from "./language-provider";

@@ -79,7 +79,7 @@ function rowToArticle(row: TechBuzzRow): TechBuzzArticle {
       average: Number(row.rating_average) || 4.9,
       // 0 means not rated yet (daily stories start there).
       count: row.rating_count == null ? 0 : Number(row.rating_count),
-      breakdown: (row.rating_breakdown as any) || { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 },
+      breakdown: (row.rating_breakdown as Record<1 | 2 | 3 | 4 | 5, number> | undefined) || { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 },
     },
     author: row.author || {
       name: "Study Buddy Team",
@@ -177,7 +177,7 @@ function articleToRow(article: Partial<TechBuzzArticle>, userId?: string) {
     builder_metrics: article.builderMetrics || null,
     founder_takeaway: article.founderTakeaway || null,
     content_sections: article.contentSections || [],
-    status: (article as any).status || "published",
+    status: (article as { status?: string }).status || "published",
     ...(userId ? { created_by: userId } : {}),
     updated_at: new Date().toISOString(),
   };

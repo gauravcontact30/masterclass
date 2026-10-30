@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect, useCallback } from "react";
+import { useState, useMemo, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -14,17 +14,13 @@ import {
   ThumbsDown,
   LayoutGrid,
   List,
-  BookOpen,
   ArrowRight,
-  Award,
-  Layers,
-  Flame,
-  ShieldCheck,
-  Check
+  Flame
 } from "lucide-react";
 import { LanguageToggle } from "./language-toggle";
 import { getTechnologyBrandIcon } from "./tech-buzz-brand-icons";
-import { getDiwaliFestiveSaleInfo, type FestiveSaleInfo } from "@/lib/festive-sale";
+import { getDiwaliFestiveSaleInfo } from "@/lib/festive-sale";
+import { parseStoredRecord, useStoredValue, writeStoredValue } from "@/lib/local-store";
 import styles from "./courses-feed.module.css";
 
 export interface MasterCourseItem {
@@ -368,43 +364,26 @@ export const MASTER_COURSES: MasterCourseItem[] = [
   }
 ];
 
+const LAYOUT_KEY = "masterclass:courses-layout", LIKES_KEY = "masterclass:courses-likes";
+const DISLIKES_KEY = "masterclass:courses-dislikes", CLAPS_KEY = "masterclass:courses-claps";
+// The banner shows the sale's fixed terms only, so it needs no clock.
+const festiveSale = getDiwaliFestiveSaleInfo();
+
 export function CoursesFeed() {
   const [courses, setCourses] = useState<MasterCourseItem[]>(() => MASTER_COURSES);
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [selectedCategory, setSelectedCategory] = useState<string>("All");
-  const [sortBy, setSortBy] = useState<"trending" | "likes" | "claps" | "rating" | "newest">("trending");
-  const [layoutDensity, setLayoutDensity] = useState<"magazine" | "compact">(() => {
-    if (typeof window !== "undefined") {
-      try {
-        const saved = localStorage.getItem("masterclass:courses-layout");
-        if (saved === "compact" || saved === "magazine") return saved;
-      } catch {}
-    }
-    return "magazine";
-  });
-
-  const [festiveSale, setFestiveSale] = useState<FestiveSaleInfo>(() => getDiwaliFestiveSaleInfo());
-
-  useEffect(() => {
-    setFestiveSale(getDiwaliFestiveSaleInfo(Date.now()));
-  }, []);
+  const [sortBy] = useState<"trending" | "likes" | "claps" | "rating" | "newest">("trending");
+  // Layout, likes, dislikes and claps are kept in this browser (lib/local-store.ts): read after hydration, never in the
+  // first render, so the server HTML and the first client render agree.
+  const layoutDensity = useStoredValue(LAYOUT_KEY) === "compact" ? "compact" : "magazine";
 
   // Interaction tracking
-  const [likedCourseIds, setLikedCourseIds] = useState<Record<string, boolean>>({});
-  const [dislikedCourseIds, setDislikedCourseIds] = useState<Record<string, boolean>>({});
-  const [clapsState, setClapsState] = useState<Record<string, number>>({});
+  const savedLikes = useStoredValue(LIKES_KEY), savedDislikes = useStoredValue(DISLIKES_KEY), savedClaps = useStoredValue(CLAPS_KEY);
+  const likedCourseIds = useMemo(() => parseStoredRecord<boolean>(savedLikes), [savedLikes]);
+  const dislikedCourseIds = useMemo(() => parseStoredRecord<boolean>(savedDislikes), [savedDislikes]);
+  const clapsState = useMemo(() => parseStoredRecord<number>(savedClaps), [savedClaps]);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
-
-  useEffect(() => {
-    try {
-      const savedLikes = localStorage.getItem("masterclass:courses-likes");
-      if (savedLikes) setLikedCourseIds(JSON.parse(savedLikes));
-      const savedDislikes = localStorage.getItem("masterclass:courses-dislikes");
-      if (savedDislikes) setDislikedCourseIds(JSON.parse(savedDislikes));
-      const savedClaps = localStorage.getItem("masterclass:courses-claps");
-      if (savedClaps) setClapsState(JSON.parse(savedClaps));
-    } catch {}
-  }, []);
 
   const showToast = useCallback((msg: string) => {
     setToastMessage(msg);
@@ -414,10 +393,7 @@ export function CoursesFeed() {
   }, []);
 
   const updateLayoutDensity = (val: "magazine" | "compact") => {
-    setLayoutDensity(val);
-    try {
-      localStorage.setItem("masterclass:courses-layout", val);
-    } catch {}
+    writeStoredValue(LAYOUT_KEY, val);
   };
 
   // Like handler
@@ -428,13 +404,8 @@ export function CoursesFeed() {
 
     const nextLikes = { ...likedCourseIds, [courseId]: !currentlyLiked };
     const nextDislikes = { ...dislikedCourseIds, [courseId]: false };
-    setLikedCourseIds(nextLikes);
-    setDislikedCourseIds(nextDislikes);
-
-    try {
-      localStorage.setItem("masterclass:courses-likes", JSON.stringify(nextLikes));
-      localStorage.setItem("masterclass:courses-dislikes", JSON.stringify(nextDislikes));
-    } catch {}
+    writeStoredValue(LIKES_KEY, JSON.stringify(nextLikes));
+    writeStoredValue(DISLIKES_KEY, JSON.stringify(nextDislikes));
 
     setCourses(current =>
       current.map(c => {
@@ -456,13 +427,8 @@ export function CoursesFeed() {
 
     const nextDislikes = { ...dislikedCourseIds, [courseId]: !currentlyDisliked };
     const nextLikes = { ...likedCourseIds, [courseId]: false };
-    setDislikedCourseIds(nextDislikes);
-    setLikedCourseIds(nextLikes);
-
-    try {
-      localStorage.setItem("masterclass:courses-dislikes", JSON.stringify(nextDislikes));
-      localStorage.setItem("masterclass:courses-likes", JSON.stringify(nextLikes));
-    } catch {}
+    writeStoredValue(DISLIKES_KEY, JSON.stringify(nextDislikes));
+    writeStoredValue(LIKES_KEY, JSON.stringify(nextLikes));
 
     setCourses(current =>
       current.map(c => {
@@ -482,11 +448,7 @@ export function CoursesFeed() {
     const current = clapsState[courseId] || 0;
     const next = current + 1;
     const nextState = { ...clapsState, [courseId]: next };
-    setClapsState(nextState);
-
-    try {
-      localStorage.setItem("masterclass:courses-claps", JSON.stringify(nextState));
-    } catch {}
+    writeStoredValue(CLAPS_KEY, JSON.stringify(nextState));
 
     setCourses(current =>
       current.map(c => (c.id === courseId ? { ...c, claps: c.claps + 1 } : c))
@@ -508,7 +470,7 @@ export function CoursesFeed() {
 
   // Filtered Courses
   const filteredCourses = useMemo(() => {
-    let result = courses.filter(c => {
+    const result = courses.filter(c => {
       const matchesCat =
         selectedCategory === "All" ||
         (selectedCategory === "system-design" && c.category === "system-design") ||

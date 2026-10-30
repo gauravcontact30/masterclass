@@ -5,6 +5,8 @@ import { NOTES_TECHNOLOGIES } from "@/lib/server/notes-study-catalog";
 import { requireLearningUser as currentUser } from "@/lib/server/subscription-access";
 import { authConfigured, databaseConfigured, billingConfigured } from "@/lib/server/config";
 import { signInFor } from "@/lib/safe-redirect";
+// Signed-in page: renders once the user is read, like its layout (instant = false there does not cover pages).
+export const instant = false;
 
 export const metadata = { title: "Bookmark" };
 export default async function Page() {

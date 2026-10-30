@@ -7,7 +7,7 @@ import { useEffect, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
 import { setAuthNotice } from "@/lib/auth-notice";
-import { ArrowLeft, ArrowUpRight, Eye, EyeOff, Languages, MailCheck, Settings2 } from "lucide-react";
+import { ArrowLeft, ArrowUpRight, Eye, EyeOff, MailCheck, Settings2 } from "lucide-react";
 import { supabaseBrowser } from "@/lib/supabase-browser";
 import { hardNavigate } from "@/lib/hard-navigate";
 import { isSafeRedirect } from "@/lib/safe-redirect";

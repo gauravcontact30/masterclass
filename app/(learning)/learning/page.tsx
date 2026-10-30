@@ -10,6 +10,8 @@ import { currentUser } from "@/lib/server/auth";
 import { authConfigured,databaseConfigured,billingConfigured } from "@/lib/server/config";
 import { legacyDashboardRoute } from "@/lib/dashboard-routes";
 import { contentOverrides } from "@/lib/server/content-overrides";
+// Signed-in page: renders once the user is read, like its layout (instant = false there does not cover pages).
+export const instant = false;
 export default async function Dashboard({searchParams}:{searchParams:Promise<{tab?:string|string[]}>}){
   const {tab}=await searchParams;
   if(tab!==undefined)redirect(legacyDashboardRoute(tab));

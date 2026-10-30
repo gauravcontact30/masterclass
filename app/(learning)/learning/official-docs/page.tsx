@@ -4,6 +4,8 @@ import { OfficialDocs } from "@/components/official-docs";
 import { requireLearningUser as currentUser } from "@/lib/server/subscription-access";
 import { authConfigured, databaseConfigured, billingConfigured } from "@/lib/server/config";
 import { signInFor } from "@/lib/safe-redirect";
+// Signed-in page: renders once the user is read, like its layout (instant = false there does not cover pages).
+export const instant = false;
 
 export const metadata = { title: "Official Docs · Comprehensive Developer Reference" };
 

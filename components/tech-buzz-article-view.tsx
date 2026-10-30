@@ -36,6 +36,7 @@ import { ClapButton, useClaps } from "./clap-button";
 import dynamic from "next/dynamic";
 import { KeyTakeaways, ProseText, SectionLists } from "./tech-buzz-prose";
 import { plainProse } from "@/lib/prose-markup";
+import { parseStoredRecord, useStoredValue, writeStoredValue } from "@/lib/local-store";
 import type { TechBuzzMemberContent as MemberContent } from "@/lib/tech-buzz-public";
 
 /** The light, Apple-style code editor (file tree + tabs): loaded with the member body, not with the page. */
@@ -94,8 +95,10 @@ function ReadingProgress() {
   return <div className={styles.readingProgressBarContainer} aria-hidden="true"><div ref={bar} className={styles.readingProgressBar} /></div>;
 }
 
+const BOOKMARKS_KEY = "masterclass:tech-buzz-bookmarks";
+
 export function TechBuzzArticleView({ article, related, prevStory, nextStory }: Props) {
-  const { t, language } = useLanguage();
+  const { t } = useLanguage();
   // Membership: "checking" while the member body loads, then the body or the reason it is locked.
   // Without a session cookie the visitor cannot be a member, so no request is made and the preview stays locked.
   const signedIn = useSyncExternalStore(noSubscription, hasSessionCookie, () => null);
@@ -106,7 +109,9 @@ export function TechBuzzArticleView({ article, related, prevStory, nextStory }: 
   // Claps are stored per reader in Supabase (components/clap-button.tsx); both buttons on the page share this state.
   const claps = useClaps(article.slug, article.claps);
   const [userReactions, setUserReactions] = useState<{ heart: number; unicorn: number; rocket: number; mindblown: number }>(article.reactions);
-  const [bookmarked, setBookmarked] = useState<boolean>(false);
+  // Bookmarks and ticked takeaways are kept in this browser (lib/local-store.ts).
+  const savedBookmarks = useStoredValue(BOOKMARKS_KEY);
+  const bookmarked = !!parseStoredRecord<boolean>(savedBookmarks)[article.id];
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   // Audio voiceover state with speech synthesis & active reading sync
@@ -123,7 +128,9 @@ export function TechBuzzArticleView({ article, related, prevStory, nextStory }: 
     `Verify code snippets and architect blueprints against production SLOs`
   ], [article.technology]);
 
-  const [checkedTakeaways, setCheckedTakeaways] = useState<Record<number, boolean>>({});
+  const takeawaysKey = `mcb:takeaways:${article.id}`;
+  const savedTakeaways = useStoredValue(takeawaysKey);
+  const checkedTakeaways = useMemo(() => parseStoredRecord<boolean>(savedTakeaways), [savedTakeaways]);
 
   // Pagination for bottom More Blogs section
   const [moreBlogsPage, setMoreBlogsPage] = useState<number>(1);
@@ -131,14 +138,6 @@ export function TechBuzzArticleView({ article, related, prevStory, nextStory }: 
   // Comments state
   const [comments, setComments] = useState<TechBuzzMemberContent["comments"]>([]);
   const [newCommentText, setNewCommentText] = useState<string>("");
-
-  // Restore bookmarks saved in this browser.
-  useEffect(() => {
-    try {
-      const savedBookmarks = localStorage.getItem("masterclass:tech-buzz-bookmarks");
-      if (savedBookmarks && JSON.parse(savedBookmarks)[article.id]) setBookmarked(true);
-    } catch {}
-  }, [article.id]);
 
   // The member body, checked on the server for signed-in readers.
   useEffect(() => {
@@ -185,13 +184,7 @@ export function TechBuzzArticleView({ article, related, prevStory, nextStory }: 
 
   const toggleBookmark = () => {
     const next = !bookmarked;
-    setBookmarked(next);
-    try {
-      const saved = localStorage.getItem("masterclass:tech-buzz-bookmarks");
-      const current = saved ? JSON.parse(saved) : {};
-      current[article.id] = next;
-      localStorage.setItem("masterclass:tech-buzz-bookmarks", JSON.stringify(current));
-    } catch {}
+    writeStoredValue(BOOKMARKS_KEY, JSON.stringify({ ...parseStoredRecord<boolean>(savedBookmarks), [article.id]: next }));
     showToast(next ? "Saved to your reading list" : "Removed from reading list");
   };
 
@@ -233,24 +226,8 @@ export function TechBuzzArticleView({ article, related, prevStory, nextStory }: 
     }
   };
 
-  // Check saved takeaways from localStorage
-  useEffect(() => {
-    try {
-      const saved = localStorage.getItem(`mcb:takeaways:${article.id}`);
-      if (saved) {
-        setCheckedTakeaways(JSON.parse(saved));
-      }
-    } catch {}
-  }, [article.id]);
-
   const toggleTakeaway = (idx: number) => {
-    setCheckedTakeaways(prev => {
-      const updated = { ...prev, [idx]: !prev[idx] };
-      try {
-        localStorage.setItem(`mcb:takeaways:${article.id}`, JSON.stringify(updated));
-      } catch {}
-      return updated;
-    });
+    writeStoredValue(takeawaysKey, JSON.stringify({ ...checkedTakeaways, [idx]: !checkedTakeaways[idx] }));
   };
 
   const completedTakeawaysCount = defaultTakeaways.filter((_, i) => checkedTakeaways[i]).length;
@@ -276,30 +253,34 @@ export function TechBuzzArticleView({ article, related, prevStory, nextStory }: 
     }
   }, []);
 
-  const playFromParagraph = useCallback((pIndex: number) => {
-    if (pIndex < 0 || pIndex >= allParagraphs.length) return;
-    setActiveParagraphIndex(pIndex);
-    setIsPlayingAudio(true);
-    setAudioProgressPercent(((pIndex + 1) / allParagraphs.length) * 100);
+  // Each paragraph queues the next one when it finishes, so `play` calls itself rather than the memoised callback.
+  const playFromParagraph = useCallback((start: number) => {
+    const play = (pIndex: number) => {
+      if (pIndex < 0 || pIndex >= allParagraphs.length) return;
+      setActiveParagraphIndex(pIndex);
+      setIsPlayingAudio(true);
+      setAudioProgressPercent(((pIndex + 1) / allParagraphs.length) * 100);
 
-    if (typeof window !== "undefined" && "speechSynthesis" in window) {
-      window.speechSynthesis.cancel();
-      const text = allParagraphs[pIndex];
-      const utter = new SpeechSynthesisUtterance(text);
-      utter.rate = audioSpeed;
-      utter.onend = () => {
-        if (pIndex + 1 < allParagraphs.length) {
-          playFromParagraph(pIndex + 1);
-        } else {
-          stopAudio();
-          showToast("Finished reading article!");
-        }
-      };
-      utter.onerror = () => {
-        setIsPlayingAudio(false);
-      };
-      window.speechSynthesis.speak(utter);
-    }
+      if (typeof window !== "undefined" && "speechSynthesis" in window) {
+        window.speechSynthesis.cancel();
+        const text = allParagraphs[pIndex];
+        const utter = new SpeechSynthesisUtterance(text);
+        utter.rate = audioSpeed;
+        utter.onend = () => {
+          if (pIndex + 1 < allParagraphs.length) {
+            play(pIndex + 1);
+          } else {
+            stopAudio();
+            showToast("Finished reading article!");
+          }
+        };
+        utter.onerror = () => {
+          setIsPlayingAudio(false);
+        };
+        window.speechSynthesis.speak(utter);
+      }
+    };
+    play(start);
   }, [allParagraphs, audioSpeed, stopAudio, showToast]);
 
   const toggleAudio = useCallback(() => {

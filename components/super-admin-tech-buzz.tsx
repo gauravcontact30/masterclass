@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
@@ -12,14 +12,12 @@ import {
   ExternalLink,
   CheckCircle2,
   AlertCircle,
-  FileText,
   Sparkles,
   BookOpen,
   Code2,
   Layers,
   Database,
   Star,
-  Eye,
   ThumbsUp,
   X,
 } from "lucide-react";
@@ -63,9 +61,20 @@ interface SuperAdminTechBuzzProps {
   onChanged?: (msg: string) => void;
 }
 
+const loadPublicArticles = () => fetch("/api/tech-buzz").then(res => res.json());
+
+function requestArticles(): Promise<TechBuzzArticle[]> {
+  return fetch("/api/super-admin/tech-buzz")
+    // Fallback to the public endpoint when the admin one refuses or fails.
+    .then(res => (res.ok ? res.json() : loadPublicArticles()))
+    .catch(err => { console.warn("Error fetching articles:", err); return loadPublicArticles(); })
+    .then(data => data.articles || []);
+}
+
 export function SuperAdminTechBuzz({ onChanged }: SuperAdminTechBuzzProps) {
   const [articles, setArticles] = useState<TechBuzzArticle[]>([]);
-  const [loading, setLoading] = useState(false);
+  // True on mount: the list is requested straight away.
+  const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
@@ -117,35 +126,18 @@ export function SuperAdminTechBuzz({ onChanged }: SuperAdminTechBuzzProps) {
     },
   ]);
 
-  // Load articles from API
-  const fetchArticles = async () => {
+  // Load articles from API. State is only set once a response arrives, so the mount effect can start it.
+  const loadArticles = useCallback(() => requestArticles().then(setArticles).finally(() => setLoading(false)), []);
+
+  const fetchArticles = () => {
     setLoading(true);
     setError(null);
-    try {
-      const res = await fetch("/api/super-admin/tech-buzz");
-      if (!res.ok) {
-        // Fallback to public endpoint
-        const pubRes = await fetch("/api/tech-buzz");
-        const pubData = await pubRes.json();
-        setArticles(pubData.articles || []);
-        return;
-      }
-      const data = await res.json();
-      setArticles(data.articles || []);
-    } catch (err: any) {
-      console.warn("Error fetching articles:", err);
-      // Fallback
-      const pubRes = await fetch("/api/tech-buzz");
-      const pubData = await pubRes.json();
-      setArticles(pubData.articles || []);
-    } finally {
-      setLoading(false);
-    }
+    return loadArticles();
   };
 
   useEffect(() => {
-    void fetchArticles();
-  }, []);
+    void loadArticles();
+  }, [loadArticles]);
 
   // Auto-slugify when typing title in new mode
   const handleTitleChange = (val: string) => {
@@ -178,8 +170,8 @@ export function SuperAdminTechBuzz({ onChanged }: SuperAdminTechBuzzProps) {
       setNotice(`Successfully synced ${data.count || 8} curated technical blogs to Supabase database!`);
       await fetchArticles();
       if (onChanged) onChanged("Tech Buzz articles synced to Supabase database");
-    } catch (err: any) {
-      setError(err.message || "Failed to sync articles to Supabase");
+    } catch (err) {
+      setError((err instanceof Error && err.message) || "Failed to sync articles to Supabase");
     } finally {
       setSubmitting(false);
     }
@@ -293,8 +285,8 @@ export function SuperAdminTechBuzz({ onChanged }: SuperAdminTechBuzzProps) {
       setNotice(`Deleted "${artTitle}" successfully.`);
       await fetchArticles();
       if (onChanged) onChanged(`Deleted blog "${artTitle}"`);
-    } catch (err: any) {
-      setError(err.message || "Failed to delete article");
+    } catch (err) {
+      setError((err instanceof Error && err.message) || "Failed to delete article");
     } finally {
       setSubmitting(false);
     }
@@ -382,8 +374,8 @@ export function SuperAdminTechBuzz({ onChanged }: SuperAdminTechBuzzProps) {
       handleResetForm();
       await fetchArticles();
       if (onChanged) onChanged(`Saved blog "${payload.title}"`);
-    } catch (err: any) {
-      setError(err.message || "Failed to save blog to Supabase");
+    } catch (err) {
+      setError((err instanceof Error && err.message) || "Failed to save blog to Supabase");
     } finally {
       setSubmitting(false);
     }
@@ -624,7 +616,7 @@ export function SuperAdminTechBuzz({ onChanged }: SuperAdminTechBuzzProps) {
               />
               <select
                 value={membershipTier}
-                onChange={e => setMembershipTier(e.target.value as any)}
+                onChange={e => setMembershipTier(e.target.value as typeof membershipTier)}
                 className={styles.formSelect}
               >
                 <option value="Free Preview">Free Preview (Paywall after section 1)</option>
@@ -902,7 +894,7 @@ export function SuperAdminTechBuzz({ onChanged }: SuperAdminTechBuzzProps) {
                     value={sec.calloutType}
                     onChange={e => {
                       const updated = [...sections];
-                      updated[idx].calloutType = e.target.value as any;
+                      updated[idx].calloutType = e.target.value as (typeof sections)[number]["calloutType"];
                       setSections(updated);
                     }}
                     className={styles.formSelect}

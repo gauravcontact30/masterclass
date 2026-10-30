@@ -380,13 +380,14 @@
 .skeletonHeadline, .skeletonLine, .skeletonStep {
   border-radius: 10px;
   background: linear-gradient(90deg, #efede5 25%, #f7f6f1 50%, #efede5 75%) 0 0 / 200% 100%;
-  animation: shimmer 1.4s linear infinite;
+  animation: shimmer .9s ease-in-out infinite alternate;
 }
 .skeletonHeadline { height: 30px; width: 68%; }
 .skeletonLine { height: 13px; width: 100%; }
 .skeletonLine:last-of-type { width: 82%; }
 .skeletonStep { height: 72px; }
-@keyframes shimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }
+/* Opacity runs on the compositor; a moving background-position repainted every frame, even off screen. */
+@keyframes shimmer { from { opacity: 1; } to { opacity: .45; } }
 
 .error, .noModel {
   padding: 17px 19px; margin-top: 20px;

@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from "react";
 import Link from "next/link";
-import { ArrowRight, BookOpen, BookmarkCheck, CodeXml, Crown, Flame, GraduationCap, Layers, Library, LogIn, Menu, Sparkles, Terminal, Trophy, Type, UserPlus, UserRound, X, type LucideIcon } from "lucide-react";
+import { ArrowRight, BookOpen, CodeXml, Crown, Flame, GraduationCap, Layers, Library, LogIn, Menu, Terminal, Type, UserPlus, UserRound, X, type LucideIcon } from "lucide-react";
 import { Wordmark } from "./brand-mark";
 import { SuggestionBox } from "./suggestion-box";
 import { LandingPlansMenu } from "./landing-plans-menu";

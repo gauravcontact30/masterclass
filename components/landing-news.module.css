@@ -192,9 +192,10 @@
 .news .quick p { margin: 4px 0 0; font-size: 13px; line-height: 1.5; color: var(--nw-text); }
 
 .loading { display: grid; align-content: start; gap: 12px; flex: 1 0 auto; padding: 22px; border-radius: 14px; background: var(--nw-ivory); border: 1px solid var(--nw-rule); font-size: 15px; color: var(--nw-muted); }
-.loading span { height: 14px; border-radius: 6px; background: linear-gradient(90deg, var(--nw-rule), var(--nw-paper), var(--nw-rule)); background-size: 200% 100%; animation: shimmer 1.4s linear infinite; }
+.loading span { height: 14px; border-radius: 6px; background: linear-gradient(90deg, var(--nw-rule), var(--nw-paper), var(--nw-rule)); background-size: 200% 100%; animation: shimmer .9s ease-in-out infinite alternate; }
 .loading span:nth-child(2) { width: 85%; } .loading span:nth-child(3) { width: 60%; }
-@keyframes shimmer { from { background-position: 200% 0; } to { background-position: -200% 0; } }
+/* Opacity runs on the compositor; a moving background-position repainted every frame, even off screen. */
+@keyframes shimmer { from { opacity: 1; } to { opacity: .45; } }
 
 @media (max-width: 899px) {
   .inner { width: calc(100% - 32px); }

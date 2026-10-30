@@ -33,7 +33,7 @@ export function GitWalkthrough({ answer, embedded = false }: { answer: SearchAns
         <p>{step.detail}</p>
         {step.code && (splitCommands(step.code).some(segment => segment.kind === "shell")
           ? <TerminalBlock title={`Terminal · Step ${index + 1}`} lines={step.code.split("\n")} />
-          : <CodeFiles label="Git editor" files={[{ path: "git-rebase-todo", code: step.code, note: "Edit this file in the editor opened by Git, then save and close it." }]} />)}
+          : <CodeFiles skin="apple" label="Git editor" files={[{ path: "git-rebase-todo", code: step.code, note: "Edit this file in the editor opened by Git, then save and close it." }]} />)}
       </section>)}
     </div>
     {!!answer.caveats.length && <aside className={styles.caution}><strong>Before you finish</strong>{answer.caveats.map((entry, index) => <p key={index}>{typeof entry === "string" ? entry : entry.text}</p>)}</aside>}

@@ -7,6 +7,9 @@ const nextConfig: NextConfig = {
   // Cache Components: `use cache` + cacheLife/cacheTag and Partial Prerendering. Each route ships a static shell at
   // once and streams its request-time parts (the signed-in user, live data) inside Suspense.
   cacheComponents: true,
+  // Keeps the current <Link> prefetch behaviour (and silences the startup warning). Turning it on prefetches only each
+  // route's App Shell and needs a review of links first: node_modules/next/dist/docs/01-app/02-guides/adopting-partial-prefetching.md
+  partialPrefetching: false,
   poweredByHeader: false,
   // Dev only: phones and tablets open the dev server by this machine's LAN address (e.g. http://192.168.1.20:3000).
   // Without this, Next.js blocks that origin's /_next assets and HMR socket, the page never hydrates, and buttons
@@ -15,7 +18,12 @@ const nextConfig: NextConfig = {
   // Dev only: Next 16 forwards browser warnings and errors to the terminal by default. A browser autofill extension
   // stamps `fdprocessedid` on every button, so each page load forwarded a ~160 KB hydration diff and flooded the
   // terminal (9,000+ lines on 2026-10-22). Set NEXT_BROWSER_LOGS=1 to forward warnings and errors again.
-  logging: { browserToTerminal: process.env.NEXT_BROWSER_LOGS ? "warn" : false },
+  logging: {
+    browserToTerminal: process.env.NEXT_BROWSER_LOGS ? "warn" : false,
+    // Dev only: the fire-and-forget beacons (page views every 45 s, Web Vitals, lesson-block views) answer 204 No
+    // Content by design and would bury real requests in the terminal. NEXT_BEACON_LOGS=1 shows them again.
+    incomingRequests: process.env.NEXT_BEACON_LOGS ? true : { ignore: [/^\/api\/(track|monitoring\/client)(\?|$)/, /^\/api\/learning-content$/] },
+  },
   compress: true,
   reactStrictMode: true,
   compiler: {
