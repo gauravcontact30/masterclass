@@ -22,8 +22,13 @@ import { LearningSlot } from "./learning-slot";
 
 // Supabase reports failures with a stable `code`; fall back to a generic message
 // so an unmapped code never surfaces raw English from the API.
-export function authErrorKey(error: { code?: string; message?: string }): TranslationKey {
+export function authErrorKey(error: { code?: string; message?: string; reasons?: string[] }): TranslationKey {
   const code = error.code ?? "";
+  // Supabase says why a password is weak: "pwned" (it is in public breach lists: leaked-password protection),
+  // "characters" (missing a required kind of character) or "length". All three used to show "at least 6 characters",
+  // which made no sense for a long password that was simply too common.
+  if (code === "weak_password" && error.reasons?.includes("pwned")) return "weak_password_pwned";
+  if (code === "weak_password" && error.reasons?.includes("characters")) return "weak_password_rules";
   return code in en ? code as TranslationKey : "service_error";
 }
 
