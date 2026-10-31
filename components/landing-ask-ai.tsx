@@ -3,6 +3,7 @@ import { useId, useState, type FormEvent } from "react";
 import { ArrowUp, GraduationCap, Sparkles } from "lucide-react";
 import { askStudyBuddy, type StudyBuddyMode } from "@/lib/study-buddy-bridge";
 import { useLanguage } from "./language-provider";
+import { HINDI_ENABLED } from "@/lib/i18n";
 import home from "./landing-home.module.css";
 import styles from "./landing-ask-ai.module.css";
 
@@ -29,7 +30,7 @@ export function LandingAskAi() {
       <div className={styles.copy}>
         <p className={styles.kicker}><Sparkles size={14} aria-hidden="true" />{text("AI tutor · free to try", "AI ट्यूटर · मुफ़्त में आज़माएँ")}</p>
         <h2 id={`${id}-title`}>{text("Stuck on something? ", "कहीं अटके हैं? ")}<em>{text("Ask Study Buddy.", "Study Buddy से पूछिए।")}</em></h2>
-        <p className={styles.lede}>{text("Clear explanations, worked examples, quick quizzes and interview answers, in English or Hindi. Answers appear as they are written, with links to the matching notes.", "साफ़ व्याख्या, हल किए उदाहरण, छोटे क्विज़ और इंटरव्यू उत्तर, अंग्रेज़ी या हिन्दी में। उत्तर लिखते-लिखते दिखते हैं, साथ में संबंधित नोट्स के लिंक।")}</p>
+        <p className={styles.lede}>{text(`Clear explanations, worked examples, quick quizzes and interview answers${HINDI_ENABLED ? ", in English or Hindi" : ""}. Answers appear as they are written, with links to the matching notes.`, "साफ़ व्याख्या, हल किए उदाहरण, छोटे क्विज़ और इंटरव्यू उत्तर, अंग्रेज़ी या हिन्दी में। उत्तर लिखते-लिखते दिखते हैं, साथ में संबंधित नोट्स के लिंक।")}</p>
       </div>
       <form className={styles.form} onSubmit={submit}>
         <label htmlFor={`${id}-q`} className={styles.label}>{text("Your question", "आपका प्रश्न")}</label>

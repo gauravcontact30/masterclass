@@ -3,6 +3,7 @@ import Link from "next/link";
 import { cacheLife } from "next/cache";
 import { ArrowRight, Flame, Menu } from "lucide-react";
 import { Wordmark } from "@/components/brand-mark";
+import { SiteContactLinks } from "@/components/site-contact-links";
 import { PUBLIC_PAGES } from "@/lib/seo";
 import styles from "./site.module.css";
 
@@ -48,6 +49,7 @@ export function SiteChrome({ children }: { children: React.ReactNode }) {
       <nav aria-label="Learning library"><ul>{LIBRARY.map(([href, label]) => <li key={href}><Link href={href} prefetch={false}>{label}</Link></li>)}</ul></nav>
       <nav aria-label="Site pages"><ul>{PUBLIC_PAGES.filter(page => page.path !== "/" && !LEGAL.includes(page)).map(page => <li key={page.path}><Link href={page.path} prefetch={false}>{page.label}</Link></li>)}</ul></nav>
       <nav aria-label="Legal"><ul>{LEGAL.map(page => <li key={page.path}><Link href={page.path} prefetch={false}>{page.title}</Link></li>)}</ul></nav>
+      <SiteContactLinks />
       <small>© <Suspense fallback={null}><CopyrightYear /></Suspense> MasterClass. All rights reserved.</small>
     </footer>
   </div>;

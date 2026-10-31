@@ -4,6 +4,7 @@ import { useEffect, useId, useRef, useState, type KeyboardEvent } from "react";
 import Link from "next/link";
 import { ArrowRight, Check, Crown } from "lucide-react";
 import { useLanguage } from "./language-provider";
+import { HINDI_ENABLED } from "@/lib/i18n";
 import styles from "./landing-home.module.css";
 import { formatPrice, salePrice, type Currency, type SaleInfo } from "@/lib/pricing";
 import { SaleBadge, SalePrice } from "./sale-price";
@@ -74,7 +75,7 @@ export function LandingPlansMenu({ prices, open, onOpenChange, onCurrency }: { p
           ? text(`${money((prices.sale?.yearly ?? prices.yearly) / 12)}/month equivalent, billed yearly.`, `${money((prices.sale?.yearly ?? prices.yearly) / 12)}/माह के बराबर, वार्षिक भुगतान।`)
           : text("Billed monthly. Cancel renewal any time.", "मासिक भुगतान। नवीनीकरण कभी भी रद्द करें।")}</p>
         {prices && <BilledNote prices={prices} cycle={cycle} hi={hi} />}
-        <ul>{[text("Every course & category", "हर कोर्स और श्रेणी"), text("Notes, worked answers & practice", "नोट्स, हल सहित उत्तर और अभ्यास"), text("English / Hindi", "अंग्रेज़ी / हिन्दी")].map(item => <li key={item}><Check size={14} aria-hidden="true" />{item}</li>)}</ul>
+        <ul>{[text("Every course & category", "हर कोर्स और श्रेणी"), text("Notes, worked answers & practice", "नोट्स, हल सहित उत्तर और अभ्यास"), ...(HINDI_ENABLED ? [text("English / Hindi", "अंग्रेज़ी / हिन्दी")] : [])].map(item => <li key={item}><Check size={14} aria-hidden="true" />{item}</li>)}</ul>
         <Link className={styles.plansCta} href={`/subscribe?plan=${cycle}`} onClick={() => onOpenChange(false)}>
           {cycle === "monthly" ? text("Subscribe monthly", "मासिक सदस्यता लें") : text("Subscribe yearly", "वार्षिक सदस्यता लें")}<ArrowRight size={16} aria-hidden="true" />
         </Link>

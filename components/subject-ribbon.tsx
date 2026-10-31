@@ -130,9 +130,11 @@ export function SubjectRibbon({ entries }: { entries?: LibraryEntry[] }) {
                     aria-haspopup="dialog"
                   >
                     <span className={styles.pillIconBadge} aria-hidden="true">
+                      {/* Inside aria-hidden, so screen readers still hear the name once; the alt is for search engines and
+                          SEO checkers, which counted every empty alt (70 of them, the loop's second copy included) as missing. */}
                       <Image
                         src={`/images/tech/${item.icon}.png`}
-                        alt=""
+                        alt={`${item.label} logo`}
                         width={14}
                         height={14}
                       />

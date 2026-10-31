@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { HINDI_ENABLED } from "@/lib/i18n";
 import { organizationSchema, pageMetadata } from "@/lib/seo";
 import { PageIntro } from "../page-intro";
 import styles from "../site.module.css";
@@ -20,7 +21,7 @@ export default function AboutPage() {
       </ul>
       <p>See every path on the <Link href="/courses">courses page</Link>.</p>
       <h2>How we teach</h2>
-      <p>Every topic pairs a plain-language explanation with worked answers and timed practice. Content is available in English and Hindi, and you can switch language at any time. An AI study assistant can explain a concept again in a different way when you are stuck.</p>
+      <p>Every topic pairs a plain-language explanation with worked answers and timed practice. {HINDI_ENABLED ? "Content is available in English and Hindi, and you can switch language at any time. " : ""}An AI study assistant can explain a concept again in a different way when you are stuck.</p>
       <h2>Our commitments</h2>
       <ul>
         <li>We say what each guide covers before you subscribe. Coverage varies by path.</li>

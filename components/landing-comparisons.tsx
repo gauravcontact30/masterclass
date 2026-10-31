@@ -174,8 +174,10 @@ function TechThumb({ id, name }: Readonly<{ id: string | null; name: string }>) 
   const [failed, setFailed] = useState(false);
   const src = id ? learningImageUrl("topics", ["interview", id]) : null;
   if (!src || failed) return null;
+  // The pictures are 960×640 (3:2): width and height carry that ratio, so the thumbnail is never squeezed or cropped
+  // (320×160 was flagged as a distorted image by SEO checkers).
   // eslint-disable-next-line @next/next/no-img-element -- pre-sized WebP thumbnail from the storage bucket.
-  return <img className={styles.thumb} src={src} alt={`Illustration of ${name}`} width={320} height={160} loading="lazy" decoding="async" onError={() => setFailed(true)} />;
+  return <img className={styles.thumb} src={src} alt={`Illustration of ${name}`} width={300} height={200} loading="lazy" decoding="async" onError={() => setFailed(true)} />;
 }
 
 /**

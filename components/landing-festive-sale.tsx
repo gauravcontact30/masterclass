@@ -140,7 +140,7 @@ export function LandingFestiveSale({ prices }: { prices: Prices }) {
         <div id={plansId} className={styles.reveal} data-open={open || undefined} inert={!open}>
         <div className={styles.plans}>{cycles.map(cycle => <Link key={cycle} href={`/subscribe?plan=${cycle}`} className={styles.plan} data-cycle={cycle}>
           <span className={styles.planName}>{cycle === "yearly" ? text("Yearly", "वार्षिक") : text("Monthly", "मासिक")}<em>−{sale.percent}%</em></span>
-          <span className={styles.planPrice}><s>{money(prices[cycle])}</s><b>{money(salePrice(sale, cycle)!)}</b></span>
+          <span className={styles.planPrice}><del>{money(prices[cycle])}</del><b>{money(salePrice(sale, cycle)!)}</b></span>
           <span className={styles.planNote}>{cycle === "yearly" ? text("every year, including renewals", "हर वर्ष, नवीनीकरण सहित") : text("every month, including renewals", "हर माह, नवीनीकरण सहित")}</span>
           <span className={styles.planCta}>{text("Claim the offer", "ऑफ़र लें")}<ArrowRight size={15} aria-hidden="true" /></span>
         </Link>)}</div>

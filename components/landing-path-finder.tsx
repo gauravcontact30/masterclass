@@ -309,7 +309,7 @@ export function LandingPathFinder({ day = 0, fresh }: { day?: number; fresh?: Fr
                 {mode === "loading" ? <div className={styles.skeleton} aria-hidden="true"><i /><i /><i /></div> : <>
                   <h4>{stage.focus}</h4>
                   {stage.technologies.length > 0 && <ul className={styles.topics} aria-label={text("Topics", "विषय")}>
-                    {stage.technologies.map(item => <li key={item.id}>{mode === "sample" ? <span>{item.title}</span> : <Link href={`/sign-in?redirect=${encodeURIComponent(item.href)}`} prefetch={false}>{item.title}</Link>}</li>)}
+                    {stage.technologies.map(item => <li key={item.id}>{mode === "sample" ? <span>{item.title}</span> : <Link href={item.href} prefetch={false}>{item.title}</Link>}</li>)}
                   </ul>}
                   <ul className={styles.tasks}>{stage.tasks.map(task => <li key={task}><Check size={14} aria-hidden="true" />{task}</li>)}</ul>
                   <p className={styles.outcome}><span>{text("By the end", "आख़िर तक")}</span>{stage.outcome}</p>

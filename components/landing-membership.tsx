@@ -4,6 +4,7 @@ import Link from "next/link";
 import { ArrowRight, Bookmark, BookMarked, BookA, BookOpenText, CircleHelp, Code2, Coffee, FileCode2, GraduationCap, ListOrdered, MessagesSquare, NotebookPen, Search, Sparkles, Workflow, type LucideIcon } from "lucide-react";
 import { ExpandedText } from "./expanded-text";
 import { useLanguage } from "./language-provider";
+import { HINDI_ENABLED } from "@/lib/i18n";
 import home from "./landing-home.module.css";
 import frame from "./landing-section.module.css";
 import styles from "./landing-membership.module.css";
@@ -57,7 +58,7 @@ export function LandingMembership({ prices, priceState, cycle, onCycle, onCurren
         <p className={frame.kicker}><GraduationCap size={14} aria-hidden="true" />{text("Membership", "सदस्यता")}<span>{text(`${areaCount} dashboard areas`, `${areaCount} डैशबोर्ड क्षेत्र`)}</span></p>
         <h2 id="membership-title"><ExpandedText text={text("Your goals. ", "आपके लक्ष्य। ")} /><em><ExpandedText text={text("One learning membership.", "एक अध्ययन सदस्यता।")} /></em></h2>
       </div>
-      <p className={frame.lede}><ExpandedText text={text("Every course and category in one plan, exactly as the Learning Dashboard is laid out: the daily home, Learning (including every Coffee & Code article in full) and Professional Learn. No course to choose and nothing behind a second tier; it all opens in English and Hindi.", "हर कोर्स और श्रेणी एक ही योजना में, ठीक वैसे ही जैसे Learning Dashboard में है: रोज़ का होम, लर्निंग (हर Coffee & Code लेख पूरा) और Professional Learn। कोई कोर्स चुनना नहीं, कोई दूसरा स्तर नहीं; सब अंग्रेज़ी और हिन्दी में खुलता है।")} /></p>
+      <p className={frame.lede}><ExpandedText text={text(`Every course and category in one plan, exactly as the Learning Dashboard is laid out: the daily home, Learning (including every Coffee & Code article in full) and Professional Learn. No course to choose and nothing behind a second tier${HINDI_ENABLED ? "; it all opens in English and Hindi" : ""}.`, "हर कोर्स और श्रेणी एक ही योजना में, ठीक वैसे ही जैसे Learning Dashboard में है: रोज़ का होम, लर्निंग (हर Coffee & Code लेख पूरा) और Professional Learn। कोई कोर्स चुनना नहीं, कोई दूसरा स्तर नहीं; सब अंग्रेज़ी और हिन्दी में खुलता है।")} /></p>
     </header>
     <div className={styles.layout}>
       <article className={styles.plan} aria-label={text("Membership plan", "सदस्यता योजना")}>

@@ -1,4 +1,6 @@
 import type { Metadata, MetadataRoute } from "next";
+import { ADDRESS, SOCIAL_PROFILES, SUPPORT } from "./site-contact";
+import { HINDI_ENABLED } from "./i18n";
 
 // Never derive canonical URLs from a request Host header or a preview hostname.
 export function siteUrl(): URL {
@@ -19,9 +21,11 @@ export function isIndexable(): boolean {
 // One name everywhere (title, og:site_name, WebSite and Organization data): Google picks the site name it shows in
 // results from these, and mixed spellings ("Master Class Buddy") left it falling back to the bare domain.
 export const siteName = "MasterClass Buddy";
-export const siteTitle = "MasterClass Buddy | Agentic AI, LangChain, n8n & Next.js";
+// Carries the home page's most-used words (read, code, interview questions, system design), so the title, description
+// and headings agree on the topic; the technologies are in the description and the h1.
+export const siteTitle = "MasterClass Buddy | Read, Code, Interview Questions & System Design";
 /** Under 160 characters so Google shows it whole; it names what the site teaches today (the search snippet and link previews). */
-export const siteDescription = "Learn Agentic AI, LangChain, LangGraph, n8n, Next.js, Python, AWS & DSA with daily Tech Buzz blogs, system design and interview questions with answers.";
+export const siteDescription = "Read daily Tech Buzz blogs, write real code and learn Agentic AI, LangChain, n8n, Next.js, Python, AWS & DSA, with system design and interview questions.";
 /**
  * Site-wide keywords: only searches that an indexed page answers (Tech Buzz, /interview-questions, /workflows,
  * /learn, /compare, /api-reference, /vocabulary), phrased the way people search. Google ignores the keywords tag
@@ -61,7 +65,7 @@ export const PUBLIC_PAGES: readonly PublicPage[] = [
   { path: "/", title: siteTitle, label: "Home", description: siteDescription, changeFrequency: "weekly", priority: 1 },
   { path: "/courses", title: "Courses & learning paths", label: "Courses", description: "Browse every MasterClass learning path: technology handbooks and interviews, system design case studies, and IELTS and professional vocabulary.", changeFrequency: "weekly", priority: 0.9 },
   { path: "/library", title: "Free learning library", label: "Library", description: "Interview questions with answers for 31 technologies, system design and AI agent workflow blueprints, an API reference for 60 technologies, technology handbooks and English vocabulary with Hindi meanings, free to read.", changeFrequency: "weekly", priority: 0.9 },
-  { path: "/about", title: "About MasterClass", label: "About", description: "MasterClass Buddy is a bilingual English and Hindi learning space for tech professionals: technology courses, AI agents, certifications and interview preparation, with study notes, worked answers and timed practice in one dashboard.", changeFrequency: "monthly", priority: 0.7 },
+  { path: "/about", title: "About MasterClass", label: "About", description: `MasterClass Buddy is ${HINDI_ENABLED ? "a bilingual English and Hindi" : "an"} learning space for tech professionals: technology courses, AI agents, certifications and interview preparation, with study notes, worked answers and timed practice in one dashboard.`, changeFrequency: "monthly", priority: 0.7 },
   { path: "/contact", title: "Contact & support", label: "Contact", description: "Get help with your MasterClass account, membership, billing or study content, and find answers to common questions.", changeFrequency: "yearly", priority: 0.5 },
   { path: "/privacy", title: "Privacy policy", label: "Privacy", description: "How MasterClass collects, uses and protects your account, payment and learning data, and what stays only in your browser.", changeFrequency: "yearly", priority: 0.3 },
   { path: "/terms", title: "Terms & conditions", label: "Terms", description: "The terms that apply when you create a MasterClass account, buy a membership and use study content and AI-assisted answers.", changeFrequency: "yearly", priority: 0.3 },
@@ -160,11 +164,15 @@ export function organizationSchema(prices?: { monthly:number; yearly:number; end
     priceSpecification: { "@type": "UnitPriceSpecification", price: String(price), priceCurrency: "INR", unitCode: unit, referenceQuantity: { "@type": "QuantitativeValue", value: 1, unitCode: unit } },
   });
   return {
-    "@context": "https://schema.org", "@type": "EducationalOrganization", "@id": `${url}#organization`, name: siteName, alternateName: ["Master Class Buddy", "masterclassbuddy.com"], url,
+    "@context": "https://schema.org", "@type": ["EducationalOrganization", "LocalBusiness"], "@id": `${url}#organization`, name: siteName, alternateName: ["Master Class Buddy", "masterclassbuddy.com"], url,
     // A raster logo (Google's logo guidance asks for a crawlable image of at least 112×112); the SVG stays the favicon.
     logo: { "@type": "ImageObject", url: new URL("/brand/masterclass-mark-512.png", url).href, width: 512, height: 512 },
     image: new URL("/opengraph-image", url).href,
     description: siteDescription, slogan: "Your buddy for mastering Agentic AI and the modern web stack.", areaServed: "IN", knowsLanguage: ["en"],
+    // Support contact, postal address and social profiles (lib/site-contact.ts); the address makes it a LocalBusiness.
+    email: SUPPORT.email, telephone: SUPPORT.phone, address: { "@type": "PostalAddress", ...ADDRESS },
+    contactPoint: { "@type": "ContactPoint", contactType: "customer support", email: SUPPORT.email, telephone: SUPPORT.phone, areaServed: "IN", availableLanguage: ["English"] },
+    sameAs: SOCIAL_PROFILES.map(item => item.href),
     knowsAbout: [
       "React 19", "Next.js 16", "TypeScript", "JavaScript", "Python 3.12", "Node.js", "System design",
       "Agentic AI", "AI agents", "Model Context Protocol MCP", "Claude Code", "LangChain", "LangGraph", "LangSmith", "LangFlow", "n8n", "TanStack Start",

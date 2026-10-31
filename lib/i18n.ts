@@ -334,7 +334,7 @@ export const en = {
   "mainNavigation": "Main navigation",
   "toggleNavigation": "Toggle navigation",
   "skipToContent": "Skip to content",
-  "siteHeadline": "MasterClass Buddy: learn Agentic AI, LangChain, LangGraph, n8n and Next.js with courses, Tech Buzz and interview prep",
+  "siteHeadline": "MasterClass Buddy: read, code and learn Agentic AI, LangChain, LangGraph, n8n and Next.js with courses, Tech Buzz, system design and interview questions",
   "techBuzzFloatingAria": "Master Class Buddy - Tech Buzz — Read popular technology blogs with star ratings",
   "techBuzzBadge": "Master Class Buddy - Tech Buzz",
   "techBuzzTag": "4.9★",
@@ -526,6 +526,8 @@ export const SUPPORTED_LANGUAGES: readonly SupportedLanguage[] = [
 
 /** Only English is enabled site-wide for now; every other language shows as "Coming soon" and falls back to English. */
 export const isLanguageAvailable = (code: string): code is Language => SUPPORTED_LANGUAGES.some(item => item.code === code && item.available);
+/** Whether Hindi is switched on. While it is off, no page may offer or promise Hindi (user rule 2026-10-31). */
+export const HINDI_ENABLED = isLanguageAvailable("hi");
 /** The language to use for a saved, detected or requested choice: itself when available, English otherwise. */
 export const usableLanguage = (code: string | null | undefined): Language => (code && isLanguageAvailable(code) ? code : "en");
 

@@ -20,8 +20,9 @@ export type NewsSlideMeta = {
   learn: { label: string; hiLabel: string; href: string }[];
 };
 
-// The dashboard's Certifications page, through sign-in, opened on one track.
-const cert = (track: string) => `/sign-in?redirect=${encodeURIComponent(`/learning/certifications?track=${track}`)}`;
+// The dashboard's Certifications page opened on one track. A plain, readable link: the proxy (lib/auth-routes.ts)
+// sends a signed-out visitor through sign-in and back here, as the encoded /sign-in?redirect=… link did.
+const cert = (track: string) => `/learning/certifications?track=${track}`;
 const L = {
   blueprints: { label: "System design & AI workflow blueprints", hiLabel: "सिस्टम डिज़ाइन और AI वर्कफ़्लो ब्लूप्रिंट", href: "/workflows" },
   questions: { label: "Interview questions with answers", hiLabel: "उत्तर सहित इंटरव्यू प्रश्न", href: "/interview-questions" },

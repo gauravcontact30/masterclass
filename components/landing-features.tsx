@@ -7,6 +7,7 @@ import frame from "./landing-section.module.css";
 import styles from "./landing-features.module.css";
 import { ListenButton } from "./listen-button";
 import { CoverCarousel, type CarouselSlide } from "./landing-carousel";
+import { HINDI_ENABLED } from "@/lib/i18n";
 
 /*
  * One landing section per Learning Dashboard feature the rest of the page does not already show: AI Search,
@@ -69,7 +70,7 @@ const FEATURES: Feature[] = [
     ],
     steps: [["Read a topic", "विषय पढ़ें"], ["Bookmark what matters", "ज़रूरी चीज़ें बुकमार्क करें"], ["Revise from one list", "एक सूची से दोहराएँ"]],
     image: { src: "/images/landing/feature-notes.webp", focus: "60% 50%" }, badge: { icon: Star, label: ["Revise what matters first", "पहले ज़रूरी चीज़ें दोहराएँ"] },
-    cta: { href: "/sign-up", label: ["Start your notes", "अपने नोट्स शुरू करें"] }, note: ["English and Hindi", "अंग्रेज़ी और हिन्दी"],
+    cta: { href: "/sign-up", label: ["Start your notes", "अपने नोट्स शुरू करें"] }, note: HINDI_ENABLED ? ["English and Hindi", "अंग्रेज़ी और हिन्दी"] : ["Saved to your account", "आपके खाते में सहेजे"],
   },
 ];
 
@@ -92,23 +93,23 @@ const LESSONS: Lesson[] = [
 
 type Card = { id: string; title: Copy; text: Copy };
 // The AI Search carousel; covers are painted by scripts/generate-lesson-covers.ts (search:<id>).
-const SEARCH: Card[] = [
+const SEARCH: Card[] = ([
   { id: "plain-words", title: ["Ask in plain words", "सरल शब्दों में पूछें"], text: ["Type the question the way you would ask a friend; no keywords to guess.", "प्रश्न वैसे ही लिखें जैसे किसी दोस्त से पूछते; कीवर्ड का अंदाज़ा नहीं लगाना।"] },
   { id: "answer-card", title: ["An answer card, not links", "लिंक नहीं, एक उत्तर कार्ड"], text: ["The answer comes first, then the key points that make it stick.", "पहले उत्तर आता है, फिर वे मुख्य बिंदु जो उसे याद रखने में मदद करते हैं।"] },
   { id: "related-topics", title: ["Related topics", "संबंधित विषय"], text: ["Every answer shows what else its area covers, so one question leads to the next.", "हर उत्तर बताता है कि उसके क्षेत्र में और क्या है, ताकि एक प्रश्न अगले तक ले जाए।"] },
   { id: "by-technology", title: ["Explore by technology", "तकनीक के अनुसार खोजें"], text: ["Not sure what to ask yet? Browse topics technology by technology.", "अभी पता नहीं क्या पूछें? तकनीक के अनुसार विषय देखें।"] },
   { id: "history-kept", title: ["Your history, kept", "आपका इतिहास सुरक्षित"], text: ["Earlier questions stay one click away, and asking again is instant.", "पिछले प्रश्न एक क्लिक पर रहते हैं, और दोबारा पूछना तुरंत होता है।"] },
   { id: "two-languages", title: ["English or Hindi", "अंग्रेज़ी या हिन्दी"], text: ["Ask in either language and read the answer in the one you prefer.", "किसी भी भाषा में पूछें और उत्तर अपनी पसंद की भाषा में पढ़ें।"] },
-];
+] satisfies Card[]).filter(card => HINDI_ENABLED || card.id !== "two-languages");
 // The Notes & bookmarks carousel; covers are painted by scripts/generate-lesson-covers.ts (notes:<id>).
-const NOTES: Card[] = [
+const NOTES: Card[] = ([
   { id: "topic-notes", title: ["Focused topic notes", "केंद्रित विषय नोट्स"], text: ["Every topic boiled down to what you need to remember, with diagrams and examples.", "हर अध्याय उतना ही, जितना याद रखना ज़रूरी है, आरेख और उदाहरणों के साथ।"] },
   { id: "priority-stars", title: ["Five-star topics first", "पहले पाँच सितारा विषय"], text: ["Topics are ranked by how often they come up in interviews and certification exams.", "विषय इस क्रम में हैं कि वे इंटरव्यू और सर्टिफ़िकेशन परीक्षा में कितनी बार आते हैं।"] },
   { id: "bookmarks", title: ["Bookmark from anywhere", "कहीं से भी बुकमार्क करें"], text: ["Save lessons, questions and topics with one tap while you read.", "पढ़ते-पढ़ते एक टैप में पाठ, प्रश्न और विषय सहेजें।"] },
   { id: "revision-list", title: ["One revision list", "एक दोहराने की सूची"], text: ["Everything you saved waits in one list, ready the evening before the interview.", "आपका सहेजा सब कुछ एक सूची में, इंटरव्यू से पहले की शाम के लिए तैयार।"] },
   { id: "offline-notes", title: ["Revise offline", "ऑफ़लाइन दोहराएँ"], text: ["Download study notes for the commute, a flight or the wait before an interview.", "सफ़र, फ़्लाइट या इंटरव्यू से पहले के इंतज़ार के लिए स्टडी नोट्स डाउनलोड करें।"] },
   { id: "two-languages", title: ["English and Hindi", "अंग्रेज़ी और हिन्दी"], text: ["Read the same notes in English or Hindi, whichever helps you remember.", "वही नोट्स अंग्रेज़ी या हिन्दी में पढ़ें, जिसमें आपको बेहतर याद रहे।"] },
-];
+] satisfies Card[]).filter(card => HINDI_ENABLED || card.id !== "two-languages");
 
 /** One feature section: copy, details, how it works and a way in, beside its picture with `float` on it. */
 export function FeatureSection({ feature, index, total, float, section, hi = false }: Readonly<{ feature: Feature; index: number; total: number; float?: ReactNode; section?: { props?: object; toolbar?: ReactNode }; hi?: boolean }>) {

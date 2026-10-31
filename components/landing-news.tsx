@@ -168,23 +168,24 @@ function Cover({ meta, hi, eager, data }: { meta: NewsSlideMeta; hi: boolean; ea
       <Icon className={styles.pictureIcon} size={56} strokeWidth={1.2} aria-hidden="true" />
       <span className={styles.kicker}><Icon size={12} aria-hidden="true" />{meta.kind === "questions" ? (hi ? "इंटरव्यू" : "Interviews") : (hi ? "खबरें" : "News")}</span>
     </div>
+    {/* h4 under this h3: the slide's sub-sections were h5, a skipped level SEO checkers flag. */}
     <h3>{hi ? meta.hiTitle : meta.title}</h3>
     <p>{hi ? meta.hiBlurb : meta.blurb}</p>
     <ul className={styles.topics}>{meta.topics.map(topic => <li key={topic}>{topic}</li>)}</ul>
     {items.length > 0 && <div className={styles.index}>
       <dl className={styles.glance} aria-label={hi ? "एक नज़र में" : "At a glance"}>{glance.map(([value, label]) => <div key={label}><dd>{value}</dd><dt>{label}</dt></div>)}</dl>
-      <h5>{hi ? "इस स्लाइड में" : "In this slide"}</h5>
+      <h4>{hi ? "इस स्लाइड में" : "In this slide"}</h4>
       <ol>{items.map(item => <li key={item.title}>
         <span>{item.title}</span>
         {(item.source || item.date) && <small>{item.logo && <Logo logo={item.logo} />}{[item.source, item.date ? shortDate(item.date) : null].filter(Boolean).join(" · ")}</small>}
       </li>)}</ol>
     </div>}
     <Fit className={`${styles.extra} ${styles.basics}`} as="dl" keep={4} watch={hi}
-      heading={<h5><Sparkles size={14} aria-hidden="true" />{hi ? "बुनियादी बातें समझें" : "Learn the basics"}</h5>}>
+      heading={<h4><Sparkles size={14} aria-hidden="true" />{hi ? "बुनियादी बातें समझें" : "Learn the basics"}</h4>}>
       {[...NEWS_BASICS[meta.id], ...NEWS_MORE_BASICS[meta.id]].map(basic => <div key={basic.term}><dt>{basic.term}</dt><dd>{hi ? basic.hiExplain : basic.explain}</dd></div>)}
     </Fit>
     <div className={`${styles.extra} ${styles.deeper}`}>
-      <h5><GraduationCap size={14} aria-hidden="true" />{hi ? "MasterClass Buddy पर आगे सीखें" : "Keep learning on MasterClass Buddy"}</h5>
+      <h4><GraduationCap size={14} aria-hidden="true" />{hi ? "MasterClass Buddy पर आगे सीखें" : "Keep learning on MasterClass Buddy"}</h4>
       <ul>{meta.learn.map(link => <li key={link.href}><Link href={link.href}>{hi ? link.hiLabel : link.label}<ArrowUpRight size={13} aria-hidden="true" /></Link></li>)}</ul>
     </div>
   </div>;

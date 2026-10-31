@@ -145,11 +145,9 @@
 .trailText { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 10.5px; }
 
 /* Card Footer Strip */
-.compactCardFooter { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px 12px; padding-top: 6px; border-top: 1px dashed #e2ded4; font-size: 10.5px; color: var(--soft); }
-.footerTagGroup { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-.footerTagItem { display: inline-flex; align-items: center; gap: 4px; font-weight: 600; }
-.footerTagIcon { color: #2f6b55; flex-shrink: 0; }
-.footerStepCounter { font-weight: 650; color: #625f56; }
+/* The card's place in the stream, newest activity first. */
+.rankNo { flex-shrink: 0; min-width: 30px; padding: 3px 7px; border-radius: 999px; background: #1f3d33; color: #fff; font-size: 11.5px; font-weight: 750; text-align: center; font-variant-numeric: tabular-nums; }
+.streamRow[data-live] .rankNo { background: #2f9e6b; }
 
 /* Badges & Shared micro-elements */
 .badgeSignedIn { display: inline-flex; align-items: center; gap: 3px; font-size: 10px; font-weight: 700; color: #1e6f47; background: #e3f7ec; padding: 1px 6px; border-radius: 999px; }

@@ -281,8 +281,7 @@ export function isEngagedVisitor(v: { engagedMs: number; page?: { ms: number } |
 }
 
 /**
- * One row per visitor (the signed-in person, or the anonymous browser): visitors on the site now first, then the most
- * recently active. `emails` maps account ids to emails for visitors whose rows did not carry one.
+ * One row per visitor (the signed-in person, or the anonymous browser), most recently active first. `emails` maps account ids to emails for visitors whose rows did not carry one.
  * Visitors with under a second of engagement are left out unless `filterZeroSeconds` is false.
  */
 export function streamVisitors(index: VisitIndex, now: number, emails: Record<string, string> = {}, filterZeroSeconds = true): StreamVisitor[] {
@@ -373,7 +372,9 @@ export function streamVisitors(index: VisitIndex, now: number, emails: Record<st
       timeSpentAlgorithm,
       visit, visits, totalReadingMs, stage, signals, convertedInWindow, campaign,
     };
-  }).sort((a, b) => Number(b.live) - Number(a.live) || b.lastAt - a.lastAt);
+  // Most recent first: a visitor with a page open is active now (their last heartbeat can be up to 45 s old, which
+  // used to shuffle live cards on every refresh); ties go to whoever arrived last, so the newest arrival is #1.
+  }).sort((a, b) => (b.live ? now : b.lastAt) - (a.live ? now : a.lastAt) || Date.parse(b.sessionArrived) - Date.parse(a.sessionArrived));
 
   return filterZeroSeconds ? list.filter(isEngagedVisitor) : list;
 }

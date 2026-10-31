@@ -22,7 +22,7 @@ const FEATURE: Feature = {
   ],
   steps: [["Pick a certification", "सर्टिफ़िकेशन चुनें"], ["Follow the weekly steps", "साप्ताहिक कदम अपनाएँ"], ["Book the exam", "परीक्षा बुक करें"]],
   image: { src: "/images/landing/feature-certifications.webp", focus: "30% 50%" }, badge: { icon: Award, label: ["9 certification paths", "9 सर्टिफ़िकेशन रास्ते"] },
-  cta: { href: "/sign-in?redirect=%2Fdashboard%2Fcertifications", label: ["Start a certification path", "सर्टिफ़िकेशन रास्ता शुरू करें"] }, note: ["Included in every membership", "हर सदस्यता में शामिल"],
+  cta: { href: "/learning/certifications", label: ["Start a certification path", "सर्टिफ़िकेशन रास्ता शुरू करें"] }, note: ["Included in every membership", "हर सदस्यता में शामिल"],
 };
 
 type Card = { id: string; title: string; text: Copy; meta: Copy };
@@ -44,7 +44,8 @@ export function LandingCertifications({ hi = false }: Readonly<{ hi?: boolean }>
   const slides = CARDS.map(card => ({
     id: card.id, image: `/images/landing/certifications/${card.id}.webp`, kicker: hi ? "सर्टिफ़िकेशन" : "Certification",
     title: card.title, text: pick(card.text), meta: pick(card.meta),
-    href: `/sign-in?redirect=${encodeURIComponent(`/learning/certifications?track=${card.id}`)}`, cta: hi ? "रास्ता देखें" : "See the path",
+    // Readable link; the proxy sends signed-out visitors through sign-in and back (lib/auth-routes.ts).
+    href: `/learning/certifications?track=${card.id}`, cta: hi ? "रास्ता देखें" : "See the path",
   }));
   return <FeatureSection feature={FEATURE} index={0} total={1} hi={hi} float={<CoverCarousel slides={slides} label={hi ? "सर्टिफ़िकेशन रास्ते" : "Certification paths"} hi={hi} />} />;
 }

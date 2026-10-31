@@ -17,7 +17,7 @@ export function SalePrice({ sale, cycle, full, currency = "INR", hi = false, siz
   if (now == null || !sale) return <span className={styles.price} data-size={size}><b>{money(full)}</b>{per && <small>{per}</small>}</span>;
   return <span className={styles.price} data-size={size} data-sale>
     <span className={styles.row}>
-      <s aria-label={hi ? `सामान्य मूल्य ${money(full)}` : `Normal price ${money(full)}`}>{money(full)}</s>
+      <del aria-label={hi ? `सामान्य मूल्य ${money(full)}` : `Normal price ${money(full)}`}>{money(full)}</del>
       <b>{money(now)}</b>
       <span className={styles.discountTag}>-{sale.percent}%</span>
       {per && <small>{per}</small>}

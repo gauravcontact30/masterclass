@@ -69,33 +69,39 @@ export function OgCard({ eyebrow, title, subtitle, chips, footer, accent = P.ter
   </div>;
 }
 
-/** The headline technologies on the home page's link preview, three to a row. */
-export const HOME_OG_TECHNOLOGIES = ["Agentic AI", "LangChain", "LangGraph", "LangSmith", "LangFlow", "n8n", "Next.js", "TanStack Start", "Zustand"] as const;
-const TILE_ACCENTS = [P.terracotta, "#7c5cff", "#1f9d74", "#e2a12a", "#2f7fd8", "#ea4b71", INK, "#e45b2b", "#7a5230"];
+/** The technologies on the home page's link preview, each with its logo from public/images/tech/<icon>.png. */
+export const HOME_OG_TECHNOLOGIES = [
+  { name: "LangChain", icon: "langchain" }, { name: "Next.js", icon: "nextjs" }, { name: "Zustand", icon: "zustand" },
+  { name: "TanStack", icon: "tanstack" }, { name: "AWS", icon: "aws" }, { name: "Docker", icon: "docker" },
+  { name: "Kubernetes", icon: "kubernetes" }, { name: "System Design", icon: "system-design" }, { name: "n8n", icon: "n8n" },
+  { name: "FastAPI", icon: "fastapi" }, { name: "Playwright", icon: "playwright" },
+] as const;
+export type OgTechnology = { name: string; logo: string };
 
 /**
- * The home page's link preview (1200×630): the lockup at full size, one line on what the site is for, and the headline
- * technologies set large enough to read in a chat or feed thumbnail. Satori rules as for OgCard.
+ * The home page's link preview (1200×630): the lockup, one line on what the site is for, and the headline
+ * technologies as logo tiles, four to a row, named large enough to read in a chat or feed thumbnail. `logo` is a
+ * data URI (app/opengraph-image.tsx reads the PNGs). Satori rules as for OgCard.
  */
-export function HomeOgCard({ headline, technologies, footer }: { headline: string; technologies: readonly string[]; footer: string }) {
+export function HomeOgCard({ headline, technologies, footer }: { headline: string; technologies: readonly OgTechnology[]; footer: string }) {
   return <div style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column", background: "#ffffff", position: "relative", fontFamily: "system-ui, sans-serif", color: INK }}>
     <div style={{ position: "absolute", top: -240, right: -180, width: 660, height: 660, borderRadius: 660, background: "radial-gradient(circle, rgba(217,119,87,0.18) 0%, rgba(217,119,87,0) 70%)", display: "flex" }} />
     <div style={{ position: "absolute", bottom: -280, left: -220, width: 660, height: 660, borderRadius: 660, background: "radial-gradient(circle, rgba(242,184,75,0.16) 0%, rgba(242,184,75,0) 70%)", display: "flex" }} />
     <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 12, background: `linear-gradient(90deg, ${P.terracotta}, ${P.gold})`, display: "flex" }} />
 
-    <div style={{ display: "flex", flexDirection: "column", flex: 1, padding: "44px 64px 0", position: "relative" }}>
+    <div style={{ display: "flex", flexDirection: "column", flex: 1, padding: "40px 64px 0", position: "relative" }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <div style={{ display: "flex", alignItems: "center" }}>
-          <Mark size={104} />
-          <div style={{ display: "flex", flexDirection: "column", marginLeft: 22 }}>
-            <div style={{ display: "flex", fontSize: 60, lineHeight: 1, letterSpacing: -2.5 }}>
+          <Mark size={92} />
+          <div style={{ display: "flex", flexDirection: "column", marginLeft: 20 }}>
+            <div style={{ display: "flex", fontSize: 54, lineHeight: 1, letterSpacing: -2.2 }}>
               <span style={{ fontWeight: 500, color: INK }}>master</span>
               <span style={{ fontWeight: 800, color: P.terracotta }}>class</span>
             </div>
             <div style={{ display: "flex", alignItems: "center", marginTop: 10 }}>
-              <div style={{ width: 52, height: 2.5, background: "#d6d2c6", display: "flex" }} />
-              <span style={{ margin: "0 12px", fontSize: 21, fontWeight: 700, letterSpacing: 10, color: P.terracotta }}>BUDDY</span>
-              <div style={{ width: 52, height: 2.5, background: "#d6d2c6", display: "flex" }} />
+              <div style={{ width: 46, height: 2.5, background: "#d6d2c6", display: "flex" }} />
+              <span style={{ margin: "0 12px", fontSize: 19, fontWeight: 700, letterSpacing: 9, color: P.terracotta }}>BUDDY</span>
+              <div style={{ width: 46, height: 2.5, background: "#d6d2c6", display: "flex" }} />
             </div>
           </div>
         </div>
@@ -105,14 +111,21 @@ export function HomeOgCard({ headline, technologies, footer }: { headline: strin
         </div>
       </div>
 
-      <div style={{ display: "flex", marginTop: 26, fontSize: 40, fontWeight: 800, letterSpacing: -1.2, color: INK }}>{headline}</div>
+      <div style={{ display: "flex", marginTop: 22, fontSize: 38, fontWeight: 800, letterSpacing: -1.2, color: INK }}>{headline}</div>
 
-      <div style={{ display: "flex", flexWrap: "wrap", marginTop: 22, justifyContent: "space-between" }}>
-        {technologies.slice(0, 9).map((tech, i) => <div key={tech} style={{ display: "flex", alignItems: "center", width: 346, height: 82, marginBottom: 14, padding: "0 22px", borderRadius: 18, background: "#faf8f2", border: `2px solid ${RULE}`, borderLeft: `10px solid ${TILE_ACCENTS[i % TILE_ACCENTS.length]}`, fontSize: 38, fontWeight: 800, letterSpacing: -1, color: INK }}>{tech}</div>)}
+      <div style={{ display: "flex", flexWrap: "wrap", marginTop: 20 }}>
+        {technologies.slice(0, 12).map((tech, i) => <div key={tech.name} style={{ display: "flex", alignItems: "center", width: 254, height: 90, marginRight: i % 4 === 3 ? 0 : 14, marginBottom: 12, padding: "0 16px", borderRadius: 18, background: "#faf8f2", border: `2px solid ${RULE}` }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 54, height: 54, borderRadius: 14, background: "#ffffff", border: `1.5px solid ${RULE}` }}>
+            {/* eslint-disable-next-line @next/next/no-img-element -- Satori renders plain <img> */}
+            <img src={tech.logo} width={38} height={38} alt="" />
+          </div>
+          <span style={{ marginLeft: 14, whiteSpace: "nowrap", fontSize: tech.name.length > 10 ? 24 : 29, fontWeight: 800, letterSpacing: -0.6, color: INK }}>{tech.name}</span>
+        </div>)}
+        {technologies.length === 11 && <div style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 254, height: 90, marginBottom: 12, borderRadius: 18, border: `2px dashed ${P.terracotta}`, color: P.terracotta, fontSize: 26, fontWeight: 800 }}>and many more →</div>}
       </div>
     </div>
 
-    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 64px 26px", position: "relative" }}>
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 64px 24px", position: "relative" }}>
       <span style={{ fontSize: 22, fontWeight: 700, color: SOFT }}>{footer}</span>
       <span style={{ fontSize: 22, fontWeight: 800, color: P.terracotta }}>Start learning free →</span>
     </div>

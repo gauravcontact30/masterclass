@@ -1,0 +1,14 @@
+.contact { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 22px; }
+.social, .support { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; margin: 0; padding: 0; list-style: none; }
+.social a, .support a { display: inline-flex; align-items: center; gap: 8px; min-height: 32px; text-decoration: none; font-size: 13px; }
+.chip { display: inline-grid; place-items: center; width: 32px; height: 32px; border-radius: 50%; background: #fff; border: 1px solid #e3e0d6; transition: transform .15s ease, box-shadow .15s ease; }
+.social a:hover .chip, .social a:focus-visible .chip { transform: translateY(-1px); box-shadow: 0 4px 12px -4px rgba(20, 20, 19, .35); }
+.support a { color: #5e5d59; overflow-wrap: anywhere; }
+.support address { display: inline-flex; align-items: center; gap: 8px; min-height: 32px; font-size: 13px; font-style: normal; color: #5e5d59; }
+.support svg { flex-shrink: 0; }
+.support a:hover, .support a:focus-visible { color: #bb5834; text-decoration: underline; }
+.social a[data-labelled] { color: #3d3d3a; font-weight: 600; }
+.contact[data-tone="dark"] .chip { border-color: #3a3936; }
+.contact[data-tone="dark"] .support a, .contact[data-tone="dark"] .support address { color: #d1cfc5; }
+.contact[data-tone="dark"] .support a:hover, .contact[data-tone="dark"] .support a:focus-visible { color: #fff; }
+@media (prefers-reduced-motion: reduce) { .chip { transition: none; } }
