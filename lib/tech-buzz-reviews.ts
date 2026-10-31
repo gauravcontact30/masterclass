@@ -5,6 +5,8 @@
  * the whole table never ships to the browser; server pages attach one review per card with withReview(). The labels
  * shown with it live in components/tech-buzz-review-stars.tsx.
  * Stories published after that date have no entry until someone reviews them, and show no rating meanwhile.
+ * On 31 Oct 2026 the user had every story rated 2.5 or below removed (17 early feature stories); meetsReviewBar keeps
+ * any later one off the public pages.
  */
 import "server-only";
 
@@ -12,26 +14,9 @@ export type ExpertReview = { stars: number; verdict: string };
 
 const REVIEWS: Record<string, ExpertReview> = {
   // Early feature stories: one short section each.
-  "agentic-ai-model-context-protocol": { stars: 2.5, verdict: "Correct MCP framing and a valid SDK snippet, but under 100 words of body with hype in place of depth." },
-  "nextjs-15-react-19-compiler-architecture": { stars: 2, verdict: "Overstates the React Compiler (useMemo is not dead) and stops after one short section; the async params snippet is fine." },
-  "hyperscale-cloud-ai-clusters-liquid-cooling": { stars: 2, verdict: "Plausible datacentre figures, but the Kubernetes manifest uses a resource kind that does not exist and nothing is sourced." },
-  "rust-microservices-10m-websockets": { stars: 2.5, verdict: "A tidy Axum handler, but the revenue and throughput claims are unverifiable and the architecture is only sketched." },
-  "typescript-5-8-ahead-of-time-optimizations": { stars: 1.5, verdict: "A single 25-word paragraph: the return-expression check is real, but there is no example and the takeaway overpromises." },
-  "the-information-reasoning-models-inference-economics": { stars: 2.5, verdict: "Test-time compute is explained correctly, but sweeping claims go unsourced and the code is only an outline." },
-  "indian-express-sovereign-ai-semiconductor-fabs": { stars: 2, verdict: "An interesting topic with unsourced numbers, no code and no engineering detail beyond the headline." },
-  "bain-company-enterprise-ai-roi-report": { stars: 1.5, verdict: "Attributes precise survey figures to a report without citing it; 45 words, no method and no code." },
-  "elevenlabs-realtime-voice-agents-low-latency": { stars: 2.5, verdict: "The latency budget framing is right and the WebSocket sketch is plausible, but it ends before any pipeline design." },
-  "postgresql-17-vector-database-scale": { stars: 2, verdict: "HNSW comes from the pgvector extension, not Postgres 17; the query is correct but the promised benchmark never appears." },
   "ebpf-kernel-telemetry-cilium-service-mesh": { stars: 3, verdict: "Accurate on sockmap redirection and TLS uprobes; the strongest early story, though its latency numbers are unsourced." },
-  "webassembly-component-model-edge-runtime": { stars: 2.5, verdict: "Sound Wasmtime component setup and a fair container comparison, but too brief to act on." },
-  "distributed-event-streaming-kafka-redpanda-warpstream": { stars: 2.5, verdict: "The cross-AZ cost argument is real and useful; the benchmark the title promises is missing." },
   "deepseek-v3-moe-architecture-mla-training": { stars: 3, verdict: "MLA's latent KV compression is explained accurately with a fair PyTorch sketch; routing and FP8 get no space." },
-  "platform-engineering-scale-backstage-crossplane": { stars: 2, verdict: "Names the right ideas (XRDs, portals) but shows no composition, template or workflow." },
-  "post-quantum-cryptography-ml-kem-tls13": { stars: 2, verdict: "The harvest-now threat is right and the group names are real, but the rustls snippet does not match the library's API." },
-  "langgraph-multi-agent-orchestration-patterns": { stars: 2.5, verdict: "A correct checkpointer graph, but supervisors and human-in-the-loop, the title's subjects, are never shown." },
-  "nextjs-16-react-19-zero-waterfall-architecture": { stars: 1.5, verdict: "Recommends experimental_ppr, which Next.js 16 removed in favour of cacheComponents; 39 words of body." },
   "system-design-distributed-event-driven-microservices": { stars: 3, verdict: "A correct transactional outbox table and rationale; locks and cache topologies from the title are missing." },
-  "indie-hackers-agentic-ai-saas-n8n-stripe": { stars: 2.5, verdict: "The HMAC-signed webhook helper is good practice; the business numbers are anecdote, not engineering." },
 
   // Technology explainers: four sections and one worked example each.
   "langchain-in-production-agents-tools-and-structured-output-without-the-magic": { stars: 4, verdict: "Demystifies the agent loop with current createAgent code and tool-design habits that genuinely improve agents." },
@@ -132,8 +117,14 @@ const REVIEWS: Record<string, ExpertReview> = {
   "agentic-ai-2026-10-31-can-an-agent-remember-you-hate-late-fees-building-a-bill-reminder-brain": { stars: 3.5, verdict: "A relatable memory-driven agent; template headings and a loose problem statement weaken it." },
 };
 
-/** Attaches the story's review, when it has one, to a card or preview headed for a client component. */
-export const withReview = <T extends { slug: string }>(item: T): T & { review?: ExpertReview } => {
+/** Attaches the story's review, when it has one, to a card or preview headed for a client component. Imported
+ *  stories arrive with their stored review already set (toCard/toPreview); this table wins when both exist. */
+export const withReview = <T extends { slug: string; review?: ExpertReview }>(item: T): T & { review?: ExpertReview } => {
   const review = REVIEWS[item.slug];
   return review ? { ...item, review } : item;
 };
+
+/** Stories rated at or below this are never published (user rule 2026-10-31); unrated stories are kept. */
+export const MIN_PUBLISHED_STARS = 2.5;
+export const meetsReviewBar = (story: { slug: string; source?: { review?: ExpertReview } }) =>
+  ((REVIEWS[story.slug] ?? story.source?.review)?.stars ?? Infinity) > MIN_PUBLISHED_STARS;

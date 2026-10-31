@@ -10,19 +10,22 @@ import { learningScenePrompt } from "@/lib/learning-image";
 import type { LandingFresh } from "@/lib/landing-fresh-types";
 import { providerModel } from "./ai-providers";
 import { paint, store } from "./learning-study-pack";
+import { weekStartDate } from "@/lib/ist-week";
 
 /*
- * The landing page's daily AI-written additions, made once a night by app/api/cron/landing-daily through the Vercel AI
- * Gateway: twelve "Or try" goals named by technology, an interview question of the day for the technology the
- * Interview prep preview leads with, a difference of the day for the featured Tech Topics comparison, and a docs tip
- * for the featured Technology docs platform, the last three each with a painted picture. Kept in Redis by India day;
- * the landing page reads today's set (or yesterday's while today's is being written) and falls back to its built-in
- * content when there is none.
+ * The landing page's weekly AI-written additions, made every Monday at 00:00 IST by app/api/cron/landing-daily
+ * through the Vercel AI Gateway (weekly since 2026-10-31; daily before): twelve "Or try" goals named by technology,
+ * an interview question of the week for the technology the Interview prep preview leads with, a difference of the
+ * week for the featured Tech Topics comparison, and a docs tip for the featured Technology docs platform, the last
+ * three each with a painted picture. Kept in Redis by India week (`day` below is the week number, lib/ist-week.ts);
+ * the landing page reads this week's set (or last week's while this week's is being written) and falls back to its
+ * built-in content when there is none.
  */
-const KEY = (day: number) => `landing:fresh:${day}`;
+const KEY = (week: number) => `landing:fresh:week:${week}`;
 const HISTORY = "landing:fresh:history";
-const KEEP_SECONDS = 3 * 86_400;
-const dayLabel = (day: number) => new Date(day * 86_400_000).toISOString().slice(0, 10);
+// This week's set and last week's fallback.
+const KEEP_SECONDS = 15 * 86_400;
+const dayLabel = weekStartDate;
 
 /** What each section leads with on `day`, the same picks the landing page makes (lib/daily-rotation.ts). */
 export function freshTopics(day: number) {
@@ -70,11 +73,11 @@ export async function generateLandingFresh(day: number, force = false): Promise<
     model: gateway(providerModel("gateway")),
     system: "You write daily learning snippets for MasterClass Buddy, an Indian e-learning platform for developers preparing for jobs and interviews. Be accurate and current as of 2026; never invent APIs or version numbers. Plain, clear English.",
     prompt: [
-      `Today is ${dayLabel(day)}.`,
+      `This week starts on ${dayLabel(day)}.`,
       `1. Goals for the "Or try" buttons of a learning-route planner: 12 goals, each a different technology.`,
-      `2. An interview question of the day about ${tech.title} (${tech.tagline}): one subjective question with a model answer, and one multiple-choice question.`,
-      `3. A difference of the day for "${comparison.question}" (${comparison.techs.map(item => `${item.name}: ${item.definition}`).join("; ")}).`,
-      `4. A docs tip of the day for ${doc.name} ${doc.version} (${doc.release}). Official docs: ${doc.docs}.`,
+      `2. An interview question of the week about ${tech.title} (${tech.tagline}): one subjective question with a model answer, and one multiple-choice question.`,
+      `3. A difference of the week for "${comparison.question}" (${comparison.techs.map(item => `${item.name}: ${item.definition}`).join("; ")}).`,
+      `4. A docs tip of the week for ${doc.name} ${doc.version} (${doc.release}). Official docs: ${doc.docs}.`,
       history.length ? `Do not repeat any of these recent items: ${history.slice(0, 60).join(" | ")}` : "",
     ].filter(Boolean).join("\n"),
     output: Output.object({ schema }),
@@ -82,7 +85,7 @@ export async function generateLandingFresh(day: number, force = false): Promise<
     abortSignal: AbortSignal.timeout(120_000),
   });
   // Three pictures side by side; one that fails leaves its card with the section's icon instead.
-  const folder = `daily/${dayLabel(day)}`;
+  const folder = `weekly/${dayLabel(day)}`;
   const picture = (name: string, subject: string, scene: string) => paint(learningScenePrompt({ subject, scene }))
     .then(webp => store(`${folder}/${name}-${Date.now()}.webp`, webp))
     .catch(error => { console.warn(`landing fresh picture "${name}" failed: ${String(error).slice(0, 200)}`); return null; });
@@ -108,7 +111,7 @@ export async function generateLandingFresh(day: number, force = false): Promise<
   return fresh;
 }
 
-/** Today's set for the landing page, or yesterday's while today's is still being written; null when there is none. */
+/** This week's set for the landing page, or last week's while this week's is still being written; null when there is none. */
 export async function landingFresh(day: number): Promise<LandingFresh | null> {
   try {
     return (await cacheGet<LandingFresh>(KEY(day))) ?? (await cacheGet<LandingFresh>(KEY(day - 1)));

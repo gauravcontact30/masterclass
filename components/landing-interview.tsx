@@ -59,8 +59,8 @@ export function LandingInterview({ expanded = false, preview = false, day = 0, f
       </div>
       <Controls text={text} playing={playing} onPlay={() => setPlaying(p => !p)} page={page} pages={pages} goTo={goTo} previous={text("Previous technology", "पिछली तकनीक")} next={text("Next technology", "अगली तकनीक")} />
     </div>
-    {/* Today's AI-written question (lib/server/landing-fresh.ts), above the bank. */}
-    {preview && fresh && <DailyCard kicker={text(`Question of the day · ${fresh.tech}`, `आज का प्रश्न · ${fresh.tech}`)} title={fresh.question} image={fresh.image} icon={<GraduationCap size={44} strokeWidth={1.3} />} day={fresh.day}>
+    {/* This week's AI-written question (lib/server/landing-fresh.ts), above the bank. */}
+    {preview && fresh && <DailyCard kicker={text(`Question of the week · ${fresh.tech}`, `इस हफ़्ते का प्रश्न · ${fresh.tech}`)} title={fresh.question} image={fresh.image} icon={<GraduationCap size={44} strokeWidth={1.3} />} day={fresh.day}>
       <details><summary>{text("Show the model answer", "मॉडल उत्तर देखें")}</summary><p>{fresh.answer}</p></details>
       <DailyChoice question={fresh.objective.question} options={fresh.objective.options} answer={fresh.objective.answer} why={fresh.objective.why} reveal={text("Why:", "क्यों:")} />
     </DailyCard>}

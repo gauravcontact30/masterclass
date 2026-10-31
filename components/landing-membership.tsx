@@ -17,9 +17,9 @@ type Area = { icon: LucideIcon; name: [string, string]; note: [string, string] }
 
 /** What the membership opens, in the Learning Dashboard's own groups, names and sidebar icons (components/workspace.tsx). */
 const GROUPS: { title: [string, string]; areas: Area[] }[] = [
-  { title: ["Dashboard home, every day", "डैशबोर्ड होम, हर दिन"], areas: [
+  { title: ["Dashboard home, fresh every week", "डैशबोर्ड होम, हर हफ़्ते नया"], areas: [
     { icon: Sparkles, name: ["AI & agentic pulse", "AI और एजेंटिक हलचल"], note: ["A fresh card set across 33 technologies", "33 तकनीकों में रोज़ नया कार्ड सेट"] },
-    { icon: BookA, name: ["Word power", "शब्द शक्ति"], note: ["New words every day with audio and Hindi", "ऑडियो और हिन्दी सहित हर दिन नए शब्द"] },
+    { icon: BookA, name: ["Word power", "शब्द शक्ति"], note: ["New words every week with audio and Hindi", "ऑडियो और हिन्दी सहित हर हफ़्ते नए शब्द"] },
     { icon: Code2, name: ["Tech Topics", "टेक टॉपिक्स"], note: ["Technology comparisons with interview questions", "इंटरव्यू प्रश्नों सहित तकनीकों की तुलना"] },
     { icon: BookOpenText, name: ["Technology docs", "तकनीकी डॉक्स"], note: ["Platform guides, projects, DSA and OOPs", "प्लेटफ़ॉर्म गाइड, परियोजनाएँ, DSA और OOPs"] },
   ] },

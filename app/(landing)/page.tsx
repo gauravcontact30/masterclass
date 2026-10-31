@@ -3,7 +3,7 @@ import { LandingPage } from "@/components/landing-page";
 import { JsonLd } from "@/components/json-ld";
 import { landingLibrary, previewLibrary } from "@/lib/landing-library";
 import { landingProPreview } from "@/lib/landing-pro-preview";
-import { istDay, landingDaily } from "@/lib/server/landing-daily";
+import { istWeek, landingDaily } from "@/lib/server/landing-daily";
 import { landingFresh } from "@/lib/server/landing-fresh";
 import { pickDaily } from "@/lib/daily-rotation";
 import { LANDING_TECH_DOC_IDS, TECH_DOCS } from "@/lib/tech-docs";
@@ -20,15 +20,16 @@ import { LandingCertifications } from "@/components/landing-certifications";
 export const metadata = pageMetadata("/");
 /** The pulse and Word power previews show three cards each (PREVIEW_COUNT in components/landing-ai-pulse.tsx). */
 const DAILY_PREVIEW = 3;
-// The AI pulse and Word power carousels change at midnight IST, and so does what the other sections lead with
-// (lib/daily-rotation.ts). The page is cached with an hourly lifetime, so the new day is picked up within the hour;
-// revalidateTag("landing") publishes a change at once.
+// The AI pulse and Word power carousels change every Monday at 00:00 IST, and so does what the other sections lead
+// with (lib/daily-rotation.ts, fed the week number). The page is cached with an hourly lifetime, so the new week is
+// picked up within the hour; revalidateTag("landing") publishes a change at once.
 export default async function Home() {
   "use cache";
   cacheLife("hours");
   cacheTag("landing");
   // Refreshed chunk hashes for client dynamic imports
-  const today = istDay();
+  // The week number (lib/ist-week.ts): every rotating section moves on one step a week.
+  const today = istWeek();
   const pro = landingProPreview(today);
   // Technology docs previews one of TanStack Start, Zustand and n8n a day; the CS fundamentals stay listed under it.
   const featuredDoc = pickDaily(TECH_DOCS.filter(tech => (LANDING_TECH_DOC_IDS as readonly string[]).includes(tech.id)), today).id;

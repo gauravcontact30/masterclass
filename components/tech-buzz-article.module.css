@@ -1427,6 +1427,9 @@
 /* Unsplash photo credit on the cover (plain text, as Unsplash asks). */
 .coverCredit { position: absolute; right: 12px; bottom: 10px; z-index: 2; padding: 3px 10px; border-radius: 999px; background: rgba(20, 20, 19, .55); color: #fff; font-size: 11.5px; }
 
+/* Plain-text credit of the community post an imported story was written from (never a link). */
+.inspiredBy { margin: 0 0 18px; padding: 10px 14px; border-left: 3px solid var(--tb-accent); background: var(--tb-accent-wash); border-radius: 0 8px 8px 0; font-size: 13.5px; line-height: 1.5; color: var(--tb-muted); }
+
 /* The back link stays on one line; on phones it is just the arrow, so the sticky bar keeps a single row. */
 .backLink { white-space: nowrap; flex-shrink: 0; }
 @media (max-width: 480px) {

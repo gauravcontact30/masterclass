@@ -63,7 +63,7 @@ export async function POST(request: Request) {
       }));
       return Response.json({
         key: required("RAZORPAY_KEY_ID"), order_id: order.id, amount: order.amount, currency: order.currency,
-        name: "MasterClass", description: `Unlock: ${input.kind === "pulse" ? title : "today's bonus word"}`.slice(0, 250),
+        name: "MasterClass", description: `Unlock: ${input.kind === "pulse" ? title : "this week's bonus word"}`.slice(0, 250),
       });
     }
 

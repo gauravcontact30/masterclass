@@ -266,7 +266,7 @@ export function LandingPathFinder({ day = 0, fresh }: { day?: number; fresh?: Fr
           </div>
           {/* The goals are grouped by line, like a transit map: today's popular mix, then one line per field. */}
           <div className={styles.lines} role="group" aria-label={text("Goal lines", "लक्ष्य की लाइनें")}>
-            {[{ id: "popular" as const, en: "Popular today", hi: "आज लोकप्रिय" }, ...LINES].map((option, at) => <button key={option.id} type="button" data-line={at} aria-pressed={line === option.id} aria-controls={`${id}-goals`} onClick={() => setLine(option.id)}>
+            {[{ id: "popular" as const, en: "Popular this week", hi: "इस हफ़्ते लोकप्रिय" }, ...LINES].map((option, at) => <button key={option.id} type="button" data-line={at} aria-pressed={line === option.id} aria-controls={`${id}-goals`} onClick={() => setLine(option.id)}>
               <i aria-hidden="true" />{hi ? option.hi : option.en}<b>{option.id === "popular" ? popular.length : GOALS.filter(goal => goal[4] === option.id).length}</b>
             </button>)}
           </div>

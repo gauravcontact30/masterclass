@@ -80,7 +80,7 @@ export function LandingComparisons({ expanded = false, preview = false, locked =
       </button>; })}
     </nav>
     <div className={styles.pickerPager}><Pager page={pickerPage} pages={Math.ceil(items.length / 5)} total={items.length} size={5} onPage={next => goTo((next - 1) * 5)} /></div></>}
-    {preview && fresh && <DailyCard kicker={text("Difference of the day", "आज का अंतर")} title={fresh.title} image={fresh.image} icon={<GitCompareArrows size={44} strokeWidth={1.3} />} day={fresh.day}>
+    {preview && fresh && <DailyCard kicker={text("Difference of the week", "इस हफ़्ते का अंतर")} title={fresh.title} image={fresh.image} icon={<GitCompareArrows size={44} strokeWidth={1.3} />} day={fresh.day}>
       <p>{fresh.answer}</p>
       <ul>{fresh.points.map((point, k) => <li key={k}>{point}</li>)}</ul>
     </DailyCard>}

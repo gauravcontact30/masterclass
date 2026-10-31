@@ -1,7 +1,8 @@
 /**
- * Daily rotation for the landing page sections. `day` is the India-calendar day number (istDay in
- * lib/server/landing-daily.ts), computed once on the server and passed down, so the server HTML and hydration agree
- * and every section turns over together at midnight IST. Pure: safe in the landing bundle.
+ * Rotation for the landing page and dashboard sections. `day` is the period number, now the India-calendar week
+ * (istWeek in lib/ist-week.ts, user rule 2026-10-31), computed once on the server and passed down, so the server HTML
+ * and hydration agree and every section turns over together on Monday at 00:00 IST. Pure: safe in the landing bundle.
+ * The names keep "Daily" from when the period was a day.
  */
 
 /** The list starting at today's offset, wrapping round; `stride` steps further each day (a full page, say). */

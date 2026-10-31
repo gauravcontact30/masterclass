@@ -6,19 +6,21 @@ import { favouriteTag, type FavouriteTopic } from "@/lib/tech-buzz-favourites";
 import { DAILY_TAG, DAILY_TRACKS, dailyDateTag, dailyTrackTag, isInternalTag, istDate, type DailyTrack } from "@/lib/tech-buzz-sections";
 import type { TechBuzzArticle } from "@/lib/tech-buzz-data";
 import { providerConfigured, providerModel } from "./ai-providers";
+import { scheduledWeek, weekStartDate } from "@/lib/ist-week";
 import { paint, store } from "./learning-study-pack";
 import { createTechBuzzArticle, dailyEditionSlugs, expireTechBuzzCache, getTechBuzzArticleBySlug, recentDailyTitles, updateTechBuzzContent } from "./tech-buzz-storage";
 
 /*
- * The daily Tech Buzz edition: at 5:00 AM IST (vercel.json → /api/cron/tech-buzz-daily) one new story per track in
- * DAILY_TRACKS, written through the Vercel AI Gateway with a painted thumbnail and an in-article image, stored in
- * tech_buzz_articles and tagged so the page lands it in "Today's 5 at 5" and in its technology section.
- * Re-running the same day only fills the tracks that are missing.
+ * The weekly Tech Buzz edition (daily until 2026-10-31): every Monday at 00:00 IST (vercel.json →
+ * /api/cron/tech-buzz-daily) one new story per track in DAILY_TRACKS, written through the Vercel AI Gateway with a
+ * painted thumbnail and an in-article image, stored in tech_buzz_articles and tagged so the page lands it in
+ * "This week's 5" and in its technology section. An edition's date is its week's Monday (the `daily:` tag keeps its
+ * old name); re-running in the same week only fills the tracks that are missing.
  *
  * Each story is 1) researched from the track's official documentation (Perplexity, restricted to track.officialSites),
  * 2) written from those notes with numbered steps and bullet points as their own fields, and 3) scored by an editor
  * pass. Below 4 out of 5 it is rewritten once with the editor's notes; still below 4, it is not published until the
- * route is run again for that day. The official pages are kept as plain-text attribution, never links.
+ * route is run again for that week. The official pages are kept as plain-text attribution, never links.
  */
 
 const SYSTEM = [
@@ -69,6 +71,7 @@ const reviewSchema = z.object({
   structure: z.number().describe("1-5: clear sections; procedures as numbered steps, checklists as bullets, no lists hidden in paragraphs."),
   code: z.number().describe("1-5: examples complete and runnable as shown (5 if the story rightly has no code)."),
   score: z.number().describe("Overall 1-5, one decimal. 4 or above means ready to publish."),
+  verdict: z.string().describe("One sentence a senior full-stack engineer would say about the draft's strengths and gaps, under 160 characters."),
   issues: z.array(z.string()).describe("Specific fixes needed to reach 5, most important first; empty if none."),
 });
 
@@ -132,10 +135,19 @@ async function research(track: DailyTrack, angle: string): Promise<Research> {
   }
 }
 
-async function draft(track: DailyTrack, angle: string, date: string, notes: string, fixes: string[], timeoutMs: number, reasoning: Reasoning, current?: string, earlier: string[] = []): Promise<Draft> {
+/** A community post a story is written from (lib/server/tech-buzz-imports.ts): a brief, never text to reuse. */
+export type Inspiration = { brief: string; tag: string; credit: { title: string; author: string; platform: string };
+  platformKey: NonNullable<TechBuzzArticle["source"]["platformKey"]> };
+
+const inspirationPrompt = (inspiration: Inspiration) => `Community post this story is inspired by (${inspiration.credit.platform}). Use it only as a brief: its topic, the problem it solves and its key points. Do not copy its sentences, headings, title or code: write every paragraph, heading and example fresh, explain the ideas more clearly than it does for a learner, go deeper, and correct anything the official notes contradict. Never mention the post, its author or any platform in the story.
+${inspiration.brief}`;
+
+async function draft(track: DailyTrack, angle: string, date: string, notes: string, fixes: string[], timeoutMs: number, reasoning: Reasoning, current?: string, earlier: string[] = [], inspiration?: Inspiration): Promise<Draft> {
   const prompt = [
-    `Track: ${track.label}.`, `Today's angle: ${angle}.`, `Date: ${date}.`,
-    track.brief && !current ? `How every story of this track is shaped:\n${track.brief}` : "",
+    `Track: ${track.label}.`, `This week's angle: ${angle}.`, `Week of: ${date}.`,
+    inspiration ? inspirationPrompt(inspiration) : "",
+    // An imported story keeps to its post's subject instead of the track's house shape.
+    track.brief && !current && !inspiration ? `How every story of this track is shaped:\n${track.brief}` : "",
     earlier.length ? `Earlier stories of this track (do not repeat their problem, workflow or headline):\n${earlier.map(title => `- ${title}`).join("\n")}` : "",
     current ? `This is a rewrite of a published story. Keep its topic and its headline's promise, correct anything the notes contradict, and make it the best lesson on the subject:
 ${current}` : "",
@@ -162,11 +174,12 @@ async function review(story: Draft, notes: string) {
 }
 
 const slugify = (text: string) => text.toLowerCase().normalize("NFKD").replace(/[^\w\s-]/g, "").trim().replace(/[\s_]+/g, "-").replace(/-+/g, "-");
-const dayNumber = (date: string) => Math.floor(Date.parse(`${date}T00:00:00Z`) / 86_400_000);
+// Angles turn over one per edition: by week number, so a track with seven angles does not repeat the same one weekly.
+const editionNumber = (date: string) => Math.floor((Math.floor(Date.parse(`${date}T00:00:00Z`) / 86_400_000) + 3) / 7);
 
 /** deadline: when set, the first draft may use the time left until then (up to draftMs, never under 150 s). */
 type Budget = { draftMs: number; rewriteBeforeMs: number; reasoning: Reasoning; deadline?: number };
-type StoryOptions = { angle?: string; tags?: string[]; daily?: boolean; budget?: Budget };
+type StoryOptions = { angle?: string; tags?: string[]; daily?: boolean; budget?: Budget; inspiration?: Inspiration; minScore?: number };
 // Run from a script, not the cron route: no 300 s limit.
 export const SCRIPT_BUDGET: Budget = { draftMs: 420_000, rewriteBeforeMs: Infinity, reasoning: "provider-default" };
 // Inside the route a medium-thinking agentic-ai draft now runs past 150 s (it timed out on 29 and 30 Oct 2026), so the
@@ -174,10 +187,12 @@ export const SCRIPT_BUDGET: Budget = { draftMs: 420_000, rewriteBeforeMs: Infini
 const DRAFT_FLOOR_MS = 150_000;
 const routeBudget = (runStarted: number): Budget => ({ draftMs: 200_000, rewriteBeforeMs: REWRITE_BEFORE_MS, reasoning: "medium", deadline: runStarted + SAVE_BY_MS - 70_000 });
 
-async function writeStory(track: DailyTrack, date: string, runStarted = Date.now(), { angle: ownAngle, tags = [], daily = true, budget }: StoryOptions = {}): Promise<TechBuzzArticle> {
-  const angle = ownAngle ?? track.angles[dayNumber(date) % track.angles.length];
-  const { output, verdict, sources } = await researchedDraft(track, angle, date, undefined, budget ?? routeBudget(runStarted));
-  const slug = `${track.id}-${date}-${slugify(output.title)}`.slice(0, 99).replace(/-+$/, "");
+async function writeStory(track: DailyTrack, date: string, runStarted = Date.now(), { angle: ownAngle, tags = [], daily = true, budget, inspiration, minScore = MIN_SCORE }: StoryOptions = {}): Promise<TechBuzzArticle> {
+  const angle = ownAngle ?? track.angles[editionNumber(date) % track.angles.length];
+  const { output, verdict, sources } = await researchedDraft(track, angle, date, undefined, budget ?? routeBudget(runStarted), inspiration, minScore);
+  const slug = `${inspiration ? inspiration.platformKey : track.id}-${date}-${slugify(output.title)}`.slice(0, 99).replace(/-+$/, "");
+  // Imported stories keep their pictures apart from the daily edition's (one cover per track and day).
+  const pictureBase = inspiration ? `tech-buzz/imports/${slug}` : `tech-buzz/daily/${date}/${track.id}`;
   // Thumbnail and blog image are painted together; a failed picture keeps the story (the page shows the technology logo).
   const paintMs = SAVE_BY_MS - (Date.now() - runStarted);
   const [cover, inline] = await Promise.allSettled([output.coverScene, output.inlineScene].map(async (scene, i) => {
@@ -186,7 +201,7 @@ async function writeStory(track: DailyTrack, date: string, runStarted = Date.now
     const timeout = new Promise<never>((_, reject) => { timer = setTimeout(() => reject(new Error("paint_timeout")), paintMs); });
     try {
       const picture = await Promise.race([paint(learningScenePrompt({ subject: `${track.short}: ${output.title}`, scene })), timeout]);
-      return await Promise.race([store(`tech-buzz/daily/${date}/${track.id}-${i === 0 ? "cover" : "inline"}.webp`, picture), timeout]);
+      return await Promise.race([store(`${pictureBase}-${i === 0 ? "cover" : "inline"}.webp`, picture), timeout]);
     } finally { clearTimeout(timer); }
   }));
   const coverUrl = cover.status === "fulfilled" ? cover.value : `/images/tech/${track.techId}.png`;
@@ -200,15 +215,19 @@ async function writeStory(track: DailyTrack, date: string, runStarted = Date.now
     techId: track.techId,
     techBadgeColor: track.color,
     readTimeMinutes: Math.min(15, Math.max(4, output.readTimeMinutes)),
-    featured: true,
+    featured: !inspiration,
     likes: 0, dislikes: 0, upvotes: 0, claps: 0,
     // Not rated yet: the page shows "New" until readers rate it.
     rating: { average: 5, count: 0, breakdown: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 } },
-    author: { name: "MCB Editorial", role: "Tech Buzz Daily Desk", avatar: "/images/brand/mcb-avatar.svg", handle: "@mcb", verified: true },
+    author: { name: "MCB Editorial", role: inspiration ? "Tech Buzz Community Desk" : "Tech Buzz Daily Desk", avatar: "/images/brand/mcb-avatar.svg", handle: "@mcb", verified: true },
     coverImage: coverUrl,
-    tags: [...output.tags.slice(0, 6), ...(daily ? [DAILY_TAG, dailyDateTag(date), dailyTrackTag(track.id)] : []), ...tags],
+    tags: [...output.tags.slice(0, 6), ...(daily ? [DAILY_TAG, dailyDateTag(date), dailyTrackTag(track.id)] : []), ...(inspiration ? [inspiration.tag] : []), ...tags],
     rankingScore: 95,
-    source: { name: "MasterClass Buddy", domain: "masterclass", trustScore: "", editorScore: Math.round(verdict.score * 10) / 10, ...(sources.length ? { basedOn: sources } : {}) },
+    source: {
+      name: "MasterClass Buddy", domain: "masterclass", trustScore: "", editorScore: Math.round(verdict.score * 10) / 10, ...(sources.length ? { basedOn: sources } : {}),
+      // An imported story shows its editor review as its star rating, and credits the post it was written from.
+      ...(inspiration ? { platformKey: inspiration.platformKey, credit: inspiration.credit, review: { stars: Math.round(verdict.score * 2) / 2, verdict: verdict.verdict } } : {}),
+    },
     summaryBullets: output.summaryBullets.slice(0, 5),
     reactions: { heart: 0, unicorn: 0, rocket: 0, mindblown: 0 },
     commentsCount: 0,
@@ -223,18 +242,19 @@ async function writeStory(track: DailyTrack, date: string, runStarted = Date.now
 }
 
 /** The steps writeStory and refineTechBuzzStory share: research, draft, review, one rewrite below the bar. */
-async function researchedDraft(track: DailyTrack, angle: string, date: string, current?: string, { draftMs, rewriteBeforeMs, reasoning, deadline }: Budget = routeBudget(Date.now())) {
+async function researchedDraft(track: DailyTrack, angle: string, date: string, current?: string, { draftMs, rewriteBeforeMs, reasoning, deadline }: Budget = routeBudget(Date.now()), inspiration?: Inspiration, minScore = MIN_SCORE) {
   const started = Date.now();
   // A rewrite keeps its own topic; a new story is told which topics the track has already covered.
   const [{ notes, sources }, earlier] = await Promise.all([research(track, angle), current ? Promise.resolve([]) : recentDailyTitles(dailyTrackTag(track.id))]);
   const firstDraftMs = deadline ? Math.max(DRAFT_FLOOR_MS, Math.min(draftMs, deadline - Date.now())) : draftMs;
-  let output = await draft(track, angle, date, notes, [], firstDraftMs, reasoning, current, earlier);
+  let output = await draft(track, angle, date, notes, [], firstDraftMs, reasoning, current, earlier, inspiration);
   let verdict = await review(output, notes);
+  // Below the daily bar the draft is rewritten once with the editor's notes, whatever bar it must finally pass.
   if (verdict.score < MIN_SCORE && Date.now() - started < rewriteBeforeMs) {
-    output = await draft(track, angle, date, notes, verdict.issues.slice(0, 8), Math.max(60_000, Math.min(draftMs, rewriteBeforeMs + 80_000 - (Date.now() - started))), reasoning, current, earlier);
+    output = await draft(track, angle, date, notes, verdict.issues.slice(0, 8), Math.max(60_000, Math.min(draftMs, rewriteBeforeMs + 80_000 - (Date.now() - started))), reasoning, current, earlier, inspiration);
     verdict = await review(output, notes);
   }
-  if (verdict.score < MIN_SCORE) throw new Error(`below_quality_bar ${verdict.score.toFixed(1)}: ${verdict.issues.slice(0, 2).join("; ")}`);
+  if (verdict.score < minScore) throw new Error(`below_quality_bar ${verdict.score.toFixed(1)}: ${verdict.issues.slice(0, 2).join("; ")}`);
   return { output, verdict, sources };
 }
 
@@ -296,10 +316,22 @@ export async function writeFavouriteStory(topic: FavouriteTopic, date = istDate(
   return story;
 }
 
+/**
+ * Writes one story from a community post (lib/server/tech-buzz-imports.ts) through the daily edition's research,
+ * writer, editor and painter, outside the daily edition. minScore is the editor score it must reach; its star
+ * review is that score in half stars. Run from scripts, so it has no 300 s route limit.
+ */
+export async function writeInspiredStory(track: DailyTrack, angle: string, inspiration: Inspiration, minScore: number, date = istDate()) {
+  const story = await writeStory(track, date, Date.now() + 10 * 60_000, { angle, daily: false, budget: SCRIPT_BUDGET, inspiration, minScore });
+  expireTechBuzzCache();
+  return story;
+}
+
 export type DailyRun = { date: string; written: string[]; skipped: string[]; failed: { track: string; error: string }[] };
 
-/** Writes today's (IST) missing daily stories, all five tracks at once so the run fits the function's time limit. */
-export async function generateTechBuzzDaily(date = istDate(), budget?: Budget): Promise<DailyRun> {
+/** Writes the week's missing edition stories (date: the week's Monday), all five tracks at once so the run fits the
+ *  function's time limit. */
+export async function generateTechBuzzDaily(date = weekStartDate(scheduledWeek()), budget?: Budget): Promise<DailyRun> {
   if (!providerConfigured("gateway")) throw new Error("ai_gateway_not_configured");
   const existing = await dailyEditionSlugs(date);
   const todo = DAILY_TRACKS.filter(track => !existing.some(slug => slug.startsWith(`${track.id}-${date}`)));

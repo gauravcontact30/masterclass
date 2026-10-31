@@ -4,6 +4,7 @@ import { db } from "./db";
 import { TECH_BUZZ_ARTICLES, type TechBuzzArticle } from "@/lib/tech-buzz-data";
 import { HttpError } from "./http";
 import { withReaderClaps } from "./tech-buzz-claps";
+import { meetsReviewBar } from "@/lib/tech-buzz-reviews";
 
 const isMissing = (err: { code?: string; message: string } | null) =>
   !err ? false : (
@@ -252,7 +253,7 @@ export async function listPublishedTechBuzzArticles(): Promise<TechBuzzArticle[]
   cacheLife("minutes");
   cacheTag(TECH_BUZZ_TAG);
   // Readers' claps (migration 0042) join each story's count here, so lists stay within minutes of the live total.
-  return withReaderClaps(await listTechBuzzArticles(false));
+  return withReaderClaps((await listTechBuzzArticles(false)).filter(meetsReviewBar));
 }
 
 /** Feed, sitemap and related-card queries exclude article bodies and comment threads. */
@@ -260,7 +261,7 @@ export async function listPublishedTechBuzzSummaries(): Promise<TechBuzzArticle[
   "use cache";
   cacheLife("minutes");
   cacheTag(TECH_BUZZ_TAG);
-  return withReaderClaps(await listTechBuzzArticles(false, true));
+  return withReaderClaps((await listTechBuzzArticles(false, true)).filter(meetsReviewBar));
 }
 
 /** Fetch only the requested published article, rather than loading the entire archive's bodies. */
@@ -276,7 +277,7 @@ export async function getPublishedTechBuzzArticle(slug: string): Promise<TechBuz
     else if (result.error && !isMissing(result.error)) console.warn("Tech Buzz article read failed:", result.error.code);
   } catch { /* Static stories remain available when the database is unavailable. */ }
   article ??= TECH_BUZZ_ARTICLES.find(item => item.slug === slug || item.id === slug);
-  return article ? (await withReaderClaps([article]))[0] : null;
+  return article && meetsReviewBar(article) ? (await withReaderClaps([article]))[0] : null;
 }
 
 /**

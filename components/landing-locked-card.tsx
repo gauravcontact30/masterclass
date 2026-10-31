@@ -82,7 +82,7 @@ export function LockedCard({ teaser, index, total, text, render }: { teaser: Loc
       </div>
       <div className={styles.overlay}>
         <span className={styles.lockBadge} aria-hidden="true">{state === "verifying" ? <LockOpen size={22} /> : <Lock size={22} />}</span>
-        <p className={styles.kicker}>{text("Today's bonus", "आज का बोनस")} · {teaser.tag}</p>
+        <p className={styles.kicker}>{text("This week's bonus", "इस हफ़्ते का बोनस")} · {teaser.tag}</p>
         <h3 className={styles.title}>{teaser.kind === "pulse" ? teaser.title : text("A bonus word, with its picture, sounds and pairs", "एक बोनस शब्द: चित्र, उच्चारण और जोड़े")}</h3>
         <p className={styles.copy}>{text(`Unlock this card for ₹${price}: the full lesson, opened instantly in this browser${teaser.kind === "pulse" ? "" : ""}.`, `₹${price} में यह कार्ड खोलें: पूरा पाठ, तुरंत इसी ब्राउज़र में।`)}</p>
         {state === "unavailable"

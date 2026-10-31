@@ -278,8 +278,8 @@ export function LandingTechDocs({ official, preview = false, locked = false, con
       <p className={frame.lede} data-learning-intro>{text("TanStack Start for type-safe full-stack React, Zustand for lightweight app state, and n8n for workflow automation and AI agents, plus DSA and OOPs. Each comes with its current release, the features worth learning first, a runnable quick start and hand-picked official guides.", "टाइप-सेफ़ फ़ुल-स्टैक React के लिए TanStack Start, हल्के ऐप स्टेट के लिए Zustand, और वर्कफ़्लो ऑटोमेशन व AI एजेंट के लिए n8n, साथ में DSA और OOPs। हर एक के साथ वर्तमान संस्करण, पहले सीखने लायक़ फ़ीचर, चलने वाला क्विक स्टार्ट और चुनी हुई आधिकारिक गाइड।")}</p>
       {total > 0 && <Controls text={text} playing={autoplay} onPlay={() => setAutoplay(value => !value)} page={current} pages={total} goTo={index => { const slide = slides[(index + total) % total]; if (slide) setActiveId(slide.tech.id); }} previous={text("Previous platform", "पिछला प्लेटफ़ॉर्म")} next={text("Next platform", "अगला प्लेटफ़ॉर्म")} />}
     </header>
-    {/* Today's AI-written tip for the featured platform (lib/server/landing-fresh.ts). */}
-    {preview && fresh && <DailyCard kicker={text(`Doc tip of the day · ${fresh.doc}`, `आज की डॉक टिप · ${fresh.doc}`)} title={fresh.title} image={fresh.image} icon={<BookOpen size={44} strokeWidth={1.3} />} day={fresh.day}>
+    {/* This week's AI-written tip for the featured platform (lib/server/landing-fresh.ts). */}
+    {preview && fresh && <DailyCard kicker={text(`Doc tip of the week · ${fresh.doc}`, `इस हफ़्ते की डॉक टिप · ${fresh.doc}`)} title={fresh.title} image={fresh.image} icon={<BookOpen size={44} strokeWidth={1.3} />} day={fresh.day}>
       <p>{fresh.summary}</p>
       <ol>{fresh.steps.map((step, k) => <li key={k}>{step}</li>)}</ol>
       {fresh.code && <pre><code>{fresh.code.code}</code></pre>}

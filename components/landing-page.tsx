@@ -58,7 +58,7 @@ const LandingTechy = dynamic(() => import("./landing-pro-sections").then(m => m.
 
 /** `international`: other currencies are offered, so the page re-prices itself where the visitor is (it is cached in rupees). */
 export type LandingPrices = { monthly: number; yearly: number; enabled: boolean; currency?: Currency; currencies?: Currency[]; local?: Currency; inr?: { monthly: number; yearly: number }; international?: boolean; sale?: SaleInfo | null };
-/** `today`: the India-calendar day number (istDay); the sections that turn over daily pick their content from it. */
+/** `today`: the India-calendar week number (istWeek, lib/ist-week.ts); the sections that turn over weekly, on Monday at 00:00 IST, pick their content from it. */
 export function LandingPage({ features, certifications, workflows, pro, library, prices: initialPrices, daily, techDocs, copyrightYear, overrides, coffee, today = 0, featuredDoc, fresh = null }: { features?: ReactNode; certifications?: ReactNode; workflows: WorkflowPreview; fresh?: LandingFresh | null; today?: number; featuredDoc?: string; overrides?: ContentOverrides; coffee?: BlogTeaser[]; copyrightYear?: number; pro?: LandingProPreview; library?: LandingLibrary; prices?: LandingPrices; techDocs?: OfficialTechDocs | null; daily?: { day: string; pulse: PulseCard[]; words: DailyWord[]; locked?: { pulse: LockedTeaser | null; word: LockedTeaser | null }; totals?: { pulse: number; words: number } } }) {
   const { language, t } = useLanguage(); const hi = language === "hi"; const text = (en: string, hindi: string) => hi ? hindi : en;
   const [cycle, setCycle] = useState<"monthly" | "yearly">("monthly");

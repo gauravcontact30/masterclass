@@ -25,7 +25,7 @@ export const siteName = "MasterClass Buddy";
 // and headings agree on the topic; the technologies are in the description and the h1.
 export const siteTitle = "MasterClass Buddy | Read, Code, Interview Questions & System Design";
 /** Under 160 characters so Google shows it whole; it names what the site teaches today (the search snippet and link previews). */
-export const siteDescription = "Read daily Tech Buzz blogs, write real code and learn Agentic AI, LangChain, n8n, Next.js, Python, AWS & DSA, with system design and interview questions.";
+export const siteDescription = "Read weekly Tech Buzz blogs, write real code and learn Agentic AI, LangChain, n8n, Next.js, Python, AWS & DSA, with system design and interview questions.";
 /**
  * Site-wide keywords: only searches that an indexed page answers (Tech Buzz, /interview-questions, /workflows,
  * /learn, /compare, /api-reference, /vocabulary), phrased the way people search. Google ignores the keywords tag
@@ -69,7 +69,7 @@ export const PUBLIC_PAGES: readonly PublicPage[] = [
   { path: "/contact", title: "Contact & support", label: "Contact", description: "Get help with your MasterClass account, membership, billing or study content, and find answers to common questions.", changeFrequency: "yearly", priority: 0.5 },
   { path: "/privacy", title: "Privacy policy", label: "Privacy", description: "How MasterClass collects, uses and protects your account, payment and learning data, and what stays only in your browser.", changeFrequency: "yearly", priority: 0.3 },
   { path: "/terms", title: "Terms & conditions", label: "Terms", description: "The terms that apply when you create a MasterClass account, buy a membership and use study content and AI-assisted answers.", changeFrequency: "yearly", priority: 0.3 },
-  { path: "/tech-buzz", title: "Tech Buzz — Daily Technology Blogs on Agentic AI, LangChain & Next.js", label: "Tech Buzz", description: "Five new tech blogs every morning at 5 AM IST on Agentic AI, LangChain, LangGraph, n8n, Next.js, TanStack Start and Zustand, rated and clapped by developers.", changeFrequency: "daily", priority: 0.95 },
+  { path: "/tech-buzz", title: "Tech Buzz — Weekly Technology Blogs on Agentic AI, LangChain & Next.js", label: "Tech Buzz", description: "Five new tech blogs every week, published Monday at 00:00 AM IST, on Agentic AI, LangChain, LangGraph, n8n, Next.js, TanStack Start and Zustand, rated and clapped by developers.", changeFrequency: "daily", priority: 0.95 },
   { path: "/refund-policy", title: "Cancellation & refund policy", label: "Refunds", description: "How to cancel a MasterClass membership, how long your access continues, and when payments are refunded, including duplicate and failed charges.", changeFrequency: "yearly", priority: 0.3 },
 ];
 

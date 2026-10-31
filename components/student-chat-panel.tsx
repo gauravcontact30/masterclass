@@ -6,12 +6,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { Fragment, useEffect, useRef, useState, type FormEvent, type ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ArrowUp, BookOpen, Check, Code2, Copy, GraduationCap, Moon, Play, RefreshCw, RotateCcw, Square, Sun, X } from "lucide-react";
+import { ArrowUp, BookOpen, Check, Code2, Copy, GraduationCap, Lock, Moon, Play, RefreshCw, RotateCcw, Square, Sun, X } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "./ui/dialog";
 import { chatHistory, type StudyChatEvent, type StudyChatReply, type StudyChatRequest } from "@/lib/study-chat";
 import { runJavaScriptPuzzle, type PuzzleResult } from "@/lib/javascript-sandbox";
 import { useLanguage } from "./language-provider";
 import type { StudyBuddyRequest } from "@/lib/study-buddy-bridge";
+import { studyBuddyUnlockHref, useStudyBuddyAccess, type StudyBuddyAccessState } from "@/lib/study-buddy-access";
 import styles from "./student-chatbot.module.css";
 
 type Mode = StudyChatRequest["mode"];
@@ -41,6 +42,14 @@ const ERRORS: Record<string, string> = {
   tutor_unavailable: "Study Buddy is unavailable right now. Please try again shortly.",
   reply_interrupted: "The reply stopped partway. Retry to get the full answer.",
   request_too_large: "That conversation is too long. Start a new one.",
+  signin_required: "Sign in with a subscribed account to ask Study Buddy.",
+  subscription_required: "Study Buddy is part of membership. Choose a plan to start asking.",
+};
+/** What a locked panel says, and its call to action. */
+const LOCKED: Record<Exclude<StudyBuddyAccessState, "member">, { text: string; action?: string }> = {
+  checking: { text: "Checking your membership…" },
+  signin_required: { text: "Study Buddy is for members. Sign in and subscribe to start asking questions.", action: "Sign in" },
+  subscription_required: { text: "Study Buddy is included with membership. Subscribe to start asking questions.", action: "View plans" },
 };
 
 /** Inline marks: **bold** and `code`. */
@@ -117,6 +126,9 @@ export default function StudentChatPanel({ open, onOpenChange, prompt }: { open:
   const stopRun = useRef<(() => void) | null>(null);
   const transcript = useRef<HTMLDivElement | null>(null);
   const composer = useRef<HTMLTextAreaElement | null>(null);
+  // Members only: every input stays disabled until the server confirms a subscription (checked when first opened).
+  const access = useStudyBuddyAccess(open);
+  const locked = access !== "member";
 
   useEffect(() => {
     if (messages.some(m => m.streaming)) return;
@@ -128,20 +140,21 @@ export default function StudentChatPanel({ open, onOpenChange, prompt }: { open:
   useEffect(() => () => { requestRef.current?.abort("closed"); stopRun.current?.(); }, []);
   useEffect(() => { if (!open) { requestRef.current?.abort("closed"); stopRun.current?.(); } }, [open]);
   useEffect(() => { const box = transcript.current; if (box) box.scrollTop = box.scrollHeight; }, [messages, error]);
-  // A question handed over from elsewhere on the page (askStudyBuddy) is asked once, in its mode.
+  // A question handed over from elsewhere on the page (askStudyBuddy) is asked once, in its mode, and only for members:
+  // it waits for the access check, and a locked visitor sees the unlock notice instead.
   const handled = useRef<number | null>(null);
   useEffect(() => {
-    if (!prompt?.question || handled.current === prompt.id) return;
+    if (!prompt?.question || handled.current === prompt.id || locked) return;
     handled.current = prompt.id;
     const nextMode = prompt.mode ?? mode;
     queueMicrotask(() => { setMode(nextMode); void ask(prompt.question!, nextMode); });
     // eslint-disable-next-line react-hooks/exhaustive-deps -- runs per handed-over prompt only.
-  }, [prompt]);
+  }, [prompt, locked]);
 
   /** Sends `content` after `base` (the conversation so far) and streams the answer into a new assistant message. */
   async function ask(content: string, selectedMode = mode, base = messages, attempt = 0) {
     const question = content.trim();
-    if (!question || question.length > 6000 || requestRef.current) return;
+    if (locked || !question || question.length > 6000 || requestRef.current) return;
     const controller = new AbortController(); requestRef.current = controller;
     setError(""); setDraft(""); setBusy(true);
     const history = chatHistory([...base.map(({ role, content }) => ({ role, content })), { role: "user", content: question }]);
@@ -207,7 +220,7 @@ export default function StudentChatPanel({ open, onOpenChange, prompt }: { open:
     try { await navigator.clipboard.writeText(messages[index].content); setCopied(index); setTimeout(() => setCopied(c => c === index ? null : c), 1500); } catch { /* clipboard blocked */ }
   }
   function run() {
-    if (running) return;
+    if (locked || running) return;
     setOutput([]); setResult(null); setRunning(true);
     stopRun.current = runJavaScriptPuzzle(code, line => setOutput(previous => [...previous, line]), finished => {
       setResult(finished); setOutput(finished.output); setRunning(false); stopRun.current = null;
@@ -238,7 +251,7 @@ export default function StudentChatPanel({ open, onOpenChange, prompt }: { open:
           <span className={styles.eyebrow}>A LITTLE CLARITY GOES A LONG WAY</span>
           <h3>{mode === "interview" ? "Walk into your next interview prepared." : mode === "javascript" ? "Predict it. Run it. Understand it." : "What are you learning today?"}</h3>
           <p>Get a clear summary, work through a tricky concept, or practice an answer out loud. Answers appear as they are written.</p>
-          <div className={styles.suggestions}>{[...onPage, ...suggestions[mode]].map(question => <button key={question} disabled={busy} onClick={() => void ask(question)}>{question}<ArrowUp size={14} /></button>)}</div>
+          <div className={styles.suggestions}>{[...onPage, ...suggestions[mode]].map(question => <button key={question} disabled={busy || locked} onClick={() => void ask(question)}>{question}<ArrowUp size={14} /></button>)}</div>
         </section>}
         <div role="log" aria-label="Study conversation" aria-live="polite" aria-relevant="additions" aria-busy={busy} className={styles.messages}>
           {messages.map((message, index) => message.role === "user"
@@ -250,28 +263,33 @@ export default function StudentChatPanel({ open, onOpenChange, prompt }: { open:
               {!message.streaming && message.sources?.length ? <div className={styles.sources}><span>Related app notes</span>{message.sources.map(source => <Link key={source.href} href={source.href} onClick={() => onOpenChange(false)}>{source.title}</Link>)}</div> : null}
               {!message.streaming && message.content && <div className={styles.answerActions}>
                 <button type="button" onClick={() => void copy(index)} aria-label="Copy answer">{copied === index ? <Check size={13} /> : <Copy size={13} />}{copied === index ? "Copied" : "Copy"}</button>
-                {index === lastAnswer && <button type="button" onClick={regenerate} disabled={busy} aria-label="Regenerate answer"><RefreshCw size={13} />Regenerate</button>}
+                {index === lastAnswer && <button type="button" onClick={regenerate} disabled={busy || locked} aria-label="Regenerate answer"><RefreshCw size={13} />Regenerate</button>}
               </div>}
-              {index === lastAnswer && !message.streaming && message.content && !busy && <div className={styles.followUps} role="group" aria-label="Follow up on this answer">
+              {index === lastAnswer && !message.streaming && message.content && !busy && !locked && <div className={styles.followUps} role="group" aria-label="Follow up on this answer">
                 {FOLLOW_UPS.map(([label, prompt]) => <button key={label} type="button" onClick={() => void ask(prompt)}>{label}</button>)}
               </div>}
             </article>)}
         </div>
-        {error && <div role="alert" className={styles.error}>{error}{!busy && messages.length > 0 && <button type="button" onClick={retry}>Retry</button>}</div>}
+        {error && <div role="alert" className={styles.error}>{error}{!busy && !locked && messages.length > 0 && <button type="button" onClick={retry}>Retry</button>}</div>}
         {mode === "javascript" && <section className={styles.lab} aria-label="JavaScript puzzle lab">
           <div className={styles.labHeading}><Code2 size={17} /><h3>JavaScript puzzle lab</h3></div>
           <p>Standalone JavaScript, promises and timers. No DOM, network or Node modules. Runs stop after 3 seconds.</p>
           <Label htmlFor="study-puzzle-code">Your code</Label>
-          <Textarea id="study-puzzle-code" value={code} onChange={event => setCode(event.target.value)} maxLength={12000} rows={7} spellCheck={false} disabled={running} />
-          <div className={styles.labActions}><button onClick={run} disabled={running || !code.trim()}><Play size={14} />Run JavaScript</button>{running && <button onClick={() => stopRun.current?.()}><Square size={14} />Stop run</button>}</div>
+          <Textarea id="study-puzzle-code" value={code} onChange={event => setCode(event.target.value)} maxLength={12000} rows={7} spellCheck={false} disabled={running || locked} />
+          <div className={styles.labActions}><button onClick={run} disabled={running || locked || !code.trim()}><Play size={14} />Run JavaScript</button>{running && <button onClick={() => stopRun.current?.()}><Square size={14} />Stop run</button>}</div>
           <div className={styles.output} aria-label="JavaScript console output"><span role="status">{running ? "Running…" : result ? ({ complete: "Run complete", error: "Run failed", timeout: "Stopped: 3-second time limit", stopped: "Run stopped" })[result.status] : "Console output"}</span><pre>{output.join("\n") || (result ? "No console output. Use console.log() to inspect a value." : "Your results will appear here.")}</pre></div>
-          {result && <button className={styles.explain} disabled={busy} onClick={() => void ask(`Explain this JavaScript puzzle and its observed sandbox output. The run status was ${result.status}. ${code.length > 4000 ? "Code excerpt (truncated):" : "Code:"}\n\`\`\`javascript\n${code.slice(0, 4000)}\n\`\`\`\nObserved output (possibly truncated):\n${output.join("\n").slice(0, 1200) || "No output"}`, "javascript")}>Help me understand this result</button>}
+          {result && <button className={styles.explain} disabled={busy || locked} onClick={() => void ask(`Explain this JavaScript puzzle and its observed sandbox output. The run status was ${result.status}. ${code.length > 4000 ? "Code excerpt (truncated):" : "Code:"}\n\`\`\`javascript\n${code.slice(0, 4000)}\n\`\`\`\nObserved output (possibly truncated):\n${output.join("\n").slice(0, 1200) || "No output"}`, "javascript")}>Help me understand this result</button>}
         </section>}
       </div>
       <form className={styles.composer} onSubmit={submit}>
+        {locked && <div className={styles.locked} role="status" id="study-chat-locked">
+          <Lock size={15} aria-hidden="true" /><span>{LOCKED[access].text}</span>
+          {LOCKED[access].action && <Link href={studyBuddyUnlockHref(access, pathname ?? "/")} onClick={() => onOpenChange(false)}>{LOCKED[access].action}</Link>}
+        </div>}
         <Label className={styles.composerLabel} htmlFor="study-chat-question">Ask a study question</Label>
-        <div className={styles.inputRow}><Textarea id="study-chat-question" ref={composer} placeholder={mode === "interview" ? "Ask an interview question…" : "Ask about a topic, an assignment or a puzzle…"} value={draft} onChange={event => setDraft(event.target.value)} maxLength={6000} rows={2} onKeyDown={event => { if (event.key === "Enter" && !event.shiftKey && !event.nativeEvent.isComposing) { event.preventDefault(); void ask(draft); } }} />
-          {busy ? <Button type="button" aria-label="Stop reply" onClick={() => requestRef.current?.abort("stopped")}><Square size={18} /></Button> : <Button type="submit" aria-label="Send question" disabled={!draft.trim()}><ArrowUp size={20} /></Button>}
+        <div className={styles.inputRow}><Textarea id="study-chat-question" ref={composer} disabled={locked} aria-describedby={locked ? "study-chat-locked" : undefined}
+          placeholder={locked ? "Subscribe to ask Study Buddy" : mode === "interview" ? "Ask an interview question…" : "Ask about a topic, an assignment or a puzzle…"} value={draft} onChange={event => setDraft(event.target.value)} maxLength={6000} rows={2} onKeyDown={event => { if (event.key === "Enter" && !event.shiftKey && !event.nativeEvent.isComposing) { event.preventDefault(); void ask(draft); } }} />
+          {busy ? <Button type="button" aria-label="Stop reply" onClick={() => requestRef.current?.abort("stopped")}><Square size={18} /></Button> : <Button type="submit" aria-label="Send question" disabled={locked || !draft.trim()}><ArrowUp size={20} /></Button>}
         </div>
         <p>Study Buddy can make mistakes. Check important facts against your course material.</p>
       </form>

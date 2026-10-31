@@ -1,8 +1,8 @@
 import { cronAuthorized, pruneVisits } from "@/lib/server/visit-retention";
 
 /*
- * Retention for visit tracking: permanently deletes site_visits rows older than VISIT_RETENTION_DAYS. The daily
- * landing job (app/api/cron/landing-daily) runs it every night; this route runs it on its own. Needs the cron secret.
+ * Retention for visit tracking: permanently deletes site_visits rows older than VISIT_RETENTION_DAYS. Its own daily
+ * cron (vercel.json, 00:05 IST) since the landing job became weekly; it generates no content. Needs the cron secret.
  */
 export async function GET(request: Request) {
   if (!cronAuthorized(request)) return new Response(null, { status: 401 });

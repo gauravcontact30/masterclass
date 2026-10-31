@@ -27,8 +27,8 @@ export function SiteChrome({ children }: { children: React.ReactNode }) {
       {/* Home, sign-in/up and the footer links are not prefetched: each prefetch also preloads that page's stylesheets
           (the landing page's are large), which Chrome reports as "preloaded but not used" on every page here. */}
       <Link href="/" prefetch={false} aria-label="MasterClass Buddy home" className={styles.brand}><Wordmark /></Link>
-      {/* Shown on /tech-buzz pages only (site.module.css): where the reader is, and what arrives every morning. */}
-      <Link href="/tech-buzz" className={styles.buzzPill} aria-label="Tech Buzz: 5 fresh blogs every morning at 5:00 AM IST"><Flame size={14} aria-hidden="true" /><span className={styles.buzzLabel}>Tech Buzz</span><small>5 fresh blogs · 5:00 AM IST</small></Link>
+      {/* Shown on /tech-buzz pages only (site.module.css): where the reader is, and what arrives every week. */}
+      <Link href="/tech-buzz" className={styles.buzzPill} aria-label="Tech Buzz: 5 fresh blogs every Monday at 00:00 AM IST"><Flame size={14} aria-hidden="true" /><span className={styles.buzzLabel}>Tech Buzz</span><small>5 fresh blogs · every Monday</small></Link>
       <nav aria-label="Main navigation" className={styles.nav}>{NAV.map(page => <Link key={page.path} href={page.path}>{page.label}</Link>)}</nav>
       <div className={styles.actions}>
         <Link href="/sign-in" prefetch={false} className={styles.signIn}>Sign in</Link>

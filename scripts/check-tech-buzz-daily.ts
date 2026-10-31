@@ -1,10 +1,13 @@
-/** Read-only by default. --repair fills only missing tracks for --date=YYYY-MM-DD (today in IST by default). */
+/** Read-only by default. --repair fills only missing tracks for the week of --date=YYYY-MM-DD (this week by default). */
 import { db } from "../lib/server/db";
-import { DAILY_TRACKS, dailyDateTag, dailyTrackTag, istDate } from "../lib/tech-buzz-sections";
+import { DAILY_TRACKS, dailyDateTag, dailyTrackTag } from "../lib/tech-buzz-sections";
+import { istWeek, weekOfDate, weekStartDate } from "../lib/ist-week";
 
 async function main() {
-  const date = process.argv.find(value => value.startsWith("--date="))?.slice(7) ?? istDate();
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || new Date(`${date}T00:00:00Z`).toISOString().slice(0, 10) !== date) throw new Error("Invalid edition date");
+  const asked = process.argv.find(value => value.startsWith("--date="))?.slice(7);
+  if (asked && (!/^\d{4}-\d{2}-\d{2}$/.test(asked) || new Date(`${asked}T00:00:00Z`).toISOString().slice(0, 10) !== asked)) throw new Error("Invalid edition date");
+  // Weekly editions are dated by their Monday.
+  const date = asked ? weekOfDate(asked) : weekStartDate(istWeek());
   const result = await db().from("tech_buzz_articles").select("slug,status,tags,published_at").contains("tags", [dailyDateTag(date)]);
   if (result.error) throw new Error(`Edition lookup failed: ${result.error.code}`);
   console.log(JSON.stringify({ date, configuration: {

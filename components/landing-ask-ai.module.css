@@ -17,4 +17,10 @@
 .row button:disabled { opacity: .5; cursor: not-allowed; }
 .starters { display: flex; flex-wrap: wrap; gap: 8px; }
 .starters button { min-height: 34px; padding: 6px 12px; border: 1px solid #e8e6dc; border-radius: 999px; background: #fff; font: inherit; font-size: 12.5px; line-height: 1.35; color: #3d3d3a; text-align: left; cursor: pointer; }
-.starters button:hover { border-color: #d97757; color: #9a402d; }
+.starters button:hover:not(:disabled) { border-color: #d97757; color: #9a402d; }
+.starters button:disabled, .row input:disabled { cursor: not-allowed; opacity: .6; }
+/* Members only: why the box is disabled, and the way in. */
+.locked { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 0; padding: 9px 12px; border: 1px solid #f0d9cc; border-radius: 12px; background: #fdf1ea; color: #9a402d; font-size: 12.5px; line-height: 1.45; }
+.locked span { flex: 1 1 200px; }
+.locked a { padding: 6px 12px; border-radius: 9px; background: #b5522f; color: #fff; font-size: 12px; font-weight: 650; text-decoration: none; }
+.locked a:hover { background: #9a402d; }

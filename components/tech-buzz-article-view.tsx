@@ -458,6 +458,9 @@ export function TechBuzzArticleView({ article, related, prevStory, nextStory }: 
       <div className={styles.articleBodyLayout}>
         <div className={styles.articleBodyInner}>
           <ReviewPanel review={article.review} />
+          {article.credit && <p className={styles.inspiredBy}>
+            Inspired by &ldquo;{article.credit.title}&rdquo; by {article.credit.author} on {article.credit.platform}. Rewritten and expanded by MCB Editorial.
+          </p>}
           {/* Enhanced Audio Voiceover Player with Speech Synthesis */}
           {article.audioVoiceover && (
             <div className={styles.articleAudioPlayerHero}>

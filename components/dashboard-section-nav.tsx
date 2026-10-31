@@ -7,7 +7,7 @@ import styles from "./dashboard-section-nav.module.css";
 /** In page order. "your-guides" is the reader's own study catalog under the sheet (components/workspace.tsx). */
 const SECTIONS = [
   { id: "dashboard-deep-courses", en: "Courses", hi: "कोर्स", icon: GraduationCap },
-  { id: "ai-pulse", en: "Today's pulse", hi: "आज का पल्स", icon: Newspaper },
+  { id: "ai-pulse", en: "This week's pulse", hi: "इस हफ़्ते का पल्स", icon: Newspaper },
   { id: "interview-prep", en: "Interview prep", hi: "इंटरव्यू तैयारी", icon: MessagesSquare },
   { id: "workflows", en: "Blueprints", hi: "ब्लूप्रिंट", icon: Workflow },
   { id: "tech-comparisons", en: "Comparisons", hi: "तुलनाएँ", icon: Scale },

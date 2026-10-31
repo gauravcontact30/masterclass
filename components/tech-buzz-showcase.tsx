@@ -16,7 +16,7 @@ import { isUnsplash, unoptimizedRemote, unsplashLoader } from "@/lib/image-loade
 import { ClapButton, useClaps } from "./clap-button";
 
 /*
- * The curated half of /tech-buzz, above the searchable feed: the daily 5:00 AM (IST) edition, Fresh & Latest (earlier
+ * The curated half of /tech-buzz, above the searchable feed: the weekly Monday 00:00 (IST) edition, Fresh & Latest (earlier
  * editions, by technology), Star
  * Rated, n8n Workflow Blogs and Most Liked, then one section per technology group (lib/tech-buzz-sections.ts) with
  * every story landed in its group. Each block has its own look. Likes, dislikes and claps are shared by every copy of
@@ -117,9 +117,10 @@ function RatingBadge({ card }: { card: TechBuzzCard }) {
   return <span className={styles.rating} aria-label={`Rated ${card.rating.average.toFixed(1)} out of 5`}><Star size={12} fill="currentColor" aria-hidden="true" />{card.rating.average.toFixed(1)}</span>;
 }
 
-/* ── 1. Today's 5 at 5: only the newest edition (today's, once the 5:00 AM IST run has written it). Earlier editions
-   move down to Fresh & Latest. Until any edition exists, each track shows its newest story as a stand-in. ─────── */
-/** The newest daily edition on the page (YYYY-MM-DD), or undefined before the first one is written. */
+/* ── 1. This week's 5: only the newest edition (this week's, once the Monday 00:00 IST run has written it; daily
+   editions until 2026-10-31). Earlier editions move down to Fresh & Latest. Until any edition exists, each track shows
+   its newest story as a stand-in. ─────── */
+/** The newest edition on the page (YYYY-MM-DD; a weekly edition is dated by its Monday), or undefined before the first one. */
 const latestEdition = (cards: TechBuzzCard[]) => cards.map(card => card.daily?.date).filter((date): date is string => !!date).sort().at(-1);
 const newestFirst = (a: TechBuzzCard, b: TechBuzzCard) => b.publishedAt.localeCompare(a.publishedAt);
 
@@ -143,10 +144,10 @@ function DailyEdition({ cards }: { cards: TechBuzzCard[] }) {
   return <section data-track-topic={TECH_BUZZ_TRACKED.daily} className={styles.daily} aria-labelledby="tb-daily">
     <div className={styles.dailyGlow} aria-hidden="true" />
     <header className={styles.dailyHead}>
-      <p className={styles.dailyKicker}><Sunrise size={15} aria-hidden="true" />Fresh every morning · 5:00 AM IST</p>
-      <h2 id="tb-daily">Today&rsquo;s <em>5 at 5</em></h2>
-      <p>Five new blogs every day on Agentic AI with LangChain, LangGraph, LangSmith, LangFlow and n8n, System Design, AWS &amp; DevOps, Kubernetes &amp; Docker, and Next.js &amp; React.</p>
-      {edition && <span className={styles.edition}><CalendarDays size={13} aria-hidden="true" />Edition of {formatDate(`${edition}T05:00:00+05:30`)}</span>}
+      <p className={styles.dailyKicker}><Sunrise size={15} aria-hidden="true" />Fresh every week · Monday 00:00 AM IST</p>
+      <h2 id="tb-daily">This week&rsquo;s <em>5</em></h2>
+      <p>Five new blogs every week on Agentic AI with LangChain, LangGraph, LangSmith, LangFlow and n8n, System Design, AWS &amp; DevOps, Kubernetes &amp; Docker, and Next.js &amp; React.</p>
+      {edition && <span className={styles.edition}><CalendarDays size={13} aria-hidden="true" />Week of {formatDate(`${edition}T00:00:00+05:30`)}</span>}
     </header>
     <div className={styles.dailyGrid}>
       <article className={styles.dailyLead} style={{ "--tone": lead.track.color } as CSSProperties}>
@@ -210,7 +211,7 @@ function Pagination({ paged, label, anchor, sizes, tone = "light" }: { paged: Pa
   </nav>;
 }
 
-/* ── 2. Fresh & Latest: every earlier daily edition, kept for later reading, one block per daily track so each
+/* ── 2. Fresh & Latest: every earlier edition, kept for later reading, one block per daily track so each
    technology holds only its own stories (newest first, paginated per block). ────────────────────────────────── */
 const FRESH_TABS_PER_PAGE = 6;
 function FreshLatest({ cards }: { cards: TechBuzzCard[] }) {
@@ -235,8 +236,8 @@ function FreshLatest({ cards }: { cards: TechBuzzCard[] }) {
   };
   if (!tracks.length && !latestEdition(cards)) return null;
   return <section data-track-topic={TECH_BUZZ_TRACKED.fresh} className={styles.fresh} aria-labelledby="tb-fresh">
-    <SectionHead id="tb-fresh" icon={<Zap size={16} aria-hidden="true" />} kicker="From earlier editions" title="Fresh & Latest" lede="Every 5:00 AM blog moves here the next day and stays for later reading, sorted by technology." />
-    {!tracks.length && <p className={styles.freshEmpty}><Sunrise size={15} aria-hidden="true" />Today&rsquo;s 5 at 5 blogs move here tomorrow at 5:00 AM IST, when the next edition is published.</p>}
+    <SectionHead id="tb-fresh" icon={<Zap size={16} aria-hidden="true" />} kicker="From earlier editions" title="Fresh & Latest" lede="Every edition's blogs move here when the next week's edition is published, and stay for later reading, sorted by technology." />
+    {!tracks.length && <p className={styles.freshEmpty}><Sunrise size={15} aria-hidden="true" />This week&rsquo;s 5 blogs move here next Monday at 00:00 AM IST, when the next edition is published.</p>}
     {tracks.length > 0 && <>
       {tabPages > 1 && <nav className={styles.freshTabPager} aria-label="Earlier edition technology pages">
         <span className={styles.pageInfo} aria-live="polite">Technologies {tabPage * FRESH_TABS_PER_PAGE + 1}–{Math.min((tabPage + 1) * FRESH_TABS_PER_PAGE, tracks.length)} of {tracks.length}</span>

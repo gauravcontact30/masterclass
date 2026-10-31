@@ -6,19 +6,23 @@
   "crons": [
     {
       "path": "/api/cron/landing-daily",
-      "schedule": "35 18 * * *"
+      "schedule": "30 18 * * 0"
     },
     {
       "path": "/api/cron/news-refresh",
-      "schedule": "5 19 * * *"
+      "schedule": "30 18 * * 0"
     },
     {
       "path": "/api/cron/tech-buzz-daily",
-      "schedule": "30 23 * * *"
+      "schedule": "30 18 * * 0"
     },
     {
       "path": "/api/cron/tech-buzz-daily?retry=1",
-      "schedule": "30 1 * * *"
+      "schedule": "30 20 * * 0"
+    },
+    {
+      "path": "/api/cron/visit-retention",
+      "schedule": "35 18 * * *"
     }
   ]
 }

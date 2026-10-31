@@ -1,5 +1,6 @@
 import { api, HttpError, jsonBody, sameOrigin } from "@/lib/server/http";
 import { studyChatSchema, type StudyChatRequest } from "@/lib/study-chat";
+import { requireStudyBuddyAccess } from "@/lib/server/subscription-access";
 
 // Long answers stream for well over a minute on a slow provider; the client allows two minutes in all.
 export const maxDuration = 120;
@@ -11,6 +12,8 @@ const tutor = () => import("@/lib/server/study-chat");
 export async function POST(request: Request) {
   return api(async () => {
     sameOrigin(request);
+    // Members only, checked before the stream starts so a refusal is a plain 401/402 rather than a stream error.
+    await requireStudyBuddyAccess();
     const input = studyChatSchema.parse(await jsonBody(request, 100000));
     if (input.stream) return new Response(streamTutor(input, request), { headers: { "Content-Type": "application/x-ndjson; charset=utf-8", "Cache-Control": "no-store", "X-Accel-Buffering": "no" } });
     const { answerStudyQuestion, limitStudyChat } = await tutor();

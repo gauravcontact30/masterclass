@@ -269,7 +269,8 @@ function coverPrompt(slide: NewsSlideData) {
 export async function refreshNews({ force = false, budgetMs = 200_000 }: { force?: boolean; budgetMs?: number } = {}) {
   const started = Date.now();
   let set = await cacheGet<StoredNews>(STORE_KEY);
-  const due = force || !set?.slides?.length || Date.now() - set.builtAt > FRESH_MS;
+  // The check runs weekly (Monday 00:00 IST), so a set built a few minutes after one run is due at the third run on.
+  const due = force || !set?.slides?.length || Date.now() - set.builtAt > FRESH_MS - 3_600_000;
   if (due) set = await rebuild(set);
   if (!set?.slides?.length) return { rebuilt: due, covers: 0, pending: 0 };
   const missing = set.slides.filter(slide => slide.fresh && !slide.cover);

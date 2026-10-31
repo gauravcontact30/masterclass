@@ -1,3 +1,4 @@
+import { istWeek, weekStartDate } from "./ist-week";
 import { DAILY_TRACKS, TECH_BUZZ_TRACKED, dailyDateTag, dailyTrackTag } from "./tech-buzz-sections";
 import { FAVOURITE_TOPICS, topicsOf } from "./tech-buzz-favourites";
 
@@ -91,7 +92,8 @@ export function techBuzzReport({ days, visits, clicks, stories, now = Date.now()
     return { date, views: dayViews.length, visitors: visitors(dayViews), clicks: clicks.filter(click => istDay(click.created_at) === date).length };
   });
 
-  const daily = Array.from({ length: 7 }, (_, i) => istDay(new Date(now - i * 86_400_000).toISOString())).map(date => ({
+  // The edition board: the last seven weekly editions (Monday dates, lib/ist-week.ts), newest first.
+  const daily = Array.from({ length: 7 }, (_, i) => weekStartDate(istWeek(now) - i)).map(date => ({
     date, tracks: DAILY_TRACKS.map(track => {
       const story = stories.find(item => item.tags.includes(dailyDateTag(date)) && item.tags.includes(dailyTrackTag(track.id)));
       const page = story && pages.find(item => item.path === `${HUB}/${story.slug}`);

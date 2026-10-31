@@ -10,7 +10,7 @@ const ORBIT = [
 ] as const;
 
 /** Rotating captions; the first one is also the screen-reader label when none is given. */
-const CAPTIONS = ["Opening your next lesson…", "Shelving today's cards…", "Warming up the code lab…", "Turning to the right page…"];
+const CAPTIONS = ["Opening your next lesson…", "Shelving this week's cards…", "Warming up the code lab…", "Turning to the right page…"];
 
 /**
  * The app's loading state: an open book whose page keeps turning, the Claude spark above it and five learning

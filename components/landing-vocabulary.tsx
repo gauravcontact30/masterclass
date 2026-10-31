@@ -47,13 +47,13 @@ export function LandingVocabulary({ words: all, total = all.length, day, locked:
     {preview && <DashboardMore href="/learning" title={text(`See all ${total + (lockedCard ? 1 : 0)} words`, `सभी ${total + (lockedCard ? 1 : 0)} शब्द देखें`)} detail={text("Pronunciation, Hindi meaning, synonyms and antonyms for every word.", "हर शब्द का उच्चारण, हिन्दी अर्थ, पर्यायवाची और विलोम।")} />}
     <div className={pulse.head} data-learning-header>
       <div className={pulse.headCopy} data-learning-copy>
-        <p className={pulse.kicker}><span className={styles.aa} aria-hidden="true">Aa</span>{text("Word power", "शब्द शक्ति")}<span className={pulse.today}>{text("New today", "आज नया")} · {dayLabel(day, hi)}</span></p>
-        <h2 id="vocabulary-title"><Editable k="section:vocabulary" f={`heading.${language}`}>{text("Today's English words, ", "आज के अंग्रेज़ी शब्द, ")}</Editable><em><Editable k="section:vocabulary" f={`emphasis.${language}`}>{text("said and used well", "सही उच्चारण और प्रयोग")}</Editable></em></h2>
-        <p className={pulse.lede} data-learning-intro><Editable k="section:vocabulary" f={`lede.${language}`} multiline>{text("Twelve new words every day. Hear each one, see what it means, read it in a real sentence and learn the words around it: what to say instead, and what it isn't.", "हर दिन बारह नए शब्द। हर शब्द सुनें, उसका अर्थ देखें, असली वाक्य में पढ़ें और उसके आसपास के शब्द सीखें: इसके बदले क्या कहें, और इसका उल्टा क्या है।")}</Editable></p>
+        <p className={pulse.kicker}><span className={styles.aa} aria-hidden="true">Aa</span>{text("Word power", "शब्द शक्ति")}<span className={pulse.today}>{text("New this week", "इस हफ़्ते नया")} · {dayLabel(day, hi)}</span></p>
+        <h2 id="vocabulary-title"><Editable k="section:vocabulary" f={`heading.${language}`}>{text("This week's English words, ", "इस हफ़्ते के अंग्रेज़ी शब्द, ")}</Editable><em><Editable k="section:vocabulary" f={`emphasis.${language}`}>{text("said and used well", "सही उच्चारण और प्रयोग")}</Editable></em></h2>
+        <p className={pulse.lede} data-learning-intro><Editable k="section:vocabulary" f={`lede.${language}`} multiline>{text("Twelve new words every week. Hear each one, see what it means, read it in a real sentence and learn the words around it: what to say instead, and what it isn't.", "हर हफ़्ते बारह नए शब्द। हर शब्द सुनें, उसका अर्थ देखें, असली वाक्य में पढ़ें और उसके आसपास के शब्द सीखें: इसके बदले क्या कहें, और इसका उल्टा क्या है।")}</Editable></p>
       </div>
       <Controls text={text} playing={playing} onPlay={() => setPlaying(p => !p)} page={page} pages={pages} goTo={goTo} previous={text("Previous words", "पिछले शब्द")} next={text("Next words", "अगले शब्द")} />
     </div>
-    <ul ref={track} className={preview ? pulse.track : `${pulse.track} ${pulse.twoUp}`} aria-roledescription="carousel" aria-label={text("Today's English words", "आज के अंग्रेज़ी शब्द")} {...holdProps}>
+    <ul ref={track} className={preview ? pulse.track : `${pulse.track} ${pulse.twoUp}`} aria-roledescription="carousel" aria-label={text("This week's English words", "इस हफ़्ते के अंग्रेज़ी शब्द")} {...holdProps}>
       {words.map((entry, i) => <WordCard key={entry.word} entry={entry} index={i} total={words.length + (locked ? 1 : 0)} speaking={speaking} onHear={hear} compact={preview} />)}
       {locked && <LockedCard teaser={locked} index={words.length} total={words.length + 1} text={text} render={full => <WordCard entry={{ ...(full as DailyWord), tone: locked.tone }} index={words.length} total={words.length + 1} speaking={speaking} onHear={hear} />} />}
     </ul>
@@ -63,8 +63,8 @@ export function LandingVocabulary({ words: all, total = all.length, day, locked:
 
 /** Card furniture in the card's own language; the English words being learned are never translated. */
 const CARD_TEXT = {
-  en: { hear: "Hear it", meaning: "Meaning", sentence: "In a sentence", synonyms: "Synonyms", antonyms: "Antonyms", language: "Language", wordOfDay: "Word of the day" },
-  hi: { hear: "सुनें", meaning: "अर्थ", sentence: "वाक्य में", synonyms: "समानार्थी", antonyms: "विलोम", language: "भाषा", wordOfDay: "आज का शब्द" },
+  en: { hear: "Hear it", meaning: "Meaning", sentence: "In a sentence", synonyms: "Synonyms", antonyms: "Antonyms", language: "Language", wordOfDay: "Word of the week" },
+  hi: { hear: "सुनें", meaning: "अर्थ", sentence: "वाक्य में", synonyms: "समानार्थी", antonyms: "विलोम", language: "भाषा", wordOfDay: "इस हफ़्ते का शब्द" },
 };
 
 function WordCard({ entry, index, total, speaking, onHear, compact = false }: { entry: DailyWord; index: number; total: number; speaking: string | null; onHear: (word: string) => void; compact?: boolean }) {

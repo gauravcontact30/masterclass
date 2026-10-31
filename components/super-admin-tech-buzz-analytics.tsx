@@ -9,11 +9,12 @@ import { AdminLoading } from "./super-admin-feedback";
 import { AdminTable } from "./super-admin-table";
 import type { TechBuzzReport } from "@/lib/tech-buzz-analytics";
 import { dailyTrackTechIds } from "@/lib/tech-buzz-sections";
+import { nextWeekStart } from "@/lib/ist-week";
 import { techLogo } from "@/lib/tech-buzz-public";
 import styles from "./super-admin-tech-buzz-analytics.module.css";
 
 /*
- * Super Admin → Tech-Buzz - Blogs: /tech-buzz traffic, every section's clicks, the daily 5:00 AM edition, the
+ * Super Admin → Tech-Buzz - Blogs: /tech-buzz traffic, every section's clicks, the weekly Monday 00:00 IST edition, the
  * Community favourites topics and each story's counters (app/api/super-admin/tech-buzz/analytics).
  */
 type Data = TechBuzzReport & { retentionDays: number };
@@ -51,15 +52,11 @@ function Panel({ icon, title, note, children, wide }: { icon: ReactNode; title: 
   </section>;
 }
 
-/** The next 5:00 AM IST run (cron 30 23 * * * UTC), as "28 Oct". */
-const nextRun = (generatedAt: string) => {
-  const now = Date.parse(generatedAt), run = new Date(now);
-  run.setUTCHours(23, 30, 0, 0);
-  if (run.getTime() <= now) run.setUTCDate(run.getUTCDate() + 1);
-  return new Intl.DateTimeFormat("en-IN", { day: "numeric", month: "short", timeZone: "Asia/Kolkata" }).format(run);
-};
+/** The next Monday 00:00 IST run (cron 30 18 * * 0 UTC), as "Mon, 2 Nov". */
+const nextRun = (generatedAt: string) =>
+  new Intl.DateTimeFormat("en-IN", { weekday: "short", day: "numeric", month: "short", timeZone: "Asia/Kolkata" }).format(nextWeekStart(Date.parse(generatedAt)));
 
-/** The daily 5:00 AM edition: today's five stories up front, then the last seven days as a day × track board. */
+/** The weekly edition: this week's five stories up front, then the last seven weeks as a week × track board. */
 function EditionPanel({ daily, generatedAt }: { daily: Data["daily"]; generatedAt: string }) {
   const [today, ...earlier] = daily;
   if (!today) return null;
@@ -68,21 +65,21 @@ function EditionPanel({ daily, generatedAt }: { daily: Data["daily"]; generatedA
   const full = (day: Data["daily"][number]) => done(day) === day.tracks.length;
   let streak = 0;
   for (const day of full(today) ? daily : earlier) { if (!full(day)) break; streak++; }
-  const status = todayDone === today.tracks.length ? { tone: "mint", text: "Published" } : todayDone ? { tone: "peach", text: `Partial · ${todayDone}/${today.tracks.length}` } : { tone: "sand", text: "Waiting for the 5:00 AM run" };
+  const status = todayDone === today.tracks.length ? { tone: "mint", text: "Published" } : todayDone ? { tone: "peach", text: `Partial · ${todayDone}/${today.tracks.length}` } : { tone: "sand", text: "Waiting for Monday's 00:00 AM run" };
 
   return <section className={styles.editionCard} aria-labelledby="edition-title">
     <header className={styles.editionHero}>
       <span className={styles.editionSun} aria-hidden="true"><Sunrise size={26} /></span>
       <div className={styles.editionHeading}>
-        <span className={styles.editionEyebrow}>Fresh every morning · 5:00 AM IST</span>
-        <h2 id="edition-title">Daily 5:00 AM edition</h2>
-        <p>{dayLabel(today.date)}: five researched stories, one per track, written and reviewed before readers wake up.</p>
+        <span className={styles.editionEyebrow}>Fresh every week · Monday 00:00 AM IST</span>
+        <h2 id="edition-title">Weekly edition</h2>
+        <p>Week of {dayLabel(today.date)}: five researched stories, one per track, written and reviewed as the week begins.</p>
       </div>
       <div className={styles.editionKpis}>
         <Sticker tone={status.tone}><CheckCircle2 size={13} aria-hidden="true" />{status.text}</Sticker>
-        <Sticker tone="sky"><Timer size={13} aria-hidden="true" />Next run <b>{nextRun(generatedAt)}, 5:00 AM</b></Sticker>
-        <Sticker tone="lavender"><CalendarCheck size={13} aria-hidden="true" /><b>{published}/{total}</b> in 7 days · {Math.round((published / total) * 100)}%</Sticker>
-        <Sticker tone="lemon"><Trophy size={13} aria-hidden="true" /><b>{streak}-day</b> full streak</Sticker>
+        <Sticker tone="sky"><Timer size={13} aria-hidden="true" />Next run <b>{nextRun(generatedAt)}, 00:00 AM</b></Sticker>
+        <Sticker tone="lavender"><CalendarCheck size={13} aria-hidden="true" /><b>{published}/{total}</b> in 7 weeks · {Math.round((published / total) * 100)}%</Sticker>
+        <Sticker tone="lemon"><Trophy size={13} aria-hidden="true" /><b>{streak}-week</b> full streak</Sticker>
       </div>
     </header>
 
@@ -100,14 +97,14 @@ function EditionPanel({ daily, generatedAt }: { daily: Data["daily"]; generatedA
 
     <div className={styles.boardScroll}>
       <table className={styles.board}>
-        <caption>Last 7 days, by track</caption>
-        <thead><tr><th scope="col">Day</th>{today.tracks.map(track => <th key={track.id} scope="col"><span className={styles.boardDot} style={{ background: track.color }} aria-hidden="true" />{track.label}<TrackLogos track={track.id} size={14} /></th>)}<th scope="col">Done</th></tr></thead>
+        <caption>Last 7 weeks, by track</caption>
+        <thead><tr><th scope="col">Week of</th>{today.tracks.map(track => <th key={track.id} scope="col"><span className={styles.boardDot} style={{ background: track.color }} aria-hidden="true" />{track.label}<TrackLogos track={track.id} size={14} /></th>)}<th scope="col">Done</th></tr></thead>
         <tbody>{daily.map(day => <tr key={day.date}>
           <th scope="row">{dayLabel(day.date)}</th>
           {day.tracks.map(track => <td key={track.id}>{track.slug
             ? <Link href={`/tech-buzz/${track.slug}`} target="_blank" className={styles.boardCell} style={{ "--track": track.color } as CSSProperties} title={track.title ?? track.label}>
                 <CheckCircle2 size={14} aria-hidden="true" />{track.editorScore == null ? "Live" : track.editorScore.toFixed(1)}</Link>
-            : <span className={styles.boardCell} data-empty="true" title="Not written for this day">–</span>}</td>)}
+            : <span className={styles.boardCell} data-empty="true" title="Not written for this week">–</span>}</td>)}
           <td><b className={styles.boardDone} data-full={full(day) || undefined}>{done(day)}/{day.tracks.length}</b></td>
         </tr>)}</tbody>
       </table>

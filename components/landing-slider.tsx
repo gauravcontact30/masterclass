@@ -203,21 +203,21 @@ function slidesFor(technologies: number | undefined): Slide[] {
         zh: "Tech Buzz"
       },
       title: {
-        en: "The tech news your team talks about, every morning.",
-        hi: "वह टेक न्यूज़, जिस पर आपकी टीम हर सुबह बात करती है।",
-        es: "Las noticias tecnológicas de las que habla tu equipo, cada mañana.",
-        ja: "チームで話題になるテックニュースを、毎朝。",
-        de: "Die Tech-News, über die Ihr Team jeden Morgen spricht.",
-        fr: "L'actualité tech dont parle votre équipe, chaque matin.",
-        zh: "每天早晨，团队热议的技术新闻。"
+        en: "The tech news your team talks about, every week.",
+        hi: "वह टेक न्यूज़, जिस पर आपकी टीम हर हफ़्ते बात करती है।",
+        es: "Las noticias tecnológicas de las que habla tu equipo, cada semana.",
+        ja: "チームで話題になるテックニュースを、毎週。",
+        de: "Die Tech-News, über die Ihr Team jede Woche spricht.",
+        fr: "L'actualité tech dont parle votre équipe, chaque semaine.",
+        zh: "每周团队热议的技术新闻。"
       },
       body: {
-        en: "A fresh Tech Buzz edition every morning on System Design, LangGraph, Docker, Kubernetes and Redis, written for engineers.",
-        hi: "हर सुबह Tech Buzz का नया संस्करण: System Design, LangGraph, Docker, Kubernetes और Redis पर, इंजीनियरों के लिए लिखा गया।",
-        es: "Una nueva edición de Tech Buzz cada mañana sobre System Design, LangGraph, Docker, Kubernetes y Redis, escrita para ingenieros.",
-        ja: "System Design、LangGraph、Docker、Kubernetes、Redis を扱う Tech Buzz の最新号を、エンジニアのために毎朝お届け。",
-        de: "Jeden Morgen eine neue Tech-Buzz-Ausgabe zu System Design, LangGraph, Docker, Kubernetes und Redis, geschrieben für Engineers.",
-        fr: "Une nouvelle édition de Tech Buzz chaque matin sur System Design, LangGraph, Docker, Kubernetes et Redis, écrite pour les ingénieurs.",
+        en: "A fresh Tech Buzz edition every week on System Design, LangGraph, Docker, Kubernetes and Redis, written for engineers.",
+        hi: "हर हफ़्ते Tech Buzz का नया संस्करण: System Design, LangGraph, Docker, Kubernetes और Redis पर, इंजीनियरों के लिए लिखा गया।",
+        es: "Una nueva edición de Tech Buzz cada semana sobre System Design, LangGraph, Docker, Kubernetes y Redis, escrita para ingenieros.",
+        ja: "System Design、LangGraph、Docker、Kubernetes、Redis を扱う Tech Buzz の最新号を、エンジニアのために毎週お届け。",
+        de: "Jede Woche eine neue Tech-Buzz-Ausgabe zu System Design, LangGraph, Docker, Kubernetes und Redis, geschrieben für Engineers.",
+        fr: "Une nouvelle édition de Tech Buzz chaque semaine sur System Design, LangGraph, Docker, Kubernetes et Redis, écrite pour les ingénieurs.",
         zh: "每天早晨推出新一期 Tech Buzz，涵盖系统设计、LangGraph、Docker、Kubernetes 与 Redis，专为工程师而写。"
       },
       link: {

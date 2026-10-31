@@ -19,6 +19,7 @@
     "images:topics": "tsx --env-file-if-exists=.env scripts/generate-card-images.ts --set topics",
     "images:api": "tsx --env-file-if-exists=.env scripts/generate-card-images.ts --set api",
     "tech-buzz:favourites": "tsx --conditions=react-server --env-file-if-exists=.env scripts/write-favourite-stories.ts",
+    "tech-buzz:import": "tsx --conditions=react-server --env-file-if-exists=.env scripts/import-tech-buzz.ts",
     "tech-buzz:refine": "tsx --conditions=react-server --env-file-if-exists=.env scripts/refine-tech-buzz.ts",
     "official:search": "tsx --env-file-if-exists=.env scripts/generate-official-content.ts --set search",
     "official:api": "tsx --env-file-if-exists=.env scripts/generate-official-content.ts --set api",

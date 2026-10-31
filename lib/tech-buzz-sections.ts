@@ -8,7 +8,9 @@
 export const DAILY_TAG = "mcb-daily";
 export const dailyDateTag = (date: string) => `daily:${date}`;
 export const dailyTrackTag = (track: string) => `daily-track:${track}`;
-export const isInternalTag = (tag: string) => tag === DAILY_TAG || tag.startsWith("daily:") || tag.startsWith("daily-track:") || tag.startsWith("fav:");
+/** Marks the community post an imported story was written from (lib/server/tech-buzz-imports.ts), so it is never imported twice. */
+export const importTag = (platform: string, id: string) => `import:${platform}:${id}`;
+export const isInternalTag = (tag: string) => tag === DAILY_TAG || tag.startsWith("daily:") || tag.startsWith("daily-track:") || tag.startsWith("fav:") || tag.startsWith("import:");
 
 export type DailyTrack = {
   id: string;
@@ -163,7 +165,7 @@ export const istDate = (now = Date.now()) => new Date(now + 5.5 * 3600_000).toIS
  * click came from (components/visit-tracker.tsx); the Super Admin "Tech-Buzz - Blogs" page reports them in this order.
  */
 export const TECH_BUZZ_TRACKED = {
-  daily: "Today's 5 at 5", fresh: "Fresh & Latest", stars: "Star Rated", favourites: "Community favourites", n8n: "n8n Workflow Blogs",
+  daily: "This week's 5", fresh: "Fresh & Latest", stars: "Star Rated", favourites: "Community favourites", n8n: "n8n Workflow Blogs",
   technologies: "Technology sections", tracks: "Popular tracks", roadmaps: "Learning roadmaps", topics: "Topics sidebar", featured: "Featured story",
   categories: "Explore categories", feed: "Story feed", highlights: "Highlights sidebar",
   storyNav: "Story top bar", storyHeader: "Story header", storyBody: "Story body", paywall: "Member paywall", discussion: "Discussion", more: "More stories",

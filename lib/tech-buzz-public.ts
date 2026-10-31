@@ -13,11 +13,12 @@ import type { ExpertReview } from "./tech-buzz-reviews";
 export type TechBuzzSection = TechBuzzArticle["contentSections"][number];
 
 /** Business and policy reports kept for admins but left out of the public technology blog. */
-const NOT_TECHNOLOGY = new Set(["bain-company-enterprise-ai-roi-report", "indian-express-sovereign-ai-semiconductor-fabs"]);
+const NOT_TECHNOLOGY = new Set<string>();
 export const isTechnologyStory = (article: Pick<TechBuzzArticle, "slug">) => !NOT_TECHNOLOGY.has(article.slug);
 
 /** Third-party blog platforms are never named, linked or shown on Tech Buzz (user rule 2026-10-25): stories carry
- *  MasterClass Buddy as their source, and tags naming a platform are dropped. */
+ *  MasterClass Buddy as their source, and tags naming a platform are dropped. The one exception is the plain-text
+ *  credit of a story written from a community post (toPreview's `credit`, user request 2026-10-31). */
 const PLATFORM = /\b(medium|daily\.?dev|dev\.to|indie ?hackers|hashnode|substack|the information|bain|indian express)\b/i;
 const OWN_SOURCE: TechBuzzArticle["source"] = { name: "MasterClass Buddy", domain: "masterclass", trustScore: "" };
 const ownTags = (tags: string[]) => tags.filter(tag => !PLATFORM.test(tag) && !isInternalTag(tag));
@@ -86,12 +87,15 @@ export function toCard(article: TechBuzzArticle): TechBuzzCard {
     daily: dailyOf(article.tags ?? []),
     topics: topicsOf({ title: article.title, technology: article.technology, tags: article.tags ?? [] }),
     editorScore: article.source?.editorScore,
+    review: article.source?.review,
   };
 }
 
 /** The free part of a story: everything but the body, plus its first section's opening paragraphs and an outline. */
 export type TechBuzzPreview = Omit<TechBuzzArticle, "contentSections" | "founderTakeaway" | "comments"> & {
   teaser: TechBuzzSection; outline: string[]; lockedCodeSamples: number; photoCredit?: string; review?: ExpertReview;
+  /** The community post an imported story was written from: the one place a platform is named, as plain text. */
+  credit?: { title: string; author: string; platform: string };
 };
 
 export function toPreview(article: TechBuzzArticle): TechBuzzPreview {
@@ -102,6 +106,8 @@ export function toPreview(article: TechBuzzArticle): TechBuzzPreview {
     ...rest,
     tags: ownTags(rest.tags),
     source: OWN_SOURCE,
+    review: rest.source?.review,
+    credit: rest.source?.credit,
     newsletterEdition: ownText(rest.newsletterEdition),
     teaser: { heading: first?.heading ?? "", paragraphs: (first?.paragraphs ?? []).map(withoutCode).filter(Boolean).slice(0, 2), quote: first?.quote, image: first?.image },
     outline: locked.map(section => section.heading).filter(Boolean),
