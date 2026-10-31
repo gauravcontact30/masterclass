@@ -33,7 +33,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const canonicalUrl = `/tech-buzz/${article.slug}`;
 
   return {
-    title: `${article.title} | Tech Buzz`,
+    // The root template appends "| MasterClass Buddy"; a "| Tech Buzz" here too pushed most titles past 70 characters.
+    title: article.title,
     description: article.subtitle,
     keywords: [
       article.technology,
@@ -63,7 +64,6 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       authors: [article.author.name],
       tags: article.tags,
       locale: "en_IN",
-      alternateLocale: ["hi_IN"],
       // The card comes from ./opengraph-image.tsx (and ./twitter-image.tsx); Next serves them at hashed URLs.
     },
     twitter: {

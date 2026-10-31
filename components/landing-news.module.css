@@ -6,7 +6,7 @@
   --nw-rule: #dedcd1;
   --nw-graphite: #141413;
   --nw-text: #3d3d3a;
-  --nw-muted: #73726c;
+  --nw-muted: #5f5e58; /* 5.3:1 or better on every card tint; #73726c fell to ~4:1 on them */
   --nw-clay: #c96442;
   --nw-clay-deep: #b5522f;
   --nw-tint: #f3dccd;
@@ -33,7 +33,7 @@
 .count { min-width: 64px; text-align: right; font-variant-numeric: tabular-nums; font-size: 14px; color: var(--nw-muted); }
 
 /* The slide on show, in place of a row of tabs. */
-.current { display: inline-flex; align-items: center; gap: 8px; margin: 0; padding: 8px 16px; border-radius: 999px; background: var(--nw-clay); color: #fff; font-size: 15px; font-weight: 600; }
+.current { display: inline-flex; align-items: center; gap: 8px; margin: 0; padding: 8px 16px; border-radius: 999px; background: var(--nw-clay-deep); color: #fff; font-size: 15px; font-weight: 600; }
 .progress { height: 3px; margin: 14px 0 26px; overflow: hidden; border-radius: 999px; background: var(--nw-ivory); }
 .progress span { display: block; height: 100%; background: var(--nw-clay); transform-origin: left; animation: fill linear both; }
 @keyframes fill { from { transform: scaleX(0); } to { transform: scaleX(1); } }

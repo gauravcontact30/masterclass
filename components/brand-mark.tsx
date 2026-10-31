@@ -21,6 +21,6 @@ export function BrandMark({ size = 36, className }: { size?: number; className?:
 export function Wordmark({ className }: { className?: string }) {
   return <span className={`brand-lockup ${className ?? ""}`}>
     <BrandMark />
-    <span className="brand-name"><span className="brand-title">master<b>class</b></span><span className="brand-buddy">Buddy</span></span>
+    <span className="brand-name"><span className="brand-title">master<b>class</b></span>{/* A flex container drops this space visually, but assistive tech reads "masterclass Buddy", so link labels can contain it. */" "}<span className="brand-buddy">Buddy</span></span>
   </span>;
 }

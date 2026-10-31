@@ -41,7 +41,7 @@ const SuperAdminAi = dynamic(() => import("./super-admin-ai").then(module => mod
 /** Logs & Health: live checks, latency, Web Vitals, AI performance and the log explorer, in its own chunk. */
 const SuperAdminLogsHealth = dynamic(() => import("./super-admin-logs-health").then(module => module.SuperAdminLogsHealth), { loading: sectionLoading });
 const SuperAdminBilling = dynamic(() => import("./super-admin-billing").then(module => module.SuperAdminBilling), { loading: sectionLoading });
-import { SuperAdminFestiveSale } from "./super-admin-festive-sale";
+const SuperAdminFestiveSale = dynamic(() => import("./super-admin-festive-sale").then(module => module.SuperAdminFestiveSale), { loading: () => null });
 const SuperAdminInfrastructure = dynamic(() => import("./super-admin-infrastructure").then(module => module.SuperAdminInfrastructure), { loading: sectionLoading });
 const SuperAdminSuggestions = dynamic(() => import("./super-admin-suggestions").then(module => module.SuperAdminSuggestions), { loading: sectionLoading });
 const SuperAdminTraces = dynamic(() => import("./super-admin-traces").then(module => module.SuperAdminTraces), { loading: sectionLoading });

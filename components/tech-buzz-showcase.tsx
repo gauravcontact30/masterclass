@@ -103,10 +103,10 @@ function CardClap({ card, tone }: { card: TechBuzzCard; tone: "light" | "dark" }
 }
 
 /** A story cover through next/image, so each card downloads a picture sized for it (`sizes`), not the stored original. */
-function Cover({ card, className, sizes }: { card: TechBuzzCard; className?: string; sizes: string }) {
+function Cover({ card, className, sizes, eager = false }: { card: TechBuzzCard; className?: string; sizes: string; eager?: boolean }) {
   const logo = logoOf(card);
   return <span className={`${styles.cover} ${className ?? ""}`} style={{ "--tone": card.color } as CSSProperties}>
-    {card.coverImage ? <Image src={card.coverImage} alt="" fill sizes={sizes} quality={75} loader={isUnsplash(card.coverImage) ? unsplashLoader : undefined} unoptimized={unoptimizedRemote(card.coverImage)} /> : null}
+    {card.coverImage ? <Image src={card.coverImage} alt="" fill sizes={sizes} quality={75} loading={eager ? "eager" : undefined} fetchPriority={eager ? "high" : undefined} loader={isUnsplash(card.coverImage) ? unsplashLoader : undefined} unoptimized={unoptimizedRemote(card.coverImage)} /> : null}
     {logo && <span className={styles.coverLogo}><Image src={logo} alt="" width={20} height={20} /></span>}
   </span>;
 }
@@ -151,7 +151,7 @@ function DailyEdition({ cards }: { cards: TechBuzzCard[] }) {
     <div className={styles.dailyGrid}>
       <article className={styles.dailyLead} style={{ "--tone": lead.track.color } as CSSProperties}>
         <Link href={`/tech-buzz/${lead.card.slug}`} className={styles.dailyLeadLink}>
-          <Cover card={lead.card} className={styles.dailyLeadCover} sizes="(max-width: 900px) 92vw, 680px" />
+          <Cover card={lead.card} className={styles.dailyLeadCover} sizes="(max-width: 900px) 92vw, (max-width: 1600px) 680px, 840px" eager />
           <span className={styles.trackChip}>01 · {lead.track.short}<TrackLogos track={lead.track.id} /></span>
           <h3>{lead.card.title}</h3>
           <p>{lead.card.subtitle}</p>
@@ -270,7 +270,7 @@ function FreshTrack({ track, items, showAll = false }: { track: DailyTrack; item
       {(showAll ? items : paged.rows).map(card => <li key={card.id} style={{ "--tone": card.color } as CSSProperties}>
         <span className={styles.timelineHead}><span className={styles.timelineDot} aria-hidden="true" /><time dateTime={card.publishedAt}>{formatDate(card.publishedAt)}</time></span>
         <Link href={`/tech-buzz/${card.slug}`} className={styles.freshCard}>
-          <Cover card={card} className={styles.freshCover} sizes="(max-width: 640px) 90vw, 240px" />
+          <Cover card={card} className={styles.freshCover} sizes="(max-width: 640px) 90vw, (max-width: 1100px) 320px, 240px" />
           <span className={styles.freshTech}><TechIcon item={card} />{card.technology}</span>
           <strong className={styles.cardTitle}>{card.title}</strong>
         </Link>
@@ -303,7 +303,7 @@ function StarRated({ cards }: { cards: TechBuzzCard[] }) {
         if (i === 0) return <li key={card.id} data-rank={rank} className={styles.starFeature}>
           <Link href={`/tech-buzz/${card.slug}`} className={styles.starFeatureLink}>
             <span className={styles.starFeatureMedia}>
-              <Cover card={card} className={styles.starFeatureCover} sizes="(max-width: 900px) 92vw, 600px" />
+              <Cover card={card} className={styles.starFeatureCover} sizes="(max-width: 900px) 92vw, (max-width: 1600px) 620px, 820px" />
               <span className={styles.starRibbon}>{rank === 1 ? <><Crown size={15} aria-hidden="true" />Readers&rsquo; #1</> : `#${rank}`}</span>
             </span>
             <span className={styles.starFeatureBody}>
@@ -411,7 +411,7 @@ function CommunityFavourites({ cards }: { cards: TechBuzzCard[] }) {
     <div id="tb-fav-panel" role="tabpanel" aria-labelledby={`tb-fav-tab-${active.id}`} className={styles.favBody}>
       <article className={styles.favFeature} style={{ "--tone": first.card.color, "--share": share(first.likes) } as CSSProperties}>
         <Link href={`/tech-buzz/${first.card.slug}`} className={styles.favFeatureLink}>
-          <Cover card={first.card} className={styles.favCover} sizes="(max-width: 960px) 100vw, 520px" />
+          <Cover card={first.card} className={styles.favCover} sizes="(max-width: 960px) 100vw, (max-width: 1600px) 600px, 780px" />
           <span className={styles.favCrown}><Crown size={14} aria-hidden="true" />#1 in {active.id === ALL_TOPICS ? "the community" : active.label}</span>
           <strong className={styles.favTitle}>{first.card.title}</strong>
           <span className={styles.favSubtitle}>{first.card.subtitle}</span>
@@ -523,7 +523,7 @@ function TechGroupSection({ group, items }: { group: TechGroup; items: TechBuzzC
     <ul className={styles.groupGrid}>
       {paged.rows.map(card => <li key={card.id}>
         <Link href={`/tech-buzz/${card.slug}`} className={styles.groupCard}>
-          <Cover card={card} className={styles.groupCover} sizes="(max-width: 640px) 80vw, 240px" />
+          <Cover card={card} className={styles.groupCover} sizes="(max-width: 640px) 80vw, (max-width: 1100px) 320px, 280px" />
           <span className={styles.groupBody}>
             <span className={styles.groupTech}><TechIcon item={card} />{card.technology}<RatingBadge card={card} /></span>
             <strong className={styles.cardTitle}>{card.title}</strong>

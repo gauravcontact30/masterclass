@@ -162,7 +162,7 @@ export function LandingNavbar({ links, prices = null, onCurrency }: { links: [st
 
   return <header aria-label="Site header" className={styles.navbar} data-solid={scrolled || menu || plans || undefined}>
     <div className={styles.navbarInner}>
-      <Link href="/" aria-label="Master Class Buddy home" className={styles.brand}><Wordmark /></Link>
+      <Link href="/" aria-label="MasterClass Buddy home" className={styles.brand}><Wordmark /></Link>
       <nav ref={navRef} className={styles.navLinks} data-open={menu || undefined} aria-label={text("Main navigation", "मुख्य नेविगेशन")} onMouseLeave={() => moveTo(active)}>
         <span className={styles.navIndicator} aria-hidden="true" data-visible={indicator.visible || undefined} style={{ clipPath: `inset(0 ${indicator.right}px 0 ${indicator.left}px round 999px)`, backgroundColor: PILL_TINTS[Math.max(0, links.findIndex(([href]) => href === indicator.href)) % PILL_TINTS.length] }} />
         {links.map(([href, label, page], index) => {

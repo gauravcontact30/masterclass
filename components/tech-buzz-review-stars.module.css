@@ -20,7 +20,7 @@
   font-size: 12px;
   white-space: nowrap;
 }
-.compact b { font-weight: 700; color: #92400e; }
+.compact b { font-weight: 700; color: var(--review-score, #92400e); }
 
 .panel {
   margin: 20px 0;

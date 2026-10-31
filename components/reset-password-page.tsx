@@ -7,7 +7,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, ArrowUpRight, Eye, EyeOff, KeyRound } from "lucide-react";
 import { setAuthNotice } from "@/lib/auth-notice";
-import { supabaseBrowser } from "@/lib/supabase-browser";
+import { browserAuth } from "@/lib/supabase-browser-lazy";
 import { hardNavigate } from "@/lib/hard-navigate";
 import type { TranslationKey } from "@/lib/i18n";
 import { authErrorKey } from "./auth-page";
@@ -35,7 +35,7 @@ export function ResetPasswordPage() {
 
   useEffect(() => {
     let live = true;
-    supabaseBrowser().auth.getUser()
+    browserAuth().then(auth => auth.getUser())
       .then(({ data }) => { if (live) setStatus(data.user ? "ready" : "missing"); })
       .catch(() => { if (live) setStatus("missing"); });
     return () => { live = false; };
@@ -48,7 +48,7 @@ export function ResetPasswordPage() {
     setBusy(true);
     let leaving = false;
     try {
-      const { error } = await supabaseBrowser().auth.updateUser({ password });
+      const { error } = await (await browserAuth()).updateUser({ password });
       if (error?.code === "same_password") { setMessage(hi ? "नया पासवर्ड पुराने से अलग होना चाहिए।" : "Choose a password different from your current one."); return; }
       if (error) { setError(authErrorKey(error)); return; }
       setAuthNotice("password_updated");

@@ -32,6 +32,8 @@ a:hover .cover > img, a:focus-visible .cover > img { transform: scale(1.05); }
 .reactions[data-tone="dark"] button { background: rgba(255,255,255,.08); border-color: rgba(255,255,255,.18); color: #f5f4ed; }
 .reactions[data-tone="dark"] button:hover:not(:disabled) { border-color: #f2b84b; color: #fff; }
 .reactions[data-tone="dark"] button[aria-pressed="true"] { background: rgba(242,184,75,.22); border-color: #f2b84b; color: #fff; }
+/* The expert score inside a dark bar (tech-buzz-review-stars reads it): its default brown is 2:1 on these cards. */
+.reactions[data-tone="dark"] { --review-score: #f2b84b; }
 
 .rating { display: inline-flex; align-items: center; gap: 3px; padding: 2px 7px; border-radius: 999px; background: #fff7e0; color: #8a6212; font-size: 11px; font-weight: 700; }
 .newBadge { display: inline-flex; padding: 2px 8px; border-radius: 999px; background: #dcfce7; color: #166534; font-size: 10px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
@@ -68,11 +70,11 @@ a:hover .cover > img, a:focus-visible .cover > img { transform: scale(1.05); }
 .timeline li { position: relative; display: grid; gap: 10px; align-content: start; }
 .timelineHead { display: flex; align-items: center; gap: 8px; padding-bottom: 8px; border-bottom: 2px solid color-mix(in srgb, var(--tone, #d97757) 45%, #e8e6dc); }
 .timelineDot { flex-shrink: 0; width: 12px; height: 12px; border-radius: 50%; background: #fff; border: 3px solid var(--tone, #d97757); }
-.timeline time { font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: #9a988f; }
+.timeline time { font-size: 11px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: #6f6d66; }
 .freshCard { display: grid; gap: 8px; padding: 10px; border-radius: 14px; background: #fff; border: 1px solid #e8e6dc; box-shadow: 0 1px 2px rgba(31,30,28,.04); transition: box-shadow .2s, transform .2s; }
 .freshCard:hover { box-shadow: 0 10px 26px -12px rgba(31,30,28,.3); transform: translateY(-2px); }
 .freshCover { aspect-ratio: 16 / 9; }
-.freshTech { font-size: 11px; font-weight: 700; color: var(--tone, #e0431f); text-transform: uppercase; letter-spacing: .06em; }
+.freshTech { font-size: 11px; font-weight: 700; color: color-mix(in srgb, var(--tone, #e0431f) 68%, #1f1e1c); text-transform: uppercase; letter-spacing: .06em; }
 .freshCard strong { font-size: 14px; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
 
 .trackLogos { display: inline-flex; align-items: center; gap: 4px; margin-left: 6px; }
@@ -90,7 +92,7 @@ a:hover .cover > img, a:focus-visible .cover > img { transform: scale(1.05); }
 .freshTrackHead { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin: 0 0 14px; font-size: clamp(17px, 2vw, 21px); font-weight: 600; color: #1f1e1c; }
 .freshTrackHead .trackLogos { margin-left: 0; order: 2; }
 .freshTrackHead .trackLogos img { width: 22px; height: 22px; }
-.freshTrackHead span:last-child { order: 3; font-size: 12px; font-weight: 700; color: var(--tone); }
+.freshTrackHead span:last-child { order: 3; font-size: 12px; font-weight: 700; color: color-mix(in srgb, var(--tone) 75%, #1f1e1c); }
 
 /* ── 3. Star Rated: a gold leaderboard ── */
 .stars { min-width: 0; padding: clamp(16px, 2.4vw, 26px); border-radius: 22px; background: linear-gradient(160deg, #fffaf0, #fff4dc 70%, #fdecc0); border: 1px solid #f3dfa8; }
@@ -123,7 +125,7 @@ a:hover .cover > img, a:focus-visible .cover > img { transform: scale(1.05); }
 .starCard:hover strong { color: #a16207; }
 .starScore { display: inline-flex; align-items: baseline; flex-wrap: wrap; gap: 6px; }
 .starScore b { font-size: 14px; color: #713f12; font-variant-numeric: tabular-nums; }
-.starScore small { font-size: 11px; color: #8a7a55; }
+.starScore small { font-size: 11px; color: #6f6346; }
 .starRow { --fill: 100%; font-size: 14px; letter-spacing: 1px; background: linear-gradient(90deg, #e0a526 var(--fill), #e8dcc0 var(--fill)); -webkit-background-clip: text; background-clip: text; color: transparent; }
 
 /* ── 5. Most Liked: a ranked chart ── */

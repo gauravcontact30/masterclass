@@ -481,7 +481,6 @@ export function TechBuzzArticleView({ article, related, prevStory, nextStory }: 
                     type="button"
                     onClick={toggleAudio}
                     className={styles.audioHeroPlayBtn}
-                    aria-label={isPlayingAudio ? "Pause Audio" : "Play Audio"}
                   >
                     {isPlayingAudio ? <Pause size={16} /> : <Play size={16} />}
                     <span>{isPlayingAudio ? "Pause Audio" : "Play Voiceover"}</span>
@@ -537,25 +536,27 @@ export function TechBuzzArticleView({ article, related, prevStory, nextStory }: 
             <ul className={styles.takeawaysList} aria-labelledby="tb-objectives">
               {defaultTakeaways.map((takeaway, idx) => {
                 const isChecked = Boolean(checkedTakeaways[idx]);
+                // The checkbox role sits inside the <li>: on the <li> itself it is not allowed and broke the list.
                 return (
-                  <li
-                    key={idx}
-                    className={`${styles.takeawayItem} ${isChecked ? styles.takeawayChecked : ""}`}
-                    onClick={() => toggleTakeaway(idx)}
-                    role="checkbox"
-                    aria-checked={isChecked}
-                    tabIndex={0}
-                    onKeyDown={e => {
-                      if (e.key === "Enter" || e.key === " ") {
-                        e.preventDefault();
-                        toggleTakeaway(idx);
-                      }
-                    }}
-                  >
-                    <span className={styles.takeawayCheckbox} aria-hidden="true">
-                      {isChecked && <Check size={12} />}
-                    </span>
-                    <span>{takeaway}</span>
+                  <li key={idx}>
+                    <div
+                      className={`${styles.takeawayItem} ${isChecked ? styles.takeawayChecked : ""}`}
+                      onClick={() => toggleTakeaway(idx)}
+                      role="checkbox"
+                      aria-checked={isChecked}
+                      tabIndex={0}
+                      onKeyDown={e => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault();
+                          toggleTakeaway(idx);
+                        }
+                      }}
+                    >
+                      <span className={styles.takeawayCheckbox} aria-hidden="true">
+                        {isChecked && <Check size={12} />}
+                      </span>
+                      <span>{takeaway}</span>
+                    </div>
                   </li>
                 );
               })}
@@ -926,7 +927,6 @@ export function TechBuzzArticleView({ article, related, prevStory, nextStory }: 
                 className={styles.moreBlogsPageBtn}
                 onClick={() => setMoreBlogsPage(p => Math.max(1, p - 1))}
                 disabled={moreBlogsPage === 1}
-                aria-label="Previous page of blogs"
               >
                 <ChevronLeft size={16} aria-hidden="true" />
                 <span>Prev</span>
@@ -950,7 +950,6 @@ export function TechBuzzArticleView({ article, related, prevStory, nextStory }: 
                 className={styles.moreBlogsPageBtn}
                 onClick={() => setMoreBlogsPage(p => Math.min(totalMorePages, p + 1))}
                 disabled={moreBlogsPage === totalMorePages}
-                aria-label="Next page of blogs"
               >
                 <span>Next</span>
                 <ChevronRight size={16} aria-hidden="true" />

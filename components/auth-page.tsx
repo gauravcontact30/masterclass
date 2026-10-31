@@ -8,7 +8,7 @@ import Link from "next/link";
 import { toast } from "sonner";
 import { setAuthNotice } from "@/lib/auth-notice";
 import { ArrowLeft, ArrowUpRight, Eye, EyeOff, MailCheck, Settings2 } from "lucide-react";
-import { supabaseBrowser } from "@/lib/supabase-browser";
+import { browserAuth, preloadSupabaseBrowser } from "@/lib/supabase-browser-lazy";
 import { hardNavigate } from "@/lib/hard-navigate";
 import { isSafeRedirect } from "@/lib/safe-redirect";
 import { en, TranslationKey } from "@/lib/i18n";
@@ -94,7 +94,7 @@ export function AuthPage({ mode, enabled, initialEmail = "", redirectTo, linkErr
     if (!address || resendIn > 0) { if (!address) setError("invalid_request"); return; }
     setBusy(true);
     try {
-      const { error } = await supabaseBrowser().auth.resend({ type: "signup", email: address, options: { emailRedirectTo: `${window.location.origin}/auth/callback` } });
+      const { error } = await (await browserAuth()).resend({ type: "signup", email: address, options: { emailRedirectTo: `${window.location.origin}/auth/callback` } });
       if (error?.code === "over_email_send_rate_limit") { setError("over_email_send_rate_limit"); return; }
       setResendIn(RESEND_WAIT);
       toast.success(hi ? "पुष्टि ईमेल फिर से भेजा गया" : "Confirmation email sent again", { description: hi ? `${address} का इनबॉक्स (और स्पैम फ़ोल्डर) देखें।` : `Check the inbox (and spam folder) of ${address}.` });
@@ -109,7 +109,7 @@ export function AuthPage({ mode, enabled, initialEmail = "", redirectTo, linkErr
     if (!email.trim()) { setError("invalid_request"); return; }
     setBusy(true); setError(null);
     try {
-      const { error } = await supabaseBrowser().auth.signInWithOtp({ email: email.trim(), options: { shouldCreateUser: false, emailRedirectTo: callbackFor(redirectTo) } });
+      const { error } = await (await browserAuth()).signInWithOtp({ email: email.trim(), options: { shouldCreateUser: false, emailRedirectTo: callbackFor(redirectTo) } });
       // Report success either way, so the form does not reveal which emails have accounts.
       if (error && error.status !== 400 && error.status !== 422) { setError(authErrorKey(error)); return; }
       setLinkSent("signin");
@@ -121,7 +121,7 @@ export function AuthPage({ mode, enabled, initialEmail = "", redirectTo, linkErr
     if (!email.trim()) { setError("invalid_request"); return; }
     setBusy(true); setError(null);
     try {
-      const { error } = await supabaseBrowser().auth.resetPasswordForEmail(email.trim(), { redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent("/reset-password")}` });
+      const { error } = await (await browserAuth()).resetPasswordForEmail(email.trim(), { redirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent("/reset-password")}` });
       if (error?.code === "over_email_send_rate_limit") { setError("over_email_send_rate_limit"); return; }
       // Same screen whether or not the address has an account.
       if (error && error.status !== 400 && error.status !== 422) { setError(authErrorKey(error)); return; }
@@ -142,7 +142,7 @@ export function AuthPage({ mode, enabled, initialEmail = "", redirectTo, linkErr
     setBusy(true); setError(null);
     let leaving = false;
     try {
-      const auth = supabaseBrowser().auth;
+      const auth = await browserAuth();
       if (mode === "signin") {
         const { data, error } = await auth.signInWithPassword({ email, password });
         if (error) { setError(authErrorKey(error)); return; }
@@ -176,7 +176,7 @@ export function AuthPage({ mode, enabled, initialEmail = "", redirectTo, linkErr
   }
 
   return (
-    <div className={styles.page}>
+    <div className={styles.page} onFocusCapture={() => void preloadSupabaseBrowser()}>
       {/* The form comes first in the DOM so keyboard and mobile visitors reach it
           before the brand panel; on wide screens CSS places the panel on the left. */}
       <main className={styles.main}>
