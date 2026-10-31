@@ -130,7 +130,8 @@ const PORTRAIT_ON = "(max-aspect-ratio: 4/5)";
 const PORTRAIT_OFF = "(min-aspect-ratio: 4.001/5)";
 
 /**
- * The landing hero: four Tech Buzz scenes (hero-buzz-*.webp, supplied 2026-10-30), then the stack infographic and the
+ * The landing hero: the Diwali scene (hero-diwali.webp, supplied 2026-10-31), four Tech Buzz scenes (hero-buzz-*.webp,
+ * supplied 2026-10-30), then the stack infographic and the
  * full-HD (1920×1080) study scenes painted by scripts/generate-hero-images.ts (each file's EXIF ImageDescription holds
  * its prompt), full-bleed under the navbar. Each slide
  * carries its own headline and actions. Autoplay runs while the mouse is over it (the hero fills the screen, so a hover
@@ -140,6 +141,53 @@ const PORTRAIT_OFF = "(min-aspect-ratio: 4.001/5)";
 function slidesFor(technologies: number | undefined): Slide[] {
   const count = technologies ? String(technologies) : "60+";
   return [
+    {
+      // Diwali celebration scene (supplied 2026-10-31), first while the festive season runs.
+      id: "diwali",
+      src: "/images/landing/hero-diwali.webp",
+      focus: "50% 50%",
+      tone: "honey",
+      tool: {
+        en: "Happy Diwali",
+        hi: "शुभ दीपावली",
+        es: "Feliz Diwali",
+        ja: "ハッピー・ディワリ",
+        de: "Frohes Diwali",
+        fr: "Joyeux Diwali",
+        zh: "排灯节快乐"
+      },
+      title: {
+        en: "Happy Diwali from MasterClass Buddy.",
+        hi: "MasterClass Buddy की ओर से दीपावली की शुभकामनाएँ।",
+        es: "Feliz Diwali de parte de MasterClass Buddy.",
+        ja: "MasterClass Buddy からハッピー・ディワリ。",
+        de: "Frohes Diwali wünscht MasterClass Buddy.",
+        fr: "Joyeux Diwali de la part de MasterClass Buddy.",
+        zh: "MasterClass Buddy 祝您排灯节快乐。"
+      },
+      body: {
+        en: "Light up your learning this festive season: LangChain, LangGraph, Next.js, System Design, DSA, n8n, FastAPI, Docker, Kubernetes and Playwright in one membership.",
+        hi: "इस त्योहार अपनी पढ़ाई को रोशन करें: LangChain, LangGraph, Next.js, System Design, DSA, n8n, FastAPI, Docker, Kubernetes और Playwright, एक ही सदस्यता में।",
+        es: "Ilumina tu aprendizaje esta temporada festiva: LangChain, LangGraph, Next.js, System Design, DSA, n8n, FastAPI, Docker, Kubernetes y Playwright en una sola membresía.",
+        ja: "この祝祭シーズンに学びを灯そう：LangChain、LangGraph、Next.js、System Design、DSA、n8n、FastAPI、Docker、Kubernetes、Playwright をひとつのメンバーシップで。",
+        de: "Bringen Sie Ihr Lernen zum Leuchten: LangChain, LangGraph, Next.js, System Design, DSA, n8n, FastAPI, Docker, Kubernetes und Playwright in einer Mitgliedschaft.",
+        fr: "Illuminez votre apprentissage en cette période de fête : LangChain, LangGraph, Next.js, System Design, DSA, n8n, FastAPI, Docker, Kubernetes et Playwright dans un seul abonnement.",
+        zh: "在这个节日点亮你的学习：LangChain、LangGraph、Next.js、系统设计、DSA、n8n、FastAPI、Docker、Kubernetes 和 Playwright，一个会员全部拥有。"
+      },
+      link: {
+        label: {
+          en: "See Diwali plans",
+          hi: "दीपावली प्लान देखें",
+          es: "Ver planes de Diwali",
+          ja: "ディワリのプランを見る",
+          de: "Diwali-Angebote ansehen",
+          fr: "Voir les offres Diwali",
+          zh: "查看排灯节方案"
+        },
+        href: "#pricing"
+      },
+      alt: "A Diwali celebration in the Master Class Buddy office: colleagues in festive clothes exchange gifts and sweets around a rangoli, under marigold garlands and Happy Diwali banners for LangChain, LangGraph, Next.js, Zustand, Docker, Kubernetes, System Design, DSA, n8n, FastAPI and Playwright, with the masterclassbuddy.com homepage on wall screens"
+    },
     {
       id: "buzz-team",
       src: "/images/landing/hero-buzz-team.webp",

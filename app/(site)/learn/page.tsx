@@ -7,7 +7,7 @@ import styles from "@/components/public-learning/library.module.css";
 export const metadata = learningMetadata({
   path: "/learn",
   title: "Technology handbooks: tutorials with examples",
-  description: "Free technology handbooks for React, Next.js, Node.js, Python, AWS, Git, Docker, TanStack, testing, system design and more: every topic explained with key points, syntax, worked code examples, use cases and interview questions.",
+  description: "Free handbooks for React, Next.js, Node.js, Python, AWS, Git, Docker and system design: every topic with key points, syntax, worked code and interview Q&A.",
   keywords: [
     "technology handbooks", "React 19 tutorial", "Next.js 16 tutorial", "Python 3.12 tutorial", "AWS services explained",
     "Git commands and workflows", "Docker tutorial for developers", "system design handbook", "Zustand guide",

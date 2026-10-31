@@ -7,8 +7,8 @@ import styles from "@/components/public-learning/library.module.css";
 
 export const metadata = learningMetadata({
   path: "/interview-questions",
-  title: "Interview questions with answers for 31 technologies",
-  description: "Most-asked subjective and objective interview questions with model answers for LangChain, LangGraph, Next.js, React, System Design, Redis, AWS, TypeScript, Node.js, testing tools and more.",
+  title: "Interview questions for 31 technologies",
+  description: "Most-asked interview questions with model answers for LangChain, LangGraph, Next.js, React, System Design, Redis, AWS, TypeScript, Node.js and more.",
   keywords: [
     "interview questions with answers", "React 19 interview questions", "Next.js 16 interview questions", "system design interview questions",
     "LangChain interview questions", "LangGraph interview questions", "Python interview questions", "AWS interview questions",

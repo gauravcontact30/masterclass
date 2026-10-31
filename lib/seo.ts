@@ -64,8 +64,8 @@ export type PublicPage = { path: `/${string}`; title: string; label: string; des
 export const PUBLIC_PAGES: readonly PublicPage[] = [
   { path: "/", title: siteTitle, label: "Home", description: siteDescription, changeFrequency: "weekly", priority: 1 },
   { path: "/courses", title: "Courses & learning paths", label: "Courses", description: "Browse every MasterClass learning path: technology handbooks and interviews, system design case studies, and IELTS and professional vocabulary.", changeFrequency: "weekly", priority: 0.9 },
-  { path: "/library", title: "Free learning library", label: "Library", description: "Interview questions with answers for 31 technologies, system design and AI agent workflow blueprints, an API reference for 60 technologies, technology handbooks and English vocabulary with Hindi meanings, free to read.", changeFrequency: "weekly", priority: 0.9 },
-  { path: "/about", title: "About MasterClass", label: "About", description: `MasterClass Buddy is ${HINDI_ENABLED ? "a bilingual English and Hindi" : "an"} learning space for tech professionals: technology courses, AI agents, certifications and interview preparation, with study notes, worked answers and timed practice in one dashboard.`, changeFrequency: "monthly", priority: 0.7 },
+  { path: "/library", title: "Free learning library", label: "Library", description: "Free interview questions for 31 technologies, system design and AI agent blueprints, an API reference for 60 technologies, handbooks and English vocabulary.", changeFrequency: "weekly", priority: 0.9 },
+  { path: "/about", title: "About MasterClass", label: "About", description: `MasterClass Buddy is ${HINDI_ENABLED ? "a bilingual English and Hindi" : "a"} learning space for tech professionals: courses, AI agents, certifications and interview prep, with notes, worked answers and practice.`, changeFrequency: "monthly", priority: 0.7 },
   { path: "/contact", title: "Contact & support", label: "Contact", description: "Get help with your MasterClass account, membership, billing or study content, and find answers to common questions.", changeFrequency: "yearly", priority: 0.5 },
   { path: "/privacy", title: "Privacy policy", label: "Privacy", description: "How MasterClass collects, uses and protects your account, payment and learning data, and what stays only in your browser.", changeFrequency: "yearly", priority: 0.3 },
   { path: "/terms", title: "Terms & conditions", label: "Terms", description: "The terms that apply when you create a MasterClass account, buy a membership and use study content and AI-assisted answers.", changeFrequency: "yearly", priority: 0.3 },
@@ -131,7 +131,8 @@ export function pageMetadata(path: PublicPage["path"]): Metadata {
  * handbooks), which is not in PUBLIC_PAGES: canonical URL, Open Graph and Twitter cards, all from one title and
  * description.
  */
-export function learningMetadata({ path, title, description, keywords }: { path: `/${string}`; title: string; description: string; keywords?: string[] }): Metadata {
+export function learningMetadata({ path, title, description: full, keywords }: { path: `/${string}`; title: string; description: string; keywords?: string[] }): Metadata {
+  const description = snippet(full);
   return {
     title,
     description,
@@ -140,6 +141,15 @@ export function learningMetadata({ path, title, description, keywords }: { path:
     openGraph: { type: "article", url: path, siteName, title: `${title} | ${siteName}`, description, locale: "en_IN", images: [ogImage] },
     twitter: { card: "summary_large_image", title: `${title} | ${siteName}`, description, images: [ogImage.url] },
   };
+}
+
+/** Search results show about 160 characters; generated descriptions (a technology's tagline appended) ran past that,
+ *  so they end at the last whole word that fits instead of being cut mid-word by the search engine. */
+function snippet(text: string, max = 158): string {
+  const clean = text.replace(/\s+/g, " ").trim();
+  if (clean.length <= max) return clean;
+  const cut = clean.slice(0, max - 1);
+  return `${cut.slice(0, cut.lastIndexOf(" ")).replace(/[\s,;:–—-]+$/, "")}…`;
 }
 
 /** BreadcrumbList structured data for a trail of [name, path] pairs, starting after Home. */

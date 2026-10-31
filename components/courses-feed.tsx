@@ -526,9 +526,9 @@ export function CoursesFeed() {
           <Sparkles size={14} />
           <span>Curated Architectural Masterclasses &amp; Learning Paths</span>
         </div>
-        <h1 className={styles.heroTitle}>
+        <h2 className={styles.heroTitle}>
           Production-Grade System Design Blueprints &amp; Tech Stacks
-        </h1>
+        </h2>
         <p className={styles.heroSubtitle}>
           Designed for senior engineers, tech leads, and aspiring architects. Zero fluff, real-world distributed architectures, and interactive interview case studies built to stand up in production.
         </p>

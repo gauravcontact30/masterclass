@@ -8,7 +8,7 @@ import { withReview } from "@/lib/tech-buzz-reviews";
 // Renders only once its content is ready: no loading screen is ever shown in its place (no loading.tsx, no fallback).
 export const instant = false;
 
-const DESCRIPTION = "Reader-rated technology blogs and engineering masterclasses on Agentic AI, LangChain, LangGraph, LangSmith, LangFlow, n8n, Next.js 16+, React 19+, System Design, TypeScript, and Cloud Architecture.";
+const DESCRIPTION = "Reader-rated tech blogs on Agentic AI, LangChain, LangGraph, LangSmith, n8n, Next.js 16+, React 19+, System Design, TypeScript and Cloud Architecture.";
 
 /**
  * Stories as light cards (bodies stay behind the member paywall) and technology topics with their story counts,

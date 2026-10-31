@@ -6,8 +6,8 @@ import styles from "@/components/public-learning/library.module.css";
 
 export const metadata = learningMetadata({
   path: "/compare",
-  title: "Technology comparisons: the differences explained",
-  description: "LangChain vs LangGraph vs LangSmith, Redux vs Zustand vs Redux Toolkit, Next.js vs TanStack, n8n vs LangChain, Jest vs Vitest, Playwright vs Cypress and more, each with definitions, a comparison table and 40+ difference questions with answers.",
+  title: "Technology comparisons and differences",
+  description: "LangChain vs LangGraph, Redux vs Zustand, Next.js vs TanStack, Jest vs Vitest, Playwright vs Cypress and more, with comparison tables and difference Q&A.",
   keywords: [
     "LangChain vs LangGraph", "Redux vs Zustand", "Next.js vs TanStack", "Jest vs Vitest",
     "Playwright vs Cypress", "n8n vs LangChain", "technology comparisons",

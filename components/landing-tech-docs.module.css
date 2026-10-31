@@ -178,6 +178,14 @@ a.docsLink, a.docsLink:hover, a.docsLink:visited { color: #fff; }
 @media (max-width: 480px) {
   .filters > .chips:first-child { grid-template-columns: minmax(0, 1fr); }
 }
+/* The smallest phones: the 58px mark, the title and the Listen button shared one row, leaving the title ~90px, so
+   "TanStack Start" broke mid-word. A smaller mark and title, and the text block may take its own line. */
+@media (max-width: 360px) {
+  .brandRow { flex-wrap: wrap; gap: 10px; }
+  .brandRow > div:not(.brand) { flex: 1 1 140px; min-width: 0; }
+  .brand { width: 44px; height: 44px; border-radius: 12px; }
+  .brandRow h3 { font-size: 21px; }
+}
 @media (prefers-reduced-motion: reduce) {
   .slide, .materials li, .suggestions, .menu, .brand { animation: none; }
   .progress { animation: none; transform: none; opacity: .5; }

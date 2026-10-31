@@ -7,7 +7,7 @@ import styles from "@/components/public-learning/library.module.css";
 export const metadata = learningMetadata({
   path: "/vocabulary",
   title: "English vocabulary with Hindi meanings",
-  description: "Thousands of English words for work, exams and IELTS, grouped by theme, each with its meaning, Hindi meaning, pronunciation, an example sentence, synonyms and antonyms.",
+  description: "Thousands of English words for work, exams and IELTS by theme, each with its meaning, Hindi meaning, pronunciation, an example, synonyms and antonyms.",
   keywords: [
     "English vocabulary with Hindi meanings", "corporate English words",
     "spoken English for software engineers", "synonyms and antonyms in Hindi", "tech industry English communication",

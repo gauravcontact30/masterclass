@@ -23,7 +23,7 @@ export default function CoursesPage() {
   }));
   const itemList = {
     "@context": "https://schema.org", "@type": "ItemList", name: "MasterClass learning paths",
-    itemListElement: groups.flatMap(group => group.items).map((item, index) => ({ "@type": "ListItem", position: index + 1, item: { "@type": "Course", name: item.label, description: item.summary, provider: { "@id": `${origin.href}#organization` }, inLanguage: ["en", "hi"], url: new URL(`/courses#${item.category}`, origin).href } })),
+    itemListElement: groups.flatMap(group => group.items).map((item, index) => ({ "@type": "ListItem", position: index + 1, item: { "@type": "Course", name: item.label, description: item.summary, provider: { "@id": `${origin.href}#organization` }, inLanguage: "en", url: new URL(`/courses#${item.category}`, origin).href } })),
   };
   return <>
     <PageIntro path="/courses" eyebrow="Learning paths" extraSchema={itemList} />
