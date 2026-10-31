@@ -18,7 +18,8 @@ export async function GET(request: NextRequest) {
   const type = params.get("type") as EmailOtpType | null;
   if (!tokenHash || !/^[\w-]{10,200}$/.test(tokenHash) || !type || !TYPES.includes(type)) return NextResponse.redirect(new URL("/sign-in?error=link_invalid", request.url));
   const { data, error } = await (await supabaseServer()).auth.verifyOtp({ token_hash: tokenHash, type });
-  if (error || !data.session) return NextResponse.redirect(new URL(`/sign-in?error=${error?.code === "otp_expired" ? "link_expired" : "link_invalid"}`, request.url));
+  // A dead reset link reopens the "Reset your password" form, so the reader can ask for a fresh one straight away.
+  if (error || !data.session) return NextResponse.redirect(new URL(`/sign-in?error=${type === "recovery" ? "reset_expired" : error?.code === "otp_expired" ? "link_expired" : "link_invalid"}`, request.url));
   const notice = type === "recovery" ? "recovery" : type === "magiclink" ? "signed_in" : "verified";
   const next = params.get("next") || params.get("redirect");
   const fallback = type === "recovery" ? "/reset-password" : `/learning?notice=${notice}`;

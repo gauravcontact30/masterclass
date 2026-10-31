@@ -63,7 +63,7 @@
 .fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
 .field { display: grid; gap: 6px; }
 .field > span { display: inline-flex; align-items: center; gap: 6px; font-size: 14px; font-weight: 600; }
-.field input { height: 46px; padding: 0 14px; border: 1px solid var(--rule-2); border-radius: 10px; background: var(--sheet); color: var(--graphite); font: inherit; font-size: 16px; }
+.field input { width: 100%; min-width: 0; height: 46px; padding: 0 14px; border: 1px solid var(--rule-2); border-radius: 10px; background: var(--sheet); color: var(--graphite); font: inherit; font-size: 16px; }
 .field input:focus { border-color: var(--ink); outline: none; box-shadow: 0 0 0 3px rgba(181, 82, 47, .15); }
 .hint { display: block; margin: 10px 0 0; color: var(--muted); font-size: 13.5px; line-height: 1.5; }
 

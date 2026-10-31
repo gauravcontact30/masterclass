@@ -40,6 +40,11 @@
 .plan { display: inline-flex; align-items: center; gap: 8px; min-height: 48px; padding: 0 22px; border: 0; border-radius: 14px; background: var(--signal); color: var(--ink); font: inherit; font-size: 15px; font-weight: 700; cursor: pointer; transition: transform .15s ease, background .15s ease; }
 .plan:hover:not(:disabled) { background: #f6cf6e; }
 .plan:active:not(:disabled) { transform: translateY(1px); }
+/* Narrow phones: the week choices wrap under their label and the button takes the full row. */
+@media (max-width: 400px) {
+  .length { flex-wrap: wrap; }
+  .plan { width: 100%; justify-content: center; }
+}
 .plan:disabled { cursor: progress; opacity: .85; }
 .plan:focus-visible, .reset:focus-visible, .start:focus-visible, .topics a:focus-visible { outline: 2px solid var(--signal); outline-offset: 2px; }
 /* "Or try": goals grouped by line, like a transit map. The line chips pick a field; each pill carries its line's

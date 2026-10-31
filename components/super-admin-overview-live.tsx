@@ -1,17 +1,18 @@
 "use client";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Activity, AlertTriangle, BookOpen, BookOpenText, Bot, CheckCircle2, Clock, Compass, Cpu, Database, EyeOff, Flame, Gauge, Globe2, Hourglass, Languages, Laptop, Link2, LogIn, LogOut, MapPin, Monitor, MousePointerClick, Network, Pause, Play, Radio, RefreshCw, Route, Server, ShieldCheck, Smartphone, Sparkles, Tablet, Target, Timer, TrendingDown, UserPlus, UserRound, Users, Zap, type LucideIcon } from "lucide-react";
+import { Activity, AlertTriangle, BookOpen, BookOpenText, Bot, CheckCircle2, Clock, Compass, Cpu, Database, EyeOff, Flame, Gauge, Globe2, Hourglass, Languages, Laptop, Lightbulb, Link2, LogIn, LogOut, MapPin, Monitor, MousePointerClick, Network, Pause, Play, Radio, RefreshCw, Route, Server, ShieldCheck, Smartphone, Sparkles, Tablet, Target, Timer, TrendingDown, UserPlus, UserRound, Users, Zap, type LucideIcon } from "lucide-react";
 import { Flag, countryName } from "./super-admin-audience";
 import { Pager } from "./super-admin-table";
 import styles from "./super-admin-overview-live.module.css";
 import { VISIT_RETENTION_DAYS } from "@/lib/visit-retention";
-import { indexVisits, streamVisitors, type Presence } from "@/lib/live-visits";
+import { indexVisits, streamVisitors, type Presence, type StreamClick, type StreamVisitor } from "@/lib/live-visits";
+import { learnerInsight } from "@/lib/country-learner-insights";
 import { localityPin } from "@/lib/new-user-locations";
 import { FirstLookVisitors } from "./super-admin-first-look";
 import { PrivateVisitors } from "./super-admin-private-visitors";
 
 type Row = Record<string, unknown>;
-type Visit = { id?: number; created_at: string; event: string; person?: string; email?: string | null; user_id?: string | null; visitor_id: string; session_id: string; new_visitor?: boolean; path: string; title?: string | null; country?: string | null; city?: string | null; region?: string | null; postal_code?: string | null; device?: string | null; browser?: string | null; os?: string | null; duration_ms?: number | null; referrer_host?: string | null; utm_source?: string | null; screen?: string | null; timezone?: string | null; language?: string | null; ip_masked?: string | null; private_mode?: boolean | null };
+type Visit = { id?: number; created_at: string; event: string; utm_medium?: string | null; utm_campaign?: string | null; person?: string; email?: string | null; user_id?: string | null; visitor_id: string; session_id: string; new_visitor?: boolean; path: string; title?: string | null; country?: string | null; city?: string | null; region?: string | null; postal_code?: string | null; device?: string | null; browser?: string | null; os?: string | null; duration_ms?: number | null; referrer_host?: string | null; utm_source?: string | null; screen?: string | null; timezone?: string | null; language?: string | null; ip_masked?: string | null; private_mode?: boolean | null };
 type Live = {
   generatedAt: string;
   /** "today": counted from 00:00 IST (migration 0045); "24h": the rolling day it falls back to. */
@@ -46,10 +47,32 @@ const clock = (iso: string | number) => new Intl.DateTimeFormat("en-IN", { hour:
 const weekday = (iso: string | number) => new Intl.DateTimeFormat("en-IN", { weekday: "long", timeZone: "Asia/Kolkata" }).format(new Date(iso));
 type StreamFilter = "all" | "live" | "signed" | "new" | "private";
 // The stream's own feed, merged across refreshes: rows by id, page heartbeats by session and path.
-type StreamFeed = { rows: Map<string, Visit>; emails: Record<string, string>; presence: Map<string, Presence> | null; days: number; capped: boolean; generatedAt: string; loadedAt: number };
+type StreamFeed = { rows: Map<string, Visit>; emails: Record<string, string>; presence: Map<string, Presence> | null; clicks: Map<string, StreamClick>; days: number; capped: boolean; generatedAt: string; loadedAt: number };
 // The whole window is read again every 10 minutes; in between, each refresh asks only for what is new.
 const FULL_RELOAD_MS = 10 * 60_000;
 const rowId = (v: Visit) => v.id != null ? String(v.id) : `${v.created_at}|${v.event}|${v.session_id}|${v.path}`;
+const clickId = (c: StreamClick) => `${c.created_at}|${c.session_id}|${c.option}`;
+/** The visitor's own clock, from the time zone their browser reported: "Sat, 08:05 am · morning". */
+const localTime = (timezone: string | null | undefined, now: number) => {
+  if (!timezone) return null;
+  try {
+    const parts = new Intl.DateTimeFormat("en-GB", { timeZone: timezone, hour: "numeric", hourCycle: "h23" }).formatToParts(new Date(now));
+    const hour = Number(parts.find(part => part.type === "hour")?.value ?? NaN);
+    const part = hour < 5 ? "late night" : hour < 12 ? "morning" : hour < 17 ? "afternoon" : hour < 21 ? "evening" : "night";
+    const text = new Intl.DateTimeFormat("en-IN", { timeZone: timezone, weekday: "short", hour: "2-digit", minute: "2-digit", hour12: true }).format(new Date(now));
+    const offset = new Intl.DateTimeFormat("en-US", { timeZone: timezone, timeZoneName: "shortOffset" }).formatToParts(new Date(now)).find(p => p.type === "timeZoneName")?.value;
+    return { text, part, offset: offset?.replace("GMT", "UTC") ?? null };
+  } catch { return null; }
+};
+const languageName = (tag: string | null | undefined) => {
+  if (!tag) return null;
+  try { return new Intl.DisplayNames(["en"], { type: "language" }).of(tag) ?? tag; } catch { return tag; }
+};
+const TIMING_NOTE: Record<StreamVisitor["visit"]["timing"], string> = {
+  live: "Live: the open page's clock runs from its heartbeat",
+  exact: "Exact: every page of this visit sent its leave beacon",
+  partial: "Partly estimated: a page closed without its leave beacon, so it is timed to its last heartbeat (up to 45 s may be missing)",
+};
 const bytes = (value: number) => value >= 1 << 30 ? `${(value / (1 << 30)).toFixed(1)} GB` : `${Math.round(value / (1 << 20))} MB`;
 const uptime = (seconds: number) => seconds >= 86400 ? `${Math.floor(seconds / 86400)}d ${Math.floor((seconds % 86400) / 3600)}h` : seconds >= 3600 ? `${Math.floor(seconds / 3600)}h ${Math.floor((seconds % 3600) / 60)}m` : `${Math.round(seconds / 60)}m`;
 const DEVICE_ICON: Record<string, LucideIcon> = { mobile: Smartphone, tablet: Tablet, desktop: Laptop };
@@ -111,7 +134,10 @@ export function OverviewLive({ snapshot, onRefreshSnapshot }: { snapshot: Overvi
       for (const [id, v] of rows) if (Date.parse(v.created_at) < windowStart) rows.delete(id);
       const presence = Array.isArray(body.presence) ? new Map(incremental && prior.presence ? prior.presence : []) : null;
       if (presence) for (const p of body.presence as Presence[]) presence.set(`${p.session_id}|${p.path}`, p);
-      const next: StreamFeed = { rows, presence, days, generatedAt, emails: { ...(incremental ? prior.emails : {}), ...(body.emails ?? {}) },
+      const clicks = new Map(incremental ? prior.clicks : []);
+      for (const c of Array.isArray(body.clicks) ? body.clicks as StreamClick[] : []) clicks.set(clickId(c), c);
+      for (const [id, c] of clicks) if (Date.parse(c.created_at) < windowStart) clicks.delete(id);
+      const next: StreamFeed = { rows, presence, clicks, days, generatedAt, emails: { ...(incremental ? prior.emails : {}), ...(body.emails ?? {}) },
         capped: Boolean(body.capped) || Boolean(incremental && prior.capped), loadedAt: incremental ? prior.loadedAt : startedAt };
       // Half the round trip is the best estimate of when the server stamped generatedAt.
       setOffset(Date.parse(generatedAt) - (startedAt + Date.now()) / 2);
@@ -152,7 +178,7 @@ export function OverviewLive({ snapshot, onRefreshSnapshot }: { snapshot: Overvi
   // Who each visitor is and what is known about every page they opened (lib/live-visits.ts); only the open pages'
   // clocks move each second, so the grouping runs when the data changes and the timing pass on every tick.
   // Indexes visits and presence; includes all live visitors and active sessions.
-  const index = useMemo(() => indexVisits(streamRows, stream ? stream.presence && [...stream.presence.values()] : null), [streamRows, stream]);
+  const index = useMemo(() => indexVisits(streamRows, stream ? stream.presence && [...stream.presence.values()] : null, stream ? [...stream.clicks.values()] : []), [streamRows, stream]);
   const everyone = useMemo(() => streamVisitors(index, clockNow, stream?.emails), [index, clockNow, stream]);
   const counts = useMemo(() => ({
     all: everyone.length, live: everyone.filter(v => v.live).length, signed: everyone.filter(v => v.signedIn).length,
@@ -295,6 +321,12 @@ export function OverviewLive({ snapshot, onRefreshSnapshot }: { snapshot: Overvi
                 const pin = localityPin(rawPin, code || null);
                 const place = [v.city, v.region].filter(Boolean).join(", ");
                 const isLive = row.live;
+                const visit = row.visit;
+                const insight = learnerInsight(code);
+                const local = localTime(v.timezone ?? row.first.timezone, clockNow);
+                const language = v.language ?? row.first.language ?? null;
+                const earlier = row.visits.filter(other => other !== visit).reverse();
+                const steps = visit.steps;
 
                 return (
                   <li key={row.key} className={styles.streamRow} data-live={isLive || undefined} data-new={freshSince != null && Date.parse(row.arrived) > freshSince || undefined}>
@@ -326,7 +358,10 @@ export function OverviewLive({ snapshot, onRefreshSnapshot }: { snapshot: Overvi
                             <div className={styles.compactMetaLine}>
                               <span>{row.views} {row.views === 1 ? "page view" : "page views"}{row.pages > 1 ? ` · ${row.pages} pages` : ""}</span>
                               <span className={styles.dotSep}>•</span>
-                              <span>{row.sessions} {row.sessions === 1 ? "session" : "sessions"}</span>
+                              <span title="Visits (sessions) in the stream window; a visit ends after 30 idle minutes">{row.sessions} {row.sessions === 1 ? "visit" : "visits"}</span>
+                              <span className={styles.dotSep}>•</span>
+                              <span title={`First page view in the window: ${dayOf(row.firstArrived)} ${clock(row.firstArrived)} IST`}>First seen {since(row.firstArrived, clockNow)}</span>
+                              {row.convertedInWindow && <><span className={styles.dotSep}>•</span><span className={styles.convertedTag}>Signed up / in during this window</span></>}
                               {p?.open && (
                                 <>
                                   <span className={styles.dotSep}>•</span>
@@ -406,24 +441,48 @@ export function OverviewLive({ snapshot, onRefreshSnapshot }: { snapshot: Overvi
                                 <Monitor size={11} aria-hidden="true" />
                                 <span>{v.screen ? `${v.screen} px` : "Screen not reported"}</span>
                               </div>
-                              <div className={styles.clientSpecItem} title={v.language ? `Browser language ${v.language}` : "Language not reported"}>
+                              <div className={styles.clientSpecItem} title={language ? `Browser language ${language}` : "Language not reported"}>
                                 <Languages size={11} aria-hidden="true" />
-                                <span>{v.language || "Language not reported"}</span>
+                                <span>{language ? `${languageName(language)} (${language})` : "Language not reported"}</span>
                               </div>
-                              <div className={styles.clientSpecItem} title={v.timezone ? `Device time zone ${v.timezone}` : "Time zone not reported"}>
+                              <div className={styles.clientSpecItem} title={(v.timezone ?? row.first.timezone) ? `Device time zone ${v.timezone ?? row.first.timezone}${local?.offset ? ` (${local.offset})` : ""}` : "Time zone not reported"}>
                                 <Clock size={11} aria-hidden="true" />
-                                <span>{v.timezone || "Time zone not reported"}</span>
+                                <span>{v.timezone ?? row.first.timezone ?? "Time zone not reported"}</span>
                               </div>
+                              {v.device && <div className={styles.clientSpecItem} title="Device class from the browser's user agent">
+                                <Device size={11} aria-hidden="true" />
+                                <span>{v.device.charAt(0).toUpperCase() + v.device.slice(1)}</span>
+                              </div>}
                               {v.ip_masked && <div className={styles.clientSpecItem} title="Network address with its last part masked">
                                 <Network size={11} aria-hidden="true" />
                                 <span>{v.ip_masked}</span>
                               </div>}
                             </div>
 
+                            {local && <p className={styles.localTime} title="The visitor's own clock, from the time zone their browser reported">
+                              <Clock size={10} aria-hidden="true" /> Their local time: <b>{local.text}</b> · {local.part}{local.offset ? ` · ${local.offset}` : ""}
+                            </p>}
+                            {language && !/^en\b/i.test(language) && <p className={styles.langNote}>Browser prefers {languageName(language)}: the site is English-only for now.</p>}
+
                             <div className={styles.trafficSourceRow}>
-                              <span className={styles.sourceBadge} title={row.source ? `Traffic source: ${row.source}` : "No referrer or campaign: typed, bookmarked or opened from an app"}>
+                              <span className={styles.sourceBadge} title={row.source ? `Traffic source of this visit: ${row.source}` : "No referrer or campaign: typed, bookmarked or opened from an app"}>
                                 <Link2 size={10} aria-hidden="true" /> {row.source ? `via ${row.source}` : "Direct / no referrer"}
                               </span>
+                              {row.campaign && <span className={styles.sourceBadge} title="utm_medium · utm_campaign of the visit's first page">Campaign: {row.campaign}</span>}
+                            </div>
+
+                            <div className={styles.insight}>
+                              <p className={styles.insightHead}><Lightbulb size={11} aria-hidden="true" /> Learners from {cleanCountry || "this region"}</p>
+                              <p className={styles.insightProfile}>{insight.profile}</p>
+                              <details>
+                                <summary>What they look for and expect</summary>
+                                <b>Usually looking for</b>
+                                <ul>{insight.lookingFor.map(item => <li key={item}>{item}</li>)}</ul>
+                                <b>Expect from a learning platform</b>
+                                <ul>{insight.expects.map(item => <li key={item}>{item}</li>)}</ul>
+                              </details>
+                              <p className={styles.insightTip}><b>Suggestion:</b> {insight.tip}</p>
+                              <small className={styles.insightNote}>General guidance for the country (local currency {insight.currency}), not measured from this visitor.</small>
                             </div>
                           </div>
                         </div>
@@ -437,7 +496,7 @@ export function OverviewLive({ snapshot, onRefreshSnapshot }: { snapshot: Overvi
                           </div>
                           <div className={styles.colBody}>
                             <div className={styles.timelineTimesGrid}>
-                              <div className={styles.timelineTimeCell}>
+                              <div className={styles.timelineTimeCell} title="When this visit's first page opened">
                                 <span className={styles.cellLabel}>
                                   <LogIn size={10} aria-hidden="true" /> Arrived (IST)
                                 </span>
@@ -473,12 +532,16 @@ export function OverviewLive({ snapshot, onRefreshSnapshot }: { snapshot: Overvi
                             <div className={styles.stayMetricBlock}>
                               <div className={styles.stayHighlightRow}>
                                 <div>
-                                  <small className={styles.stayLabel} title="This visit: from arrival to now while on the site, otherwise to the last activity seen">Total Stay</small>
-                                  <strong className={styles.stayValue}>{spent(row.stayDurationMs / 1000)}</strong>
+                                  <small className={styles.stayLabel} title="This visit, from the moment its first page opened to now while a page is open, otherwise to its last leave beacon or heartbeat">Total Stay</small>
+                                  <strong className={styles.stayValue}>{spent(visit.stayMs / 1000)}</strong>
                                 </div>
                                 <div>
-                                  <small className={styles.stayLabel} title="Time this visit's pages were visible on screen, the open page included">Active Reading</small>
-                                  <strong className={styles.readingValue}>{spent(row.sessionEngagedMs / 1000)}</strong>
+                                  <small className={styles.stayLabel} title="Time this visit's pages were on screen and visible, the open page included. Two windows open at once count once">Active Reading</small>
+                                  <strong className={styles.readingValue}>{spent(visit.readingMs / 1000)}</strong>
+                                </div>
+                                <div>
+                                  <small className={styles.stayLabel} title="Total Stay minus Active Reading: the tab was hidden, the visitor was between pages, or a page was loading">Away / idle</small>
+                                  <strong className={styles.stayValue}>{spent(visit.awayMs / 1000)}</strong>
                                 </div>
                                 <div className={styles.intensityBadgeWrap}>
                                   {row.intensityTier === "Deep Focus" ? (
@@ -497,7 +560,11 @@ export function OverviewLive({ snapshot, onRefreshSnapshot }: { snapshot: Overvi
                                 </div>
                                 <span className={styles.focusRatioText}>{row.focusRatio}% Focus</span>
                               </div>
+                              <small className={styles.timingNote}>{TIMING_NOTE[visit.timing]}</small>
                             </div>
+                            {row.visits.length > 1 && <p className={styles.stayAll} title="Each visit's stay and reading, added up; time between visits is not counted">
+                              All {row.visits.length} visits ({streamDays === 1 ? "24 h" : `${streamDays} days`}): <b>{spent(row.totalStayDurationMs / 1000)}</b> stay · <b>{spent(row.totalReadingMs / 1000)}</b> reading
+                            </p>}
                           </div>
                         </div>
 
@@ -509,6 +576,12 @@ export function OverviewLive({ snapshot, onRefreshSnapshot }: { snapshot: Overvi
                             <span className={styles.colKickerPill}>Step {row.currentStep.step}/{row.currentStep.total}</span>
                           </div>
                           <div className={styles.colBody}>
+                            <div className={styles.stageRow}>
+                              <span className={styles.stageBadge} title="How far along the site this person got, from the pages they opened">{row.stage}</span>
+                              <small>{visit.pages} {visit.pages === 1 ? "page" : "pages"} · {visit.clicks} {visit.clicks === 1 ? "click" : "clicks"} this visit</small>
+                            </div>
+                            {row.signals.length > 0 && <ul className={styles.signalList}>{row.signals.map(signal => <li key={signal}>{signal}</li>)}</ul>}
+
                             <div className={styles.activeTargetBlock}>
                               <div className={styles.targetHeaderLine}>
                                 <span className={styles.targetCategoryBadge}>{row.currentStep.category}</span>
@@ -527,31 +600,58 @@ export function OverviewLive({ snapshot, onRefreshSnapshot }: { snapshot: Overvi
                               </code>
                             </div>
 
-                            {row.engagedContents.length > 0 ? (
-                              <div className={styles.engagedPagesMiniList}>
-                                <div className={styles.miniListHeading}>
-                                  <span>Engaged Pages ({row.engagedContents.length})</span>
-                                  <small className={styles.velocityText}>{row.readingVelocity}</small>
-                                </div>
-                                {row.engagedContents.slice(0, 2).map((item, idx) => (
-                                  <div key={`${item.path}-${idx}`} className={styles.miniPageItem}>
-                                    <div className={styles.miniPageTop}>
-                                      <span className={styles.miniPageBadge}>{item.category}</span>
-                                      <span className={styles.miniPageTime}>{spent(item.durationMs / 1000)}</span>
-                                    </div>
-                                    <div className={styles.miniPageTitleLine}>
-                                      <BookOpen size={10} className={styles.miniPageIcon} aria-hidden="true" />
-                                      <span className={styles.miniPageTitle}>{item.title}</span>
-                                    </div>
+                            <div className={styles.journeyHead}><span>This visit, step by step</span><small className={styles.velocityText}>{row.readingVelocity}</small></div>
+                            <ol className={styles.journeySteps}>
+                              {steps.slice(-6).map((step, i, shown) => {
+                                const number = steps.length - shown.length + i + 1;
+                                return <li key={`${step.path}-${step.at}`} data-open={step.open || undefined}>
+                                  <span className={styles.stepNo}>{number}</span>
+                                  <div className={styles.stepBody}>
+                                    <strong title={step.path}>{step.title}</strong>
+                                    <small>{step.category} · {clock(step.at)} · {step.open ? `reading now, ${spent((step.ms ?? 0) / 1000)}` : step.ms == null ? "time not recorded" : spent(step.ms / 1000)}</small>
+                                    {step.clicks.length > 0 && <small className={styles.stepClicks} title={step.clicks.map(c => `${c.option}${c.topic ? ` (in ${c.topic})` : ""}${c.target_path ? ` → ${c.target_path}` : ""}`).join("\n")}>
+                                      <MousePointerClick size={9} aria-hidden="true" /> {step.clicks.slice(0, 3).map(c => `"${c.option}"`).join(", ")}{step.clicks.length > 3 ? ` +${step.clicks.length - 3}` : ""}
+                                    </small>}
                                   </div>
-                                ))}
-                              </div>
-                            ) : (
-                              <div className={styles.trailFallback}>
-                                <span className={styles.trailLabel}><Route size={10} aria-hidden="true" /> Learning Trail:</span>
-                                <span className={styles.trailText}>{row.trail.length > 1 ? row.trail.join(" → ") : (v.title || "Single page")}</span>
-                              </div>
-                            )}
+                                </li>;
+                              })}
+                            </ol>
+                            {steps.length > 6 && <small className={styles.moreSteps}>{steps.length - 6} earlier {steps.length - 6 === 1 ? "step" : "steps"} in this visit, from {steps[0].title}</small>}
+
+                            {visit.categories.length > 0 && <div className={styles.categoryBars} aria-label="Time by kind of content this visit">
+                              {visit.categories.slice(0, 3).map(c => {
+                                const share = visit.readingMs ? Math.min(100, Math.round((c.ms / visit.readingMs) * 100)) : 0;
+                                return <div key={c.category} className={styles.catRow} title={`${c.category}: ${spent(c.ms / 1000)} on ${c.pages} ${c.pages === 1 ? "page" : "pages"}`}>
+                                  <span>{c.category}</span><i style={{ width: `${Math.max(4, share)}%` }} aria-hidden="true" /><b>{spent(c.ms / 1000)}</b>
+                                </div>;
+                              })}
+                            </div>}
+
+                            <p className={styles.entryExit}>Entered on <code>{visit.entry}</code>{visit.exit && <> · left from <code>{visit.exit}</code></>}</p>
+
+                            {row.engagedContents.length > 1 && <div className={styles.engagedPagesMiniList}>
+                              <div className={styles.miniListHeading}><span>Most-read across all visits</span></div>
+                              {row.engagedContents.slice(0, 2).map((item, idx) => (
+                                <div key={`${item.path}-${idx}`} className={styles.miniPageItem}>
+                                  <div className={styles.miniPageTop}>
+                                    <span className={styles.miniPageBadge}>{item.category}</span>
+                                    <span className={styles.miniPageTime}>{spent(item.durationMs / 1000)}{item.views > 1 ? ` · ${item.views} views` : ""}</span>
+                                  </div>
+                                  <div className={styles.miniPageTitleLine}>
+                                    <BookOpen size={10} className={styles.miniPageIcon} aria-hidden="true" />
+                                    <span className={styles.miniPageTitle}>{item.title}</span>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>}
+
+                            {earlier.length > 0 && <details className={styles.earlierVisits}>
+                              <summary>Earlier visits ({earlier.length})</summary>
+                              <ul>{earlier.map(other => <li key={other.sessionId}>
+                                <b>{dayOf(other.start)}, {clock(other.start)}</b> · {other.pages} {other.pages === 1 ? "page" : "pages"} · {spent(other.stayMs / 1000)} stay · {spent(other.readingMs / 1000)} reading
+                                <small>Entered on {other.entry}{other.source ? ` via ${other.source}` : ""}</small>
+                              </li>)}</ul>
+                            </details>}
                           </div>
                         </div>
                       </div>

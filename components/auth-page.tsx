@@ -37,9 +37,10 @@ export function safeRedirect(target: string | undefined) {
  */
 const enterApp = (target: string) => hardNavigate(target);
 /** Problems with an emailed link, passed back by /auth/confirm and /auth/callback as ?error=. */
-export type LinkError = "link_expired" | "link_invalid" | "link_other_device" | "oauth_failed" | "oauth_unavailable";
+export type LinkError = "link_expired" | "reset_expired" | "link_invalid" | "link_other_device" | "oauth_failed" | "oauth_unavailable";
 const LINK_ERRORS: Record<LinkError, [en: string, hi: string]> = {
-  link_expired: ["That confirmation link has expired. Sign in to get a new one, or send it again below.", "यह पुष्टि लिंक समाप्त हो गया है। नया लिंक पाने के लिए नीचे से फिर भेजें।"],
+  link_expired: ["That email link has expired or was already used. Sign in, or send a new one below.", "यह ईमेल लिंक समाप्त हो गया है या पहले ही उपयोग हो चुका है। साइन इन करें, या नीचे से नया लिंक भेजें।"],
+  reset_expired: ["That password-reset link has expired or was already used. Enter your email to get a new one.", "यह पासवर्ड-रीसेट लिंक समाप्त हो गया है या पहले ही उपयोग हो चुका है। नया लिंक पाने के लिए अपना ईमेल लिखें।"],
   link_invalid: ["That link is not valid or was already used. If your email is confirmed, just sign in.", "यह लिंक मान्य नहीं है या पहले ही उपयोग हो चुका है। ईमेल सत्यापित है तो सीधे साइन इन करें।"],
   link_other_device: ["That link was opened in a different browser from the one you signed up in. Your email may already be confirmed: try signing in.", "यह लिंक उस ब्राउज़र से अलग ब्राउज़र में खुला जिसमें आपने साइन अप किया था। आपका ईमेल शायद सत्यापित हो चुका है: साइन इन करके देखें।"],
   oauth_failed: ["Google sign-in was cancelled or did not finish. Try again, or use your email and password.", "Google साइन-इन रद्द हुआ या पूरा नहीं हुआ। फिर कोशिश करें, या ईमेल और पासवर्ड से साइन इन करें।"],
@@ -71,6 +72,9 @@ export function AuthPage({ mode, enabled, initialEmail = "", redirectTo, linkErr
   const [sent, setSent] = useState(false);
   // Which emailed link the "Check your email" screen is about: a magic sign-in link or a password reset.
   const [linkSent, setLinkSent] = useState<"signin" | "reset" | null>(null);
+  // "Forgot password?" opens its own small form, so the reset never depends on the sign-in form's email being filled.
+  // A dead reset link lands here with ?error=reset_expired and opens that form straight away.
+  const [forgot, setForgot] = useState(linkError === "reset_expired");
   const [resendIn, setResendIn] = useState(0);
   const hi = language === "hi";
   useEffect(() => {
@@ -116,7 +120,7 @@ export function AuthPage({ mode, enabled, initialEmail = "", redirectTo, linkErr
       if (error?.code === "over_email_send_rate_limit") { setError("over_email_send_rate_limit"); return; }
       // Same screen whether or not the address has an account.
       if (error && error.status !== 400 && error.status !== 422) { setError(authErrorKey(error)); return; }
-      setLinkSent("reset");
+      setForgot(false); setLinkSent("reset");
     } catch { setError("service_error"); } finally { setBusy(false); }
   }
 
@@ -194,6 +198,21 @@ export function AuthPage({ mode, enabled, initialEmail = "", redirectTo, linkErr
                 : (hi ? `अगर ${email.trim()} से कोई खाता है, तो हमने उस पर साइन-इन लिंक भेजा है। लिंक खोलकर साइन इन करें।` : `If an account exists for ${email.trim()}, we have sent it a sign-in link. Open the link to sign in.`)} /></p>
               <button type="button" className={styles.switchLink} onClick={() => setLinkSent(null)}><ExpandedText text={hi ? "वापस जाएँ" : "Back to sign in"} /></button>
             </section>
+          ) : forgot ? (
+            <section>
+              <h1 className={styles.title}><ExpandedText text={hi ? "पासवर्ड रीसेट करें" : "Reset your password"} /></h1>
+              <p className={styles.lead}><ExpandedText text={hi ? "अपने खाते का ईमेल लिखें। हम उस पर एक लिंक भेजेंगे जिससे आप नया पासवर्ड चुन सकेंगे।" : "Enter the email for your account and we will send you a link to choose a new password."} /></p>
+              {!error && linkError === "reset_expired" && <p className={`error-banner ${styles.error}`} role="alert"><ExpandedText text={LINK_ERRORS.reset_expired[hi ? 1 : 0]} /></p>}
+              {error && <p className={`error-banner ${styles.error}`} role="alert"><ExpandedText text={t(error)} /></p>}
+              <form method="post" onSubmit={event => { event.preventDefault(); void sendReset(); }} className={styles.form}>
+                <div className={styles.field}>
+                  <Label className={styles.label} htmlFor="reset-email"><ExpandedText text={t("email")} /></Label>
+                  <Input className={styles.input} id="reset-email" type="email" autoComplete="email" required autoFocus value={email} onChange={e => setEmail(e.target.value)} />
+                </div>
+                <Button className={styles.submit} type="submit" disabled={busy || !hydrated} aria-busy={busy}><ExpandedText text={busy ? t("loading") : (hi ? "रीसेट लिंक भेजें" : "Send reset link")} /></Button>
+              </form>
+              <p className={styles.switchRow}><button type="button" className={styles.switchLink} disabled={busy} onClick={() => { setForgot(false); setError(null); }}><ExpandedText text={hi ? "वापस जाएँ" : "Back to sign in"} /></button></p>
+            </section>
           ) : sent ? (
             <section className={styles.notice}>
               <span className={styles.noticeIcon}><MailCheck size={20} aria-hidden="true" /></span>
@@ -241,7 +260,7 @@ export function AuthPage({ mode, enabled, initialEmail = "", redirectTo, linkErr
                   </div>
                   {mode === "signup" && <small className={styles.hint} id="auth-password-hint"><ExpandedText text={t("authPasswordHint")} /></small>}
                 </div>
-                {mode === "signin" && <button type="button" className={`${styles.switchLink} ${styles.forgot}`} disabled={busy} onClick={() => void sendReset()}><ExpandedText text={hi ? "पासवर्ड भूल गए?" : "Forgot password?"} /></button>}
+                {mode === "signin" && <button type="button" className={`${styles.switchLink} ${styles.forgot}`} disabled={busy} onClick={() => { setError(null); setForgot(true); }}><ExpandedText text={hi ? "पासवर्ड भूल गए?" : "Forgot password?"} /></button>}
                 <Button className={styles.submit} type="submit" disabled={busy || !hydrated} aria-busy={busy || !hydrated}><ExpandedText text={busy || !hydrated ? t("loading") : t(mode === "signin" ? "signin" : "signup")} /></Button>
               </form>
               {mode === "signup" && error === "user_already_exists" && <p className={styles.switchRow}><Link className={styles.switchLink} href={`/sign-in?email=${encodeURIComponent(email.trim())}${redirectTo ? `&redirect=${encodeURIComponent(safeRedirect(redirectTo))}` : ""}`}><ExpandedText text={t("signin")} /><ArrowUpRight size={15} aria-hidden="true" /></Link></p>}

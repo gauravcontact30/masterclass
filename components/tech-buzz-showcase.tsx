@@ -10,6 +10,7 @@ import { logoOf, techLogo, type TechBuzzCard } from "@/lib/tech-buzz-public";
 import { TechIcon } from "./tech-icon";
 import { FAVOURITE_TOPICS } from "@/lib/tech-buzz-favourites";
 import styles from "./tech-buzz-showcase.module.css";
+import { ReviewStars } from "./tech-buzz-review-stars";
 import Image from "next/image";
 import { isUnsplash, unoptimizedRemote, unsplashLoader } from "@/lib/image-loaders";
 import { ClapButton, useClaps } from "./clap-button";
@@ -111,6 +112,7 @@ function Cover({ card, className, sizes }: { card: TechBuzzCard; className?: str
 }
 
 function RatingBadge({ card }: { card: TechBuzzCard }) {
+  if (card.review) return <ReviewStars review={card.review} />;
   if (!card.rating.count) return <span className={styles.newBadge}>New</span>;
   return <span className={styles.rating} aria-label={`Rated ${card.rating.average.toFixed(1)} out of 5`}><Star size={12} fill="currentColor" aria-hidden="true" />{card.rating.average.toFixed(1)}</span>;
 }

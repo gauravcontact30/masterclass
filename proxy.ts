@@ -18,6 +18,12 @@ export default async function proxy(request: NextRequest) {
   const startTime = Date.now();
   const { pathname } = request.nextUrl;
   if (PUBLIC_DATA.has(pathname) && request.method === "GET") return NextResponse.next();
+  // Supabase sends an emailed link to the Site URL ("/") instead of /auth/callback when the link's redirect address is
+  // not on its Redirect URLs list, with ?code= on success or ?error_code= (e.g. otp_expired) on failure. The landing
+  // page ignores both, so the sign-in was lost and the reader saw the home page. Hand them to the callback instead.
+  if (pathname === "/" && (request.nextUrl.searchParams.has("code") || request.nextUrl.searchParams.has("error_code"))) {
+    return NextResponse.redirect(new URL(`/auth/callback${request.nextUrl.search}`, request.url));
+  }
   // Vercel Cron jobs carry the cron secret, which each /api/cron route checks itself (lib/server/visit-retention.ts).
   // Bot detection and the per-IP API budget are for visitors: the cron user agent was refused as a bot. Only the real
   // secret skips them; any Authorization header used to, which let anyone hammer these routes past both checks.

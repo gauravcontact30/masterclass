@@ -3,6 +3,7 @@ import { siteName, siteUrl } from "@/lib/seo";
 import { TechBuzzBlog, type TechBuzzGroup } from "@/components/tech-buzz-blog";
 import { listPublishedTechBuzzSummaries, withUnsplashCovers } from "@/lib/server/tech-buzz-storage";
 import { isTechnologyStory, toCard, topicLabel } from "@/lib/tech-buzz-public";
+import { withReview } from "@/lib/tech-buzz-reviews";
 
 // Renders only once its content is ready: no loading screen is ever shown in its place (no loading.tsx, no fallback).
 export const instant = false;
@@ -15,7 +16,7 @@ const DESCRIPTION = "Reader-rated technology blogs and engineering masterclasses
  */
 async function Blog() {
   const articles = await listPublishedTechBuzzSummaries();
-  const cards = await withUnsplashCovers(articles.filter(isTechnologyStory).map(toCard));
+  const cards = await withUnsplashCovers(articles.filter(isTechnologyStory).map(article => withReview(toCard(article))));
   // Categories (largest first), each with the technologies written about in it.
   const byCategory = new Map<string, TechBuzzGroup>();
   for (const card of cards) {

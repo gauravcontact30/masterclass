@@ -14,9 +14,10 @@ import { isLocalAddress, looksAutomated } from "@/lib/visit-quality";
  * (lib/live-visits.ts), because an incremental read does not see a visitor's older rows.
  */
 const LIMIT = 20_000, PAGE = 1000;
-/** Read only to judge a row (lib/visit-quality.ts); never sent to the browser. */
-const PRIVATE = new Set(["timezone", "language", "ip_masked"]);
-const BASE_COLUMNS = "id,created_at,event,visitor_id,session_id,user_id,new_visitor,path,title,referrer_host,utm_source,country,region,city,postal_code,device,browser,os,duration_ms,screen,timezone,language,ip_masked,ip_hash";
+/** Read only to judge a row (lib/visit-quality.ts); never sent to the browser. The browser's language and time zone are
+ *  sent: the stream's "Learner origin" shows them (it said "not reported" for every visitor while they were held back). */
+const PRIVATE = new Set(["ip_masked"]);
+const BASE_COLUMNS = "id,created_at,event,visitor_id,session_id,user_id,new_visitor,path,title,referrer_host,utm_source,utm_medium,utm_campaign,country,region,city,postal_code,device,browser,os,duration_ms,screen,timezone,language,ip_masked,ip_hash";
 /** private_mode arrives with migration 0048; until then the stream reads without it and private windows show as "likely" only. */
 const COLUMNS = `${BASE_COLUMNS},private_mode`;
 
@@ -38,7 +39,7 @@ export async function GET(request: Request) {
       .eq("is_bot", false).in("event", ["page_view", "page_leave"]).gte("created_at", since)
       .order("created_at", { ascending: false }).order("id", { ascending: false }).range(offset, offset + PAGE - 1);
     // The first page also says how many rows there are; the rest are read four at a time instead of one by one.
-    const [first, presence] = await Promise.all([page(0, true), readPresence(since)]);
+    const [first, presence, clickRows] = await Promise.all([page(0, true), readPresence(since), readClicks(since)]);
     let head = first;
     if (head.error?.code === "42703") { columns = BASE_COLUMNS; head = await page(0, true); }
     if (head.error) adminError(head.error);
@@ -68,7 +69,8 @@ export async function GET(request: Request) {
     if (emailCache.size > 5000) emailCache.clear();
     const emails = Object.fromEntries(ids.flatMap(id => { const email = emailCache.get(id)?.email; return email ? [[id, email]] : []; }));
     const visits = genuine.map(row => ({ ...row, email: typeof row.user_id === "string" ? emails[row.user_id] ?? null : null }));
-    return Response.json({ days: VISIT_RETENTION_DAYS, since, incremental: Boolean(asked), visits, emails, presence, hidden: rows.length - genuine.length,
+    const clicks = clickRows.filter(click => !automated.has(click.session_id));
+    return Response.json({ days: VISIT_RETENTION_DAYS, since, incremental: Boolean(asked), visits, emails, presence, clicks, hidden: rows.length - genuine.length,
       capped: (head.count ?? 0) > LIMIT, generatedAt: new Date().toISOString() }, { headers: { "Cache-Control": "private, no-store" } });
   }, request);
 }
@@ -78,4 +80,17 @@ async function readPresence(since: string) {
   const { data, error } = await db().from("site_presence").select("session_id,path,started_at,seen_at").gte("seen_at", since).order("seen_at", { ascending: false }).limit(5000);
   if (error) return null;
   return data ?? [];
+}
+
+/** Tracked clicks since `since` (components/visit-tracker.tsx: UI labels and paths only), for the visitor journeys. */
+async function readClicks(since: string) {
+  const { data, error } = await db().from("monitor_events").select("created_at,resource,details").eq("kind", "site_interaction").gte("created_at", since)
+    .order("created_at", { ascending: false }).limit(5000);
+  if (error) return [];
+  return (data ?? []).flatMap(row => {
+    const details = (row.details ?? {}) as Record<string, unknown>;
+    const text = (value: unknown, max: number) => typeof value === "string" && value ? value.slice(0, max) : null;
+    const session = text(details.session_id, 64), option = text(details.option, 100);
+    return session && option ? [{ created_at: String(row.created_at), session_id: session, path: text(row.resource, 300) ?? "/", topic: text(details.topic, 120), option, target_path: text(details.target_path, 300) }] : [];
+  });
 }

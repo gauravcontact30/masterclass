@@ -32,6 +32,7 @@ import { isUnsplash, unoptimizedRemote, unsplashLoader } from "@/lib/image-loade
 import { LanguageSwitcher } from "./language-switcher";
 import { useLanguage } from "./language-provider";
 import styles from "./tech-buzz-article.module.css";
+import { ReviewPanel, ReviewStars } from "./tech-buzz-review-stars";
 import { ClapButton, useClaps } from "./clap-button";
 import dynamic from "next/dynamic";
 import { KeyTakeaways, ProseText, SectionLists } from "./tech-buzz-prose";
@@ -445,6 +446,8 @@ export function TechBuzzArticleView({ article, related, prevStory, nextStory }: 
             fill
             className={styles.coverImage}
             preload
+            // The cover is the page's LCP element: fetch it ahead of scripts (its request started 2.3 s late on mobile).
+            fetchPriority="high"
             sizes="(max-width: 712px) 100vw, 680px"
             loader={loaderFor(article.coverImage)} unoptimized={remote(article.coverImage)}
           />
@@ -454,6 +457,7 @@ export function TechBuzzArticleView({ article, related, prevStory, nextStory }: 
 
       <div className={styles.articleBodyLayout}>
         <div className={styles.articleBodyInner}>
+          <ReviewPanel review={article.review} />
           {/* Enhanced Audio Voiceover Player with Speech Synthesis */}
           {article.audioVoiceover && (
             <div className={styles.articleAudioPlayerHero}>
@@ -904,7 +908,7 @@ export function TechBuzzArticleView({ article, related, prevStory, nextStory }: 
                     <span className={styles.moreBlogCardSubtitle}>{rel.subtitle}</span>
                     <span className={styles.moreBlogCardFooter}>
                       <span>{rel.readTimeMinutes} min read</span>
-                      {rel.rating.count
+                      {rel.review ? <ReviewStars review={rel.review} /> : rel.rating.count
                         ? <span className={styles.moreBlogRating}><Star size={12} fill="currentColor" aria-hidden="true" />{rel.rating.average}<span className={styles.srOnly}> out of 5</span></span>
                         : <span>New story</span>}
                     </span>

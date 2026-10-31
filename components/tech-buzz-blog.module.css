@@ -2553,3 +2553,9 @@
   .stories[data-view="list"] .storyLink, .stories[data-view="grid"] .storyLink { transition: none; }
   .stories[data-view="list"] .storyLink:hover, .stories[data-view="grid"] .storyLink:hover { transform: none; }
 }
+
+/* Below-the-fold sections skip style, layout and paint until they near the viewport; see tech-buzz-showcase.module.css. */
+.techTracksSection { content-visibility: auto; contain-intrinsic-size: auto 520px; }
+.roadmapsSection { content-visibility: auto; contain-intrinsic-size: auto 760px; }
+.feed { content-visibility: auto; contain-intrinsic-size: auto 2400px; }
+.categorySection { content-visibility: auto; contain-intrinsic-size: auto 900px; }

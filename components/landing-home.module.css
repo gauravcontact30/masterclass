@@ -720,6 +720,23 @@
 @media (max-width: 359px) {
   .brand :global(.brand-name) { display: none; }
 }
+/* Five round controls plus the mark must fit 360px and below, down to 240px watches and fold covers. */
+@media (max-width: 380px) {
+  /* The paragraph wraps to a fourth line here, so the headline steps down and the slider controls move into the
+     empty band at the foot of the hero instead of covering "Read Tech Buzz". */
+  .heroCopy { --h2-size: 33px; }
+  .heroControls { bottom: 24px; }
+  .home { --nav-control-h: 34px; }
+  .navActions { gap: 3px; }
+  .navMenu, .plansButton { width: 34px; height: 34px; }
+}
+@media (max-width: 300px) {
+  .home { --nav-control-h: 30px; }
+  .navActions { gap: 2px; }
+  .navMenu, .plansButton { width: 30px; height: 30px; }
+  .navbarInner { width: calc(100% - 16px); gap: 4px; }
+  .brand :global(.brand-mark) { width: 26px; height: 26px; }
+}
 @media (prefers-reduced-motion: reduce) {
   .heroSlide, .heroSlide[data-active], .heroImage, .heroCopy > *, .navIndicator, .navbar { transition: none; }
   .heroImage, .heroSlide[data-active] .heroImage, .heroCopy > * { transform: none; }

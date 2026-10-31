@@ -4,6 +4,7 @@ import { siteName, siteUrl } from "@/lib/seo";
 import { getPublishedTechBuzzArticle, listPublishedTechBuzzArticles, withUnsplashCovers } from "@/lib/server/tech-buzz-storage";
 import { TechBuzzArticleView } from "@/components/tech-buzz-article-view";
 import { isTechnologyStory, techIdOf, toCard, toPreview } from "@/lib/tech-buzz-public";
+import { withReview } from "@/lib/tech-buzz-reviews";
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -86,10 +87,10 @@ export default async function TechBuzzArticlePage({ params }: PageProps) {
   const stories = (await listPublishedTechBuzzArticles()).filter(isTechnologyStory);
   const index = stories.findIndex(story => story.id === article.id);
   const rank = (story: (typeof stories)[number]) => (story.technology === article.technology ? 0 : story.category === article.category ? 1 : 2);
-  const related = await withUnsplashCovers(stories.filter(story => story.id !== article.id).sort((a, b) => rank(a) - rank(b)).slice(0, 9).map(toCard));
-  const prevStory = index > 0 ? toCard(stories[index - 1]) : null;
-  const nextStory = index >= 0 && index < stories.length - 1 ? toCard(stories[index + 1]) : null;
-  const [preview] = await withUnsplashCovers([{ ...toPreview(article), techId: techIdOf(article) }]);
+  const related = await withUnsplashCovers(stories.filter(story => story.id !== article.id).sort((a, b) => rank(a) - rank(b)).slice(0, 9).map(story => withReview(toCard(story))));
+  const prevStory = index > 0 ? withReview(toCard(stories[index - 1])) : null;
+  const nextStory = index >= 0 && index < stories.length - 1 ? withReview(toCard(stories[index + 1])) : null;
+  const [preview] = await withUnsplashCovers([withReview({ ...toPreview(article), techId: techIdOf(article) })]);
 
   const origin = siteUrl().href;
   const pageUrl = new URL(`/tech-buzz/${article.slug}`, origin).href;

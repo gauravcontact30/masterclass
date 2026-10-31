@@ -2,6 +2,7 @@ import type { ArticleComment, TechBuzzArticle } from "./tech-buzz-data";
 import { DAILY_TAG, isInternalTag } from "./tech-buzz-sections";
 import { topicsOf } from "./tech-buzz-favourites";
 import { countCodeBlocks, withoutCode } from "./prose-markup";
+import type { ExpertReview } from "./tech-buzz-reviews";
 
 /**
  * What each Tech Buzz audience may receive. Lists get light cards, everyone gets the free preview of an article, and
@@ -66,6 +67,8 @@ export type TechBuzzCard = {
   topics: string[];
   /** The editor's pre-publish score out of 5, when it had one. */
   editorScore?: number;
+  /** The senior full-stack star review (lib/tech-buzz-reviews.ts), attached on the server by withReview. */
+  review?: ExpertReview;
 };
 
 export function toCard(article: TechBuzzArticle): TechBuzzCard {
@@ -88,7 +91,7 @@ export function toCard(article: TechBuzzArticle): TechBuzzCard {
 
 /** The free part of a story: everything but the body, plus its first section's opening paragraphs and an outline. */
 export type TechBuzzPreview = Omit<TechBuzzArticle, "contentSections" | "founderTakeaway" | "comments"> & {
-  teaser: TechBuzzSection; outline: string[]; lockedCodeSamples: number; photoCredit?: string;
+  teaser: TechBuzzSection; outline: string[]; lockedCodeSamples: number; photoCredit?: string; review?: ExpertReview;
 };
 
 export function toPreview(article: TechBuzzArticle): TechBuzzPreview {

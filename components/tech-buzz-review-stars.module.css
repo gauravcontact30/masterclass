@@ -1,0 +1,60 @@
+.track {
+  position: relative;
+  display: inline-block;
+  color: #d6d3cb;
+  letter-spacing: 1px;
+  line-height: 1;
+  white-space: nowrap;
+}
+.track span {
+  position: absolute;
+  inset: 0 auto 0 0;
+  overflow: hidden;
+  color: #d97706;
+}
+
+.compact {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  white-space: nowrap;
+}
+.compact b { font-weight: 700; color: #92400e; }
+
+.panel {
+  margin: 20px 0;
+  padding: 14px 16px;
+  border: 1px solid #f1d9b5;
+  border-radius: 12px;
+  background: #fffaf2;
+  color: #3d3d3a;
+}
+.head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 10px;
+  margin: 0;
+  color: #92400e;
+}
+.byline { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; }
+.head .track { font-size: 18px; }
+.score { font-size: 17px; color: #78350f; }
+.score span { font-size: 12px; font-weight: 500; color: #8a6a3f; }
+.verdict { margin: 8px 0 0; font-size: 15px; line-height: 1.55; }
+.note { margin: 6px 0 0; font-size: 12px; line-height: 1.5; color: #6b6a65; }
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+@media (max-width: 360px) {
+  .panel { padding: 12px; }
+  .verdict { font-size: 14px; }
+}

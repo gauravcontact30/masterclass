@@ -169,7 +169,7 @@ a:hover .cover > img, a:focus-visible .cover > img { transform: scale(1.05); }
 .tabPager button:hover:not(:disabled) { border-color: #d97757; color: #c6613f; }
 .tabPager button[aria-current="page"] { border-color: #1f1e1c; background: #1f1e1c; color: #fff; }
 .tabPager button:disabled { opacity: .4; cursor: default; }
-.groupTabs button { display: inline-flex; align-items: center; gap: 8px; flex-shrink: 0; min-height: 38px; padding: 0 14px; border-radius: 999px; border: 1px solid color-mix(in srgb, var(--tone) 30%, #ffffff); background: var(--tint); color: var(--tone); font: inherit; font-size: 13px; font-weight: 700; cursor: pointer; transition: background .15s, color .15s; }
+.groupTabs button { display: inline-flex; align-items: center; gap: 8px; flex-shrink: 0; max-width: 100%; text-align: left; min-height: 38px; padding: 0 14px; border-radius: 999px; border: 1px solid color-mix(in srgb, var(--tone) 30%, #ffffff); background: var(--tint); color: var(--tone); font: inherit; font-size: 13px; font-weight: 700; cursor: pointer; transition: background .15s, color .15s; }
 .groupTabs button:hover, .groupTabs button[aria-selected="true"] { background: var(--tone); color: #fff; }
 .groupTabs button[aria-selected="true"] span { color: var(--tone); }
 .groupPanel { display: grid; gap: clamp(18px, 2.6vw, 26px); min-width: 0; }
@@ -289,3 +289,8 @@ a:hover .cover > img, a:focus-visible .cover > img { transform: scale(1.05); }
 
 @media (max-width: 960px) { .favBody { grid-template-columns: minmax(0, 1fr); } }
 @media (max-width: 480px) { .favTabs button { min-height: 34px; padding: 0 10px; font-size: 12.5px; } .favFeature { padding: 10px; } }
+
+/* Below-the-fold sections skip style, layout and paint until they near the viewport (mobile main thread spent ~2.8 s on
+   style and layout for the whole page); `auto` remembers each section's real height once it has rendered. */
+.stars, .n8n { content-visibility: auto; contain-intrinsic-size: auto 640px; }
+.favourites { content-visibility: auto; contain-intrinsic-size: auto 760px; }

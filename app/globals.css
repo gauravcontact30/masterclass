@@ -19,6 +19,11 @@ html[data-app-font] body,html[data-app-font] body *:not(code,pre,kbd,samp,code *
 :where(html[data-app-font]) body{font-size-adjust:.545;overflow-wrap:break-word}
 :where(html[data-app-font] body :is(div,section,article,main,aside,header,footer,nav,ul,ol,li,dl,dd,form,fieldset,figure,p,h1,h2,h3,h4,label)){min-width:0}
 :where(html[data-app-font]) :is(img,video,canvas,iframe){max-width:100%}
+/* Form fields size to their column instead of their default 20-character width, which overflowed narrow phones. */
+:where(html[data-app-font]) :is(input,select,textarea){min-width:0;max-width:100%}
+/* Below the smallest phones (watches, 240px fold covers) the page lays out at 280px and scales to fit, instead of
+   every component needing its own 240px layout. */
+@media (max-width:279px){html{zoom:.86}}@media (max-width:240px){html{zoom:.8}}
 :where(html[data-app-font]) img{height:auto}
 /* Whatever the font, nothing scrolls the page sideways: a too-wide element is clipped at the screen edge. clip (not
    hidden) keeps position: sticky working. */

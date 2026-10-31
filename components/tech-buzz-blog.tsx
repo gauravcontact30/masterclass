@@ -19,6 +19,7 @@ import { isUnsplash, unoptimizedRemote, unsplashLoader } from "@/lib/image-loade
 import { loadGoogleFont } from "@/lib/google-fonts";
 import { FontFamilyDropdown } from "./font-family-dropdown";
 import styles from "./tech-buzz-blog.module.css";
+import { ReviewStars } from "./tech-buzz-review-stars";
 import { TechBuzzShowcase } from "./tech-buzz-showcase";
 
 /**
@@ -184,6 +185,7 @@ function Meta({ card }: { card: TechBuzzCard }) {
     <span className={styles.member} title="Member-only deep dive"><Sparkles size={13} aria-hidden="true" />Member</span>
     <span>{dateLabel(card.publishedAt)}</span>
     <span><Clock size={13} aria-hidden="true" />{card.readTimeMinutes} min</span>
+    <ReviewStars review={card.review} />
     <Stars rating={card.rating} />
     {card.claps > 0 && <span title="Claps">👏 {compact(card.claps)}</span>}
     {card.reactions > 0 && <span title="Reactions"><Heart size={13} aria-hidden="true" />{compact(card.reactions)}</span>}
@@ -1138,7 +1140,7 @@ export function TechBuzzBlog({ cards, groups, showcase = false }: { cards: TechB
                           {card.author.name}
                         </span>
                         <b>{card.title}</b>
-                        <Stars rating={card.rating} />
+                        {card.review ? <ReviewStars review={card.review} /> : <Stars rating={card.rating} />}
                       </Link>
                     </li>
                   ))}
