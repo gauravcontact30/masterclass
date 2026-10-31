@@ -1,5 +1,5 @@
 "use client";
-import Image from "next/image";
+import Image from "@/components/responsive-image";
 import { useEffect, useState, type FocusEvent } from "react";
 import { Library, Pause, Play } from "lucide-react";
 import { useLanguage } from "./language-provider";

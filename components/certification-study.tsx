@@ -1,5 +1,5 @@
 "use client";
-import Image from "next/image";
+import Image from "@/components/responsive-image";
 import { createElement, useEffect, useMemo, useState } from "react";
 import { AlertTriangle, ArrowRight, BookOpenCheck, Brain, Scale, ScrollText, SearchCheck, Check, CheckCircle2, ChevronLeft, ChevronRight, Code2, Eye, EyeOff, GraduationCap, Lightbulb, ListChecks, MessageSquareText, RotateCcw, Sparkles, Target, Terminal, Timer, Trophy, Workflow, X } from "lucide-react";
 import { CERTIFICATION_BRANDS } from "@/lib/certification-brands";

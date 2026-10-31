@@ -1,4 +1,5 @@
 "use client";
+import { ContentImage } from "./content-image";
 import type { FreshDifference } from "@/lib/landing-fresh-types";
 import { pickDaily } from "@/lib/daily-rotation";
 import { DailyCard } from "./landing-daily-card";
@@ -163,8 +164,8 @@ function ChainPicture({ sources, alt, icon, children }: Readonly<{ sources: (str
   const [index, setIndex] = useState(0);
   const src = usable[index];
   return <div className={interview.picture} data-empty={!src}>
-    {src ? /* eslint-disable-next-line @next/next/no-img-element -- pre-sized WebP from the storage bucket, as on the interview slides. */
-      <img key={src} src={src} alt={alt} loading="lazy" decoding="async" onError={() => setIndex(i => i + 1)} /> : <span className={interview.placeholder}>{icon}</span>}
+    {src ?
+      <ContentImage key={src} src={src} alt={alt} loading="lazy" decoding="async" onError={() => setIndex(i => i + 1)} /> : <span className={interview.placeholder}>{icon}</span>}
     {children}
   </div>;
 }
@@ -176,8 +177,7 @@ function TechThumb({ id, name }: Readonly<{ id: string | null; name: string }>) 
   if (!src || failed) return null;
   // The pictures are 960×640 (3:2): width and height carry that ratio, so the thumbnail is never squeezed or cropped
   // (320×160 was flagged as a distorted image by SEO checkers).
-  // eslint-disable-next-line @next/next/no-img-element -- pre-sized WebP thumbnail from the storage bucket.
-  return <img className={styles.thumb} src={src} alt={`Illustration of ${name}`} width={300} height={200} loading="lazy" decoding="async" onError={() => setFailed(true)} />;
+  return <ContentImage className={styles.thumb} src={src} alt={`Illustration of ${name}`} width={300} height={200} loading="lazy" decoding="async" onError={() => setFailed(true)} />;
 }
 
 /**

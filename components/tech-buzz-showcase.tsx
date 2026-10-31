@@ -11,7 +11,7 @@ import { TechIcon } from "./tech-icon";
 import { FAVOURITE_TOPICS } from "@/lib/tech-buzz-favourites";
 import styles from "./tech-buzz-showcase.module.css";
 import { ReviewStars } from "./tech-buzz-review-stars";
-import Image from "next/image";
+import Image from "@/components/responsive-image";
 import { isUnsplash, unoptimizedRemote, unsplashLoader } from "@/lib/image-loaders";
 import { ClapButton, useClaps } from "./clap-button";
 

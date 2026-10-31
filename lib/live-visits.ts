@@ -59,8 +59,8 @@ export type VisitSummary = {
   views: number; pages: number; steps: JourneyStep[]; clicks: number;
   categories: { category: string; ms: number; pages: number }[];
   entry: string; exit: string | null; source: string | null; campaign: string | null;
-  /** "exact": every closed page sent its leave beacon; "partial": some pages were timed to their last heartbeat or not at all. */
-  timing: "exact" | "partial" | "live";
+  /** Beacons record visibility ending, not a confirmed browser/session exit. */
+  timing: "recorded" | "partial" | "live";
 };
 export type JourneyStage = "Learner" | "Evaluating plans" | "Account holder" | "Signing up" | "Studying content" | "Browsing";
 export type StreamVisitor = {
@@ -122,7 +122,7 @@ export function privateSignal(views: StreamVisit[]): PrivateSignal | null {
 }
 
 /** What one page view is known to have: its closed stretches, and the stretch still running when there is one. */
-type ViewFacts = { from: number; stretches: [number, number][]; beaconMs: number; lastLeave: number | null; beacons: number; running: { since: number; seen: number; heartbeat: boolean } | null; legacyOpen: boolean };
+type ViewFacts = { from: number; stretches: [number, number][]; beaconMs: number; lastLeave: number | null; beacons: number; partial: boolean; running: { since: number; seen: number; heartbeat: boolean } | null; legacyOpen: boolean };
 type Person = { key: string; user: string | null; email: string | null; views: StreamVisit[]; lastEvent: number };
 export type VisitIndex = { facts: Map<StreamVisit, ViewFacts>; people: Person[]; clicks: Map<string, StreamClick[]> };
 
@@ -159,18 +159,23 @@ export function indexVisits(rows: StreamVisit[], presence: Presence[] | null, cl
         // Its start is the browser's own (started_at): a page's first stretch begins before the server stamped the view,
         // at navigation start for the page load and a second earlier for a client-side route, so it is not cut at `from`
         // (that made an open page's clock jump by several seconds when it closed and its leave beacon arrived).
-        if (beat && seen > (entry.lastLeave ?? entry.from)) entry.running = { since: Math.max(at(beat.started_at), entry.lastLeave ?? entry.from - EARLY_START_MS), seen, heartbeat: true };
+        if (beat && Number.isFinite(at(beat.started_at)) && seen >= at(beat.started_at) && seen >= entry.from && seen > (entry.lastLeave ?? -Infinity)) entry.running = { since: Math.max(at(beat.started_at), entry.lastLeave ?? entry.from - EARLY_START_MS), seen, heartbeat: true };
         else if (presence && entry.lastLeave == null) entry.running = { since: entry.from, seen: entry.from, heartbeat: false };
         entry.legacyOpen = !presence && entry.lastLeave == null && latestView.get(view.session_id) === entry.from;
       }
       facts.set(view, entry);
     };
     for (const row of list) {
-      if (row.event === "page_view") { close(false); view = row; entry = { from: at(row.created_at), stretches: [], beaconMs: 0, lastLeave: null, beacons: 0, running: null, legacyOpen: false }; }
+      if (row.event === "page_view") { close(false); view = row; entry = { from: at(row.created_at), stretches: [], beaconMs: 0, lastLeave: null, beacons: 0, partial: false, running: null, legacyOpen: false }; }
       else if (entry) {
-        const ms = Math.max(0, Number(row.duration_ms) || 0), end = at(row.created_at);
-        entry.beaconMs += ms; entry.lastLeave = end; entry.beacons++;
-        if (ms) entry.stretches.push([end - ms, end]);
+        const duration = Number(row.duration_ms), end = at(row.created_at);
+        // A malformed or overlapping duration must not move arrival arbitrarily backwards or count time twice.
+        const ms = Number.isFinite(duration) ? Math.max(0, duration) : 0;
+        const start = Math.max(end - ms, entry.lastLeave ?? entry.from - EARLY_START_MS);
+        if (end > start) entry.stretches.push([start, end]);
+        entry.beaconMs += Math.max(0, end - start);
+        if (row.duration_ms == null || !Number.isFinite(duration) || duration < 0 || start > end - ms) entry.partial = true;
+        entry.lastLeave = end; entry.beacons++;
       }
     }
     close(true);
@@ -290,7 +295,8 @@ export function streamVisitors(index: VisitIndex, now: number, emails: Record<st
     const times = views.map(view => ({ view, time: pageTime(index.facts.get(view), now) }));
     const openNow = times.filter(t => t.time?.open).at(-1);
     const lastAt = Math.max(person.lastEvent, ...times.map(t => t.time?.lastSignal ?? 0));
-    const latest = times.reduce<typeof times[number] | null>((best, t) => !best || (t.time?.lastSignal ?? 0) >= (best.time?.lastSignal ?? 0) ? t : best, null);
+    const signalAt = (t: typeof times[number]) => t.time?.lastSignal ?? at(t.view.created_at);
+    const latest = times.reduce<typeof times[number] | null>((best, t) => !best || signalAt(t) >= signalAt(best) ? t : best, null);
 
     // Every visit (session) in the window, oldest first, each timed from its own pages' stretches.
     const sessionIds = [...new Set(views.map(view => view.session_id))];
@@ -320,7 +326,7 @@ export function streamVisitors(index: VisitIndex, now: number, emails: Record<st
 
     // Merged per visit, so a page open in two windows at once is counted once.
     const engagedMs = totalReadingMs;
-    const focusRatio = stayDurationMs >= 1000 ? Math.min(100, Math.round((sessionEngagedMs / stayDurationMs) * 100)) : 100;
+    const focusRatio = stayDurationMs > 0 ? Math.min(100, Math.round((sessionEngagedMs / stayDurationMs) * 100)) : 0;
     let intensityTier: "Deep Focus" | "Active Study" | "Exploring" = "Exploring";
     if (focusRatio >= 70 && sessionEngagedMs >= 120_000) intensityTier = "Deep Focus";
     else if (sessionEngagedMs >= 45_000 || (focusRatio >= 40 && sessionEngagedMs >= 15_000)) intensityTier = "Active Study";
@@ -338,7 +344,7 @@ export function streamVisitors(index: VisitIndex, now: number, emails: Record<st
     let leftAlgorithm: "beacon" | "heartbeat" | "legacy" | "live" = "live";
     if (openNow) leftAlgorithm = "live";
     else if (latest?.time?.beacon) leftAlgorithm = "beacon";
-    else if (latest?.time?.lastSignal) leftAlgorithm = "heartbeat";
+    else if (latest && index.facts.get(latest.view)?.running?.heartbeat) leftAlgorithm = "heartbeat";
     else leftAlgorithm = "legacy";
 
     const hasBeacon = times.some(t => (index.facts.get(t.view)?.beaconMs ?? 0) > 0);
@@ -354,7 +360,7 @@ export function streamVisitors(index: VisitIndex, now: number, emails: Record<st
       page: currentTime ? { ms: currentTime.ms, open: currentTime.open } : null, views: views.length, pages: new Set(views.map(view => view.path)).size,
       sessions: sessionIds.length, engagedMs,
       trail, source: visit.source,
-      arrived: first.created_at, lastAt, left: openNow ? null : lastAt, beacon: !openNow && Boolean(latest?.time?.beacon),
+      arrived: first.created_at, lastAt, left: visit.open ? null : visit.end, beacon: !openNow && Boolean(latest?.time?.beacon),
       live: Boolean(openNow), signedIn,
       stayDurationMs,
       sessionEngagedMs,
@@ -408,7 +414,7 @@ function summarizeVisit(sessionId: string, times: { view: StreamVisit; time: Ret
     entry.ms += step.ms ?? 0; entry.pages.add(step.path);
     byCategory.set(step.category, entry);
   }
-  const closedUntimed = times.some(t => !t.time?.open && !(t.time?.beacon));
+  const closedUntimed = times.some(t => index.facts.get(t.view)?.partial || (!t.time?.open && !(t.time?.beacon)));
   const firstView = times[0].view;
   return {
     sessionId, start, end, stayMs, readingMs, awayMs: Math.max(0, stayMs - readingMs), open,
@@ -417,7 +423,7 @@ function summarizeVisit(sessionId: string, times: { view: StreamVisit; time: Ret
     entry: firstView.path, exit: open ? null : times.at(-1)!.view.path,
     source: firstView.utm_source || firstView.referrer_host || null,
     campaign: firstView.utm_medium || firstView.utm_campaign ? [firstView.utm_medium, firstView.utm_campaign].filter(Boolean).join(" · ") : null,
-    timing: open ? "live" : closedUntimed ? "partial" : "exact",
+    timing: open ? "live" : closedUntimed ? "partial" : "recorded",
   };
 }
 

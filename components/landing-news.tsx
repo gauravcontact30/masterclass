@@ -7,7 +7,7 @@ import { ArrowUpRight, Bot, CircleHelp, Hammer, GraduationCap, Lightbulb, ListCh
 import { NEWS_BASICS, NEWS_PER_SLIDE, NEWS_PRACTICE, NEWS_SLIDES, QUESTIONS_PER_SLIDE, type InterviewAsk, type LandingNews as LandingNewsData, type NewsLogo, type NewsSlideData, type NewsSlideId, type NewsSlideMeta, type NewsStory } from "@/lib/landing-news";
 import { DEFAULT_LANDING_NEWS } from "@/lib/landing-news-fallback";
 import { NEWS_MORE_BASICS, NEWS_QUICK_CHECKS } from "@/lib/landing-news-study";
-import Image from "next/image";
+import Image from "@/components/responsive-image";
 import Link from "next/link";
 import { ListenButton } from "./listen-button";
 import { useLanguage } from "./language-provider";

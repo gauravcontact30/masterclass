@@ -1,3 +1,4 @@
+import { ContentImage } from "./content-image";
 import type { MouseEvent, ReactNode } from "react";
 import { CodeFiles } from "./code-files";
 import { codeFileName, FENCE, IMAGE_LINE } from "@/lib/prose-markup";
@@ -104,8 +105,7 @@ export function ProseText({ text, paragraphClass, listClass, orderedClass }: { t
       case "quote": return <blockquote key={index} className={styles.quote}>{block.text.split("\n").map((line, i) => <p key={i}><Inline text={line} /></p>)}</blockquote>;
       case "hr": return <hr key={index} className={styles.rule} />;
       case "img": return <figure key={index} className={styles.figure} onClick={keep}>
-        {/* eslint-disable-next-line @next/next/no-img-element -- writers' pictures live in Supabase Storage */}
-        <img src={block.src} alt={block.alt} loading="lazy" decoding="async" />
+        <ContentImage src={block.src} alt={block.alt} loading="lazy" decoding="async" />
         {block.alt && <figcaption>{block.alt}</figcaption>}
       </figure>;
       case "code": return <div key={index} className={styles.codeBlock} onClick={keep}>

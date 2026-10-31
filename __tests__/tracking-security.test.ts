@@ -6,6 +6,7 @@ import { supabaseServer } from "@/lib/server/auth";
 import { api, HttpError, sameOrigin } from "@/lib/server/http";
 import { recordEvent } from "@/lib/server/monitoring";
 import { isUntrackedEmail } from "@/lib/server/tracking-exclusions";
+import { db } from "@/lib/server/db";
 jest.mock("next/headers", () => ({ cookies: jest.fn() }));
 jest.mock("next/server", () => ({ after: jest.fn() }));
 jest.mock("@/lib/server/auth", () => ({ supabaseServer: jest.fn() }));
@@ -31,6 +32,29 @@ test("excluded user gets an opt-out cookie and schedules no visit write", async 
 test("regular learner still schedules a visit", async () => {
   (supabaseServer as jest.Mock).mockResolvedValue({ auth: { getClaims: async () => ({ data: { claims: { sub: "learner", email: "learner@example.com" } } }) } });
   expect((await POST(request(JSON.stringify({ type: "view", path: "/learning" })))).status).toBe(204);
+  expect(after).toHaveBeenCalledTimes(1);
+});
+
+test.each(["view", "leave", "ping"])("%s uses request receipt time despite slow authentication and deferred persistence", async type => {
+  const received = Date.parse("2026-10-30T18:29:58Z");
+  let now = received;
+  const clock = jest.spyOn(Date, "now").mockImplementation(() => now);
+  const write = jest.fn().mockResolvedValue({ error: null });
+  (db as jest.Mock).mockReturnValue({ from: () => ({ insert: write, upsert: write }) });
+  (supabaseServer as jest.Mock).mockResolvedValue({ auth: { getClaims: async () => { now += 30_000; return { data: { claims: {} } }; } } });
+  try {
+    await POST(request(JSON.stringify({ type, path: "/learn", duration: 5000 }), { "user-agent": "Mozilla/5.0 Chrome/130.0 Safari/537.36" }));
+    now += 60_000;
+    await (after as jest.Mock).mock.calls.at(-1)![0]();
+    expect(write).toHaveBeenCalledWith(expect.objectContaining(type === "ping"
+      ? { seen_at: new Date(received).toISOString(), started_at: new Date(received - 5000).toISOString() }
+      : { created_at: new Date(received).toISOString() }), ...(type === "ping" ? [{ onConflict: "session_id,path" }] : []));
+  } finally { clock.mockRestore(); }
+});
+
+test("a sub-second resumed stretch still records a leave to end presence", async () => {
+  (supabaseServer as jest.Mock).mockResolvedValue({ auth: { getClaims: async () => ({ data: { claims: {} } }) } });
+  expect((await POST(request(JSON.stringify({ type: "leave", path: "/learn", duration: 200 })))).status).toBe(204);
   expect(after).toHaveBeenCalledTimes(1);
 });
 

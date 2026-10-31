@@ -2,7 +2,7 @@
 
 import learningCard from "./learning-card.module.css";
 import { useState } from "react";
-import Image from "next/image";
+import Image from "@/components/responsive-image";
 import { Images, Maximize2 } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "./ui/dialog";
 import { Pager } from "./pager";

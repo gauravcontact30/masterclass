@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo, useCallback } from "react";
-import Image from "next/image";
+import Image from "@/components/responsive-image";
 import Link from "next/link";
 import {
   Star,
@@ -612,7 +612,7 @@ export function CoursesFeed() {
                   <span className={styles.starRatingBadge} title={`Rated ${course.rating.average} / 5`}>
                     <Star size={11} fill="#f59e0b" color="#f59e0b" />
                     <span>{course.rating.average}</span>
-                    <span style={{ opacity: 0.7 }}>({course.rating.count})</span>
+                    <span style={{ fontWeight: 500 }}>({course.rating.count})</span>
                   </span>
 
                   <button
@@ -778,7 +778,7 @@ export function CoursesFeed() {
                     <span className={styles.starRatingBadge} title={`Rated ${course.rating.average} / 5`}>
                       <Star size={11} fill="#f59e0b" color="#f59e0b" />
                       <span>{course.rating.average}</span>
-                      <span style={{ opacity: 0.7 }}>({course.rating.count})</span>
+                      <span style={{ fontWeight: 500 }}>({course.rating.count})</span>
                     </span>
 
                     <button

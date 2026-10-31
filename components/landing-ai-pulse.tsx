@@ -1,4 +1,5 @@
 "use client";
+import { ContentImage } from "./content-image";
 import { useState, type ReactNode } from "react";
 import { BookOpen, Bot, Boxes, Braces, ChevronLeft, ChevronRight, Cloud, Code2, Database, FlaskConical, GitBranch, Layers, Network, Pause, Play, Puzzle, Server, Sparkles, Workflow, Zap, type LucideIcon } from "lucide-react";
 import { problemPoints } from "@/lib/problem-points";
@@ -129,8 +130,8 @@ function PulsePicture({ src, alt, icon, children }: { src: string | null; alt: s
   const [failed, setFailed] = useState(false);
   const empty = !src || failed;
   return <div className={styles.picture} data-empty={empty}>
-    {empty ? <span className={styles.placeholder}>{icon}</span> : /* eslint-disable-next-line @next/next/no-img-element -- pre-sized WebP from the storage bucket, as on the Search cards. */
-      <img src={src} alt={alt} loading="lazy" decoding="async" onError={() => setFailed(true)} />}
+    {empty ? <span className={styles.placeholder}>{icon}</span> :
+      <ContentImage src={src} alt={alt} loading="lazy" decoding="async" onError={() => setFailed(true)} />}
     {children}
   </div>;
 }

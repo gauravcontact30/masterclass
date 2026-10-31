@@ -1,4 +1,4 @@
-import Image from "next/image";
+import Image from "@/components/responsive-image";
 import { logoOf } from "@/lib/tech-buzz-public";
 
 /** The technology's own logo (public/images/tech) beside its name in a Tech Buzz pill; nothing when it has none. */

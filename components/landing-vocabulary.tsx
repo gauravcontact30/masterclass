@@ -1,4 +1,5 @@
 "use client";
+import { ContentImage } from "./content-image";
 import { useEffect, useState, type ReactNode } from "react";
 import { Equal, EqualNot, Quote, Sparkles, Volume2 } from "lucide-react";
 import type { DailyWord, LockedTeaser, RelatedWord } from "@/lib/landing-daily-types";
@@ -80,8 +81,8 @@ function WordCard({ entry, index, total, speaking, onHear, compact = false }: { 
   const item = useContentItem(k, "word");
   return <li className={`${pulse.card} ${styles.card}`} data-tone={entry.tone} aria-roledescription="slide" aria-label={`${index + 1} / ${total}: ${entry.word}`} {...item.props}>{item.toolbar}
     <div className={styles.picture} data-empty={!src || failed}>
-      {src && !failed && /* eslint-disable-next-line @next/next/no-img-element -- pre-sized WebP from the vocabulary bucket, as on the Search cards. */
-        <img src={src} alt={`Picture showing the meaning of ${entry.word}`} loading="lazy" decoding="async" onError={() => setFailed(true)} />}
+      {src && !failed &&
+        <ContentImage src={src} alt={`Picture showing the meaning of ${entry.word}`} loading="lazy" decoding="async" onError={() => setFailed(true)} />}
       <span className={styles.category}>{entry.category}</span>
       {index === 0 && <span className={styles.ribbon}><Sparkles size={12} aria-hidden="true" />{t.wordOfDay}</span>}
       <div className={styles.langToggle} role="group" aria-label={`${t.language}: ${entry.word}`}>

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useCallback } from "react";
-import Image from "next/image";
+import Image from "@/components/responsive-image";
 import Link from "next/link";
 import { ArrowRight, Check, CheckCircle2, Copy, HelpCircle, Sparkles, Terminal, X } from "lucide-react";
 import type { TechnologyInfo } from "@/lib/technology-catalog";

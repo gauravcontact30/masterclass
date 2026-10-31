@@ -2,7 +2,7 @@
 
 import { TECH_BUZZ_TRACKED } from "@/lib/tech-buzz-sections";
 import { useState, useEffect, useCallback, useMemo, useRef, useSyncExternalStore } from "react";
-import Image from "next/image";
+import Image from "@/components/responsive-image";
 import Link from "next/link";
 import {
   ArrowLeft,

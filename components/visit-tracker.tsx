@@ -3,7 +3,7 @@ import { useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
 
 /** Set by the early page-view beacon in <head> (lib/early-track.ts). */
-declare global { interface Window { __mcEarly?: { path: string; sent: boolean; taken: boolean; pending?: Promise<unknown>; priv?: boolean | null } } }
+declare global { interface Window { __mcEarly?: { path: string; sent: boolean; taken: boolean; since?: number | null; pending?: Promise<unknown>; priv?: boolean | null } } }
 
 /** The referrer belongs to the page load, not to every client-side navigation after it. */
 let referrerSent = false;
@@ -51,12 +51,12 @@ export function VisitTracker() {
     if (early && !early.taken && early.sent && early.path === pathname) {
       early.taken = true;
       referrerSent = true;
-      open.current = { path: pathname, since: document.visibilityState === "hidden" ? null : 0 };
+      open.current = { path: pathname, since: document.visibilityState === "hidden" ? null : early.since ?? performance.now() };
     }
     if (early) early.taken = true;
     // Send the view once the page has been visible for MIN_SEEN_MS (which also lets document.title become the new
     // page's): a page closed or left sooner is not recorded at all. Time on page still counts from when it opened.
-    const opened = firstPage ? 0 : performance.now();
+    let opened = firstPage ? early?.since ?? performance.now() : performance.now();
     let timer: ReturnType<typeof setTimeout> | undefined;
     const record = () => {
       if (open.current?.path === pathname) return;
@@ -86,7 +86,12 @@ export function VisitTracker() {
     const heartbeat = setInterval(beat, HEARTBEAT_MS);
     const onVisibility = () => {
       // Hidden before it counted: nothing is sent until the page is visible again.
-      if (!open.current) return document.visibilityState === "hidden" ? clearTimeout(timer) : seen();
+      if (!open.current) {
+        if (document.visibilityState === "hidden") { clearTimeout(timer); return; }
+        opened = performance.now();
+        seen();
+        return;
+      }
       if (document.visibilityState === "hidden") return pause();
       if (open.current && open.current.since == null) { open.current.since = performance.now(); beat(); }
     };
@@ -108,7 +113,12 @@ export function VisitTracker() {
     };
     document.addEventListener("visibilitychange", onVisibility);
     document.addEventListener("click", onClick);
-    return () => { clearTimeout(timer); clearInterval(heartbeat); document.removeEventListener("visibilitychange", onVisibility); document.removeEventListener("click", onClick); leave(); };
+    // pagehide also covers navigation/unload paths where visibilitychange is absent. pause is idempotent.
+    const onPageHide = () => { clearTimeout(timer); pause(); };
+    const onPageShow = () => { if (document.visibilityState === "visible") onVisibility(); };
+    window.addEventListener("pagehide", onPageHide);
+    window.addEventListener("pageshow", onPageShow);
+    return () => { clearTimeout(timer); clearInterval(heartbeat); document.removeEventListener("visibilitychange", onVisibility); document.removeEventListener("click", onClick); window.removeEventListener("pagehide", onPageHide); window.removeEventListener("pageshow", onPageShow); leave(); };
   }, [pathname]);
 
   return null;

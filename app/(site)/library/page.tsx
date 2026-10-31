@@ -1,4 +1,4 @@
-import Image from "next/image";
+import Image from "@/components/responsive-image";
 import { HINDI_ENABLED } from "@/lib/i18n";
 import Link from "next/link";
 import type { CSSProperties } from "react";
@@ -62,7 +62,9 @@ export default async function LibraryHub() {
       <ul className={styles.sections}>{sections.map((section, index) => {
         const Icon = section.icon;
         return <li key={section.href} style={tone(index)}><Link href={section.href} className={styles.card}>
-          <span className={styles.cover}><Image src={section.image} alt="" fill sizes="(max-width: 640px) 100vw, (max-width: 1100px) 50vw, 33vw" className={styles.coverImage} /></span>
+          <span className={styles.cover}>{/* The first row is on screen at load (the first cover is the LCP element): no lazy loading there. */}
+          <Image src={section.image} alt="" fill sizes="(max-width: 600px) calc(100vw - 32px), (max-width: 920px) calc(50vw - 40px), 290px" className={styles.coverImage}
+            loading={index < 3 ? "eager" : undefined} fetchPriority={index === 0 ? "high" : undefined} /></span>
           <span className={styles.icon} aria-hidden="true"><Icon size={20} strokeWidth={1.9} /></span>
           <b>{section.title}</b>
           <span className={styles.body}>{section.body}</span>

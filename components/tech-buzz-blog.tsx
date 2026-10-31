@@ -2,7 +2,7 @@
 
 import { TECH_BUZZ_TRACKED } from "@/lib/tech-buzz-sections";
 import { useEffect, useMemo, useState, useSyncExternalStore, type CSSProperties } from "react";
-import Image from "next/image";
+import Image from "@/components/responsive-image";
 import Link from "next/link";
 import {
   ArrowRight, Binary, Bookmark, BookmarkCheck, BookOpen, Bot, Building2, CheckCircle2, ChevronDown, ChevronLeft, ChevronRight, Cloud, Clock,

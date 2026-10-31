@@ -1,4 +1,4 @@
-import Image from "next/image";
+import Image from "@/components/responsive-image";
 import { brandAssetFor } from "@/lib/media";
 import { creditLine } from "@/lib/media/types";
 import { SearchSectionIcon } from "./search-section-icon";

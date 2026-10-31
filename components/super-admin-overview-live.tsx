@@ -39,12 +39,11 @@ const since = (iso: unknown, now: number) => {
 };
 const spent = (seconds: number) => {
   const s = Math.max(0, Math.round(seconds));
-  return s < 60 ? `${s}s` : s < 3600 ? `${Math.floor(s / 60)}m ${s % 60}s` : `${Math.floor(s / 3600)}h ${Math.floor((s % 3600) / 60)}m`;
+  return s < 60 ? `${s}s` : s < 3600 ? `${Math.floor(s / 60)}m ${s % 60}s` : `${Math.floor(s / 3600)}h ${Math.floor((s % 3600) / 60)}m ${s % 60}s`;
 };
 // The visitor stream's Date, Arrived and Left columns, in India time (times to the second).
 const dayOf = (iso: string | number) => new Intl.DateTimeFormat("en-IN", { day: "2-digit", month: "short", year: "numeric", timeZone: "Asia/Kolkata" }).format(new Date(iso));
 const clock = (iso: string | number) => new Intl.DateTimeFormat("en-IN", { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: true, timeZone: "Asia/Kolkata" }).format(new Date(iso));
-const weekday = (iso: string | number) => new Intl.DateTimeFormat("en-IN", { weekday: "long", timeZone: "Asia/Kolkata" }).format(new Date(iso));
 type StreamFilter = "all" | "live" | "signed" | "new" | "private";
 // The stream's own feed, merged across refreshes: rows by id, page heartbeats by session and path.
 type StreamFeed = { rows: Map<string, Visit>; emails: Record<string, string>; presence: Map<string, Presence> | null; clicks: Map<string, StreamClick>; days: number; capped: boolean; generatedAt: string; loadedAt: number };
@@ -69,9 +68,9 @@ const languageName = (tag: string | null | undefined) => {
   try { return new Intl.DisplayNames(["en"], { type: "language" }).of(tag) ?? tag; } catch { return tag; }
 };
 const TIMING_NOTE: Record<StreamVisitor["visit"]["timing"], string> = {
-  live: "Live: the open page's clock runs from its heartbeat",
-  exact: "Exact: every page of this visit sent its leave beacon",
-  partial: "Partly estimated: a page closed without its leave beacon, so it is timed to its last heartbeat (up to 45 s may be missing)",
+  live: "Estimated live duration since the latest signal; a recent signal does not confirm the page is still open.",
+  recorded: "Recorded visible time. A leave signal can mean a hidden tab or navigation, not a confirmed session exit. Network delay can affect timestamps.",
+  partial: "Incomplete timing: shown through the last recorded signal. Actual departure and any missing reading time are unknown.",
 };
 const bytes = (value: number) => value >= 1 << 30 ? `${(value / (1 << 30)).toFixed(1)} GB` : `${Math.round(value / (1 << 20))} MB`;
 const uptime = (seconds: number) => seconds >= 86400 ? `${Math.floor(seconds / 86400)}d ${Math.floor((seconds % 86400) / 3600)}h` : seconds >= 3600 ? `${Math.floor(seconds / 3600)}h ${Math.floor((seconds % 3600) / 60)}m` : `${Math.round(seconds / 60)}m`;
@@ -496,7 +495,7 @@ export function OverviewLive({ snapshot, onRefreshSnapshot }: { snapshot: Overvi
                         </div>
 
                         {/* Column 2: Session Timeline & Precision IST (Sage/Mint Tone) */}
-                        <div className={`${styles.compactCol} ${styles.colTimeline}`}>
+                        <div className={`${styles.compactCol} ${styles.colTimeline}`} role="group" aria-label="Session timeline">
                           <div className={styles.colKicker}>
                             <Clock size={12} className={styles.colKickerIcon} aria-hidden="true" />
                             <span>Session Timeline (IST & Duration)</span>
@@ -504,7 +503,7 @@ export function OverviewLive({ snapshot, onRefreshSnapshot }: { snapshot: Overvi
                           </div>
                           <div className={styles.colBody}>
                             <div className={styles.timelineTimesGrid}>
-                              <div className={styles.timelineTimeCell} title="When this visit's first page opened">
+                              <div className={styles.timelineTimeCell} title="Estimated first page opening from recorded views and visible durations in the loaded window; network delay can affect this time">
                                 <span className={styles.cellLabel}>
                                   <LogIn size={10} aria-hidden="true" /> Arrived (IST)
                                 </span>
@@ -514,17 +513,18 @@ export function OverviewLive({ snapshot, onRefreshSnapshot }: { snapshot: Overvi
                                 <small className={styles.dateValue}>
                                   {dayOf(row.sessionArrived)} · {since(row.sessionArrived, clockNow)}
                                 </small>
+                                <small className={styles.dateValue}>Estimated arrival</small>
                               </div>
 
                               <div className={`${styles.timelineTimeCell} ${row.left == null ? styles.timelineTimeCellLive : ""}`}>
                                 <span className={styles.cellLabel}>
                                   {row.left == null ? <Radio size={10} aria-hidden="true" /> : <LogOut size={10} aria-hidden="true" />}
-                                  {row.left == null ? "Status (IST)" : "Left (IST)"}
+                                  {row.left == null ? "Status (IST)" : row.beacon ? "Left / hidden (IST)" : "Last seen (IST)"}
                                 </span>
                                 {row.left == null ? (
                                   <div className={styles.liveCellStatus}>
                                     <span className={styles.livePulseRingSmall} aria-hidden="true" />
-                                    <strong>On site now</strong>
+                                    <strong>Recently active</strong>
                                   </div>
                                 ) : (
                                   <time className={styles.clockValue} dateTime={new Date(row.left).toISOString()}>
@@ -534,6 +534,7 @@ export function OverviewLive({ snapshot, onRefreshSnapshot }: { snapshot: Overvi
                                 <small className={styles.dateValue}>
                                   {row.left == null ? (heartbeats ? `Pinged ${since(row.lastAt, clockNow)}` : `Active now`) : `${dayOf(row.left)} · ${since(row.left, clockNow)}`}
                                 </small>
+                                {row.left != null && <small className={styles.dateValue}>{row.beacon ? "Visibility ended; exit unconfirmed" : "Departure not confirmed"}</small>}
                               </div>
                             </div>
 
@@ -548,7 +549,7 @@ export function OverviewLive({ snapshot, onRefreshSnapshot }: { snapshot: Overvi
                                   <strong className={styles.readingValue}>{spent(visit.readingMs / 1000)}</strong>
                                 </div>
                                 <div>
-                                  <small className={styles.stayLabel} title="Total Stay minus Active Reading: the tab was hidden, the visitor was between pages, or a page was loading">Away / idle</small>
+                                  <small className={styles.stayLabel} title="Total Stay minus recorded visible time. This may include hidden tabs, loading, or missing tracking signals">Unobserved time</small>
                                   <strong className={styles.stayValue}>{spent(visit.awayMs / 1000)}</strong>
                                 </div>
                                 <div className={styles.intensityBadgeWrap}>

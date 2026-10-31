@@ -1,5 +1,5 @@
 "use client";
-import Image from "next/image";
+import Image from "@/components/responsive-image";
 import Link from "next/link";
 import { useId, useMemo, useState, useSyncExternalStore } from "react";
 import { ArrowRight, Award, BadgeCheck, BookOpen, Bot, CalendarClock, Check, CheckCircle2, ChevronsDownUp, ChevronsUpDown, Cloud, ClipboardCheck, Clock, GraduationCap, Hammer, HelpCircle, Info, Layers, Lightbulb, ListChecks, Search, Sparkles, Target, Users, Wallet, X, type LucideIcon } from "lucide-react";

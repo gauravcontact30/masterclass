@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
 import { useReportWebVitals } from "next/web-vitals";
 
@@ -21,24 +21,33 @@ function send(body: Record<string, unknown>) {
  */
 export function ClientMonitor() {
   const pathname = usePathname();
-  const page = useRef<{ path: string; vitals: Vitals; errors: ClientError[]; sent: boolean }>({ path: pathname, vitals: {}, errors: [], sent: false });
+  // Web Vitals describe a document navigation, not a client-side route. Keep their original route until unload.
+  const navigation = useRef<{ path: string; vitals: Vitals; sent: boolean }>({ path: pathname, vitals: {}, sent: false });
+  const page = useRef<{ path: string; errors: ClientError[] }>({ path: pathname, errors: [] });
 
-  useReportWebVitals(metric => {
-    if (metric.name in { LCP: 1, INP: 1, CLS: 1, FCP: 1, TTFB: 1 }) page.current.vitals[metric.name as keyof Vitals] = Math.round(metric.value * (metric.name === "CLS" ? 1000 : 1)) / (metric.name === "CLS" ? 1000 : 1);
-  });
+  const report = useCallback<Parameters<typeof useReportWebVitals>[0]>(metric => {
+    if (metric.name in { LCP: 1, INP: 1, CLS: 1, FCP: 1, TTFB: 1 }) navigation.current.vitals[metric.name as keyof Vitals] = Math.round(metric.value * (metric.name === "CLS" ? 1000 : 1)) / (metric.name === "CLS" ? 1000 : 1);
+  }, []);
+  useReportWebVitals(report);
 
   useEffect(() => {
-    if (pathname.startsWith("/super-admin")) return;
-    const flush = () => {
+    const context = () => ({ connection: (navigator as Navigator & { connection?: { effectiveType?: string } }).connection?.effectiveType ?? null, width: window.innerWidth });
+    const flushErrors = () => {
       const current = page.current;
-      if (current.sent || (!Object.keys(current.vitals).length && !current.errors.length)) return;
-      current.sent = true;
-      const connection = (navigator as Navigator & { connection?: { effectiveType?: string } }).connection?.effectiveType ?? null;
-      send({ path: current.path, vitals: current.vitals, errors: current.errors, connection, width: window.innerWidth });
+      if (!current.path.startsWith("/super-admin") && current.errors.length) send({ path: current.path, errors: current.errors, ...context() });
+      current.errors = [];
     };
-    // A client-side navigation ends the previous page: report it, then start counting for this one.
-    flush();
-    page.current = { path: pathname, vitals: {}, errors: [], sent: false };
+    const flush = () => {
+      const current = navigation.current;
+      if (!current.sent && !current.path.startsWith("/super-admin") && Object.keys(current.vitals).length) {
+        current.sent = true;
+        send({ path: current.path, vitals: current.vitals, ...context() });
+      }
+      flushErrors();
+    };
+    // Route changes flush errors only. Do not erase buffered FCP/TTFB or relabel document LCP/CLS/INP.
+    flushErrors();
+    page.current = { path: pathname, errors: [] };
     const record = (error: ClientError) => {
       const list = page.current.errors;
       if (list.length < MAX_ERRORS && !list.some(item => item.message === error.message)) list.push(error);
@@ -58,6 +67,7 @@ export function ClientMonitor() {
     return () => {
       window.removeEventListener("error", onError); window.removeEventListener("unhandledrejection", onRejection);
       document.removeEventListener("visibilitychange", onHide); window.removeEventListener("pagehide", flush);
+      flushErrors();
     };
   }, [pathname]);
 

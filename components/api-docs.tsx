@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Badge as UiBadge } from "@/components/ui/badge";
 import { memo, useDeferredValue, useEffect, useMemo, useState, type CSSProperties } from "react";
 import Link from "next/link";
-import Image from "next/image";
+import Image from "@/components/responsive-image";
 import { vocabularyIcon } from "@/lib/vocabulary-icons";
 import { BrandMark, BrandOrGlyph } from "./topic-media";
 import { LearningResources } from "./learning-resources";

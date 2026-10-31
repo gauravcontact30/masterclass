@@ -1,4 +1,5 @@
 "use client";
+import { ContentImage } from "./content-image";
 import { useId, useMemo, useState, type CSSProperties } from "react";
 import { Dialog } from "@base-ui/react/dialog";
 import { ArrowRight, BookOpen, CalendarClock, ChevronDown, GitBranch, Images, ListOrdered, MessageCircleQuestion, Pin, Sparkles, X } from "lucide-react";
@@ -47,7 +48,7 @@ export function LearningCards({ blocks }: { blocks: CardBlock[] }) {
 function Thumbnail({ block, className }: { block: CardBlock; className: string }) {
   const [failed, setFailed] = useState(false);
   const tone = TONES.find(t => t.value === block.tone) ?? TONES[0];
-  if (block.thumbnailUrl && !failed) return <div className={className}><img src={block.thumbnailUrl} alt="" width={1200} height={800} loading="lazy" decoding="async" onError={() => setFailed(true)} /></div>;
+  if (block.thumbnailUrl && !failed) return <div className={className}><ContentImage src={block.thumbnailUrl} alt="" width={1200} height={800} loading="lazy" decoding="async" onError={() => setFailed(true)} /></div>;
   // No picture yet (or it failed): the upload's tone, so the card still has a cover.
   return <div className={className} data-empty style={{ "--thumb-fill": tone.fill, "--thumb-edge": tone.edge } as CSSProperties} aria-hidden="true"><BookOpen size={34} /></div>;
 }
@@ -129,7 +130,7 @@ function LessonWindow({ block, copy, hi }: { block: CardBlock; copy: Copy; hi: b
 function Figure({ url, caption }: { url: string; caption: string }) {
   const [failed, setFailed] = useState(false);
   if (failed) return null;
-  return <figure><img src={url} alt={caption} width={1200} height={800} loading="lazy" decoding="async" onError={() => setFailed(true)} />{caption && <figcaption>{caption}</figcaption>}</figure>;
+  return <figure><ContentImage src={url} alt={caption} width={1200} height={800} loading="lazy" decoding="async" onError={() => setFailed(true)} />{caption && <figcaption>{caption}</figcaption>}</figure>;
 }
 
 // ----- Diagram -----

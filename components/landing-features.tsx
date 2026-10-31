@@ -1,4 +1,4 @@
-import Image from "next/image";
+import Image from "@/components/responsive-image";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import { ArrowRight, BookMarked, Check, Compass, Download, GitBranch, History, Images, Layers, ListTree, MessageCircleQuestion, Search, Sparkles, Star, type LucideIcon } from "lucide-react";

@@ -1,4 +1,5 @@
 "use client";
+import { ContentImage } from "./content-image";
 import { useMemo, useState, type ReactNode } from "react";
 import dynamic from "next/dynamic";
 import { Boxes, Building2, FlaskConical, GitBranch, Layers, Network, Workflow as WorkflowIcon, Zap, type LucideIcon } from "lucide-react";
@@ -168,8 +169,8 @@ function BriefPicture({ src, alt, icon, children }: Readonly<{ src: string | nul
   const [failed, setFailed] = useState(false);
   const empty = !src || failed;
   return <div className={styles.picture} data-empty={empty}>
-    {empty ? <span className={styles.placeholder}>{icon}</span> : /* eslint-disable-next-line @next/next/no-img-element -- pre-sized WebP from the storage bucket, as on the pulse cards. */
-      <img src={src} alt={alt} loading="lazy" decoding="async" onError={() => setFailed(true)} />}
+    {empty ? <span className={styles.placeholder}>{icon}</span> :
+      <ContentImage src={src} alt={alt} loading="lazy" decoding="async" onError={() => setFailed(true)} />}
     {children}
   </div>;
 }

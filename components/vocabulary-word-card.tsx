@@ -1,4 +1,5 @@
 "use client";
+import { ContentImage } from "./content-image";
 
 import { useEffect, useId, useRef, useState } from "react";
 import { ArrowUpRight, Volume2, Trash2, Plus, Minus, GripVertical } from "lucide-react";
@@ -60,8 +61,7 @@ export function VocabularyWordCard({ card, selected, onOpen, onUpdate, onDelete,
   return <article className={styles.wordCard} data-selected={selected || undefined} data-learned={card.checked || undefined} aria-labelledby={`${id}-word`}>
     <div className={styles.flashPicture}>
       {imageUrl && !imageFailed
-        // eslint-disable-next-line @next/next/no-img-element -- pre-sized WebP from the storage bucket; re-optimising it would only add cost.
-        ? <img src={imageUrl} alt={`A scene showing the meaning of “${entry.word}”`} loading="lazy" decoding="async" onError={() => setImageFailed(true)} />
+        ? <ContentImage src={imageUrl} alt={`A scene showing the meaning of “${entry.word}”`} loading="lazy" decoding="async" onError={() => setImageFailed(true)} />
         : <div className={styles.flashFallback} aria-hidden="true"><VocabularyWordIcon word={entry.word} meaning={entry.meaning} size={56} /></div>}
       <div className={styles.flashOverlay}>
         <div

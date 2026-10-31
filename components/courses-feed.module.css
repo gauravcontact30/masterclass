@@ -42,7 +42,7 @@
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #ea580c;
+  background: #c2410c;
 }
 
 .festiveBannerPill {
@@ -86,7 +86,7 @@
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: #ea580c;
+  color: #c2410c;
   margin-bottom: 0.85rem;
 }
 
@@ -194,7 +194,7 @@
   font-size: 2rem;
   font-weight: 800;
   line-height: 1;
-  color: #cbd5e1;
+  color: #7c8799;
   font-family: -apple-system, BlinkMacSystemFont, sans-serif;
   min-width: 2.5rem;
 }
@@ -407,7 +407,7 @@
 }
 
 .layoutToggleActive {
-  background: #ea580c !important;
+  background: #c2410c !important;
   color: #ffffff !important;
   box-shadow: 0 1px 3px rgba(234, 88, 12, 0.3);
 }
@@ -440,7 +440,7 @@
 }
 
 .searchInput:focus {
-  border-color: #ea580c;
+  border-color: #c2410c;
   background: #ffffff;
   box-shadow: 0 0 0 3px rgba(234, 88, 12, 0.12);
 }
@@ -487,9 +487,9 @@
 }
 
 .categoryPillActive {
-  background: #ea580c !important;
+  background: #c2410c !important;
   color: #ffffff !important;
-  border-color: #ea580c !important;
+  border-color: #c2410c !important;
   box-shadow: 0 2px 6px rgba(234, 88, 12, 0.25);
 }
 
@@ -582,7 +582,7 @@
 }
 
 .syllabusBulletItem span:first-child {
-  color: #ea580c;
+  color: #c2410c;
   font-weight: 700;
 }
 
@@ -629,7 +629,7 @@
   gap: 0.4rem;
   padding: 0.45rem 0.95rem;
   border-radius: 8px;
-  background: #ea580c;
+  background: #c2410c;
   color: #ffffff;
   font-size: 0.8125rem;
   font-weight: 700;
@@ -639,7 +639,7 @@
 }
 
 .ctaPathBtn:hover {
-  background: #c2410c;
+  background: #9a3412;
   transform: translateY(-1px);
 }
 
@@ -663,7 +663,7 @@
 }
 
 .compactCard:hover {
-  border-color: #ea580c;
+  border-color: #c2410c;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
   background: #fffbf7;
 }
@@ -744,7 +744,7 @@
   gap: 0.4rem;
   padding: 0.65rem 1.4rem;
   border-radius: 9999px;
-  background: #ea580c;
+  background: #c2410c;
   color: #ffffff;
   font-size: 0.875rem;
   font-weight: 700;

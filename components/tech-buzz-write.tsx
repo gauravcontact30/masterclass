@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState, type ChangeEvent, type ReactNode } from "react";
-import Image from "next/image";
+import Image from "@/components/responsive-image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowDown, ArrowLeft, ArrowUp, Code2, Eye, ImagePlus, Lightbulb, List, ListOrdered, Loader2, PenLine, Plus, Quote, Send, Trash2, X } from "lucide-react";

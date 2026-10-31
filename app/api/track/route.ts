@@ -42,6 +42,8 @@ function allowed(key: string) {
 const noContent = () => new Response(null, { status: 204, headers: { "Cache-Control": "no-store" } });
 
 export async function POST(request: Request) {
+  // Stamp receipt before authentication and deferred writes. Database insertion time can be seconds later.
+  const receivedAt = Date.now();
   if (!authConfigured()) return noContent();
   try { sameOrigin(request); } catch { return new Response(null, { status: 403 }); }
   let input: z.infer<typeof bodySchema>;
@@ -49,8 +51,8 @@ export async function POST(request: Request) {
   // Super admin pages are not part of the audience being measured.
   if (/^\/(?:dashboard\/)?super-admin(?:\/|$)/.test(input.path) || input.path.startsWith("/api/")) return noContent();
 
-  // A page left in under a second is a 0-second bounce, not a visit (components/visit-tracker.tsx never sends its view).
-  if (input.type === "leave" && (input.duration ?? 0) < 1000) return noContent();
+  // Short resumed stretches still close presence. Both trackers withhold the view for sub-second bounces,
+  // and the stream filters unengaged visitors; discarding a short leave here would keep a hidden tab live.
 
   const ip = clientIp(request.headers);
   // The site's own development server is not audience (it shares the production database); TRACK_LOCAL=1 records it.
@@ -99,7 +101,7 @@ export async function POST(request: Request) {
   // its current stretch, which the browser measures; the server only records it against its own clock.
   if (input.type === "ping") {
     if (ua.isBot) return noContent();
-    const seen = Date.now();
+    const seen = receivedAt;
     const presence = { session_id: sessionId, path: input.path, visitor_id: visitorId, user_id: userId,
       started_at: new Date(seen - (input.duration ?? 0)).toISOString(), seen_at: new Date(seen).toISOString() };
     after(async () => {
@@ -122,6 +124,7 @@ export async function POST(request: Request) {
   }
 
   const row = {
+    created_at: new Date(receivedAt).toISOString(),
     event: input.type === "view" ? "page_view" : "page_leave",
     visitor_id: visitorId, session_id: sessionId, user_id: userId,
     new_visitor: input.type === "view" && !known,

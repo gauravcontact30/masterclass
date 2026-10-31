@@ -41,7 +41,7 @@ test("a page whose leave beacon was lost is timed to its last heartbeat and then
 
 test("a page just opened counts as open until its first heartbeat is overdue", () => {
   expect(run([view(20, "/")], [])[0]).toMatchObject({ live: true, page: { ms: 20_000, open: true } });
-  const stale = run([view(LIVE_MS / 1000 + 5, "/")], [])[0];
+  const stale = streamVisitors(indexVisits([view(LIVE_MS / 1000 + 5, "/")], []), NOW, {}, false)[0];
   expect(stale.live).toBe(false);
   expect(stale.page).toBeNull();
 });
@@ -56,7 +56,7 @@ test("one person across pages, sessions and signing in: totals add up and the jo
     { ...view(4100, "/", { visitor_id: "visitor-2", session_id: "other" }) },
   ];
   const visitors = streamVisitors(indexVisits(rows, [beat("/pricing", 120, 10)]), NOW, { "user-1": "learner@example.test" });
-  expect(visitors).toHaveLength(2);
+  expect(visitors).toHaveLength(1); // The other visitor has no recorded engagement.
   const [person] = visitors;
   expect(person).toMatchObject({ email: "learner@example.test", signedIn: true, live: true, views: 4, pages: 3, sessions: 2, source: "linkedin" });
   expect(person.current.path).toBe("/pricing");
@@ -73,7 +73,7 @@ test("a repeated path keeps each view's own beacons", () => {
 
 test("without heartbeats the older rule holds: the latest page without a beacon is open for 30 minutes", () => {
   expect(run([view(600, "/learn")], null)[0]).toMatchObject({ live: true, page: { ms: 600_000, open: true } });
-  expect(run([view(31 * 60, "/learn")], null)[0].live).toBe(false);
+  expect(streamVisitors(indexVisits([view(31 * 60, "/learn")], null), NOW, {}, false)[0].live).toBe(false);
 });
 
 test("visitors on the site come first, then the most recently active", () => {
@@ -137,6 +137,53 @@ test("filterZeroSeconds excludes visitors who engaged for 0 seconds", () => {
 
   const filtered = streamVisitors(index, NOW, {}, true);
   expect(filtered.length).toBe(1);
-  expect(filtered[0].visitor_id ?? filtered[0].first.visitor_id).toBe("visitor-1");
+  expect(filtered[0].first.visitor_id).toBe("visitor-1");
+});
+
+test("a newer untimed session cannot show an older session's arrival or departure evidence", () => {
+  const [visitor] = run([
+    view(4000, "/old", { session_id: "old" }), leave(3900, "/old", 100, { session_id: "old" }),
+    view(500, "/new", { session_id: "new" }),
+  ], []);
+  expect(visitor.visit.sessionId).toBe("new");
+  expect(visitor.sessionArrived).toBe(t(500));
+  expect(visitor.left).toBe(visitor.visit.end);
+  expect(visitor.left).toBe(Date.parse(t(500)));
+  expect(visitor.beacon).toBe(false);
+  expect(visitor.leftAlgorithm).toBe("legacy");
+  expect(visitor.visit.timing).toBe("partial");
+  expect(visitor.focusRatio).toBe(0);
+});
+
+test("an orphan leave from a different session cannot change the selected visit's end", () => {
+  const [visitor] = run([view(600, "/a"), leave(500, "/a", 100), leave(200, "/other", 10, { session_id: "unloaded" })], []);
+  expect(visitor.left).toBe(Date.parse(t(500)));
+  expect(visitor.visit.stayMs).toBe(visitor.left! - Date.parse(visitor.sessionArrived));
+});
+
+test("simultaneous tabs count overlapping visible intervals once", () => {
+  const [visitor] = run([view(600, "/a"), view(550, "/b"), leave(400, "/a", 200), leave(350, "/b", 200)], []);
+  expect(visitor.visit).toMatchObject({ stayMs: 250_000, readingMs: 250_000, awayMs: 0, timing: "recorded" });
+});
+
+test("overlapping leave durations cannot duplicate reading or invent an arbitrarily early arrival", () => {
+  const [visitor] = run([view(600, "/a"), leave(500, "/a", 86400), leave(450, "/a", 100)], []);
+  expect(visitor.sessionArrived).toBe(t(660));
+  expect(visitor.page?.ms).toBe(210_000);
+  expect(visitor.visit.readingMs).toBe(210_000);
+});
+
+test("a heartbeat stamped at the same instant as a view still supplies its visible stretch", () => {
+  const [visitor] = run([view(200, "/a")], [beat("/a", 205, 200)]);
+  expect(visitor.visit).toMatchObject({ start: Date.parse(t(205)), end: Date.parse(t(200)), readingMs: 5000, timing: "partial" });
+});
+
+test("an expired heartbeat stops duration at the last signal without claiming departure", () => {
+  const rows = [view(300, "/a")], presence = [beat("/a", 300, 0)];
+  const live = run(rows, presence, NOW + LIVE_MS - 1)[0];
+  const stale = run(rows, presence, NOW + LIVE_MS)[0];
+  expect(live.visit.open).toBe(true);
+  expect(stale.visit).toMatchObject({ open: false, end: NOW, readingMs: 300_000, timing: "partial" });
+  expect(stale.beacon).toBe(false);
 });
 

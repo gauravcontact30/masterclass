@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { useVisiblePlayback } from "./use-visible-playback";
-import Image from "next/image";
+import Image from "@/components/responsive-image";
 import { ArrowLeft, ArrowRight, BookA, MessagesSquare, Pause, Play, Quote, Sparkles, Star, Workflow, FileCode2, MessageSquareQuote, type LucideIcon } from "lucide-react";
 import { useLanguage } from "./language-provider";
 import home from "./landing-home.module.css";

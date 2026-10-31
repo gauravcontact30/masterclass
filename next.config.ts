@@ -36,6 +36,8 @@ const nextConfig: NextConfig = {
   // Supabase Storage holds the Tech Buzz daily covers (stored full size): served through the optimizer so a phone
   // gets a small AVIF instead of the original. Unsplash goes through its own CDN (lib/image-loaders.ts).
   images: { formats: ["image/avif", "image/webp"], qualities: [75, 82, 85], minimumCacheTTL: 60 * 60 * 24 * 30,
+    // The same widths scripts/prepare-responsive-images.mjs builds, so a request never rounds up to a wider file.
+    deviceSizes: [320, 480, 640, 720, 960, 1080, 1280, 1920, 2560, 3840],
     remotePatterns: [{ protocol: "https", hostname: "*.supabase.co", pathname: "/storage/v1/object/public/**" }] },
   experimental: {
     // Group CSS per route by cost instead of merging stylesheets app-wide: the default merged the dashboard's and
@@ -97,6 +99,7 @@ const nextConfig: NextConfig = {
       })),
       // public/images files are not content-hashed, so cache for a month rather than forever.
       { source: "/images/:path*", headers: [{ key: "Cache-Control", value: "public, max-age=2592000, stale-while-revalidate=86400" }] },
+      { source: "/images/responsive/:path*", headers: [{ key: "Cache-Control", value: "public, max-age=31536000, immutable" }] },
       // /_next/static is content-hashed and Next.js already serves it immutable; overriding it only triggers a build warning.
     ];
   },

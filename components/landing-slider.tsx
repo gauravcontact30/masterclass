@@ -1,8 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useId, useRef, useState } from "react";
-import Image, { getImageProps } from "next/image";
-import { preload } from "react-dom";
+import { memo, useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
+import Image from "@/components/responsive-image";
 import Link from "next/link";
 import { Bell, ChevronLeft, ChevronRight, Flame, Pause, Play } from "lucide-react";
 import { useLanguage } from "./language-provider";
@@ -100,93 +99,35 @@ type SlideBase = {
   alt: string;
 };
 /** A photograph with its own headline, copy and actions over it. */
-type StorySlide = SlideBase & { infographic?: undefined; title: MultiLang; body: MultiLang; link: { label: MultiLang; href: string } };
-/** An image that carries all its words itself, shown with nothing over it; `portrait` is the phone layout. */
-type InfographicSlide = SlideBase & { infographic: { portrait: string } };
-type Slide = StorySlide | InfographicSlide;
+type StorySlide = SlideBase & { imageOnly?: undefined; title: MultiLang; body: MultiLang; link: { label: MultiLang; href: string } };
+/** Supplied promotional artwork: serve its lossless, full-resolution pixels without overlays or recompression. */
+type ImageSlide = SlideBase & { imageOnly: true };
+type Slide = StorySlide | ImageSlide;
 
 /**
- * An infographic slide: the landscape file on wide screens, the portrait one on phones (art direction, so each screen
- * downloads only its own), full-bleed and slowly zoomed like every other slide; its words sit inside the frame's safe
- * zone (scripts/generate-stack-infographic.ts). The first slide is the LCP image, so both candidates are preloaded for
- * their own media query.
- */
-function InfographicImage({ slide, priority, onLoad }: { slide: InfographicSlide; priority: boolean; onLoad?: () => void }) {
-  const common = { alt: slide.alt, sizes: "100vw", quality: 85, loading: priority ? "eager" : "lazy", fetchPriority: priority ? "high" : undefined } as const;
-  const { props: { srcSet: wide } } = getImageProps({ ...common, src: slide.src, width: 3840, height: 2160 });
-  const { props: { srcSet: tall, ...rest } } = getImageProps({ ...common, src: slide.infographic.portrait, width: 2160, height: 3840 });
-  if (priority) {
-    preload(slide.src, { as: "image", imageSrcSet: wide, imageSizes: "100vw", media: PORTRAIT_OFF, fetchPriority: "high" });
-    preload(slide.infographic.portrait, { as: "image", imageSrcSet: tall, imageSizes: "100vw", media: PORTRAIT_ON, fetchPriority: "high" });
-  }
-  return <picture>
-    <source media={PORTRAIT_ON} srcSet={tall} sizes="100vw" />
-    <source media={PORTRAIT_OFF} srcSet={wide} sizes="100vw" />
-    <img {...rest} alt={slide.alt} className={`${styles.heroImage} ${styles.heroInfographic}`} style={{ "--focus": slide.focus } as React.CSSProperties} onLoad={onLoad} />
-  </picture>;
-}
-// Phones and other tall screens get the portrait layout.
-const PORTRAIT_ON = "(max-aspect-ratio: 4/5)";
-const PORTRAIT_OFF = "(min-aspect-ratio: 4.001/5)";
-
-/**
- * The landing hero: the Diwali scene (hero-diwali.webp, supplied 2026-10-31), four Tech Buzz scenes (hero-buzz-*.webp,
- * supplied 2026-10-30), then the stack infographic and the
- * full-HD (1920×1080) study scenes painted by scripts/generate-hero-images.ts (each file's EXIF ImageDescription holds
- * its prompt), full-bleed under the navbar. Each slide
- * carries its own headline and actions. Autoplay runs while the mouse is over it (the hero fills the screen, so a hover
- * pause meant it almost never moved); it pauses for keyboard focus inside it, with the pause button, off screen, and
- * never starts for visitors who prefer reduced motion.
+ * Two supplied interview scenes lead the hero, followed by the four Tech Buzz scenes and the four study scenes.
+ * Each slide stays for 15 seconds. Playback pauses for keyboard focus, the pause button, hidden tabs, and reduced motion.
  */
 function slidesFor(technologies: number | undefined): Slide[] {
   const count = technologies ? String(technologies) : "60+";
   return [
     {
-      // Diwali celebration scene (supplied 2026-10-31), first while the festive season runs.
-      id: "diwali",
-      src: "/images/landing/hero-diwali.webp",
+      id: "technology-interviews",
+      src: "/images/landing/hero-interviews-ads9.webp",
+      imageOnly: true,
       focus: "50% 50%",
-      tone: "honey",
-      tool: {
-        en: "Happy Diwali",
-        hi: "शुभ दीपावली",
-        es: "Feliz Diwali",
-        ja: "ハッピー・ディワリ",
-        de: "Frohes Diwali",
-        fr: "Joyeux Diwali",
-        zh: "排灯节快乐"
-      },
-      title: {
-        en: "Happy Diwali from MasterClass Buddy.",
-        hi: "MasterClass Buddy की ओर से दीपावली की शुभकामनाएँ।",
-        es: "Feliz Diwali de parte de MasterClass Buddy.",
-        ja: "MasterClass Buddy からハッピー・ディワリ。",
-        de: "Frohes Diwali wünscht MasterClass Buddy.",
-        fr: "Joyeux Diwali de la part de MasterClass Buddy.",
-        zh: "MasterClass Buddy 祝您排灯节快乐。"
-      },
-      body: {
-        en: "Light up your learning this festive season: LangChain, LangGraph, Next.js, System Design, DSA, n8n, FastAPI, Docker, Kubernetes and Playwright in one membership.",
-        hi: "इस त्योहार अपनी पढ़ाई को रोशन करें: LangChain, LangGraph, Next.js, System Design, DSA, n8n, FastAPI, Docker, Kubernetes और Playwright, एक ही सदस्यता में।",
-        es: "Ilumina tu aprendizaje esta temporada festiva: LangChain, LangGraph, Next.js, System Design, DSA, n8n, FastAPI, Docker, Kubernetes y Playwright en una sola membresía.",
-        ja: "この祝祭シーズンに学びを灯そう：LangChain、LangGraph、Next.js、System Design、DSA、n8n、FastAPI、Docker、Kubernetes、Playwright をひとつのメンバーシップで。",
-        de: "Bringen Sie Ihr Lernen zum Leuchten: LangChain, LangGraph, Next.js, System Design, DSA, n8n, FastAPI, Docker, Kubernetes und Playwright in einer Mitgliedschaft.",
-        fr: "Illuminez votre apprentissage en cette période de fête : LangChain, LangGraph, Next.js, System Design, DSA, n8n, FastAPI, Docker, Kubernetes et Playwright dans un seul abonnement.",
-        zh: "在这个节日点亮你的学习：LangChain、LangGraph、Next.js、系统设计、DSA、n8n、FastAPI、Docker、Kubernetes 和 Playwright，一个会员全部拥有。"
-      },
-      link: {
-        label: {
-          en: "See Diwali plans",
-          hi: "दीपावली प्लान देखें",
-          es: "Ver planes de Diwali",
-          ja: "ディワリのプランを見る",
-          de: "Diwali-Angebote ansehen",
-          fr: "Voir les offres Diwali",
-          zh: "查看排灯节方案"
-        },
-        href: "#pricing"
-      },
-      alt: "A Diwali celebration in the Master Class Buddy office: colleagues in festive clothes exchange gifts and sweets around a rangoli, under marigold garlands and Happy Diwali banners for LangChain, LangGraph, Next.js, Zustand, Docker, Kubernetes, System Design, DSA, n8n, FastAPI and Playwright, with the masterclassbuddy.com homepage on wall screens"
+      tone: "sky",
+      tool: { en: "Technology interviews", hi: "टेक्नोलॉजी इंटरव्यू", es: "Entrevistas tecnológicas", ja: "技術面接", de: "Technische Interviews", fr: "Entretiens techniques", zh: "技术面试" },
+      alt: "Master Class Buddy technology interview office with a panel discussion, waiting candidates, and posters for LangChain, LangGraph, Next.js, AWS, Docker, Kubernetes, System Design and FastAPI"
+    },
+    {
+      id: "interview-preparation",
+      src: "/images/landing/hero-interviews-ads17.webp",
+      imageOnly: true,
+      focus: "50% 50%",
+      tone: "clay",
+      tool: { en: "Interview preparation", hi: "इंटरव्यू की तैयारी", es: "Preparación de entrevistas", ja: "面接準備", de: "Interviewvorbereitung", fr: "Préparation aux entretiens", zh: "面试准备" },
+      alt: "Master Class Buddy interview preparation centre with a glass meeting room, candidates studying, and technology posters for LangChain, LangGraph, Python, Docker, Kubernetes, FastAPI and Playwright"
     },
     {
       id: "buzz-team",
@@ -371,23 +312,6 @@ function slidesFor(technologies: number | undefined): Slide[] {
         href: "/courses#technology"
       },
       alt: "A laptop showing the Tech Buzz blog on a college canteen table beside three red Master Class Buddy cups for AI with Python, DSA and AWS Cloud, with students eating and talking behind"
-    },
-    {
-      id: "stack",
-      src: "/images/landing/hero-stack.webp",
-      infographic: { portrait: "/images/landing/hero-stack-portrait.webp" },
-      focus: "50% 50%",
-      tone: "sky",
-      tool: {
-        en: "76 technologies",
-        hi: "लोकप्रिय टेक्नोलॉजी",
-        es: "Tecnologías populares",
-        ja: "人気のテクノロジー",
-        de: "Beliebte Technologien",
-        fr: "Technologies populaires",
-        zh: "热门技术"
-      },
-      alt: "The technology universe: all 76 technologies MasterClass Buddy teaches, in 13 families. Java, C++ & DSA: Core Java, Advanced Java, Spring Boot, C++, DSA, Java Basic to Advanced. AI & agents: AI & ML, AI Tools, AI Agents, LangChain, LangGraph, LangSmith, LangFlow, n8n. Frontend frameworks: Next.js 16+, React 19+, T3 Stack, Angular, Vue.js, Flutter. Languages & fundamentals: TypeScript, JavaScript, JS Puzzles, Python, Rust, Go. State & data on the client: TanStack, Zustand, Redux Toolkit. Backend & APIs: Node.js, Express.js, FastAPI, GraphQL, Django, NestJS. Validation & forms: Pydantic, Zod, Conform. Authentication: Auth.js, Clerk, Kinde, Better Auth. Databases & storage: Drizzle ORM, Prisma, Neon, Redis, Upstash, PostgreSQL, Supabase. Python data & ML: NumPy, Pandas, Polars, SciPy, Scikit-Learn, TensorFlow, PyTorch, Keras, Seaborn, Plotly. HTTP & scraping: Requests, HTTPX, Scrapy. Testing & quality: Jest, Vitest, React Testing Library, Playwright, Cypress. Cloud, ops & architecture: Inngest, Arcjet, System Design, AWS Services, DevOps, Docker, Kubernetes, Git, Linux."
     },
     {
       id: "campus",
@@ -578,17 +502,18 @@ function slidesFor(technologies: number | undefined): Slide[] {
 
 /** The floating Tech Buzz dock on the hero. Its 5-second colour beat lives here, so it re-renders only itself, not the
  *  whole carousel. */
-function TechBuzzDock() {
+const TechBuzzDock = memo(function TechBuzzDock({ running }: { running: boolean }) {
   const { t } = useLanguage();
   const [buzzColorIndex, setBuzzColorIndex] = useState(0);
 
   // Change Master Class Buddy - Tech Buzz button background color every 5 seconds (Suggestion Box palette)
   useEffect(() => {
+    if (!running) return;
     const timer = setInterval(() => {
       setBuzzColorIndex(prev => (prev + 1) % SUGGESTION_BOX_PALETTES.length);
     }, 5000);
     return () => clearInterval(timer);
-  }, []);
+  }, [running]);
 
   const currentBuzzColor = SUGGESTION_BOX_PALETTES[buzzColorIndex];
   // The "TECH BUZZ - BLOGS" swirl arrow and its words take a new vivid pair on the same 5-second beat.
@@ -642,12 +567,12 @@ function TechBuzzDock() {
       </Link>
     </div>
   );
-}
+});
 
 export function LandingSlider({ technologies }: { technologies?: number }) {
   const { language, t } = useLanguage();
   const pick = (record: MultiLang) => record[language] ?? record.en;
-  const slides = slidesFor(technologies);
+  const slides = useMemo(() => slidesFor(technologies), [technologies]);
   const [index, setIndex] = useState(0);
   const [playing, setPlaying] = useState(true);
   const [held, setHeld] = useState(false);
@@ -696,13 +621,14 @@ export function LandingSlider({ technologies }: { technologies?: number }) {
       if (start === null || end === undefined || Math.abs(end - start) < 48) return;
       go(end < start ? index + 1 : index - 1);
     }}>
-    <TechBuzzDock />
+    <TechBuzzDock running={running} />
     <div className={styles.heroStage} aria-live={running ? "off" : "polite"}>
       {slides.map((slide, position) => {
         const current = position === index;
-        if (slide.infographic) return <article key={slide.id} className={styles.heroSlide} data-active={current || undefined} aria-roledescription="slide"
+        if (slide.imageOnly) return <article key={slide.id} className={styles.heroSlide} data-active={current || undefined} aria-roledescription="slide"
           aria-label={`${position + 1} / ${total}`} aria-hidden={!current} inert={!current}>
-          {requested.has(position) && <InfographicImage slide={slide} priority={position === 0}
+          {requested.has(position) && <Image src={slide.src} alt={slide.alt} fill sizes="(max-aspect-ratio: 4/5) 180svh, 100vw" preload={position === 0}
+            className={styles.heroImage} style={{ "--focus": slide.focus } as React.CSSProperties}
             onLoad={position === 0 ? () => setRequested(previous => previous.has(1) ? previous : new Set([...previous, 1])) : undefined} />}
         </article>;
         return <article key={slide.id} className={styles.heroSlide} data-active={current || undefined} aria-roledescription="slide"

@@ -3,7 +3,7 @@
 import { useState, useSyncExternalStore } from "react";
 
 const noSubscribe = () => () => {};
-import Image from "next/image";
+import Image from "@/components/responsive-image";
 import type { LibraryEntry } from "@/lib/landing-library";
 import dynamic from "next/dynamic";
 import type { TechnologyInfo } from "@/lib/technology-catalog";

@@ -683,7 +683,10 @@
 }
 @media (max-width: 900px) {
   .heroSegment span { display: none; }
-  .heroSegments { gap: 8px; align-self: center; }
+  /* The 8px between bars is each button's own padding rather than a gap, so a tap there still lands on a button:
+     ten bars were 14px-wide targets (24px is the minimum). */
+  .heroSegments { gap: 0; align-self: center; }
+  .heroSegment { padding-inline: 4px; }
 }
 @media (max-width: 640px) {
   .home { --nav-h: 64px; }
@@ -697,9 +700,10 @@
     left: 16px; width: calc(100% - 32px); top: max(calc(var(--nav-h) + var(--copy-gap)), calc(100% - 156px - var(--copy-h))); gap: 14px; }
   .heroCopy h2 { font-variation-settings: "wdth" 108; }
   .home .heroPrimary, .home .heroSecondary { height: 50px; padding: 0 20px; flex: 1 1 auto; justify-content: center; }
-  .heroControls { left: 16px; right: 16px; bottom: 88px; gap: 16px; align-items: center; }
+  .heroControls { left: 16px; right: 16px; bottom: 88px; gap: 8px; align-items: center; }
+  .heroNav { gap: 6px; }
   .heroCount { display: none; }
-  .heroArrow { width: 44px; height: 44px; }
+  .heroArrow { width: 40px; height: 40px; }
   /* Phones: every header action is a round icon (Suggestion Box, Plans, Account, Menu), so the bar fits 360px. */
   .plansButton { width: var(--nav-control-h); padding: 0; justify-content: center; }
   .plansButton span { display: none; }

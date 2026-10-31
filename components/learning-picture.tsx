@@ -1,4 +1,5 @@
 "use client";
+import { ContentImage } from "./content-image";
 
 import { useState } from "react";
 import styles from "./learning-picture.module.css";
@@ -17,7 +18,6 @@ export function LearningPicture({ src, alt, variant = "hero", className }: { src
   const [failed, setFailed] = useState<string | null>(null);
   if (!src || failed === src) return null;
   return <div className={className ? `${styles[variant]} ${className}` : styles[variant]}>
-    {/* eslint-disable-next-line @next/next/no-img-element -- pre-sized WebP from the storage bucket; re-optimising it would only add cost. */}
-    <img src={src} alt={alt} loading="lazy" decoding="async" onError={() => setFailed(src)} />
+    <ContentImage src={src} alt={alt} loading="lazy" decoding="async" onError={() => setFailed(src)} />
   </div>;
 }

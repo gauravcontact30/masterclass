@@ -1,4 +1,5 @@
 "use client";
+import { ContentImage } from "./content-image";
 import { useEffect, useState, type ReactNode } from "react";
 import { Lock, LockOpen, ShieldCheck } from "lucide-react";
 import type { LockedTeaser } from "@/lib/landing-daily-types";
@@ -69,8 +70,8 @@ export function LockedCard({ teaser, index, total, text, render }: { teaser: Loc
   const busy = state === "paying" || state === "verifying" || state === "checking";
   return <li className={`${pulse.card} ${styles.locked}`} data-tone={teaser.tone} aria-roledescription="slide" aria-label={`${index + 1} / ${total}: ${text("Locked card", "लॉक कार्ड")}`}>
     <div className={styles.picture}>
-      {teaser.image && /* eslint-disable-next-line @next/next/no-img-element -- the same pre-sized picture as the open cards, blurred. */
-        <img src={teaser.image} alt={text("Blurred preview of a bonus card", "बोनस कार्ड का धुंधला पूर्वावलोकन")} loading="lazy" decoding="async" />}
+      {teaser.image &&
+        <ContentImage src={teaser.image} alt={text("Blurred preview of a bonus card", "बोनस कार्ड का धुंधला पूर्वावलोकन")} loading="lazy" decoding="async" />}
       <span className={styles.ribbon}><Lock size={12} aria-hidden="true" />{text("Bonus card", "बोनस कार्ड")}</span>
     </div>
     <div className={styles.body}>

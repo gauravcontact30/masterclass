@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import Image from "next/image";
+import Image from "@/components/responsive-image";
 import Link from "next/link";
 import { ArrowRight, BookOpenCheck, ChevronLeft, ChevronRight, Compass, Cpu, GraduationCap, Languages, Layers, Pause, Play, Sparkles, Timer, Workflow, CheckCircle2, type LucideIcon } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "./ui/dialog";

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, type CSSProperties } from "react";
-import Image from "next/image";
+import Image from "@/components/responsive-image";
 import Link from "next/link";
 import { ArrowRight, ArrowUpRight, BookText, Braces, Check, ChevronLeft, ChevronRight, Code2, FileCode2, Languages, ListChecks, MessageSquareText, Puzzle, Search, Server, X } from "lucide-react";
 import type { LandingProPreview } from "@/lib/landing-pro-preview";
