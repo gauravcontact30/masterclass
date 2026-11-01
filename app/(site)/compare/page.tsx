@@ -1,3 +1,5 @@
+import { PageAnswers } from "@/components/page-answers";
+import { HUB_ANSWERS } from "@/lib/page-answers";
 import Link from "next/link";
 import { COMPARISONS } from "@/lib/comparisons";
 import { learningMetadata, siteUrl } from "@/lib/seo";
@@ -27,6 +29,7 @@ export default function CompareIndex() {
       <h2 id={`g-${group}`}>{group}</h2>
       <ul className={styles.grid}>{COMPARISONS.filter(item => item.group === group).map(item => <li key={item.id}><Link href={`/compare/${item.id}`}><b>{item.question}</b><span>{item.summary}</span><small>{item.techs.map(tech => tech.name).join(" · ")}</small></Link></li>)}</ul>
     </section>)}
+    <PageAnswers answers={HUB_ANSWERS["/compare"]} />
     <div className={styles.cta}><p>Study every comparison with progress in your dashboard.</p><Link href="/sign-up">Start learning</Link></div>
   </>;
 }

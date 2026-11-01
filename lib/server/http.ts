@@ -36,6 +36,13 @@ const SECURITY_CODES = new Set(["invalid_origin", "forbidden", "owner_only", "si
 export function clientIp(request: Request) {
   return (request.headers.get("x-forwarded-for")?.split(",")[0] ?? request.headers.get("x-real-ip") ?? "unknown").trim().slice(0, 64);
 }
+/** The visit a request belongs to, from the first-party tracking cookies (app/api/track): random ids, so the Live visitor stream can list each visitor's API routes. */
+function visitIds(request: Request) {
+  const cookie = (name: string) => request.headers.get("cookie")?.split(/;\s*/).find(part => part.startsWith(`${name}=`))?.slice(name.length + 1);
+  const valid = (value?: string) => value && /^[\w-]{8,64}$/.test(value) ? value : undefined;
+  const session = valid(cookie("mc_sid")), visitor = valid(cookie("mc_vid"));
+  return session ? { session_id: session, ...(visitor ? { visitor_id: visitor } : {}) } : {};
+}
 export async function api(action: () => Promise<Response>, request?: Request) {
   const started = performance.now();
   const requestId = crypto.randomUUID();
@@ -51,10 +58,10 @@ export async function api(action: () => Promise<Response>, request?: Request) {
       // where it came from, for the Super Admin Security page. Pruned with other request events after 90 days.
       const security = SECURITY_STATUSES.has(response.status) || (!!code && SECURITY_CODES.has(code));
       const details = security
-        ? { request_id: requestId, security: true, code: code ?? String(response.status), ip: clientIp(request), ua: (request.headers.get("user-agent") ?? "").slice(0, 160) }
-        : { request_id: requestId };
+        ? { request_id: requestId, ...visitIds(request), security: true, code: code ?? String(response.status), ip: clientIp(request), ua: (request.headers.get("user-agent") ?? "").slice(0, 160) }
+        : { request_id: requestId, ...visitIds(request) };
       const event = { kind: "request", action: request.method, resource: new URL(request.url).pathname, status: response.status, duration_ms: Math.round(performance.now() - started), details };
-      // Never log query strings, cookies, request bodies or authorization headers.
+      // Never log query strings, other cookies, request bodies or authorization headers.
       try { after(() => recordEvent(event)); } catch { /* No request context in direct unit tests. */ }
     }
     return response;

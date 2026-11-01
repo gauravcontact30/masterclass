@@ -103,7 +103,7 @@ function InterviewSlide({ tech, index, tone, total, near, text, tab, onTab, prev
         <span className={styles.index} aria-hidden="true">{two(index + 1)}</span>
       </CoverPicture>
       <div className={styles.coverBody}>
-        <h3><Editable k={k} f="title">{tech.title}</Editable></h3>
+        <div className={styles.coverTitle}><Editable k={k} f="title">{tech.title}</Editable></div>
         <ListenButton id={`interview:${tech.id}`} title={tech.title} text={() => [tech.title, active ? `${active.title}. ${active.tagline}` : tech.tagline].join(". ")} />
         {active && <p className={styles.subtitle}>{active.title}</p>}
         <p className={styles.tagline}>{active ? active.tagline : <Editable k={k} f="tagline" multiline>{tech.tagline}</Editable>}</p>
@@ -128,7 +128,7 @@ function InterviewSlide({ tech, index, tone, total, near, text, tab, onTab, prev
       </div>}
       <div {...(tech.tabs ? { role: "tabpanel", id: panelId, "aria-labelledby": `${panelId}-${tech.tabs[tab].id}` } : {})}>
         {set
-          ? <InterviewQuestions key={id} set={set} text={text} scroll limit={preview ? LANDING_QUESTIONS : undefined} heading={<h4>{text(`${title} questions`, `${title} प्रश्न`)}</h4>} />
+          ? <InterviewQuestions key={id} set={set} text={text} scroll limit={preview ? LANDING_QUESTIONS : undefined} heading={<div className={styles.panelTitle}>{text(`${title} questions`, `${title} प्रश्न`)}</div>} />
           : <div className={styles.loading} role="status">{failed ? text("These questions could not load. Check your connection and try again.", "ये प्रश्न लोड नहीं हो सके। कनेक्शन जाँचें और फिर कोशिश करें।") : text("Loading questions…", "प्रश्न लोड हो रहे हैं…")}</div>}
       </div>
     </div>

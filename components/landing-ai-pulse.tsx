@@ -87,7 +87,7 @@ export function PulseCardItem({ card, index, total, hi, text, compact = false }:
         </PulsePicture>
         <div className={styles.body}>
           <p className={styles.category}><Editable k={k} f="category">{card.category}</Editable></p>
-          <h3>{card.compare ? <>{card.compare[0].heading} <span className={styles.vs}>vs.</span> {card.compare[1].heading}</> : <Editable k={k} f="title">{card.title}</Editable>}</h3>
+          <div className={styles.cardTitle}>{card.compare ? <>{card.compare[0].heading} <span className={styles.vs}>vs.</span> {card.compare[1].heading}</> : <Editable k={k} f="title">{card.title}</Editable>}</div>
           <ListenButton id={`pulse:${card.title}`} title={card.title} text={() => card.compare
             ? [card.title, ...card.compare.map(side => `${side.heading}. ${side.title}. ${side.summary} Use when ${side.useWhen}`)].join(". ")
             : [card.title, hi && card.hiDefinition ? card.hiDefinition : card.definition, ...card.points, ...card.useCases].join(". ")} />

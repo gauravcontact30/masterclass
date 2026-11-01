@@ -114,17 +114,17 @@ export function LandingTechy({ data, buzz }: Readonly<{ data: LandingProPreview[
     <div className={styles.labGrid}>
       <article id="landing-techy-question" className={styles.questionCard} aria-label={text("Interview question of the week", "इस सप्ताह का इंटरव्यू प्रश्न")}>
         <p className={styles.labKicker}><Sparkles size={14} aria-hidden="true" />{text("Interview question of the week", "इस सप्ताह का इंटरव्यू प्रश्न")} · {TECH_PILLS[topic.id]?.label ?? topic.title}</p>
-        <h3>{topic.title}</h3>
+        <div className={styles.questionTitle}>{topic.title}</div>
         {topic.feature && <p className={styles.feature}><Check size={15} aria-hidden="true" /><ExpandedText text={topic.feature} /></p>}
         <p className={styles.qLabel}>{text(`Question ${count(topic.questionNumber)} of ${count(topic.questionCount)}`, `प्रश्न ${count(topic.questionNumber)} / ${count(topic.questionCount)}`)}</p>
-        <h4><ExpandedText text={topic.question} /></h4>
+        <div className={styles.questionText}><ExpandedText text={topic.question} /></div>
         <button type="button" className={styles.reveal} aria-expanded={revealed} aria-controls="landing-techy-answer" onClick={() => setRevealed(value => !value)}>{revealed ? text("Hide answer", "उत्तर छिपाएँ") : text("Answer it yourself, then reveal", "आदर्श उत्तर देखें")}</button>
         <p id="landing-techy-answer" className={styles.answer} hidden={!revealed}><ExpandedText text={topic.answer} /></p>
       </article>
 
       {quiz && <article className={styles.puzzleCard} aria-label={text("Predict the output", "आउटपुट का अनुमान")}>
         <p className={styles.labKicker}><Puzzle size={14} aria-hidden="true" />{text("Predict the output", "आउटपुट का अनुमान")}</p>
-        <h3 className={styles.puzzleTitle}>{quiz.title}</h3>
+        <div className={styles.puzzleTitle}>{quiz.title}</div>
         <CodeFiles key={quiz.title} files={[{ path: "puzzle.js", code: quiz.code, note: quiz.title }]} label={quiz.title} skin="apple" annotate={false} explainFormatting={false} className={styles.editor} />
         <button type="button" className={styles.reveal} aria-expanded={solved} aria-controls="landing-techy-output" onClick={() => setSolved(value => !value)}>{solved ? text("Hide output", "आउटपुट छिपाएँ") : text("I have a guess: show the output", "आउटपुट दिखाएँ")}</button>
         <div id="landing-techy-output" className={styles.output} hidden={!solved}><code>{quiz.output}</code><p>{quiz.explanation}</p></div>
@@ -139,7 +139,7 @@ export function LandingTechy({ data, buzz }: Readonly<{ data: LandingProPreview[
 
     {polyglot && snippet && <article className={styles.polyglot} aria-label={text("Same idea, five languages", "एक विचार, पाँच भाषाएँ")}>
       <div className={styles.polyHead}>
-        <div><p className={styles.labKicker}><Braces size={14} aria-hidden="true" />{text("Same idea, five languages · this week", "एक विचार, पाँच भाषाएँ")}</p><h3>{polyglot.title}</h3><p>{polyglot.idea}</p></div>
+        <div><p className={styles.labKicker}><Braces size={14} aria-hidden="true" />{text("Same idea, five languages · this week", "एक विचार, पाँच भाषाएँ")}</p><div className={styles.polyTitle}>{polyglot.title}</div><p>{polyglot.idea}</p></div>
         {/* Picks the file the editor opens on; it steps through the languages on its own until the visitor takes over. */}
         <div className={styles.langTabs} role="group" aria-label={text("Open a language", "भाषा खोलें")}>{polyglot.snippets.map((item, i) => <button type="button" key={item.language} aria-pressed={lang === i} onClick={() => { setLang(i); setLangPinned(true); }}>
           <Image src={`/images/tech/${item.logo}.png`} alt={`${item.language} logo`} aria-hidden="true" width={16} height={16} />{item.language}
@@ -230,7 +230,7 @@ export function LandingApiDocs({ data, buzz }: Readonly<{ data: LandingProPrevie
         </div>
         {selected && <div className={styles.entries}>
           <div className={styles.entriesHead}>
-            <h3><span aria-hidden="true">{selected.icon}</span>{selected.name}</h3>
+            <div className={styles.entriesTitle}><span aria-hidden="true">{selected.icon}</span>{selected.name}</div>
             <span role="status">{text(`${count(entries.length)} of ${count(selected.sample.length)} shown · ${count(selected.count)} in the reference`, `${count(selected.count)} पहचानकर्ता`)}</span>
           </div>
           {usedKinds.length > 1 && <div className={styles.kinds} role="group" aria-label={text("Identifier type", "पहचानकर्ता प्रकार")}>
@@ -245,13 +245,13 @@ export function LandingApiDocs({ data, buzz }: Readonly<{ data: LandingProPrevie
           {!entries.length && <p className={styles.noMatch} role="status">{text("No identifier in this sample matches. The full reference has the rest.", "इस नमूने में कोई पहचानकर्ता नहीं मिला।")}</p>}
         </div>}
       </div>
-      <ul className={styles.points}>{points.map(point => <li key={point.title}><point.icon size={17} aria-hidden="true" /><div><h4>{point.title}</h4><p>{point.body}</p></div></li>)}</ul>
+      <ul className={styles.points}>{points.map(point => <li key={point.title}><point.icon size={17} aria-hidden="true" /><div><div className={styles.pointTitle}>{point.title}</div><p>{point.body}</p></div></li>)}</ul>
     </article>
 
     {spot && <article className={styles.spotlight} aria-labelledby="landing-api-spotlight">
       <div className={styles.spotInfo}>
         <p className={styles.labKicker}><Sparkles size={14} aria-hidden="true" />{text("API of the week", "इस सप्ताह का API")} · <code>{spot.packageName}</code></p>
-        <h3 id="landing-api-spotlight"><code>{spot.name}</code></h3>
+        <div id="landing-api-spotlight" className={styles.spotTitle}><code>{spot.name}</code></div>
         <p className={styles.spotDesc}>{spot.description}</p>
         <pre className={styles.signature}><code>{spot.signature}</code></pre>
         {spot.parameters.length > 0 && <dl className={styles.params}>{spot.parameters.map(param => <div key={param.name}><dt><code>{param.name}</code><small>{param.type}</small></dt><dd>{param.description}</dd></div>)}</dl>}

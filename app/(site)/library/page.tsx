@@ -1,3 +1,5 @@
+import { PageAnswers } from "@/components/page-answers";
+import { HUB_ANSWERS } from "@/lib/page-answers";
 import Image from "@/components/responsive-image";
 import { HINDI_ENABLED } from "@/lib/i18n";
 import Link from "next/link";
@@ -85,6 +87,7 @@ export default async function LibraryHub() {
       })}</ul>
     </section>}
 
+    <PageAnswers answers={HUB_ANSWERS["/library"]} />
     <div className={styles.cta}><p>Practise with progress, search and daily sets in your dashboard.</p><Link href="/sign-up">Start learning</Link></div>
   </>;
 }

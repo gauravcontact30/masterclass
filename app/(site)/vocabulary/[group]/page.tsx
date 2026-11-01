@@ -1,3 +1,5 @@
+import { PageAnswers } from "@/components/page-answers";
+import { vocabularyAnswers } from "@/lib/page-answers";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -55,6 +57,7 @@ async function Words({ params }: Props) {
       {word.synonyms.length > 0 && <p className={styles.meta}><strong>Synonyms:</strong> {word.synonyms.join(", ")}</p>}
       {word.antonyms.length > 0 && <p className={styles.meta}><strong>Antonyms:</strong> {word.antonyms.join(", ")}</p>}
     </article>)}</div>
+    <PageAnswers answers={vocabularyAnswers(group.name, group.words.length, group.words.map(word => word.word))} />
     <nav className={styles.next} aria-label="More vocabulary">
       {previous ? <Link href={`/vocabulary/${previous.slug}`}>← {previous.name}</Link> : <span />}
       {next && <Link href={`/vocabulary/${next.slug}`}>{next.name} →</Link>}

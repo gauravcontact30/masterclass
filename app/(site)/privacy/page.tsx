@@ -8,8 +8,7 @@ const UPDATED = "2026-09-24";
 
 export default function PrivacyPage() {
   return <>
-    <PageIntro path="/privacy" eyebrow="Legal" />
-    <p className={styles.updated}>Last updated <time dateTime={UPDATED}>24 September 2026</time></p>
+    <PageIntro path="/privacy" eyebrow="Legal" updated={UPDATED} />
     <div className={styles.prose}>
       <h2>What we collect</h2>
       <ul>

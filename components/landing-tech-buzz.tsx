@@ -68,7 +68,7 @@ export function LandingTechBuzz({ stories = [], week, hi = false }: Readonly<{ s
         <i className={styles.progress} style={{ animationDuration: `${INTERVAL}ms` }} aria-hidden="true" />
       </div>
       <div className={styles.body}>
-        <h3 className={styles.title}>{story.title}</h3>
+        <div className={styles.title}>{story.title}</div>
         {story.subtitle && <p className={styles.text}>{story.subtitle}</p>}
         <Rating story={story} />
         <div className={styles.foot}>

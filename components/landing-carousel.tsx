@@ -31,7 +31,7 @@ export function CoverCarousel({ slides, label, interval = 15_000, hi = false }: 
         <span className={styles.kicker}>{item.kicker}</span>
       </div>
       <div className={styles.body}>
-        <h3 className={styles.title}>{item.title}</h3>
+        <div className={styles.title}>{item.title}</div>
         <p className={styles.text}>{item.text}</p>
         <div className={styles.foot}>
           {item.meta && <span className={styles.meta}>{item.meta}</span>}

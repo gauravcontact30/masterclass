@@ -11,7 +11,9 @@ import { billingConfigured } from "@/lib/server/config";
 import { internationalBilling } from "@/lib/server/pricing";
 import { activeSale } from "@/lib/server/festive-sale";
 import { officialTechDocs, previewTechDocs } from "@/lib/server/official-tech-docs";
-import { organizationSchema, pageMetadata, websiteSchema } from "@/lib/seo";
+import { organizationSchema, pageMetadata, webPageSchema, websiteSchema } from "@/lib/seo";
+import { weekStartDate } from "@/lib/ist-week";
+import { LandingAnswers } from "@/components/landing-answers";
 import { contentOverrides } from "@/lib/server/content-overrides";
 import { blogTeasers } from "@/lib/coffee-and-code";
 import { landingBuzz } from "@/lib/server/landing-buzz";
@@ -54,5 +56,7 @@ export default async function Home() {
   const prices = { monthly: Number(process.env.PRO_MONTHLY_PRICE_INR ?? 299), yearly: Number(process.env.PRO_YEARLY_PRICE_INR ?? 2999), enabled: billingConfigured(), currency: "INR" as const, international: internationalBilling(), sale };
   // Super Admin content edits apply to the landing previews too; a save expires both this page and the overrides.
   // Today's AI-written additions (lib/server/landing-fresh.ts); the nightly job publishes them with revalidateTag("landing").
-  return <><JsonLd data={[websiteSchema(), organizationSchema({ monthly:sale?.monthly ?? prices.monthly, yearly:sale?.yearly ?? prices.yearly, endsAt:sale?.endsAt })]} /><LandingPage features={features} certifications={<LandingCertifications />} workflows={previewWorkflows(overrides)} copyrightYear={new Date().getFullYear()} pro={pro} library={previewLibrary(landingLibrary(pro), today)} prices={prices} daily={daily} techDocs={previewTechDocs(docs, featuredDoc)} featuredDoc={featuredDoc} fresh={fresh} today={today} overrides={overrides} coffee={blogTeasers(8, today)} buzz={buzz} /></>;
+  // The page's content turns over every Monday at 00:00 IST, so that is when it last changed.
+  const updated = weekStartDate(today);
+  return <><JsonLd data={[websiteSchema(), webPageSchema("/", updated), organizationSchema({ monthly:sale?.monthly ?? prices.monthly, yearly:sale?.yearly ?? prices.yearly, endsAt:sale?.endsAt })]} /><LandingPage features={features} certifications={<LandingCertifications />} answers={<LandingAnswers monthly={prices.monthly} yearly={prices.yearly} updated={updated} />} workflows={previewWorkflows(overrides)} copyrightYear={new Date().getFullYear()} pro={pro} library={previewLibrary(landingLibrary(pro), today)} prices={prices} daily={daily} techDocs={previewTechDocs(docs, featuredDoc)} featuredDoc={featuredDoc} fresh={fresh} today={today} overrides={overrides} coffee={blogTeasers(8, today)} buzz={buzz} /></>;
 }

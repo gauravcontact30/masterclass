@@ -1,3 +1,5 @@
+import { PageAnswers } from "@/components/page-answers";
+import { HUB_ANSWERS } from "@/lib/page-answers";
 import Link from "next/link";
 import { vocabularyGroups } from "@/lib/public-learning";
 import { learningMetadata } from "@/lib/seo";
@@ -26,6 +28,7 @@ export default function VocabularyIndex() {
       <h2 id="themes">Choose a theme</h2>
       <ul className={styles.grid}>{groups.map(group => <li key={group.slug}><Link href={`/vocabulary/${group.slug}`}><b>{group.name}</b><span>{group.words.slice(0, 4).map(word => word.word).join(", ")}…</span><small>{group.words.length} words</small></Link></li>)}</ul>
     </section>
+    <PageAnswers answers={HUB_ANSWERS["/vocabulary"]} />
     <div className={styles.cta}><p>Hear every word and practise daily in your dashboard.</p><Link href="/sign-up">Start learning</Link></div>
   </>;
 }

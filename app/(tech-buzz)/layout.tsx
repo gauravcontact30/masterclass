@@ -1,9 +1,11 @@
 import { SiteChrome } from "@/app/(site)/site-chrome";
+import { JsonLd } from "@/components/json-ld";
+import { organizationSchema } from "@/lib/seo";
 
 /*
  * Route group for every /tech-buzz page (the hub and each story). Group folders add nothing to the URL, so the
  * paths are unchanged; the site header and footer are shared with (site), and tech-buzz/layout.tsx widens the page.
  */
 export default function TechBuzzGroupLayout({ children }: { children: React.ReactNode }) {
-  return <SiteChrome>{children}</SiteChrome>;
+  return <><JsonLd data={organizationSchema()} /><SiteChrome>{children}</SiteChrome></>;
 }

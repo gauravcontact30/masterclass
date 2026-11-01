@@ -1,0 +1,41 @@
+/* Live visitor stream → Routes by visitor: one light card per visitor, with frontend and backend routes as separate panels. */
+.routes { display: grid; gap: 12px; margin-bottom: 14px; padding: 14px; border: 1px solid #e8e6dc; border-radius: 16px; background: #fffdf8; }
+.head { display: flex; align-items: center; gap: 12px; }
+.head > div { min-width: 0; }
+.head h4 { margin: 0; font-size: 15px; font-weight: 700; color: #141413; }
+.head p { margin: 2px 0 0; font-size: 12.5px; line-height: 1.45; color: #6c6b63; }
+.mark { display: grid; place-items: center; flex: none; width: 36px; height: 36px; border-radius: 11px; background: #e3f1ea; color: #2f6b55; }
+
+.list { display: grid; gap: 12px; margin: 0; padding: 0; list-style: none; }
+.card { --c: #2f6b55; --wash: #f1f9f5; --edge: #cfe6da; display: grid; gap: 11px; min-width: 0; padding: 13px; border: 1px solid var(--edge); border-top: 3px solid var(--c); border-radius: 14px; background: var(--wash); }
+.card[data-tone="sky"] { --c: #2f5f82; --wash: #f1f7fc; --edge: #cfe1f0; }
+.card[data-tone="lavender"] { --c: #5a4b8f; --wash: #f6f3fc; --edge: #dfd7f2; }
+.card[data-tone="peach"] { --c: #99502f; --wash: #fdf4ef; --edge: #f3dacd; }
+.card[data-tone="butter"] { --c: #7a5c12; --wash: #fdf9ea; --edge: #efe3b8; }
+.card[data-tone="rose"] { --c: #99405a; --wash: #fdf2f5; --edge: #f3d5de; }
+
+.who { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; min-width: 0; }
+.who strong { overflow: hidden; min-width: 0; max-width: 100%; font-size: 14px; font-weight: 700; color: #141413; text-overflow: ellipsis; white-space: nowrap; }
+.rank { flex: none; font-size: 12px; font-weight: 700; color: var(--c); font-variant-numeric: tabular-nums; }
+.pill { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 999px; background: #fff; color: var(--c); font-size: 11px; font-weight: 600; }
+.live { display: inline-flex; align-items: center; gap: 4px; padding: 2px 7px; border-radius: 999px; background: #dff3e8; color: #1f6f4f; font-size: 11px; font-weight: 700; }
+
+.facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 170px), 1fr)); gap: 8px 14px; margin: 0; }
+.facts > div { min-width: 0; }
+.facts dt { display: flex; align-items: center; gap: 5px; font-size: 11.5px; color: #5f5e57; }
+.facts dd { overflow: hidden; margin: 2px 0 0; font-size: 12.5px; font-weight: 600; color: #141413; text-overflow: ellipsis; white-space: nowrap; }
+
+.panels { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: 10px; }
+.panel { --p: #1d6a7a; --p-wash: #eef9fb; --p-edge: #c6e6ec; display: grid; align-content: start; gap: 8px; min-width: 0; padding: 11px; border: 1px solid var(--p-edge); border-radius: 12px; background: var(--p-wash); }
+.panel[data-side="api"] { --p: #6a4a96; --p-wash: #f8f4fd; --p-edge: #e2d6f3; }
+.panel h5 { display: flex; align-items: center; gap: 6px; margin: 0; font-size: 12.5px; font-weight: 700; color: var(--p); }
+.panel h5 span { margin-left: auto; padding: 1px 8px; border-radius: 999px; background: #fff; font-size: 11.5px; font-variant-numeric: tabular-nums; }
+.panel ul { display: grid; gap: 5px; overflow-y: auto; max-height: 232px; margin: 0; padding: 0; list-style: none; }
+.panel li { display: flex; flex-wrap: wrap; align-items: center; gap: 3px 6px; min-width: 0; padding: 6px 8px; border: 1px solid var(--p-edge); border-radius: 8px; background: #fff; }
+.panel code { overflow: hidden; flex: 1 1 120px; min-width: 0; font-size: 12px; font-weight: 600; color: #141413; text-overflow: ellipsis; white-space: nowrap; }
+.panel li b { padding: 1px 5px; border-radius: 5px; background: var(--p-wash); color: var(--p); font-size: 10.5px; font-weight: 700; }
+.panel em { padding: 1px 6px; border-radius: 5px; background: #e3f1ea; color: #2f6b55; font-size: 10.5px; font-style: normal; font-weight: 700; }
+.panel em[data-open] { background: #dff3e8; color: #1f6f4f; }
+.panel em[data-error] { background: #fde8e6; color: #a32a22; }
+.panel small { flex: none; font-size: 11px; color: #5f5e57; font-variant-numeric: tabular-nums; }
+.panel p { margin: 0; font-size: 12px; line-height: 1.5; color: #5f5e57; }

@@ -1,3 +1,5 @@
+import { PageAnswers } from "@/components/page-answers";
+import { HUB_ANSWERS } from "@/lib/page-answers";
 import Link from "next/link";
 import { cacheLife } from "next/cache";
 import { interviewBanks, interviewTechs } from "@/lib/public-learning";
@@ -32,6 +34,7 @@ export default async function InterviewQuestionsIndex() {
       <h2 id="techs">Choose a technology</h2>
       <ul className={styles.grid}>{techs.map((tech, i) => <li key={tech.id}><Link href={`/interview-questions/${tech.id}`}><b>{tech.title}</b><span>{tech.tagline}</span><small>{counts[i]} questions with answers</small></Link></li>)}</ul>
     </section>
+    <PageAnswers answers={HUB_ANSWERS["/interview-questions"]} />
     <div className={styles.cta}><p>Practise them with search, filters and progress in your dashboard.</p><Link href="/sign-up">Start learning</Link></div>
   </>;
 }

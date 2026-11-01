@@ -56,11 +56,11 @@
 .questionCard { scroll-margin-top: 90px; border-left: 4px solid var(--nb-button); }
 .labKicker { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-size: 13.5px; font-weight: 400; letter-spacing: normal; text-transform: none; color: var(--nb-ink); }
 .labKicker code { text-transform: none; letter-spacing: 0; }
-.questionCard h3, .polyHead h3 { font-size: 21px; font-weight: 600; letter-spacing: -0.01em; }
+.questionCard .questionTitle, .polyHead .polyTitle { font-size: 21px; font-weight: 600; letter-spacing: -0.01em; }
 .feature { display: flex; gap: 8px; font-size: 14.5px; line-height: 1.5; color: var(--nb-text); text-align: left; }
 .feature svg { flex: none; margin-top: 3px; color: #2f7d4f; }
 .qLabel { font-size: 13px; color: var(--nb-muted); }
-.questionCard h4 { font-size: 17px; font-weight: 600; line-height: 1.45; }
+.questionCard .questionText { font-size: 17px; font-weight: 600; line-height: 1.45; }
 .reveal { justify-self: start; display: inline-flex; align-items: center; min-height: 40px; padding: 0 16px; border: 1px solid var(--nb-graphite); border-radius: 10px; background: var(--nb-graphite); color: #fff; font-size: 14px; font-weight: 600; cursor: pointer; transition: background-color .15s ease; }
 .reveal:hover { background: #30302e; }
 .reveal[aria-expanded="true"] { background: var(--nb-sheet); color: var(--nb-graphite); }
@@ -112,7 +112,7 @@
 
 .entries { display: flex; flex-direction: column; min-height: 0; padding: 18px 20px 0; }
 .entriesHead { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 6px 16px; }
-.entriesHead h3 { display: flex; align-items: center; gap: 10px; font-size: 20px; font-weight: 600; letter-spacing: -0.01em; }
+.entriesHead .entriesTitle { display: flex; align-items: center; gap: 10px; font-size: 20px; font-weight: 600; letter-spacing: -0.01em; }
 .entriesHead > span { font-size: 13.5px; color: var(--nb-muted); font-variant-numeric: tabular-nums; }
 .kinds { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 14px; }
 .kinds button { display: inline-flex; align-items: center; gap: 7px; height: 30px; padding: 0 11px; border: 1px solid var(--nb-rule-2); border-radius: 6px; background: var(--nb-sheet); color: var(--nb-text); font-size: 13px; cursor: pointer; }
@@ -131,7 +131,7 @@
 .points li:nth-child(3n + 2) { --tone-bg: #f1f7fe; --tone-edge: #cfe1f6; --tone-ink: #1d4f7a; }
 .points li:nth-child(3n + 3) { --tone-bg: #fef5ee; --tone-edge: #f5dac6; --tone-ink: #8f3f23; }
 .points svg { flex: none; margin-top: 2px; color: var(--tone-ink); }
-.points h4 { font-size: 15px; font-weight: 400; color: var(--tone-ink); }
+.points .pointTitle { font-size: 15px; font-weight: 400; color: var(--tone-ink); }
 .points p { margin-top: 2px; font-size: 14px; line-height: 1.5; color: var(--nb-muted); text-align: left; hyphens: manual; }
 
 
@@ -143,7 +143,7 @@
 /* API of the week: the entry in full beside its example. */
 .spotlight { grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr); gap: clamp(16px, 2.5vw, 28px); margin-top: 18px; align-items: start; }
 .spotInfo { display: grid; gap: 12px; min-width: 0; }
-.spotInfo h3 { font-size: clamp(22px, 2.4vw, 28px); font-weight: 600; letter-spacing: -0.01em; overflow-wrap: anywhere; }
+.spotInfo .spotTitle { font-size: clamp(22px, 2.4vw, 28px); font-weight: 600; letter-spacing: -0.01em; overflow-wrap: anywhere; }
 .spotDesc { font-size: 15.5px; line-height: 1.55; color: var(--nb-text); text-align: left; }
 .signature { overflow-x: auto; margin: 0; padding: 10px 12px; border: 1px solid var(--nb-rule-2); border-radius: 8px; background: var(--nb-paper); font-size: 13.5px; color: var(--nb-graphite); white-space: pre; }
 .params { display: grid; margin: 0; border-top: 1px solid var(--nb-rule); }

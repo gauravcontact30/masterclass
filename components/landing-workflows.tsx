@@ -140,7 +140,7 @@ function WorkflowSlide({ workflow, near, index, total, text, preview }: Readonly
       </BriefPicture>
       <div className={styles.briefBody}>
         <p className={styles.industry}><Editable k={k} f="industry">{workflow.industry}</Editable></p>
-        <h3><Editable k={k} f="title">{workflow.title}</Editable></h3>
+        <div className={styles.briefTitle}><Editable k={k} f="title">{workflow.title}</Editable></div>
         <ListenButton id={`workflow:${workflow.id}`} title={workflow.title} text={() => [workflow.title, workflow.summary, `The real-life problem. ${workflow.problem}`, `The outcome. ${workflow.outcome}`].join(". ")} />
         <p className={styles.summary}><Editable k={k} f="summary" multiline>{workflow.summary}</Editable></p>
         <dl className={styles.facts}>

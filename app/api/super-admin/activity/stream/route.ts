@@ -4,6 +4,7 @@ import { db } from "@/lib/server/db";
 import { adminError } from "@/lib/server/admin-rpc";
 import { VISIT_RETENTION_DAYS } from "@/lib/visit-retention";
 import { isLocalAddress, looksAutomated } from "@/lib/visit-quality";
+import { isUntrackedEmail } from "@/lib/server/tracking-exclusions";
 
 /*
  * The Overview's Live visitor stream: every page view and leave beacon of the last VISIT_RETENTION_DAYS days (bots
@@ -39,7 +40,7 @@ export async function GET(request: Request) {
       .eq("is_bot", false).in("event", ["page_view", "page_leave"]).gte("created_at", since)
       .order("created_at", { ascending: false }).order("id", { ascending: false }).range(offset, offset + PAGE - 1);
     // The first page also says how many rows there are; the rest are read four at a time instead of one by one.
-    const [first, presence, clickRows] = await Promise.all([page(0, true), readPresence(since), readClicks(since)]);
+    const [first, presence, clickRows, apiRows] = await Promise.all([page(0, true), readPresence(since), readClicks(since), readApiCalls(since)]);
     let head = first;
     if (head.error?.code === "42703") { columns = BASE_COLUMNS; head = await page(0, true); }
     if (head.error) adminError(head.error);
@@ -68,9 +69,14 @@ export async function GET(request: Request) {
     }
     if (emailCache.size > 5000) emailCache.clear();
     const emails = Object.fromEntries(ids.flatMap(id => { const email = emailCache.get(id)?.email; return email ? [[id, email]] : []; }));
-    const visits = genuine.map(row => ({ ...row, email: typeof row.user_id === "string" ? emails[row.user_id] ?? null : null }));
+    // The owner and TRACKING_EXCLUDED_EMAILS are never written (app/api/track); this holds if a row got in anyway, and takes
+    // the rest of that browser's rows with it.
+    const excluded = new Set(genuine.filter(row => typeof row.user_id === "string" && isUntrackedEmail(emails[row.user_id])).map(row => String(row.visitor_id)));
+    for (const row of genuine) if (excluded.has(String(row.visitor_id))) automated.add(String(row.session_id));
+    const visits = genuine.filter(row => !automated.has(String(row.session_id))).map(row => ({ ...row, email: typeof row.user_id === "string" ? emails[row.user_id] ?? null : null }));
     const clicks = clickRows.filter(click => !automated.has(click.session_id));
-    return Response.json({ days: VISIT_RETENTION_DAYS, since, incremental: Boolean(asked), visits, emails, presence, clicks, hidden: rows.length - genuine.length,
+    const apiCalls = apiRows.filter(call => !automated.has(call.session_id));
+    return Response.json({ days: VISIT_RETENTION_DAYS, since, incremental: Boolean(asked), visits, emails, presence, clicks, apiCalls, automated: [...automated], hidden: rows.length - genuine.length,
       capped: (head.count ?? 0) > LIMIT, generatedAt: new Date().toISOString() }, { headers: { "Cache-Control": "private, no-store" } });
   }, request);
 }
@@ -80,6 +86,22 @@ async function readPresence(since: string) {
   const { data, error } = await db().from("site_presence").select("session_id,path,started_at,seen_at").gte("seen_at", since).order("seen_at", { ascending: false }).limit(5000);
   if (error) return null;
   return data ?? [];
+}
+
+/**
+ * Backend API calls since `since` that carry a visit's session (lib/server/http.ts: pathname and method only, never a
+ * query or body), for each visitor's route card. Tracking and monitoring beacons are the app's own bookkeeping, not
+ * routes the visitor used, so they are left out.
+ */
+async function readApiCalls(since: string) {
+  const { data, error } = await db().from("monitor_events").select("id,created_at,resource,action,status,duration_ms,details").eq("kind", "request")
+    .not("details->>session_id", "is", null).gte("created_at", since).order("created_at", { ascending: false }).limit(10_000);
+  if (error) return [];
+  return (data ?? []).flatMap(row => {
+    const details = (row.details ?? {}) as Record<string, unknown>, path = String(row.resource ?? "");
+    if (typeof details.session_id !== "string" || !path || path === "/api/track" || path.startsWith("/api/monitoring")) return [];
+    return [{ id: String(row.id), created_at: String(row.created_at), session_id: details.session_id, path, method: String(row.action ?? "GET"), status: Number(row.status) || 0, duration_ms: Number(row.duration_ms) || 0 }];
+  });
 }
 
 /** Tracked clicks since `since` (components/visit-tracker.tsx: UI labels and paths only), for the visitor journeys. */

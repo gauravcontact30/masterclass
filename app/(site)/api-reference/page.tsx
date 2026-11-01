@@ -1,3 +1,5 @@
+import { PageAnswers } from "@/components/page-answers";
+import { HUB_ANSWERS } from "@/lib/page-answers";
 import Link from "next/link";
 import { apiPackages, apiTypes } from "@/lib/public-learning";
 import { learningMetadata, siteUrl } from "@/lib/seo";
@@ -28,6 +30,7 @@ export default function ApiReferenceIndex() {
       <h2 id="packages">Choose a technology</h2>
       <ul className={styles.grid}>{packages.map(pkg => <li key={pkg.id}><Link href={`/api-reference/${pkg.id}`}><b>{pkg.name}</b><span>{pkg.description}</span><small>{pkg.entries.length.toLocaleString("en-IN")} identifiers</small></Link></li>)}</ul>
     </section>
+    <PageAnswers answers={HUB_ANSWERS["/api-reference"]} />
     <div className={styles.cta}><p>Search and filter the whole reference in your dashboard.</p><Link href="/sign-up">Start learning</Link></div>
   </>;
 }

@@ -1,3 +1,5 @@
+import { PageAnswers } from "@/components/page-answers";
+import { HUB_ANSWERS } from "@/lib/page-answers";
 import Link from "next/link";
 import { workflows } from "@/lib/public-learning";
 import { learningMetadata, siteUrl } from "@/lib/seo";
@@ -37,6 +39,7 @@ export default function WorkflowsIndex() {
       <p className={styles.meta}>{GROUP_INTRO[group]}</p>
       <ul className={styles.grid}>{all.filter(item => item.group === group).map(item => <li key={item.id}><Link href={`/workflows/${item.id}`}><b>{item.title}</b><span>{item.summary}</span><small>{item.industry}</small></Link></li>)}</ul>
     </section>)}
+    <PageAnswers answers={HUB_ANSWERS["/workflows"]} />
     <div className={styles.cta}><p>Study every blueprint with progress tracking in your dashboard.</p><Link href="/sign-up">Start learning</Link></div>
   </>;
 }

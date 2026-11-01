@@ -266,7 +266,7 @@ export function LandingPathFinder({ day = 0, fresh }: { day?: number; fresh?: Fr
     <div className={styles.panel}>
       <div className={styles.intro}>
         <h2 id={`${id}-title`}>{text("Plan your route", "अपना रास्ता तय कीजिए")}</h2>
-        <p>{text("Say where you want to get to. AI turns it into three stages, foundation, practice and a project, using the notes, quizzes and interview questions already in MasterClass.", "बताइए आप कहाँ पहुँचना चाहते हैं। AI उसे तीन चरणों में बाँटता है: बुनियाद, अभ्यास और प्रोजेक्ट, MasterClass के नोट्स, क्विज़ और इंटरव्यू प्रश्नों से।")}</p>
+        <p>{text("Say where you want to get to. AI turns it into three stages, foundation, practice and a project, using the notes, quizzes and interview questions already in MasterClass, so you always know what to study next.", "बताइए आप कहाँ पहुँचना चाहते हैं। AI उसे तीन चरणों में बाँटता है: बुनियाद, अभ्यास और प्रोजेक्ट, MasterClass के नोट्स, क्विज़ और इंटरव्यू प्रश्नों से।")}</p>
       </div>
 
       <form className={styles.composer} onSubmit={submit} method="post">
@@ -344,7 +344,7 @@ export function LandingPathFinder({ day = 0, fresh }: { day?: number; fresh?: Fr
                   <span className={styles.weeks}>{stageWeeks(stage, hi)}</span>
                 </header>
                 {mode === "loading" ? <div className={styles.skeleton} aria-hidden="true"><i /><i /><i /></div> : <>
-                  <h4>{stage.focus}</h4>
+                  <div className={styles.stageTitle}>{stage.focus}</div>
                   {stage.technologies.length > 0 && <ul className={styles.topics} aria-label={text("Topics", "विषय")}>
                     {stage.technologies.map(item => <li key={item.id}>{mode === "sample" ? <span>{item.title}</span> : <Link href={item.href} prefetch={false}>{item.title}</Link>}</li>)}
                   </ul>}

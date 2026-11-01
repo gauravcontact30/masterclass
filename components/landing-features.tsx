@@ -128,7 +128,7 @@ export function FeatureSection({ feature, index, total, float, section, hi = fal
         <p className={frame.lede}>{pick(feature.lede)}</p>
         <ul className={styles.details}>{feature.details.map(detail => { const DetailIcon = detail.icon; return <li key={detail.title[0]}>
           <span className={styles.detailIcon} aria-hidden="true"><DetailIcon size={17} /></span>
-          <div><h3>{pick(detail.title)}</h3><p>{pick(detail.body)}</p></div>
+          <div><div className={styles.detailTitle}>{pick(detail.title)}</div><p>{pick(detail.body)}</p></div>
         </li>; })}</ul>
         <div className={styles.how}>
           <p className={styles.howLabel}>{hi ? "यह कैसे काम करता है" : "How it works"}</p>

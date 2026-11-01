@@ -101,7 +101,7 @@ export function LandingNews() {
           <p className={styles.eyebrow}><Newspaper size={14} aria-hidden="true" />{text("Fresh in tech", "टेक में नया")}
             {news?.updatedAt && <span>{text("Updated", "अपडेट")} {istTime(news.updatedAt)}</span>}</p>
           <h2 id="fresh-title">{text("What changed in tech this week", "इस हफ़्ते टेक में क्या बदला")}</h2>
-          <p className={styles.lede}>{text("Ten slides of real news explained for learners, the interview questions candidates are being asked right now, and a quick check on each subject.", "सीखने वालों के लिए समझाई गई असली खबरों की दस स्लाइड, वे इंटरव्यू प्रश्न जो अभी पूछे जा रहे हैं, और हर विषय पर एक त्वरित जाँच।")}</p>
+          <p className={styles.lede}>{text("Ten slides of real news explained for learners, the interview questions candidates are being asked right now, and a quick check on each subject. Everything here is refreshed every Monday at 00:00 IST.", "सीखने वालों के लिए समझाई गई असली खबरों की दस स्लाइड, वे इंटरव्यू प्रश्न जो अभी पूछे जा रहे हैं, और हर विषय पर एक त्वरित जाँच।")}</p>
         </header>
         <div className={styles.bar}>
           {(() => {
@@ -174,18 +174,18 @@ function Cover({ meta, hi, eager, data }: { meta: NewsSlideMeta; hi: boolean; ea
     <ul className={styles.topics}>{meta.topics.map(topic => <li key={topic}>{topic}</li>)}</ul>
     {items.length > 0 && <div className={styles.index}>
       <dl className={styles.glance} aria-label={hi ? "एक नज़र में" : "At a glance"}>{glance.map(([value, label]) => <div key={label}><dd>{value}</dd><dt>{label}</dt></div>)}</dl>
-      <h4>{hi ? "इस स्लाइड में" : "In this slide"}</h4>
+      <div className={styles.subhead}>{hi ? "इस स्लाइड में" : "In this slide"}</div>
       <ol>{items.map(item => <li key={item.title}>
         <span>{item.title}</span>
         {(item.source || item.date) && <small>{item.logo && <Logo logo={item.logo} />}{[item.source, item.date ? shortDate(item.date) : null].filter(Boolean).join(" · ")}</small>}
       </li>)}</ol>
     </div>}
     <Fit className={`${styles.extra} ${styles.basics}`} as="dl" keep={4} watch={hi}
-      heading={<h4><Sparkles size={14} aria-hidden="true" />{hi ? "बुनियादी बातें समझें" : "Learn the basics"}</h4>}>
+      heading={<div className={styles.subhead}><Sparkles size={14} aria-hidden="true" />{hi ? "बुनियादी बातें समझें" : "Learn the basics"}</div>}>
       {[...NEWS_BASICS[meta.id], ...NEWS_MORE_BASICS[meta.id]].map(basic => <div key={basic.term}><dt>{basic.term}</dt><dd>{hi ? basic.hiExplain : basic.explain}</dd></div>)}
     </Fit>
     <div className={`${styles.extra} ${styles.deeper}`}>
-      <h4><GraduationCap size={14} aria-hidden="true" />{hi ? "MasterClass Buddy पर आगे सीखें" : "Keep learning on MasterClass Buddy"}</h4>
+      <div className={styles.subhead}><GraduationCap size={14} aria-hidden="true" />{hi ? "MasterClass Buddy पर आगे सीखें" : "Keep learning on MasterClass Buddy"}</div>
       <ul>{meta.learn.map(link => <li key={link.href}><Link href={link.href}>{hi ? link.hiLabel : link.label}<ArrowUpRight size={13} aria-hidden="true" /></Link></li>)}</ul>
     </div>
   </div>;
@@ -213,7 +213,7 @@ function Stories({ stories, hi, slide }: { stories: NewsStory[]; hi: boolean; sl
       <h4>{lead.title}</h4>
       <p>{lead.summary}</p>
       {lead.points.length > 0 && <div className={styles.facts}>
-        <h5><ListChecks size={14} aria-hidden="true" />{hi ? "मुख्य बातें" : "Key facts"}</h5>
+        <div className={styles.subhead}><ListChecks size={14} aria-hidden="true" />{hi ? "मुख्य बातें" : "Key facts"}</div>
         <ul>{lead.points.map(point => <li key={point}>{point}</li>)}</ul>
       </div>}
       {lead.why && <p className={styles.why}><Lightbulb size={14} aria-hidden="true" /><span><b>{hi ? "क्यों ज़रूरी है" : "Why it matters"}:</b> {lead.why}</span></p>}
@@ -233,7 +233,7 @@ function Stories({ stories, hi, slide }: { stories: NewsStory[]; hi: boolean; sl
 /** Stories beyond the slide's four cards: a compact two-column list, each naming its source, with its concept. */
 function Headlines({ stories, hi }: { stories: NewsStory[]; hi: boolean }) {
   return <section className={styles.headlines} aria-label={hi ? "और सुर्ख़ियाँ" : "More headlines"}>
-    <h5><Newspaper size={14} aria-hidden="true" />{hi ? "और सुर्ख़ियाँ" : "More headlines"}</h5>
+    <div className={styles.subhead}><Newspaper size={14} aria-hidden="true" />{hi ? "और सुर्ख़ियाँ" : "More headlines"}</div>
     <ol>{stories.map(story => <li key={story.url}>
       <small>{story.logo && <Logo logo={story.logo} />}{story.source} · <time dateTime={story.date}>{shortDate(story.date)}</time></small>
       <span>{story.title}</span>
@@ -246,7 +246,7 @@ function Headlines({ stories, hi }: { stories: NewsStory[]; hi: boolean }) {
 /** Eight short questions with answers on the slide's subject, closing the stories column (as many as fit). */
 function QuickCheck({ id, hi }: { id: NewsSlideId; hi: boolean }) {
   return <Fit className={styles.quick} as="ol" keep={2} watch={hi}
-    heading={<h5><CircleHelp size={14} aria-hidden="true" />{hi ? "त्वरित जाँच" : "Quick check"}</h5>}>
+    heading={<div className={styles.subhead}><CircleHelp size={14} aria-hidden="true" />{hi ? "त्वरित जाँच" : "Quick check"}</div>}>
     {NEWS_QUICK_CHECKS[id].map(check => <li key={check.q}><b>{hi ? check.hiQ : check.q}</b><p>{hi ? check.hiA : check.a}</p></li>)}
   </Fit>;
 }
@@ -311,7 +311,7 @@ function Fit({ as: List, keep, watch, heading, className, children }: { as: "dl"
 /** Three hands-on tasks for the slide's subject, so the week's news ends in something to practise. */
 function Practice({ id, hi }: { id: NewsSlideId; hi: boolean }) {
   return <section className={styles.practice} aria-label={hi ? "इस हफ़्ते आज़माएँ" : "Try this week"}>
-    <h5><Hammer size={14} aria-hidden="true" />{hi ? "इस हफ़्ते आज़माएँ" : "Try this week"}</h5>
+    <div className={styles.subhead}><Hammer size={14} aria-hidden="true" />{hi ? "इस हफ़्ते आज़माएँ" : "Try this week"}</div>
     <ol>{NEWS_PRACTICE[id].map((item, at) => <li key={item.title}>
       <span className={styles.practiceNumber} aria-hidden="true">{at + 1}</span>
       <div><b>{item.title}</b><p>{hi ? item.hiTask : item.task}</p></div>
@@ -322,7 +322,7 @@ function Practice({ id, hi }: { id: NewsSlideId; hi: boolean }) {
 /** Interview questions beyond the slide's five cards, with their short answers. */
 function AlsoAsked({ questions, hi }: { questions: InterviewAsk[]; hi: boolean }) {
   return <section className={styles.headlines} aria-label={hi ? "ये भी पूछे गए" : "Also asked"}>
-    <h5><MessagesSquare size={14} aria-hidden="true" />{hi ? "ये भी पूछे गए" : "Also asked"}</h5>
+    <div className={styles.subhead}><MessagesSquare size={14} aria-hidden="true" />{hi ? "ये भी पूछे गए" : "Also asked"}</div>
     <ol>{questions.map(ask => <li key={ask.question}>
       {ask.url && <small>{ask.companies[0] && <Logo logo={ask.companies[0]} />}{ask.source}</small>}
       <span>{ask.question}</span>

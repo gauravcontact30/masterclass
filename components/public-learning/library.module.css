@@ -60,6 +60,7 @@
 .cards article { padding: 18px; border: 1px solid #e8e6dc; border-radius: 14px; background: #fff; }
 .cards h3 { margin: 0 0 8px; font-size: 17px; color: #141413; }
 .cards p { margin: 0 0 8px; font-size: 15px; line-height: 1.65; }
+.updated { margin: 8px 0 0; font-size: 13px; color: #6f6e69; }
 .meta { font-size: 13px; color: #6f6e69; }
 
 .table { overflow-x: auto; }

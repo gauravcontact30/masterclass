@@ -119,7 +119,7 @@
 .cardHead { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px 10px; }
 .stageName { font-size: 13px; font-weight: 700; color: var(--tint-ink, var(--mint-ink)); }
 .weeks { padding: 3px 9px; border-radius: 999px; background: var(--tint-strong, var(--mint)); font-size: 12px; font-weight: 650; color: var(--tint-ink, var(--mint-ink)); white-space: nowrap; }
-.card h4 { margin: 0; font-size: 18px; line-height: 1.3; font-weight: 700; color: var(--ink); overflow-wrap: anywhere; }
+.card .stageTitle { margin: 0; font-size: 18px; line-height: 1.3; font-weight: 700; color: var(--ink); overflow-wrap: anywhere; }
 .topics { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; padding: 0; list-style: none; }
 .panel .topics a, .panel .topics span { display: inline-flex; align-items: center; min-height: 28px; padding: 2px 10px; border: 1px solid var(--tint-strong, #cfe1d7); border-radius: 8px; background: #fff; font-size: 12.5px; font-weight: 650; color: var(--tint-ink, var(--mint-ink)); text-decoration: none; }
 .panel .topics a:hover { border-color: var(--tint-ink, var(--mint-ink)); background: var(--tint-strong, var(--mint)); }

@@ -1,3 +1,5 @@
+import { PageAnswers } from "@/components/page-answers";
+import { HUB_ANSWERS } from "@/lib/page-answers";
 import { CATEGORY_LABELS, PREPARATIONS, PREPARATION_GROUPS, courseCategory } from "@/lib/study/preparations";
 import { STUDY_COURSES } from "@/lib/study/catalog";
 import { COURSE_SUMMARIES as SUMMARIES } from "@/lib/study/course-summaries";
@@ -30,5 +32,6 @@ export default function CoursesPage() {
     <Suspense fallback={null}>
       <CoursesFeed />
     </Suspense>
+    <PageAnswers answers={HUB_ANSWERS["/courses"]} />
   </>;
 }

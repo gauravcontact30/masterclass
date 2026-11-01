@@ -1,3 +1,4 @@
+import { JsonLd } from "@/components/json-ld";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { siteName, siteUrl } from "@/lib/seo";
@@ -139,10 +140,7 @@ export default async function TechBuzzArticlePage({ params }: PageProps) {
 
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify([articleSchema, breadcrumbSchema]).replace(/</g, "\\u003c") }}
-      />
+      <JsonLd data={[articleSchema, breadcrumbSchema]} />
       <TechBuzzArticleView article={preview} related={related} prevStory={prevStory} nextStory={nextStory} />
     </>
   );

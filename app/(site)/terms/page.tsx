@@ -8,8 +8,7 @@ const UPDATED = "2026-09-24";
 
 export default function TermsPage() {
   return <>
-    <PageIntro path="/terms" eyebrow="Legal" />
-    <p className={styles.updated}>Last updated <time dateTime={UPDATED}>24 September 2026</time></p>
+    <PageIntro path="/terms" eyebrow="Legal" updated={UPDATED} />
     <div className={styles.prose}>
       <h2>Your account</h2>
       <p>You need an account to use the dashboard. Keep your sign-in details private; you are responsible for activity on your account. If you are under 18, use MasterClass with a parent or guardian&apos;s permission.</p>

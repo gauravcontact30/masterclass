@@ -5,8 +5,9 @@ import { Flag, countryName } from "./super-admin-audience";
 import { Pager } from "./super-admin-table";
 import styles from "./super-admin-overview-live.module.css";
 import { VISIT_RETENTION_DAYS } from "@/lib/visit-retention";
-import { indexVisits, periodSummary, streamVisitors, type Presence, type StreamClick, type StreamVisitor } from "@/lib/live-visits";
+import { indexVisits, periodSummary, streamVisitors, type Presence, type StreamApiCall, type StreamClick, type StreamVisitor } from "@/lib/live-visits";
 import { localityPin } from "@/lib/new-user-locations";
+import { VisitorRoutes } from "./super-admin-visitor-routes";
 import { FirstLookVisitors } from "./super-admin-first-look";
 import { PrivateVisitors } from "./super-admin-private-visitors";
 
@@ -49,7 +50,7 @@ const dayOf = (iso: string | number) => new Intl.DateTimeFormat("en-IN", { day: 
 const clock = (iso: string | number) => new Intl.DateTimeFormat("en-IN", { hour: "2-digit", minute: "2-digit", second: "2-digit", hour12: true, timeZone: "Asia/Kolkata" }).format(new Date(iso));
 type StreamFilter = "all" | "live" | "signed" | "new" | "private";
 // The stream's own feed, merged across refreshes: rows by id, page heartbeats by session and path.
-type StreamFeed = { rows: Map<string, Visit>; emails: Record<string, string>; presence: Map<string, Presence> | null; clicks: Map<string, StreamClick>; days: number; capped: boolean; generatedAt: string; loadedAt: number };
+type StreamFeed = { rows: Map<string, Visit>; emails: Record<string, string>; presence: Map<string, Presence> | null; clicks: Map<string, StreamClick>; apiCalls: Map<string, StreamApiCall>; automated: Set<string>; days: number; capped: boolean; generatedAt: string; loadedAt: number };
 // The whole window is read again every 10 minutes; in between, each refresh asks only for what is new.
 const FULL_RELOAD_MS = 10 * 60_000;
 const rowId = (v: Visit) => v.id != null ? String(v.id) : `${v.created_at}|${v.event}|${v.session_id}|${v.path}`;
@@ -118,6 +119,7 @@ export function OverviewLive({ snapshot, onRefreshSnapshot }: { snapshot: Overvi
   // The Live visitor stream's own feed: every visit of the last VISIT_RETENTION_DAYS days (the 24 h report above
   // keeps only its newest 500 events), kept in a ref between refreshes so each one only fetches what is new.
   const [stream, setStream] = useState<StreamFeed | null>(null);
+  const [streamFailed, setStreamFailed] = useState(false);
   const feed = useRef<StreamFeed | null>(null);
   const streamBusy = useRef(false);
 
@@ -132,18 +134,24 @@ export function OverviewLive({ snapshot, onRefreshSnapshot }: { snapshot: Overvi
       const query = incremental ? `?since=${encodeURIComponent(new Date(Date.parse(prior.generatedAt) - 60_000).toISOString())}` : "";
       const response = await fetch(`/api/super-admin/activity/stream${query}`, { cache: "no-store", signal });
       const body = await response.json().catch(() => ({}));
-      if (!response.ok || !Array.isArray(body?.visits)) return;
+      if (!response.ok || !Array.isArray(body?.visits)) { if (!feed.current) setStreamFailed(true); return; }
       const days = Number(body.days) || VISIT_RETENTION_DAYS, generatedAt = typeof body.generatedAt === "string" ? body.generatedAt : new Date().toISOString();
       const windowStart = Date.parse(generatedAt) - days * 86_400_000;
       const rows = new Map(incremental ? prior.rows : []);
-      for (const v of body.visits as Visit[]) rows.set(rowId(v), v);
+      // A session judged automated is dropped by the read that sees its page view; later reads see only its newer rows, so
+      // it is remembered here. Those rows used to show one visitor too many until the next full reload.
+      const automated = new Set<string>([...(incremental ? prior.automated : []), ...(Array.isArray(body.automated) ? body.automated as string[] : [])]);
+      for (const v of body.visits as Visit[]) if (!automated.has(v.session_id)) rows.set(rowId(v), v);
       for (const [id, v] of rows) if (Date.parse(v.created_at) < windowStart) rows.delete(id);
       const presence = Array.isArray(body.presence) ? new Map(incremental && prior.presence ? prior.presence : []) : null;
       if (presence) for (const p of body.presence as Presence[]) presence.set(`${p.session_id}|${p.path}`, p);
       const clicks = new Map(incremental ? prior.clicks : []);
       for (const c of Array.isArray(body.clicks) ? body.clicks as StreamClick[] : []) clicks.set(clickId(c), c);
       for (const [id, c] of clicks) if (Date.parse(c.created_at) < windowStart) clicks.delete(id);
-      const next: StreamFeed = { rows, presence, clicks, days, generatedAt, emails: { ...(incremental ? prior.emails : {}), ...(body.emails ?? {}) },
+      const apiCalls = new Map(incremental ? prior.apiCalls : []);
+      for (const c of Array.isArray(body.apiCalls) ? body.apiCalls as StreamApiCall[] : []) apiCalls.set(c.id, c);
+      for (const [id, c] of apiCalls) if (Date.parse(c.created_at) < windowStart) apiCalls.delete(id);
+      const next: StreamFeed = { rows, presence, clicks, apiCalls, automated, days, generatedAt, emails: { ...(incremental ? prior.emails : {}), ...(body.emails ?? {}) },
         capped: Boolean(body.capped) || Boolean(incremental && prior.capped), loadedAt: incremental ? prior.loadedAt : startedAt };
       // Half the round trip is the best estimate of when the server stamped generatedAt.
       setOffset(Date.parse(generatedAt) - (startedAt + Date.now()) / 2);
@@ -151,7 +159,7 @@ export function OverviewLive({ snapshot, onRefreshSnapshot }: { snapshot: Overvi
       if (!incremental || rows.size !== prior.rows.size) setFreshSince(prior ? Date.parse(prior.generatedAt) : null);
       // The section's clock moves only with new data: no running timers on screen, figures change silently (user request 2026-11-01).
       feed.current = next; setStream(next); setNow(Date.now());
-    } catch { /* the stream falls back to the 24 h report's recent visits */ }
+    } catch { if (!signal?.aborted && !feed.current) setStreamFailed(true); /* the stream falls back to the 24 h report's recent visits */ }
     finally { streamBusy.current = false; }
   }, []);
   const reportBusy = useRef(false), hasReport = useRef(false);
@@ -184,7 +192,11 @@ export function OverviewLive({ snapshot, onRefreshSnapshot }: { snapshot: Overvi
     return () => { controller.abort(); clearInterval(timer); document.removeEventListener("visibilitychange", onVisible); };
   }, [load, paused, onRefreshSnapshot]);
 
-  const streamRows = useMemo(() => stream ? [...stream.rows.values()] : live?.recent ?? [], [stream, live]);
+  // The SQL report counts each browser cookie as a visitor and the stream counts each person, so showing the report while
+  // the stream loads made figures jump (Visitors, today read one too many for a moment). It stands in only if the stream
+  // cannot load; until then the visitor figures stay blank, so the first number on screen is the right one.
+  const report = stream || streamFailed ? live : null;
+  const streamRows = useMemo(() => stream ? [...stream.rows.values()] : report?.recent ?? [], [stream, report]);
   const streamDays = stream?.days ?? 1;
   const clockNow = now + offset;
   const dayStart = istMidnight(clockNow);
@@ -197,6 +209,7 @@ export function OverviewLive({ snapshot, onRefreshSnapshot }: { snapshot: Overvi
   // clocks move each second, so the grouping runs when the data changes and the timing pass on every tick.
   // Indexes visits and presence; includes all live visitors and active sessions.
   const index = useMemo(() => indexVisits(streamRows, stream ? stream.presence && [...stream.presence.values()] : null, stream ? [...stream.clicks.values()] : []), [streamRows, stream]);
+  const streamApiCalls = useMemo(() => stream ? [...stream.apiCalls.values()] : [], [stream]);
   const everyone = useMemo(() => streamVisitors(index, clockNow, stream?.emails), [index, clockNow, stream]);
   const counts = useMemo(() => ({
     all: everyone.length, live: everyone.filter(v => v.live).length, signed: everyone.filter(v => v.signedIn).length,
@@ -229,7 +242,7 @@ export function OverviewLive({ snapshot, onRefreshSnapshot }: { snapshot: Overvi
   const reading = readSum.pages;
   const devices = hourSum.devices;
   // Today's figures: from the stream when it holds the whole day, otherwise from the SQL report (labelled as such).
-  const t = live?.totals;
+  const t = report?.totals;
   // New accounts and bots filtered come from the database report, so they take its window, not the stream's: before
   // migration 0045 that report is the rolling 24 h even while the stream covers today.
   const sqlDay = live?.window === "24h" ? "24 h" : "today";
@@ -244,11 +257,11 @@ export function OverviewLive({ snapshot, onRefreshSnapshot }: { snapshot: Overvi
   } : {
     views: t?.pageViews, people: t?.people ?? t?.visitors, sessions: t?.sessions, signedIn: t?.signedInUsers, newVisitors: t?.newVisitors,
     bounceRate: t?.bounceRate ?? null, avgSessionSeconds: t?.avgSessionSeconds ?? null, pagesPerSession: t?.pagesPerSession ?? null,
-    readingPerPerson: null as number | null, hours: Array.from({ length: 24 }, (_, hour) => live?.hours.find(x => x.hour === hour)?.views ?? 0),
-    topPage: live?.pages?.[0] ? { path: live.pages[0].path, views: live.pages[0].views, people: live.pages[0].visitors, avgSeconds: live.pages[0].avg_seconds } : null,
-    topSource: live?.referrers?.[0] ? { name: live.referrers[0].referrer, people: live.referrers[0].visitors } : null,
-    topCountry: (({ country, visitors: people }) => country ? { country, people } : null)(live?.countries?.find(c => c.country !== "Unknown") ?? { country: "", visitors: 0 }),
-    devices: (live?.devices ?? []).map(d => ({ device: d.device.toLowerCase(), people: Number(d.visitors) })),
+    readingPerPerson: null as number | null, hours: Array.from({ length: 24 }, (_, hour) => report?.hours.find(x => x.hour === hour)?.views ?? 0),
+    topPage: report?.pages?.[0] ? { path: report.pages[0].path, views: report.pages[0].views, people: report.pages[0].visitors, avgSeconds: report.pages[0].avg_seconds } : null,
+    topSource: report?.referrers?.[0] ? { name: report.referrers[0].referrer, people: report.referrers[0].visitors } : null,
+    topCountry: (({ country, visitors: people }) => country ? { country, people } : null)(report?.countries?.find(c => c.country !== "Unknown") ?? { country: "", visitors: 0 }),
+    devices: (report?.devices ?? []).map(d => ({ device: d.device.toLowerCase(), people: Number(d.visitors) })),
   };
 
   const requests = useMemo(() => (snapshot?.events ?? []).filter(e => e.kind === "request"), [snapshot]);
@@ -285,7 +298,7 @@ export function OverviewLive({ snapshot, onRefreshSnapshot }: { snapshot: Overvi
   const kpis: { label: string; value: string; note: string; icon: LucideIcon; tone: string; pulse?: boolean }[] = [
     heartbeats
       ? { label: "On the site now", value: n(counts.live), note: `${n(counts.liveSigned)} signed in · page open now`, icon: Radio, tone: "mint", pulse: true }
-      : { label: "On the site now", value: n(live?.totals.liveNow), note: `${n(live?.totals.liveSignedIn)} signed in · page open now`, icon: Radio, tone: "mint", pulse: true },
+      : { label: "On the site now", value: n(report?.totals.liveNow), note: `${n(report?.totals.liveSignedIn)} signed in · page open now`, icon: Radio, tone: "mint", pulse: true },
     { label: "Page views, last hour", value: n(hourSum.views), note: `by ${n(hourSum.people)} ${hourSum.people === 1 ? "person" : "people"}`, icon: MousePointerClick, tone: "sky" },
     { label: `Visitors, ${day}`, value: n(fig.people), note: `${day === "today" ? "since 00:00 IST · " : ""}${n(fig.views)} page views · ${n(fig.signedIn)} signed in · ${n(fig.newVisitors)} new`, icon: Users, tone: "lavender" },
     ...(exact ? [{ label: "Visitors, last 24 hours", value: n(daySum.people), note: `rolling, since ${clock(clockNow - 86_400_000)} IST yesterday · ${n(daySum.views)} page views · ${n(daySum.sessions)} visits`, icon: CalendarClock, tone: "sky" }] : []),
@@ -337,6 +350,7 @@ export function OverviewLive({ snapshot, onRefreshSnapshot }: { snapshot: Overvi
           <div className={styles.filters} role="group" aria-label="Show visitors">{STREAM_FILTERS.map(f => <button key={f.id} type="button" aria-pressed={streamFilter === f.id} onClick={() => { setStreamFilter(f.id); setVisitPage(1); }}><f.icon size={12} aria-hidden="true" />{f.label} <b>{n(counts[f.id])}</b></button>)}</div>
         </div>}
         {visitors.length ? <>
+          <VisitorRoutes visitors={visitors} apiCalls={streamApiCalls} />
           <div className={styles.streamTableWrap}>
             <div className={styles.streamHeadRow} aria-hidden="true">
               <span className={styles.streamHeadTitle}>
@@ -676,7 +690,7 @@ export function OverviewLive({ snapshot, onRefreshSnapshot }: { snapshot: Overvi
               })}
             </ol>
           </div>
-        </> : <p className={styles.empty}>{everyone.length ? "No visitors match this filter." : live || stream ? `No page views recorded in ${streamDays === 1 ? "the last 24 hours" : `the last ${streamDays} days`} yet.` : "Connecting to live tracking…"}</p>}
+        </> : <p className={styles.empty}>{everyone.length ? "No visitors match this filter." : report || stream ? `No page views recorded in ${streamDays === 1 ? "the last 24 hours" : `the last ${streamDays} days`} yet.` : "Connecting to live tracking…"}</p>}
         <Pager page={Math.min(visitPage, pagesOf(visitors, STREAM_PAGE))} pages={pagesOf(visitors, STREAM_PAGE)} total={visitors.length} size={STREAM_PAGE} onPage={setVisitPage} />
         {stream && !heartbeats && <p className={styles.streamNote}>Live status is estimated: apply migration 0034 (page heartbeats) so a visitor counts as on the site only while their page is open, timed to the second. Until then a page without a leave beacon counts as open for up to 30 minutes.</p>}
         {stream?.capped && <p className={styles.streamNote}>Showing the newest 20,000 events of the window; older visitors are left out.</p>}

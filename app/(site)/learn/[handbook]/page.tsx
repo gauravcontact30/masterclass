@@ -1,3 +1,5 @@
+import { PageAnswers } from "@/components/page-answers";
+import { handbookAnswers } from "@/lib/page-answers";
 import { AccordionSummary } from "@/components/ui/accordion-chevron";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -64,6 +66,7 @@ async function Handbook({ params }: Props) {
       </article>)}
     </section>)}
     {item.sources && item.sources.length > 0 && <section className={styles.section} aria-labelledby="sources"><h2 id="sources">Sources</h2><ul className={styles.prose}>{item.sources.map(source => <li key={source.url}>{source.title}</li>)}</ul></section>}
+    <PageAnswers answers={handbookAnswers(name, item.topics.length, item.categories.map(category => category.name))} />
     <nav className={styles.next} aria-label="More handbooks">
       {previous ? <Link href={`/learn/${handbookSlug(previous)}`}>← {handbookName(previous)}</Link> : <span />}
       {next && <Link href={`/learn/${handbookSlug(next)}`}>{handbookName(next)} →</Link>}

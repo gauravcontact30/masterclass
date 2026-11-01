@@ -62,7 +62,19 @@ export async function POST(request: Request) {
 
   const store = await cookies();
   const secure = new URL(request.url).protocol === "https:";
-  if (store.get(UNTRACKED_COOKIE)?.value === "1") return noContent();
+  // Visits an excluded account made signed out, before this browser was known to be theirs, are erased once it signs in.
+  // Only a verified session can erase: the opt-out cookie and the visitor id can both be set by hand.
+  const forget = async () => {
+    const id = store.get(VISITOR)?.value;
+    if (id) await Promise.all([db().from("site_visits").delete().eq("visitor_id", id), db().from("site_presence").delete().eq("visitor_id", id)]);
+    store.delete(VISITOR); store.delete(SESSION);
+  };
+  if (store.get(UNTRACKED_COOKIE)?.value === "1") {
+    if (store.get(VISITOR)) {
+      try { const { data } = await (await supabaseServer()).auth.getClaims(); if (isUntrackedEmail(data?.claims?.email)) await forget(); } catch { /* still written nowhere */ }
+    }
+    return noContent();
+  }
 
   let userId: string | null = null;
   try {
@@ -71,7 +83,7 @@ export async function POST(request: Request) {
     // The owner (and TRACKING_EXCLUDED_EMAILS) are not part of the audience: write nothing, and remember the browser.
     if (isUntrackedEmail(data?.claims?.email)) {
       store.set(UNTRACKED_COOKIE, "1", { httpOnly: true, sameSite: "lax", secure, path: "/", maxAge: 365 * 86400 });
-      store.delete(VISITOR); store.delete(SESSION);
+      await forget();
       return noContent();
     }
   } catch { /* anonymous */ }

@@ -1,6 +1,8 @@
+import { PageAnswers } from "@/components/page-answers";
+import { HUB_ANSWERS } from "@/lib/page-answers";
 import Link from "next/link";
 import { HINDI_ENABLED } from "@/lib/i18n";
-import { organizationSchema, pageMetadata } from "@/lib/seo";
+import { pageMetadata } from "@/lib/seo";
 import { PageIntro } from "../page-intro";
 import styles from "../site.module.css";
 
@@ -8,7 +10,7 @@ export const metadata = pageMetadata("/about");
 
 export default function AboutPage() {
   return <>
-    <PageIntro path="/about" eyebrow="Our story" extraSchema={organizationSchema()} />
+    <PageIntro path="/about" eyebrow="Our story" />
     <div className={styles.prose}>
       <h2>Why MasterClass exists</h2>
       <p>Learning a technology is scattered: official docs here, a video there, interview questions somewhere else. MasterClass Buddy brings what a tech professional needs for the next role or certification into one dashboard, so each study session starts with a clear next step instead of a search.</p>
@@ -31,6 +33,7 @@ export default function AboutPage() {
         <li>You can cancel renewal at any time and keep access until the end of the period you paid for.</li>
       </ul>
     </div>
+    <PageAnswers answers={HUB_ANSWERS["/about"]} />
     <div className={styles.banner}><p>Your next skill starts with one clear step.</p><Link className={styles.cta} href="/sign-up">Start learning</Link></div>
   </>;
 }

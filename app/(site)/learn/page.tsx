@@ -1,3 +1,5 @@
+import { PageAnswers } from "@/components/page-answers";
+import { HUB_ANSWERS } from "@/lib/page-answers";
 import Link from "next/link";
 import { handbookName, handbookSlug, handbooks } from "@/lib/public-learning";
 import { learningMetadata, siteUrl } from "@/lib/seo";
@@ -28,6 +30,7 @@ export default function HandbooksIndex() {
       <h2 id="handbooks">Choose a handbook</h2>
       <ul className={styles.grid}>{all.map(item => <li key={handbookSlug(item)}><Link href={`/learn/${handbookSlug(item)}`}><b>{handbookName(item)}</b><span>{item.description}</span><small>{item.topics.length} topics</small></Link></li>)}</ul>
     </section>
+    <PageAnswers answers={HUB_ANSWERS["/learn"]} />
     <div className={styles.cta}><p>Ask questions about any topic and save your place in your dashboard.</p><Link href="/sign-up">Start learning</Link></div>
   </>;
 }

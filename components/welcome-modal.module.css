@@ -21,7 +21,7 @@
 .copy > :nth-child(2) { animation-delay: .08s; }
 .copy > :nth-child(3) { animation-delay: .16s; }
 .copy > :nth-child(4) { animation-delay: .24s; }
-.copy h3 { margin: 10px 0 6px; font-family: var(--font-serif, Georgia, serif); font-size: clamp(22px, 2.6vw, 28px); font-weight: 500; line-height: 1.15; letter-spacing: -.01em; }
+.copy .slideTitle { margin: 10px 0 6px; font-family: var(--font-serif, Georgia, serif); font-size: clamp(22px, 2.6vw, 28px); font-weight: 500; line-height: 1.15; letter-spacing: -.01em; }
 .copy p { margin: 0; max-width: 42ch; font-size: 14.5px; line-height: 1.55; color: rgba(250, 249, 245, .88); }
 .copy ul { display: flex; flex-wrap: wrap; gap: 6px; margin: 12px 0 0; padding: 0; list-style: none; }
 .copy li { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 999px; background: rgba(250, 249, 245, .14); backdrop-filter: blur(6px); font-size: 12.5px; font-weight: 600; }
@@ -69,7 +69,7 @@
 .featureCard[data-tone="sky"] .cardIcon { background: #dbeefc; color: #1d5a85; }
 .featureCard[data-tone="sage"] .cardIcon { background: #d8f1e4; color: #1f6040; }
 
-.featureCard h4 { margin: 0; font-size: 13.5px; font-weight: 700; color: #141413; line-height: 1.25; }
+.featureCard .featureTitle { margin: 0; font-size: 13.5px; font-weight: 700; color: #141413; line-height: 1.25; }
 .featureCard p { margin: 0; font-size: 11.5px; line-height: 1.45; color: #5e5d59; }
 
 /* Highlights Bar */

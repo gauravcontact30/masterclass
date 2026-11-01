@@ -385,6 +385,35 @@ export function streamVisitors(index: VisitIndex, now: number, emails: Record<st
   return filterZeroSeconds ? list.filter(isEngagedVisitor) : list;
 }
 
+/** A backend API call made during a visit (/api/super-admin/activity/stream): pathname and method only. */
+export type StreamApiCall = { id: string; created_at: string; session_id: string; path: string; method: string; status: number; duration_ms: number };
+
+/** The frontend routes a visitor opened over all their visits, first opened first; query strings are dropped. */
+export function visitorUiRoutes(visitor: StreamVisitor) {
+  const routes = new Map<string, { path: string; views: number; ms: number; entries: number; open: boolean; first: number }>();
+  for (const visit of visitor.visits) for (const [at, step] of visit.steps.entries()) {
+    const path = step.path.split(/[?#]/)[0] || "/";
+    const route = routes.get(path) ?? { path, views: 0, ms: 0, entries: 0, open: false, first: step.at };
+    route.views += 1; route.ms += step.ms ?? 0; route.open ||= step.open; route.first = Math.min(route.first, step.at);
+    if (at === 0) route.entries += 1;
+    routes.set(path, route);
+  }
+  return [...routes.values()].sort((a, b) => a.first - b.first);
+}
+
+/** The backend API routes called during a visitor's visits, most called first. */
+export function visitorApiRoutes(visitor: StreamVisitor, bySession: Map<string, StreamApiCall[]>) {
+  const routes = new Map<string, { method: string; path: string; calls: number; errors: number; totalMs: number }>();
+  for (const visit of visitor.visits) for (const call of bySession.get(visit.sessionId) ?? []) {
+    const key = `${call.method} ${call.path}`;
+    const route = routes.get(key) ?? { method: call.method, path: call.path, calls: 0, errors: 0, totalMs: 0 };
+    route.calls += 1; route.totalMs += call.duration_ms;
+    if (call.status >= 400) route.errors += 1;
+    routes.set(key, route);
+  }
+  return [...routes.values()].map(route => ({ ...route, avgMs: route.totalMs / route.calls })).sort((a, b) => b.calls - a.calls || a.path.localeCompare(b.path));
+}
+
 /** One session's pages, timed and in order, with what was clicked on each. */
 function summarizeVisit(sessionId: string, times: { view: StreamVisit; time: ReturnType<typeof pageTime> }[], index: VisitIndex, now: number): VisitSummary {
   const stretches = times.flatMap(t => viewStretches(index.facts.get(t.view), now));

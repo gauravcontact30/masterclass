@@ -83,7 +83,7 @@ export function LandingMembership({ prices, priceState, cycle, onCycle, onCurren
       </article>
       <div className={styles.map}>
         {GROUPS.map(group => <div key={group.title[0]} className={styles.group}>
-          <h3>{group.title[lang]}</h3>
+          <div className={styles.groupTitle}>{group.title[lang]}</div>
           <ul>{group.areas.map(area => <li key={area.name[0]}><span aria-hidden="true"><area.icon size={16} /></span><div><b>{area.name[lang]}</b><small>{area.note[lang]}</small></div></li>)}</ul>
         </div>)}
       </div>

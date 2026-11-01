@@ -36,7 +36,7 @@ export default function WorkflowPrepPanel({ id, text, full = true, limit }: Read
   return <div ref={box} className={styles.prep}>
     <Detail prep={prep} text={text} />
     <section className={styles.interview} aria-label={text("Interview questions", "इंटरव्यू प्रश्न")}>
-      <InterviewQuestions set={set} text={text} scroll limit={limit} heading={<h4><GraduationCap size={17} aria-hidden="true" />{text("Most-asked interview questions", "सबसे ज़्यादा पूछे जाने वाले इंटरव्यू प्रश्न")}</h4>} />
+      <InterviewQuestions set={set} text={text} scroll limit={limit} heading={<div className={styles.interviewTitle}><GraduationCap size={17} aria-hidden="true" />{text("Most-asked interview questions", "सबसे ज़्यादा पूछे जाने वाले इंटरव्यू प्रश्न")}</div>} />
     </section>
   </div>;
 }
@@ -50,7 +50,7 @@ function Detail({ prep, text }: Readonly<{ prep: WorkflowPrep; text: Text }>) {
     { key: "metrics", Icon: Gauge, title: text("What to measure", "क्या मापें"), items: prep.metrics },
   ];
   return <div className={styles.detail}>{cards.map(({ key, Icon, title, items, chips }) => <section key={key} className={styles.card} data-card={key} aria-label={title}>
-    <h4><Icon size={15} aria-hidden="true" />{title}</h4>
+    <div className={styles.cardTitle}><Icon size={15} aria-hidden="true" />{title}</div>
     <ul className={chips ? styles.chips : styles.points}>{items.map(item => <li key={item}>{item}</li>)}</ul>
   </section>)}</div>;
 }

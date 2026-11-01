@@ -8,8 +8,7 @@ const UPDATED = "2026-10-12";
 
 export default function RefundPolicyPage() {
   return <>
-    <PageIntro path="/refund-policy" eyebrow="Legal" />
-    <p className={styles.updated}>Last updated <time dateTime={UPDATED}>12 October 2026</time></p>
+    <PageIntro path="/refund-policy" eyebrow="Legal" updated={UPDATED} />
     <div className={styles.prose}>
       <h2>Cancelling your membership</h2>
       <ul>

@@ -92,7 +92,7 @@ function WordCard({ entry, index, total, speaking, onHear, compact = false }: { 
     <div className={`${pulse.body} ${styles.body}`}>
       <div className={styles.wordRow}>
         <div className={styles.wordHead}>
-          <h3 className={styles.word} lang="en"><span>{headword(entry.word)}</span></h3>
+          <div className={styles.word} lang="en"><span>{headword(entry.word)}</span></div>
           <span className={styles.respell}>/{entry.pronunciation}/</span>
         </div>
         <button type="button" className={styles.hear} data-speaking={speaking === entry.word} onClick={() => onHear(entry.word)} aria-label={`${t.hear}: ${entry.word}`}>

@@ -179,7 +179,7 @@ export default function WelcomeModalPanel({
                 <slide.icon size={15} aria-hidden="true" />
                 {`${index + 1} / ${SLIDES.length}`}
               </span>
-              <h3>{say(slide.title)}</h3>
+              <div className={styles.slideTitle}>{say(slide.title)}</div>
               <p>{say(slide.text)}</p>
               <ul>
                 {slide.points.map(point => (
@@ -272,7 +272,7 @@ export default function WelcomeModalPanel({
                     </span>
                     <span className={styles.cardBadge}>{say(feat.badge)}</span>
                   </div>
-                  <h4>{say(feat.title)}</h4>
+                  <div className={styles.featureTitle}>{say(feat.title)}</div>
                   <p>{say(feat.desc)}</p>
                 </div>
               ))}

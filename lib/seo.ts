@@ -162,6 +162,18 @@ export function breadcrumbSchema(trail: readonly (readonly [string, `/${string}`
   };
 }
 
+/**
+ * When the static catalogues (handbooks, vocabulary, interview questions, blueprints, comparisons, company pages) last
+ * changed: the visible "Last updated" date and dateModified on those pages. Bump it when their content changes; never
+ * set it from the build date, which would claim freshness on every deploy.
+ */
+export const CONTENT_UPDATED = "2026-11-01";
+
+/** A YYYY-MM-DD date as people read it: 1 November 2026. */
+export function readableDate(date: string): string {
+  return new Intl.DateTimeFormat("en-IN", { day: "numeric", month: "long", year: "numeric", timeZone: "UTC" }).format(new Date(`${date.slice(0, 10)}T00:00:00Z`));
+}
+
 export function websiteSchema() {
   const url = siteUrl().href;
   return { "@context": "https://schema.org", "@type": "WebSite", "@id": `${url}#website`, url, name: siteName, alternateName: ["Master Class Buddy", "masterclassbuddy.com"], description: siteDescription, inLanguage: "en", keywords: siteKeywords.join(", "), publisher: { "@id": `${url}#organization` } };
@@ -175,7 +187,7 @@ export function organizationSchema(prices?: { monthly:number; yearly:number; end
     priceSpecification: { "@type": "UnitPriceSpecification", price: String(price), priceCurrency: "INR", unitCode: unit, referenceQuantity: { "@type": "QuantitativeValue", value: 1, unitCode: unit } },
   });
   return {
-    "@context": "https://schema.org", "@type": ["EducationalOrganization", "LocalBusiness"], "@id": `${url}#organization`, name: siteName, alternateName: ["Master Class Buddy", "masterclassbuddy.com"], url,
+    "@context": "https://schema.org", "@type": ["Organization", "EducationalOrganization", "LocalBusiness"], "@id": `${url}#organization`, name: siteName, alternateName: ["Master Class Buddy", "masterclassbuddy.com"], url,
     // A raster logo (Google's logo guidance asks for a crawlable image of at least 112×112); the SVG stays the favicon.
     logo: { "@type": "ImageObject", url: new URL("/brand/masterclass-mark-512.png", url).href, width: 512, height: 512 },
     image: new URL("/opengraph-image", url).href,
@@ -199,14 +211,24 @@ export function organizationSchema(prices?: { monthly:number; yearly:number; end
   };
 }
 
-export function webPageSchema(path: PublicPage["path"]) {
+export function webPageSchema(path: PublicPage["path"], updated: string = CONTENT_UPDATED) {
   const { title, description } = publicPage(path);
   const origin = siteUrl().href, url = new URL(path, origin).href;
   return {
-    "@context": "https://schema.org", "@type": "WebPage", "@id": `${url}#webpage`, url, name: title, description, inLanguage: "en",
+    "@context": "https://schema.org", "@type": "WebPage", "@id": `${url}#webpage`, url, name: title, description, inLanguage: "en", dateModified: updated,
     isPartOf: { "@id": `${origin}#website` },
-    breadcrumb: { "@type": "BreadcrumbList", itemListElement: [{ "@type": "ListItem", position: 1, name: "Home", item: origin }, { "@type": "ListItem", position: 2, name: title, item: url }] },
+    ...(path === "/" ? {} : { breadcrumb: { "@type": "BreadcrumbList", itemListElement: [{ "@type": "ListItem", position: 1, name: "Home", item: origin }, { "@type": "ListItem", position: 2, name: title, item: url }] } }),
   };
+}
+
+/** WebPage data for a generated learning page, which is not in PUBLIC_PAGES. */
+export function learningPageSchema({ path, title, description, updated = CONTENT_UPDATED }: { path: `/${string}`; title: string; description: string; updated?: string }) {
+  const origin = siteUrl().href, url = new URL(path, origin).href;
+  return { "@context": "https://schema.org", "@type": "WebPage", "@id": `${url}#webpage`, url, name: title, description, inLanguage: "en", dateModified: updated, isPartOf: { "@id": `${origin}#website` } };
+}
+
+export function howToSchema(name: string, steps: readonly string[]) {
+  return { "@context": "https://schema.org", "@type": "HowTo", name, step: steps.map((text, index) => ({ "@type": "HowToStep", position: index + 1, text })) };
 }
 
 export function faqSchema(items: readonly { question: string; answer: string }[]) {

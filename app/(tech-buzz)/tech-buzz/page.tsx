@@ -1,9 +1,13 @@
 import type { Metadata } from "next";
-import { siteName, siteUrl } from "@/lib/seo";
+import { CONTENT_UPDATED, readableDate, siteName, siteUrl } from "@/lib/seo";
+import { JsonLd } from "@/components/json-ld";
+import { PageAnswers } from "@/components/page-answers";
+import { HUB_ANSWERS } from "@/lib/page-answers";
 import { TechBuzzBlog, type TechBuzzGroup } from "@/components/tech-buzz-blog";
 import { listPublishedTechBuzzSummaries, withUnsplashCovers } from "@/lib/server/tech-buzz-storage";
 import { isTechnologyStory, toCard, topicLabel } from "@/lib/tech-buzz-public";
 import { withReview } from "@/lib/tech-buzz-reviews";
+import styles from "./page.module.css";
 
 // Renders only once its content is ready: no loading screen is ever shown in its place (no loading.tsx, no fallback).
 export const instant = false;
@@ -39,9 +43,16 @@ async function Blog() {
     numberOfItems: cards.length,
     itemListElement: cards.map((card, index) => ({ "@type": "ListItem", position: index + 1, url: new URL(`/tech-buzz/${card.slug}`, origin).href, name: card.title }))
   };
+  // The hub is as fresh as its newest story.
+  const updated = articles.map(article => article.publishedAt).sort().at(-1)?.slice(0, 10) ?? CONTENT_UPDATED;
+  const page = { "@context": "https://schema.org", "@type": "CollectionPage", name: "Tech Buzz", url: new URL("/tech-buzz", origin).href, description: DESCRIPTION, inLanguage: "en", dateModified: updated };
   return <>
-    <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(itemList).replace(/</g, "\\u003c") }} />
+    <JsonLd data={[itemList, page]} />
     <TechBuzzBlog cards={cards} groups={groups} showcase />
+    <div className={styles.answers}>
+      <p className={styles.updated}>Last updated <time dateTime={updated}>{readableDate(updated)}</time></p>
+      <PageAnswers answers={HUB_ANSWERS["/tech-buzz"]} />
+    </div>
   </>;
 }
 
@@ -87,7 +98,7 @@ export default function TechBuzzPage() {
 
   return (
     <>
-      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(schema).replace(/</g, "\\u003c") }} />
+      <JsonLd data={schema} />
       <Blog />
     </>
   );

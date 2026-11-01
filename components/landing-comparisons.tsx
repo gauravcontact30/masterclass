@@ -124,7 +124,7 @@ function ComparisonSlide({ item, index, total, near, text, official, preview = f
         <span className={interview.index} aria-hidden="true">{two(index + 1)}</span>
       </ChainPicture>
       <div className={interview.coverBody}>
-        <h3><Editable k={k} f="question">{item.question}</Editable></h3>
+        <div className={interview.coverTitle}><Editable k={k} f="question">{item.question}</Editable></div>
         <ListenButton id={`comparison:${item.id}`} title={question} text={() => [question, summary, ...item.techs.map(tech => `${tech.name}: ${tech.definition} ${tech.description}`)].join(". ")} />
         <p className={interview.tagline}><Editable k={k} f="summary" multiline>{item.summary}</Editable></p>
         <ul className={styles.techs}>{item.techs.map((tech, k) => <li key={tech.name} data-tint={(index + k) % 6}>
@@ -138,16 +138,16 @@ function ComparisonSlide({ item, index, total, near, text, official, preview = f
     </article>
     <div className={`${interview.panel} ${styles.tallPanel}`}>
       <div className={styles.glance}>
-        <h4>{text("At a glance", "एक नज़र में")}</h4>
+        <div className={styles.glanceTitle}>{text("At a glance", "एक नज़र में")}</div>
         <div className={styles.tableScroll} tabIndex={0} role="region" aria-label={text(`${item.question} at a glance`, `${item.question} एक नज़र में`)}><table>
           <thead><tr><th scope="col"><span className={styles.srOnly}>{text("Aspect", "पहलू")}</span></th>{item.techs.map(tech => <th key={tech.name} scope="col">{tech.name}</th>)}</tr></thead>
           <tbody>{item.aspects.map(([aspect, ...values]) => <tr key={aspect}><th scope="row">{aspect}</th>{values.map((value, k) => <td key={k}>{value}</td>)}</tr>)}</tbody>
         </table></div>
       </div>
       {set && set.subjective.length > 0
-        ? <InterviewQuestions key={item.id} set={set} text={text} scroll limit={preview ? LANDING_DIFFERENCES : undefined} heading={<h4>{preview && set.subjective.length > LANDING_DIFFERENCES
+        ? <InterviewQuestions key={item.id} set={set} text={text} scroll limit={preview ? LANDING_DIFFERENCES : undefined} heading={<div className={interview.panelTitle}>{preview && set.subjective.length > LANDING_DIFFERENCES
           ? text(`${LANDING_DIFFERENCES} of ${set.subjective.length} difference questions`, `${set.subjective.length} में से ${LANDING_DIFFERENCES} अंतर प्रश्न`)
-          : text(`${set.subjective.length} difference questions`, `${set.subjective.length} अंतर प्रश्न`)}</h4>} />
+          : text(`${set.subjective.length} difference questions`, `${set.subjective.length} अंतर प्रश्न`)}</div>} />
         : <div className={interview.loading} role="status">{failed ? text("These questions could not load. Check your connection and try again.", "ये प्रश्न लोड नहीं हो सके। कनेक्शन जाँचें और फिर कोशिश करें।") : set ? text("Questions for this comparison are being written.", "इस तुलना के प्रश्न तैयार किए जा रहे हैं।") : text("Loading the questions…", "प्रश्न लोड हो रहे हैं…")}</div>}
       <OfficialDocs item={item} official={official} text={text} />
       <Link className={styles.more} href={`/compare/${item.id}`}>{text("Read the full comparison", "पूरी तुलना पढ़ें")} →</Link>
@@ -190,7 +190,7 @@ function OfficialDocs({ item, official, text }: Readonly<{ item: Comparison; off
   if (!docs.length) return null;
   const host = (url: string) => new URL(url).host.replace(/^www\./, "");
   return <div className={styles.officialDocs}>
-    <h4>{text("Official documentation", "आधिकारिक दस्तावेज़")}</h4>
+    <div className={styles.officialTitle}>{text("Official documentation", "आधिकारिक दस्तावेज़")}</div>
     <ul>{docs.map(({ tech, url }, k) => { const page = official?.pages[url]; return <li key={tech.name} data-tint={k % 6}>
       <div className={styles.docCard}>
         <b>{tech.name}</b>
