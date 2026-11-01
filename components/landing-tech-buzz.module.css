@@ -1,0 +1,60 @@
+/* The Tech Buzz story cards in the landing carousel (landing-tech-buzz.tsx). The frame, fade, controls and Read story
+   button come from landing-carousel.module.css; this adds the cover badges, rating, reactions and the entrance motion
+   that replays each time a card becomes active (data-active, flipped by CarouselShell). */
+.slide { --rise: cubic-bezier(.2, .8, .2, 1); }
+.srOnly { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+.cover { position: relative; aspect-ratio: 3 / 1.7; overflow: hidden; background: linear-gradient(135deg, #2a2148, #e2774c); }
+.cover img:first-child { transition: transform 7s linear; }
+.slide[data-active] .cover img:first-child { transform: scale(1.07); }
+.cover::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(to top, rgb(20 18 30 / .55), transparent 45%); }
+.topic, .time, .fresh { position: absolute; z-index: 1; display: inline-flex; align-items: center; gap: 6px; border-radius: 999px; font-size: 11.5px; font-weight: 600; line-height: 1; }
+.topic { left: 10px; bottom: 10px; max-width: calc(100% - 96px); padding: 5px 10px 5px 6px; overflow: hidden; background: rgb(31 30 29 / .82); backdrop-filter: blur(4px); color: #f5f4ee; white-space: nowrap; text-overflow: ellipsis; }
+.topic img { flex: none; border-radius: 4px; background: #fff; }
+.time { right: 10px; bottom: 10px; padding: 5px 9px; background: rgb(255 255 255 / .9); color: #1f1e1d; }
+.fresh { left: 10px; top: 10px; padding: 5px 10px; background: #e2774c; color: #1b1410; letter-spacing: .04em; text-transform: uppercase; }
+.slide[data-active] .fresh { animation: pulse 2.4s ease-in-out infinite; }
+/* Autoplay progress along the cover's foot: runs for the carousel interval, held while the card is hovered or focused. */
+.progress { position: absolute; z-index: 2; left: 0; bottom: 0; width: 100%; height: 3px; background: #e2774c; transform: scaleX(0); transform-origin: left; }
+.slide[data-active] .progress { animation: fill linear forwards; }
+.slide:hover .progress, .slide:focus-within .progress { animation-play-state: paused; }
+
+.body { position: relative; display: grid; gap: 7px; padding: 12px 4px 4px; }
+.title { display: -webkit-box; overflow: hidden; -webkit-box-orient: vertical; -webkit-line-clamp: 2; margin: 0; font-size: 16px; font-weight: 650; line-height: 1.3; letter-spacing: -.01em; color: #141413; }
+.text { display: -webkit-box; overflow: hidden; -webkit-box-orient: vertical; -webkit-line-clamp: 2; margin: 0; font-size: 13px; line-height: 1.5; color: #5e5d59; text-align: left; -webkit-hyphens: manual; hyphens: manual; }
+
+.rating { display: inline-flex; align-items: center; gap: 6px; margin: 0; font-size: 12.5px; color: #3d3d3a; }
+.rating b { font-weight: 700; font-variant-numeric: tabular-nums; }
+.rating small { color: #6b6a65; }
+.stars { position: relative; display: inline-block; font-size: 14px; letter-spacing: 1px; line-height: 1; color: #e3ded1; }
+.stars span { position: absolute; inset: 0 auto 0 0; width: 0; overflow: hidden; color: #e0a526; white-space: nowrap; }
+.slide[data-active] .stars span { animation: stars 1s var(--rise) .35s forwards; }
+
+.foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; margin-top: 2px; }
+.reactions { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.reactions li { display: inline-flex; align-items: center; gap: 5px; min-height: 28px; padding: 0 9px; border: 1px solid #ebe7dc; border-radius: 999px; background: #faf8f2; font-size: 12px; font-weight: 600; color: #3d3d3a; font-variant-numeric: tabular-nums; }
+.reactions li:nth-child(1) svg { color: #2f7d55; }
+.reactions li:nth-child(2) svg { color: #b4472e; }
+.date { position: absolute; top: 14px; right: 4px; font-size: 11px; color: #8a887f; }
+.slide:has(.date) .title { padding-right: 46px; }
+
+/* Entrance: the text rises in, then the reactions pop, each time the card becomes current. */
+.slide[data-active] :is(.title, .text, .rating) { animation: rise .6s var(--rise) both; }
+.slide[data-active] .text { animation-delay: .08s; }
+.slide[data-active] .rating { animation-delay: .16s; }
+.slide[data-active] .reactions li { animation: pop .45s var(--rise) both; }
+.slide[data-active] .reactions li:nth-child(1) { animation-delay: .3s; }
+.slide[data-active] .reactions li:nth-child(2) { animation-delay: .38s; }
+.slide[data-active] .reactions li:nth-child(3) { animation-delay: .46s; }
+
+@keyframes rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+@keyframes pop { 0% { opacity: 0; transform: scale(.8); } 70% { opacity: 1; transform: scale(1.06); } 100% { opacity: 1; transform: none; } }
+@keyframes stars { to { width: var(--fill); } }
+@keyframes fill { to { transform: scaleX(1); } }
+@keyframes pulse { 0%, 100% { box-shadow: 0 0 0 0 rgb(226 119 76 / .55); } 50% { box-shadow: 0 0 0 6px rgb(226 119 76 / 0); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .cover img:first-child, .slide[data-active] .cover img:first-child { transition: none; transform: none; }
+  .slide[data-active] :is(.title, .text, .rating, .fresh), .slide[data-active] .reactions li, .slide[data-active] .progress { animation: none; }
+  .stars span, .slide[data-active] .stars span { width: var(--fill); animation: none; }
+}

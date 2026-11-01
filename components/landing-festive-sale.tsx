@@ -126,7 +126,7 @@ export function LandingFestiveSale({ prices }: { prices: Prices }) {
     <div className={styles.inner}>
       <div className={styles.copy}>
         <p className={styles.kicker}><Sparkles size={15} aria-hidden="true" />{hi ? sale.titleHi : sale.title}</p>
-        <h2 id="festive-sale-title">{text("Light up your career this Diwali.", "इस दिवाली अपने करियर को रोशन करें।")} <span>{text(`${sale.percent}% off every payment.`, `हर भुगतान पर ${sale.percent}% छूट।`)}</span></h2>
+        <p data-h2="" id="festive-sale-title">{text("Light up your career this Diwali.", "इस दिवाली अपने करियर को रोशन करें।")} <span>{text(`${sale.percent}% off every payment.`, `हर भुगतान पर ${sale.percent}% छूट।`)}</span></p>
         <p className={styles.lede}>{text("Every course, AI agent workflow, certification path and interview bank, in one membership. Choose Monthly or Yearly and the festive discount comes off every payment.",
           "हर कोर्स, AI एजेंट वर्कफ़्लो, सर्टिफ़िकेशन पथ और इंटरव्यू बैंक, एक ही सदस्यता में। मासिक या वार्षिक चुनें और हर भुगतान पर त्योहारी छूट पाएँ, नवीनीकरण सहित।")}</p>
         <button type="button" className={styles.unwrap} aria-expanded={open} aria-controls={plansId} onClick={() => setOpen(value => !value)}>
@@ -176,6 +176,7 @@ export function LandingFestiveSale({ prices }: { prices: Prices }) {
                   sizes="(max-width: 900px) 100vw, 560px"
                   quality={85}
                   className={styles.photo}
+                  style={{ objectFit: "cover" }}
                 />}
               </div>
             );

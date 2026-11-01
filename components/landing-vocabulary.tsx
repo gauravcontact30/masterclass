@@ -82,7 +82,7 @@ function WordCard({ entry, index, total, speaking, onHear, compact = false }: { 
   return <li className={`${pulse.card} ${styles.card}`} data-tone={entry.tone} aria-roledescription="slide" aria-label={`${index + 1} / ${total}: ${entry.word}`} {...item.props}>{item.toolbar}
     <div className={styles.picture} data-empty={!src || failed}>
       {src && !failed &&
-        <ContentImage src={src} alt={`Picture showing the meaning of ${entry.word}`} loading="lazy" decoding="async" onError={() => setFailed(true)} />}
+        <ContentImage src={src} alt={`Picture showing the meaning of ${entry.word}`} style={{ objectFit: "cover", objectPosition: "center 40%" }} loading="lazy" decoding="async" onError={() => setFailed(true)} />}
       <span className={styles.category}>{entry.category}</span>
       {index === 0 && <span className={styles.ribbon}><Sparkles size={12} aria-hidden="true" />{t.wordOfDay}</span>}
       <div className={styles.langToggle} role="group" aria-label={`${t.language}: ${entry.word}`}>

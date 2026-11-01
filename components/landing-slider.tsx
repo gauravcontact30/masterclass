@@ -628,7 +628,7 @@ export function LandingSlider({ technologies }: { technologies?: number }) {
         if (slide.imageOnly) return <article key={slide.id} className={styles.heroSlide} data-active={current || undefined} aria-roledescription="slide"
           aria-label={`${position + 1} / ${total}`} aria-hidden={!current} inert={!current}>
           {requested.has(position) && <Image src={slide.src} alt={slide.alt} fill sizes="(max-aspect-ratio: 4/5) 180svh, 100vw" preload={position === 0}
-            className={styles.heroImage} style={{ "--focus": slide.focus } as React.CSSProperties}
+            className={styles.heroImage} style={{ "--focus": slide.focus, objectFit: "cover" } as React.CSSProperties}
             onLoad={position === 0 ? () => setRequested(previous => previous.has(1) ? previous : new Set([...previous, 1])) : undefined} />}
         </article>;
         return <article key={slide.id} className={styles.heroSlide} data-active={current || undefined} aria-roledescription="slide"
@@ -637,12 +637,12 @@ export function LandingSlider({ technologies }: { technologies?: number }) {
               retain visited images so cross-fades and backwards navigation stay smooth. */}
           {requested.has(position) && <Image src={slide.src} alt={slide.alt} fill sizes="100vw" quality={75} preload={position === 0}
             onLoad={position === 0 ? () => setRequested(previous => previous.has(1) ? previous : new Set([...previous, 1])) : undefined}
-            className={styles.heroImage} style={{ "--focus": slide.focus } as React.CSSProperties} />}
+            className={styles.heroImage} style={{ "--focus": slide.focus, objectFit: "cover" } as React.CSSProperties} />}
           <div className={styles.heroShade} />
           <div className={styles.heroTint} data-tone={slide.tone} />
           <p className={styles.heroKicker} data-tone={slide.tone}><span aria-hidden="true" /><span className={styles.heroKickerText}>{pick(slide.tool)}</span></p>
           <div className={styles.heroCopy}>
-            <h2>{pick(slide.title)}</h2>
+            <p data-h2="">{pick(slide.title)}</p>
             <p className={styles.heroBody}>{pick(slide.body)}</p>
             <div className={styles.heroActions}>
               <Link className={styles.heroPrimary} href="/sign-up">{t("startLearning") || "Start learning"}</Link>

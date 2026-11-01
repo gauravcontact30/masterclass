@@ -1,7 +1,7 @@
 import { cacheLife, cacheTag } from "next/cache";
 import { listTechBuzzArticles, TECH_BUZZ_TAG } from "@/lib/server/tech-buzz-storage";
-import { meetsReviewBar } from "@/lib/tech-buzz-reviews";
-import { techIdOf, topicLabel } from "@/lib/tech-buzz-public";
+import { meetsReviewBar, withReview } from "@/lib/tech-buzz-reviews";
+import { techIdOf, techLogo, topicLabel } from "@/lib/tech-buzz-public";
 import type { LandingBuzz } from "@/lib/landing-buzz-types";
 
 /**
@@ -19,7 +19,12 @@ export async function landingBuzz(limit = 24): Promise<LandingBuzz[]> {
     return stories.map(story => {
       const techId = techIdOf(story);
       return { slug: story.slug, title: story.title, topic: topicLabel({ techId, technology: story.technology, category: story.category }), techId: techId ?? null,
-        technology: story.technology, minutes: story.readTimeMinutes, publishedAt: story.publishedAt, tags: (story.tags ?? []).filter(tag => !/^(daily|_)/i.test(tag)).slice(0, 4) };
+        technology: story.technology, minutes: story.readTimeMinutes, publishedAt: story.publishedAt, tags: (story.tags ?? []).filter(tag => !/^(daily|_)/i.test(tag)).slice(0, 4), logo: techLogo(techId ?? undefined) ?? null,
+        // Card fields only (toCard sends the same to every visitor); the subtitle is capped so 24 stories stay light.
+        subtitle: story.subtitle.length > 170 ? `${story.subtitle.slice(0, 167).trimEnd()}…` : story.subtitle, cover: story.coverImage || undefined,
+        likes: story.likes ?? 0, dislikes: story.dislikes ?? 0, claps: story.claps ?? 0,
+        rating: { average: story.rating?.average ?? 0, count: story.rating?.count ?? 0 },
+        stars: (withReview({ slug: story.slug }).review ?? story.source?.review)?.stars ?? null };
     });
   } catch {
     // A landing section without fresh stories still renders; a failed read must never break the home page.

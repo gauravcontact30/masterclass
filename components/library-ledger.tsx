@@ -130,7 +130,7 @@ export function LibraryLedger({ library: initial }: { library: LandingLibrary })
   };
 
   return <section className={styles.ledger} aria-labelledby={`${ids}-title`} onPointerEnter={loadAll} onFocusCapture={loadAll}>
-    <h2 id={`${ids}-title`} className={styles.srOnly}>{text("Search the MasterClass library", "MasterClass लाइब्रेरी खोजें")}</h2>
+    <h3 id={`${ids}-title`} className={styles.srOnly}>{text("Search the MasterClass library", "MasterClass लाइब्रेरी खोजें")}</h3>
     <div className={styles.top}>
       <div className={styles.searchRow}>
         <div className={styles.searchWrap}>

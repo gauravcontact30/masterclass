@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowRight, ArrowUpRight, CalendarSync, Check, Copy, CreditCard, Mail, MapPin, MessageCircleHeart, Phone, ReceiptText, ShieldCheck, Undo2 } from "lucide-react";
 import { ADDRESS, ADDRESS_LINE, SOCIAL_PROFILES, SUPPORT } from "@/lib/site-contact";
+import { EmailLink } from "./email-link";
 import { SocialMark } from "./site-contact-links";
 import styles from "./landing-footer-contact.module.css";
 
@@ -28,7 +29,7 @@ export function LandingFooterContact() {
     <header className={styles.head}>
       <span className={styles.badge} aria-hidden="true"><MessageCircleHeart size={16} /></span>
       <div>
-        <h2 id="footer-contact-title">Get in touch</h2>
+        <h3 data-h2="" id="footer-contact-title">Get in touch</h3>
         <p>Questions about a course, billing or your account? Write, call or message us.</p>
       </div>
       <Link className={styles.cta} href="/learning/plans">See plans<ArrowRight size={14} aria-hidden="true" /></Link>
@@ -36,7 +37,7 @@ export function LandingFooterContact() {
     <ul className={styles.grid}>
       <li data-tone="mint">
         <span className={styles.icon} aria-hidden="true"><Mail size={15} /></span>
-        <div className={styles.info}><small>Email</small><a href={`mailto:${SUPPORT.email}`}>{SUPPORT.email}</a></div>
+        <div className={styles.info}><small>Email</small><EmailLink /></div>
         <CopyValue value={SUPPORT.email} label="email address" />
       </li>
       <li data-tone="sky">
@@ -69,7 +70,7 @@ export function LandingFooterFacts() {
     <header className={styles.head}>
       <span className={styles.badge} aria-hidden="true"><ShieldCheck size={16} /></span>
       <div>
-        <h2 id="footer-facts-title">Plans and payments</h2>
+        <h3 data-h2="" id="footer-facts-title">Plans and payments</h3>
         <p>What to know before you join, in four lines.</p>
       </div>
       <Link className={styles.cta} href="/sign-up">Sign up free<ArrowRight size={14} aria-hidden="true" /></Link>

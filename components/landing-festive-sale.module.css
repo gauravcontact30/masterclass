@@ -7,8 +7,8 @@
 
 .copy { display: grid; gap: 18px; }
 .kicker { display: inline-flex; align-items: center; gap: 8px; width: fit-content; padding: 6px 14px; border: 1px solid #f59e0b80; border-radius: 999px; background: #f59e0b1f; font-size: 13px; font-weight: 700; letter-spacing: .02em; color: var(--marigold); }
-.copy h2 { margin: 0; font-family: Georgia, "Times New Roman", serif; font-size: clamp(30px, 4.2vw, 50px); font-weight: 500; line-height: 1.08; letter-spacing: -.01em; color: var(--ivory); }
-.copy h2 span { display: block; margin-top: 6px; background: linear-gradient(90deg, #fde68a, #f59e0b 45%, #fb923c); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.copy :is(h2, :where([data-h2])) { margin: 0; font-family: Georgia, "Times New Roman", serif; font-size: clamp(30px, 4.2vw, 50px); font-weight: 500; line-height: 1.08; letter-spacing: -.01em; color: var(--ivory); }
+.copy :is(h2, :where([data-h2])) span { display: block; margin-top: 6px; background: linear-gradient(90deg, #fde68a, #f59e0b 45%, #fb923c); -webkit-background-clip: text; background-clip: text; color: transparent; }
 .lede { max-width: 54ch; margin: 0; text-align: left; -webkit-hyphens: none; hyphens: none; font-size: 16px; line-height: 1.65; color: #e9e3ff; }
 
 .plans { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)); gap: 14px; }

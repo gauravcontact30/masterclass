@@ -131,7 +131,7 @@ function PulsePicture({ src, alt, icon, children }: { src: string | null; alt: s
   const empty = !src || failed;
   return <div className={styles.picture} data-empty={empty}>
     {empty ? <span className={styles.placeholder}>{icon}</span> :
-      <ContentImage src={src} alt={alt} loading="lazy" decoding="async" onError={() => setFailed(true)} />}
+      <ContentImage src={src} alt={alt} style={{ objectFit: "cover" }} loading="lazy" decoding="async" onError={() => setFailed(true)} />}
     {children}
   </div>;
 }

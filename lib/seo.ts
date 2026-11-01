@@ -21,9 +21,10 @@ export function isIndexable(): boolean {
 // One name everywhere (title, og:site_name, WebSite and Organization data): Google picks the site name it shows in
 // results from these, and mixed spellings ("Master Class Buddy") left it falling back to the bare domain.
 export const siteName = "MasterClass Buddy";
-// Carries the home page's most-used words (read, code, interview questions, system design), so the title, description
-// and headings agree on the topic; the technologies are in the description and the h1.
-export const siteTitle = "MasterClass Buddy | Read, Code, Interview Questions & System Design";
+// Carries the home page's most-used words (interview questions, system design), so the title, description and headings
+// agree on the topic; the technologies are in the description and the h1. 55 characters: SEO checkers flag titles over
+// 60 and Google truncates them.
+export const siteTitle = "MasterClass Buddy | Interview Questions & System Design";
 /** Under 160 characters so Google shows it whole; it names what the site teaches today (the search snippet and link previews). */
 export const siteDescription = "Read weekly Tech Buzz blogs, write real code and learn Agentic AI, LangChain, n8n, Next.js, Python, AWS & DSA, with system design and interview questions.";
 /**
@@ -180,8 +181,10 @@ export function organizationSchema(prices?: { monthly:number; yearly:number; end
     image: new URL("/opengraph-image", url).href,
     description: siteDescription, slogan: "Your buddy for mastering Agentic AI and the modern web stack.", areaServed: "IN", knowsLanguage: ["en"],
     // Support contact, postal address and social profiles (lib/site-contact.ts); the address makes it a LocalBusiness.
-    email: SUPPORT.email, telephone: SUPPORT.phone, address: { "@type": "PostalAddress", ...ADDRESS },
-    contactPoint: { "@type": "ContactPoint", contactType: "customer support", email: SUPPORT.email, telephone: SUPPORT.phone, areaServed: "IN", availableLanguage: ["English"] },
+    // No email: it would put a plaintext address in every page's HTML for harvesters (and SEO checkers' plaintext-email
+    // test); the Contact page URL stands in, and components/email-link.tsx shows the address there.
+    telephone: SUPPORT.phone, address: { "@type": "PostalAddress", ...ADDRESS },
+    contactPoint: { "@type": "ContactPoint", contactType: "customer support", url: new URL("/contact", url).href, telephone: SUPPORT.phone, areaServed: "IN", availableLanguage: ["English"] },
     sameAs: SOCIAL_PROFILES.map(item => item.href),
     knowsAbout: [
       "React 19", "Next.js 16", "TypeScript", "JavaScript", "Python 3.12", "Node.js", "System design",

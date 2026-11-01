@@ -1,5 +1,6 @@
 import { AccordionSummary } from "@/components/ui/accordion-chevron";
 import Link from "next/link";
+import { EmailLink } from "@/components/email-link";
 import { SiteContactLinks } from "@/components/site-contact-links";
 import { ADDRESS_LINE, SUPPORT } from "@/lib/site-contact";
 import { faqSchema, pageMetadata } from "@/lib/seo";
@@ -25,7 +26,7 @@ export default function ContactPage() {
       <h2>Get in touch</h2>
       <p>Reach our support team by email or phone. When you write about your account, include the email address you signed up with so we can find it quickly.</p>
       <ul>
-        <li><strong>Email:</strong> <a href={`mailto:${SUPPORT.email}`}>{SUPPORT.email}</a></li>
+        <li><strong>Email:</strong> <EmailLink /></li>
         <li><strong>Phone:</strong> <a href={SUPPORT.phoneHref}>{SUPPORT.phone}</a></li>
         <li><strong>Address:</strong> <address style={{ display: "inline", fontStyle: "normal" }}>{ADDRESS_LINE}</address></li>
       </ul>

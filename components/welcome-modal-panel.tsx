@@ -160,7 +160,7 @@ export default function WelcomeModalPanel({
                   fill
                   sizes="(max-width: 760px) 100vw, 520px"
                   className={styles.photo}
-                  style={{ objectPosition: item.focus }}
+                  style={{ objectFit: "cover", objectPosition: item.focus }}
                   priority={i === 0}
                 />
               </div>

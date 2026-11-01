@@ -60,7 +60,7 @@ export function LandingComparisons({ expanded = false, preview = false, locked =
     <div className={interview.head} data-learning-header>
       <div className={interview.headCopy} data-learning-copy>
         <p className={interview.kicker}><GitCompareArrows size={14} aria-hidden="true" />{text("Tech Topics", "टेक टॉपिक्स")}<span>{items.length} {text("comparisons", "तुलनाएँ")}</span></p>
-        <h2 id="comparisons-title">{text("What is the difference ", "असल में अंतर ")}<em>{text("between them, really?", "क्या है?")}</em></h2>
+        <h3 data-h2="" id="comparisons-title">{text("What is the difference ", "असल में अंतर ")}<em>{text("between them, really?", "क्या है?")}</em></h3>
         <p className={interview.lede} data-learning-intro>{text(
           "The comparisons interviewers and teams ask about most, from LangChain, LangGraph and LangSmith to Redux, Zustand and Redux Toolkit. Each one defines every technology in a line, compares them at a glance and answers 40+ difference questions.",
           "इंटरव्यू और टीमों में सबसे ज़्यादा पूछी जाने वाली तुलनाएँ, LangChain, LangGraph और LangSmith से Redux, Zustand और Redux Toolkit तक। हर तुलना में हर तकनीक की एक पंक्ति की परिभाषा, एक नज़र में तालिका और 40+ अंतर प्रश्नों के उत्तर।")}</p>
@@ -165,7 +165,7 @@ function ChainPicture({ sources, alt, icon, children }: Readonly<{ sources: (str
   const src = usable[index];
   return <div className={interview.picture} data-empty={!src}>
     {src ?
-      <ContentImage key={src} src={src} alt={alt} loading="lazy" decoding="async" onError={() => setIndex(i => i + 1)} /> : <span className={interview.placeholder}>{icon}</span>}
+      <ContentImage key={src} src={src} alt={alt} style={{ objectFit: "cover" }} loading="lazy" decoding="async" onError={() => setIndex(i => i + 1)} /> : <span className={interview.placeholder}>{icon}</span>}
     {children}
   </div>;
 }
@@ -177,7 +177,7 @@ function TechThumb({ id, name }: Readonly<{ id: string | null; name: string }>) 
   if (!src || failed) return null;
   // The pictures are 960×640 (3:2): width and height carry that ratio, so the thumbnail is never squeezed or cropped
   // (320×160 was flagged as a distorted image by SEO checkers).
-  return <ContentImage className={styles.thumb} src={src} alt={`Illustration of ${name}`} width={300} height={200} loading="lazy" decoding="async" onError={() => setFailed(true)} />;
+  return <ContentImage className={styles.thumb} style={{ objectFit: "cover" }} src={src} alt={`Illustration of ${name}`} width={300} height={200} loading="lazy" decoding="async" onError={() => setFailed(true)} />;
 }
 
 /**

@@ -46,7 +46,7 @@ export function StudentReviews() {
     <header className={frame.head}>
       <div>
         <p className={frame.kicker}><MessageSquareQuote size={14} aria-hidden="true" />{hi ? "छात्रों की कहानियाँ" : "Student stories"}<span>{hi ? "नमूना समीक्षाएँ" : "Sample reviews"}</span></p>
-        <h2>{hi ? "छोटे कदम। " : "Small steps. "}<em>{hi ? "बढ़ता आत्मविश्वास।" : "Growing confidence."}</em></h2>
+        <h3 data-h2="">{hi ? "छोटे कदम। " : "Small steps. "}<em>{hi ? "बढ़ता आत्मविश्वास।" : "Growing confidence."}</em></h3>
       </div>
       <p className={frame.lede}>{hi ? "ये नमूना समीक्षाएँ दिखाती हैं कि डैशबोर्ड का हर क्षेत्र रोज़ की पढ़ाई में कैसे काम आ सकता है। ये असली छात्रों के उद्धरण नहीं हैं; असली प्रतिक्रिया मिलने पर इन्हें बदल दिया जाएगा।" : "These sample stories show how each area of the dashboard can fit into a week of study, and the routine behind each one. They are illustrations, not quotes from real students, and will be replaced with real feedback as it arrives."}</p>
     </header>

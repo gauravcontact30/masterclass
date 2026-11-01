@@ -26,6 +26,9 @@ type Person = { person: string; sessions: number; engaged_seconds: number; first
 export type OverviewSnapshot = { generatedAt: string; events: Row[]; requests: { count: number; errors: number; p95: number | null }; health: { databaseMs: number; processUptime: number; processMemory: number; hostMemory: number; hostUsedMemory: number; cpuCores: number; cpuPercent?: number | null; environment?: string; nodeVersion?: string } };
 
 const REFRESH_MS = 15_000;
+// The visitor stream is read incrementally (only rows since the last read), so it can be asked far more often than the
+// SQL report: the visitor tiles and cards are at most this stale (user request 2026-11-01: "fresh" live visitors).
+const STREAM_REFRESH_MS = 5_000;
 // Rows per page in each paginated panel.
 const STREAM_PAGE = 3, TRACE_PAGE = 10, READING_PAGE = 6;
 const pageOf = <T,>(rows: T[], page: number, size: number) => rows.slice((Math.min(page, Math.max(1, Math.ceil(rows.length / size))) - 1) * size, Math.min(page, Math.max(1, Math.ceil(rows.length / size))) * size);
@@ -116,8 +119,12 @@ export function OverviewLive({ snapshot, onRefreshSnapshot }: { snapshot: Overvi
   // keeps only its newest 500 events), kept in a ref between refreshes so each one only fetches what is new.
   const [stream, setStream] = useState<StreamFeed | null>(null);
   const feed = useRef<StreamFeed | null>(null);
+  const streamBusy = useRef(false);
 
   const loadStream = useCallback(async (signal?: AbortSignal) => {
+    // One read at a time: two incremental reads built on the same prior feed would each drop the other's rows.
+    if (streamBusy.current) return;
+    streamBusy.current = true;
     try {
       const prior = feed.current, startedAt = Date.now();
       const incremental = prior && startedAt - prior.loadedAt < FULL_RELOAD_MS;
@@ -140,9 +147,11 @@ export function OverviewLive({ snapshot, onRefreshSnapshot }: { snapshot: Overvi
         capped: Boolean(body.capped) || Boolean(incremental && prior.capped), loadedAt: incremental ? prior.loadedAt : startedAt };
       // Half the round trip is the best estimate of when the server stamped generatedAt.
       setOffset(Date.parse(generatedAt) - (startedAt + Date.now()) / 2);
-      setFreshSince(prior ? Date.parse(prior.generatedAt) : null);
+      // "New since the last refresh" moves only when a read brought rows, so a 5 s poll does not wipe the highlight.
+      if (!incremental || rows.size !== prior.rows.size) setFreshSince(prior ? Date.parse(prior.generatedAt) : null);
       feed.current = next; setStream(next);
     } catch { /* the stream falls back to the 24 h report's recent visits */ }
+    finally { streamBusy.current = false; }
   }, []);
   const load = useCallback(async (signal?: AbortSignal) => {
     void loadStream(signal);
@@ -161,8 +170,13 @@ export function OverviewLive({ snapshot, onRefreshSnapshot }: { snapshot: Overvi
     queueMicrotask(() => { if (!controller.signal.aborted) void load(controller.signal); });
     if (paused) return () => controller.abort();
     const timer = setInterval(() => { if (document.visibilityState === "visible") { void load(controller.signal); onRefreshSnapshot(); } }, REFRESH_MS);
-    return () => { controller.abort(); clearInterval(timer); };
-  }, [load, paused, onRefreshSnapshot]);
+    // Between full refreshes, the visitor stream alone (cheap: only what is new) every few seconds.
+    const streamTimer = setInterval(() => { if (document.visibilityState === "visible") void loadStream(controller.signal); }, STREAM_REFRESH_MS);
+    // Back on a hidden tab: refresh at once instead of showing figures from when it was left.
+    const onVisible = () => { if (document.visibilityState === "visible") { void load(controller.signal); onRefreshSnapshot(); } };
+    document.addEventListener("visibilitychange", onVisible);
+    return () => { controller.abort(); clearInterval(timer); clearInterval(streamTimer); document.removeEventListener("visibilitychange", onVisible); };
+  }, [load, loadStream, paused, onRefreshSnapshot]);
   // A one-second clock keeps the "x seconds ago" labels honest between refreshes.
   useEffect(() => { const t = setInterval(() => setNow(Date.now()), 1000); return () => clearInterval(t); }, []);
 
@@ -260,12 +274,14 @@ export function OverviewLive({ snapshot, onRefreshSnapshot }: { snapshot: Overvi
   const peak = Math.max(1, ...hours);
   const h = snapshot?.health;
 
+  // How old the visitor figures are, on the server's clock (the stream is re-read every STREAM_REFRESH_MS).
+  const freshness = exact && stream ? ` · updated ${Math.max(0, Math.round((clockNow - Date.parse(stream.generatedAt)) / 1000))}s ago` : " · from the SQL report";
   const kpis: { label: string; value: string; note: string; icon: LucideIcon; tone: string; pulse?: boolean }[] = [
     heartbeats
       ? { label: "On the site now", value: n(counts.live), note: `${n(counts.liveSigned)} signed in · page open now`, icon: Radio, tone: "mint", pulse: true }
       : { label: "On the site now", value: n(live?.totals.liveNow), note: `${n(live?.totals.liveSignedIn)} signed in · page open now`, icon: Radio, tone: "mint", pulse: true },
     { label: "Page views, last hour", value: n(hourSum.views), note: `by ${n(hourSum.people)} ${hourSum.people === 1 ? "person" : "people"}`, icon: MousePointerClick, tone: "sky" },
-    { label: `Visitors, ${day}`, value: n(fig.people), note: `${day === "today" ? "since 00:00 IST · " : ""}${n(fig.views)} page views · ${n(fig.signedIn)} signed in · ${n(fig.newVisitors)} new`, icon: Users, tone: "lavender" },
+    { label: `Visitors, ${day}`, value: n(fig.people), note: `${day === "today" ? "since 00:00 IST · " : ""}${n(fig.views)} page views · ${n(fig.signedIn)} signed in · ${n(fig.newVisitors)} new${freshness}`, icon: Users, tone: "lavender" },
     ...(exact ? [{ label: "Visitors, last 24 hours", value: n(daySum.people), note: `rolling, since ${clock(clockNow - 86_400_000)} IST yesterday · ${n(daySum.views)} page views · ${n(daySum.sessions)} visits`, icon: CalendarClock, tone: "sky" }] : []),
     { label: "API requests, 15 min", value: n(recent15.length), note: `${n(snapshot?.requests.count)} in the reporting window`, icon: Route, tone: "peach" },
     { label: "Server errors, 15 min", value: n(errors15), note: errors15 ? "Open Application logs for details" : "All clear", icon: AlertTriangle, tone: errors15 ? "rose" : "sage" },

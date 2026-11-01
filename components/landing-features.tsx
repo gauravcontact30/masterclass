@@ -111,15 +111,20 @@ const NOTES: Card[] = ([
   { id: "two-languages", title: ["English and Hindi", "अंग्रेज़ी और हिन्दी"], text: ["Read the same notes in English or Hindi, whichever helps you remember.", "वही नोट्स अंग्रेज़ी या हिन्दी में पढ़ें, जिसमें आपको बेहतर याद रहे।"] },
 ] satisfies Card[]).filter(card => HINDI_ENABLED || card.id !== "two-languages");
 
-/** One feature section: copy, details, how it works and a way in, beside its picture with `float` on it. */
-export function FeatureSection({ feature, index, total, float, section, hi = false }: Readonly<{ feature: Feature; index: number; total: number; float?: ReactNode; section?: { props?: object; toolbar?: ReactNode }; hi?: boolean }>) {
+/**
+ * One feature section: copy, details, how it works and a way in, beside its picture with `float` on it. The title is
+ * an h3 styled as a section heading (the landing page keeps 9 real h2s); `topLevel` makes it a real h2 (Tech Buzz).
+ */
+export function FeatureSection({ feature, index, total, float, section, hi = false, topLevel = false }: Readonly<{ feature: Feature; index: number; total: number; float?: ReactNode; section?: { props?: object; toolbar?: ReactNode }; hi?: boolean; topLevel?: boolean }>) {
   const pick = ([en, hindi]: Copy) => hi ? hindi : en;
   const Icon = feature.icon, Badge = feature.badge.icon;
   return <section id={feature.id} className={`${frame.section} ${styles.feature}`} data-ground={index % 2 ? "wash" : "paper"} aria-labelledby={`${feature.id}-title`} {...section?.props}>{section?.toolbar}
     <div className={`${home.inner} ${styles.layout}`} data-flip={index % 2 ? "" : undefined}>
       <div className={styles.copy}>
         <p className={frame.kicker}><Icon size={14} aria-hidden="true" />{pick(feature.kicker)}{total > 1 && <span>{String(index + 1).padStart(2, "0")} / {String(total).padStart(2, "0")}</span>}</p>
-        <h2 id={`${feature.id}-title`} className={styles.title}>{pick(feature.title)}<em>{pick(feature.emphasis)}</em></h2>
+        {topLevel
+          ? <h2 id={`${feature.id}-title`} className={styles.title}>{pick(feature.title)}<em>{pick(feature.emphasis)}</em></h2>
+          : <h3 data-h2="" id={`${feature.id}-title`} className={styles.title}>{pick(feature.title)}<em>{pick(feature.emphasis)}</em></h3>}
         <p className={frame.lede}>{pick(feature.lede)}</p>
         <ul className={styles.details}>{feature.details.map(detail => { const DetailIcon = detail.icon; return <li key={detail.title[0]}>
           <span className={styles.detailIcon} aria-hidden="true"><DetailIcon size={17} /></span>
@@ -132,7 +137,7 @@ export function FeatureSection({ feature, index, total, float, section, hi = fal
         <div className={frame.actions}><Link className={frame.cta} href={feature.cta.href}>{pick(feature.cta.label)}<ArrowRight size={16} aria-hidden="true" /></Link><ListenButton id={`feature:${feature.id}`} title={pick(feature.kicker)} text={[pick(feature.title) + pick(feature.emphasis), pick(feature.lede), ...feature.details.map(detail => `${pick(detail.title)}. ${pick(detail.body)}`)].join(" ")} /><small>{pick(feature.note)}</small></div>
       </div>
       <div className={styles.visual}>
-        <div className={styles.photo}><Image src={feature.image.src} alt={`${pick(feature.kicker)}: ${pick(feature.title)}${pick(feature.emphasis)}`} fill sizes="(max-width: 900px) 92vw, 560px" style={{ objectPosition: feature.image.focus }} /></div>
+        <div className={styles.photo}><Image src={feature.image.src} alt={`${pick(feature.kicker)}: ${pick(feature.title)}${pick(feature.emphasis)}`} fill sizes="(max-width: 900px) 92vw, 560px" style={{ objectFit: "cover", objectPosition: feature.image.focus }} /></div>
         <span className={styles.badge} aria-hidden="true"><Badge size={14} />{pick(feature.badge.label)}</span>
         {float && <div className={styles.float}>{float}</div>}
       </div>

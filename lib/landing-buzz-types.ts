@@ -1,5 +1,12 @@
-/** A Tech Buzz story as the landing sections link to it (lib/server/landing-buzz.ts): no body, no preview text. */
-export type LandingBuzz = { slug: string; title: string; topic: string; techId: string | null; technology: string; minutes: number; publishedAt: string; tags: string[] };
+/**
+ * A Tech Buzz story as the landing sections link to it (lib/server/landing-buzz.ts): no body, no preview text. The card
+ * fields (subtitle, cover, reader signals, the reviewer's stars) are the ones toCard already sends to every visitor.
+ */
+export type LandingBuzz = {
+  slug: string; title: string; topic: string; techId: string | null; technology: string; minutes: number; publishedAt: string; tags: string[];
+  logo?: string | null; subtitle?: string; cover?: string; likes?: number; dislikes?: number; claps?: number;
+  rating?: { average: number; count: number }; stars?: number | null;
+};
 
 /**
  * The stories most related to a set of keywords (technology names, identifiers), newest first among equals; with no

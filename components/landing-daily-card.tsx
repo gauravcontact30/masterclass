@@ -12,7 +12,7 @@ import styles from "./landing-daily-card.module.css";
 export function DailyCard({ kicker, title, image, icon, day, children }: Readonly<{ kicker: string; title: string; image: string | null; icon: ReactNode; day: string; children: ReactNode }>) {
   return <article className={styles.card} aria-label={`${kicker}: ${title}`}>
     <div className={styles.picture}>
-      {image ? <ContentImage src={image} alt={`${kicker}: ${title}`} loading="lazy" decoding="async" /> : <span className={styles.icon} aria-hidden="true">{icon}</span>}
+      {image ? <ContentImage src={image} alt={`${kicker}: ${title}`} style={{ objectFit: "cover" }} loading="lazy" decoding="async" /> : <span className={styles.icon} aria-hidden="true">{icon}</span>}
       <span className={styles.badge}><Sparkles size={12} aria-hidden="true" />New this week · <time dateTime={day}>{new Date(`${day}T12:00:00Z`).toLocaleDateString("en-IN", { day: "numeric", month: "short", timeZone: "UTC" })}</time></span>
     </div>
     <div className={styles.body}>

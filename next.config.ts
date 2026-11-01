@@ -43,6 +43,8 @@ const nextConfig: NextConfig = {
     // Group CSS per route by cost instead of merging stylesheets app-wide: the default merged the dashboard's and
     // Super Admin's styles into chunks the landing page had to download before first paint. Graph mode is
     // Turbopack-only, so webpack (`next dev --webpack`) and next/jest keep the default.
+    // Tried 2026-11-01: requestCost 80 KB only cut the landing page's CSS requests 40 → 33 and raised its render-blocking
+    // sheets 21 → 25 (the split follows dynamic-import boundaries, not cost), so the default tuning stays.
     cssChunking: process.env.TURBOPACK ? "graph" : true,
     optimizePackageImports: [
       "lucide-react",

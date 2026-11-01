@@ -115,7 +115,7 @@ export function LandingSearchDocs({ fresh, buzz, week = 0 }: Readonly<{ fresh?: 
     <header className={frame.head}>
       <div>
         <p className={frame.kicker}><BookOpenCheck size={14} aria-hidden="true" />Technology docs<span>{index ? `${total.toLocaleString("en-IN")} topics · ${index.handbooks.length} handbooks` : "Search every handbook"}</span></p>
-        <h2 id="landing-search-title">Ask the docs. <em>Answers in milliseconds.</em></h2>
+        <h3 data-h2="" id="landing-search-title">Ask the docs. <em>Answers in milliseconds.</em></h3>
       </div>
       <div>
         <p className={frame.lede}>The dashboard&apos;s Search covers every technology handbook, from React hooks and Docker to LangGraph, Kubernetes and system design. Try it here on the real topic index: type, filter by technology, and open any result with its explanation and worked code after signing in.</p>
@@ -137,7 +137,7 @@ export function LandingSearchDocs({ fresh, buzz, week = 0 }: Readonly<{ fresh?: 
         </form>
 
         {popular.length > 0 && <div className={styles.pillBlock}>
-          <div className={styles.popular} id="landing-popular"><span><TrendingUp size={14} aria-hidden="true" />Popular this week</span>{popular.slice(popularPage * PILLS_PER_PAGE, (popularPage + 1) * PILLS_PER_PAGE).map(item => <button type="button" key={item.name} onClick={() => update({ query: item.name, logo: null })}><Image src={`/images/tech/${item.logo}.png`} alt="" width={14} height={14} />{item.name}</button>)}</div>
+          <div className={styles.popular} id="landing-popular"><span><TrendingUp size={14} aria-hidden="true" />Popular this week</span>{popular.slice(popularPage * PILLS_PER_PAGE, (popularPage + 1) * PILLS_PER_PAGE).map(item => <button type="button" key={item.name} onClick={() => update({ query: item.name, logo: null })}><Image src={`/images/tech/${item.logo}.png`} alt={`${item.name} logo`} aria-hidden="true" width={14} height={14} />{item.name}</button>)}</div>
           <PillPager className={styles.pager} page={Math.min(popularPage, Math.ceil(popular.length / PILLS_PER_PAGE) - 1)} pages={Math.ceil(popular.length / PILLS_PER_PAGE)} total={popular.length} perPage={PILLS_PER_PAGE} onPage={setPopularPage} label="Popular searches" noun="popular searches" controls="landing-popular" />
         </div>}
 
@@ -145,7 +145,7 @@ export function LandingSearchDocs({ fresh, buzz, week = 0 }: Readonly<{ fresh?: 
           <div className={styles.filters} id="landing-tech-filters" role="group" aria-label="Filter by technology">
             <button type="button" aria-pressed={!logo} onClick={() => update({ logo: null })}><Layers size={15} aria-hidden="true" />All</button>
             {filters.slice(filterPage * PILLS_PER_PAGE, (filterPage + 1) * PILLS_PER_PAGE).map(item => <button type="button" key={item.id} aria-pressed={logo === item.id} onClick={() => update({ logo: logo === item.id ? null : item.id })} title={`${item.label}: ${item.topics} topics`}>
-              <Image src={`/images/tech/${item.id}.png`} alt="" width={18} height={18} /><span>{item.label}</span><small>{item.topics}</small>
+              <Image src={`/images/tech/${item.id}.png`} alt={`${item.label} logo`} aria-hidden="true" width={18} height={18} /><span>{item.label}</span><small>{item.topics}</small>
             </button>)}
           </div>
           <PillPager className={styles.pager} page={Math.min(filterPage, Math.ceil(filters.length / PILLS_PER_PAGE) - 1)} pages={Math.ceil(filters.length / PILLS_PER_PAGE)} total={filters.length} perPage={PILLS_PER_PAGE} onPage={setFilterPage} label="Technologies" noun="technologies" controls="landing-tech-filters" />
@@ -161,7 +161,7 @@ export function LandingSearchDocs({ fresh, buzz, week = 0 }: Readonly<{ fresh?: 
 
         {result && words.length > 0 && (result.hits.length ? <ol className={styles.results}>{result.hits.slice(0, RESULTS).map((hit, i) => { const book = index!.handbooks[hit.book]; return <li key={`${hit.name}-${hit.book}`} style={{ "--i": i } as React.CSSProperties}>
           <Link href={searchHref(hit.name)}>
-            {book.logo ? <Image src={`/images/tech/${book.logo}.png`} alt="" width={22} height={22} /> : <BookOpenCheck size={20} aria-hidden="true" />}
+            {book.logo ? <Image src={`/images/tech/${book.logo}.png`} alt={`${book.title} logo`} aria-hidden="true" width={22} height={22} /> : <BookOpenCheck size={20} aria-hidden="true" />}
             <span><strong>{highlight(hit.name, words)}</strong><small>{hit.category} · {book.title}</small></span>
             <ArrowUpRight size={15} aria-hidden="true" />
           </Link>

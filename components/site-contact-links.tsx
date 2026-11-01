@@ -1,5 +1,6 @@
 import { Mail, MapPin, Phone } from "lucide-react";
 import { ADDRESS_LINE, SOCIAL_PROFILES, SUPPORT, type SocialProfile } from "@/lib/site-contact";
+import { EmailLink } from "./email-link";
 import styles from "./site-contact-links.module.css";
 
 // The marks inlined from simple-icons (CC0), so the landing page's footer does not pull in the icon package.
@@ -26,7 +27,7 @@ export function SiteContactLinks({ tone = "light", socialOnly = false, labelled 
       </li>)}
     </ul>
     {!socialOnly && <ul className={styles.support} aria-label="Support contact">
-      <li><a href={`mailto:${SUPPORT.email}`}><Mail size={14} aria-hidden="true" />{SUPPORT.email}</a></li>
+      <li><EmailLink><Mail size={14} aria-hidden="true" /></EmailLink></li>
       <li><a href={SUPPORT.phoneHref}><Phone size={14} aria-hidden="true" />{SUPPORT.phone}</a></li>
       <li><address><MapPin size={14} aria-hidden="true" />{ADDRESS_LINE}</address></li>
     </ul>}

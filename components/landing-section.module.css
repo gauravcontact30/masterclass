@@ -10,8 +10,8 @@
 
 .head { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); align-items: end; gap: 20px 56px; margin-bottom: clamp(32px, 4vw, 48px); }
 .head > div { display: grid; gap: 16px; justify-items: start; }
-.head h2 { font-weight: 600; font-size: clamp(32px, 3.8vw, 52px); line-height: 1.06; letter-spacing: -0.02em; text-wrap: balance; }
-.head h2 em { font-style: italic; color: var(--nb-ink); }
+.head :is(h2, :where([data-h2])) { font-weight: 600; font-size: clamp(32px, 3.8vw, 52px); line-height: 1.06; letter-spacing: -0.02em; text-wrap: balance; }
+.head :is(h2, :where([data-h2])) em { font-style: italic; color: var(--nb-ink); }
 .lede { max-width: 56ch; font-size: 17px; line-height: 1.6; color: var(--nb-text); text-align: justify; text-justify: inter-word; -webkit-hyphens: auto; hyphens: auto; }
 .lede b { font-weight: 600; color: var(--nb-graphite); font-variant-numeric: tabular-nums; }
 

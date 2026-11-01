@@ -14,6 +14,7 @@ import dynamic from "next/dynamic";
 import { loadPrices } from "./currency-picker";
 import type { Currency, SaleInfo } from "@/lib/pricing";
 import { LandingFestiveSale } from "./landing-festive-sale";
+import { LandingTechBuzz } from "./landing-tech-buzz";
 import { LibraryBig } from "lucide-react";
 import { landingFont } from "./landing-fonts";
 import { LandingNews } from "./landing-news";
@@ -94,6 +95,8 @@ export function LandingPage({ features, certifications, workflows, pro, library,
     <LandingSlider technologies={library?.counts.technology} />
     {/* A festive sale in force (lib/server/festive-sale.ts) leads straight after the hero; it renders nothing otherwise. */}
     {priceState === "ready" && prices.sale && <LandingFestiveSale prices={prices} />}
+    {/* Tech Buzz right under the sale (user request 2026-11-01): the newest stories and the way into /tech-buzz. */}
+    <LandingTechBuzz stories={buzz} week={today} hi={hi} />
     <LearningSlot surface="landing" page="home" section="after-slider" className={styles.learningSlot} />
     <LandingNews />
     <LandingPathFinder day={today} fresh={fresh?.goals} />

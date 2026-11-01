@@ -74,7 +74,7 @@ export function LandingTechy({ data, buzz }: Readonly<{ data: LandingProPreview[
     <header className={frame.head}>
       <div>
         <p className={frame.kicker}><Code2 size={14} aria-hidden="true" />Techy<span>{text(`${count(data.topics.length)} topics · new questions every week`, `${count(data.topics.length)} विषय`)}</span></p>
-        <h2 id="landing-techy-title">{text("One topic, real code, ", "एक विषय, असली कोड, ")}<em>{text("read over a coffee.", "एक कप कॉफ़ी के साथ।")}</em></h2>
+        <h3 data-h2="" id="landing-techy-title">{text("One topic, real code, ", "एक विषय, असली कोड, ")}<em>{text("read over a coffee.", "एक कप कॉफ़ी के साथ।")}</em></h3>
       </div>
       <div>
         <p className={frame.lede}><ExpandedText text={text("The frameworks, cloud services and testing tools teams hire for, each explained, questioned and coded. Browse the topics like articles, open one for this week's interview question, then try a code puzzle and see one idea written in five languages.", "वे फ़्रेमवर्क, क्लाउड सेवाएँ और टेस्टिंग टूल जिनके लिए टीमें भर्ती करती हैं, हर एक समझाया, पूछा और कोड किया गया।")} /></p>
@@ -95,7 +95,7 @@ export function LandingTechy({ data, buzz }: Readonly<{ data: LandingProPreview[
       {shown.length ? <ul key={`${current}-${category}-${query}`} className={styles.cardGrid}>
         {shown.slice(current * CARDS_PER_PAGE, (current + 1) * CARDS_PER_PAGE).map((item, i) => { const pill = TECH_PILLS[item.id]; return <li key={item.id} style={{ "--i": i } as CSSProperties}>
           <button type="button" className={styles.topicCard} data-tone={TONES[data.topics.indexOf(item) % TONES.length]} aria-pressed={item.id === topic.id} onClick={() => { setTopicId(item.id); setRevealed(false); document.getElementById("landing-techy-question")?.scrollIntoView({ behavior: "smooth", block: "nearest" }); }}>
-            <span className={styles.cover}>{pill ? <Image src={`/images/tech/${pill.icon}.png`} alt="" width={28} height={28} /> : <Code2 size={22} aria-hidden="true" />}<small>{item.category}</small></span>
+            <span className={styles.cover}>{pill ? <Image src={`/images/tech/${pill.icon}.png`} alt={`${pill.label} logo`} aria-hidden="true" width={28} height={28} /> : <Code2 size={22} aria-hidden="true" />}<small>{item.category}</small></span>
             <strong>{item.title}</strong>
             <span className={styles.cardSummary}>{item.summary}</span>
             <span className={styles.cardMeta}>{text(`${count(item.questionCount)} questions`, `${count(item.questionCount)} प्रश्न`)}<span aria-hidden="true">·</span>{item.id === topic.id ? text("Open below", "नीचे खुला") : text("Open question", "प्रश्न खोलें")}</span>
@@ -142,7 +142,7 @@ export function LandingTechy({ data, buzz }: Readonly<{ data: LandingProPreview[
         <div><p className={styles.labKicker}><Braces size={14} aria-hidden="true" />{text("Same idea, five languages · this week", "एक विचार, पाँच भाषाएँ")}</p><h3>{polyglot.title}</h3><p>{polyglot.idea}</p></div>
         {/* Picks the file the editor opens on; it steps through the languages on its own until the visitor takes over. */}
         <div className={styles.langTabs} role="group" aria-label={text("Open a language", "भाषा खोलें")}>{polyglot.snippets.map((item, i) => <button type="button" key={item.language} aria-pressed={lang === i} onClick={() => { setLang(i); setLangPinned(true); }}>
-          <Image src={`/images/tech/${item.logo}.png`} alt="" width={16} height={16} />{item.language}
+          <Image src={`/images/tech/${item.logo}.png`} alt={`${item.language} logo`} aria-hidden="true" width={16} height={16} />{item.language}
           {lang === i && !langPinned && visible && <i key={lang} style={{ animationDuration: `${LANGUAGE_MS}ms` }} aria-hidden="true" />}
         </button>)}</div>
       </div>
@@ -205,7 +205,7 @@ export function LandingApiDocs({ data, buzz }: Readonly<{ data: LandingProPrevie
     <header className={frame.head}>
       <div>
         <p className={frame.kicker}><FileCode2 size={14} aria-hidden="true" />API Docs<span>{text(`${count(data.identifierCount)} identifiers · API of the week`, `${count(data.identifierCount)} पहचानकर्ता`)}</span></p>
-        <h2 id="landing-api-title">{text("Every identifier, ", "हर पहचानकर्ता, ")}<em>{text("one calm reference.", "एक शांत संदर्भ में।")}</em></h2>
+        <h3 data-h2="" id="landing-api-title">{text("Every identifier, ", "हर पहचानकर्ता, ")}<em>{text("one calm reference.", "एक शांत संदर्भ में।")}</em></h3>
       </div>
       <div>
         <p className={frame.lede}>{text("Hooks, classes, functions and CLI commands, from AI tooling to databases, testing and cloud, organised so you find the right API in seconds. Search the real index below, filter it by type and status, and read this week's API in full.", "AI टूलिंग से डेटाबेस, टेस्टिंग और क्लाउड तक hooks, classes, functions और CLI कमांड। नीचे असली सूची खोजें।")}</p>
