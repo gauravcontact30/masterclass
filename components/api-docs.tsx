@@ -1,15 +1,18 @@
 "use client";
+import { RouteH1 } from "@/components/route-heading";
 import { AccordionChevron } from "@/components/ui/accordion-chevron";
 
 import { NativeSelect, NativeSelectOptGroup, NativeSelectOption } from "@/components/ui/native-select";
 import { Button } from "@/components/ui/button";
 import { Badge as UiBadge } from "@/components/ui/badge";
-import { memo, useDeferredValue, useEffect, useMemo, useState, type CSSProperties } from "react";
+import { memo, useDeferredValue, useEffect, useId, useMemo, useState, type CSSProperties, type ReactNode } from "react";
 import Link from "next/link";
 import Image from "@/components/responsive-image";
 import { vocabularyIcon } from "@/lib/vocabulary-icons";
 import { BrandMark, BrandOrGlyph } from "./topic-media";
-import { LearningResources } from "./learning-resources";
+import { PillPager } from "./pill-pager";
+import { splitUseCase, toPoints } from "@/lib/text-points";
+import type { StoredApiPage } from "@/lib/server/api-detail-store";
 import { usePathname, useSearchParams } from "next/navigation";
 import {
   BookOpen,
@@ -21,7 +24,6 @@ import {
   FileCode2,
   GraduationCap,
   MessageCircle,
-  RefreshCw,
   RotateCcw,
   Search,
   ShieldCheck,
@@ -41,20 +43,15 @@ import {
 } from "@/lib/api-docs";
 import { API_DETAILS } from "@/lib/api-docs-details";
 import { agenticSection, agenticSections } from "@/lib/api-docs-agentic";
-import { apiDetailSchema, type ContentSource, type GeneratedApiDetail } from "@/lib/pro-learn/types";
-import type { CodeLanguage } from "@/lib/code-highlight";
 import styles from "./api-docs.module.css";
 import ref from "./api-reference.module.css";
 import projectStyles from "./api-project.module.css";
-import { apiCodeLanguage, enrichApiLearning } from "@/lib/api-learning";
 import { ApiProjectWorkspace } from "./api-project-workspace";
 import { ApiInterviewPractice } from "./api-interview-practice";
-import { referenceErrorMessage } from "@/lib/api-reference-errors";
 import { DashboardPageHeader } from "./dashboard-page-header";
 import { ApiPackageIndex } from "./api-package-index";
 import { AgentBlueprint } from "./agent-blueprint";
 import { ApiDefinitionCards } from "./api-definition";
-import { AiProvenance, AiProviderPicker, useAiProvider } from "./ai-provider-picker";
 import { KeyText } from "./key-text";
 import { LearningPicture } from "./learning-picture";
 import { ListenButton } from "./listen-button";
@@ -84,151 +81,50 @@ function Badge({ kind }: { kind: string }) {
   );
 }
 
-type GeneratedResult = {
-  detail: GeneratedApiDetail;
-  source: ContentSource;
-  reason?: string;
-  provider?: string;
-};
-const DETAIL_CACHE = "masterclass:api-detail:v2";
-function readCache(key: string): GeneratedResult | null {
-  try {
-    const value = JSON.parse(localStorage.getItem(DETAIL_CACHE) || "{}")[key];
-    return value?.source === "ai"
-      ? { source: "ai", detail: apiDetailSchema.parse(value.detail) }
-      : null;
-  } catch {
-    return null;
-  }
-}
-function writeCache(key: string, value: GeneratedResult) {
-  try {
-    const all = JSON.parse(localStorage.getItem(DETAIL_CACHE) || "{}");
-    all[key] = value;
-    const keys = Object.keys(all);
-    while (keys.length > 120) delete all[keys.shift()!];
-    localStorage.setItem(DETAIL_CACHE, JSON.stringify(all));
-  } catch {
-    /* Browser storage is an optional speed-up. */
-  }
-}
-/** Loads the in-app reference for identifiers that have no hand-authored page. */
-function useGeneratedDetail(
-  pkg: ApiPackage,
-  entry: ApiEntry,
-  curated: boolean,
-  provider?: string
-) {
-  const key = `${pkg.id}:${entry.name}:${provider ?? "default"}`;
-  const [state, setState] = useState<{
-    key: string;
-    status: "loading" | "ready" | "error";
-    data?: GeneratedResult;
-    error?: string;
-  }>({ key, status: "loading" });
-  const [attempt, setAttempt] = useState(0);
-
-  useEffect(() => {
-    if (curated) return;
-    const controller = new AbortController();
-    void Promise.resolve().then(async () => {
-      if (controller.signal.aborted) return;
-      const cached = attempt === 0 ? readCache(key) : null;
-      if (cached) {
-        setState({ key, status: "ready", data: cached });
-        return;
-      }
-      setState({ key, status: "loading" });
-      try {
-        const response = await fetch("/api/pro-learn/api-detail", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            packageId: pkg.id,
-            name: entry.name,
-            ...(provider ? { provider } : {}),
-          }),
-          signal: controller.signal,
-        });
-        if (!response.ok) {
-          const failure = await response.json().catch(() => ({}));
-          throw new Error(
-            failure.error ??
-              (response.status === 401
-                ? "signin_required"
-                : response.status === 429
-                ? "rate_limited"
-                : response.status === 504
-                ? "reference_timeout"
-                : "reference_unavailable")
-          );
-        }
-        const payload = await response.json();
-        if (controller.signal.aborted) return;
-        const data: GeneratedResult = {
-          detail: apiDetailSchema.parse(payload.detail),
-          source: payload.source === "ai" ? "ai" : "library",
-          reason: typeof payload.reason === "string" ? payload.reason : undefined,
-          provider: typeof payload.provider === "string" ? payload.provider : undefined,
-        };
-        if (data.source === "ai") writeCache(key, data);
-        setState({ key, status: "ready", data });
-      } catch (error) {
-        if (!controller.signal.aborted)
-          setState({
-            key,
-            status: "error",
-            error:
-              error instanceof TypeError
-                ? "network_error"
-                : error instanceof Error
-                ? error.message
-                : "reference_unavailable",
-          });
-      }
-    });
-    return () => controller.abort();
-  }, [key, curated, attempt, pkg.id, entry.name, provider]);
-
-  return {
-    ...(state.key === key ? state : { status: "loading" as const, data: undefined }),
-    retry: () => setAttempt((value) => value + 1),
-  };
-}
-
 function packageMark(pkg: ApiPackage) {
   return <BrandOrGlyph label={pkg.name} glyph={pkg.icon} size={16} />;
 }
 
+const PILLS_PER_PAGE = 6;
+
+/** A row of link pills, six to a page. */
+function PagedPills<T>({ items, label, noun, itemKey, renderItem }: { items: readonly T[]; label: string; noun: string; itemKey: (item: T) => string; renderItem: (item: T) => ReactNode }) {
+  const id = useId();
+  const [page, setPage] = useState(0);
+  const pages = Math.max(1, Math.ceil(items.length / PILLS_PER_PAGE));
+  const at = Math.min(page, pages - 1);
+  return <>
+    <ul id={id} className={styles.pillGrid}>
+      {items.slice(at * PILLS_PER_PAGE, (at + 1) * PILLS_PER_PAGE).map(item => <li key={itemKey(item)}>{renderItem(item)}</li>)}
+    </ul>
+    <PillPager className={styles.pillPager} page={at} pages={pages} total={items.length} perPage={PILLS_PER_PAGE} onPage={setPage} label={label} noun={noun} controls={id} />
+  </>;
+}
+
+/** Stored content only, passed in by the page: opening an entry never generates anything (lib/server/api-detail-store.ts). */
 export function ApiDetail({
   pkg,
   entry,
   pathname,
+  page,
 }: {
   pkg: ApiPackage;
   entry: ApiEntry;
   pathname: string;
+  page: StoredApiPage;
 }) {
-  const curated = API_DETAILS[`${pkg.id}:${entry.name}`];
-  const { providers, provider, choose } = useAiProvider(!curated);
-  const generated = useGeneratedDetail(pkg, entry, !!curated, provider);
+  const { detail, status: pageStatus, seeAlso, learn } = page;
+  const written = pageStatus === "written";
   const kind = API_TYPES.find((type) => type.k === entry.kind)?.label || "Identifier";
   const status = API_STATUSES.find((item) => item.id === entry.status)?.label || "Reference entry";
-  const base = curated ?? (generated.status === "ready" ? generated.data?.detail : undefined);
-  const detail = base ? enrichApiLearning(pkg, entry, base) : undefined;
-  const language: CodeLanguage = curated?.language ?? apiCodeLanguage(pkg.id);
-  const fromLibrary = !curated && generated.status === "ready" && generated.data?.source === "library";
-  const related = (detail?.related ?? [])
-    .map((name) => pkg.entries.find((item) => item.name === name))
-    .filter((item): item is ApiEntry => !!item);
-  const seeAlso = related.length
-    ? related
-    : pkg.entries.filter((item) => item.name !== entry.name && item.kind === entry.kind).slice(0, 6);
+  const { language } = page;
   const mentorHref = `/learning/mentors?q=${encodeURIComponent(
     `Explain ${entry.name} from ${pkg.name} with a practical example`
   )}`;
   const quizHref = `/learning/quiz?topic=${encodeURIComponent(`${pkg.name} ${entry.name}`)}`;
   const isAgentic = AGENTIC_FRAMEWORK_IDS.has(pkg.id);
+  const lead = shortDefinition(detail.description);
+  const howItWorks = toPoints(`${detail.description} ${detail.descriptionLong ?? ""}`, [lead]);
 
   return (
     <div>
@@ -252,7 +148,7 @@ export function ApiDetail({
         <article className={styles.detail}>
           <p className={styles.packageName}>
             <BrandMark label={pkg.name} size={14} />
-            {detail?.packageName || pkg.name}
+            {detail.packageName || pkg.name}
             {isAgentic && (
               <UiBadge variant="secondary" className={styles.frameworkBadge}>
                 <Sparkles size={11} aria-hidden="true" />
@@ -260,106 +156,66 @@ export function ApiDetail({
               </UiBadge>
             )}
           </p>
-          <h1>
+          <RouteH1>
             {entry.name}
             <span className={styles.kind}>{kind}</span>
             <span className={styles.statusBadge} data-status={entry.status}>
               {status}
             </span>
-            {detail?.since && <span className={styles.kind}>{detail.since}</span>}
-          </h1>
-          {detail && <ListenButton id={`api:${pkg.id}:${entry.name}`} title={entry.name} text={() => [`${entry.name}, from ${detail.packageName}`, detail.description,
+            {detail.since && <span className={styles.kind}>{detail.since}</span>}
+          </RouteH1>
+          <ListenButton id={`api:${pkg.id}:${entry.name}`} title={entry.name} text={() => [`${entry.name}, from ${detail.packageName}`, detail.description,
             detail.parameters.length ? `Parameters. ${detail.parameters.map(parameter => `${parameter.name}: ${parameter.description}`).join(". ")}` : "",
-            `Returns. ${detail.returns}`, detail.notes.length ? `Notes. ${detail.notes.join(". ")}` : "", detail.useCases.length ? `Use it for: ${detail.useCases.join(". ")}` : ""].filter(Boolean).join(". ")} />}
+            `Returns. ${detail.returns}`, detail.notes.length ? `Notes. ${detail.notes.join(". ")}` : "", detail.useCases.length ? `Use it for: ${detail.useCases.join(". ")}` : ""].filter(Boolean).join(". ")} />
           <LearningPicture src={learningImageUrl("api", [pkg.id, entry.name])} alt={`Illustration of how ${entry.name} works`} />
-          {!curated && <AiProviderPicker providers={providers} provider={provider} onChoose={choose} />}
-          {!detail && generated.status === "loading" && (
-            <div className={styles.generating} role="status">
-              <Sparkles size={16} />
-              <span>Preparing the {entry.name} reference…</span>
-              <i />
-              <i />
-              <i />
-            </div>
-          )}
-          {!detail && generated.status === "error" && (
-            <div className={styles.referenceCard} role="alert">
-              <p>{referenceErrorMessage(generated.error)}</p>
-              {generated.error === "signin_required" ? (
-                <Link href="/sign-in">
-                  Sign in again
-                  <ArrowUpRight size={14} />
-                </Link>
-              ) : (
-                <button className={styles.retry} onClick={generated.retry}>
-                  <RefreshCw size={14} />
-                  Try again
-                </button>
-              )}
-            </div>
-          )}
-          {detail && (
+          <section id="api-definition" className={styles.definitionBlock}>
+            <h2 className={styles.coloredTitle} data-tone="clay">
+              <BookOpen size={20} aria-hidden="true" />
+              Definition
+            </h2>
+            <p className={styles.lead}>
+              <KeyText text={lead} />
+            </p>
+            {written && howItWorks.length > 0 && (
+              <ul className={styles.pointCards} aria-label="How it works">
+                {howItWorks.map((point) => (
+                  <li key={point}>
+                    <span>
+                      <KeyText text={point} />
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
+            {!written && (
+              <p className={styles.preparing} role="status">
+                <Sparkles size={15} aria-hidden="true" />
+                The full page for {entry.name} is being written ahead of time and is not ready yet. Until then, explore the related pages and lessons below.
+              </p>
+            )}
+            {written && (
+              <ApiDefinitionCards
+                name={entry.name}
+                kindLabel={kind}
+                status={status}
+                packageName={detail.packageName || pkg.name}
+                signature={detail.signature}
+                parameters={detail.parameters}
+                returns={detail.returns}
+                code={detail.code}
+                language={language}
+                missingSignature="This concept has no standalone syntax."
+              />
+            )}
+          </section>
+          {written && (
             <>
-              <section id="api-definition" className={styles.definitionBlock}>
-                <h2 className={styles.coloredTitle} data-tone="clay">
-                  <BookOpen size={20} aria-hidden="true" />
-                  Definition
-                </h2>
-                <p className={styles.lead}>
-                  <KeyText text={shortDefinition(detail.description)} />
-                </p>
-                {detail.description.length > shortDefinition(detail.description).length && (
-                  <p>
-                    <KeyText text={detail.description} />
-                  </p>
-                )}
-                {detail.descriptionLong &&
-                  detail.descriptionLong.split(/\n\n+/).map((paragraph) => (
-                    <p key={paragraph}>
-                      <KeyText text={paragraph} />
-                    </p>
-                  ))}
-                <AiProvenance
-                  provider={generated.data?.provider}
-                  providers={providers}
-                />
-                {fromLibrary && (
-                  <p className={styles.small}>
-                    Showing the in-app catalog summary for {entry.name}: the facts the catalog
-                    holds, with no invented signature or example.
-                    {generated.data?.reason
-                      ? ` ${referenceErrorMessage(generated.data.reason)}`
-                      : " Prepare the full learning page for signatures, a worked example and a runnable project."}
-                  </p>
-                )}
-                <ApiDefinitionCards
-                  name={entry.name}
-                  kindLabel={kind}
-                  status={status}
-                  packageName={detail.packageName || pkg.name}
-                  signature={detail.signature}
-                  parameters={detail.parameters}
-                  returns={detail.returns}
-                  code={detail.code}
-                  language={language}
-                  missingSignature={
-                    fromLibrary
-                      ? `The catalog summary does not carry a signature for ${entry.name}. Prepare the full learning page below, or read the official documentation linked in the key features.`
-                      : "This concept has no standalone syntax."
-                  }
-                  missingExample={
-                    fromLibrary
-                      ? "No example is invented for a catalog summary. Prepare the full learning page below to generate a runnable one."
-                      : "Explore the complete code workspace below for a practical example."
-                  }
-                />
-              </section>
               <section id="api-key-points">
                 <h2 className={styles.coloredTitle} data-tone="violet">
                   <Sparkles size={20} aria-hidden="true" />
                   Key features
                 </h2>
-                <ol className={styles.pointList} data-tone="violet">
+                <ol className={styles.pointCards}>
                   {detail.notes.map((note, index) => (
                     <li key={note}>
                       <span className={styles.pointNumber} aria-hidden="true">
@@ -377,32 +233,29 @@ export function ApiDetail({
                   <BriefcaseBusiness size={20} aria-hidden="true" />
                   Real use cases
                 </h2>
-                <ol className={styles.pointList} data-tone="sage">
-                  {detail.useCases.map((note, index) => (
-                    <li key={note}>
-                      <span className={styles.pointNumber} aria-hidden="true">
-                        {String(index + 1).padStart(2, "0")}
-                      </span>
-                      <span>
-                        <KeyText text={note} />
-                      </span>
-                    </li>
-                  ))}
+                <ol className={styles.pointCards}>
+                  {detail.useCases.map((note) => {
+                    const { title, body } = splitUseCase(note);
+                    return (
+                      <li key={note}>
+                        <span>
+                          {title && <strong className={styles.pointTitle}>{title}</strong>}
+                          <KeyText text={body} />
+                        </span>
+                      </li>
+                    );
+                  })}
                 </ol>
               </section>
-              <section id="api-project">
-                <h2>Complete code workspace</h2>
-                {detail.project ? (
+              {detail.project && (
+                <section id="api-project">
+                  <h2 className={styles.coloredTitle} data-tone="sky">
+                    <FileCode2 size={20} aria-hidden="true" />
+                    Example code
+                  </h2>
                   <ApiProjectWorkspace key={entry.name} project={detail.project} />
-                ) : (
-                  <div className={styles.referenceCard}>
-                    <p>A runnable project is not available in this catalog summary.</p>
-                    <button className={styles.retry} onClick={generated.retry}>
-                      Prepare full learning page
-                    </button>
-                  </div>
-                )}
-              </section>
+                </section>
+              )}
               <section id="api-vocabulary">
                 <div className={projectStyles.vocabularyHeading}>
                   <h2 className={styles.coloredTitle} data-tone="sage">
@@ -469,44 +322,34 @@ export function ApiDetail({
                 </p>
                 <ApiInterviewPractice key={entry.name} detail={detail} />
               </section>
-              <section id="api-topics">
-                <h2>Learn {pkg.name} in the app</h2>
-                <div className={styles.topicChips}>
-                  {pkg.topics.map((topic) => (
-                    <Link
-                      key={topic}
-                      href={`/learning/lessons?track=${encodeURIComponent(
-                        pkg.id
-                      )}&topic=${encodeURIComponent(topic)}`}
-                    >
-                      <BookOpen size={15} aria-hidden="true" />
-                      <span>{topic}</span>
-                      <ArrowUpRight size={13} aria-hidden="true" />
-                    </Link>
-                  ))}
-                </div>
-              </section>
             </>
           )}
-          {!!seeAlso.length && (
-            <section id="api-related">
-              <h2>See also</h2>
-              <ul className={styles.related}>
-                {seeAlso.map((item) => (
-                  <li key={item.name}>
-                    <Link href={apiTopicHref(pathname, pkg.id, item.name)}>
-                      <FileCode2 size={15} aria-hidden="true" />
-                      <span>{item.name}</span>
-                      <ArrowUpRight size={13} aria-hidden="true" />
-                    </Link>
-                  </li>
-                ))}
-              </ul>
+          {learn.length > 0 && (
+            <section id="api-topics">
+              <h2>Learn {pkg.name} in the app</h2>
+              <PagedPills items={learn} label={`${pkg.name} lessons`} noun="lessons" itemKey={(topic) => topic.title} renderItem={(topic) => (
+                <Link className={styles.pill} href={topic.href}>
+                  <BookOpen size={15} aria-hidden="true" />
+                  <span>{topic.title}</span>
+                  {topic.soon ? <small className={styles.soon}>Soon</small> : <ArrowUpRight size={13} aria-hidden="true" />}
+                </Link>
+              )} />
             </section>
           )}
-          <LearningResources key={pkg.id} technology={pkg.name} />
+          {seeAlso.length > 0 && (
+            <section id="api-related">
+              <h2>See also</h2>
+              <PagedPills items={seeAlso} label={`More ${pkg.name} identifiers`} noun="identifiers" itemKey={(name) => name} renderItem={(name) => (
+                <Link className={styles.pill} href={apiTopicHref(pathname, pkg.id, name)}>
+                  <FileCode2 size={15} aria-hidden="true" />
+                  <span>{name}</span>
+                  <ArrowUpRight size={13} aria-hidden="true" />
+                </Link>
+              )} />
+            </section>
+          )}
           <p className={styles.provenance}>
-            {curated
+            {API_DETAILS[`${pkg.id}:${entry.name}`]
               ? "Hand-authored reference prepared for study in MasterClass."
               : "Prepared inside MasterClass for study."}{" "}
             Behaviour can differ between versions; verify against the version installed in your
@@ -779,10 +622,11 @@ export function ApiDocs() {
     return (
       <div className={styles.root}>
         {selectedPackage && selectedEntry ? (
-          <ApiDetail key={`${selectedPackage.id}:${selectedEntry.name}`} pkg={selectedPackage} entry={selectedEntry} pathname={pathname} />
+          /* An old ?package=&name= link: the entry's own page holds its stored content. */
+          <p className={styles.empty}><Link href={apiTopicHref(pathname, selectedPackage.id, selectedEntry.name)}>Open {selectedEntry.name}</Link></p>
         ) : (
           <div className={styles.empty}>
-            <h1>API entry not found</h1>
+            <RouteH1>API entry not found</RouteH1>
             <p>This identifier is not in the reference catalog.</p>
             <Link href={pathname}>Back to API Reference</Link>
           </div>

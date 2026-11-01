@@ -1,3 +1,4 @@
+import { RouteH1 } from "@/components/route-heading";
 import { redirect } from "next/navigation";
 import { Workspace } from "@/components/workspace";
 import { EnglishWordSearch } from "@/components/english-word-search";
@@ -20,7 +21,7 @@ export default async function VocabularyPage() {
     configured={databaseConfigured()} billingEnabled={billingConfigured()} userEmail={user?.email ?? null} initialSuperAdmin={isSuperAdminUser(user)}
     notesContent={<section className={styles.page} aria-labelledby="vocabulary-heading">
       <header className={styles.head}>
-        <h1 id="vocabulary-heading">Vocabulary</h1>
+        <RouteH1 id="vocabulary-heading">Vocabulary</RouteH1>
         <p>Explore English words and phrases with Hindi meanings, pronunciation, examples, synonyms and antonyms.</p>
       </header>
       <EnglishWordSearch historyKey={`masterclass:vocabulary:${user?.id ?? "guest"}`} />

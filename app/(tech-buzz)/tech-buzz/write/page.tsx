@@ -1,3 +1,4 @@
+import { RouteH1 } from "@/components/route-heading";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
@@ -25,7 +26,7 @@ export default async function TechBuzzWritePage({ searchParams }: { searchParams
   if (!(await canWrite(user))) {
     return <div className={styles.page}><div className={styles.gate}>
       <PenLine size={30} aria-hidden="true" />
-      <h1>Write on Tech Buzz</h1>
+      <RouteH1>Write on Tech Buzz</RouteH1>
       <p>Writing and publishing your own stories is part of MasterClass Buddy membership. Become a member to share what you build with every engineer reading Tech Buzz.</p>
       <Link href="/subscribe">Become a member</Link>
     </div></div>;

@@ -1,4 +1,5 @@
 "use client";
+import { RouteH1 } from "@/components/route-heading";
 import { AccordionSummary } from "@/components/ui/accordion-chevron";
 
 import { awsServiceImageUrl } from "@/lib/aws-service-image";
@@ -7,7 +8,7 @@ import { learningImageUrl } from "@/lib/learning-image";
 import { vocabularyImageUrl } from "@/lib/vocabulary-image";
 import learningCard from "./learning-card.module.css";
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import { ArrowRight, Building2, Check, ChevronDown, ChevronLeft, ChevronRight, CornerDownLeft, FolderTree, GraduationCap, Images, Layers, Lightbulb, ListOrdered, Search, Sigma, Sparkles, Target, TriangleAlert, X } from "lucide-react";
+import { ArrowRight, Building2, Check, ChevronLeft, ChevronRight, CornerDownLeft, FolderTree, GraduationCap, Images, Layers, Lightbulb, ListOrdered, Search, Sigma, Sparkles, Target, TriangleAlert, X } from "lucide-react";
 import { LearningDiagram } from "./learning-diagram";
 import { learningDiagramSchema } from "@/lib/pro-learn/learning-diagram";
 import { Input } from "@/components/ui/input";
@@ -420,7 +421,7 @@ export function AnswerSearch({ initialQuestion = "", heading = "Search", intro =
 
   return <section className={styles.page} aria-label="Search">
     <header className={styles.head}>
-      <h1>{heading}</h1>
+      <RouteH1>{heading}</RouteH1>
       <p>{intro}</p>
     </header>
 
@@ -830,7 +831,7 @@ function Block({ icon, title, children, className = "", tone, fold, count }: {
   return <section className={`${styles.block} ${className}`.trim()} data-tone={tone} aria-label={title}>
     {fold
       ? <details className={styles.fold}>
-          <AccordionSummary className={styles.blockTitle}>{head}<ChevronDown size={15} className={styles.foldMark} aria-hidden="true" /></AccordionSummary>
+          <AccordionSummary className={styles.blockTitle}>{head}</AccordionSummary>
           <div className={styles.foldBody}>{children}</div>
         </details>
       : <><h3 className={styles.blockTitle}>{head}</h3>{children}</>}

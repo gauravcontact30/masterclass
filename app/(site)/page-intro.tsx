@@ -1,3 +1,4 @@
+import { RouteH1 } from "@/components/route-heading";
 import Link from "next/link";
 import { JsonLd } from "@/components/json-ld";
 import { CONTENT_UPDATED, publicPage, readableDate, webPageSchema, type PublicPage } from "@/lib/seo";
@@ -10,7 +11,7 @@ export function PageIntro({ path, eyebrow, extraSchema, updated = CONTENT_UPDATE
     <JsonLd data={extraSchema ? [webPageSchema(path, updated), extraSchema] : webPageSchema(path, updated)} />
     <nav aria-label="Breadcrumb" className={styles.breadcrumb}><ol><li><Link href="/">Home</Link></li><li aria-current="page">{page.label}</li></ol></nav>
     <p className={styles.eyebrow}>{eyebrow}</p>
-    <h1 className={styles.title}>{page.title}</h1>
+    <RouteH1 className={styles.title}>{page.title}</RouteH1>
     <p className={styles.lead}>{page.description}</p>
     <p className={styles.updated}>Last updated <time dateTime={updated}>{readableDate(updated)}</time></p>
   </>;

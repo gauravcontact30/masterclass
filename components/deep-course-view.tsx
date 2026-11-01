@@ -1,3 +1,4 @@
+import { RouteH1 } from "@/components/route-heading";
 import Link from "next/link";
 import { ArrowLeft, ArrowRight, BookOpenText, Braces, ChevronRight, BadgeCheck, ClipboardList, Clock3, Crosshair, GraduationCap, Sparkles, FlaskConical, Footprints, GitFork, Lightbulb, ListChecks, MessageSquareText, Wrench } from "lucide-react";
 import type { ReactNode } from "react";
@@ -58,7 +59,7 @@ function Overview({ course }: { course: DeepCourse }) {
   return <div className={styles.main}>
     <header className={styles.hero} style={{ "--tint": course.tint } as React.CSSProperties}>
       <p className={styles.eyebrow}><Link href="/learning/lessons">Lessons</Link> / In-depth course</p>
-      <h1><span aria-hidden="true">{course.glyph}</span> {course.name}</h1>
+      <RouteH1><span aria-hidden="true">{course.glyph}</span> {course.name}</RouteH1>
       {course.intro.map(paragraph => <p key={paragraph}>{paragraph}</p>)}
       <dl className={styles.stats}>
         <div><dt>Topics</dt><dd>{course.topics.length}</dd></div>
@@ -83,7 +84,7 @@ function Topic({ course, topic }: { course: DeepCourse; topic: CourseTopic }) {
   return <article className={styles.main}>
     <header className={styles.topicHead}>
       <p className={styles.eyebrow}><Link href={deepCourseHref(course.id)}>{course.name}</Link> / {topic.module} / Topic {index + 1} of {course.topics.length}</p>
-      <h1>{topic.title}</h1>
+      <RouteH1>{topic.title}</RouteH1>
       <p className={styles.summary}>{topic.summary}</p>
       <p className={styles.meta}><i data-level={topic.level}>{topic.level}</i><span><Clock3 size={14} aria-hidden="true"/>{topic.minutes} min</span></p>
       {topic.pending && <PreparingTopic title={topic.title} />}

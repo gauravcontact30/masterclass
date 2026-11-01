@@ -1,4 +1,5 @@
 "use client";
+import { RouteH1 } from "@/components/route-heading";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { NativeSelect } from "@/components/ui/native-select";
@@ -35,7 +36,7 @@ export function BookmarkPage({ technologies }: { technologies: { id: string; tit
     if (await store?.remove(item)) toast("Bookmark removed", { action: { label: "Undo", onClick: () => { const { id: _id, savedAt: _time, ...draft } = item; void _id; void _time; void store?.save(draft); } } });
   }
   return <div className={styles.page}>
-    <header className={styles.hero}><div><span className={styles.eyebrow}><Bookmark size={15} /> YOUR PERSONAL REFERENCE</span><h1>Bookmark</h1><p>Keep the ideas that matter. Revisit them when you need them.</p></div><Link href="/learning/notes">Explore notes <ArrowUpRight size={16} /></Link></header>
+    <header className={styles.hero}><div><span className={styles.eyebrow}><Bookmark size={15} /> YOUR PERSONAL REFERENCE</span><RouteH1>Bookmark</RouteH1><p>Keep the ideas that matter. Revisit them when you need them.</p></div><Link href="/learning/notes">Explore notes <ArrowUpRight size={16} /></Link></header>
     <div className={styles.stats}><div><Bookmark size={19} /><strong>{items.length}</strong><span>Saved bookmarks</span></div><div><Library size={19} /><strong>{new Set(items.map(item => `${item.technology}:${item.title}`)).size}</strong><span>Source titles</span></div><div><Layers3 size={19} /><strong>{techs.length}</strong><span>Technologies & subjects</span></div></div>
     <section className={styles.toolbar} aria-label="Bookmark filters"><Label className={styles.search}><Search size={18} /><Input aria-label="Search bookmarks" placeholder="Search a key point, title or technology…" value={query} onChange={event => setQuery(event.target.value)} /></Label><NativeSelect aria-label="Filter bookmarks by technology" value={technology} onChange={event => setTechnology(event.target.value)}><NativeSelectOption value="">All technologies</NativeSelectOption>{techs.map(id => <NativeSelectOption key={id} value={id}>{name(id)}</NativeSelectOption>)}</NativeSelect><NativeSelect aria-label="Sort bookmarks" value={sort} onChange={event => setSort(event.target.value)}><NativeSelectOption value="newest">Newest first</NativeSelectOption><NativeSelectOption value="oldest">Oldest first</NativeSelectOption><NativeSelectOption value="title">Title A–Z</NativeSelectOption></NativeSelect></section>
     <div className={styles.results}><span role="status">{filtered.length} of {items.length} bookmarks{store?.owner === "demo" ? " · Saved in this browser" : ""}</span><div><button disabled={!filtered.length} onClick={() => void copy(bookmarkText(exportItems))}><Copy size={15} /> Copy results</button><button disabled={!filtered.length} onClick={download}><Download size={15} /> Export .txt</button></div></div>

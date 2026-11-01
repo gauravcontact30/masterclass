@@ -31,7 +31,7 @@ const nextConfig: NextConfig = {
   },
   serverExternalPackages: ["@electric-sql/pglite"],
   // Official learning cards are read from disk at request time (lib/server/official-content.ts).
-  outputFileTracingIncludes: Object.fromEntries(["/learning/search", "/api/pro-learn/handbook", "/api/pro-learn/api-detail"].map(route => [route, ["./content/official/**/*.json"]])),
+  outputFileTracingIncludes: Object.fromEntries(["/learning/search", "/learning/api-docs/*", "/api/pro-learn/handbook"].map(route => [route, ["./content/official/**/*.json"]])),
   // AVIF first (smallest), WebP as the fallback, for every next/image.
   // Supabase Storage holds the Tech Buzz daily covers (stored full size): served through the optimizer so a phone
   // gets a small AVIF instead of the original. Unsplash goes through its own CDN (lib/image-loaders.ts).

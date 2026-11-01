@@ -322,6 +322,18 @@ export async function cachedGeneratedCourse(trackId: string) {
   return loaded;
 }
 
+/** The course's outline with which topics are written, without their content: for links to them from other pages. */
+export async function cachedCourseOutline(trackId: string) {
+  "use cache";
+  cacheTag(courseTag(trackId));
+  cacheLife("hours");
+  const course = await courseRow(trackId);
+  if (course?.status !== "ready") return [];
+  const ready = check(await db().from("generated_course_topics").select("topic_id").eq("track_id", trackId).eq("status", "ready")) as { topic_id: string }[];
+  const written = new Set(ready.map(row => row.topic_id));
+  return course.topics.map(topic => ({ id: topic.id, title: topic.title, written: written.has(topic.id) }));
+}
+
 function ensureConfigured() {
   if (!providerConfigured("gateway")) throw new HttpError(503, "ai_not_configured");
 }

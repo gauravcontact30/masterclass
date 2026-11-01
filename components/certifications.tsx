@@ -1,4 +1,5 @@
 "use client";
+import { RouteH1 } from "@/components/route-heading";
 import Image from "@/components/responsive-image";
 import Link from "next/link";
 import { useId, useMemo, useState, useSyncExternalStore } from "react";
@@ -70,7 +71,7 @@ export function Certifications({ initialTrack }: { initialTrack?: string }) {
     <header className={styles.hero}>
       <div className={styles.heroText}>
         <p className={styles.eyebrow}><Award size={14} aria-hidden="true" />Professional Learn · Certifications</p>
-        <h1>Certification paths, <em>step by step</em></h1>
+        <RouteH1>Certification paths, <em>step by step</em></RouteH1>
         <p>Pick a certification, follow its weekly steps from the first lesson to exam day, and tick each one off as you finish it. Each certificate shows its exam code, format, time and fee, so you know exactly what you are preparing for.</p>
         {resume && <button type="button" className={styles.resume} onClick={() => choose(resume.id, true)}>
           Continue {resume.title}<span>{done[resume.id]!.length} of {resume.steps.length} steps done</span><ArrowRight size={16} aria-hidden="true" />

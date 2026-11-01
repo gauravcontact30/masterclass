@@ -1,4 +1,5 @@
 "use client";
+import { RouteH1 } from "@/components/route-heading";
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { ArrowUpRight, Clock, Coffee, Search, X } from "lucide-react";
@@ -60,7 +61,7 @@ export function CoffeeAndCode({ posts, topics }: Readonly<{ posts: BlogPost[]; t
     <header className={styles.hero}>
       <span className={styles.mark} aria-hidden="true"><Coffee size={22} /></span>
       <div>
-        <h1 id="coffee-title">Coffee & Code</h1>
+        <RouteH1 id="coffee-title">Coffee & Code</RouteH1>
         <p>Short, practical articles you can finish over a coffee: one idea, real code, and the questions interviewers ask about it.</p>
       </div>
     </header>

@@ -1,3 +1,4 @@
+import { RouteH1 } from "@/components/route-heading";
 import Link from "next/link";
 import { Clock3 } from "lucide-react";
 import styles from "./deep-course.module.css";
@@ -24,7 +25,7 @@ export function PreparingCourse({ name, glyph, unavailable = false }: { name: st
   return <div className={styles.main}>
     <header className={styles.hero}>
       <p className={styles.eyebrow}><Link href="/learning/lessons">Lessons</Link> / In-depth course</p>
-      <h1><span aria-hidden="true">{glyph}</span> {name}</h1>
+      <RouteH1><span aria-hidden="true">{glyph}</span> {name}</RouteH1>
     </header>
     <Notice title={unavailable ? "Not available yet" : `The ${name} course is being prepared`}
       lede={unavailable ? MIGRATION : "Every lesson is researched from the official documentation, written and reviewed before it is published. This course will appear here as soon as it is ready."} />

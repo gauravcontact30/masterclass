@@ -3,6 +3,7 @@ import type { ApiDetail } from "./api-docs-details";
 import type { CodeLanguage } from "./code-highlight";
 import type { GeneratedApiDetail } from "./pro-learn/types";
 import type { LearningProject } from "./api-learning-schema";
+import { annotateCode, normalizeCode } from "./annotate-code";
 
 const glossary = [
   { word: "Deterministic", meaning: "Producing the same result for the same inputs and conditions.", sentence:"The team requested deterministic test fixtures so that a failing build could be reproduced.", synonyms: ["predictable", "repeatable"], antonyms: ["nondeterministic", "unpredictable"] },
@@ -13,12 +14,7 @@ const glossary = [
 export function authoredProject(pkg: ApiPackage, entry: ApiEntry, detail: ApiDetail): LearningProject | null {
   if (!detail.code) return null;
   const readme = `# ${entry.name} lab\n\n${detail.description}\n\n${detail.notes.map(note=>`- ${note}`).join("\n")}\n`;
-  if (pkg.id === "python" || PYTHON_PACKAGES.has(pkg.id)) return { title: `${entry.name} in practice`, template:"python", entry:"/main.py", dependencies:{}, files:[{path:"/main.py",code:"from example import run_example\n\nif __name__ == '__main__':\n    run_example()\n"},{path:"/example.py",code:`def run_example():\n${detail.code.split("\n").map(line=>"    "+line).join("\n")}\n`},{path:"/README.md",code:readme}], instructions:["Click Run to execute Python in an isolated browser worker.","To run locally, save all project files and run python main.py."] };
-  if (pkg.id === "javascript") return { title:`${entry.name} data transformation`,template:"vanilla-ts",entry:"/index.ts",dependencies:{},files:[
-    {path:"/index.ts",code:'import { runExample } from "./src/example";\nconst output = document.querySelector("#output")!;\nconst original = console.log;\nconsole.log = (...values) => { original(...values); output.textContent += values.map(value => typeof value === "string" ? value : JSON.stringify(value)).join(" ") + "\\n"; };\nrunExample();'},
-    {path:"/src/example.ts",code:`export function runExample() {\n${detail.code}\n}\n`},
-    {path:"/index.html",code:'<!doctype html><html><head><title>API lab</title></head><body><h1>Live output</h1><pre id="output"></pre><script src="index.ts"></script></body></html>'},
-    {path:"/README.md",code:readme}],instructions:["Click Run. The browser preview and console show the actual result.","Edit src/example.ts and run again to experiment."] };
+  if (PYTHON_PACKAGES.has(pkg.id)) return pythonProject(pkg, entry, detail, readme);
   if (pkg.id === "react") {
     const component = detail.code.match(/export function (\w+)/)?.[1];
     if (!component) return null;
@@ -28,13 +24,103 @@ export function authoredProject(pkg: ApiPackage, entry: ApiEntry, detail: ApiDet
       {path:"/styles.css",code:"body { font-family: system-ui; background:#faf9f5; color:#262624; padding:24px; } button,input { padding:10px 16px; margin:6px; border:1px solid #d1cfc5; border-radius:8px; background:white; } button { cursor:pointer; }"},
       {path:"/README.md",code:readme}],instructions:["Click Run, then interact with the component in Browser output.","Edit the example file to see how the API changes the UI."]};
   }
-  if (pkg.id === 'zustand') return {title:'Shared counter store',template:'react-ts',entry:'/App.tsx',dependencies:{zustand:'5.0.8'},files:[{path:'/src/store.ts',code:detail.code},{path:'/App.tsx',code:'import { useCounter } from "./src/store";\nfunction Count() { const count = useCounter(s => s.count); return <p>Count: {count}</p>; }\nexport default function App() { const add = useCounter(s => s.add); return <main><h1>Shared state</h1><Count/><Count/><button onClick={add}>Add one</button></main>; }'},{path:'/README.md',code:readme}],instructions:['Click Run, then Add one. Both subscribers update from the same store.']};
+  if (pkg.id === 'zustand' && /\buseCount/.test(detail.code)) return {title:'Shared counter store',template:'react-ts',entry:'/App.tsx',dependencies:{zustand:'5.0.8'},files:[{path:'/src/store.ts',code:detail.code},{path:'/App.tsx',code:'import { useCounter } from "./src/store";\nfunction Count() { const count = useCounter(s => s.count); return <p>Count: {count}</p>; }\nexport default function App() { const add = useCounter(s => s.add); return <main><h1>Shared state</h1><Count/><Count/><button onClick={add}>Add one</button></main>; }'},{path:'/README.md',code:readme}],instructions:['Click Run, then Add one. Both subscribers update from the same store.']};
   if (pkg.id === 'nextjs' && /export function (\w+)/.test(detail.code)) return {title:'App Router navigation',template:'nextjs',entry:'/app/page.tsx',dependencies:{next:'16.3.4',react:'19.2.8','react-dom':'19.2.8'},files:[{path:'/package.json',code:JSON.stringify({scripts:{dev:'next dev',build:'next build',start:'next start'},dependencies:{next:'16.3.4',react:'19.2.8','react-dom':'19.2.8'},devDependencies:{typescript:'5.9.3','@types/react':'19.2.2','@types/node':'22.18.6'}})},{path:'/app/layout.tsx',code:'export default function Layout({children}:{children:React.ReactNode}) {return <html lang="en"><body style={{fontFamily:"system-ui",padding:24}}>{children}</body></html>;}'},{path:'/app/page.tsx',code:detail.code+'\nexport default '+(detail.code.match(/export function (\w+)/)?.[1] ?? 'BackToTopics')+';'},{path:'/app/dashboard/techy/page.tsx',code:'import Link from "next/link";\nexport default function Topics() {return <main><h1>Topics</h1><p>The router navigated to this page.</p><Link href="/">Back to the example</Link></main>;}'},{path:'/README.md',code:readme}],instructions:['Click Run to start the Next.js runtime. The first boot can take a minute.','Click Topics to navigate to the included destination page. Locally: npm install, then npm run dev.']};
   if (pkg.id === 'angular') {
     const example = entry.name === 'HttpClient' ? `import {Component, inject} from '@angular/core';\nimport {HttpClient} from '@angular/common/http';\n@Component({selector:'app-root',standalone:true,template:'<h1>HttpClient</h1><button (click)="load()">Load users</button><pre>{{result}}</pre>'})\nexport class AppComponent { private http=inject(HttpClient); result='Click Load users'; load(){ this.http.get('/api/users').subscribe({next:users=>this.result=JSON.stringify(users,null,2),error:()=>this.result='Request failed'}); } }` : `import {Component,signal,computed} from '@angular/core';\n@Component({selector:'app-root',standalone:true,template:'<h1>Signals</h1><button (click)="add()">Count: {{count()}}</button><p>Doubled: {{doubled()}}</p>'})\nexport class AppComponent { count=signal(0); doubled=computed(()=>this.count()*2); add(){this.count.update(n=>n+1);} }`;
     return {title:`${entry.name} Angular application`,template:'angular',entry:'/src/app/app.component.ts',dependencies:{'@angular/core':'19.2.0','@angular/common':'19.2.0','@angular/compiler':'19.2.0','@angular/platform-browser':'19.2.0','@angular/platform-browser-dynamic':'19.2.0',rxjs:'7.8.2','zone.js':'0.15.1'},files:[{path:'/src/app/app.component.ts',code:example},{path:'/src/main.ts',code:"import 'zone.js';\nimport '@angular/compiler';\nimport {bootstrapApplication} from '@angular/platform-browser';\nimport {provideHttpClient,withInterceptors,HttpResponse} from '@angular/common/http';\nimport {of} from 'rxjs';\nimport {users} from './data';\nimport {AppComponent} from './app/app.component';\nbootstrapApplication(AppComponent,{providers:[provideHttpClient(withInterceptors([request=>of(new HttpResponse({body:users,status:200}))]))]}).catch(console.error);"},{path:'/src/index.html',code:'<!doctype html><html><head><title>Angular API lab</title><base href="/"></head><body><app-root></app-root></body></html>'},{path:'/src/polyfills.ts',code:"import 'zone.js';"},{path:'/src/data.ts',code:'export const users = [{id:1,name:"Ada"},{id:2,name:"Lin"}];'},{path:'/README.md',code:readme}],instructions:['Click Run to build the complete Angular example.','The HTTP example uses a fixture interceptor with the included data.ts records; the signal example updates reactive state.']};
   }
-  return null;
+  return scriptProject(pkg, entry, detail, readme);
+}
+
+/** Packages Pyodide ships (or that need nothing beyond it) whose examples print real results in the browser. */
+const BROWSER_PYTHON = new Set(["python", "numpy", "pandas", "polars", "scipy", "sklearn", "pydantic"]);
+/** Pure JavaScript packages that run in the browser bundler. Others need a server, a database or an account. */
+const BROWSER_SCRIPT = new Set(["javascript", "jspuzzles", "typescript", "zod", "zustand", "redux", "tanstack", "conform", "graphql"]);
+const PIP_NAME: Record<string, string> = { sklearn: "scikit-learn", PIL: "pillow", yaml: "pyyaml", bs4: "beautifulsoup4", cv2: "opencv-python" };
+const PYTHON_STANDARD = /^(?:abc|argparse|array|ast|asyncio|base64|bisect|calendar|collections|contextlib|copy|csv|dataclasses|datetime|decimal|enum|fractions|functools|glob|hashlib|heapq|html|http|inspect|io|itertools|json|logging|math|operator|os|pathlib|pickle|queue|random|re|secrets|shutil|signal|sqlite3|statistics|string|struct|subprocess|sys|tempfile|textwrap|threading|time|timeit|traceback|types|typing|unittest|urllib|uuid|warnings|weakref|zipfile|__future__)$/;
+
+function pythonRequirements(code: string) {
+  const roots = [...code.matchAll(/^\s*(?:from|import)\s+([A-Za-z_]\w*)/gm)].map(match => match[1]);
+  return [...new Set(roots)].filter(root => !PYTHON_STANDARD.test(root)).map(root => PIP_NAME[root] ?? root.replaceAll("_", "-"));
+}
+
+/** Full example, runner, requirements and notes. The example runs exactly as written, not wrapped in a function. */
+function pythonProject(pkg: ApiPackage, entry: ApiEntry, detail: ApiDetail, readme: string): LearningProject {
+  const code = normalizeCode(detail.code, "python");
+  const requirements = pythonRequirements(code);
+  const runs = BROWSER_PYTHON.has(pkg.id) && detail.language !== "bash" && !/\b(?:requests|httpx|urllib\.request|socket)\b/.test(code);
+  return {
+    title: `${entry.name} in practice`, template: runs ? "python" : "local", entry: "/main.py", dependencies: {},
+    files: [
+      { path: "/main.py", code: 'import runpy\n\n# Runs example.py as a script, so its prints appear in the console.\nrunpy.run_path("example.py", run_name="__main__")\n' },
+      { path: "/example.py", code },
+      { path: "/example_explained.py", code: annotateCode(code, "python") },
+      { path: "/requirements.txt", code: requirements.length ? `${requirements.join("\n")}\n` : "# Standard library only\n" },
+      { path: "/README.md", code: readme },
+    ],
+    instructions: runs
+      ? ["Press Run: the code executes in an isolated browser worker and the console shows its real output.", "The first run downloads the Python runtime and packages, which can take up to a minute.", `To run it on your machine: ${requirements.length ? "pip install -r requirements.txt, then " : ""}python main.py`]
+      : [`${pkg.name} needs a native runtime, a network or a server, so this example runs on your machine, not in the browser.`, `${requirements.length ? "pip install -r requirements.txt" : "No packages to install"}, then python main.py`],
+  };
+}
+
+const CONSOLE_CAPTURE = `const output = document.querySelector("#output")!;
+const show = (value: unknown) => typeof value === "string" ? value : JSON.stringify(value, null, 2) ?? String(value);
+for (const level of ["log", "info", "warn", "error"] as const) {
+  const original = console[level].bind(console);
+  console[level] = (...values: unknown[]) => { original(...values); output.textContent += values.map(show).join(" ") + "\\n"; };
+}
+window.addEventListener("error", event => { output.textContent += \`Error: \${event.message}\\n\`; });
+window.addEventListener("unhandledrejection", event => { output.textContent += \`Error: \${event.reason}\\n\`; });
+setTimeout(() => { if (!output.textContent) output.textContent = "Finished. This example prints nothing."; }, 1500);
+`;
+
+/** The npm packages a script imports, for the bundler and package.json. */
+function scriptPackages(code: string) {
+  const names = [...code.matchAll(/(?:\bfrom\s+|\bimport\s+|\brequire\()["']([^"'.\/][^"']*)["']/g)].map(match => match[1]);
+  return [...new Set(names.filter(name => !name.startsWith("node:")).map(name => name.split("/").slice(0, name.startsWith("@") ? 2 : 1).join("/")))];
+}
+
+/** A TypeScript or JavaScript example as a complete project: runs in the browser where that is possible, else on the learner's machine. */
+function scriptProject(pkg: ApiPackage, entry: ApiEntry, detail: ApiDetail, readme: string): LearningProject | null {
+  const language = detail.language === "javascript" ? "javascript" : detail.language === "typescript" ? "typescript" : null;
+  if (!language) {
+    if (detail.language === "tsx" || detail.language === "jsx") {
+      const extension = detail.language;
+      return { title: `${entry.name} in practice`, template: "local", entry: `/src/example.${extension}`, dependencies: {}, files: [
+        { path: `/src/example.${extension}`, code: normalizeCode(detail.code, detail.language) },
+        { path: "/package.json", code: `${JSON.stringify({ name: "api-lab", private: true, dependencies: Object.fromEntries(scriptPackages(detail.code).map(name => [name, "latest"])) }, null, 2)}\n` },
+        { path: "/README.md", code: readme },
+      ], instructions: ["This component renders inside your own app, so it runs on your machine, not in this page.", "Install the packages in package.json, then import the component from a page of your project."] };
+    }
+    return null;
+  }
+  const code = normalizeCode(detail.code, language);
+  const packages = scriptPackages(code);
+  const dependencies = Object.fromEntries(packages.map(name => [name, "latest"]));
+  const extension = language === "javascript" ? "js" : "ts";
+  const browser = BROWSER_SCRIPT.has(pkg.id) && !/\bprocess\.|\bnode:|\brequire\(/.test(code) && !packages.includes("react");
+  const shared = [
+    { path: `/src/example.${extension}`, code },
+    { path: `/src/example_explained.${extension}`, code: annotateCode(code, language) },
+    { path: "/README.md", code: readme },
+  ];
+  if (browser) return {
+    title: `${entry.name} in practice`, template: "vanilla-ts", entry: "/index.ts", dependencies,
+    files: [
+      { path: "/index.ts", code: 'import "./src/console";\nimport "./src/example";\n' },
+      ...shared,
+      { path: "/src/console.ts", code: CONSOLE_CAPTURE },
+      { path: "/index.html", code: '<!doctype html><html><head><meta charset="utf-8"><title>Output</title><style>body{margin:0;background:#fff}pre{margin:0;padding:14px;font:13px/1.7 ui-monospace,SFMono-Regular,Menlo,monospace;color:#1d1d1f;white-space:pre-wrap}</style></head><body><pre id="output"></pre><script src="index.ts"></script></body></html>' },
+    ],
+    instructions: ["Press Run: the code builds in the browser and its real console output appears below.", "Edit src/example, press Save, and the output updates."],
+  };
+  return {
+    title: `${entry.name} in practice`, template: "local", entry: `/src/example.${extension}`, dependencies,
+    files: [...shared, { path: "/package.json", code: `${JSON.stringify({ name: "api-lab", private: true, type: "module", dependencies }, null, 2)}\n` }],
+    instructions: [`${pkg.name} needs a server, a database or an account, so this example runs on your machine, not in the browser.`, `npm install, then npx tsx src/example.${extension}`],
+  };
 }
 
 // Python-ecosystem packages render their examples as Python; everything else as TypeScript.

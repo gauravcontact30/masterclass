@@ -1,4 +1,5 @@
 "use client";
+import { RouteH1 } from "@/components/route-heading";
 import { AccordionChevron, AccordionSummary } from "@/components/ui/accordion-chevron";
 
 import learningCard from "./learning-card.module.css";
@@ -732,7 +733,7 @@ export function StepByStep({ initialQuestion = "", technologies = [] }: { initia
       <header className={styles.pageHead}>
         <div>
           <p className={styles.eyebrow}><span aria-hidden="true">✳</span>On The Go</p>
-          <h1 id={`${ids}-title`}>Your step-by-step cards</h1>
+          <RouteH1 id={`${ids}-title`}>Your step-by-step cards</RouteH1>
         </div>
         <span className={styles.count} aria-live="polite">{visible.length ? `Showing ${first + 1}–${first + shown.length} of ${visible.length}` : "No cards"}</span>
       </header>

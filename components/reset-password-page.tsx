@@ -1,4 +1,5 @@
 "use client";
+import { RouteH1 } from "@/components/route-heading";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { ExpandedText } from "@/components/expanded-text";
@@ -67,13 +68,13 @@ export function ResetPasswordPage() {
           {status === "missing" ? (
             <section className={styles.notice}>
               <span className={styles.noticeIcon}><KeyRound size={20} aria-hidden="true" /></span>
-              <h1 className={styles.title}><ExpandedText text={hi ? "रीसेट लिंक काम नहीं कर रहा" : "This reset link is not active"} /></h1>
+              <RouteH1 className={styles.title}><ExpandedText text={hi ? "रीसेट लिंक काम नहीं कर रहा" : "This reset link is not active"} /></RouteH1>
               <p className={styles.lead}><ExpandedText text={hi ? "लिंक समाप्त हो गया है, पहले उपयोग हो चुका है, या किसी दूसरे ब्राउज़र में खोला गया है। साइन-इन पेज पर “पासवर्ड भूल गए?” से नया लिंक मँगवाएँ।" : "It has expired, was already used, or was opened in a different browser. Ask for a new one with “Forgot password?” on the sign-in page."} /></p>
               <Link className={styles.switchLink} href="/sign-in"><ExpandedText text={t("signin")} /><ArrowUpRight size={15} aria-hidden="true" /></Link>
             </section>
           ) : (
             <section>
-              <h1 className={styles.title}><ExpandedText text={hi ? "नया पासवर्ड चुनें" : "Choose a new password"} /></h1>
+              <RouteH1 className={styles.title}><ExpandedText text={hi ? "नया पासवर्ड चुनें" : "Choose a new password"} /></RouteH1>
               <p className={styles.lead}><ExpandedText text={hi ? "वह पासवर्ड सेट करें जिससे आप आगे अपने ईमेल के साथ साइन इन करेंगे।" : "Set the password you will use with your email to sign in from now on."} /></p>
               {message && <p className={`error-banner ${styles.error}`} role="alert"><ExpandedText text={message} /></p>}
               {error && <p className={`error-banner ${styles.error}`} role="alert"><ExpandedText text={t(error)} /></p>}

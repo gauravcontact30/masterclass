@@ -3,14 +3,8 @@ import { validatedAiJson } from "./ai-json";
 import { availableProviders, learningProvider, completeWithFallback, providerConfigured, providerModel, providerRateLimited, providerRefused, type AiProvider, type ProviderCompletion } from "./ai-providers";
 import { createHash } from "node:crypto";
 import type { z } from "zod";
-import { enrichApiLearning } from "@/lib/api-learning";
-import { catalogReference } from "./api-reference-fallback";
-import { officialApiCard } from "./official-content";
-import { officialApiDetail } from "@/lib/official-content/apply";
-import { API_DETAILS } from "@/lib/api-docs-details";
-import { API_PACKAGES, API_TYPES } from "@/lib/api-docs";
 import { TECHY_TOPICS } from "@/lib/techy-content";
-import { apiDetailSchema, generatedInterviewSchema, INTERVIEW_BANK, lessonSchema, quizQuestionSchema, searchAnswerSchema, trackById, type ContentSource, type GeneratedApiDetail, type GeneratedInterview, type MentorMessage, type ProTrack, type QuizQuestion, type SearchAnswer } from "@/lib/pro-learn/types";
+import { apiDetailSchema, generatedInterviewSchema, INTERVIEW_BANK, lessonSchema, quizQuestionSchema, searchAnswerSchema, trackById, type ContentSource, type GeneratedInterview, type MentorMessage, type ProTrack, type QuizQuestion, type SearchAnswer } from "@/lib/pro-learn/types";
 import { databaseConfigured } from "./config";
 import { HttpError } from "./http";
 import { rateLimit } from "./rate-limit";
@@ -76,47 +70,6 @@ function generationFailureReason(failure: unknown) {
   if (providerRefused(failure)) return "ai_provider_unavailable";
   if (failure instanceof Error && /timeout|timed out/i.test(`${failure.name} ${failure.message}`)) return "reference_timeout";
   return "reference_unavailable";
-}
-
-export async function apiDetail(packageId: string, name: string, signal?: AbortSignal, provider?: AiProvider): Promise<{ detail: GeneratedApiDetail; source: ContentSource; reason?: string; provider?: AiProvider }> {
-  const pkg = API_PACKAGES.find(item => item.id === packageId), entry = pkg?.entries.find(item => item.name === name);
-  if (!pkg || !entry) throw new HttpError(404, "not_found");
-  const curated = API_DETAILS[`${packageId}:${name}`];
-  if (curated) return {detail:enrichApiLearning(pkg,entry,curated),source:"library"};
-  // Written offline from the entry's official page and verified against it.
-  const official = officialApiCard(packageId, name);
-  if (official) return { detail: enrichApiLearning(pkg, entry, officialApiDetail(official, catalogReference(pkg, entry))), source: "library" };
-  // Only 13 of the catalog's identifiers are hand-authored, so an unavailable or
-  // failing model must not leave the page with no reference at all: fall back to
-  // the catalog summary the client already labels as such, with a retry button.
-  const fallback = (reason: string) => ({ detail: enrichApiLearning(pkg, entry, catalogReference(pkg, entry)), source: "library" as const, reason });
-  const chosen = provider ?? learningProvider();
-  if (!chosen || !aiAvailable(chosen)) return fallback("ai_unavailable");
-  const cacheKey = `ai:pro-learn:api-detail:${createHash("sha256").update(`${packageId}:${name}:${chosen}`).digest("hex")}`;
-  try {
-    const cached = stripCitationsDeep(await cacheGet<GeneratedApiDetail>(cacheKey));
-    if (cached) return { detail: enrichApiLearning(pkg, entry, cached), source: "ai", provider: chosen };
-  } catch {}
-  const kind = API_TYPES.find(type => type.k === entry.kind)?.label ?? "symbol";
-  try {
-    const { value: detail, completion } = await completeJson(chosen, referenceGenerationSchema, "You write precise, current API reference pages for software engineers, in the calm style of high-quality framework reference docs.",
-      `Document the identifier ${JSON.stringify(name)} from ${pkg.name} (${pkg.description}). It is a ${kind}. Reflect the latest stable behaviour and idioms.
-JSON shape: {"packageName":"import path or package","description":"1-2 sentence summary (backticks for code)","since":"release or version when relevant, else empty","signature":"real TypeScript/Python signature or declaration, multi-line allowed","parameters":[{"name":"","type":"","description":""}],"returns":"return type and meaning","notes":["4-7 crisp key points: mental model, gotchas, performance, recent changes"],"useCases":["3-5 concrete scenarios"],"descriptionLong":"one or two fuller paragraphs","code":"one realistic, modern usage example","related":["related identifier names from ${pkg.name}"]}
-Also include:
-"vocabulary": 4 context-relevant difficult workplace words, each {"word":"","meaning":"","sentence":"natural corporate sentence using the word","synonyms":[""],"antonyms":[""],"examples":[]}.
-"subjective": 4 substantive interview questions each {"question":"","answer":"complete correct answer with example","followUp":"similar question including a concise answer"}.
-"objective": 3 questions each {"question":"","options":["","","",""],"answer":0,"explanation":"why this answer is correct and a related variation"}. Vary correct indexes. Do not claim verified interview frequency.
-"project": {"title":"","template":"react-ts|vanilla-ts|angular|vue|node|nextjs|python|local","entry":"/path","files":[{"path":"/path","code":"complete runnable source"}],"dependencies":{},"instructions":["exact run/setup steps"]}.
-The project MUST have 2-8 files including README.md, with ALL imported local files present and complete code, no ellipses, TODOs, missing secrets or external service dependency. Use a real working in-memory fixture where data is needed. Supply concrete package versions. React projects use /App.tsx; vanilla-ts uses /index.ts plus /index.html with a module script; Next.js uses complete app/layout.tsx, app/page.tsx and package.json. Python browser projects use /main.py and Pyodide-supported packages only; native servers, GPUs and unsupported packages use template local with complete setup instructions and requirements. Choose an appropriate actual runtime, never pretend a framework feature runs in plain JavaScript. The example must exercise this exact identifier. Keep each source file under 100 lines.
-For concepts that are not code symbols, explain the idea and provide a runnable demonstration.`, 9500, signal);
-    if (!detail.project || !detail.vocabulary.length || !detail.subjective.length || !detail.objective.length) throw new Error("incomplete_learning_page");
-    void cacheSet(cacheKey, detail, 86400 * 7);
-    return { detail:enrichApiLearning(pkg,entry,detail), source: "ai", provider: completion.provider };
-  } catch (failure) {
-    if (signal?.aborted) throw failure;
-    logFailure("api-detail", failure);
-    return fallback(generationFailureReason(failure));
-  }
 }
 
 /* ---------------- Lessons ---------------- */

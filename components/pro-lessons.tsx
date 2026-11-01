@@ -1,5 +1,6 @@
 "use client";
 
+import { RouteH1 } from "@/components/route-heading";
 import learningCard from "./learning-card.module.css";
 import { LearningPicture } from "@/components/learning-picture";
 import { learningImageUrl } from "@/lib/learning-image";
@@ -52,7 +53,7 @@ function Reader({ lesson, track, siblings, done, builtIn, onToggleDone, onBack, 
     </div>
     <article className={styles.article}>
       <p className={styles.eyebrow}><BrandOrGlyph label={track.name} glyph={track.icon} size={14}/> {track.name} · {lesson.tag}</p>
-      <h1>{lesson.title}</h1>
+      <RouteH1>{lesson.title}</RouteH1>
       {builtIn && <LearningPicture src={learningImageUrl("lessons", [lesson.track, lesson.id])} alt={`Illustration of ${lesson.title}`} />}
       <div className={styles.articleMeta}><span className={styles.level} data-level={lesson.level}>{lesson.level}</span><span className={styles.cat}>{lesson.minutes} min read</span></div>
       <p className={styles.lead}>{lesson.lead || lesson.summary}</p>

@@ -1,4 +1,5 @@
 "use client";
+import { RouteH1 } from "@/components/route-heading";
 import { AccordionChevron } from "@/components/ui/accordion-chevron";
 
 import { ImportedDocumentation } from "./documentation-refresh";
@@ -428,7 +429,7 @@ export function OfficialDocs() {
         </div>
         <div className={styles.headTitleRow}>
           <div>
-            <h1 className={styles.heading}>Official Documentation Hub</h1>
+            <RouteH1 className={styles.heading}>Official Documentation Hub</RouteH1>
             <p className={styles.subheading}>
               Key concepts for {OFFICIAL_DOCS.length} technologies, with learning objectives, highlighted takeaways, and rated questions with answers.
             </p>

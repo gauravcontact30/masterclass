@@ -333,3 +333,11 @@
     padding: 14px;
   }
 }
+
+/* Parameters and the return value: one light colour each. */
+.parameter:nth-child(6n + 1) { background: #f4f1fb; border-color: #e2daf3; }
+.parameter:nth-child(6n + 2) { background: #eef6f1; border-color: #d4e8da; }
+.parameter:nth-child(6n + 3) { background: #fdf4e7; border-color: #f3e0c3; }
+.parameter:nth-child(6n + 4) { background: #edf4fc; border-color: #d3e3f5; }
+.parameter:nth-child(6n + 5) { background: #fcf0f2; border-color: #f4d9de; }
+.parameter:nth-child(6n) { background: #effafa; border-color: #d0ecec; }

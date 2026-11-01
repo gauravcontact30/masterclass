@@ -1,4 +1,5 @@
 "use client";
+import { RouteH1 } from "@/components/route-heading";
 import { AccordionChevron, AccordionSummary } from "@/components/ui/accordion-chevron";
 
 import { useState, useMemo, useCallback, type CSSProperties } from "react";
@@ -894,7 +895,7 @@ export function AgenticWorkflowDashboard() {
         </div>
         <div className={styles.headTitleRow}>
           <div>
-            <h1 className={styles.heading}>Agentic Workflow Architecture &amp; Runtime Systems</h1>
+            <RouteH1 className={styles.heading}>Agentic Workflow Architecture &amp; Runtime Systems</RouteH1>
             <p className={styles.subheading}>
               Definitive technical specification and execution mechanics for stateful Single-Agent and Multi-Agent topologies. Built on modern{" "}
               <strong>LangChain v0.3+</strong>, <strong>LangGraph v0.2+</strong>, and <strong>LangSmith v0.2+</strong> runtime primitives.

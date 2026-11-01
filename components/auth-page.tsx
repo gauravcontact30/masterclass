@@ -1,4 +1,5 @@
 "use client";
+import { RouteH1 } from "@/components/route-heading";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { ExpandedText } from "@/components/expanded-text";
@@ -190,14 +191,14 @@ export function AuthPage({ mode, enabled, initialEmail = "", redirectTo, linkErr
           {!enabled ? (
             <section className={styles.notice}>
               <span className={styles.noticeIcon}><Settings2 size={20} aria-hidden="true" /></span>
-              <h1 className={styles.title}><ExpandedText text={t("setupTitle")} /></h1>
+              <RouteH1 className={styles.title}><ExpandedText text={t("setupTitle")} /></RouteH1>
               <p className={styles.lead}><ExpandedText text={t("setupHelp")} /></p>
               <Link className={styles.switchLink} href="/"><ExpandedText text={t("dashboard")} /></Link>
             </section>
           ) : linkSent ? (
             <section className={styles.notice}>
               <span className={styles.noticeIcon}><MailCheck size={20} aria-hidden="true" /></span>
-              <h1 className={styles.title}><ExpandedText text={hi ? "अपना ईमेल देखें" : "Check your email"} /></h1>
+              <RouteH1 className={styles.title}><ExpandedText text={hi ? "अपना ईमेल देखें" : "Check your email"} /></RouteH1>
               <p className={styles.lead}><ExpandedText text={linkSent === "reset"
                 ? (hi ? `अगर ${email.trim()} से कोई खाता है, तो हमने उस पर पासवर्ड रीसेट लिंक भेजा है। उसी ब्राउज़र में लिंक खोलें और नया पासवर्ड चुनें (स्पैम फ़ोल्डर भी देखें)।` : `If an account exists for ${email.trim()}, we have sent it a password reset link. Open it in this browser to choose a new password (check spam too).`)
                 : (hi ? `अगर ${email.trim()} से कोई खाता है, तो हमने उस पर साइन-इन लिंक भेजा है। लिंक खोलकर साइन इन करें।` : `If an account exists for ${email.trim()}, we have sent it a sign-in link. Open the link to sign in.`)} /></p>
@@ -205,7 +206,7 @@ export function AuthPage({ mode, enabled, initialEmail = "", redirectTo, linkErr
             </section>
           ) : forgot ? (
             <section>
-              <h1 className={styles.title}><ExpandedText text={hi ? "पासवर्ड रीसेट करें" : "Reset your password"} /></h1>
+              <RouteH1 className={styles.title}><ExpandedText text={hi ? "पासवर्ड रीसेट करें" : "Reset your password"} /></RouteH1>
               <p className={styles.lead}><ExpandedText text={hi ? "अपने खाते का ईमेल लिखें। हम उस पर एक लिंक भेजेंगे जिससे आप नया पासवर्ड चुन सकेंगे।" : "Enter the email for your account and we will send you a link to choose a new password."} /></p>
               {!error && linkError === "reset_expired" && <p className={`error-banner ${styles.error}`} role="alert"><ExpandedText text={LINK_ERRORS.reset_expired[hi ? 1 : 0]} /></p>}
               {error && <p className={`error-banner ${styles.error}`} role="alert"><ExpandedText text={t(error)} /></p>}
@@ -221,7 +222,7 @@ export function AuthPage({ mode, enabled, initialEmail = "", redirectTo, linkErr
           ) : sent ? (
             <section className={styles.notice}>
               <span className={styles.noticeIcon}><MailCheck size={20} aria-hidden="true" /></span>
-              <h1 className={styles.title}><ExpandedText text={t("confirmTitle")} /></h1>
+              <RouteH1 className={styles.title}><ExpandedText text={t("confirmTitle")} /></RouteH1>
               <p className={styles.lead}><ExpandedText text={t("confirmBody")} /></p>
               <p className={styles.lead}><ExpandedText text={hi ? `ईमेल: ${email.trim()}। ईमेल नहीं मिला? स्पैम फ़ोल्डर देखें या फिर से भेजें।` : `Sent to ${email.trim()}. Nothing arrived? Check your spam folder, or send it again.`} /></p>
               <p className={styles.switchRow}>{resendButton}</p>
@@ -229,7 +230,7 @@ export function AuthPage({ mode, enabled, initialEmail = "", redirectTo, linkErr
             </section>
           ) : (
             <section>
-              <h1 className={styles.title}><ExpandedText text={t(mode === "signin" ? "signinTitle" : "signupTitle")} /></h1>
+              <RouteH1 className={styles.title}><ExpandedText text={t(mode === "signin" ? "signinTitle" : "signupTitle")} /></RouteH1>
               <p className={styles.lead}><ExpandedText text={t(mode === "signin" ? "signinHelp" : "signupHelp")} /></p>
               {mode === "signup" && <p className={styles.trial}><ExpandedText text={hi ? "हर नया खाता 1 दिन के निःशुल्क ट्रायल से शुरू होता है: पूरी पहुँच, कोई कार्ड नहीं।" : "Every new account starts with a 1-day free trial: full access, no card needed."} /></p>}
               <LearningSlot surface={mode === "signin" ? "sign_in" : "sign_up"} page={mode === "signin" ? "sign-in" : "sign-up"} section="above-form" />

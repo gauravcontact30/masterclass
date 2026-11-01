@@ -1,5 +1,6 @@
 "use client";
 
+import { RouteH1 } from "@/components/route-heading";
 import { useCallback, useEffect, useRef, useState, type ChangeEvent, type ReactNode } from "react";
 import Image from "@/components/responsive-image";
 import Link from "next/link";
@@ -391,7 +392,7 @@ function StoryPreview({ story, authorName, technology, words }: { story: InkStor
   return <article className={styles.preview}>
     {story.coverImage && <span className={styles.coverImage}><Image src={story.coverImage} alt="" fill sizes="(max-width: 800px) 100vw, 720px" /></span>}
     <p className={styles.previewMeta}>{technology} · {Math.max(1, Math.round(words / 220))} min read · by {authorName}</p>
-    <h1>{story.title || "Untitled story"}</h1>
+    <RouteH1>{story.title || "Untitled story"}</RouteH1>
     {story.subtitle && <p className={styles.previewSubtitle}>{story.subtitle}</p>}
     {story.summaryBullets.length > 0 && <ul className={styles.previewTakeaways}>{story.summaryBullets.map((item, i) => <li key={i}>{item}</li>)}</ul>}
     {story.sections.map((section, i) => <section key={i}>

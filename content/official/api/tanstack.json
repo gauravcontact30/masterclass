@@ -5713,6 +5713,84 @@
   ],
   "checkedAt": "2026-10-15"
  },
+ "useQuery": {
+  "sourceUrl": "https://tanstack.com/query/latest/docs/framework/react/reference/functions/useQuery",
+  "sourceTitle": "useQuery | TanStack Query React Docs",
+  "summary": "useQuery runs and observes an asynchronous query identified by a queryKey, returning its current data, status, and error state. It integrates query-function execution with TanStack Query's caching and client configuration.",
+  "explanation": "useQuery accepts query options and returns the current query result. The query key identifies the cached request, while the query function obtains data asynchronously; changing the key can cause the query to update, and an optional QueryClient selects a custom client.",
+  "syntax": "function useQuery<TQueryFnData = unknown, TError = Error, TData = TQueryFnData, TQueryKey extends readonly unknown[] = readonly unknown[]>(options: UseQueryOptions<TQueryFnData, TError, TData, TQueryKey>, queryClient?: QueryClient): UseQueryResult<TData, TError>",
+  "parameters": [
+   {
+    "name": "options",
+    "type": "DefinedInitialDataOptions | UndefinedInitialDataOptions | UseQueryOptions",
+    "description": "Options object containing queryKey, queryFn, and other query configuration."
+   },
+   {
+    "name": "queryClient",
+    "type": "QueryClient",
+    "description": "Optional custom client; otherwise the nearest context client is used."
+   }
+  ],
+  "returns": "A query result containing status, data, error, and convenience state flags; the exact result type depends on whether initialData is known to be defined.",
+  "example": {
+   "title": "Fetch and render todos",
+   "code": "import { useQuery } from '@tanstack/react-query'\n\nasync function fetchTodos() {\n  const response = await fetch('/api/todos')\n  if (!response.ok) throw new Error('Request failed')\n  return response.json() as Promise<{ id: number; title: string }[]>\n}\n\nexport function TodoList() {\n  const { data, isPending, isError, error } = useQuery({\n    queryKey: ['todos'],\n    queryFn: fetchTodos,\n  })\n\n  if (isPending) return <p>Loading…</p>\n  if (isError) return <p>{error.message}</p>\n  return <ul>{data.map(todo => <li key={todo.id}>{todo.title}</li>)}</ul>\n}",
+   "language": "tsx",
+   "explanation": "This component declares a cached todos query and renders according to its current result state."
+  },
+  "useCases": [
+   {
+    "title": "Fetch server data",
+    "scenario": "Load remote resources such as todo lists or user profiles while exposing loading and error states."
+   },
+   {
+    "title": "Dependent queries",
+    "scenario": "Represent requests whose inputs depend on another value by combining enabled with a query key."
+   },
+   {
+    "title": "Choose a query client",
+    "scenario": "Reuse a specific cache and configuration boundary by passing a custom QueryClient."
+   }
+  ],
+  "related": [
+   "Query Keys",
+   "QueryFunctionContext",
+   "QueryClient",
+   "useQueries",
+   "Query Options"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What are the essential inputs to useQuery?",
+    "answer": "useQuery declares a query from an options object and returns its current result. The queryKey identifies the query, and queryFn performs the asynchronous request.",
+    "followUp": "What happens when the key changes? The query automatically updates when the key changes, provided enabled is not false."
+   },
+   {
+    "question": "What contract does queryFn have?",
+    "answer": "The query function receives a QueryFunctionContext and must return a promise that resolves the data or throws an error. It is required unless a default query function exists.",
+    "followUp": "Can the query function resolve undefined? No; the documentation states that query data cannot be undefined."
+   },
+   {
+    "question": "How do initialData and QueryClient affect the result?",
+    "answer": "The overload with defined initialData produces a result whose data is available up front, while the ordinary overload may produce undefined data. A custom QueryClient can be supplied; otherwise the nearest context client is used.",
+    "followUp": "Why prefer a directly written options object? It lets TypeScript infer whether initialData guarantees defined data."
+   }
+  ],
+  "keyPoints": [
+   "queryKey is the identity used to locate and cache a query.",
+   "Changing queryKey can trigger an updated query unless the query is disabled.",
+   "enabled controls whether the query starts automatically and can support dependent queries.",
+   "staleTime defines how long fetched data remains fresh.",
+   "The optional QueryClient argument lets a call use a particular client instead of the nearest context client."
+  ],
+  "gotchas": [
+   "The query function must resolve data or throw an error; it must not silently return an invalid result.",
+   "A query function cannot resolve to undefined.",
+   "Using an object literal with known initialData gives more precise result typing than broadly typing the options."
+  ],
+  "checkedAt": "2026-11-01"
+ },
  "useQueryClient": {
   "sourceUrl": "https://tanstack.com/query/latest/docs/framework/react/reference/functions/useQueryClient",
   "sourceTitle": "useQueryClient | TanStack Query React Docs",

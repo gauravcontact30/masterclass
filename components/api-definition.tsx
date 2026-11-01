@@ -1,19 +1,13 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Boxes, Check, Copy, FileCode2, MessageSquareText, PackageOpen, Shapes } from "lucide-react";
-import { annotateCode, importLines, isBuiltIn, kindInfo, normalizeCode } from "@/lib/annotate-code";
+import { Check, Copy, FileCode2, PackageOpen, Shapes } from "lucide-react";
+import { importLines, isBuiltIn, kindInfo, normalizeCode } from "@/lib/annotate-code";
 import { highlightLines, type CodeLanguage } from "@/lib/code-highlight";
 import { KeyText } from "./key-text";
 import styles from "./api-definition.module.css";
 
 type Parameter = { name: string; type: string; description: string };
-
-function fileName(base: string, language: CodeLanguage, code: string) {
-  if (language === "python") return `${base}.py`;
-  if (language === "javascript") return `${base}.js`;
-  return /<\/?[A-Za-z]/.test(code) ? `${base}.tsx` : `${base}.ts`;
-}
 
 function CodeBlock({ code, language, label }: { code: string; language: CodeLanguage; label: string }) {
   const [copied, setCopied] = useState(false);
@@ -70,8 +64,7 @@ function CodeBlock({ code, language, label }: { code: string; language: CodeLang
 
 /**
  * The reference half of the Definition section: what the identifier is, how
- * to import it, its complete syntax, and the example twice, clean and with a
- * short comment on each line.
+ * to import it and its complete syntax. The worked example is in the Example code section.
  */
 export function ApiDefinitionCards({
   name,
@@ -84,7 +77,6 @@ export function ApiDefinitionCards({
   code,
   language,
   missingSignature,
-  missingExample,
 }: {
   name: string;
   kindLabel: string;
@@ -96,11 +88,14 @@ export function ApiDefinitionCards({
   code: string;
   language: CodeLanguage;
   missingSignature: string;
-  missingExample: string;
 }) {
   const example = useMemo(() => (code ? normalizeCode(code, language) : ""), [code, language]);
-  const annotated = useMemo(() => (example ? annotateCode(example, language) : ""), [example, language]);
-  const imports = useMemo(() => (example ? importLines(example, name) : []), [example, name]);
+  // An identifier reached through an alias (pl.lit) has no import of its own, so the example's imports stand in.
+  const imports = useMemo(() => {
+    if (!example) return [];
+    const own = importLines(example, name);
+    return own.length ? own : example.split("\n").filter(line => /^(?:import|from)\s/.test(line)).slice(0, 3);
+  }, [example, name]);
   const builtIn = isBuiltIn(packageName);
   const kind = kindInfo(kindLabel, packageName, signature);
   const cleanSignature = signature ? normalizeCode(signature, language) : "";
@@ -156,7 +151,7 @@ export function ApiDefinitionCards({
           </p>
         ) : (
           <p className={styles.cardText}>
-            Import <code>{name}</code> from <code>{packageName}</code>. The exact path is shown in the official reference.
+            <code>{name}</code> comes from <code>{packageName}</code>.
           </p>
         )}
       </section>
@@ -195,31 +190,6 @@ export function ApiDefinitionCards({
         )}
       </section>
 
-      <section id="api-example" className={`${styles.card} ${styles.wide}`} data-tone="sage" aria-labelledby="api-example-title">
-        <h3 id="api-example-title" className={styles.cardTitle}>
-          <span className={styles.cardIcon} aria-hidden="true">
-            <Boxes size={15} />
-          </span>
-          Example
-        </h3>
-        {example ? (
-          <CodeBlock code={example} language={language} label={fileName("example", language, example)} />
-        ) : (
-          <p className={styles.cardText}>{missingExample}</p>
-        )}
-      </section>
-
-      {annotated && (
-        <section className={`${styles.card} ${styles.wide}`} data-tone="cream" aria-labelledby="api-annotated-title">
-          <h3 id="api-annotated-title" className={styles.cardTitle}>
-            <span className={styles.cardIcon} aria-hidden="true">
-              <MessageSquareText size={15} />
-            </span>
-            Example with line notes
-          </h3>
-          <CodeBlock code={annotated} language={language} label={fileName("example_explained", language, example)} />
-        </section>
-      )}
     </div>
   );
 }

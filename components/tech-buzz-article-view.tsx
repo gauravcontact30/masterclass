@@ -1,5 +1,6 @@
 "use client";
 
+import { RouteH1 } from "@/components/route-heading";
 import { TECH_BUZZ_TRACKED } from "@/lib/tech-buzz-sections";
 import { useState, useEffect, useCallback, useMemo, useRef, useSyncExternalStore } from "react";
 import Image from "@/components/responsive-image";
@@ -388,7 +389,7 @@ export function TechBuzzArticleView({ article, related, prevStory, nextStory }: 
             </ol>
           </nav>
 
-          <h1 id="tb-story-title" className={styles.articleTitle}>{article.title}</h1>
+          <RouteH1 id="tb-story-title" className={styles.articleTitle}>{article.title}</RouteH1>
           <p className={styles.articleSubtitle}>{article.subtitle}</p>
 
           {/* Author Byline */}

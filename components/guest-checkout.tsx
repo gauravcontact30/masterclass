@@ -1,5 +1,6 @@
 "use client";
 
+import { RouteH1 } from "@/components/route-heading";
 import { usePriceRefresh } from "./use-price-refresh";
 import { useState } from "react";
 import Link from "next/link";
@@ -90,7 +91,7 @@ export function GuestCheckout({ initialTier, enabled, prices: located }: { initi
       {outcome ? <PaymentOutcome outcome={outcome} busy={busy} error={error} onCheckAgain={() => void checkAgain()} text={text} t={t} /> : <>
         <div className={styles.intro}>
           <p className={styles.eyebrow}><LockKeyhole size={13} aria-hidden="true" /><ExpandedText text={text("No account needed to start", "शुरू करने के लिए खाता ज़रूरी नहीं")} /></p>
-          <h1><ExpandedText text={text("Start your membership", "अपनी सदस्यता शुरू करें")} /></h1>
+          <RouteH1><ExpandedText text={text("Start your membership", "अपनी सदस्यता शुरू करें")} /></RouteH1>
           <p><ExpandedText text={text("One membership unlocks every course and category. Pick a plan and pay securely. We set up your account with the email you give here.", "एक सदस्यता से हर कोर्स और श्रेणी खुलती है। योजना चुनें और सुरक्षित भुगतान करें। आपका खाता यहाँ दिए गए ईमेल से बनाया जाएगा।")} /></p>
         </div>
 
@@ -148,14 +149,14 @@ function PaymentOutcome({ outcome, busy, error, onCheckAgain, text, t }: { outco
   const signInHref = `/sign-in?email=${encodeURIComponent(outcome.email)}`;
   if (outcome.status === "conflict") return <section className={styles.result}>
     <span className={`${styles.resultIcon} ${styles.resultWarn}`}><CircleAlert size={22} aria-hidden="true" /></span>
-    <h1><ExpandedText text={text("This email already has a membership", "इस ईमेल पर पहले से सदस्यता है")} /></h1>
+    <RouteH1><ExpandedText text={text("This email already has a membership", "इस ईमेल पर पहले से सदस्यता है")} /></RouteH1>
     <p><ExpandedText text={text(`${outcome.email} already has an active membership, so this new one will not renew. Contact support with your payment ID for a refund of this payment.`, `${outcome.email} पर पहले से सक्रिय सदस्यता है, इसलिए यह नई सदस्यता नवीनीकृत नहीं होगी। इस भुगतान की वापसी के लिए अपने भुगतान ID के साथ सहायता से संपर्क करें।`)} /></p>
     <Link className={styles.pay} href={signInHref}><ExpandedText text={text("Sign in", "साइन इन")} /><ArrowRight size={16} aria-hidden="true" /></Link>
   </section>;
   const active = outcome.status === "active";
   return <section className={styles.result}>
     <span className={styles.resultIcon}>{active ? <PartyPopper size={22} aria-hidden="true" /> : <MailCheck size={22} aria-hidden="true" />}</span>
-    <h1><ExpandedText text={active ? text("Your membership is active", "आपकी सदस्यता सक्रिय है") : text("Payment received", "भुगतान प्राप्त हुआ")} /></h1>
+    <RouteH1><ExpandedText text={active ? text("Your membership is active", "आपकी सदस्यता सक्रिय है") : text("Payment received", "भुगतान प्राप्त हुआ")} /></RouteH1>
     <p><ExpandedText text={active
       ? text(`Welcome to MasterClass. Your membership is on the account for ${outcome.email}.`, `MasterClass में स्वागत है। आपकी सदस्यता ${outcome.email} वाले खाते पर है।`)
       : text("Razorpay is confirming your first payment. This usually takes under a minute. Do not pay again.", "Razorpay आपका पहला भुगतान पुष्टि कर रहा है। आमतौर पर एक मिनट से कम लगता है। दोबारा भुगतान न करें।")} /></p>

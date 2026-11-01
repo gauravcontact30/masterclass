@@ -1,3 +1,4 @@
+import { RouteH1 } from "@/components/route-heading";
 import Link from "next/link";
 import { JsonLd } from "@/components/json-ld";
 import { breadcrumbSchema, CONTENT_UPDATED, learningPageSchema, readableDate } from "@/lib/seo";
@@ -19,7 +20,7 @@ export function LibraryIntro({ trail, eyebrow, title, lead, facts = [], schema, 
       {trail.map(([name, path]) => <li key={path} aria-current={path === current?.[1] ? "page" : undefined}>{path === current?.[1] ? name : <Link href={path}>{name}</Link>}</li>)}
     </ol></nav>
     <p className={styles.eyebrow}>{eyebrow}</p>
-    <h1 className={styles.title}>{title}</h1>
+    <RouteH1 className={styles.title}>{title}</RouteH1>
     <p className={styles.lead}>{lead}</p>
     <p className={styles.updated}>Last updated <time dateTime={updated}>{readableDate(updated)}</time></p>
     {facts.length > 0 && <dl className={styles.facts}>{facts.map(([label, value]) => <div key={label}><dt>{label}</dt><dd>{typeof value === "number" ? value.toLocaleString("en-IN") : value}</dd></div>)}</dl>}

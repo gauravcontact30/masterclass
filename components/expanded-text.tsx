@@ -8,9 +8,8 @@ import styles from "./expanded-text.module.css";
 /**
  * Prose with known abbreviations marked up as abbreviations.
  *
- * The full form is shown in a compact pill beside the short form. This keeps
- * navigation and learning content concise while making the meaning visible
- * without requiring a hover or tooltip.
+ * The full form appears only in a tooltip on hover or focus (user rule 2026-11-01): a pill beside the short form
+ * stretched lines and broke cards into several rows.
  *
  * Use for display prose only; never change stored content, code or input values.
  */
@@ -36,12 +35,8 @@ export function ExpandedText({ text }: { text: string }) {
                 triggerWordLookup(part.fullForm || part.text);
               }
             }}
-            title={`Click to inspect “${part.text}” (${part.fullForm}) in Vocabulary`}
           >
-            <abbr title={part.fullForm}>{part.text}</abbr>
-            <span className={styles.fullForm}>
-              {part.fullForm}
-            </span>
+            <abbr title={`${part.text} stands for ${part.fullForm}`}>{part.text}</abbr>
           </span>
         ) : (
           <Fragment key={index}>{part.text}</Fragment>

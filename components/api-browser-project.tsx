@@ -2,12 +2,11 @@
 import { useEffect, useRef, useState } from 'react';
 import { SandpackProvider, SandpackLayout, SandpackFileExplorer, SandpackCodeEditor, SandpackPreview, SandpackConsole, useSandpack } from '@codesandbox/sandpack-react';
 import type { LearningProject } from '@/lib/api-learning-schema';
-import { isCodeExampleTab } from '@/lib/code-example-tabs';
+import { Play } from 'lucide-react';
 import styles from './api-project.module.css';
 
 /** Sandpack addresses every file by absolute path; a relative key silently fails to override the template. */
 const absolute = (path: string) => '/' + path.replace(/^\/+/, '');
-const hidden = (path: string) => !isCodeExampleTab(path);
 const snapshot = (files: Record<string, { code: string }>) => Object.fromEntries(Object.entries(files).map(([path, file]) => [path, file.code]));
 const sameCode = (a: Record<string, string>, b: Record<string, string>) => {
   const keys = new Set([...Object.keys(a), ...Object.keys(b)]);
@@ -17,7 +16,7 @@ const sameCode = (a: Record<string, string>, b: Record<string, string>) => {
 function ActivePreview() {
   const {sandpack}=useSandpack();const started=useRef(false);const [error,setError]=useState('');
   useEffect(()=>{if(started.current)return;started.current=true;void sandpack.runSandpack().catch(()=>setError('Unable to start the runtime. Stop and try Run again.'));},[sandpack]);
-  return <>{error&&<p role="alert">{error}</p>}<SandpackPreview showOpenInCodeSandbox={false} showOpenNewtab={false}/><h3>Console output</h3><SandpackConsole/></>;
+  return <>{error&&<p role="alert">{error}</p>}<SandpackPreview showOpenInCodeSandbox={false} showOpenNewtab={false}/><h3>Console</h3><SandpackConsole/></>;
 }
 
 function Workspace({project}:{project:LearningProject}) {
@@ -67,22 +66,22 @@ function Workspace({project}:{project:LearningProject}) {
       <span className={styles.dots} aria-hidden="true"><i/><i/><i/></span>
       <strong>{project.title}</strong>
       {dirty && <span className={styles.unsaved}>Unsaved changes</span>}
-      <button onClick={()=>setExplorer(!explorer)} aria-expanded={explorer}>{explorer?'Hide':'Show'} files</button>
+      <button className={styles.filesToggle} onClick={()=>setExplorer(!explorer)} aria-expanded={explorer}>{explorer?'Hide':'Show'} files</button>
       <button onClick={reset}>Reset</button>
       <button className={styles.save} data-dirty={dirty} disabled={!dirty} onClick={()=>void save()}>Save</button>
-      <button onClick={()=>void run()}>Run</button>
+      <button className={styles.run} onClick={()=>void run()}><Play size={12} aria-hidden="true"/>{running?'Run again':'Run'}</button>
       {running&&<button onClick={()=>setRunning(false)}>Stop</button>}
     </div>
     <SandpackLayout>
-      {explorer&&<SandpackFileExplorer autoHiddenFiles={false}/>}
+      {explorer&&<SandpackFileExplorer className={styles.filesPane} autoHiddenFiles={false}/>}
       <div className={styles.editor} style={{flex:1,minWidth:0}}>
-        <div className={styles.tabs} role="tablist" aria-label="Code files">{project.files.filter(file=>!hidden(file.path)).map(file=><button key={file.path} role="tab" aria-selected={sandpack.activeFile===absolute(file.path)} onClick={()=>sandpack.setActiveFile(absolute(file.path))}>{file.path.split("/").at(-1)}</button>)}</div>
+        <div className={styles.tabs} role="tablist" aria-label="Code files">{project.files.map(file=><button key={file.path} role="tab" aria-selected={sandpack.activeFile===absolute(file.path)} onClick={()=>sandpack.setActiveFile(absolute(file.path))}>{file.path.split("/").at(-1)}</button>)}</div>
         <SandpackCodeEditor showRunButton={false} showTabs={false} showLineNumbers showInlineErrors/>
       </div>
     </SandpackLayout>
     <div className={styles.output}>
-      <h3>Browser output</h3>
-      {running?<ActivePreview/>:<p className={styles.console}>Click Run to start this project. Browser and console output appear here once the runtime starts.</p>}
+      <h3>Output</h3>
+      {running?<ActivePreview/>:<p className={styles.console}>Press Run to execute this code and see its real output here.</p>}
     </div>
     <p className={styles.status} role="status">{status}</p>
     <ol className={styles.instructions}>{project.instructions.map(item=><li key={item}>{item}</li>)}</ol>
@@ -94,9 +93,10 @@ export default function BrowserProject({project}:{project:LearningProject}) {
   return <SandpackProvider
     template={template}
     files={Object.fromEntries(project.files.map(file=>[absolute(file.path),file.code]))}
-    customSetup={{dependencies:project.dependencies,entry:absolute(project.entry)}}
-    theme={{colors:{surface1:'#ffffff',surface2:'#f5f6f8',surface3:'#e7ebf0',clickable:'#687080',base:'#30394b',disabled:'#adb2bd',hover:'#b4593e',accent:'#b4593e',error:'#bf3548',errorSurface:'#fff2f3'},syntax:{plain:'#30394b',comment:'#818a98',keyword:'#a33cad',tag:'#a33cad',punctuation:'#6e7686',definition:'#326ca6',property:'#326ca6',static:'#b66b1d',string:'#438454'},font:{body:'system-ui, sans-serif',mono:'ui-monospace, SFMono-Regular, Consolas, monospace',size:'13px',lineHeight:'22px'}}}
-    options={{autorun:false,autoReload:false,activeFile:absolute(project.entry),visibleFiles:project.files.filter(file=>!hidden(file.path)).map(file=>absolute(file.path))}}>
+    // A framework template's own index mounts the app; pointing the entry at App.tsx rendered nothing.
+    customSetup={{dependencies:project.dependencies,...(template==='vanilla-ts'?{entry:absolute(project.entry)}:{})}}
+    theme={{colors:{surface1:'#ffffff',surface2:'#f5f5f7',surface3:'#e8e8ed',clickable:'#6e6e73',base:'#1d1d1f',disabled:'#aeaeb2',hover:'#0071e3',accent:'#0071e3',error:'#c41a16',errorSurface:'#fff2f1'},syntax:{plain:'#1d1d1f',comment:'#5d6c79',keyword:'#9b2393',tag:'#9b2393',punctuation:'#424245',definition:'#0b4f79',property:'#326d74',static:'#1c00cf',string:'#c41a16'},font:{body:'-apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif',mono:'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace',size:'13px',lineHeight:'22px'}}}
+    options={{autorun:false,autoReload:false,activeFile:absolute(project.entry),visibleFiles:project.files.map(file=>absolute(file.path))}}>
     <Workspace project={project}/>
   </SandpackProvider>;
 }

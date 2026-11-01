@@ -1,4 +1,5 @@
 "use client";
+import { RouteH1 } from "@/components/route-heading";
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { AlertTriangle, ArrowLeft, Clock, Coffee, Info, Lightbulb, MessageCircleQuestion } from "lucide-react";
@@ -46,7 +47,7 @@ export function CoffeeArticle({ post, related, onOpen }: Readonly<{ post: BlogPo
     {back}
     <header className={styles.articleHead}>
       <p className={styles.topic}>{post.topic}</p>
-      <h1 id="article-title"><Editable k={k} f="title">{post.title}</Editable></h1>
+      <RouteH1 id="article-title"><Editable k={k} f="title">{post.title}</Editable></RouteH1>
       <p className={styles.lead}><Editable k={k} f="dek" multiline>{post.dek}</Editable></p>
       <p className={styles.byline}><span>{post.author}</span><time dateTime={post.published}>{date(post.published)}</time><span><Clock size={13} aria-hidden="true" />{post.minutes} min read</span></p>
       <ListenButton id={`blog:${post.slug}`} title={post.title} text={button => [post.title, post.dek, (button.closest("article")?.querySelector("[data-article-body]") as HTMLElement | null)?.innerText ?? ""].join(". ")} />

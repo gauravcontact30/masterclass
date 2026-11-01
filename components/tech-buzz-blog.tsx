@@ -1,5 +1,6 @@
 "use client";
 
+import { RouteH1 } from "@/components/route-heading";
 import { TECH_BUZZ_TRACKED } from "@/lib/tech-buzz-sections";
 import { useEffect, useMemo, useState, useSyncExternalStore, type CSSProperties } from "react";
 import Image from "@/components/responsive-image";
@@ -399,7 +400,7 @@ export function TechBuzzBlog({ cards, groups, showcase = false }: { cards: TechB
           <span className={styles.verifiedKicker}><Sparkles size={13} aria-hidden="true" />Engineering Masterclasses</span>
           <Link href="/tech-buzz/write" prefetch={false} className={styles.writeLink}><PenLine size={15} aria-hidden="true" />The Slate - Ink</Link>
         </div>
-        <h1>{t("techBuzzTitle")}</h1>
+        <RouteH1>{t("techBuzzTitle")}</RouteH1>
         <p className={styles.lede}>
           {t("techBuzzSubtitle")}
         </p>

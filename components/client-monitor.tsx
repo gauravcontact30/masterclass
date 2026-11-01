@@ -5,6 +5,22 @@ import { useReportWebVitals } from "next/web-vitals";
 
 type Vitals = Partial<Record<"LCP" | "INP" | "CLS" | "FCP" | "TTFB", number>>;
 type ClientError = { message: string; source: string; line: number | null; kind: "error" | "rejection" };
+type InpDetail = { target: string; type: string; at: number; input: number; processing: number; presentation: number };
+
+/** Where the slowest interaction's time went: waiting for the main thread, running handlers, or painting the result. */
+function inpDetail(entry: PerformanceEventTiming | undefined): InpDetail | undefined {
+  if (!entry) return undefined;
+  const element = entry.target as Element | null, className = element?.getAttribute("class")?.split(/\s+/)[0];
+  return {
+    target: `${element?.tagName.toLowerCase() ?? "unknown"}${className ? `.${className}` : ""}`.slice(0, 80),
+    type: entry.name.slice(0, 20),
+    at: Math.round(entry.startTime),
+    input: Math.max(0, Math.round(entry.processingStart - entry.startTime)),
+    processing: Math.max(0, Math.round(entry.processingEnd - entry.processingStart)),
+    presentation: Math.max(0, Math.round(entry.startTime + entry.duration - entry.processingEnd)),
+  };
+}
+
 /** At most this many distinct errors per page view, so a render loop cannot flood the log. */
 const MAX_ERRORS = 5;
 
@@ -17,16 +33,18 @@ function send(body: Record<string, unknown>) {
 /**
  * Frontend performance and errors for the super admin's Logs & Health page (/api/monitoring/client): the page's Core
  * Web Vitals and any uncaught script errors, sent once per page as one beacon when the page is hidden or left. Only
- * metric values, the route path and an error's first line and file name are sent; never page content or input.
+ * metric values, the route path, the tag and class of the element behind INP, and an error's first line and file name
+ * are sent; never page content or input.
  */
 export function ClientMonitor() {
   const pathname = usePathname();
   // Web Vitals describe a document navigation, not a client-side route. Keep their original route until unload.
-  const navigation = useRef<{ path: string; vitals: Vitals; sent: boolean }>({ path: pathname, vitals: {}, sent: false });
+  const navigation = useRef<{ path: string; vitals: Vitals; inp?: InpDetail; sent: boolean }>({ path: pathname, vitals: {}, sent: false });
   const page = useRef<{ path: string; errors: ClientError[] }>({ path: pathname, errors: [] });
 
   const report = useCallback<Parameters<typeof useReportWebVitals>[0]>(metric => {
     if (metric.name in { LCP: 1, INP: 1, CLS: 1, FCP: 1, TTFB: 1 }) navigation.current.vitals[metric.name as keyof Vitals] = Math.round(metric.value * (metric.name === "CLS" ? 1000 : 1)) / (metric.name === "CLS" ? 1000 : 1);
+    if (metric.name === "INP") navigation.current.inp = inpDetail(metric.entries[0] as PerformanceEventTiming | undefined) ?? navigation.current.inp;
   }, []);
   useReportWebVitals(report);
 
@@ -41,7 +59,7 @@ export function ClientMonitor() {
       const current = navigation.current;
       if (!current.sent && !current.path.startsWith("/super-admin") && Object.keys(current.vitals).length) {
         current.sent = true;
-        send({ path: current.path, vitals: current.vitals, ...context() });
+        send({ path: current.path, vitals: current.vitals, inp: current.inp, ...context() });
       }
       flushErrors();
     };

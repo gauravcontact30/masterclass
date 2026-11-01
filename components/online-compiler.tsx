@@ -1,5 +1,6 @@
 "use client";
 
+import { RouteH1 } from "@/components/route-heading";
 import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from "react";
 import { Check, Copy, Download, FilePlus2, Loader2, Play, RotateCcw, SquareTerminal, X } from "lucide-react";
 import { highlightLines } from "@/lib/code-highlight";
@@ -137,7 +138,7 @@ export function OnlineCompiler() {
     <header className={styles.head}>
       <div>
         <p className={styles.eyebrow}><SquareTerminal size={14} aria-hidden="true" />Online compiler</p>
-        <h1 id="compiler-title">Java and C++ compiler</h1>
+        <RouteH1 id="compiler-title">Java and C++ compiler</RouteH1>
         <p className={styles.lede}>Write, compile and run real programs with the latest OpenJDK and GCC. Each run gets its own isolated machine with no network, up to {COMPILER_LIMITS.runSeconds} seconds of run time and your standard input.</p>
       </div>
       <div className={styles.langs} role="radiogroup" aria-label="Language">

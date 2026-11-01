@@ -1,7 +1,10 @@
 "use client";
 
 import { memo, useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
+import { preload } from "react-dom";
+import { getImageProps } from "next/image";
 import Image from "@/components/responsive-image";
+import { losslessImageLoader } from "@/lib/responsive-image-loader";
 import Link from "next/link";
 import { Bell, ChevronLeft, ChevronRight, Flame, Pause, Play } from "lucide-react";
 import { useLanguage } from "./language-provider";
@@ -89,6 +92,11 @@ const SUGGESTION_BOX_PALETTES = [
 
 // Each slide stays 15 s before the next one slides in.
 const INTERVAL = 15000;
+// The next slide's picture is fetched this long before it is due, so a visitor who scrolls away never pays for it.
+const WARM_AHEAD = 4000;
+// A phone in portrait shows only the middle quarter of a landscape picture. Artwork slides have a centre crop (5:8, same
+// pixel density, q90 like the other variants) so phones stop downloading and decoding the 2752 px file (~0.7 MB) for it.
+const PORTRAIT = "(max-aspect-ratio: 5/8)";
 type MultiLang = Record<import("@/lib/domain").Language, string>;
 type SlideBase = {
   id: string;
@@ -101,7 +109,7 @@ type SlideBase = {
 /** A photograph with its own headline, copy and actions over it. */
 type StorySlide = SlideBase & { imageOnly?: undefined; title: MultiLang; body: MultiLang; link: { label: MultiLang; href: string } };
 /** Supplied promotional artwork: serve its lossless, full-resolution pixels without overlays or recompression. */
-type ImageSlide = SlideBase & { imageOnly: true };
+type ImageSlide = SlideBase & { imageOnly: true; portrait: string };
 type Slide = StorySlide | ImageSlide;
 
 /**
@@ -114,6 +122,7 @@ function slidesFor(technologies: number | undefined): Slide[] {
     {
       id: "technology-interviews",
       src: "/images/landing/hero-interviews-ads9.webp",
+      portrait: "/images/landing/hero-interviews-ads9-portrait.webp",
       imageOnly: true,
       focus: "50% 50%",
       tone: "sky",
@@ -123,6 +132,7 @@ function slidesFor(technologies: number | undefined): Slide[] {
     {
       id: "interview-preparation",
       src: "/images/landing/hero-interviews-ads17.webp",
+      portrait: "/images/landing/hero-interviews-ads17-portrait.webp",
       imageOnly: true,
       focus: "50% 50%",
       tone: "clay",
@@ -500,6 +510,22 @@ function slidesFor(technologies: number | undefined): Slide[] {
   ];
 }
 
+/** An artwork slide's picture: the centre crop on portrait phones, the full picture everywhere else. */
+function HeroArtwork({ slide, first }: { slide: ImageSlide; first: boolean }) {
+  const shared = { alt: slide.alt, fill: true, loader: losslessImageLoader, fetchPriority: first ? "high" : undefined, loading: first ? "eager" : undefined } as const;
+  const { props: wide } = getImageProps({ ...shared, src: slide.src, sizes: "(max-aspect-ratio: 4/5) 180svh, 100vw" });
+  const { props: tall } = getImageProps({ ...shared, src: slide.portrait, sizes: "62.5svh" });
+  if (first) {
+    preload(tall.src, { as: "image", media: PORTRAIT, imageSrcSet: tall.srcSet, imageSizes: tall.sizes, fetchPriority: "high" });
+    preload(wide.src, { as: "image", media: `not all and ${PORTRAIT}`, imageSrcSet: wide.srcSet, imageSizes: wide.sizes, fetchPriority: "high" });
+  }
+  return <picture>
+    <source media={PORTRAIT} srcSet={tall.srcSet} sizes={tall.sizes} />
+    {/* eslint-disable-next-line jsx-a11y/alt-text -- getImageProps supplies src, srcSet and alt for art direction. */}
+    <img {...wide} className={`${styles.heroImage} ${styles.heroInfographic}`} style={{ "--focus": slide.focus, objectFit: "cover" } as React.CSSProperties} />
+  </picture>;
+}
+
 /** The floating Tech Buzz dock on the hero. Its 5-second colour beat lives here, so it re-renders only itself, not the
  *  whole carousel. */
 const TechBuzzDock = memo(function TechBuzzDock({ running }: { running: boolean }) {
@@ -604,6 +630,13 @@ export function LandingSlider({ technologies }: { technologies?: number }) {
     return () => clearTimeout(timer);
   }, [running, index, go]);
 
+  useEffect(() => {
+    if (!running) return;
+    const next = (index + 1) % total;
+    const timer = setTimeout(() => setRequested(previous => previous.has(next) ? previous : new Set([...previous, next])), INTERVAL - WARM_AHEAD);
+    return () => clearTimeout(timer);
+  }, [running, index, total]);
+
   const pad = (value: number) => String(value).padStart(2, "0");
 
 
@@ -627,16 +660,13 @@ export function LandingSlider({ technologies }: { technologies?: number }) {
         const current = position === index;
         if (slide.imageOnly) return <article key={slide.id} className={styles.heroSlide} data-active={current || undefined} aria-roledescription="slide"
           aria-label={`${position + 1} / ${total}`} aria-hidden={!current} inert={!current}>
-          {requested.has(position) && <Image src={slide.src} alt={slide.alt} fill sizes="(max-aspect-ratio: 4/5) 180svh, 100vw" preload={position === 0}
-            className={styles.heroImage} style={{ "--focus": slide.focus, objectFit: "cover" } as React.CSSProperties}
-            onLoad={position === 0 ? () => setRequested(previous => previous.has(1) ? previous : new Set([...previous, 1])) : undefined} />}
+          {requested.has(position) && <HeroArtwork slide={slide} first={position === 0} />}
         </article>;
         return <article key={slide.id} className={styles.heroSlide} data-active={current || undefined} aria-roledescription="slide"
           aria-label={`${position + 1} / ${total}`} aria-hidden={!current} inert={!current}>
-          {/* Only the LCP image is requested initially. Warm the next slide after it loads;
+          {/* Only the first image is requested initially. The next one warms shortly before it is due;
               retain visited images so cross-fades and backwards navigation stay smooth. */}
           {requested.has(position) && <Image src={slide.src} alt={slide.alt} fill sizes="100vw" quality={75} preload={position === 0}
-            onLoad={position === 0 ? () => setRequested(previous => previous.has(1) ? previous : new Set([...previous, 1])) : undefined}
             className={styles.heroImage} style={{ "--focus": slide.focus, objectFit: "cover" } as React.CSSProperties} />}
           <div className={styles.heroShade} />
           <div className={styles.heroTint} data-tone={slide.tone} />

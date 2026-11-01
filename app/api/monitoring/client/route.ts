@@ -14,6 +14,8 @@ const metric = (max: number) => z.number().min(0).max(max).optional();
 const bodySchema = z.object({
   path: z.string().trim().min(1).max(300).regex(/^\/(?!\/)[^?#]*$/),
   vitals: z.object({ LCP: metric(120_000), INP: metric(60_000), CLS: metric(100), FCP: metric(120_000), TTFB: metric(120_000) }).default({}),
+  // Which interaction set INP and where its time went, so the slowest taps can be fixed from field data.
+  inp: z.object({ target: z.string().max(80), type: z.string().max(20), at: metric(3_600_000), input: metric(60_000), processing: metric(60_000), presentation: metric(60_000) }).optional(),
   errors: z.array(z.object({ message: z.string().max(200), source: z.string().max(80), line: z.number().int().min(0).max(10_000_000).nullable(), kind: z.enum(["error", "rejection"]) })).max(5).default([]),
   connection: z.string().max(10).nullable().optional(),
   width: z.number().int().min(0).max(20_000).optional(),
@@ -39,7 +41,7 @@ export async function POST(request: Request) {
   if (ua.isBot || input.path.startsWith("/api/")) return noContent();
   const context = { device: ua.device, browser: ua.browser, os: ua.os, connection: input.connection ?? null, width: input.width ?? null };
   if (Object.keys(input.vitals).length) {
-    recordEventLater({ kind: "web_vitals", action: "page", resource: input.path, duration_ms: input.vitals.LCP != null ? Math.round(input.vitals.LCP) : undefined, details: { ...input.vitals, ...context } });
+    recordEventLater({ kind: "web_vitals", action: "page", resource: input.path, duration_ms: input.vitals.LCP != null ? Math.round(input.vitals.LCP) : undefined, details: { ...input.vitals, ...(input.inp ? { inp: input.inp } : {}), ...context } });
   }
   for (const error of input.errors) {
     recordEventLater({ kind: "client_error", action: error.kind, resource: input.path, status: 0, details: { message: error.message, source: error.source, line: error.line, ...context } });
