@@ -6,6 +6,7 @@ import { dayBounds, reportDay } from "@/lib/daily-social";
 import { siteUrl } from "@/lib/seo";
 import { weekReport, type WeekLeave, type WeekView } from "@/lib/week-report";
 import { isAudience, SIGNAL_COLUMNS, type VisitSignals } from "@/lib/visit-quality";
+import { VISIT_RETENTION_DAYS } from "@/lib/visit-retention";
 
 /** Rows read per day and kind; a day past it is reported as capped rather than read without end. */
 const DAY_LIMIT = 20_000;
@@ -30,10 +31,17 @@ export async function GET(request: Request) {
       return { rows, capped: true };
     }
     // Fourteen days of views and leave beacons, each day read on its own so they load side by side.
-    const [viewDays, leaveDays] = await Promise.all([
+    const [viewDays, leaveDays, oldest] = await Promise.all([
       Promise.all(days.map(day => read<WeekView & VisitSignals>("page_view", VIEW_COLUMNS, day))),
       Promise.all(days.map(day => read<WeekLeave>("page_leave", "id,created_at,session_id,path,duration_ms", day))),
+      db().from("site_visits").select("created_at").order("created_at", { ascending: true }).limit(1).maybeSingle(),
     ]);
+    if (oldest.error) adminError(oldest.error);
+    // Rows can only be missing before both the oldest row still stored and the retention cutoff (the nightly prune
+    // deletes nothing newer than VISIT_RETENTION_DAYS); a quiet morning after the cutoff is a real zero, not a gap.
+    const retentionCutoff = Date.now() - VISIT_RETENTION_DAYS * 86_400_000;
+    const oldestAt = oldest.data?.created_at ? Date.parse(String(oldest.data.created_at)) : Infinity;
+    const keptSince = new Date(Math.min(oldestAt, retentionCutoff)).toISOString();
     // People only (lib/visit-quality.ts): an automated browser or the site's own machine drops its whole session,
     // leave beacons included, as the activity reports do (migration 0046).
     const dropped = new Set<string>();
@@ -44,7 +52,7 @@ export async function GET(request: Request) {
     const people = new Set(views.map(view => view.session_id));
     const leaves = leaveDays.flatMap(day => day.rows).filter(row => people.has(row.session_id));
     const host = siteUrl().hostname.replace(/^www\./, "");
-    const report = weekReport(views, leaves, today, [host, "localhost"]);
-    return Response.json({ ...report, capped: [...viewDays, ...leaveDays].some(day => day.capped), generatedAt: new Date().toISOString() }, { headers: { "Cache-Control": "private, no-store" } });
+    const report = weekReport(views, leaves, today, [host, "localhost"], keptSince);
+    return Response.json({ ...report, retentionDays: VISIT_RETENTION_DAYS, capped: [...viewDays, ...leaveDays].some(day => day.capped), generatedAt: new Date().toISOString() }, { headers: { "Cache-Control": "private, no-store" } });
   }, request);
 }

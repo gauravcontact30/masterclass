@@ -21,6 +21,7 @@ import { useReveal } from "./use-reveal";
 import { LearningSlot } from "./learning-slot";
 import type { LandingProPreview } from "@/lib/landing-pro-preview";
 import type { LandingFresh } from "@/lib/landing-fresh-types";
+import type { LandingBuzz } from "@/lib/landing-buzz-types";
 import type { LandingLibrary } from "@/lib/landing-library";
 import type { DailyWord, LockedTeaser, PulseCard } from "@/lib/landing-daily-types";
 import home from "./landing-home.module.css";
@@ -51,7 +52,8 @@ const LibraryLedger = dynamic(() => import("./library-ledger").then(m => m.Libra
 const LandingFooter = dynamic(() => import("./landing-footer").then(m => m.LandingFooter));
 const LandingVocabulary = dynamic(() => import("./landing-vocabulary").then(m => m.LandingVocabulary));
 const StudentReviews = dynamic(() => import("./student-reviews").then(m => m.StudentReviews));
-const LandingTechDocs = dynamic(() => import("./landing-tech-docs").then(m => m.LandingTechDocs));
+// Technology docs on the landing page is the Search-page preview; the dashboard keeps LandingTechDocs (dashboard-learning.tsx).
+const LandingSearchDocs = dynamic(() => import("./landing-search-docs").then(m => m.LandingSearchDocs));
 const LandingCoffee = dynamic(() => import("./landing-coffee").then(m => m.LandingCoffee));
 const LandingApiDocs = dynamic(() => import("./landing-pro-sections").then(m => m.LandingApiDocs));
 const LandingTechy = dynamic(() => import("./landing-pro-sections").then(m => m.LandingTechy));
@@ -59,7 +61,7 @@ const LandingTechy = dynamic(() => import("./landing-pro-sections").then(m => m.
 /** `international`: other currencies are offered, so the page re-prices itself where the visitor is (it is cached in rupees). */
 export type LandingPrices = { monthly: number; yearly: number; enabled: boolean; currency?: Currency; currencies?: Currency[]; local?: Currency; inr?: { monthly: number; yearly: number }; international?: boolean; sale?: SaleInfo | null };
 /** `today`: the India-calendar week number (istWeek, lib/ist-week.ts); the sections that turn over weekly, on Monday at 00:00 IST, pick their content from it. */
-export function LandingPage({ features, certifications, workflows, pro, library, prices: initialPrices, daily, techDocs, copyrightYear, overrides, coffee, today = 0, featuredDoc, fresh = null }: { features?: ReactNode; certifications?: ReactNode; workflows: WorkflowPreview; fresh?: LandingFresh | null; today?: number; featuredDoc?: string; overrides?: ContentOverrides; coffee?: BlogTeaser[]; copyrightYear?: number; pro?: LandingProPreview; library?: LandingLibrary; prices?: LandingPrices; techDocs?: OfficialTechDocs | null; daily?: { day: string; pulse: PulseCard[]; words: DailyWord[]; locked?: { pulse: LockedTeaser | null; word: LockedTeaser | null }; totals?: { pulse: number; words: number } } }) {
+export function LandingPage({ features, certifications, workflows, pro, library, prices: initialPrices, daily, techDocs, copyrightYear, overrides, coffee, today = 0, fresh = null, buzz }: { buzz?: LandingBuzz[]; features?: ReactNode; certifications?: ReactNode; workflows: WorkflowPreview; fresh?: LandingFresh | null; today?: number; featuredDoc?: string; overrides?: ContentOverrides; coffee?: BlogTeaser[]; copyrightYear?: number; pro?: LandingProPreview; library?: LandingLibrary; prices?: LandingPrices; techDocs?: OfficialTechDocs | null; daily?: { day: string; pulse: PulseCard[]; words: DailyWord[]; locked?: { pulse: LockedTeaser | null; word: LockedTeaser | null }; totals?: { pulse: number; words: number } } }) {
   const { language, t } = useLanguage(); const hi = language === "hi"; const text = (en: string, hindi: string) => hi ? hindi : en;
   const [cycle, setCycle] = useState<"monthly" | "yearly">("monthly");
   // Prices rendered on the server arrive in the HTML, so the plan card never paints "—" and then shifts; the fetch is only the fallback.
@@ -122,8 +124,8 @@ export function LandingPage({ features, certifications, workflows, pro, library,
       <LibraryLedger library={library} />
     </div></section>}
     <LandingComparisons preview official={techDocs} day={today} fresh={fresh?.difference} />
-    <LandingTechDocs official={techDocs} preview featured={featuredDoc} fresh={fresh?.doc} />
-    {pro && <><LandingTechy data={pro.techy} /><LandingApiDocs data={pro.api} /></>}
+    <LandingSearchDocs fresh={fresh?.doc} buzz={buzz} week={today} />
+    {pro && <><LandingTechy data={pro.techy} buzz={buzz} /><LandingApiDocs data={pro.api} buzz={buzz} /></>}
     {daily && <LandingVocabulary words={daily.words} total={daily.totals?.words} day={daily.day} locked={daily.locked?.word} preview />}
     <StudentReviews />
     <LearningSlot surface="landing" page="home" section="before-plans" className={styles.learningSlot} />

@@ -16,8 +16,10 @@ export type WeekTotals = {
   visitors: number; newVisitors: number; signedIn: number; sessions: number; views: number;
   engagedSeconds: number; avgSecondsPerVisitor: number; pagesPerSession: number; bounceRate: number;
 };
+/** Whether a day's visits are all still stored: "missing" days were deleted by retention (or predate tracking). */
+export type DayKept = "full" | "partial" | "missing";
 export type WeekDay = WeekTotals & {
-  date: string; weekday: string; partial: boolean; rank: number;
+  date: string; weekday: string; partial: boolean; rank: number; kept: DayKept;
   topPath: { name: string; views: number } | null; topContent: { title: string; path: string; views: number } | null;
 };
 export type WeekPath = { name: string; views: number; visitors: number; engagedSeconds: number };
@@ -25,7 +27,10 @@ export type WeekContent = { path: string; title: string; learningPath: string; v
 export type WeekSlice = { name: string; value: number };
 export type WeekReport = {
   from: string; to: string; today: string; days: WeekDay[];
-  current: WeekTotals; previous: WeekTotals;
+  /** null when the previous seven days are not all stored, so no comparison can be made. */
+  current: WeekTotals; previous: WeekTotals | null;
+  /** Visits before this moment may have been deleted (VISIT_RETENTION_DAYS) or were never tracked. */
+  keptSince: string | null; keptDays: number;
   paths: WeekPath[]; contents: WeekContent[];
   devices: WeekSlice[]; sources: WeekSlice[]; countries: WeekSlice[];
 };
@@ -119,7 +124,12 @@ function slices(counts: Map<string, number>, keep = 5): WeekSlice[] {
  * `views`/`leaves` cover the fourteen days from `weekBounds(today).previousFrom`; rows outside them are ignored.
  * `ownHosts` are the site's own domains (a referrer from them is navigation inside the site, not a source).
  */
-export function weekReport(views: WeekView[], leaves: WeekLeave[], today = reportDay(), ownHosts: string[] = []): WeekReport {
+export function weekReport(views: WeekView[], leaves: WeekLeave[], today = reportDay(), ownHosts: string[] = [], keptSince: string | null = null): WeekReport {
+  const keptMs = keptSince ? Date.parse(keptSince) : -Infinity;
+  const keptOf = (date: string): DayKept => {
+    const { since, until } = dayBounds(date);
+    return Date.parse(until) <= keptMs ? "missing" : Date.parse(since) < keptMs ? "partial" : "full";
+  };
   // Visits before the 2026-10-25 move are stored under /dashboard: count them with the /learning page they became.
   const canonical = (path: string) => path.replace(/^\/dashboard\/super-admin(?=\/|$)/, "/super-admin").replace(/^\/dashboard(?=\/|$)/, "/learning");
   views = views.map(view => ({ ...view, path: canonical(view.path) }));
@@ -148,13 +158,13 @@ export function weekReport(views: WeekView[], leaves: WeekLeave[], today = repor
     const path = top(byPath), content = top(byContent);
     return {
       ...totals(dayViews, weekLeaves.filter(leave => istDate(leave.created_at) === date)),
-      date, weekday: WEEKDAY.format(new Date(`${date}T12:00:00+05:30`)), partial: date === today, rank: 0,
+      date, weekday: WEEKDAY.format(new Date(`${date}T12:00:00+05:30`)), partial: date === today, rank: 0, kept: keptOf(date),
       topPath: path ? { name: path[0], views: path[1].length } : null,
       topContent: content ? { path: content[0], title: titleOf(content[1].at(-1)?.title, content[0]), views: content[1].length } : null,
     } satisfies WeekDay;
   });
-  // Busiest first: visitors, then views, then the earlier day.
-  [...dayStats].sort((a, b) => b.visitors - a.visitors || b.views - a.views || a.date.localeCompare(b.date)).forEach((day, index) => { day.rank = index + 1; });
+  // Busiest first: visitors, then views, then the earlier day. Days no longer stored are not ranked (rank 0).
+  dayStats.filter(day => day.kept !== "missing").sort((a, b) => b.visitors - a.visitors || b.views - a.views || a.date.localeCompare(b.date)).forEach((day, index) => { day.rank = index + 1; });
 
   const pathMap = new Map<string, { views: number; visitors: Set<string>; seconds: number }>();
   const contentMap = new Map<string, { views: number; visitors: Set<string>; days: Set<string>; title: string | null | undefined }>();
@@ -179,7 +189,9 @@ export function weekReport(views: WeekView[], leaves: WeekLeave[], today = repor
   return {
     from, to: today, today, days: dayStats,
     current: totals(week, weekLeaves),
-    previous: totals(views.filter(view => inPrevious(view.created_at)), leaves.filter(leave => inPrevious(leave.created_at))),
+    // Comparing with days whose visits were deleted would show every figure as "new this week".
+    previous: keptOf(previousFrom) === "full" ? totals(views.filter(view => inPrevious(view.created_at)), leaves.filter(leave => inPrevious(leave.created_at))) : null,
+    keptSince, keptDays: dayStats.filter(day => day.kept !== "missing").length,
     paths: [...pathMap].map(([name, entry]) => ({ name, views: entry.views, visitors: entry.visitors.size, engagedSeconds: round(entry.seconds) }))
       .sort((a, b) => b.views - a.views || b.visitors - a.visitors || a.name.localeCompare(b.name)),
     contents: [...contentMap].map(([path, entry]) => ({ path, title: titleOf(entry.title, path), learningPath: learningPath(path), views: entry.views, visitors: entry.visitors.size,

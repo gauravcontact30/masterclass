@@ -1,54 +1,83 @@
-/* Sample student stories: a large quote on the left, an index of reviewers on the right. Frame: landing-section.module.css. */
+/* Sample student stories: a fanned deck of story cards on the left, an index of reviewers on the right.
+   Frame: landing-section.module.css; colours: the --nb tokens on .home (landing-home.module.css). */
 .layout { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); gap: clamp(24px, 3vw, 44px); align-items: start; }
-.stage { display: grid; gap: 16px; }
+.stage { display: grid; gap: 18px; }
 
-.card { display: grid; gap: 16px; padding: clamp(24px, 3vw, 36px); border: 1px solid var(--nb-rule-2); border-radius: 14px; background: var(--nb-sheet); box-shadow: 0 24px 48px -36px rgba(143, 63, 35, .35); }
-/* All quotes share a grid cell so switching quotes cannot move the content below. */
-.slides { display: grid; }
-.slides > .card { grid-area: 1 / 1; }
-.card[hidden] { display: grid; visibility: hidden; pointer-events: none; }
+/* The deck: two cards fanned behind the story in front. Behind-cards are decoration only, sized by the front card. */
+.deck { position: relative; display: grid; padding: 0 14px 14px 0; touch-action: pan-y; }
+.behind { grid-area: 1 / 1; border: 1px solid var(--nb-rule-2); border-radius: 16px; background: var(--nb-sheet); transform-origin: 50% 100%; }
+.behind[data-depth="1"] { transform: translate(8px, 8px) rotate(1.2deg); background: #fbf6f1; }
+.behind[data-depth="2"] { transform: translate(14px, 14px) rotate(2.4deg); background: var(--nb-wash); }
+
+.card { position: relative; grid-area: 1 / 1; display: grid; gap: 16px; padding: clamp(22px, 3vw, 36px); border: 1px solid var(--nb-rule-2); border-radius: 16px; background: var(--nb-sheet); box-shadow: 0 28px 56px -38px rgba(143, 63, 35, .4); animation: storyIn .55s cubic-bezier(.2, .7, .2, 1) both; }
+@keyframes storyIn { from { opacity: 0; transform: translateX(28px) rotate(1.5deg); } to { opacity: 1; transform: none; } }
 .cardTop { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; }
 .area { display: inline-flex; align-items: center; gap: 7px; height: 28px; padding: 0 10px; border-radius: 6px; background: var(--nb-orange); color: var(--nb-ink-deep); font-size: 13.5px; font-weight: 600; }
 .stars { display: flex; gap: 3px; color: var(--nb-ink); }
 .mark { color: var(--nb-cream-edge); }
-.card blockquote { min-height: 7.5em; font-size: clamp(20px, 2vw, 25px); font-weight: 500; line-height: 1.45; letter-spacing: -0.01em; color: var(--nb-graphite); text-wrap: pretty; }
+/* A fixed minimum keeps the deck from jumping as quotes of different lengths turn. */
+.card blockquote { min-height: 6.6em; font-size: clamp(19px, 2vw, 24px); font-weight: 500; line-height: 1.45; letter-spacing: -0.01em; color: var(--nb-graphite); text-wrap: pretty; }
+
+/* The routine behind the story, three steps that arrive one after another. */
+.routine { display: flex; flex-wrap: wrap; gap: 8px; padding: 0; list-style: none; }
+.routine li { display: inline-flex; align-items: center; gap: 8px; min-height: 32px; padding: 4px 12px 4px 4px; border: 1px dashed var(--nb-cream-edge); border-radius: 999px; background: #fffaf6; font-size: 13.5px; color: var(--nb-text); animation: stepIn .45s ease both; animation-delay: calc(.25s + var(--i, 0) * .12s); }
+.routine b { display: grid; place-items: center; width: 24px; height: 24px; border-radius: 50%; background: var(--nb-button); color: #fff; font-size: 12px; font-weight: 700; }
+@keyframes stepIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
 .profile { display: flex; align-items: center; gap: 14px; padding-top: 16px; border-top: 1px solid var(--nb-rule); }
-.profile div { display: grid; gap: 2px; }
+.profile div { display: grid; gap: 2px; min-width: 0; }
 .profile strong { font-size: 16px; font-weight: 600; }
 .profile div span { font-size: 14px; color: var(--nb-muted); }
+.sample { margin-left: auto; padding: 3px 8px; border: 1px solid var(--nb-rule-2); border-radius: 6px; font-size: 11.5px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; color: var(--nb-muted); }
 
-.avatar, .selectorAvatar { display: grid; place-items: center; flex: none; overflow: hidden; border-radius: 50%; font-weight: 600; color: var(--nb-ink-deep); background: var(--nb-orange); }
+/* Illustrated initials on three warm tones, with a soft ring: never a photograph (see the component). */
+.avatar, .selectorAvatar { display: grid; place-items: center; flex: none; border-radius: 50%; font-weight: 700; color: var(--nb-ink-deep); background: radial-gradient(circle at 30% 25%, #fff6ef, var(--nb-orange)); box-shadow: 0 0 0 3px var(--nb-sheet), 0 0 0 4px var(--nb-cream-edge); }
 .avatar { width: 56px; height: 56px; font-size: 18px; }
 .selectorAvatar { width: 40px; height: 40px; font-size: 14px; }
-.avatar[data-tone="1"], .selectorAvatar[data-tone="1"] { background: #e3eefc; color: #22508f; }
-.avatar[data-tone="2"], .selectorAvatar[data-tone="2"] { background: #dff3e8; color: #1d6a45; }
-.avatar[data-photo], .selectorAvatar[data-photo] { background: var(--nb-rule); }
-.avatar img, .selectorAvatar img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.avatar[data-tone="1"], .selectorAvatar[data-tone="1"] { background: radial-gradient(circle at 30% 25%, #f3f8ef, #d3e0c9); color: #3f5a2e; }
+.avatar[data-tone="2"], .selectorAvatar[data-tone="2"] { background: radial-gradient(circle at 30% 25%, #f5f2fd, #ddd4f5); color: #4b3c86; }
 
-.controls { position: relative; display: flex; align-items: center; gap: 12px; }
-.controls button { display: grid; place-items: center; width: 40px; height: 40px; border: 1px solid var(--nb-rule-2); border-radius: 50%; background: var(--nb-sheet); color: var(--nb-graphite); cursor: pointer; transition: border-color .15s ease, background-color .15s ease; }
-.controls button:hover { border-color: var(--nb-ink); background: var(--nb-wash); }
-.controls > span:not(.timer) { min-width: 4.5ch; text-align: center; font-size: 15px; font-weight: 600; font-variant-numeric: tabular-nums; }
-.controls i { font-style: normal; font-weight: 400; color: var(--nb-muted); }
-/* A hairline that fills over the 5.5s rotation, so it is clear the quote will change and when. */
-.timer { flex: 1; height: 2px; border-radius: 2px; background: linear-gradient(var(--nb-ink), var(--nb-ink)) left / 0 100% no-repeat, var(--nb-rule); animation: fill 5.5s linear forwards; }
-@keyframes fill { to { background-size: 100% 100%; } }
+.controls { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.controls button { display: grid; place-items: center; width: 44px; height: 44px; border: 1px solid var(--nb-rule-2); border-radius: 50%; background: var(--nb-sheet); color: var(--nb-graphite); cursor: pointer; transition: background-color .15s ease, border-color .15s ease; }
+.controls button:hover { background: var(--nb-orange); border-color: var(--nb-cream-edge); }
+.controls button:focus-visible, .index button:focus-visible { outline: 3px solid var(--nb-graphite); outline-offset: 2px; }
+/* The play/pause button carries the eight-second ring. */
+.ring { position: relative; }
+.ringSvg { position: absolute; inset: -1px; width: calc(100% + 2px); height: calc(100% + 2px); transform: rotate(-90deg); pointer-events: none; }
+.ringSvg circle { fill: none; stroke: transparent; stroke-width: 2.5; }
+.ring .ringFill { stroke: var(--nb-button); stroke-dasharray: 100.53; stroke-dashoffset: 100.53; stroke-linecap: round; }
+.ring[data-running] .ringFill { animation: ringFill linear forwards; }
+@keyframes ringFill { to { stroke-dashoffset: 0; } }
+.counter { font-size: 15px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.counter i { font-style: normal; color: var(--nb-muted); }
+.hint { flex-basis: 100%; font-size: 13px; color: var(--nb-muted); }
 
-.index { display: grid; border-top: 1px solid var(--nb-graphite); }
-.index button { display: grid; grid-template-columns: 40px minmax(0, 1fr); grid-template-areas: "avatar who" "avatar area"; column-gap: 14px; row-gap: 6px; align-items: center; width: 100%; padding: 14px 12px; border: 0; border-bottom: 1px solid var(--nb-rule-2); background: transparent; color: var(--nb-graphite); text-align: left; cursor: pointer; transition: background-color .15s ease; }
-.index button > .selectorAvatar { grid-area: avatar; }
-.who { grid-area: who; display: grid; gap: 1px; min-width: 0; }
-.who b { font-size: 15.5px; font-weight: 600; }
-.who small { overflow: hidden; font-size: 13.5px; color: var(--nb-muted); text-overflow: ellipsis; white-space: nowrap; }
-.whoArea { grid-area: area; display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: var(--nb-ink); }
-.index button:hover { background: var(--nb-wash); }
-.index button[aria-pressed="true"] { background: var(--nb-sheet); box-shadow: inset 3px 0 0 var(--nb-ink); }
+.index { display: grid; gap: 8px; }
+.index button { position: relative; overflow: hidden; display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 4px 12px; width: 100%; min-height: 64px; padding: 12px 14px; border: 1px solid var(--nb-rule); border-radius: 12px; background: var(--nb-sheet); text-align: left; color: var(--nb-graphite); cursor: pointer; transition: border-color .2s ease, transform .2s ease, box-shadow .2s ease; }
+.index button:hover { border-color: var(--nb-cream-edge); transform: translateX(3px); }
+.index button[aria-pressed="true"] { border-color: var(--nb-cream-edge); background: #fffaf6; box-shadow: 0 12px 26px -22px rgba(143, 63, 35, .6); }
+.selectorAvatar { grid-row: span 2; }
+.who { display: grid; gap: 2px; min-width: 0; }
+.who b { font-size: 15px; font-weight: 600; }
+.who small { overflow: hidden; font-size: 13px; color: var(--nb-muted); text-overflow: ellipsis; white-space: nowrap; }
+.whoArea { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; color: var(--nb-ink-deep); }
+/* The active story's time left, as a bar along the bottom of its index row. */
+.bar { position: absolute; left: 0; bottom: 0; height: 3px; width: 100%; background: var(--nb-button); transform-origin: left; transform: scaleX(0); }
+.bar[data-running] { animation: barFill linear forwards; }
+@keyframes barFill { to { transform: scaleX(1); } }
 
 @media (max-width: 900px) {
   .layout { grid-template-columns: minmax(0, 1fr); }
-  .index { grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr)); column-gap: 16px; }
+  .index { grid-template-columns: repeat(auto-fill, minmax(min(100%, 220px), 1fr)); }
 }
 @media (max-width: 520px) {
-  .card blockquote { min-height: 9em; }
+  .deck { padding: 0 8px 8px 0; }
+  .behind[data-depth="1"] { transform: translate(5px, 5px) rotate(.8deg); }
+  .behind[data-depth="2"] { transform: translate(8px, 8px) rotate(1.6deg); }
+  .card blockquote { min-height: 8.5em; }
+  .whoArea { grid-column: 2; }
 }
-@media (prefers-reduced-motion: reduce) { .timer { display: none; } }
+@media (prefers-reduced-motion: reduce) {
+  .card, .routine li { animation: none; }
+  .index button:hover { transform: none; }
+}

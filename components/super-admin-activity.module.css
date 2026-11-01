@@ -651,3 +651,7 @@
 /* User activities: every panel gets breathing room inside and between, and the last one clears the Study Buddy button. */
 .activity > [data-slot="card"] { padding-block: 22px; }
 .breakdowns { gap: 18px; }
+
+/* The window actually shown: visits are kept VISIT_RETENTION_DAYS days, so a longer selection says so. */
+.windowNote { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 0; padding: 9px 12px; border-radius: 10px; border: 1px solid #e8e6dc; background: #faf9f5; font-size: 13px; color: #5e5d59; }
+.windowNote b { color: #141413; font-weight: 600; }

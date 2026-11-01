@@ -427,6 +427,93 @@ function summarizeVisit(sessionId: string, times: { view: StreamVisit; time: Ret
   };
 }
 
+/**
+ * A period's visitor figures, counted from the same visitors the stream's cards list (bots, automated browsers and
+ * visitors under a second already left out; one person per signed-in account or linked device), so the command
+ * centre's tiles can never disagree with the list beneath them. A page view counts when it was opened in
+ * [from, to); a visit (session) counts when one of its page views does, and its stay, reading time and bounce are
+ * the whole visit's, timed exactly like the cards.
+ */
+export type PeriodSummary = {
+  people: number; signedIn: number; newVisitors: number; sessions: number; views: number;
+  bounceRate: number | null; avgStayMs: number | null; readingPerPersonMs: number | null; pagesPerSession: number | null;
+  /** Page views by IST hour, 0–23. */
+  hours: number[];
+  pages: { path: string; title: string; views: number; people: number; avgReadMs: number | null }[];
+  sources: { source: string; people: number }[]; countries: { country: string; people: number }[]; devices: { device: string; people: number }[];
+  browsers: { browser: string; people: number }[]; systems: { os: string; people: number }[];
+  /** By IST calendar day (YYYY-MM-DD), oldest first: page views, people, new visitors and signed-in learners that day. */
+  daily: { day: string; views: number; people: number; newVisitors: number; signedIn: number }[];
+};
+
+const tally = (map: Map<string, Set<string>>, key: string, person: string) => (map.get(key) ?? map.set(key, new Set()).get(key)!).add(person);
+const ranked = (map: Map<string, Set<string>>) => [...map].map(([key, set]) => ({ key, people: set.size })).sort((a, b) => b.people - a.people || a.key.localeCompare(b.key));
+
+/** Where a visit came from: its campaign source or referring host, with the site's own hosts counted as direct. */
+export function sourceName(source: string | null, ownHosts: string[] = []): string {
+  const host = source?.toLowerCase().trim().replace(/^www\./, "");
+  return !host || ownHosts.some(own => host === own || host.endsWith(`.${own}`)) ? "Direct" : host;
+}
+
+export function periodSummary(visitors: StreamVisitor[], from: number, to = Infinity, ownHosts: string[] = []): PeriodSummary {
+  const inPeriod = (ms: number) => ms >= from && ms < to;
+  const hours = Array.from({ length: 24 }, () => 0);
+  const pages = new Map<string, { title: string; views: number; people: Set<string>; readMs: number; reads: number }>();
+  const sources = new Map<string, Set<string>>(), countries = new Map<string, Set<string>>(), devices = new Map<string, Set<string>>();
+  const browsers = new Map<string, Set<string>>(), systems = new Map<string, Set<string>>();
+  const days = new Map<string, { views: number; people: Set<string>; fresh: Set<string>; signed: Set<string> }>();
+  const istDay = (ms: number) => new Date(ms + 19_800_000).toISOString().slice(0, 10);
+  let people = 0, signedIn = 0, newVisitors = 0, sessions = 0, views = 0, bounced = 0, stayMs = 0, readingMs = 0;
+  for (const v of visitors) {
+    const visits = v.visits.filter(visit => visit.steps.some(step => inPeriod(step.at)));
+    if (!visits.length) continue;
+    people++;
+    if (v.signedIn) signedIn++;
+    // New: their first page view ever (the browser had no visitor cookie) was opened in this period.
+    else if (v.first.new_visitor && inPeriod(Date.parse(v.first.created_at))) newVisitors++;
+    tally(countries, v.current.country ?? v.first.country ?? "Unknown", v.key);
+    tally(devices, (v.current.device || "desktop").toLowerCase(), v.key);
+    tally(browsers, v.current.browser || "Unknown", v.key);
+    tally(systems, v.current.os || "Unknown", v.key);
+    const firstAt = Date.parse(v.first.created_at), firstDay = !v.signedIn && v.first.new_visitor && inPeriod(firstAt) ? istDay(firstAt) : null;
+    for (const visit of visits) {
+      sessions++; stayMs += visit.stayMs; readingMs += visit.readingMs;
+      if (visit.views === 1) bounced++;
+      tally(sources, sourceName(visit.source, ownHosts), v.key);
+      for (const step of visit.steps) {
+        if (!inPeriod(step.at)) continue;
+        views++;
+        const dayKey = istDay(step.at), day = days.get(dayKey) ?? { views: 0, people: new Set<string>(), fresh: new Set<string>(), signed: new Set<string>() };
+        day.views++; day.people.add(v.key);
+        if (v.signedIn) day.signed.add(v.key);
+        if (firstDay === dayKey) day.fresh.add(v.key);
+        days.set(dayKey, day);
+        hours[new Date(step.at + 19_800_000).getUTCHours()]++;
+        const page = pages.get(step.path) ?? { title: step.title, views: 0, people: new Set<string>(), readMs: 0, reads: 0 };
+        page.views++; page.people.add(v.key);
+        // Average read from pages that have closed: an open page's clock is still running.
+        if (step.ms != null && !step.open) { page.readMs += step.ms; page.reads++; }
+        pages.set(step.path, page);
+      }
+    }
+  }
+  return {
+    people, signedIn, newVisitors, sessions, views, hours,
+    bounceRate: sessions ? Math.round((1000 * bounced) / sessions) / 10 : null,
+    avgStayMs: sessions ? stayMs / sessions : null,
+    readingPerPersonMs: people ? readingMs / people : null,
+    pagesPerSession: sessions ? Math.round((views / sessions) * 10) / 10 : null,
+    pages: [...pages].map(([path, p]) => ({ path, title: p.title, views: p.views, people: p.people.size, avgReadMs: p.reads ? p.readMs / p.reads : null }))
+      .sort((a, b) => b.people - a.people || b.views - a.views || a.path.localeCompare(b.path)),
+    sources: ranked(sources).map(({ key, people }) => ({ source: key, people })),
+    countries: ranked(countries).map(({ key, people }) => ({ country: key, people })),
+    devices: ranked(devices).map(({ key, people }) => ({ device: key, people })),
+    browsers: ranked(browsers).map(({ key, people }) => ({ browser: key, people })),
+    systems: ranked(systems).map(({ key, people }) => ({ os: key, people })),
+    daily: [...days].sort((a, b) => a[0].localeCompare(b[0])).map(([day, d]) => ({ day, views: d.views, people: d.people.size, newVisitors: d.fresh.size, signedIn: d.signed.size })),
+  };
+}
+
 const count = (n: number, one: string, many = `${one}s`) => `${n} ${n === 1 ? one : many}`;
 
 /** How far along the site a person got, from the pages they opened: each signal is something they actually did. */

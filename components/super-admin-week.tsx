@@ -10,7 +10,7 @@ import styles from "./super-admin-week.module.css";
 const Donut = dynamic(() => import("./super-admin-week-charts").then(module => module.Donut), { ssr: false, loading: () => <div className={styles.chartSkeleton} /> });
 const DayBars = dynamic(() => import("./super-admin-week-charts").then(module => module.DayBars), { ssr: false, loading: () => <div className={styles.chartSkeleton} /> });
 
-type Report = WeekReport & { capped: boolean; generatedAt: string };
+type Report = WeekReport & { capped: boolean; generatedAt: string; retentionDays?: number };
 const n = (value: number) => value.toLocaleString("en-IN");
 const time = (seconds: number) => {
   if (seconds < 60) return `${Math.round(seconds)}s`;
@@ -24,7 +24,7 @@ const MEDAL = ["🥇", "🥈", "🥉"];
 
 /** The comparison figures: what each measures, and whether a rise is good (bounce rate is the one where it is not). */
 const FIGURES: { key: keyof WeekTotals; label: string; icon: typeof Users; note: string; format?: (value: number) => string; lowerIsBetter?: boolean }[] = [
-  { key: "visitors", label: "Visitors", icon: Users, note: "Different browsers that opened a page" },
+  { key: "visitors", label: "Visitors", icon: Users, note: "Different browsers that opened a page (one person on two devices counts twice)" },
   { key: "newVisitors", label: "New visitors", icon: UserPlus, note: "First visit ever in this window" },
   { key: "signedIn", label: "Signed-in learners", icon: UserCheck, note: "Accounts that opened a page" },
   { key: "sessions", label: "Sessions", icon: Repeat, note: "Separate visits" },
@@ -35,7 +35,9 @@ const FIGURES: { key: keyof WeekTotals; label: string; icon: typeof Users; note:
   { key: "bounceRate", label: "Bounce rate", icon: MousePointerClick, note: "Sessions that saw one page", format: value => `${value}%`, lowerIsBetter: true },
 ];
 
-function Delta({ now, before, lowerIsBetter = false }: Readonly<{ now: number; before: number; lowerIsBetter?: boolean }>) {
+function Delta({ now, before, lowerIsBetter = false }: Readonly<{ now: number; before: number | null; lowerIsBetter?: boolean }>) {
+  // The previous week's visits are no longer stored: say so rather than calling every figure "new".
+  if (before == null) return <span className={styles.delta} data-trend="flat"><Minus size={12} aria-hidden="true" />No earlier week to compare</span>;
   if (!before && !now) return <span className={styles.delta} data-trend="flat"><Minus size={12} aria-hidden="true" />No change</span>;
   if (!before) return <span className={styles.delta} data-trend="up">New this week</span>;
   const change = Math.round(((now - before) / before) * 1000) / 10;
@@ -73,7 +75,10 @@ export function SuperAdminWeek() {
     return () => { controller.abort(); clearInterval(timer); };
   }, [reload]);
 
-  const ranked = data ? [...data.days].sort((a, b) => a.rank - b.rank) : [];
+  // Only days whose visits are still stored are ranked; deleted days would rank last with a misleading zero.
+  const ranked = data ? data.days.filter(day => day.kept !== "missing").sort((a, b) => a.rank - b.rank) : [];
+  const kept = data?.days.filter(day => day.kept !== "missing") ?? [];
+  const missing = data ? data.days.length - kept.length : 0;
   const peak = ranked[0];
   const learningViews = data?.paths.reduce((sum, path) => sum + path.views, 0) ?? 0;
 
@@ -82,7 +87,7 @@ export function SuperAdminWeek() {
       <span className={styles.mark} aria-hidden="true"><CalendarRange size={18} /></span>
       <div>
         <h2 id="week-report-title">Last 7 days</h2>
-        <p>{data ? `${shortDay(data.from)} – ${shortDay(data.to)} (today so far) compared with the 7 days before · updated ${ist(data.generatedAt)} IST` : "Visitors, learning paths and contents, day by day, compared with the week before."}</p>
+        <p>{data ? `${shortDay(kept[0]?.date ?? data.from)} – ${shortDay(data.to)} (today so far)${data.previous ? " compared with the 7 days before" : ""} · updated ${ist(data.generatedAt)} IST` : "Visitors, learning paths and contents, day by day, compared with the week before."}</p>
       </div>
       <button type="button" onClick={() => setReload(value => value + 1)} disabled={busy} aria-label="Refresh the last 7 days" title="Refresh"><RefreshCw size={15} className={busy ? styles.spin : undefined} aria-hidden="true" /></button>
     </div>
@@ -90,26 +95,32 @@ export function SuperAdminWeek() {
     {!data && !error && <AdminLoading>Reading the last 14 days of visits…</AdminLoading>}
     {data && <>
       {data.capped && <p className={styles.notice} role="status">A very busy day passed the per-day reading limit, so its figures are a lower bound.</p>}
+      {(missing > 0 || !data.previous || data.days.some(day => day.kept === "partial")) && <p className={styles.notice} role="status">
+        Visits are kept for {data.retentionDays ?? 5} days, then deleted every night.{" "}
+        {missing > 0 ? `${missing} of these 7 days ${missing === 1 ? "is" : "are"} no longer stored, so the figures cover ${kept.length} ${kept.length === 1 ? "day" : "days"}. ` : ""}
+        {data.days.some(day => day.kept === "partial") && data.keptSince ? `On ${data.days.filter(day => day.kept === "partial").map(day => day.weekday).join(", ")}, visits before ${ist(data.keptSince)} IST may have been deleted. ` : ""}
+        {data.previous ? "" : "The previous week is not stored, so there is no week-on-week comparison."}
+      </p>}
 
       <dl className={styles.figures}>{FIGURES.map(({ key, label, icon: Icon, note, format = n, lowerIsBetter }) => <div key={key}>
         <dt><Icon size={13} aria-hidden="true" />{label}</dt>
         <dd>{format(data.current[key])}</dd>
-        <Delta now={data.current[key]} before={data.previous[key]} lowerIsBetter={lowerIsBetter} />
-        <small>{note} · before: {format(data.previous[key])}</small>
+        <Delta now={data.current[key]} before={data.previous ? data.previous[key] : null} lowerIsBetter={lowerIsBetter} />
+        <small>{note}{data.previous ? ` · before: ${format(data.previous[key])}` : ""}</small>
       </div>)}</dl>
 
       <div className={styles.split}>
         <article className={styles.card}>
           <h3><Trophy size={15} aria-hidden="true" />Busiest days, ranked by visitors</h3>
           {peak && peak.visitors > 0 ? <p className={styles.callout}>Peak day: <b>{peak.weekday}</b> with <b>{n(peak.visitors)}</b> visitors and <b>{n(peak.views)}</b> page views{peak.topPath ? <>, mostly in <b>{peak.topPath.name}</b></> : null}.</p> : <p className={styles.callout}>No visits recorded in these 7 days yet.</p>}
-          <DayBars data={data.days.map(day => ({ label: shortDay(day.date), visitors: day.visitors, views: day.views, rank: day.rank, partial: day.partial }))} />
+          <DayBars data={kept.map(day => ({ label: shortDay(day.date), visitors: day.visitors, views: day.views, rank: day.rank, partial: day.partial }))} />
           <ol className={styles.ranking}>{ranked.map(day => <li key={day.date} data-top={day.rank <= 3 || undefined}>
             <span className={styles.rank}>{day.rank <= 3 && day.visitors > 0 ? <span aria-hidden="true">{MEDAL[day.rank - 1]}</span> : null}#{day.rank}</span>
-            <span className={styles.rankDay}><b>{day.weekday}</b>{day.partial && <em>today, so far</em>}<small>{day.topPath ? `Most used: ${day.topPath.name}` : "No learning pages opened"}</small></span>
+            <span className={styles.rankDay}><b>{day.weekday}</b>{day.partial && <em>today, so far</em>}{day.kept === "partial" && <em>may be incomplete</em>}<small>{day.topPath ? `Most used: ${day.topPath.name}` : "No learning pages opened"}</small></span>
             <span className={styles.rankFigures}><b>{n(day.visitors)}</b> visitors<small>{n(day.views)} views · {time(day.engagedSeconds)}</small></span>
           </li>)}</ol>
         </article>
-        <Donut title="Share of the week's visitors, by day" unit="visitors" center="visitor-days" data={data.days.map(day => ({ name: shortDay(day.date) + (day.partial ? " (today)" : ""), value: day.visitors }))} />
+        <Donut title="Share of the week's visitors, by day" unit="visitors" center="visitor-days" data={kept.map(day => ({ name: shortDay(day.date) + (day.partial ? " (today)" : ""), value: day.visitors }))} />
       </div>
 
       <div className={styles.donuts}>
@@ -141,7 +152,7 @@ export function SuperAdminWeek() {
           <tbody>{data.contents.map((content, index) => <tr key={content.path} data-top={index < 3 || undefined}>
             <td>{index < 3 ? `${MEDAL[index]} ` : ""}#{index + 1}</td>
             <th scope="row"><a href={content.path} target="_blank" rel="noreferrer">{content.title}</a><small>{content.path}</small></th>
-            <td>{content.learningPath}</td><td>{n(content.views)}</td><td>{n(content.visitors)}</td><td>{time(content.avgSeconds)}</td><td>{content.days} of 7</td>
+            <td>{content.learningPath}</td><td>{n(content.views)}</td><td>{n(content.visitors)}</td><td>{time(content.avgSeconds)}</td><td>{content.days} of {kept.length}</td>
           </tr>)}</tbody>
         </table></div> : <p className={styles.empty}>No learning content was opened in these 7 days.</p>}
       </article>
@@ -150,8 +161,11 @@ export function SuperAdminWeek() {
         <h3><CalendarRange size={15} aria-hidden="true" />Day by day, every metric</h3>
         <div className={styles.tableWrap}><table>
           <thead><tr><th scope="col">Day</th><th scope="col">Rank</th><th scope="col">Visitors</th><th scope="col">New</th><th scope="col">Signed in</th><th scope="col">Sessions</th><th scope="col">Views</th><th scope="col">Pages / session</th><th scope="col">Bounce</th><th scope="col">Avg. time / visitor</th><th scope="col">Time read</th><th scope="col">Most used path</th><th scope="col">Most read content</th></tr></thead>
-          <tbody>{[...data.days].reverse().map(day => <tr key={day.date} data-top={(day.rank <= 3 && day.visitors > 0) || undefined}>
-            <th scope="row">{day.weekday}{day.partial && <small>today, so far</small>}</th>
+          <tbody>{[...data.days].reverse().map(day => day.kept === "missing" ? <tr key={day.date}>
+            <th scope="row">{day.weekday}<small>not stored</small></th>
+            <td colSpan={12}>Visits from this day were deleted after {data.retentionDays ?? 5} days (or predate tracking).</td>
+          </tr> : <tr key={day.date} data-top={(day.rank <= 3 && day.visitors > 0) || undefined}>
+            <th scope="row">{day.weekday}{day.partial && <small>today, so far</small>}{day.kept === "partial" && <small>may be incomplete</small>}</th>
             <td>{day.rank <= 3 && day.visitors > 0 ? `${MEDAL[day.rank - 1]} ` : ""}#{day.rank}</td>
             <td>{n(day.visitors)}</td><td>{n(day.newVisitors)}</td><td>{n(day.signedIn)}</td><td>{n(day.sessions)}</td><td>{n(day.views)}</td>
             <td>{day.pagesPerSession.toFixed(2)}</td><td>{day.bounceRate}%</td><td>{time(day.avgSecondsPerVisitor)}</td><td>{time(day.engagedSeconds)}</td>
