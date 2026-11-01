@@ -1,12 +1,11 @@
 "use client";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Activity, AlertTriangle, BookOpen, BookOpenText, Bot, CalendarClock, CheckCircle2, Clock, Compass, Cpu, Database, EyeOff, Flame, Gauge, Globe2, Hourglass, Languages, Laptop, Lightbulb, Link2, LogIn, LogOut, MapPin, Monitor, MousePointerClick, Network, Pause, Play, Radio, RefreshCw, Route, Server, Smartphone, Sparkles, Tablet, Target, Timer, TrendingDown, UserPlus, UserRound, Users, Zap, type LucideIcon } from "lucide-react";
+import { Activity, AlertTriangle, BookOpen, BookOpenText, Bot, CalendarClock, CheckCircle2, Clock, Cpu, Database, EyeOff, Flame, Gauge, Globe2, Hourglass, Languages, Laptop, Link2, LogIn, LogOut, MapPin, Monitor, MousePointerClick, Network, Pause, Play, Radio, RefreshCw, Route, Server, Smartphone, Sparkles, Tablet, Target, Timer, TrendingDown, UserPlus, UserRound, Users, Zap, type LucideIcon } from "lucide-react";
 import { Flag, countryName } from "./super-admin-audience";
 import { Pager } from "./super-admin-table";
 import styles from "./super-admin-overview-live.module.css";
 import { VISIT_RETENTION_DAYS } from "@/lib/visit-retention";
 import { indexVisits, periodSummary, streamVisitors, type Presence, type StreamClick, type StreamVisitor } from "@/lib/live-visits";
-import { learnerInsight } from "@/lib/country-learner-insights";
 import { localityPin } from "@/lib/new-user-locations";
 import { FirstLookVisitors } from "./super-admin-first-look";
 import { PrivateVisitors } from "./super-admin-private-visitors";
@@ -25,10 +24,10 @@ type Live = {
 type Person = { person: string; sessions: number; engaged_seconds: number; first_seen: string };
 export type OverviewSnapshot = { generatedAt: string; events: Row[]; requests: { count: number; errors: number; p95: number | null }; health: { databaseMs: number; processUptime: number; processMemory: number; hostMemory: number; hostUsedMemory: number; cpuCores: number; cpuPercent?: number | null; environment?: string; nodeVersion?: string } };
 
-const REFRESH_MS = 15_000;
-// The visitor stream is read incrementally (only rows since the last read), so it can be asked far more often than the
-// SQL report: the visitor tiles and cards are at most this stale (user request 2026-11-01: "fresh" live visitors).
-const STREAM_REFRESH_MS = 5_000;
+// Everything in the Live command centre and visitor stream is re-read every 5 seconds, silently: no running timers or
+// loading states on screen, the figures just change (user requests 2026-11-01). The stream is read incrementally (only
+// rows since the last read); the report and the snapshot skip a tick while the previous read is still in flight.
+const REFRESH_MS = 5_000;
 // Rows per page in each paginated panel.
 const STREAM_PAGE = 3, TRACE_PAGE = 10, READING_PAGE = 6;
 const pageOf = <T,>(rows: T[], page: number, size: number) => rows.slice((Math.min(page, Math.max(1, Math.ceil(rows.length / size))) - 1) * size, Math.min(page, Math.max(1, Math.ceil(rows.length / size))) * size);
@@ -38,7 +37,8 @@ const since = (iso: unknown, now: number) => {
   if (!iso) return "—";
   // Accepts an ISO string or epoch milliseconds (the visitor stream keeps Left as a number).
   const s = Math.max(0, (now - new Date(typeof iso === "number" ? iso : String(iso)).getTime()) / 1000);
-  return s < 10 ? "now" : s < 60 ? `${Math.round(s)}s ago` : s < 3600 ? `${Math.round(s / 60)}m ago` : s < 86400 ? `${Math.round(s / 3600)}h ago` : `${Math.round(s / 86400)}d ago`;
+  // No seconds: a count that changes on every refresh reads as a running timer (user request 2026-11-01).
+  return s < 60 ? "just now" : s < 3600 ? `${Math.round(s / 60)}m ago` : s < 86400 ? `${Math.round(s / 3600)}h ago` : `${Math.round(s / 86400)}d ago`;
 };
 const spent = (seconds: number) => {
   const s = Math.max(0, Math.round(seconds));
@@ -149,43 +149,48 @@ export function OverviewLive({ snapshot, onRefreshSnapshot }: { snapshot: Overvi
       setOffset(Date.parse(generatedAt) - (startedAt + Date.now()) / 2);
       // "New since the last refresh" moves only when a read brought rows, so a 5 s poll does not wipe the highlight.
       if (!incremental || rows.size !== prior.rows.size) setFreshSince(prior ? Date.parse(prior.generatedAt) : null);
-      feed.current = next; setStream(next);
+      // The section's clock moves only with new data: no running timers on screen, figures change silently (user request 2026-11-01).
+      feed.current = next; setStream(next); setNow(Date.now());
     } catch { /* the stream falls back to the 24 h report's recent visits */ }
     finally { streamBusy.current = false; }
   }, []);
+  const reportBusy = useRef(false), hasReport = useRef(false);
   const load = useCallback(async (signal?: AbortSignal) => {
     void loadStream(signal);
+    if (reportBusy.current) return;
+    reportBusy.current = true;
     try {
       const response = await fetch("/api/super-admin/activity?day=today", { cache: "no-store", signal });
       const body = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(body.error ?? "service_error");
       // A malformed payload must degrade this panel, never take the whole dashboard down with it.
       if (typeof body?.totals !== "object" || body.totals === null || !Array.isArray(body.recent) || !Array.isArray(body.hours)) throw new Error("service_error");
-      setLive(body);
+      setLive(body); setNow(Date.now()); hasReport.current = true;
       setError("");
-    } catch (e) { if (!signal?.aborted && !(e instanceof DOMException)) setError(e instanceof Error && e.message === "migration_required" ? "Live visitor tracking needs migration 0023 (User activity)." : "Live tracking is unavailable right now; retrying."); }
+    } catch (e) {
+      // A failed background read keeps the figures already shown; the warning is only for a report that never loaded.
+      if (!signal?.aborted && !(e instanceof DOMException) && !hasReport.current) setError(e instanceof Error && e.message === "migration_required" ? "Live visitor tracking needs migration 0023 (User activity)." : "Live tracking is unavailable right now; retrying.");
+    }
+    finally { reportBusy.current = false; }
   }, [loadStream]);
   useEffect(() => {
     const controller = new AbortController();
     queueMicrotask(() => { if (!controller.signal.aborted) void load(controller.signal); });
     if (paused) return () => controller.abort();
     const timer = setInterval(() => { if (document.visibilityState === "visible") { void load(controller.signal); onRefreshSnapshot(); } }, REFRESH_MS);
-    // Between full refreshes, the visitor stream alone (cheap: only what is new) every few seconds.
-    const streamTimer = setInterval(() => { if (document.visibilityState === "visible") void loadStream(controller.signal); }, STREAM_REFRESH_MS);
     // Back on a hidden tab: refresh at once instead of showing figures from when it was left.
     const onVisible = () => { if (document.visibilityState === "visible") { void load(controller.signal); onRefreshSnapshot(); } };
     document.addEventListener("visibilitychange", onVisible);
-    return () => { controller.abort(); clearInterval(timer); clearInterval(streamTimer); document.removeEventListener("visibilitychange", onVisible); };
-  }, [load, loadStream, paused, onRefreshSnapshot]);
-  // A one-second clock keeps the "x seconds ago" labels honest between refreshes.
-  useEffect(() => { const t = setInterval(() => setNow(Date.now()), 1000); return () => clearInterval(t); }, []);
+    return () => { controller.abort(); clearInterval(timer); document.removeEventListener("visibilitychange", onVisible); };
+  }, [load, paused, onRefreshSnapshot]);
 
   const streamRows = useMemo(() => stream ? [...stream.rows.values()] : live?.recent ?? [], [stream, live]);
   const streamDays = stream?.days ?? 1;
   const clockNow = now + offset;
   const dayStart = istMidnight(clockNow);
-  // A short window (last hour, 30 or 15 minutes) never reaches back past midnight.
-  const notBefore = (ms: number) => Math.max(clockNow - ms, dayStart);
+  // A short window (last hour, 30 minutes) is exactly that long, across midnight too: clamped to 00:00 IST it showed a
+  // few minutes under a "last hour" label just after midnight. The stream holds several days, so the rows are there.
+  const notBefore = (ms: number) => clockNow - ms;
   // The stream always covers today; only the SQL fallback can be the rolling 24 h (before migration 0045).
   const day = !(stream && !stream.capped) && live?.window === "24h" ? "24 h" : "today";
   // Who each visitor is and what is known about every page they opened (lib/live-visits.ts); only the open pages'
@@ -205,8 +210,8 @@ export function OverviewLive({ snapshot, onRefreshSnapshot }: { snapshot: Overvi
     views: everyone.reduce((sum, v) => sum + v.views, 0),
     engaged: everyone.length ? everyone.reduce((sum, v) => sum + v.engagedMs, 0) / everyone.length : null,
     pages: everyone.length ? Math.round((everyone.reduce((sum, v) => sum + v.views, 0) / everyone.length) * 10) / 10 : null,
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- notBefore() reads clockNow and dayStart
-  }), [everyone, clockNow, dayStart]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- notBefore() reads clockNow
+  }), [everyone, clockNow]);
   // Every visitor figure below is counted from `everyone`, the list the stream's cards show (lib/live-visits.ts
   // periodSummary): bots, automated browsers and visitors under a second left out, one person per account or linked
   // device. They used to mix three sources (the SQL report counted each browser cookie as a visitor, the last-hour and
@@ -215,7 +220,7 @@ export function OverviewLive({ snapshot, onRefreshSnapshot }: { snapshot: Overvi
   const ownHosts = useMemo(() => typeof window === "undefined" ? [] : [window.location.hostname.replace(/^www\./, "")], []);
   const exact = Boolean(stream && !stream.capped);
   const todaySum = useMemo(() => periodSummary(everyone, dayStart, Infinity, ownHosts), [everyone, dayStart, ownHosts]);
-  const hourSum = useMemo(() => periodSummary(everyone, Math.max(clockNow - 3600_000, dayStart), Infinity, ownHosts), [everyone, clockNow, dayStart, ownHosts]);
+  const hourSum = useMemo(() => periodSummary(everyone, clockNow - 3600_000, Infinity, ownHosts), [everyone, clockNow, ownHosts]);
   const readSum = useMemo(() => periodSummary(everyone, clockNow - 30 * 60_000, Infinity, ownHosts), [everyone, clockNow, ownHosts]);
   // The rolling 24 hours, beside "today" (from 00:00 IST): early in the IST day, today alone looks small.
   const daySum = useMemo(() => periodSummary(everyone, clockNow - 86_400_000, Infinity, ownHosts), [everyone, clockNow, ownHosts]);
@@ -225,6 +230,9 @@ export function OverviewLive({ snapshot, onRefreshSnapshot }: { snapshot: Overvi
   const devices = hourSum.devices;
   // Today's figures: from the stream when it holds the whole day, otherwise from the SQL report (labelled as such).
   const t = live?.totals;
+  // New accounts and bots filtered come from the database report, so they take its window, not the stream's: before
+  // migration 0045 that report is the rolling 24 h even while the stream covers today.
+  const sqlDay = live?.window === "24h" ? "24 h" : "today";
   const fig = exact ? {
     views: todaySum.views, people: todaySum.people, sessions: todaySum.sessions, signedIn: todaySum.signedIn, newVisitors: todaySum.newVisitors,
     bounceRate: todaySum.bounceRate, avgSessionSeconds: todaySum.avgStayMs == null ? null : todaySum.avgStayMs / 1000, pagesPerSession: todaySum.pagesPerSession,
@@ -244,8 +252,6 @@ export function OverviewLive({ snapshot, onRefreshSnapshot }: { snapshot: Overvi
   };
 
   const requests = useMemo(() => (snapshot?.events ?? []).filter(e => e.kind === "request"), [snapshot]);
-  const recent15 = useMemo(() => requests.filter(e => Date.parse(String(e.created_at)) >= Math.max(now - 15 * 60_000, istMidnight(now))), [requests, now]);
-  const errors15 = recent15.filter(e => Number(e.status) >= 500).length;
   const traces = useMemo(() => requests.filter(e => {
     const status = Number(e.status), ms = Number(e.duration_ms);
     return traceFilter === "all" || (traceFilter === "client" ? status >= 400 && status < 500 : traceFilter === "server" ? status >= 500 : ms >= 1000);
@@ -274,30 +280,26 @@ export function OverviewLive({ snapshot, onRefreshSnapshot }: { snapshot: Overvi
   const peak = Math.max(1, ...hours);
   const h = snapshot?.health;
 
-  // How old the visitor figures are, on the server's clock (the stream is re-read every STREAM_REFRESH_MS).
-  const freshness = exact && stream ? ` · updated ${Math.max(0, Math.round((clockNow - Date.parse(stream.generatedAt)) / 1000))}s ago` : " · from the SQL report";
+  // Visitor figures only (user request 2026-11-01). API volume, errors and latency are in Request tracing and System
+  // health below: their 15-minute counts here came from the loaded request sample, not every request.
   const kpis: { label: string; value: string; note: string; icon: LucideIcon; tone: string; pulse?: boolean }[] = [
     heartbeats
       ? { label: "On the site now", value: n(counts.live), note: `${n(counts.liveSigned)} signed in · page open now`, icon: Radio, tone: "mint", pulse: true }
       : { label: "On the site now", value: n(live?.totals.liveNow), note: `${n(live?.totals.liveSignedIn)} signed in · page open now`, icon: Radio, tone: "mint", pulse: true },
     { label: "Page views, last hour", value: n(hourSum.views), note: `by ${n(hourSum.people)} ${hourSum.people === 1 ? "person" : "people"}`, icon: MousePointerClick, tone: "sky" },
-    { label: `Visitors, ${day}`, value: n(fig.people), note: `${day === "today" ? "since 00:00 IST · " : ""}${n(fig.views)} page views · ${n(fig.signedIn)} signed in · ${n(fig.newVisitors)} new${freshness}`, icon: Users, tone: "lavender" },
+    { label: `Visitors, ${day}`, value: n(fig.people), note: `${day === "today" ? "since 00:00 IST · " : ""}${n(fig.views)} page views · ${n(fig.signedIn)} signed in · ${n(fig.newVisitors)} new`, icon: Users, tone: "lavender" },
     ...(exact ? [{ label: "Visitors, last 24 hours", value: n(daySum.people), note: `rolling, since ${clock(clockNow - 86_400_000)} IST yesterday · ${n(daySum.views)} page views · ${n(daySum.sessions)} visits`, icon: CalendarClock, tone: "sky" }] : []),
-    { label: "API requests, 15 min", value: n(recent15.length), note: `${n(snapshot?.requests.count)} in the reporting window`, icon: Route, tone: "peach" },
-    { label: "Server errors, 15 min", value: n(errors15), note: errors15 ? "Open Application logs for details" : "All clear", icon: AlertTriangle, tone: errors15 ? "rose" : "sage" },
-    { label: "API p95 latency", value: snapshot?.requests.p95 == null ? "—" : `${Math.round(snapshot.requests.p95)} ms`, note: `Database ${n(h?.databaseMs)} ms`, icon: Gauge, tone: "butter" },
     { label: "Active, last 30 min", value: n(counts.recent), note: `${n(counts.recentSigned)} of them signed in`, icon: Flame, tone: "rose" },
-    { label: `New accounts, ${day}`, value: n(t?.newAccounts), note: day === "today" ? "sign-ups since 00:00 IST" : "sign-ups in the last 24 h", icon: UserPlus, tone: "mint" },
+    { label: `New accounts, ${sqlDay}`, value: n(t?.newAccounts), note: sqlDay === "today" ? "sign-ups since 00:00 IST" : "sign-ups in the last 24 h", icon: UserPlus, tone: "mint" },
     { label: `Reading time per visitor, ${day}`, value: fig.readingPerPerson == null ? "—" : spent(fig.readingPerPerson / 1000), note: fig.people ? `pages on screen · ${Math.round(((fig.views ?? 0) / fig.people) * 10) / 10} pages each` : "pages on screen", icon: Hourglass, tone: "sky" },
     { label: `Bounce rate, ${day}`, value: fig.bounceRate == null ? "—" : `${fig.bounceRate}%`, note: `visits that opened one page${fig.avgSessionSeconds == null ? "" : ` · avg visit ${spent(fig.avgSessionSeconds)}`}`, icon: TrendingDown, tone: "lavender" },
-    { label: `Bot sessions filtered, ${day}`, value: n(live?.totals.bots), note: "crawlers and automated browsers, excluded from every figure", icon: Bot, tone: "sage" },
+    { label: `Bot sessions filtered, ${sqlDay}`, value: n(live?.totals.bots), note: "crawlers and automated browsers, excluded from every figure", icon: Bot, tone: "sage" },
   ];
 
   return <section className={styles.live} aria-label="Live command centre">
     <header className={styles.head}>
-      <div><p className={styles.kicker}><span className={styles.dot} data-paused={paused || undefined} aria-hidden="true" />{paused ? "Live updates paused" : "Live · refreshes every 15 s"}</p><h2>Live command centre</h2></div>
+      <div><p className={styles.kicker}><span className={styles.dot} data-paused={paused || undefined} aria-hidden="true" />{paused ? "Live updates paused" : "Live"}</p><h2>Live command centre</h2></div>
       <div className={styles.actions}>
-        <span className={styles.updated} aria-live="polite">Updated {since(live?.generatedAt, clockNow)}</span>
         <button type="button" className={styles.button} onClick={() => { void load(); onRefreshSnapshot(); }}><RefreshCw size={14} aria-hidden="true" />Refresh</button>
         <button type="button" className={styles.button} aria-pressed={paused} onClick={() => setPaused(p => !p)}>{paused ? <Play size={14} aria-hidden="true" /> : <Pause size={14} aria-hidden="true" />}{paused ? "Resume" : "Pause"}</button>
       </div>
@@ -324,7 +326,7 @@ export function OverviewLive({ snapshot, onRefreshSnapshot }: { snapshot: Overvi
 
     <div className={styles.grid}>
       <article className={`${styles.panel} ${styles.full}`} data-tone="mint">
-        <h3><Radio size={16} aria-hidden="true" />Live visitor stream<span>{everyone.length ? `${n(everyone.length)} ${everyone.length === 1 ? "visitor" : "visitors"} · ${n(counts.views)} views in ${streamDays === 1 ? "24 h" : `the last ${streamDays} days`} · newest first` : ""}</span></h3>
+        <h3><Radio size={16} aria-hidden="true" />Live visitor stream<span>{everyone.length ? `${n(everyone.length)} ${everyone.length === 1 ? "visitor" : "visitors"} · ${n(counts.views)} views in ${stream ? `the last ${streamDays} ${streamDays === 1 ? "day" : "days"}` : "the 24 h report's newest events (full stream loading)"} · newest first` : ""}</span></h3>
         {everyone.length > 0 && <div className={styles.streamBar}>
           <dl className={styles.streamStats}>
             <div data-live={counts.live > 0 || undefined}><dt>On the site now</dt><dd>{n(counts.live)}</dd><small>{counts.live ? `${n(counts.liveSigned)} signed in · ${heartbeats ? "page open now" : "page opened in the last 30 min"}` : "nobody has a page open"}</small></div>
@@ -360,7 +362,6 @@ export function OverviewLive({ snapshot, onRefreshSnapshot }: { snapshot: Overvi
                 const place = [v.city, v.region].filter(Boolean).join(", ");
                 const isLive = row.live;
                 const visit = row.visit;
-                const insight = learnerInsight(code);
                 const local = localTime(v.timezone ?? row.first.timezone, clockNow);
                 const language = v.language ?? row.first.language ?? null;
                 const earlier = row.visits.filter(other => other !== visit).reverse();
@@ -385,7 +386,7 @@ export function OverviewLive({ snapshot, onRefreshSnapshot }: { snapshot: Overvi
                               {row.signedIn ? (
                                 <span className={styles.badgeSignedIn}><CheckCircle2 size={10} aria-hidden="true" /> Signed In</span>
                               ) : row.first.new_visitor ? (
-                                <span className={styles.badgeNew}><Sparkles size={10} aria-hidden="true" /> New Learner</span>
+                                <span className={styles.badgeNew}><Sparkles size={10} aria-hidden="true" /> New visitor</span>
                               ) : (
                                 <span className={styles.badgeReturning}>Returning</span>
                               )}
@@ -406,7 +407,7 @@ export function OverviewLive({ snapshot, onRefreshSnapshot }: { snapshot: Overvi
                                   <span className={styles.dotSep}>•</span>
                                   <span className={styles.liveReadingTag}>
                                     <span className={styles.livePulsingDot} aria-hidden="true" />
-                                    Reading: {spent(p.ms / 1000)}
+                                    Reading now
                                   </span>
                                 </>
                               )}
@@ -421,7 +422,7 @@ export function OverviewLive({ snapshot, onRefreshSnapshot }: { snapshot: Overvi
                               <span className={styles.livePulseCenter} aria-hidden="true" />
                               <span className={styles.liveBadgeText}>LIVE ON SITE</span>
                               <span className={styles.liveBadgeSub}>
-                                {heartbeats ? `Pinged ${since(row.lastAt, clockNow)}` : `Active ${since(row.lastAt, clockNow)}`}
+                                {heartbeats ? "Page open now" : "Active now"}
                               </span>
                             </div>
                           ) : (
@@ -510,19 +511,6 @@ export function OverviewLive({ snapshot, onRefreshSnapshot }: { snapshot: Overvi
                               {row.campaign && <span className={styles.sourceBadge} title="utm_medium · utm_campaign of the visit's first page">Campaign: {row.campaign}</span>}
                             </div>
 
-                            <div className={styles.insight}>
-                              <p className={styles.insightHead}><Lightbulb size={11} aria-hidden="true" /> Learners from {cleanCountry || "this region"}</p>
-                              <p className={styles.insightProfile}>{insight.profile}</p>
-                              <details>
-                                <summary>What they look for and expect</summary>
-                                <b>Usually looking for</b>
-                                <ul>{insight.lookingFor.map(item => <li key={item}>{item}</li>)}</ul>
-                                <b>Expect from a learning platform</b>
-                                <ul>{insight.expects.map(item => <li key={item}>{item}</li>)}</ul>
-                              </details>
-                              <p className={styles.insightTip}><b>Suggestion:</b> {insight.tip}</p>
-                              <small className={styles.insightNote}>General guidance for the country (local currency {insight.currency}), not measured from this visitor.</small>
-                            </div>
                           </div>
                         </div>
 
@@ -564,7 +552,7 @@ export function OverviewLive({ snapshot, onRefreshSnapshot }: { snapshot: Overvi
                                   </time>
                                 )}
                                 <small className={styles.dateValue}>
-                                  {row.left == null ? (heartbeats ? `Pinged ${since(row.lastAt, clockNow)}` : `Active now`) : `${dayOf(row.left)} · ${since(row.left, clockNow)}`}
+                                  {row.left == null ? (heartbeats ? "Page open now" : "Active now") : `${dayOf(row.left)} · ${since(row.left, clockNow)}`}
                                 </small>
                                 {row.left != null && <small className={styles.dateValue}>{row.beacon ? "Visibility ended; exit unconfirmed" : "Departure not confirmed"}</small>}
                               </div>
@@ -584,23 +572,8 @@ export function OverviewLive({ snapshot, onRefreshSnapshot }: { snapshot: Overvi
                                   <small className={styles.stayLabel} title="Total Stay minus recorded visible time. This may include hidden tabs, loading, or missing tracking signals">Unobserved time</small>
                                   <strong className={styles.stayValue}>{spent(visit.awayMs / 1000)}</strong>
                                 </div>
-                                <div className={styles.intensityBadgeWrap}>
-                                  {row.intensityTier === "Deep Focus" ? (
-                                    <span className={styles.intensityBadgeDeep}><Zap size={9} aria-hidden="true" /> Deep Focus</span>
-                                  ) : row.intensityTier === "Active Study" ? (
-                                    <span className={styles.intensityBadgeActive}><BookOpen size={9} aria-hidden="true" /> Active Study</span>
-                                  ) : (
-                                    <span className={styles.intensityBadgeExplore}><Compass size={9} aria-hidden="true" /> Exploring</span>
-                                  )}
-                                </div>
                               </div>
 
-                              <div className={styles.focusMeterRow} title={`Focus Ratio: ${row.focusRatio}% of stay was actively engaged`}>
-                                <div className={styles.focusBarWrap} aria-hidden="true">
-                                  <div className={styles.focusBarFill} style={{ width: `${Math.max(6, row.focusRatio)}%` }} />
-                                </div>
-                                <span className={styles.focusRatioText}>{row.focusRatio}% Focus</span>
-                              </div>
                               <small className={styles.timingNote}>{TIMING_NOTE[visit.timing]}</small>
                             </div>
                             {row.visits.length > 1 && <p className={styles.stayAll} title="Each visit's stay and reading, added up; time between visits is not counted">
@@ -649,7 +622,7 @@ export function OverviewLive({ snapshot, onRefreshSnapshot }: { snapshot: Overvi
                                   <span className={styles.stepNo}>{number}</span>
                                   <div className={styles.stepBody}>
                                     <strong title={step.path}>{step.title}</strong>
-                                    <small>{step.category} · {clock(step.at)} · {step.open ? `reading now, ${spent((step.ms ?? 0) / 1000)}` : step.ms == null ? "time not recorded" : spent(step.ms / 1000)}</small>
+                                    <small>{step.category} · {clock(step.at)} · {step.open ? "reading now" : step.ms == null ? "time not recorded" : spent(step.ms / 1000)}</small>
                                     {step.clicks.length > 0 && <small className={styles.stepClicks} title={step.clicks.map(c => `${c.option}${c.topic ? ` (in ${c.topic})` : ""}${c.target_path ? ` → ${c.target_path}` : ""}`).join("\n")}>
                                       <MousePointerClick size={9} aria-hidden="true" /> {step.clicks.slice(0, 3).map(c => `"${c.option}"`).join(", ")}{step.clicks.length > 3 ? ` +${step.clicks.length - 3}` : ""}
                                     </small>}

@@ -111,6 +111,9 @@ function Cover({ card, className, sizes, eager = false }: { card: TechBuzzCard; 
   </span>;
 }
 
+/** A track name before its tool list ("Agentic AI - LangChain, LangGraph, …" → "Agentic AI") for one-line card tags. */
+const shortTech = (technology: string) => technology.split(" - ")[0];
+
 function RatingBadge({ card }: { card: TechBuzzCard }) {
   if (card.review) return <ReviewStars review={card.review} />;
   if (!card.rating.count) return <span className={styles.newBadge}>New</span>;
@@ -526,7 +529,7 @@ function TechGroupSection({ group, items }: { group: TechGroup; items: TechBuzzC
         <Link href={`/tech-buzz/${card.slug}`} className={styles.groupCard}>
           <Cover card={card} className={styles.groupCover} sizes="(max-width: 640px) 80vw, (max-width: 1100px) 320px, 280px" />
           <span className={styles.groupBody}>
-            <span className={styles.groupTech}><TechIcon item={card} />{card.technology}<RatingBadge card={card} /></span>
+            <span className={styles.groupTech}><TechIcon item={card} /><span className={styles.groupTechName} title={card.technology}>{shortTech(card.technology)}</span><RatingBadge card={card} /></span>
             <strong className={styles.cardTitle}>{card.title}</strong>
             <span className={styles.meta}><CalendarDays size={12} aria-hidden="true" />{formatDate(card.publishedAt)}<Clock size={12} aria-hidden="true" />{card.readTimeMinutes} min</span>
           </span>

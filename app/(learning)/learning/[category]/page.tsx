@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { Workspace } from "@/components/workspace";
-import { CATEGORY_LABELS } from "@/lib/study/preparations";
+import { CATEGORY_LABELS, isSuperAdminUser } from "@/lib/study/preparations";
 import { requireLearningUser as currentUser } from "@/lib/server/subscription-access";
 import { authConfigured, billingConfigured, databaseConfigured } from "@/lib/server/config";
 import { signInFor } from "@/lib/safe-redirect";
@@ -17,5 +17,5 @@ export default async function PreparationPage({ params, searchParams }: { params
   if (!Object.hasOwn(CATEGORY_LABELS, category)) redirect("/learning");
   const user = (authConfigured() || process.env.NODE_ENV === "production") ? await currentUser(`/learning/${category}`) : null;
   if (authConfigured() && !user) redirect(signInFor(`/learning/${category}`));
-  return <Workspace key={category+":"+(preparation??"")+":"+(course??"")} initialCategory={category} initialPreparation={preparation} initialCourse={course} authEnabled={authConfigured()} configured={databaseConfigured()} billingEnabled={billingConfigured()} userEmail={user?.email ?? null} />;
+  return <Workspace key={category+":"+(preparation??"")+":"+(course??"")} initialCategory={category} initialPreparation={preparation} initialCourse={course} authEnabled={authConfigured()} configured={databaseConfigured()} billingEnabled={billingConfigured()} userEmail={user?.email ?? null} initialSuperAdmin={isSuperAdminUser(user)} />;
 }

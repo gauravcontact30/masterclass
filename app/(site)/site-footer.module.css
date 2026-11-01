@@ -1,0 +1,62 @@
+/* The public pages' dark footer (site-footer.tsx), in the landing footer's palette: near-black #141413, warm light text,
+   terracotta headings. Every text colour here keeps 4.5:1 or better on the background. */
+.footer { margin-top: auto; overflow-x: clip; border-top: 1px solid #2a2a28; background: #141413; color: #e8e6dc; font-size: 13px; }
+.inner { width: min(1440px, calc(100% - clamp(32px, 8vw, 96px))); margin: 0 auto; }
+.footer :focus-visible { outline: 2px solid #d97757; outline-offset: 3px; border-radius: 6px; }
+
+/* Brand and pitch on the left, the contact and plans cards on the right; stacked below 1100 px. */
+.intro { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); gap: 32px 48px; padding: 52px 0 40px; border-bottom: 1px solid #2a2a28; }
+.brand { display: grid; align-content: start; gap: 14px; min-width: 0; }
+.brand > a { justify-self: start; text-decoration: none; }
+.brand :global(.brand-name) { color: #f5f4ed; }
+.brand :global(.brand-mark) { color: #d97757; }
+.brand p { max-width: 380px; margin: 0; font-size: 13.5px; line-height: 1.7; color: #c9c7bd; }
+.brand .weekly { display: inline-flex; align-items: center; gap: 8px; font-size: 12.5px; color: #e9a383; }
+.tracks { display: flex; flex-wrap: wrap; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.tracks a { display: inline-flex; align-items: center; gap: 7px; min-height: 30px; padding: 0 12px; border: 1px solid #34332f; border-radius: 999px; background: #1d1d1b; color: #e8e6dc; font-size: 12px; text-decoration: none; transition: border-color .2s, background-color .2s; }
+.tracks a::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: color-mix(in srgb, var(--tone, #d97757) 70%, #fff); box-shadow: 0 0 0 2px color-mix(in srgb, var(--tone, #d97757) 45%, transparent); }
+/* Mixed with white: a near-black track colour (Next.js, #111827) would vanish on the dark footer. */
+.tracks a:hover { border-color: color-mix(in srgb, var(--tone, #d97757) 70%, #fff); background: #23231f; }
+.ctas { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 4px; }
+.ctas a { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 42px; padding: 0 18px; border-radius: 999px; font-size: 13.5px; font-weight: 600; text-decoration: none; transition: transform .2s, background-color .2s, border-color .2s; }
+.primary { background: #d97757; color: #1b1410; }
+.primary:hover { background: #e58a6a; transform: translateY(-1px); }
+.secondary { border: 1px solid #4a4843; color: #f5f4ed; }
+.secondary svg { color: #e9a383; }
+.secondary:hover { border-color: #d97757; transform: translateY(-1px); }
+.cards { display: flex; flex-wrap: wrap; align-items: stretch; justify-content: flex-end; gap: 20px; min-width: 0; }
+.cards > * { flex: 1 1 340px; }
+
+/* Five link columns: 3 on tablets, 2 on phones, 1 below 330 px. */
+.columns { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 32px 28px; padding: 40px 0 44px; }
+.columns h3 { margin: 0 0 16px; font-size: 12px; font-weight: 650; letter-spacing: .08em; text-transform: uppercase; color: #d97757; }
+.columns ul { display: grid; gap: 13px; margin: 0; padding: 0; list-style: none; }
+/* Colour, padding and the sliding hover pill come from FooterLinks (components/footer-links.module.css). */
+.columns a { font-size: 13px; }
+/* Labels are written in title case in site-footer.tsx, so names like "n8n" keep their own spelling. */
+.columns a[href] { text-transform: none; } /* [href] outranks FooterLinks' `.links .link` capitalize. */
+
+.bottom { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 14px 24px; padding: 22px 0 28px; border-top: 1px solid #2a2a28; color: #a3a198; }
+.bottom small { font-size: 12px; }
+.note { display: inline-flex; align-items: center; gap: 7px; font-size: 12px; }
+.note svg { flex: none; color: #e9a383; }
+
+@media (max-width: 1100px) {
+  .intro { grid-template-columns: minmax(0, 1fr); }
+  .cards { justify-content: flex-start; }
+  .columns { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+@media (max-width: 640px) {
+  .intro { padding: 36px 0 28px; }
+  .cards > * { flex-basis: 100%; }
+  .columns { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 28px 18px; padding: 30px 0; }
+  .bottom { flex-direction: column; align-items: flex-start; }
+  .ctas a { flex: 1 1 auto; }
+}
+@media (max-width: 330px) {
+  .columns { grid-template-columns: minmax(0, 1fr); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .tracks a, .ctas a { transition: none; }
+  .primary:hover, .secondary:hover { transform: none; }
+}

@@ -8,7 +8,7 @@ const RING = 2 * Math.PI * 22;
 const noSubscribe = () => () => {};
 
 /**
- * "Move to top" on the landing page, the learning dashboard, and the super admin dashboard: a round button that appears after the first
+ * "Move to top" on every page of the site (user request 2026-11-01; it was the landing page and dashboards only): a round button that appears after the first
  * screen, cycles through five light tones (one every five seconds), draws scroll progress around its edge and
  * shows a tooltip on hover or focus. It sits above the Study Buddy launcher on the same edge.
  */
@@ -18,12 +18,10 @@ export function BackToTop() {
   // as nothing. Rendering the button from the first client render made React report a hydration mismatch (#418) on
   // every page load; it now appears right after hydration instead.
   const hydrated = useSyncExternalStore(noSubscribe, () => true, () => false);
-  const enabled = pathname === "/" || pathname?.startsWith("/learning") || pathname?.startsWith("/tech-buzz") || pathname?.startsWith("/super-admin");
   const [progress, setProgress] = useState(0);
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    if (!enabled) return;
     let frame = 0;
     const read = () => {
       frame = 0;
@@ -36,9 +34,9 @@ export function BackToTop() {
     window.addEventListener("scroll", onScroll, { passive: true });
     window.addEventListener("resize", onScroll);
     return () => { window.removeEventListener("scroll", onScroll); window.removeEventListener("resize", onScroll); if (frame) cancelAnimationFrame(frame); };
-  }, [enabled, pathname]);
+  }, [pathname]);
 
-  if (!enabled || !hydrated) return null;
+  if (!hydrated) return null;
   const toTop = () => {
     const reduce = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
     window.scrollTo({ top: 0, behavior: reduce ? "auto" : "smooth" });

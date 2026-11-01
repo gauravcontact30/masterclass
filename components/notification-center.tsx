@@ -3,25 +3,16 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { toast } from "sonner";
 import { Bell, BellRing, CheckCheck, CreditCard, GraduationCap, LogIn, Megaphone, MailCheck, ShieldAlert, UserPlus, type LucideIcon } from "lucide-react";
-import { takeAuthNotice, AUTH_NOTICES, type AuthNotice } from "@/lib/auth-notice";
 import { useLanguage } from "./language-provider";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import styles from "./notification-center.module.css";
 
 export type AppNotification = { id: string; kind: string; title: string; body: string; link: string | null; created_at: string; read_at: string | null };
 const ICONS: Record<string, LucideIcon> = { account_created: UserPlus, email_verified: MailCheck, sign_in: LogIn, announcement: Megaphone, billing: CreditCard, learning: GraduationCap, security: ShieldAlert };
-/** Account events already confirmed by the sign-in toast; everything else new is toasted once as it arrives. */
+/** Account events already confirmed by the sign-in toast (components/auth-notice-toast.tsx); everything else new is toasted once as it arrives. */
 const QUIET = new Set(["account_created", "email_verified", "sign_in"]);
 const SEEN = "mc:notifications-toasted";
 const POLL_MS = 60_000;
-
-const NOTICES: Record<AuthNotice, [en: string, hi: string, enBody: string, hiBody: string]> = {
-  signed_in: ["Signed in successfully", "सफलतापूर्वक साइन इन हुआ", "Welcome back. Pick up where you left off.", "वापसी पर स्वागत है। जहाँ छोड़ा था वहीं से शुरू करें।"],
-  created: ["Account created successfully", "खाता सफलतापूर्वक बन गया", "Your 1-day free trial has started.", "आपका 1 दिन का निःशुल्क ट्रायल शुरू हो गया है।"],
-  verified: ["Email verified. You are signed in", "ईमेल सत्यापित हुआ। आप साइन इन हैं", "Your account is confirmed and ready to use.", "आपका खाता सत्यापित है और उपयोग के लिए तैयार है।"],
-  recovery: ["Signed in from your reset link", "रीसेट लिंक से साइन इन हुआ", "Choose a new password at /reset-password.", "/reset-password पर नया पासवर्ड चुनें।"],
-  password_updated: ["Password updated", "पासवर्ड बदल दिया गया", "Use your new password the next time you sign in.", "अगली बार साइन इन करते समय नया पासवर्ड इस्तेमाल करें।"],
-};
 
 function ago(iso: string, hi: boolean) {
   const minutes = Math.max(0, Math.round((Date.now() - Date.parse(iso)) / 60000));
@@ -35,8 +26,7 @@ function seen(): Set<string> { try { return new Set(JSON.parse(sessionStorage.ge
 function remember(ids: Set<string>) { try { sessionStorage.setItem(SEEN, JSON.stringify([...ids].slice(-100))); } catch { /* blocked */ } }
 
 /**
- * The dashboard's notification centre: the sign-in / sign-up / verified toast (from ?notice= or the auth page's
- * one-shot notice), and a bell listing the learner's notifications from /api/notifications with an unread badge.
+ * The dashboard's notification centre: a bell listing the learner's notifications from /api/notifications with an unread badge.
  */
 export function NotificationCenter() {
   const { language } = useLanguage(); const hi = language === "hi";
@@ -45,18 +35,6 @@ export function NotificationCenter() {
   const [open, setOpen] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const first = useRef(true);
-
-  // The confirmation toast for what just happened, once.
-  useEffect(() => {
-    const url = new URL(window.location.href);
-    const param = url.searchParams.get("notice");
-    const notice = (AUTH_NOTICES as readonly string[]).includes(param ?? "") ? param as AuthNotice : takeAuthNotice();
-    if (param) { url.searchParams.delete("notice"); window.history.replaceState(window.history.state, "", `${url.pathname}${url.search}${url.hash}`); }
-    if (!notice) return;
-    const [en, hindi, enBody, hiBody] = NOTICES[notice];
-    toast.success(hi ? hindi : en, { description: hi ? hiBody : enBody, duration: 6000 });
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- once per page load, in the language at that moment.
-  }, []);
 
   const load = useCallback(async () => {
     try {

@@ -51,7 +51,7 @@ export const siteKeywords = [
   // System design (/workflows) and comparisons (/compare)
   "system design examples", "LangChain vs LangGraph",
   // Blogs (/tech-buzz)
-  "daily tech blogs", "AI engineering blog",
+  "weekly tech blogs", "AI engineering blog",
   // Vocabulary (/vocabulary)
   "English vocabulary with Hindi meanings", "corporate English vocabulary",
 ];
@@ -70,7 +70,7 @@ export const PUBLIC_PAGES: readonly PublicPage[] = [
   { path: "/contact", title: "Contact & support", label: "Contact", description: "Get help with your MasterClass account, membership, billing or study content, and find answers to common questions.", changeFrequency: "yearly", priority: 0.5 },
   { path: "/privacy", title: "Privacy policy", label: "Privacy", description: "How MasterClass collects, uses and protects your account, payment and learning data, and what stays only in your browser.", changeFrequency: "yearly", priority: 0.3 },
   { path: "/terms", title: "Terms & conditions", label: "Terms", description: "The terms that apply when you create a MasterClass account, buy a membership and use study content and AI-assisted answers.", changeFrequency: "yearly", priority: 0.3 },
-  { path: "/tech-buzz", title: "Tech Buzz — Weekly Technology Blogs on Agentic AI, LangChain & Next.js", label: "Tech Buzz", description: "Five new tech blogs every week, published Monday at 00:00 AM IST, on Agentic AI, LangChain, LangGraph, n8n, Next.js, TanStack Start and Zustand, rated and clapped by developers.", changeFrequency: "daily", priority: 0.95 },
+  { path: "/tech-buzz", title: "Tech Buzz — Weekly Technology Blogs on Agentic AI, LangChain & Next.js", label: "Tech Buzz", description: "Five new tech blogs every Monday at 00:00 IST, one per track: Agentic AI with LangChain, LangGraph and n8n, System Design, AWS & DevOps, Kubernetes & Docker, and Next.js & React. Reviewed, rated and clapped by developers.", changeFrequency: "weekly", priority: 0.95 },
   { path: "/refund-policy", title: "Cancellation & refund policy", label: "Refunds", description: "How to cancel a MasterClass membership, how long your access continues, and when payments are refunded, including duplicate and failed charges.", changeFrequency: "yearly", priority: 0.3 },
 ];
 
@@ -104,8 +104,8 @@ const PAGE_KEYWORDS: Partial<Record<PublicPage["path"], string[]>> = {
   "/about": ["about MasterClass Buddy", "MasterClass Buddy"],
   "/contact": ["contact MasterClass Buddy", "MasterClass Buddy support"],
   "/tech-buzz": [
-    "Tech Buzz", "daily tech blogs", "Agentic AI blog", "LangChain blog", "LangGraph blog", "n8n automation blog",
-    "Next.js 16 blog", "TanStack Start blog", "Zustand blog", "AI engineering news"
+    "Tech Buzz", "weekly tech blogs", "Agentic AI blog", "LangChain blog", "LangGraph blog", "n8n automation blog",
+    "system design blog", "AWS DevOps blog", "Kubernetes Docker blog", "Next.js 16 blog", "AI engineering news"
   ],
 };
 /** Pages whose metadata carries no keywords at all (rather than inheriting the site-wide list). */

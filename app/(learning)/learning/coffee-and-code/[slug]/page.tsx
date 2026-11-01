@@ -29,6 +29,6 @@ export default async function CoffeeArticlePage({ params }: { params: Params }) 
   const related = [...BLOG_POSTS.filter(p => p.slug !== post.slug && p.topic === post.topic), ...BLOG_POSTS.filter(p => p.slug !== post.slug && p.topic !== post.topic)]
     .filter(p => !overrides[`blog:${p.slug}`]?.deleted).slice(0, 2);
   return <Workspace initialCategory="coffee-and-code" authEnabled={authEnabled}
-    configured={databaseConfigured()} billingEnabled={billingConfigured()} userEmail={user?.email ?? null}
+    configured={databaseConfigured()} billingEnabled={billingConfigured()} userEmail={user?.email ?? null} initialSuperAdmin={isSuperAdminUser(user)}
     notesContent={<ContentProvider overrides={overrides} canEdit={isSuperAdminUser(user)}><CoffeeArticle post={post} related={related} /></ContentProvider>} />;
 }

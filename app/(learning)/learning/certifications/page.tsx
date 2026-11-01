@@ -4,6 +4,7 @@ import { Certifications } from "@/components/certifications";
 import { requireLearningUser as currentUser } from "@/lib/server/subscription-access";
 import { authConfigured, databaseConfigured, billingConfigured } from "@/lib/server/config";
 import { signInFor } from "@/lib/safe-redirect";
+import { isSuperAdminUser } from "@/lib/study/preparations";
 // Signed-in page: renders once the user is read, like its layout (instant = false there does not cover pages).
 export const instant = false;
 
@@ -13,6 +14,6 @@ export default async function Page({ searchParams }: { searchParams: Promise<{ t
   const user = (authConfigured() || process.env.NODE_ENV === "production") ? await currentUser("/learning/certifications") : null;
   if (authConfigured() && !user) redirect(signInFor("/learning/certifications"));
   const { track } = await searchParams;
-  return <Workspace initialCategory="certifications" authEnabled={authConfigured()} configured={databaseConfigured()} billingEnabled={billingConfigured()} userEmail={user?.email ?? null}
+  return <Workspace initialCategory="certifications" authEnabled={authConfigured()} configured={databaseConfigured()} billingEnabled={billingConfigured()} userEmail={user?.email ?? null} initialSuperAdmin={isSuperAdminUser(user)}
     notesContent={<Certifications initialTrack={typeof track === "string" ? track : undefined} />} />;
 }

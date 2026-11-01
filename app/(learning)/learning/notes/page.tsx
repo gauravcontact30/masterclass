@@ -6,6 +6,7 @@ import { STUDY_FILTERS } from "@/lib/notes-study";
 import { requireLearningUser as currentUser } from "@/lib/server/subscription-access";
 import { authConfigured, databaseConfigured, billingConfigured } from "@/lib/server/config";
 import { signInFor } from "@/lib/safe-redirect";
+import { isSuperAdminUser } from "@/lib/study/preparations";
 // Signed-in page: renders once the user is read, like its layout (instant = false there does not cover pages).
 export const instant = false;
 
@@ -19,6 +20,6 @@ export default async function NotesPage({ searchParams }: { searchParams: Promis
   if (authConfigured() && !user) redirect(signInFor("/learning/notes"));
   const selected = getStudyNote(scalar(params.note));
   const technology = selected?.technology ?? (NOTES_TECHNOLOGIES.some(item => item.id === scalar(params.technology)) ? scalar(params.technology) : "");
-  return <Workspace initialCategory="notes" authEnabled={authConfigured()} configured={databaseConfigured()} billingEnabled={billingConfigured()} userEmail={user?.email ?? null}
+  return <Workspace initialCategory="notes" authEnabled={authConfigured()} configured={databaseConfigured()} billingEnabled={billingConfigured()} userEmail={user?.email ?? null} initialSuperAdmin={isSuperAdminUser(user)}
     notesContent={<NotesExplorer key={`${scalar(params.q)}:${technology}:${scalar(params.kind)}:${selected?.id ?? ""}`} notes={NOTES_SUMMARIES} technologies={NOTES_TECHNOLOGIES.map(({ id, title, category, reading }) => ({ id, title, category, reading }))} initialQuery={selected ? "" : scalar(params.q)} initialTechnology={technology} initialKind={selected ? "" : STUDY_FILTERS.find(kind => kind === scalar(params.kind)) ?? ""} initialNote={selected?.id} />} />;
 }

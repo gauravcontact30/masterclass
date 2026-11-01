@@ -6,6 +6,7 @@ import { SEARCH_FIXED_CATALOGUES } from "@/lib/step-by-step/technologies";
 import { requireLearningUser as currentUser } from "@/lib/server/subscription-access";
 import { authConfigured, billingConfigured, databaseConfigured } from "@/lib/server/config";
 import { signInFor } from "@/lib/safe-redirect";
+import { isSuperAdminUser } from "@/lib/study/preparations";
 // Signed-in page: renders once the user is read, like its layout (instant = false there does not cover pages).
 export const instant = false;
 
@@ -19,6 +20,6 @@ export default async function StepByStepPage({ searchParams }: { searchParams: P
   // The same technologies, in the same order, as the Search page's "Explore
   // topics" strip. Only the titles cross to the client; the handbooks stay here.
   const technologies = [...SEARCH_FIXED_CATALOGUES, ...TECHNOLOGY_HANDBOOKS.map(handbook => handbook.title).sort((a, b) => a.localeCompare(b))];
-  return <Workspace initialCategory="step-by-step" authEnabled={authConfigured()} configured={databaseConfigured()} billingEnabled={billingConfigured()} userEmail={user?.email ?? null}
+  return <Workspace initialCategory="step-by-step" authEnabled={authConfigured()} configured={databaseConfigured()} billingEnabled={billingConfigured()} userEmail={user?.email ?? null} initialSuperAdmin={isSuperAdminUser(user)}
     notesContent={<StepByStep key={question} initialQuestion={question} technologies={technologies} />} />;
 }

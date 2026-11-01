@@ -118,11 +118,6 @@
 .stayLabel { display: block; font-size: 9.5px; color: var(--soft); text-transform: uppercase; letter-spacing: 0.03em; font-weight: 600; }
 .stayValue { font-family: Georgia, "Times New Roman", serif; font-size: 14px; font-weight: 700; color: var(--ink); font-variant-numeric: tabular-nums; }
 .readingValue { font-family: Georgia, "Times New Roman", serif; font-size: 14px; font-weight: 700; color: #156d40; font-variant-numeric: tabular-nums; }
-.intensityBadgeWrap { margin-left: auto; }
-.focusMeterRow { display: flex; align-items: center; gap: 6px; }
-.focusBarWrap { flex: 1; height: 5px; border-radius: 999px; background: #e5ece6; overflow: hidden; }
-.focusBarFill { height: 100%; border-radius: 999px; background: linear-gradient(90deg, #d4a72c, #2f9e6b); }
-.focusRatioText { font-size: 10px; font-weight: 700; color: #156d40; font-variant-numeric: tabular-nums; flex-shrink: 0; }
 
 /* Column 3: Learning Target & Trail */
 .activeTargetBlock { display: grid; gap: 2px; min-width: 0; background: rgba(255, 255, 255, 0.85); border: 1px solid #d2e8fb; border-radius: 8px; padding: 6px 8px; }
@@ -161,9 +156,6 @@
 .sourceBadge { display: inline-flex; align-items: center; font-size: 10px; font-weight: 600; color: #765c15; background: #fdf6dc; padding: 1px 5px; border-radius: 4px; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .clockValue { font-size: 13px; font-weight: 700; color: var(--ink); font-variant-numeric: tabular-nums; }
 .dateValue { font-size: 10.5px; color: var(--soft); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.intensityBadgeDeep { display: inline-flex; align-items: center; gap: 2px; font-size: 9.5px; font-weight: 750; color: #845300; background: #fef0c7; padding: 1px 5px; border-radius: 999px; }
-.intensityBadgeActive { display: inline-flex; align-items: center; gap: 2px; font-size: 9.5px; font-weight: 750; color: #166b44; background: #dcf5e7; padding: 1px 5px; border-radius: 999px; }
-.intensityBadgeExplore { display: inline-flex; align-items: center; gap: 2px; font-size: 9.5px; font-weight: 750; color: #1e5a83; background: #e0effb; padding: 1px 5px; border-radius: 999px; }
 .velocityText { font-size: 10px; color: var(--soft); font-variant-numeric: tabular-nums; }
 .livePulsingDot { width: 6px; height: 6px; border-radius: 50%; background: #2f9e6b; animation: ol-pulse-dot 1.2s ease-in-out infinite; }
 @keyframes ol-pulse-dot { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.3); opacity: 0.6; } }
@@ -276,14 +268,6 @@
 .localTime b { color: var(--ink); font-variant-numeric: tabular-nums; }
 .langNote { margin: 0; font-size: 10px; color: #8a5a12; }
 .trafficSourceRow { flex-wrap: wrap; gap: 4px; }
-.insight { display: grid; gap: 4px; padding: 7px 8px; border-radius: 8px; background: rgba(255, 255, 255, .8); border: 1px dashed #d6cff5; font-size: 10.5px; line-height: 1.45; color: #4a4943; }
-.insightHead { display: flex; align-items: center; gap: 4px; margin: 0; font-size: 9.5px; font-weight: 750; letter-spacing: .04em; text-transform: uppercase; color: #483ba5; }
-.insightProfile, .insightTip { margin: 0; }
-.insightTip b { color: #483ba5; }
-.insight details summary { cursor: pointer; font-weight: 650; color: #483ba5; }
-.insight details b { display: block; margin-top: 4px; font-size: 9.5px; text-transform: uppercase; letter-spacing: .03em; color: #6c6b63; }
-.insight ul { margin: 2px 0 0; padding-left: 14px; display: grid; gap: 1px; }
-.insightNote { font-size: 9.5px; color: #8c8b82; }
 .timingNote { font-size: 9.5px; line-height: 1.4; color: #6c6b63; }
 .stayAll { margin: 0; font-size: 10.5px; color: #585750; }
 .stayAll b { color: var(--ink); font-variant-numeric: tabular-nums; }

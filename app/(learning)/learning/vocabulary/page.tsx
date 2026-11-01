@@ -5,6 +5,7 @@ import { requireLearningUser as currentUser } from "@/lib/server/subscription-ac
 import { authConfigured, billingConfigured, databaseConfigured } from "@/lib/server/config";
 import styles from "@/components/answer-search.module.css";
 import { signInFor } from "@/lib/safe-redirect";
+import { isSuperAdminUser } from "@/lib/study/preparations";
 // Signed-in page: renders once the user is read, like its layout (instant = false there does not cover pages).
 export const instant = false;
 
@@ -16,7 +17,7 @@ export default async function VocabularyPage() {
   if (authEnabled && !user) redirect(signInFor("/learning/vocabulary"));
 
   return <Workspace initialCategory="vocabulary" authEnabled={authEnabled}
-    configured={databaseConfigured()} billingEnabled={billingConfigured()} userEmail={user?.email ?? null}
+    configured={databaseConfigured()} billingEnabled={billingConfigured()} userEmail={user?.email ?? null} initialSuperAdmin={isSuperAdminUser(user)}
     notesContent={<section className={styles.page} aria-labelledby="vocabulary-heading">
       <header className={styles.head}>
         <h1 id="vocabulary-heading">Vocabulary</h1>

@@ -25,7 +25,7 @@ async function body() {
     "",
     `> ${siteDescription}`,
     "",
-    "MasterClass Buddy is an online learning platform for software engineers and students: daily technology blogs, interview questions with model answers, system design and AI agent workflow blueprints, technology handbooks, side-by-side comparisons and an API reference. The pages below are free to read; courses, certifications and practice tests live in the signed-in Learning Dashboard.",
+    "MasterClass Buddy is an online learning platform for software engineers and students: weekly technology blogs (Tech Buzz, five every Monday), interview questions with model answers, system design and AI agent workflow blueprints, technology handbooks, side-by-side comparisons and an API reference. The pages below are free to read; courses, certifications and practice tests live in the signed-in Learning Dashboard.",
     "",
     "## Main pages",
     ...pages.map(page => link(page.label, page.path, page.description)),

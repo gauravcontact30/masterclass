@@ -14,14 +14,16 @@ export default function AboutPage() {
       <p>Learning a technology is scattered: official docs here, a video there, interview questions somewhere else. MasterClass Buddy brings what a tech professional needs for the next role or certification into one dashboard, so each study session starts with a clear next step instead of a search.</p>
       <h2>What you can learn</h2>
       <ul>
+        <li><strong>Tech Buzz</strong>: five new blogs every Monday on Agentic AI, System Design, AWS &amp; DevOps, Kubernetes &amp; Docker and Next.js &amp; React, each starred by a senior reviewer before it goes live. Read them on <Link href="/tech-buzz">Tech Buzz</Link>.</li>
         <li><strong>Technology careers</strong>: handbooks, official docs explained, API references, coding labs and step-by-step build guides.</li>
         <li><strong>AI and agents</strong>: LangChain, LangGraph, LangSmith, LangFlow and n8n workflow blueprints, plus the agentic AI pulse.</li>
+        <li><strong>Free library</strong>: <Link href="/interview-questions">interview questions</Link> with model answers, <Link href="/compare">comparisons</Link>, <Link href="/workflows">workflow blueprints</Link>, <Link href="/learn">handbooks</Link> and an <Link href="/api-reference">API reference</Link>, free to read without an account.</li>
         <li><strong>Interviews and certifications</strong>: interview question banks, system-design case studies, quizzes and certification paths with mock exams.</li>
         <li><strong>Workplace English</strong>: IELTS practice and professional vocabulary with Hindi meanings.</li>
       </ul>
       <p>See every path on the <Link href="/courses">courses page</Link>.</p>
       <h2>How we teach</h2>
-      <p>Every topic pairs a plain-language explanation with worked answers and timed practice. {HINDI_ENABLED ? "Content is available in English and Hindi, and you can switch language at any time. " : ""}An AI study assistant can explain a concept again in a different way when you are stuck.</p>
+      <p>Every topic pairs a plain-language explanation with worked answers and timed practice. {HINDI_ENABLED ? "Content is available in English and Hindi, and you can switch language at any time. " : ""}Members get Study Buddy, an AI study assistant that explains a concept again in a different way when you are stuck.</p>
       <h2>Our commitments</h2>
       <ul>
         <li>We say what each guide covers before you subscribe. Coverage varies by path.</li>

@@ -188,6 +188,11 @@ a:hover .cover > img, a:focus-visible .cover > img { transform: scale(1.05); }
 .groupCover { aspect-ratio: 16 / 9; }
 .groupBody { display: grid; gap: 6px; }
 .groupTech { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--tone); }
+/* One line beside the icon and the rating: a long track name ("Agentic AI - LangChain, LangGraph, …") used to wrap word by word
+   into a narrow column between them. It ends in an ellipsis; the full name is the title tooltip. */
+.groupTechName { flex: 1; min-width: 0; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.groupTech > :not(.groupTechName) { flex: none; }
+.groupBody, .groupTech { min-width: 0; }
 .groupBody strong { font-size: 15px; line-height: 1.38; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
 
 .allStories { display: inline-flex; align-items: center; justify-content: center; gap: 8px; margin: 0; font-size: 13px; font-weight: 700; color: #b5522f; }

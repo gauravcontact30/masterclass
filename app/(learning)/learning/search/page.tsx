@@ -10,6 +10,7 @@ import { authConfigured, billingConfigured, databaseConfigured } from "@/lib/ser
 import { prepareHandbooks, prepareSearchTopics } from "@/lib/server/prepared-catalog";
 import { withApiReference } from "@/lib/server/handbook-api-reference";
 import { signInFor } from "@/lib/safe-redirect";
+import { isSuperAdminUser } from "@/lib/study/preparations";
 // Signed-in page: renders once the user is read, like its layout (instant = false there does not cover pages).
 export const instant = false;
 
@@ -27,7 +28,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Promi
   const first = ordered.slice(0, 1);
   const deferred = ordered.slice(1).map(({ topics, ...metadata }) => { void topics; return metadata; });
   const services = prepareSearchTopics(popularAwsHighlights(), "AWS");
-  return <Workspace initialCategory="search" authEnabled={authConfigured()} configured={databaseConfigured()} billingEnabled={billingConfigured()} userEmail={user?.email ?? null}
+  return <Workspace initialCategory="search" authEnabled={authConfigured()} configured={databaseConfigured()} billingEnabled={billingConfigured()} userEmail={user?.email ?? null} initialSuperAdmin={isSuperAdminUser(user)}
     notesContent={<AnswerSearch key={question} initialQuestion={question} awsServices={services} awsCategories={awsCategories(services)}
       aiGlossary={prepareSearchTopics(aiTerms(), "AI terms")} aiGlossaryCategories={aiCategories()}
       pythonHandbook={prepareSearchTopics(pythonTopics(), "Python")} pythonCategories={pythonCategories()} technologyHandbooks={prepareHandbooks(first)} deferredHandbooks={deferred} />} />;

@@ -19,6 +19,6 @@ export default async function CoffeeAndCodePage() {
   if (authEnabled && !user) redirect(signInFor("/learning/coffee-and-code"));
   const overrides = await contentOverrides();
   return <Workspace initialCategory="coffee-and-code" authEnabled={authEnabled}
-    configured={databaseConfigured()} billingEnabled={billingConfigured()} userEmail={user?.email ?? null}
+    configured={databaseConfigured()} billingEnabled={billingConfigured()} userEmail={user?.email ?? null} initialSuperAdmin={isSuperAdminUser(user)}
     notesContent={<ContentProvider overrides={overrides} canEdit={isSuperAdminUser(user)}><CoffeeAndCode posts={BLOG_POSTS} topics={BLOG_TOPICS} /></ContentProvider>} />;
 }

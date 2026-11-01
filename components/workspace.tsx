@@ -98,7 +98,7 @@ function SearchNavRow({collapsed,active}:{collapsed:boolean;active:boolean}){con
       <span className="sidebar-tooltip">{label}</span>
     </button>
   </div>;}
-export function Workspace({initialPlan=null,reserveResume=false,authEnabled,configured,billingEnabled,userEmail=null,initialTab="dashboard",initialAccount=null,initialCategory,initialPreparation="",initialCourse,initialStudyCourses,notesContent,learning,learnSlug,learnTitle,autoCollapse=false}:{/** The plan as the server read it, so the trial banner is in the first paint (before /api/account answers). */initialPlan?:{tier:Tier;trialEndsAt:string|null}|null;/** Hold the Resume strip's space while the account loads: the server saw a guide in progress. */reserveResume?:boolean;/** Start with the sidebar collapsed (pages with their own sidebar, like an in-depth course), without changing the saved preference. */autoCollapse?:boolean;learnSlug?:string;learnTitle?:string;notesContent?:React.ReactNode;learning?:React.ReactNode;initialStudyCourses?:StudyCourse[];initialPreparation?:string;initialCourse?:string;initialCategory?:string;authEnabled:boolean;configured:boolean;billingEnabled:boolean;userEmail?:string|null;initialTab?:WorkspaceTab;initialAccount?:AccountData|null}) {
+export function Workspace({initialSuperAdmin=false,initialPlan=null,reserveResume=false,authEnabled,configured,billingEnabled,userEmail=null,initialTab="dashboard",initialAccount=null,initialCategory,initialPreparation="",initialCourse,initialStudyCourses,notesContent,learning,learnSlug,learnTitle,autoCollapse=false}:{/** Whether the server saw the super admin, so the Super Admin link is in the first paint (before /api/account answers). */initialSuperAdmin?:boolean;/** The plan as the server read it, so the trial banner is in the first paint (before /api/account answers). */initialPlan?:{tier:Tier;trialEndsAt:string|null}|null;/** Hold the Resume strip's space while the account loads: the server saw a guide in progress. */reserveResume?:boolean;/** Start with the sidebar collapsed (pages with their own sidebar, like an in-depth course), without changing the saved preference. */autoCollapse?:boolean;learnSlug?:string;learnTitle?:string;notesContent?:React.ReactNode;learning?:React.ReactNode;initialStudyCourses?:StudyCourse[];initialPreparation?:string;initialCourse?:string;initialCategory?:string;authEnabled:boolean;configured:boolean;billingEnabled:boolean;userEmail?:string|null;initialTab?:WorkspaceTab;initialAccount?:AccountData|null}) {
   const {t,language,setLanguage}=useLanguage();const router=useRouter();const tab=initialTab;
   const [learningQuery,setLearningQuery]=useState("");const [sidebarQuery,setSidebarQuery]=useState("");
   const [notesSelected,setNotesSelected]=useState<DocumentRecord|null>(null);const [refreshing,setRefreshing]=useState(false);
@@ -131,7 +131,7 @@ export function Workspace({initialPlan=null,reserveResume=false,authEnabled,conf
   const access=data?.preparations??{selections:[],isSuperAdmin:false};
   // Trial over and no membership: pages show the plans; the dashboard shows its sections as previews above them.
   const lapsed=data?.account.tier==="free"&&!access.isSuperAdmin;
-  const showSuperAdmin=authEnabled&&access.isSuperAdmin;
+  const showSuperAdmin=authEnabled&&(data?access.isSuperAdmin:initialSuperAdmin);
   const activePreparation=category?PREPARATIONS.find(option=>option.id===initialPreparation):undefined;
   const needsPreparation=!!data&&!access.isSuperAdmin&&!access.selections.length;
   const confirmDoc=documents.find(d=>d.id===confirmId);

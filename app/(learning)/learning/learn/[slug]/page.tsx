@@ -6,6 +6,7 @@ import { learningPage } from "@/lib/server/learning-uploads";
 import { requireLearningUser as currentUser } from "@/lib/server/subscription-access";
 import { authConfigured, billingConfigured, databaseConfigured } from "@/lib/server/config";
 import { signInFor } from "@/lib/safe-redirect";
+import { isSuperAdminUser } from "@/lib/study/preparations";
 // Signed-in page: renders once the user is read, like its layout (instant = false there does not cover pages).
 export const instant = false;
 
@@ -21,6 +22,6 @@ export default async function LearningCustomRoute({ params }: { params: Promise<
   if (authConfigured() && !user) redirect(signInFor(`/learning/learn/${slug}`));
   const page = databaseConfigured() && /^[a-z0-9][a-z0-9-]{0,59}$/.test(slug) ? await learningPage(slug) : null;
   if (!page) notFound();
-  return <Workspace initialCategory="learn" learnSlug={page.slug} learnTitle={page.title} authEnabled={authConfigured()} configured={databaseConfigured()} billingEnabled={billingConfigured()} userEmail={user?.email ?? null}
+  return <Workspace initialCategory="learn" learnSlug={page.slug} learnTitle={page.title} authEnabled={authConfigured()} configured={databaseConfigured()} billingEnabled={billingConfigured()} userEmail={user?.email ?? null} initialSuperAdmin={isSuperAdminUser(user)}
     notesContent={<LearningCustomPage slug={page.slug} title={page.title} description={page.description} />} />;
 }
