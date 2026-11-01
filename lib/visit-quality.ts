@@ -17,7 +17,12 @@ export function looksAutomated(visit: VisitSignals): boolean {
   if (visit.language?.includes("@posix")) return true;
   if (visit.timezone === "Etc/Unknown") return true;
   // A desktop browser set to bare UTC is a server, not a person's computer (phones always report a real zone).
-  return (visit.timezone === "UTC" || visit.timezone === "Etc/UTC") && visit.device === "Desktop";
+  if ((visit.timezone === "UTC" || visit.timezone === "Etc/UTC") && visit.device === "Desktop") return true;
+  // A desktop operating system reporting a phone-width screen is browser device emulation (DevTools device mode,
+  // responsive testing), not a visitor: no Windows, macOS or Linux display is narrower than 600 px (2026-11-01 audit:
+  // one such page view in five days; Lighthouse runs were already caught by their user agent).
+  const width = Number(visit.screen?.split("x")[0]);
+  return visit.device === "Desktop" && Number.isFinite(width) && width > 0 && width < 600;
 }
 
 /**

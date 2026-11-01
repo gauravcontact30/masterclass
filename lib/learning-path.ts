@@ -20,7 +20,7 @@ export type LearningPath = { goal: string; weeks: number; summary: string; stage
 
 export const pathRequestSchema = z.object({
   goal: z.string().trim().min(3).max(300),
-  weeks: z.number().int().min(3).max(12).default(4),
+  weeks: z.number().int().min(3).max(60).default(4),
   language: z.enum(["en", "hi"]).default("en"),
 });
 export type PathRequest = z.infer<typeof pathRequestSchema>;

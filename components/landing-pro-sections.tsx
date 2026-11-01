@@ -3,13 +3,14 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import Image from "@/components/responsive-image";
 import Link from "next/link";
-import { ArrowRight, ArrowUpRight, Braces, Check, ChevronLeft, ChevronRight, Code2, Copy, FileCode2, Lightbulb, Pause, Play, Puzzle, Search, Server, Sparkles, X } from "lucide-react";
+import { ArrowRight, ArrowUpRight, Braces, Check, ChevronLeft, ChevronRight, Code2, FileCode2, Lightbulb, Pause, Play, Puzzle, Search, Server, Sparkles, X } from "lucide-react";
 import type { LandingProPreview } from "@/lib/landing-pro-preview";
 import type { LandingBuzz } from "@/lib/landing-buzz-types";
 import { ExpandedText } from "./expanded-text";
 import { useLanguage } from "./language-provider";
 import { useVisiblePlayback } from "./use-visible-playback";
 import { BuzzStrip } from "./landing-buzz-strip";
+import { CodeFiles } from "./code-files";
 import home from "./landing-home.module.css";
 import frame from "./landing-section.module.css";
 import styles from "./landing-pro-sections.module.css";
@@ -34,14 +35,8 @@ function useText() {
   return { locale: language === "hi" ? "hi-IN" : "en-IN", text: (en: string, hindi: string) => language === "hi" ? hindi : en };
 }
 
-/** A copy button for a code block: says "Copied" for two seconds, and stays quiet where the clipboard is unavailable. */
-function CopyButton({ code, label }: Readonly<{ code: string; label: string }>) {
-  const [copied, setCopied] = useState(false);
-  useEffect(() => { if (!copied) return; const timer = setTimeout(() => setCopied(false), 2000); return () => clearTimeout(timer); }, [copied]);
-  return <button type="button" className={styles.copy} aria-label={copied ? "Copied" : label} onClick={() => { void navigator.clipboard?.writeText(code).then(() => setCopied(true), () => undefined); }}>
-    {copied ? <Check size={14} aria-hidden="true" /> : <Copy size={14} aria-hidden="true" />}<span aria-live="polite">{copied ? "Copied" : "Copy"}</span>
-  </button>;
-}
+/** File extensions for the API of the week's example, by the language API Docs records. */
+const EXTENSIONS: Record<string, string> = { tsx: "tsx", jsx: "jsx", typescript: "ts", javascript: "js", python: "py", bash: "sh", shell: "sh", json: "json", yaml: "yaml", sql: "sql", go: "go", rust: "rs", java: "java", css: "css", html: "html" };
 
 /**
  * Techy, laid out like the dashboard's Coffee & Code page: search and topic chips over a grid of tone-covered topic
@@ -71,6 +66,7 @@ export function LandingTechy({ data, buzz }: Readonly<{ data: LandingProPreview[
   useEffect(() => { if (langPinned || !visible || !polyglot) return; const timer = setTimeout(() => setLang(value => (value + 1) % polyglot.snippets.length), LANGUAGE_MS); return () => clearTimeout(timer); }, [lang, langPinned, visible, polyglot]);
   const topic = data.topics.find(item => item.id === topicId) ?? data.topics[0];
   const quiz = data.puzzles[puzzle];
+  const goPuzzle = (index: number) => { setPuzzle(Math.max(0, Math.min(data.puzzles.length - 1, index))); setSolved(false); };
   const snippet = polyglot?.snippets[lang];
   if (!topic) return null;
   const filter = (next: () => void) => { next(); setPage(0); };
@@ -128,24 +124,31 @@ export function LandingTechy({ data, buzz }: Readonly<{ data: LandingProPreview[
 
       {quiz && <article className={styles.puzzleCard} aria-label={text("Predict the output", "आउटपुट का अनुमान")}>
         <p className={styles.labKicker}><Puzzle size={14} aria-hidden="true" />{text("Predict the output", "आउटपुट का अनुमान")}</p>
-        <div className={styles.puzzleTabs} role="group" aria-label={text("This week's puzzles", "इस सप्ताह की पहेलियाँ")}>{data.puzzles.map((item, i) => <button type="button" key={item.title} aria-pressed={puzzle === i} onClick={() => { setPuzzle(i); setSolved(false); }}>{item.title}</button>)}</div>
-        <pre className={styles.code}><code>{quiz.code}</code></pre>
+        <h3 className={styles.puzzleTitle}>{quiz.title}</h3>
+        <CodeFiles key={quiz.title} files={[{ path: "puzzle.js", code: quiz.code, note: quiz.title }]} label={quiz.title} skin="apple" annotate={false} explainFormatting={false} className={styles.editor} />
         <button type="button" className={styles.reveal} aria-expanded={solved} aria-controls="landing-techy-output" onClick={() => setSolved(value => !value)}>{solved ? text("Hide output", "आउटपुट छिपाएँ") : text("I have a guess: show the output", "आउटपुट दिखाएँ")}</button>
         <div id="landing-techy-output" className={styles.output} hidden={!solved}><code>{quiz.output}</code><p>{quiz.explanation}</p></div>
+        {data.puzzles.length > 1 && <nav className={styles.puzzlePager} aria-label={text("This week's puzzles", "इस सप्ताह की पहेलियाँ")}>
+          <button type="button" className={styles.step} onClick={() => goPuzzle(puzzle - 1)} disabled={puzzle === 0} aria-label={text("Previous puzzle", "पिछली पहेली")}><ChevronLeft size={16} /></button>
+          <div className={styles.puzzleTabs}>{data.puzzles.map((item, i) => <button type="button" key={item.title} aria-pressed={puzzle === i} aria-label={`${text("Puzzle", "पहेली")} ${i + 1}: ${item.title}`} title={item.title} onClick={() => goPuzzle(i)}>{i + 1}</button>)}</div>
+          <button type="button" className={styles.step} onClick={() => goPuzzle(puzzle + 1)} disabled={puzzle === data.puzzles.length - 1} aria-label={text("Next puzzle", "अगली पहेली")}><ChevronRight size={16} /></button>
+          <span role="status">{text(`Puzzle ${puzzle + 1} of ${data.puzzles.length}`, `पहेली ${puzzle + 1} / ${data.puzzles.length}`)}</span>
+        </nav>}
       </article>}
     </div>
 
     {polyglot && snippet && <article className={styles.polyglot} aria-label={text("Same idea, five languages", "एक विचार, पाँच भाषाएँ")}>
       <div className={styles.polyHead}>
         <div><p className={styles.labKicker}><Braces size={14} aria-hidden="true" />{text("Same idea, five languages · this week", "एक विचार, पाँच भाषाएँ")}</p><h3>{polyglot.title}</h3><p>{polyglot.idea}</p></div>
-        <div className={styles.langTabs} role="tablist" aria-label={text("Language", "भाषा")}>{polyglot.snippets.map((item, i) => <button type="button" role="tab" key={item.language} aria-selected={lang === i} aria-controls="landing-polyglot-code" onClick={() => { setLang(i); setLangPinned(true); }}>
+        {/* Picks the file the editor opens on; it steps through the languages on its own until the visitor takes over. */}
+        <div className={styles.langTabs} role="group" aria-label={text("Open a language", "भाषा खोलें")}>{polyglot.snippets.map((item, i) => <button type="button" key={item.language} aria-pressed={lang === i} onClick={() => { setLang(i); setLangPinned(true); }}>
           <Image src={`/images/tech/${item.logo}.png`} alt="" width={16} height={16} />{item.language}
           {lang === i && !langPinned && visible && <i key={lang} style={{ animationDuration: `${LANGUAGE_MS}ms` }} aria-hidden="true" />}
         </button>)}</div>
       </div>
-      <div id="landing-polyglot-code" role="tabpanel" className={styles.polyBody} key={snippet.language}>
-        <div className={styles.codeWrap}><pre className={styles.code}><code>{snippet.code}</code></pre><CopyButton code={snippet.code} label={text(`Copy the ${snippet.language} example`, "कोड कॉपी करें")} /></div>
-        <p className={styles.polyNote}><Lightbulb size={15} aria-hidden="true" />{snippet.note}</p>
+      <div className={styles.polyBody} onPointerDownCapture={() => setLangPinned(true)} onFocusCapture={() => setLangPinned(true)}>
+        <CodeFiles key={snippet.path} files={polyglot.files} initialPath={snippet.path} label={`${polyglot.title} · 5 languages`} skin="apple" annotate={false} explainFormatting={false} />
+        <p className={styles.polyNote}><Lightbulb size={15} aria-hidden="true" /><b>{snippet.language}:</b> {snippet.note}</p>
       </div>
     </article>}
 
@@ -186,6 +189,13 @@ export function LandingApiDocs({ data, buzz }: Readonly<{ data: LandingProPrevie
   const count = (value: number) => value.toLocaleString(locale);
   const choose = (id: string) => { setPackageId(id); setKind("all"); setStatus("all"); };
   const spot = data.spotlight;
+  // The API of the week as a small project: the example, and a README with the reference it was written from.
+  const spotFiles = useMemo(() => spot ? [
+    { path: `src/example.${EXTENSIONS[spot.language] ?? "txt"}`, code: spot.code, note: spot.description },
+    { path: "README.md", note: "Reference", code: [`# ${spot.name}`, "", spot.description, "", "## Signature", "", "```", spot.signature, "```",
+      ...(spot.parameters.length ? ["", "## Parameters", "", ...spot.parameters.map(param => `- \`${param.name}\` (${param.type}): ${param.description}`)] : []),
+      "", "## Returns", "", spot.returns, ...(spot.notes.length ? ["", "## Notes", "", ...spot.notes.map(note => `- ${note}`)] : [])].join("\n") },
+  ] : [], [spot]);
   const points = [
     { icon: Search, title: text("Search across every stack", "हर स्टैक में खोजें"), body: text("Filter by technology, identifier type and status in one place.", "तकनीक, पहचानकर्ता प्रकार और स्थिति से एक जगह फ़िल्टर करें।") },
     { icon: Braces, title: text("Signatures you can read", "पढ़ने योग्य सिग्नेचर"), body: text("Parameters, return values, key points and focused usage code.", "पैरामीटर, रिटर्न वैल्यू, मुख्य बिंदु और केंद्रित उपयोग कोड।") },
@@ -250,8 +260,7 @@ export function LandingApiDocs({ data, buzz }: Readonly<{ data: LandingProPrevie
         {spot.related.length > 0 && <p className={styles.related}>{text("Related", "संबंधित")}: {spot.related.map(name => <button type="button" key={name} onClick={() => { setQuery(name); document.getElementById("api-docs")?.scrollIntoView({ behavior: "smooth", block: "start" }); }}><code>{name}</code></button>)}</p>}
       </div>
       <div className={styles.spotCode}>
-        <div className={styles.codeBar}><span className={styles.dots} aria-hidden="true"><i /><i /><i /></span><span>{text("Example", "उदाहरण")} · {spot.language}</span><CopyButton code={spot.code} label={text(`Copy the ${spot.name} example`, "कोड कॉपी करें")} /></div>
-        <pre className={styles.code}><code>{spot.code}</code></pre>
+        <CodeFiles files={spotFiles} label={text(`${spot.name} example`, "उदाहरण")} skin="apple" annotate={false} explainFormatting={false} />
       </div>
     </article>}
 

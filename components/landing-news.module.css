@@ -213,3 +213,19 @@
 /* Listen: at the top right of the lead story and at the end of each interview question's meta row. */
 .leadHead { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
 .askListen { margin-left: auto; }
+
+/* Try this week and Quick check (user request 2026-11-01): each card its own light tone, each item a different pastel,
+   sentence-case headings and no bold text. */
+.practice { border: 1px solid #cfe1f6; background: #f1f7fe; }
+.quick { border-color: #ddd4f5; background: #f5f2fd; }
+.news .practice h5, .news .quick h5 { font-size: 14px; font-weight: 400; letter-spacing: normal; text-transform: none; }
+.news .practice h5 { color: #1d4f7a; }
+.news .quick h5 { color: #4b3c86; }
+.practice li, .quick li { --tone-bg: #eff9f3; --tone-edge: #c8e8d5; --tone-ink: #1f5a37; }
+.practice li:nth-child(4n + 2), .quick li:nth-child(4n + 2) { --tone-bg: #fefaea; --tone-edge: #f1e3a8; --tone-ink: #6e4f00; }
+.practice li:nth-child(4n + 3), .quick li:nth-child(4n + 3) { --tone-bg: #fdf2f4; --tone-edge: #f4d0d9; --tone-ink: #8a2846; }
+.practice li:nth-child(4n + 4), .quick li:nth-child(4n + 4) { --tone-bg: #fef5ee; --tone-edge: #f5dac6; --tone-ink: #8f3f23; }
+.practice li { padding: 12px; border: 1px solid var(--tone-edge); border-radius: 12px; background: var(--tone-bg); }
+.quick li { border-color: var(--tone-edge); border-left-color: var(--tone-ink); background: var(--tone-bg); }
+.practiceNumber { background: var(--tone-ink); font-weight: 400; }
+.practice b, .quick b { font-weight: 400; color: var(--tone-ink); }

@@ -171,3 +171,16 @@
   .screen { border-radius: 11px; }
   .rowMeta { max-width: 11ch; }
 }
+
+/* Light multi-colour pills (landing-wide palette): each pill takes the next of eight pastel tones; pressed fills with its ink. */
+.chips .chip:nth-child(8n + 1) { --pill-bg: #eff9f3; --pill-edge: #c8e8d5; --pill-ink: #1f5a37; }
+.chips .chip:nth-child(8n + 2) { --pill-bg: #f1f7fe; --pill-edge: #cfe1f6; --pill-ink: #1d4f7a; }
+.chips .chip:nth-child(8n + 3) { --pill-bg: #fefaea; --pill-edge: #f1e3a8; --pill-ink: #6e4f00; }
+.chips .chip:nth-child(8n + 4) { --pill-bg: #fdf2f4; --pill-edge: #f4d0d9; --pill-ink: #8a2846; }
+.chips .chip:nth-child(8n + 5) { --pill-bg: #f5f2fd; --pill-edge: #ddd4f5; --pill-ink: #4b3c86; }
+.chips .chip:nth-child(8n + 6) { --pill-bg: #fef5ee; --pill-edge: #f5dac6; --pill-ink: #8f3f23; }
+.chips .chip:nth-child(8n + 7) { --pill-bg: #f1f5ee; --pill-edge: #d3e0c9; --pill-ink: #3f5a2e; }
+.chips .chip:nth-child(8n + 8) { --pill-bg: #faf6ee; --pill-edge: #e8dcc4; --pill-ink: #6b5426; }
+.chips .chip { background: var(--pill-bg, #fff); border-color: var(--pill-edge, #e8e6dc); color: var(--pill-ink, inherit); }
+.chips .chip:hover { border-color: var(--pill-ink, #141413); }
+.chips .chip[aria-pressed="true"] { background: var(--pill-ink, #141413); border-color: var(--pill-ink, #141413); color: #fff; }

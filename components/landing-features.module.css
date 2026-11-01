@@ -64,3 +64,14 @@
   .badge { top: 12px; right: 12px; }
   .layout[data-flip] .badge { left: 12px; }
 }
+
+/* Detail cards in different light tones (user request 2026-11-01): each card its own pastel, icon tile and title in
+   that tone's ink, no bold, text left-aligned without hyphen breaks. */
+.details li { --tone-bg: #eff9f3; --tone-edge: #c8e8d5; --tone-ink: #1f5a37; border-color: var(--tone-edge); background: var(--tone-bg); }
+.details li:nth-child(4n + 2) { --tone-bg: #f1f7fe; --tone-edge: #cfe1f6; --tone-ink: #1d4f7a; }
+.details li:nth-child(4n + 3) { --tone-bg: #f5f2fd; --tone-edge: #ddd4f5; --tone-ink: #4b3c86; }
+.details li:nth-child(4n + 4) { --tone-bg: #fefaea; --tone-edge: #f1e3a8; --tone-ink: #6e4f00; }
+.details li:hover { border-color: var(--tone-ink); }
+.details .detailIcon { background: #fff; border: 1px solid var(--tone-edge); color: var(--tone-ink); }
+.details h3 { font-weight: 400; color: var(--tone-ink); }
+.details p { text-align: left; hyphens: manual; }

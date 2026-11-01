@@ -77,3 +77,29 @@
   .ranking li { grid-template-columns: 50px minmax(0, 1fr); }
   .rankFigures { grid-column: 2; text-align: left; }
 }
+
+/* Last 7 days in light tones (user request 2026-11-01): each figure tile, donut and panel its own pastel. Tables keep
+   a white sheet inside the tinted panel so figures stay easy to read. */
+.figures > div, .donuts > * { --tone-bg: #eff9f3; --tone-edge: #c8e8d5; }
+.figures > div:nth-child(8n + 2), .donuts > *:nth-child(4n + 2) { --tone-bg: #f1f7fe; --tone-edge: #cfe1f6; }
+.figures > div:nth-child(8n + 3), .donuts > *:nth-child(4n + 3) { --tone-bg: #fefaea; --tone-edge: #f1e3a8; }
+.figures > div:nth-child(8n + 4), .donuts > *:nth-child(4n + 4) { --tone-bg: #fdf2f4; --tone-edge: #f4d0d9; }
+.figures > div:nth-child(8n + 5) { --tone-bg: #f5f2fd; --tone-edge: #ddd4f5; }
+.figures > div:nth-child(8n + 6) { --tone-bg: #fef5ee; --tone-edge: #f5dac6; }
+.figures > div:nth-child(8n + 7) { --tone-bg: #f1f5ee; --tone-edge: #d3e0c9; }
+.figures > div:nth-child(8n + 8) { --tone-bg: #faf6ee; --tone-edge: #e8dcc4; }
+.figures > div, .donuts > .donut { border-color: var(--tone-edge); background: var(--tone-bg); }
+.card[data-tone="peach"] { border-color: #f5dac6; background: #fef5ee; }
+.card[data-tone="sky"] { border-color: #cfe1f6; background: #f1f7fe; }
+.card[data-tone="lavender"] { border-color: #ddd4f5; background: #f5f2fd; }
+.card[data-tone="mint"] { border-color: #c8e8d5; background: #eff9f3; }
+.card .tableWrap, .card .ranking li:not([data-top]) { background: #fff; }
+
+/* Table pagination, 8 rows a page (components/pill-pager.tsx). */
+.pager { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.pager button { display: grid; place-items: center; min-width: 30px; height: 30px; padding: 0 8px; border: 1px solid #e8e6dc; border-radius: 999px; background: #fff; color: #3d3d3a; font: inherit; font-size: 12.5px; font-variant-numeric: tabular-nums; cursor: pointer; }
+.pager button:hover:not(:disabled) { border-color: #b96d50; }
+.pager button:disabled { opacity: .45; cursor: default; }
+.pager button[aria-current="page"] { border-color: #141413; background: #141413; color: #fff; }
+.pager button:focus-visible { outline: 2px solid #b96d50; outline-offset: 2px; }
+.pager span { margin-left: 4px; font-size: 12px; color: #6c6b63; }

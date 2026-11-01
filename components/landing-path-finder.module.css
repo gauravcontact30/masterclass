@@ -55,7 +55,6 @@
 .triesHead small { font-size: 12.5px; color: var(--sage); }
 .lines { display: flex; flex-wrap: wrap; gap: 6px; }
 /* On a phone the lines become one swipeable row instead of four wrapped ones. */
-@media (max-width: 640px) { .lines { flex-wrap: nowrap; margin: 0 -4px; padding: 2px 4px 6px; overflow-x: auto; scrollbar-width: thin; scrollbar-color: var(--pine-3) transparent; } }
 .lines button { display: inline-flex; flex-shrink: 0; align-items: center; gap: 7px; min-height: 36px; padding: 0 12px; border: 1px solid var(--pine-3); border-radius: 999px; background: transparent; font: inherit; font-size: 13px; font-weight: 600; color: var(--sage); cursor: pointer; transition: background .15s ease, border-color .15s ease, color .15s ease; }
 .lines button i { width: 10px; height: 10px; border: 2px solid var(--line-ink, var(--signal)); border-radius: 50%; background: var(--pine); }
 .lines button b { min-width: 20px; padding: 1px 6px; border-radius: 999px; background: var(--pine-2); font-size: 11.5px; font-weight: 700; color: var(--paper); text-align: center; }
@@ -183,3 +182,16 @@
 @media (max-width: 420px) { .card { padding: 16px 14px 0; } .outcome { margin-inline: -14px; padding-inline: 14px; } }
 .panel .topics a:focus-visible { outline: 2px solid var(--mint-ink); outline-offset: 2px; }
 @keyframes draw-down { from { transform: scaleY(0); } }
+
+/* Ready-made goals, twelve to a page. Week lengths wrap onto a second row now that plans run to 60 weeks. */
+.length { flex-wrap: wrap; }
+.goalPager { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.goalPager button { display: grid; place-items: center; min-width: 34px; height: 34px; padding: 0 8px; border: 1px solid var(--pine-3); border-radius: 10px; background: var(--pine-2); color: var(--paper); font: inherit; font-size: 13px; font-weight: 650; cursor: pointer; transition: background .15s ease, border-color .15s ease; }
+.goalPager button:hover { border-color: var(--sage); }
+.goalPager button[aria-current="page"] { border-color: var(--paper); background: var(--paper); color: var(--ink); }
+.goalPager button:focus-visible { outline: 2px solid var(--signal); outline-offset: 2px; }
+.goalPager span { margin-left: 4px; font-size: 12.5px; color: var(--sage); }
+
+/* 2026-11-01: line pills are paged six at a time (no sideways scroll), and no bold text in the pills. */
+.lines button, .lines button b, .tries ul button { font-weight: 400; }
+.lines + .goalPager { margin-top: -2px; }

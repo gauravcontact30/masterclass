@@ -4,7 +4,16 @@ import dynamic from "next/dynamic";
 import { ArrowDownRight, ArrowUpRight, BookOpen, CalendarRange, Clock, Eye, FileText, Layers, Minus, MousePointerClick, RefreshCw, Repeat, Trophy, UserCheck, UserPlus, Users } from "lucide-react";
 import type { WeekReport, WeekTotals } from "@/lib/week-report";
 import { AdminError, AdminLoading } from "./super-admin-feedback";
+import { PillPager } from "./pill-pager";
 import styles from "./super-admin-week.module.css";
+
+/** Rows per page in every table of this report (user request 2026-11-01). */
+const ROWS_PER_PAGE = 8;
+/** One page of `rows`, clamped so a shorter reload never leaves an empty page. */
+function pageOf<T>(rows: T[], page: number) {
+  const pages = Math.max(1, Math.ceil(rows.length / ROWS_PER_PAGE)), at = Math.min(page, pages - 1);
+  return { rows: rows.slice(at * ROWS_PER_PAGE, (at + 1) * ROWS_PER_PAGE), page: at, pages, total: rows.length, offset: at * ROWS_PER_PAGE };
+}
 
 // Recharts loads with this section only, never with the console's first paint (or any public page).
 const Donut = dynamic(() => import("./super-admin-week-charts").then(module => module.Donut), { ssr: false, loading: () => <div className={styles.chartSkeleton} /> });
@@ -56,6 +65,8 @@ export function SuperAdminWeek() {
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const [reload, setReload] = useState(0);
+  const [pages, setPages] = useState({ ranked: 0, paths: 0, contents: 0, days: 0 });
+  const turn = (table: keyof typeof pages) => (page: number) => setPages(current => ({ ...current, [table]: page }));
   useEffect(() => {
     const controller = new AbortController();
     const load = async () => {
@@ -110,15 +121,16 @@ export function SuperAdminWeek() {
       </div>)}</dl>
 
       <div className={styles.split}>
-        <article className={styles.card}>
+        <article className={styles.card} data-tone="peach">
           <h3><Trophy size={15} aria-hidden="true" />Busiest days, ranked by visitors</h3>
           {peak && peak.visitors > 0 ? <p className={styles.callout}>Peak day: <b>{peak.weekday}</b> with <b>{n(peak.visitors)}</b> visitors and <b>{n(peak.views)}</b> page views{peak.topPath ? <>, mostly in <b>{peak.topPath.name}</b></> : null}.</p> : <p className={styles.callout}>No visits recorded in these 7 days yet.</p>}
           <DayBars data={kept.map(day => ({ label: shortDay(day.date), visitors: day.visitors, views: day.views, rank: day.rank, partial: day.partial }))} />
-          <ol className={styles.ranking}>{ranked.map(day => <li key={day.date} data-top={day.rank <= 3 || undefined}>
+          <ol className={styles.ranking} id="week-ranked">{pageOf(ranked, pages.ranked).rows.map(day => <li key={day.date} data-top={day.rank <= 3 || undefined}>
             <span className={styles.rank}>{day.rank <= 3 && day.visitors > 0 ? <span aria-hidden="true">{MEDAL[day.rank - 1]}</span> : null}#{day.rank}</span>
             <span className={styles.rankDay}><b>{day.weekday}</b>{day.partial && <em>today, so far</em>}{day.kept === "partial" && <em>may be incomplete</em>}<small>{day.topPath ? `Most used: ${day.topPath.name}` : "No learning pages opened"}</small></span>
             <span className={styles.rankFigures}><b>{n(day.visitors)}</b> visitors<small>{n(day.views)} views · {time(day.engagedSeconds)}</small></span>
           </li>)}</ol>
+          <Pager table="ranked" rows={ranked} page={pages.ranked} onPage={turn("ranked")} noun="days" />
         </article>
         <Donut title="Share of the week's visitors, by day" unit="visitors" center="visitor-days" data={kept.map(day => ({ name: shortDay(day.date) + (day.partial ? " (today)" : ""), value: day.visitors }))} />
       </div>
@@ -133,35 +145,37 @@ export function SuperAdminWeek() {
         <Donut title="Countries, by sessions" unit="sessions" data={data.countries} />
       </div>
 
-      <article className={styles.card}>
+      <article className={styles.card} data-tone="sky">
         <h3><BookOpen size={15} aria-hidden="true" />Most used learning paths</h3>
         {data.paths.length ? <div className={styles.tableWrap}><table>
           <thead><tr><th scope="col">Rank</th><th scope="col">Learning path</th><th scope="col">Page views</th><th scope="col">Share</th><th scope="col">Visitors</th><th scope="col">Time read</th><th scope="col">Avg. per view</th></tr></thead>
-          <tbody>{data.paths.map((path, index) => <tr key={path.name} data-top={index < 3 || undefined}>
+          <tbody>{(({ rows, offset }) => rows.map((path, at) => { const index = offset + at; return <tr key={path.name} data-top={index < 3 || undefined}>
             <td>{index < 3 ? `${MEDAL[index]} ` : ""}#{index + 1}</td><th scope="row">{path.name}</th><td>{n(path.views)}</td>
             <td><span className={styles.share} style={{ "--share": `${learningViews ? (path.views / learningViews) * 100 : 0}%` } as React.CSSProperties} aria-hidden="true" />{learningViews ? Math.round((path.views / learningViews) * 1000) / 10 : 0}%</td>
             <td>{n(path.visitors)}</td><td>{time(path.engagedSeconds)}</td><td>{time(path.views ? path.engagedSeconds / path.views : 0)}</td>
-          </tr>)}</tbody>
+          </tr>; }))(pageOf(data.paths, pages.paths))}</tbody>
         </table></div> : <p className={styles.empty}>No learning pages were opened in these 7 days.</p>}
+        <Pager table="paths" rows={data.paths} page={pages.paths} onPage={turn("paths")} noun="learning paths" />
       </article>
 
-      <article className={styles.card}>
+      <article className={styles.card} data-tone="lavender">
         <h3><FileText size={15} aria-hidden="true" />Most read contents</h3>
         {data.contents.length ? <div className={styles.tableWrap}><table>
           <thead><tr><th scope="col">Rank</th><th scope="col">Content</th><th scope="col">Learning path</th><th scope="col">Page views</th><th scope="col">Visitors</th><th scope="col">Avg. time</th><th scope="col">Days opened</th></tr></thead>
-          <tbody>{data.contents.map((content, index) => <tr key={content.path} data-top={index < 3 || undefined}>
+          <tbody>{(({ rows, offset }) => rows.map((content, at) => { const index = offset + at; return <tr key={content.path} data-top={index < 3 || undefined}>
             <td>{index < 3 ? `${MEDAL[index]} ` : ""}#{index + 1}</td>
             <th scope="row"><a href={content.path} target="_blank" rel="noreferrer">{content.title}</a><small>{content.path}</small></th>
             <td>{content.learningPath}</td><td>{n(content.views)}</td><td>{n(content.visitors)}</td><td>{time(content.avgSeconds)}</td><td>{content.days} of {kept.length}</td>
-          </tr>)}</tbody>
+          </tr>; }))(pageOf(data.contents, pages.contents))}</tbody>
         </table></div> : <p className={styles.empty}>No learning content was opened in these 7 days.</p>}
+        <Pager table="contents" rows={data.contents} page={pages.contents} onPage={turn("contents")} noun="contents" />
       </article>
 
-      <article className={styles.card}>
+      <article className={styles.card} data-tone="mint">
         <h3><CalendarRange size={15} aria-hidden="true" />Day by day, every metric</h3>
         <div className={styles.tableWrap}><table>
           <thead><tr><th scope="col">Day</th><th scope="col">Rank</th><th scope="col">Visitors</th><th scope="col">New</th><th scope="col">Signed in</th><th scope="col">Sessions</th><th scope="col">Views</th><th scope="col">Pages / session</th><th scope="col">Bounce</th><th scope="col">Avg. time / visitor</th><th scope="col">Time read</th><th scope="col">Most used path</th><th scope="col">Most read content</th></tr></thead>
-          <tbody>{[...data.days].reverse().map(day => day.kept === "missing" ? <tr key={day.date}>
+          <tbody>{pageOf([...data.days].reverse(), pages.days).rows.map(day => day.kept === "missing" ? <tr key={day.date}>
             <th scope="row">{day.weekday}<small>not stored</small></th>
             <td colSpan={12}>Visits from this day were deleted after {data.retentionDays ?? 5} days (or predate tracking).</td>
           </tr> : <tr key={day.date} data-top={(day.rank <= 3 && day.visitors > 0) || undefined}>
@@ -173,8 +187,15 @@ export function SuperAdminWeek() {
             <td>{day.topContent ? <a href={day.topContent.path} target="_blank" rel="noreferrer">{day.topContent.title} ({n(day.topContent.views)})</a> : "—"}</td>
           </tr>)}</tbody>
         </table></div>
+        <Pager table="days" rows={data.days} page={pages.days} onPage={turn("days")} noun="days" />
         <p className={styles.footnote}>Days are India time (IST). People only: crawlers, automated browsers and the site&apos;s own machines are left out, and a page counts once it has been visible for a second. A browser seen on several days counts once per day, so the day totals add up to more than the week&apos;s visitors.</p>
       </article>
     </>}
   </section>;
+}
+
+/** The pager under each table of the report: always shown, so even a one-page table says how many rows it holds. */
+function Pager({ table, rows, page, onPage, noun }: Readonly<{ table: string; rows: unknown[]; page: number; onPage: (page: number) => void; noun: string }>) {
+  const at = pageOf(rows, page);
+  return <PillPager className={styles.pager} page={at.page} pages={at.pages} total={at.total} perPage={ROWS_PER_PAGE} onPage={onPage} label={`Pages of ${noun}`} noun={noun} controls={table === "ranked" ? "week-ranked" : undefined} always />;
 }

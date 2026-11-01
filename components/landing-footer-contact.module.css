@@ -1,0 +1,40 @@
+/* The landing footer's contact details: a compact light card on the left of the dark footer, details stacked one per
+   line. No bold anywhere (user request 2026-11-01): hierarchy comes from size, colour, letter-spacing and the serif title. */
+.panel { display: flex; flex-direction: column; width: min(100%, 440px); overflow: hidden; border: 1px solid #f5dac6; border-radius: 14px; background: #faf9f5; color: #141413; box-shadow: 0 20px 40px -32px rgba(0, 0, 0, .8); animation: panelIn .5s ease both; }
+@keyframes panelIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+.panel * { font-weight: 400; }
+.head { display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-bottom: 1px solid #e8e6dc; background: linear-gradient(120deg, #fef5ee, #faf9f5 70%); }
+.head > div { flex: 1; min-width: 0; }
+.badge { display: grid; flex: none; place-items: center; width: 30px; height: 30px; border-radius: 8px; background: #bb5834; color: #fff; }
+.head h2 { margin: 0; font-family: Georgia, "Times New Roman", serif; font-size: 17px; letter-spacing: -0.01em; color: #8f3f23; }
+.head p { margin: 1px 0 0; font-size: 12px; line-height: 1.4; color: #6c6b63; text-align: left; }
+.cta { display: inline-flex; flex: none; align-items: center; gap: 5px; min-height: 30px; padding: 0 11px; border-radius: 8px; background: #bb5834; color: #fff !important; font-size: 12.5px; letter-spacing: .02em; text-decoration: none; transition: background-color .2s ease; }
+.cta:hover { background: #a64c2c; }
+
+/* The footer's two cards sit side by side at one height (stretched by .cards); the rows share the extra space. */
+.grid { display: grid; flex: 1; align-content: space-evenly; margin: 0; padding: 4px 0; list-style: none; }
+.grid li { --chip: #eff9f3; --ink: #1f5a37; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 10px; min-width: 0; padding: 8px 14px; transition: background-color .2s ease; }
+.grid li + li { border-top: 1px dashed #e8e6dc; }
+.grid li:hover { background: #fff; }
+.grid li[data-tone="sky"] { --chip: #f1f7fe; --ink: #1d4f7a; }
+.grid li[data-tone="rose"] { --chip: #fdf2f4; --ink: #8a2846; }
+.grid li[data-tone="butter"] { --chip: #fefaea; --ink: #6e4f00; }
+.icon { display: grid; place-items: center; width: 28px; height: 28px; border-radius: 8px; background: var(--chip); color: var(--ink); border: 1px solid color-mix(in srgb, var(--ink) 18%, #fff); }
+.info { display: grid; gap: 0; min-width: 0; }
+/* Label: tiny spaced capitals in the row's colour; value: plain text, a step larger. */
+.info small { font-size: 12px; letter-spacing: normal; color: var(--ink); }
+.info a, .info address { overflow-wrap: anywhere; font-size: 13.5px; font-style: normal; line-height: 1.4; color: #3d3d3a !important; text-decoration: none; }
+.info a:hover { color: var(--ink) !important; text-decoration: underline; text-underline-offset: 3px; }
+.info address { font-size: 12.5px; color: #5e5d59 !important; }
+.info p { margin: 0; font-size: 13px; line-height: 1.45; color: #3d3d3a; text-align: left; }
+.out { color: var(--ink); }
+.copy { display: inline-flex; flex: none; align-items: center; gap: 4px; min-width: 26px; min-height: 26px; padding: 0 5px; border: 1px solid #e8e6dc; border-radius: 7px; background: #fff; color: var(--ink); font: inherit; font-size: 11px; cursor: pointer; }
+.copy:hover { border-color: var(--ink); }
+.copied:empty { display: none; }
+.panel :is(a, button):focus-visible { outline: 2px solid #bb5834; outline-offset: 2px; }
+
+@media (max-width: 420px) {
+  .head { flex-wrap: wrap; }
+  .cta { width: 100%; justify-content: center; }
+}
+@media (prefers-reduced-motion: reduce) { .panel { animation: none; } }

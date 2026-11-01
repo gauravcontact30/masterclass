@@ -20,8 +20,8 @@
 .popular button:hover { border-color: var(--nb-cream-edge); background: #fffaf6; }
 .popular img { flex: none; border-radius: 3px; }
 
-/* Technology filters: icon chips in one scrolling row, so 25 of them never take over the card. */
-.filters { display: flex; gap: 6px; margin-inline: -4px; padding: 4px; overflow-x: auto; scrollbar-width: thin; scrollbar-color: var(--nb-rule-2) transparent; }
+/* Technology filters: "All" plus six icon chips a page, wrapping (no sideways scroll; user request 2026-11-01). */
+.filters { display: flex; flex-wrap: wrap; gap: 6px; }
 .filters button { flex: none; display: inline-flex; align-items: center; gap: 7px; min-height: 40px; padding: 0 12px; border: 1px solid var(--nb-rule-2); border-radius: 10px; background: var(--nb-paper); color: var(--nb-text); font-size: 13.5px; font-weight: 500; cursor: pointer; transition: border-color .15s ease, background-color .15s ease, transform .15s ease; }
 .filters button:hover { border-color: var(--nb-cream-edge); transform: translateY(-1px); }
 .filters button img { border-radius: 4px; background: #fff; }
@@ -53,7 +53,6 @@
 .tip h3 { font-size: 19px; font-weight: 600; line-height: 1.3; letter-spacing: -0.01em; }
 .tip p { font-size: 14.5px; line-height: 1.55; color: var(--nb-text); text-align: left; }
 .tip ol { display: grid; gap: 6px; margin: 0; padding-left: 20px; font-size: 14px; line-height: 1.5; color: var(--nb-text); }
-.tip pre { overflow-x: auto; margin: 0; padding: 12px 14px; border-radius: 10px; background: #262624; color: #e8e6dc; font-family: "JetBrains Mono", ui-monospace, "SFMono-Regular", Consolas, monospace; font-size: 13px; line-height: 1.55; white-space: pre; }
 .howList { display: grid; gap: 0; margin: 0; padding: 0; list-style: none; border-top: 1px solid var(--nb-rule-2); }
 .howList li { display: flex; gap: 12px; padding: 12px 2px; border-bottom: 1px solid var(--nb-rule-2); }
 .howList svg { flex: none; margin-top: 2px; color: var(--nb-ink); }
@@ -64,8 +63,43 @@
 @media (max-width: 520px) {
   .bar { flex-wrap: wrap; padding: 8px; }
   .bar > svg { display: none; }
-  .popular button:nth-of-type(n + 5) { display: none; }
   .bar input { flex-basis: calc(100% - 44px); padding-left: 6px; }
   .go { flex: 1; justify-content: center; }
 }
 @media (prefers-reduced-motion: reduce) { .results li { animation: none; } .filters button:hover { transform: none; } }
+
+/* Light multi-colour pills (landing-wide palette): each pill takes the next of eight pastel tones; pressed fills with its ink. */
+.popular button:nth-child(8n + 1), .filters button:nth-child(8n + 1) { --pill-bg: #eff9f3; --pill-edge: #c8e8d5; --pill-ink: #1f5a37; }
+.popular button:nth-child(8n + 2), .filters button:nth-child(8n + 2) { --pill-bg: #f1f7fe; --pill-edge: #cfe1f6; --pill-ink: #1d4f7a; }
+.popular button:nth-child(8n + 3), .filters button:nth-child(8n + 3) { --pill-bg: #fefaea; --pill-edge: #f1e3a8; --pill-ink: #6e4f00; }
+.popular button:nth-child(8n + 4), .filters button:nth-child(8n + 4) { --pill-bg: #fdf2f4; --pill-edge: #f4d0d9; --pill-ink: #8a2846; }
+.popular button:nth-child(8n + 5), .filters button:nth-child(8n + 5) { --pill-bg: #f5f2fd; --pill-edge: #ddd4f5; --pill-ink: #4b3c86; }
+.popular button:nth-child(8n + 6), .filters button:nth-child(8n + 6) { --pill-bg: #fef5ee; --pill-edge: #f5dac6; --pill-ink: #8f3f23; }
+.popular button:nth-child(8n + 7), .filters button:nth-child(8n + 7) { --pill-bg: #f1f5ee; --pill-edge: #d3e0c9; --pill-ink: #3f5a2e; }
+.popular button:nth-child(8n + 8), .filters button:nth-child(8n + 8) { --pill-bg: #faf6ee; --pill-edge: #e8dcc4; --pill-ink: #6b5426; }
+.popular button, .filters button { background: var(--pill-bg, #fff); border-color: var(--pill-edge, #e8e6dc); color: var(--pill-ink, inherit); }
+.popular button:hover, .filters button:hover { border-color: var(--pill-ink, #141413); }
+.popular button[aria-pressed="true"], .filters button[aria-pressed="true"] { background: var(--pill-ink, #141413); border-color: var(--pill-ink, #141413); color: #fff; }
+
+/* Pagination under the popular searches and the technology filters (components/pill-pager.tsx). */
+.pillBlock { display: grid; gap: 8px; }
+.pager { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.pager button { display: grid; place-items: center; min-width: 32px; height: 32px; padding: 0 8px; border: 1px solid var(--nb-rule-2); border-radius: 999px; background: var(--nb-sheet); color: var(--nb-text); font: inherit; font-size: 13px; font-variant-numeric: tabular-nums; cursor: pointer; transition: border-color .15s ease, background-color .15s ease; }
+.pager button:hover { border-color: var(--nb-cream-edge); }
+.pager button[aria-current="page"] { border-color: var(--nb-graphite); background: var(--nb-graphite); color: #fff; }
+.pager button:focus-visible { outline: 3px solid var(--nb-graphite); outline-offset: 2px; }
+.pager span { margin-left: 4px; font-size: 12.5px; color: var(--nb-muted); }
+
+/* "How Search helps": the tip and each point as their own light-tinted card; sentence case, no bold (2026-11-01). */
+.tip[data-tone="butter"] { border-color: #f1e3a8; border-left-color: #6e4f00; background: #fefaea; }
+.tip[data-tone="butter"] .tipKicker, .tip[data-tone="butter"] h3 { color: #6e4f00; }
+.howList { gap: 10px; border-top: 0; }
+.howList li { --tone-bg: #f1f7fe; --tone-edge: #cfe1f6; --tone-ink: #1d4f7a; padding: 12px 14px; border: 1px solid var(--tone-edge); border-radius: 12px; background: var(--tone-bg); }
+.howList li:nth-child(3n + 2) { --tone-bg: #f5f2fd; --tone-edge: #ddd4f5; --tone-ink: #4b3c86; }
+.howList li:nth-child(3n + 3) { --tone-bg: #fef5ee; --tone-edge: #f5dac6; --tone-ink: #8f3f23; }
+.howList svg { color: var(--tone-ink); }
+.howList b { font-weight: 400; color: var(--tone-ink); }
+.tipKicker { font-size: 13.5px; font-weight: 400; letter-spacing: normal; text-transform: none; }
+.tip h3 { font-weight: 400; }
+.popular > span { font-weight: 400; }
+.filters button { font-weight: 400; }

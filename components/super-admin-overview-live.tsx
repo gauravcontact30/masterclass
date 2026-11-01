@@ -1,6 +1,6 @@
 "use client";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Activity, AlertTriangle, BookOpen, BookOpenText, Bot, CheckCircle2, Clock, Compass, Cpu, Database, EyeOff, Flame, Gauge, Globe2, Hourglass, Languages, Laptop, Lightbulb, Link2, LogIn, LogOut, MapPin, Monitor, MousePointerClick, Network, Pause, Play, Radio, RefreshCw, Route, Server, Smartphone, Sparkles, Tablet, Target, Timer, TrendingDown, UserPlus, UserRound, Users, Zap, type LucideIcon } from "lucide-react";
+import { Activity, AlertTriangle, BookOpen, BookOpenText, Bot, CalendarClock, CheckCircle2, Clock, Compass, Cpu, Database, EyeOff, Flame, Gauge, Globe2, Hourglass, Languages, Laptop, Lightbulb, Link2, LogIn, LogOut, MapPin, Monitor, MousePointerClick, Network, Pause, Play, Radio, RefreshCw, Route, Server, Smartphone, Sparkles, Tablet, Target, Timer, TrendingDown, UserPlus, UserRound, Users, Zap, type LucideIcon } from "lucide-react";
 import { Flag, countryName } from "./super-admin-audience";
 import { Pager } from "./super-admin-table";
 import styles from "./super-admin-overview-live.module.css";
@@ -203,6 +203,8 @@ export function OverviewLive({ snapshot, onRefreshSnapshot }: { snapshot: Overvi
   const todaySum = useMemo(() => periodSummary(everyone, dayStart, Infinity, ownHosts), [everyone, dayStart, ownHosts]);
   const hourSum = useMemo(() => periodSummary(everyone, Math.max(clockNow - 3600_000, dayStart), Infinity, ownHosts), [everyone, clockNow, dayStart, ownHosts]);
   const readSum = useMemo(() => periodSummary(everyone, clockNow - 30 * 60_000, Infinity, ownHosts), [everyone, clockNow, ownHosts]);
+  // The rolling 24 hours, beside "today" (from 00:00 IST): early in the IST day, today alone looks small.
+  const daySum = useMemo(() => periodSummary(everyone, clockNow - 86_400_000, Infinity, ownHosts), [everyone, clockNow, ownHosts]);
   const visitors = useMemo(() => everyone.filter(v => streamFilter === "all" || (streamFilter === "live" ? v.live : streamFilter === "signed" ? v.signedIn : streamFilter === "private" ? Boolean(v.privateWindow) : v.first.new_visitor && !v.signedIn)), [everyone, streamFilter]);
   const heartbeats = Boolean(stream?.presence);
   const reading = readSum.pages;
@@ -263,7 +265,8 @@ export function OverviewLive({ snapshot, onRefreshSnapshot }: { snapshot: Overvi
       ? { label: "On the site now", value: n(counts.live), note: `${n(counts.liveSigned)} signed in · page open now`, icon: Radio, tone: "mint", pulse: true }
       : { label: "On the site now", value: n(live?.totals.liveNow), note: `${n(live?.totals.liveSignedIn)} signed in · page open now`, icon: Radio, tone: "mint", pulse: true },
     { label: "Page views, last hour", value: n(hourSum.views), note: `by ${n(hourSum.people)} ${hourSum.people === 1 ? "person" : "people"}`, icon: MousePointerClick, tone: "sky" },
-    { label: `Visitors, ${day}`, value: n(fig.people), note: `${n(fig.views)} page views · ${n(fig.signedIn)} signed in · ${n(fig.newVisitors)} new`, icon: Users, tone: "lavender" },
+    { label: `Visitors, ${day}`, value: n(fig.people), note: `${day === "today" ? "since 00:00 IST · " : ""}${n(fig.views)} page views · ${n(fig.signedIn)} signed in · ${n(fig.newVisitors)} new`, icon: Users, tone: "lavender" },
+    ...(exact ? [{ label: "Visitors, last 24 hours", value: n(daySum.people), note: `rolling, since ${clock(clockNow - 86_400_000)} IST yesterday · ${n(daySum.views)} page views · ${n(daySum.sessions)} visits`, icon: CalendarClock, tone: "sky" }] : []),
     { label: "API requests, 15 min", value: n(recent15.length), note: `${n(snapshot?.requests.count)} in the reporting window`, icon: Route, tone: "peach" },
     { label: "Server errors, 15 min", value: n(errors15), note: errors15 ? "Open Application logs for details" : "All clear", icon: AlertTriangle, tone: errors15 ? "rose" : "sage" },
     { label: "API p95 latency", value: snapshot?.requests.p95 == null ? "—" : `${Math.round(snapshot.requests.p95)} ms`, note: `Database ${n(h?.databaseMs)} ms`, icon: Gauge, tone: "butter" },

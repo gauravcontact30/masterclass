@@ -2,7 +2,7 @@
 import { useEffect, useId, useMemo, useRef, useState, useSyncExternalStore, type CSSProperties, type FormEvent, type RefObject } from "react";
 import Image from "@/components/responsive-image";
 import Link from "next/link";
-import { Check, Flag, Hammer, Layers, Loader2, RotateCcw, Sparkles, type LucideIcon } from "lucide-react";
+import { Check, ChevronLeft, ChevronRight, Flag, Hammer, Layers, Loader2, RotateCcw, Sparkles, type LucideIcon } from "lucide-react";
 import type { LearningPath, PathStage } from "@/lib/learning-path";
 import { PLAN_LENGTHS, stageSpans } from "@/lib/learning-path-stages";
 import { requestJson } from "@/lib/client";
@@ -10,6 +10,7 @@ import { useLanguage } from "./language-provider";
 import type { FreshGoal } from "@/lib/landing-fresh-types";
 import { pickDaily, rotateDaily } from "@/lib/daily-rotation";
 import { stageWeeks } from "./learning-path-view";
+import { PillPager } from "./pill-pager";
 import home from "./landing-home.module.css";
 import styles from "./landing-path-finder.module.css";
 
@@ -73,9 +74,32 @@ const GOALS: Goal[] = [
   ["System Design", "सिस्टम डिज़ाइन", "crack a system design interview", "सिस्टम डिज़ाइन इंटरव्यू पास करना", "interview", "system-design"],
   ["DSA", "DSA", "prepare for coding interviews with data structures and algorithms", "डेटा स्ट्रक्चर और एल्गोरिद्म से कोडिंग इंटरव्यू की तैयारी करना", "interview"],
   ["JavaScript", "JavaScript", "crack a JavaScript interview", "JavaScript इंटरव्यू पास करना", "interview", "javascript"],
+  ["Prompt engineering", "प्रॉम्प्ट इंजीनियरिंग", "write reliable prompts for LLM apps", "LLM ऐप्स के लिए भरोसेमंद प्रॉम्प्ट लिखना", "ai"],
+  ["MCP", "MCP", "build MCP servers that give AI agents tools", "AI एजेंट को टूल देने वाले MCP सर्वर बनाना", "ai"],
+  ["OpenAI API", "OpenAI API", "build apps on the OpenAI API", "OpenAI API पर ऐप बनाना", "ai", "openai"],
+  ["Supabase", "Supabase", "build a full-stack app with Supabase", "Supabase से फ़ुल-स्टैक ऐप बनाना", "backend", "supabase"],
+  ["Express", "Express", "build REST APIs with Express", "Express से REST API बनाना", "backend", "express"],
+  ["Svelte", "Svelte", "build fast web apps with Svelte", "Svelte से तेज़ वेब ऐप बनाना", "frontend"],
+  ["Web performance", "वेब परफ़ॉर्मेंस", "improve Core Web Vitals on a real site", "असली साइट पर Core Web Vitals सुधारना", "frontend"],
+  ["Accessibility", "एक्सेसिबिलिटी", "build accessible websites that meet WCAG", "WCAG के अनुरूप सुलभ वेबसाइट बनाना", "frontend"],
+  ["Google Cloud", "Google Cloud", "deploy apps on Google Cloud", "Google Cloud पर ऐप डिप्लॉय करना", "cloud", "google"],
+  ["Git", "Git", "master Git and team workflows", "Git और टीम वर्कफ़्लो में महारत पाना", "cloud", "git"],
+  ["Power BI", "Power BI", "become a data analyst with SQL and Power BI", "SQL और Power BI से डेटा एनालिस्ट बनना", "data", "microsoft"],
+  ["Swift", "Swift", "build iOS apps with Swift and SwiftUI", "Swift और SwiftUI से iOS ऐप बनाना", "mobile"],
+  ["Kotlin", "Kotlin", "build Android apps with Kotlin", "Kotlin से Android ऐप बनाना", "mobile"],
+  ["Cypress", "Cypress", "write end-to-end tests with Cypress", "Cypress से एंड-टू-एंड टेस्ट लिखना", "quality"],
+  ["Pen testing", "पेन टेस्टिंग", "learn the basics of ethical hacking and penetration testing", "एथिकल हैकिंग और पेनिट्रेशन टेस्टिंग की बुनियाद सीखना", "quality"],
+  ["Behavioural", "व्यवहारिक इंटरव्यू", "prepare for behavioural interview rounds", "व्यवहारिक इंटरव्यू राउंड की तैयारी करना", "interview"],
+  ["Frontend system design", "फ्रंटएंड सिस्टम डिज़ाइन", "crack a frontend system design interview", "फ्रंटएंड सिस्टम डिज़ाइन इंटरव्यू पास करना", "interview", "system-design"],
 ];
 /** How many goals the popular mix shows. */
-const POPULAR = 8;
+const POPULAR = 24;
+/** Goals per page of the "ready-made goal" list. */
+const GOAL_PAGE = 6;
+/** The line pills: today's popular mix, every goal, then one per field. */
+const LINE_OPTIONS: { id: Line | "popular" | "all"; en: string; hi: string }[] = [{ id: "popular", en: "Popular this week", hi: "इस हफ़्ते लोकप्रिय" }, { id: "all", en: "All goals", hi: "सभी लक्ष्य" }, ...LINES];
+/** Line (category) pills per page (user request 2026-11-01: 6 per page, like the goals). */
+const LINE_PAGE = 6;
 /** What each of the three stages is for; the model and the rules both plan to this shape. */
 const STAGES: { icon: LucideIcon; en: string; hi: string }[] = [
   { icon: Layers, en: "Foundation", hi: "बुनियाद" },
@@ -186,8 +210,14 @@ export function LandingPathFinder({ day = 0, fresh }: { day?: number; fresh?: Fr
     const today: Goal[] = [...(fresh ?? []).map((goal): Goal => [goal.tech, goal.hiTech, goal.goal, goal.hiGoal]), ...rotateDaily(GOALS, day)];
     return today.filter((goal, at) => today.findIndex(other => other[0].toLowerCase() === goal[0].toLowerCase()) === at).slice(0, POPULAR);
   }, [fresh, day]);
-  const [line, setLine] = useState<Line | "popular">("popular");
-  const goals = line === "popular" ? popular : GOALS.filter(goal => goal[4] === line);
+  const [line, setLineState] = useState<Line | "popular" | "all">("popular");
+  const [goalPage, setGoalPage] = useState(0);
+  const setLine = (next: Line | "popular" | "all") => { setLineState(next); setGoalPage(0); };
+  const [linePage, setLinePage] = useState(0);
+  const lineGoals = line === "popular" ? popular : line === "all" ? GOALS : GOALS.filter(goal => goal[4] === line);
+  const goalPages = Math.max(1, Math.ceil(lineGoals.length / GOAL_PAGE));
+  const shownPage = Math.min(goalPage, goalPages - 1);
+  const goals = lineGoals.slice(shownPage * GOAL_PAGE, (shownPage + 1) * GOAL_PAGE);
   const reduced = useSyncExternalStore(subscribeMotion, () => window.matchMedia?.(motionQuery).matches ?? false, () => true);
   const [focused, setFocused] = useState(false);
   const examples = useMemo(() => popular.map(goal => hi ? goal[3] : goal[2]), [popular, hi]);
@@ -266,11 +296,12 @@ export function LandingPathFinder({ day = 0, fresh }: { day?: number; fresh?: Fr
           </div>
           {/* The goals are grouped by line, like a transit map: today's popular mix, then one line per field. */}
           <div className={styles.lines} role="group" aria-label={text("Goal lines", "लक्ष्य की लाइनें")}>
-            {[{ id: "popular" as const, en: "Popular this week", hi: "इस हफ़्ते लोकप्रिय" }, ...LINES].map((option, at) => <button key={option.id} type="button" data-line={at} aria-pressed={line === option.id} aria-controls={`${id}-goals`} onClick={() => setLine(option.id)}>
-              <i aria-hidden="true" />{hi ? option.hi : option.en}<b>{option.id === "popular" ? popular.length : GOALS.filter(goal => goal[4] === option.id).length}</b>
+            {LINE_OPTIONS.slice(linePage * LINE_PAGE, (linePage + 1) * LINE_PAGE).map(option => <button key={option.id} type="button" data-line={option.id === "all" ? 0 : Math.max(0, LINE_OPTIONS.indexOf(option) - 1)} aria-pressed={line === option.id} aria-controls={`${id}-goals`} onClick={() => setLine(option.id)}>
+              <i aria-hidden="true" />{hi ? option.hi : option.en}<b>{option.id === "popular" ? popular.length : option.id === "all" ? GOALS.length : GOALS.filter(goal => goal[4] === option.id).length}</b>
             </button>)}
           </div>
-          <ul id={`${id}-goals`} key={line} aria-labelledby={`${id}-try`}>
+          <PillPager className={styles.goalPager} page={linePage} pages={Math.ceil(LINE_OPTIONS.length / LINE_PAGE)} total={LINE_OPTIONS.length} perPage={LINE_PAGE} onPage={setLinePage} label={text("Goal lines", "लक्ष्य की लाइनें")} noun="lines" />
+          <ul id={`${id}-goals`} key={`${line}-${shownPage}`} aria-labelledby={`${id}-try`}>
             {goals.map(([label, labelHi, en, hindi, goalLine, icon], at) => {
               const value = hi ? hindi : en;
               // Each pill carries its line's colour and the technology's icon; the goal it plans is its tooltip.
@@ -279,6 +310,12 @@ export function LandingPathFinder({ day = 0, fresh }: { day?: number; fresh?: Fr
               </button></li>;
             })}
           </ul>
+          {goalPages > 1 && <nav className={styles.goalPager} aria-label={text("Ready-made goal pages", "तैयार लक्ष्यों के पृष्ठ")}>
+            <button type="button" onClick={() => setGoalPage((shownPage - 1 + goalPages) % goalPages)} aria-label={text("Previous goals", "पिछले लक्ष्य")}><ChevronLeft size={15} aria-hidden="true" /></button>
+            {Array.from({ length: goalPages }, (_, page) => <button type="button" key={page} aria-current={page === shownPage ? "page" : undefined} aria-label={text(`Goals page ${page + 1}`, `पृष्ठ ${page + 1}`)} onClick={() => setGoalPage(page)}>{page + 1}</button>)}
+            <button type="button" onClick={() => setGoalPage((shownPage + 1) % goalPages)} aria-label={text("Next goals", "अगले लक्ष्य")}><ChevronRight size={15} aria-hidden="true" /></button>
+            <span role="status">{text(`${shownPage * GOAL_PAGE + 1}–${Math.min((shownPage + 1) * GOAL_PAGE, lineGoals.length)} of ${lineGoals.length} goals`, `${lineGoals.length} में से ${shownPage * GOAL_PAGE + 1}–${Math.min((shownPage + 1) * GOAL_PAGE, lineGoals.length)}`)}</span>
+          </nav>}
         </div>
       </form>
 

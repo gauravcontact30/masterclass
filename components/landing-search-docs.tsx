@@ -10,6 +10,8 @@ import { useContentItem } from "./content-editing";
 import { useNearViewport } from "./use-near-viewport";
 import { useVisiblePlayback } from "./use-visible-playback";
 import { BuzzStrip } from "./landing-buzz-strip";
+import { CodeFiles } from "./code-files";
+import { PillPager } from "./pill-pager";
 import home from "./landing-home.module.css";
 import frame from "./landing-section.module.css";
 import styles from "./landing-search-docs.module.css";
@@ -22,6 +24,9 @@ const LOGO_LABELS: Record<string, string> = {
   playwright: "Playwright", vitest: "Vitest", graphql: "GraphQL", "system-design": "System Design",
 };
 const RESULTS = 8;
+/** Popular searches and technology filters per page (user request 2026-11-01: three a page). */
+const PILLS_PER_PAGE = 3;
+const TIP_EXTENSIONS: Record<string, string> = { tsx: "tsx", jsx: "jsx", typescript: "ts", ts: "ts", javascript: "js", js: "js", python: "py", bash: "sh", shell: "sh", json: "json", yaml: "yaml", sql: "sql", go: "go", rust: "rs", css: "css", html: "html" };
 type Hit = { name: string; category: string; book: number; score: number };
 type Result = { hits: Hit[]; searched: number; ms: number; words: string[]; logo: string | null };
 
@@ -74,6 +79,7 @@ export function LandingSearchDocs({ fresh, buzz, week = 0 }: Readonly<{ fresh?: 
     if (source) setResult(search(source, q, l));
   };
   const [placeholder, setPlaceholder] = useState(0);
+  const [popularPage, setPopularPage] = useState(0); const [filterPage, setFilterPage] = useState(0);
   useEffect(() => {
     if (!near || index) return;
     const controller = new AbortController();
@@ -81,12 +87,12 @@ export function LandingSearchDocs({ fresh, buzz, week = 0 }: Readonly<{ fresh?: 
       .then((body: LandingSearchIndex) => { setIndex(body); setResult(search(body, "", null)); }).catch(() => { if (!controller.signal.aborted) setFailed(true); });
     return () => controller.abort();
   }, [near, index]);
-  // Popular searches: one real topic from each of eight technologies, turning over weekly.
+  // Popular searches: one real topic from each technology, turning over weekly, shown three per page.
   const popular = useMemo(() => {
     if (!index) return [];
     const seen = new Set<string>(), picks: { name: string; logo: string }[] = [];
     index.handbooks.forEach((book, h) => {
-      if (!book.logo || seen.has(book.logo) || picks.length >= 8) return;
+      if (!book.logo || seen.has(book.logo)) return;
       const topics = index.topics.filter(topic => topic[2] === h);
       if (!topics.length) return;
       seen.add(book.logo); picks.push({ name: topics[(week + h) % topics.length][0], logo: book.logo });
@@ -130,13 +136,19 @@ export function LandingSearchDocs({ fresh, buzz, week = 0 }: Readonly<{ fresh?: 
           <button type="submit" className={styles.go}>Search<ArrowRight size={15} aria-hidden="true" /></button>
         </form>
 
-        {popular.length > 0 && <div className={styles.popular}><span><TrendingUp size={14} aria-hidden="true" />Popular this week</span>{popular.map(item => <button type="button" key={item.name} onClick={() => update({ query: item.name, logo: null })}><Image src={`/images/tech/${item.logo}.png`} alt="" width={14} height={14} />{item.name}</button>)}</div>}
+        {popular.length > 0 && <div className={styles.pillBlock}>
+          <div className={styles.popular} id="landing-popular"><span><TrendingUp size={14} aria-hidden="true" />Popular this week</span>{popular.slice(popularPage * PILLS_PER_PAGE, (popularPage + 1) * PILLS_PER_PAGE).map(item => <button type="button" key={item.name} onClick={() => update({ query: item.name, logo: null })}><Image src={`/images/tech/${item.logo}.png`} alt="" width={14} height={14} />{item.name}</button>)}</div>
+          <PillPager className={styles.pager} page={Math.min(popularPage, Math.ceil(popular.length / PILLS_PER_PAGE) - 1)} pages={Math.ceil(popular.length / PILLS_PER_PAGE)} total={popular.length} perPage={PILLS_PER_PAGE} onPage={setPopularPage} label="Popular searches" noun="popular searches" controls="landing-popular" />
+        </div>}
 
-        {filters.length > 0 && <div className={styles.filters} role="group" aria-label="Filter by technology">
-          <button type="button" aria-pressed={!logo} onClick={() => update({ logo: null })}><Layers size={15} aria-hidden="true" />All</button>
-          {filters.map(item => <button type="button" key={item.id} aria-pressed={logo === item.id} onClick={() => update({ logo: logo === item.id ? null : item.id })} title={`${item.label}: ${item.topics} topics`}>
-            <Image src={`/images/tech/${item.id}.png`} alt="" width={18} height={18} /><span>{item.label}</span><small>{item.topics}</small>
-          </button>)}
+        {filters.length > 0 && <div className={styles.pillBlock}>
+          <div className={styles.filters} id="landing-tech-filters" role="group" aria-label="Filter by technology">
+            <button type="button" aria-pressed={!logo} onClick={() => update({ logo: null })}><Layers size={15} aria-hidden="true" />All</button>
+            {filters.slice(filterPage * PILLS_PER_PAGE, (filterPage + 1) * PILLS_PER_PAGE).map(item => <button type="button" key={item.id} aria-pressed={logo === item.id} onClick={() => update({ logo: logo === item.id ? null : item.id })} title={`${item.label}: ${item.topics} topics`}>
+              <Image src={`/images/tech/${item.id}.png`} alt="" width={18} height={18} /><span>{item.label}</span><small>{item.topics}</small>
+            </button>)}
+          </div>
+          <PillPager className={styles.pager} page={Math.min(filterPage, Math.ceil(filters.length / PILLS_PER_PAGE) - 1)} pages={Math.ceil(filters.length / PILLS_PER_PAGE)} total={filters.length} perPage={PILLS_PER_PAGE} onPage={setFilterPage} label="Technologies" noun="technologies" controls="landing-tech-filters" />
         </div>}
 
         {/* Proof: what was searched and how long it took, measured in this browser. */}
@@ -163,8 +175,8 @@ export function LandingSearchDocs({ fresh, buzz, week = 0 }: Readonly<{ fresh?: 
           <h3 id="landing-doc-tip">{fresh.title}</h3>
           <p>{fresh.summary}</p>
           {fresh.steps.length > 0 && <ol>{fresh.steps.slice(0, 4).map(step => <li key={step}>{step}</li>)}</ol>}
-          {fresh.code && <pre><code>{fresh.code.code}</code></pre>}
-        </article> : <article className={styles.tip}>
+          {fresh.code && <CodeFiles files={[{ path: `tip.${TIP_EXTENSIONS[fresh.code.language] ?? "txt"}`, code: fresh.code.code, note: fresh.title }]} label={fresh.title} skin="apple" annotate={false} explainFormatting={false} />}
+        </article> : <article className={styles.tip} data-tone="butter">
           <p className={styles.tipKicker}><Lightbulb size={14} aria-hidden="true" />How Search helps</p>
           <h3>From a word to working code</h3>
           <ol><li>Search a topic across every handbook</li><li>Read the explanation and key points</li><li>Copy the worked example</li><li>Ask a follow-up in AI search</li></ol>

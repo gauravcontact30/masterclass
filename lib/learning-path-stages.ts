@@ -2,7 +2,8 @@
  * The zod-free part of lib/learning-path.ts: plan lengths and how a plan's weeks split into its three stages. The
  * landing route planner imports this directly, so it must never import zod or the catalog.
  */
-export const PLAN_LENGTHS = [4, 6, 8, 12] as const;
+/** Plan lengths the route planner offers, from a sprint to a year-plus (2026-11-01: up to 60 weeks). */
+export const PLAN_LENGTHS = [4, 6, 8, 12, 16, 24, 36, 48, 60] as const;
 
 /** The weeks each of the three stages covers: 4 → 1–2, 3, 4; 8 → 1–3, 4–6, 7–8. Earlier stages take the extra week. */
 export function stageSpans(weeks: number): [number, number][] {

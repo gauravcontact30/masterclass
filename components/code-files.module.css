@@ -229,3 +229,5 @@
 }
 .wrap[data-skin="apple"] .tab:focus-visible { outline: 2px solid #0071e3; }
 .wrap[data-skin="apple"] .tab[aria-selected="true"] svg { color: #0071e3; }
+/* Apple skin (landing page): the header reads in sentence case, as written, never forced to capitals (2026-11-01). */
+.wrap[data-skin="apple"] .disclose { font-size: 13px; font-weight: 400; letter-spacing: normal; text-transform: none; }

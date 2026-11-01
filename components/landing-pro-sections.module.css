@@ -1,6 +1,6 @@
 /* Techy and API Docs on the landing page. The section frame (head, kicker, facts, CTA) is landing-section.module.css;
    this file holds Techy's Coffee & Code-style topic grid and code lab, and API Docs' command palette and API of the week. */
-.code, .signature, .hint code, .spotInfo code, .output code { font-family: "JetBrains Mono", ui-monospace, "SFMono-Regular", Consolas, monospace; }
+.signature, .hint code, .spotInfo code, .output code { font-family: "JetBrains Mono", ui-monospace, "SFMono-Regular", Consolas, monospace; }
 
 /* ---------- Techy: search, category chips and tone-covered topic cards (as on the Coffee & Code page) ---------- */
 .toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 16px; margin-bottom: 18px; }
@@ -40,7 +40,7 @@
 .pager { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 6px; }
 .pager button { display: grid; place-items: center; min-width: 36px; height: 36px; border: 1px solid var(--nb-rule-2); border-radius: 50%; background: var(--nb-sheet); color: var(--nb-graphite); cursor: pointer; }
 .pager button:hover { border-color: var(--nb-cream-edge); }
-.pager button:focus-visible, .reveal:focus-visible, .langTabs button:focus-visible, .copy:focus-visible, .hint:focus-visible, .related button:focus-visible { outline: 3px solid var(--nb-graphite); outline-offset: 2px; }
+.pager button:focus-visible, .reveal:focus-visible, .langTabs button:focus-visible, .hint:focus-visible, .related button:focus-visible { outline: 3px solid var(--nb-graphite); outline-offset: 2px; }
 /* Page dots: the current one stretches into a bar that fills while autoplay runs. */
 .pager .dot { position: relative; overflow: hidden; min-width: 12px; width: 12px; height: 12px; padding: 0; border-radius: 999px; background: var(--nb-rule-2); border: 0; transition: width .25s ease; }
 .pager .dot[aria-current="page"] { width: 34px; background: color-mix(in srgb, var(--nb-button) 30%, #fff); }
@@ -54,7 +54,7 @@
 .labGrid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; margin-top: 28px; align-items: start; }
 .questionCard, .puzzleCard, .polyglot, .spotlight { display: grid; gap: 12px; padding: clamp(18px, 2.4vw, 26px); border: 1px solid var(--nb-rule-2); border-radius: 14px; background: var(--nb-sheet); box-shadow: 0 22px 44px -38px rgba(143, 63, 35, .45); }
 .questionCard { scroll-margin-top: 90px; border-left: 4px solid var(--nb-button); }
-.labKicker { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; color: var(--nb-ink); }
+.labKicker { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-size: 13.5px; font-weight: 400; letter-spacing: normal; text-transform: none; color: var(--nb-ink); }
 .labKicker code { text-transform: none; letter-spacing: 0; }
 .questionCard h3, .polyHead h3 { font-size: 21px; font-weight: 600; letter-spacing: -0.01em; }
 .feature { display: flex; gap: 8px; font-size: 14.5px; line-height: 1.5; color: var(--nb-text); text-align: left; }
@@ -66,7 +66,14 @@
 .reveal[aria-expanded="true"] { background: var(--nb-sheet); color: var(--nb-graphite); }
 .answer { padding-top: 12px; border-top: 1px dashed var(--nb-rule-2); font-size: 15px; line-height: 1.65; color: var(--nb-text); text-align: left; }
 .puzzleTabs { display: flex; flex-wrap: wrap; gap: 6px; }
-.code { overflow-x: auto; margin: 0; padding: 14px 16px; border-radius: 10px; background: #262624; color: #e8e6dc; font-size: 13.5px; line-height: 1.6; tab-size: 2; white-space: pre; scrollbar-width: thin; }
+.puzzleTitle { font-size: 18px; font-weight: 400; line-height: 1.35; color: var(--nb-graphite); }
+/* Puzzle pagination: previous, numbered pastel pills, next, and where you are (user request 2026-11-01). */
+.puzzlePager { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding-top: 4px; border-top: 1px dashed var(--nb-rule-2); }
+.puzzlePager .puzzleTabs button { min-width: 36px; padding: 0; font-variant-numeric: tabular-nums; }
+.puzzlePager .step { display: grid; place-items: center; width: 36px; height: 36px; border: 1px solid var(--nb-rule-2); border-radius: 50%; background: var(--nb-sheet); color: var(--nb-graphite); cursor: pointer; }
+.puzzlePager .step:disabled { opacity: .4; cursor: default; }
+.puzzlePager .step:focus-visible, .puzzlePager .puzzleTabs button:focus-visible { outline: 3px solid var(--nb-graphite); outline-offset: 2px; }
+.puzzlePager > span { margin-left: auto; font-size: 13px; color: var(--nb-muted); }
 .output { display: grid; gap: 8px; padding: 12px 14px; border: 1px solid #c8e8d5; border-radius: 10px; background: #eff9f3; }
 .output code { font-size: 14.5px; font-weight: 600; color: #1f5a37; }
 .output p { font-size: 14.5px; line-height: 1.55; color: var(--nb-text); text-align: left; }
@@ -81,10 +88,6 @@
 .langTabs button[aria-selected="true"] { border-color: var(--nb-graphite); background: var(--nb-sheet); color: var(--nb-graphite); }
 .langTabs button i { position: absolute; left: 0; right: 0; bottom: 0; height: 3px; background: var(--nb-button); transform-origin: left; transform: scaleX(0); animation: fill linear forwards; }
 .polyBody { display: grid; gap: 10px; animation: cardIn .35s ease both; }
-.codeWrap { position: relative; }
-.codeWrap .code { padding-right: 92px; }
-.copy { display: inline-flex; align-items: center; gap: 6px; min-height: 32px; padding: 0 10px; border: 1px solid rgba(250, 249, 245, .2); border-radius: 8px; background: #30302e; color: #e8e6dc; font-size: 12.5px; cursor: pointer; }
-.codeWrap .copy { position: absolute; top: 8px; right: 8px; }
 .polyNote { display: flex; gap: 8px; font-size: 14.5px; line-height: 1.5; color: var(--nb-text); text-align: left; }
 .polyNote svg { flex: none; margin-top: 2px; color: var(--nb-ink); }
 .noMatch { padding: 14px 4px; font-size: 14.5px; line-height: 1.5; color: var(--nb-text); text-align: left; }
@@ -122,12 +125,14 @@
 .entryList code { overflow: hidden; font-family: "JetBrains Mono", ui-monospace, "SFMono-Regular", Consolas, monospace; font-size: 14px; color: var(--nb-graphite); text-overflow: ellipsis; white-space: nowrap; }
 .entryList small { font-size: 13px; color: var(--nb-muted); }
 
-.points { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); margin: 0; padding: 0; list-style: none; border-top: 1px solid var(--nb-rule); background: var(--nb-paper); }
-.points li { display: flex; gap: 12px; align-items: flex-start; padding: 18px 20px; }
-.points li + li { border-left: 1px solid var(--nb-rule); }
-.points svg { flex: none; margin-top: 2px; color: var(--nb-ink); }
-.points h4 { font-size: 15px; font-weight: 600; }
-.points p { margin-top: 2px; font-size: 14px; line-height: 1.5; color: var(--nb-muted); text-align: left; }
+/* The three points under the palette: separate light blocks, one tone each, no bold (user request 2026-11-01). */
+.points { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 0; padding: 14px; list-style: none; border-top: 1px solid var(--nb-rule); background: var(--nb-paper); }
+.points li { --tone-bg: #eff9f3; --tone-edge: #c8e8d5; --tone-ink: #1f5a37; display: flex; gap: 12px; align-items: flex-start; padding: 16px 18px; border: 1px solid var(--tone-edge); border-radius: 12px; background: var(--tone-bg); }
+.points li:nth-child(3n + 2) { --tone-bg: #f1f7fe; --tone-edge: #cfe1f6; --tone-ink: #1d4f7a; }
+.points li:nth-child(3n + 3) { --tone-bg: #fef5ee; --tone-edge: #f5dac6; --tone-ink: #8f3f23; }
+.points svg { flex: none; margin-top: 2px; color: var(--tone-ink); }
+.points h4 { font-size: 15px; font-weight: 400; color: var(--tone-ink); }
+.points p { margin-top: 2px; font-size: 14px; line-height: 1.5; color: var(--nb-muted); text-align: left; hyphens: manual; }
 
 
 /* A real identifier to try, cycling every three seconds until the visitor types. */
@@ -156,13 +161,7 @@
 .related button { min-height: 30px; padding: 0 9px; border: 1px solid var(--nb-rule-2); border-radius: 6px; background: var(--nb-sheet); cursor: pointer; }
 .related button:hover { border-color: var(--nb-cream-edge); }
 .related code { font-size: 12.5px; color: var(--nb-ink-deep); }
-.spotCode { overflow: hidden; min-width: 0; border-radius: 12px; background: #262624; }
-.spotCode .code { border-radius: 0; max-height: 440px; overflow: auto; }
-.codeBar { display: flex; align-items: center; gap: 12px; padding: 8px 10px 8px 14px; border-bottom: 1px solid rgba(250, 249, 245, .1); font-size: 12.5px; color: #b0aea5; }
-.codeBar > span:nth-child(2) { flex: 1; }
-.dots { display: flex; gap: 6px; }
-.dots i { width: 10px; height: 10px; border-radius: 50%; background: #4a4946; }
-.dots i:first-child { background: #e3926f; }
+.spotCode, .editor { min-width: 0; }
 
 @media (max-width: 1000px) {
   .cardGrid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -174,7 +173,6 @@
   .packages button { flex: none; width: auto; grid-template-columns: 22px auto auto; }
   .entryList { max-height: 360px; }
   .points { grid-template-columns: minmax(0, 1fr); }
-  .points li + li { border-left: 0; border-top: 1px solid var(--nb-rule); }
   .paletteSearch .hint { display: none; }
 }
 @media (max-width: 560px) {
@@ -186,6 +184,19 @@
   .polyHead { align-items: flex-start; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .cardGrid li, .polyBody, .hint { animation: none; }
+  .cardGrid li, .polyBody, .paletteSearch .hint { animation: none; }
   .topicCard:hover { transform: none; }
 }
+
+/* Light multi-colour pills (landing-wide palette): each pill takes the next of eight pastel tones; pressed fills with its ink. */
+.chips button:nth-child(8n + 1), .puzzleTabs button:nth-child(8n + 1), .langTabs button:nth-child(8n + 1), .kinds button:nth-child(8n + 1), .related button:nth-child(8n + 1) { --pill-bg: #eff9f3; --pill-edge: #c8e8d5; --pill-ink: #1f5a37; }
+.chips button:nth-child(8n + 2), .puzzleTabs button:nth-child(8n + 2), .langTabs button:nth-child(8n + 2), .kinds button:nth-child(8n + 2), .related button:nth-child(8n + 2) { --pill-bg: #f1f7fe; --pill-edge: #cfe1f6; --pill-ink: #1d4f7a; }
+.chips button:nth-child(8n + 3), .puzzleTabs button:nth-child(8n + 3), .langTabs button:nth-child(8n + 3), .kinds button:nth-child(8n + 3), .related button:nth-child(8n + 3) { --pill-bg: #fefaea; --pill-edge: #f1e3a8; --pill-ink: #6e4f00; }
+.chips button:nth-child(8n + 4), .puzzleTabs button:nth-child(8n + 4), .langTabs button:nth-child(8n + 4), .kinds button:nth-child(8n + 4), .related button:nth-child(8n + 4) { --pill-bg: #fdf2f4; --pill-edge: #f4d0d9; --pill-ink: #8a2846; }
+.chips button:nth-child(8n + 5), .puzzleTabs button:nth-child(8n + 5), .langTabs button:nth-child(8n + 5), .kinds button:nth-child(8n + 5), .related button:nth-child(8n + 5) { --pill-bg: #f5f2fd; --pill-edge: #ddd4f5; --pill-ink: #4b3c86; }
+.chips button:nth-child(8n + 6), .puzzleTabs button:nth-child(8n + 6), .langTabs button:nth-child(8n + 6), .kinds button:nth-child(8n + 6), .related button:nth-child(8n + 6) { --pill-bg: #fef5ee; --pill-edge: #f5dac6; --pill-ink: #8f3f23; }
+.chips button:nth-child(8n + 7), .puzzleTabs button:nth-child(8n + 7), .langTabs button:nth-child(8n + 7), .kinds button:nth-child(8n + 7), .related button:nth-child(8n + 7) { --pill-bg: #f1f5ee; --pill-edge: #d3e0c9; --pill-ink: #3f5a2e; }
+.chips button:nth-child(8n + 8), .puzzleTabs button:nth-child(8n + 8), .langTabs button:nth-child(8n + 8), .kinds button:nth-child(8n + 8), .related button:nth-child(8n + 8) { --pill-bg: #faf6ee; --pill-edge: #e8dcc4; --pill-ink: #6b5426; }
+.chips button, .puzzleTabs button, .langTabs button, .kinds button, .related button { background: var(--pill-bg, #fff); border-color: var(--pill-edge, #e8e6dc); color: var(--pill-ink, inherit); }
+.chips button:hover, .puzzleTabs button:hover, .langTabs button:hover, .kinds button:hover, .related button:hover { border-color: var(--pill-ink, #141413); }
+.chips button[aria-pressed="true"], .puzzleTabs button[aria-pressed="true"], .langTabs button[aria-pressed="true"], .kinds button[aria-pressed="true"], .related button[aria-pressed="true"] { background: var(--pill-ink, #141413); border-color: var(--pill-ink, #141413); color: #fff; }

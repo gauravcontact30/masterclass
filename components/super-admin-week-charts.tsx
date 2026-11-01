@@ -16,12 +16,12 @@ export type Slice = { name: string; value: number };
 const share = (value: number, total: number) => total ? `${Math.round((value / total) * 1000) / 10}%` : "0%";
 
 /** A donut with a legend that names every slice with its value and share; slices keep their order (fixed colours). */
-export function Donut({ title, unit, data, center }: Readonly<{ title: string; unit: string; data: Slice[]; center?: string }>) {
+export function Donut({ title, unit, data, center, empty }: Readonly<{ title: string; unit: string; data: Slice[]; center?: string; empty?: string }>) {
   const total = data.reduce((sum, slice) => sum + slice.value, 0);
   const filled = data.map((slice, index) => ({ ...slice, fill: slice.name === "Other" ? OTHER : SERIES[index % SERIES.length] }));
   return <figure className={styles.donut}>
     <figcaption>{title}</figcaption>
-    {total === 0 ? <p className={styles.empty}>No {unit} in these 7 days.</p> : <>
+    {total === 0 ? <p className={styles.empty}>{empty ?? `No ${unit} in these 7 days.`}</p> : <>
       <div className={styles.donutPlot}>
         <PieChart responsive style={{ width: "100%", height: 190 }} accessibilityLayer>
           {/* A 2px surface-coloured edge separates neighbouring slices. */}

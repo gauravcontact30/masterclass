@@ -81,3 +81,33 @@
   .card, .routine li { animation: none; }
   .index button:hover { transform: none; }
 }
+
+/* Light multi-colour pills (landing-wide palette): each pill takes the next of eight pastel tones; pressed fills with its ink. */
+.routine li:nth-child(8n + 1) { --pill-bg: #eff9f3; --pill-edge: #c8e8d5; --pill-ink: #1f5a37; }
+.routine li:nth-child(8n + 2) { --pill-bg: #f1f7fe; --pill-edge: #cfe1f6; --pill-ink: #1d4f7a; }
+.routine li:nth-child(8n + 3) { --pill-bg: #fefaea; --pill-edge: #f1e3a8; --pill-ink: #6e4f00; }
+.routine li:nth-child(8n + 4) { --pill-bg: #fdf2f4; --pill-edge: #f4d0d9; --pill-ink: #8a2846; }
+.routine li:nth-child(8n + 5) { --pill-bg: #f5f2fd; --pill-edge: #ddd4f5; --pill-ink: #4b3c86; }
+.routine li:nth-child(8n + 6) { --pill-bg: #fef5ee; --pill-edge: #f5dac6; --pill-ink: #8f3f23; }
+.routine li:nth-child(8n + 7) { --pill-bg: #f1f5ee; --pill-edge: #d3e0c9; --pill-ink: #3f5a2e; }
+.routine li:nth-child(8n + 8) { --pill-bg: #faf6ee; --pill-edge: #e8dcc4; --pill-ink: #6b5426; }
+.routine li { background: var(--pill-bg, #fff); border-color: var(--pill-edge, #e8e6dc); color: var(--pill-ink, inherit); }
+.routine li:hover { border-color: var(--pill-ink, #141413); }
+
+.card[data-tone] .area { background: var(--pill-bg); color: var(--pill-ink); }
+.card[data-tone="0"] { --pill-bg: #eff9f3; --pill-edge: #c8e8d5; --pill-ink: #1f5a37; }
+.card[data-tone="1"] { --pill-bg: #f1f7fe; --pill-edge: #cfe1f6; --pill-ink: #1d4f7a; }
+.card[data-tone="2"] { --pill-bg: #fefaea; --pill-edge: #f1e3a8; --pill-ink: #6e4f00; }
+.card[data-tone="3"] { --pill-bg: #fdf2f4; --pill-edge: #f4d0d9; --pill-ink: #8a2846; }
+.card[data-tone="4"] { --pill-bg: #f5f2fd; --pill-edge: #ddd4f5; --pill-ink: #4b3c86; }
+.card[data-tone] .routine b { background: var(--pill-ink); }
+
+/* Extra-small phones (≤360px, 2026-11-01 audit): the tilted behind-cards poked past the screen edge and the front
+   card kept its content width; flatten the fan to a small offset and let the card shrink. */
+.deck, .card { min-width: 0; }
+@media (max-width: 360px) {
+  .deck { padding: 0 5px 5px 0; }
+  .behind[data-depth="1"] { transform: translate(3px, 3px); }
+  .behind[data-depth="2"] { transform: translate(5px, 5px); }
+  .card { padding: 16px; }
+}

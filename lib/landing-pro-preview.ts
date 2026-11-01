@@ -41,7 +41,7 @@ export function landingProPreview(day = 0): LandingProPreview {
       vocabularyCount: TECHY_VOCABULARY.length,
       puzzleCount: TECHY_PUZZLES.length,
       polyglot: pickDaily(POLYGLOT, day),
-      puzzles: takeDaily(TECHY_PUZZLES, day, 3).map(({ title, code, output, explanation }) => ({ title, code, output, explanation })),
+      puzzles: takeDaily(TECHY_PUZZLES, day, TECHY_PUZZLES.length).map(({ title, code, output, explanation }) => ({ title, code, output, explanation })),
     },
     api: {
       packages: rotateDaily(API_PACKAGES, day).map(pkg => ({ id: pkg.id, name: pkg.name, icon: pkg.icon, accent: pkg.accent, count: pkg.entries.length, sample: takeDaily(pkg.entries, day, 12).map(({ name, kind, status }) => ({ name, kind, status })) })),

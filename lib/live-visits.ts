@@ -439,6 +439,8 @@ export type PeriodSummary = {
   bounceRate: number | null; avgStayMs: number | null; readingPerPersonMs: number | null; pagesPerSession: number | null;
   /** Page views by IST hour, 0–23. */
   hours: number[];
+  /** Different people with a page view in each IST hour, 0–23 (one person can appear in several hours). */
+  hourPeople: number[];
   pages: { path: string; title: string; views: number; people: number; avgReadMs: number | null }[];
   sources: { source: string; people: number }[]; countries: { country: string; people: number }[]; devices: { device: string; people: number }[];
   browsers: { browser: string; people: number }[]; systems: { os: string; people: number }[];
@@ -458,6 +460,7 @@ export function sourceName(source: string | null, ownHosts: string[] = []): stri
 export function periodSummary(visitors: StreamVisitor[], from: number, to = Infinity, ownHosts: string[] = []): PeriodSummary {
   const inPeriod = (ms: number) => ms >= from && ms < to;
   const hours = Array.from({ length: 24 }, () => 0);
+  const hourSets = Array.from({ length: 24 }, () => new Set<string>());
   const pages = new Map<string, { title: string; views: number; people: Set<string>; readMs: number; reads: number }>();
   const sources = new Map<string, Set<string>>(), countries = new Map<string, Set<string>>(), devices = new Map<string, Set<string>>();
   const browsers = new Map<string, Set<string>>(), systems = new Map<string, Set<string>>();
@@ -488,7 +491,8 @@ export function periodSummary(visitors: StreamVisitor[], from: number, to = Infi
         if (v.signedIn) day.signed.add(v.key);
         if (firstDay === dayKey) day.fresh.add(v.key);
         days.set(dayKey, day);
-        hours[new Date(step.at + 19_800_000).getUTCHours()]++;
+        const hour = new Date(step.at + 19_800_000).getUTCHours();
+        hours[hour]++; hourSets[hour].add(v.key);
         const page = pages.get(step.path) ?? { title: step.title, views: 0, people: new Set<string>(), readMs: 0, reads: 0 };
         page.views++; page.people.add(v.key);
         // Average read from pages that have closed: an open page's clock is still running.
@@ -498,7 +502,7 @@ export function periodSummary(visitors: StreamVisitor[], from: number, to = Infi
     }
   }
   return {
-    people, signedIn, newVisitors, sessions, views, hours,
+    people, signedIn, newVisitors, sessions, views, hours, hourPeople: hourSets.map(set => set.size),
     bounceRate: sessions ? Math.round((1000 * bounced) / sessions) / 10 : null,
     avgStayMs: sessions ? stayMs / sessions : null,
     readingPerPersonMs: people ? readingMs / people : null,

@@ -56,7 +56,7 @@ export function StudentReviews() {
           {/* The next two stories fan out behind the front card, so the deck reads as more to come. */}
           <span className={styles.behind} data-depth="2" aria-hidden="true" />
           <span className={styles.behind} data-depth="1" aria-hidden="true" />
-          <article key={item.id} className={styles.card} role="group" aria-roledescription="slide" aria-label={hi ? `नमूना समीक्षा ${index + 1} / ${samples.length}` : `Sample review ${index + 1} of ${samples.length}`}>
+          <article key={item.id} className={styles.card} data-tone={index % 5} role="group" aria-roledescription="slide" aria-label={hi ? `नमूना समीक्षा ${index + 1} / ${samples.length}` : `Sample review ${index + 1} of ${samples.length}`}>
             <div className={styles.cardTop}>
               <span className={styles.area}><item.area.icon size={14} aria-hidden="true" />{item.area.name[lang]}</span>
               <div role="img" aria-label={hi ? `नमूना रेटिंग ${item.rating} / 5` : `Sample rating ${item.rating} out of 5`} className={styles.stars}>{[1, 2, 3, 4, 5].map(star => <Star key={star} size={15} fill={star <= item.rating ? "currentColor" : "none"} aria-hidden="true" />)}</div>
