@@ -2716,6 +2716,142 @@
   ],
   "checkedAt": "2026-11-02"
  },
+ "git ls-files": {
+  "sourceUrl": "https://git-scm.com/docs/git-ls-files",
+  "sourceTitle": "Git - git-ls-files Documentation",
+  "summary": "git ls-files is a low-level (plumbing) command that lists files by comparing what's in Git's index with what's in your working directory. Flags pick which groups to show: tracked, modified, deleted, untracked, ignored or unmerged.",
+  "explanation": "The command reads the index (the staging area) and can also walk the working tree, then prints the paths that match the selection flags you give. If you pass no selection flag it acts like --cached and lists every tracked path. Other modes compare the index with the filesystem to find deleted, modified, untracked or conflicting paths. By default the output is just paths, relative to the current directory. --stage adds mode, object ID and stage number, and --format lets you build each line yourself from fields. If you list paths after the options, only those paths are shown.",
+  "syntax": "git ls-files [-z] [-t] [-v] [-f] [-c|--cached] [-d|--deleted] [-o|--others] [-i|--ignored] [-s|--stage] [-u|--unmerged] [-k|--killed] [-m|--modified] [--resolve-undo] [--directory [--no-empty-directory]] [--eol] [--deduplicate] [-x <pattern>|--exclude=<pattern>] [-X <file>|--exclude-from=<file>] [--exclude-per-directory=<file>] [--exclude-standard] [--error-unmatch] [--with-tree=<tree-ish>] [--full-name] [--recurse-submodules] [--abbrev[=<n>]] [--format=<format>] [--] [<file>…]",
+  "parameters": [
+   {
+    "name": "-c, --cached",
+    "type": "flag",
+    "description": "List every tracked file in the index. This is the default when no other mode is chosen."
+   },
+   {
+    "name": "-d, --deleted / -m, --modified",
+    "type": "flag",
+    "description": "List tracked files that have an unstaged deletion or an unstaged modification."
+   },
+   {
+    "name": "-o, --others",
+    "type": "flag",
+    "description": "List untracked files."
+   },
+   {
+    "name": "-i, --ignored",
+    "type": "flag",
+    "description": "Only list files that match exclude patterns. You must also give -c or -o."
+   },
+   {
+    "name": "-s, --stage",
+    "type": "flag",
+    "description": "Add the mode bits, object name and stage number to each line."
+   },
+   {
+    "name": "-u, --unmerged",
+    "type": "flag",
+    "description": "Only list unmerged (conflicted) entries. Turns on --stage."
+   },
+   {
+    "name": "-z",
+    "type": "flag",
+    "description": "End each entry with a NUL byte and print filenames without quoting."
+   },
+   {
+    "name": "--exclude-standard",
+    "type": "flag",
+    "description": "Use the normal ignore sources: .git/info/exclude, every .gitignore, and the user's global excludes file."
+   },
+   {
+    "name": "--error-unmatch",
+    "type": "flag",
+    "description": "Fail with exit status 1 if any <file> given is not in the index."
+   },
+   {
+    "name": "--format=<format>",
+    "type": "string",
+    "description": "Build each line from %(fieldname) placeholders such as objectname, objectmode, stage and path."
+   },
+   {
+    "name": "--full-name",
+    "type": "flag",
+    "description": "Print paths relative to the repository root instead of the current directory."
+   },
+   {
+    "name": "<file>",
+    "type": "pathspec",
+    "description": "Only show these paths. If none are given, every matching file is shown."
+   }
+  ],
+  "returns": "Writes the selected paths to stdout, one per line by default. With --stage each line is '[<tag> ]<mode> <object> <stage> <file>'. With --error-unmatch the exit status is 1 if any given path is missing from the index.",
+  "example": {
+   "title": "Inspecting the index and the working tree",
+   "code": "#!/usr/bin/env bash\nset -euo pipefail\n\n# All tracked files, with paths relative to the repo root\ngit ls-files --full-name\n\n# Untracked files that are not ignored, one entry per untracked directory\ngit ls-files --others --exclude-standard --directory\n\n# Ignored files currently in the working tree\ngit ls-files --others --ignored --exclude-standard\n\n# Index entries with object id and stage number\ngit ls-files --format='%(objectmode) %(objectname) %(stage)\t%(path)'\n\n# Conflicted entries during a merge (stages 1-3)\ngit ls-files --unmerged\n\n# Check whether a path is tracked (exit status 1 if not)\nif git ls-files --error-unmatch README.md >/dev/null 2>&1; then\n  echo \"README.md is tracked\"\nfi\n\n# Pass filenames safely to another tool using NUL separators\ngit ls-files -z -- '*.py' | xargs -0 wc -l",
+   "language": "bash",
+   "explanation": "The script lists tracked, untracked and ignored files, shows index entries and merge conflicts, checks whether a file is tracked, and passes tracked filenames safely to another tool."
+  },
+  "useCases": [
+   {
+    "title": "Feeding linters and formatters",
+    "scenario": "A CI job uses `git ls-files -z -- '*.ts'` to get only the tracked TypeScript files, so build output and other untracked files are skipped, and filenames with spaces still work."
+   },
+   {
+    "title": "Finding stray untracked files",
+    "scenario": "Before cutting a release, run `git ls-files -o --exclude-standard` to spot new files nobody has added yet, while leaving out anything .gitignore covers."
+   },
+   {
+    "title": "Debugging a merge conflict",
+    "scenario": "While resolving a conflict, use `git ls-files -u` to see the base, ours and theirs blob IDs for each conflicted path."
+   },
+   {
+    "title": "Auditing line endings",
+    "scenario": "Run `git ls-files --eol` to find files saved with CRLF or mixed endings and see which text/eol attributes apply to them."
+   }
+  ],
+  "related": [
+   "git ls-tree",
+   "git read-tree",
+   "git update-index",
+   "git status",
+   "git diff-files",
+   "git check-ignore",
+   "gitignore"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does git ls-files print when you give it no options, and how does that differ from git ls-tree?",
+    "answer": "With no mode flag it acts like --cached and prints every tracked path in the index, relative to the current directory. git ls-tree lists the contents of a tree object, such as a commit's tree. ls-files reflects the current index, including staged changes that are not committed yet.",
+    "followUp": "How would you print object IDs along with the paths? Use `git ls-files -s` (mode, object, stage, path) or `--format='%(objectname) %(path)'`."
+   },
+   {
+    "question": "How do you list ignored files with git ls-files?",
+    "answer": "Combine -i with -o (or with -c to find tracked files that match ignore rules), and add an exclude source such as --exclude-standard. -i does not load ignore rules on its own, so leaving out the exclude option gives no useful result.",
+    "followUp": "Which files does --exclude-standard read? .git/info/exclude, the .gitignore in each directory, and the user's global excludes file (core.excludesfile or $XDG_CONFIG_HOME/git/ignore)."
+   },
+   {
+    "question": "How can you check in a script whether a given path is tracked?",
+    "answer": "Run `git ls-files --error-unmatch <path>`. It exits with status 1 if the path is not in the index, so the exit code tells you the answer. Send its output to /dev/null if you only care about the status.",
+    "followUp": "Why use -z when you pipe ls-files output to other tools? Without -z, unusual filenames are quoted according to core.quotePath. With -z they are printed as-is and separated by NUL, which works with `xargs -0`."
+   }
+  ],
+  "keyPoints": [
+   "The same path can appear more than once in the output, for example when a conflicted file has several index stages or when it fits more than one of the modes you asked for.",
+   "--deduplicate removes repeated names when only filenames are printed. It does nothing when -t, --unmerged or --stage is used.",
+   "For a conflicted path the index can hold up to three versions: stage 1 is the common ancestor, stage 2 is one side, and stage 3 is the other. --stage and --unmerged show all of them.",
+   "-t puts a one-letter status tag before each path, for example H (tracked), S (skip-worktree), M (unmerged), R (removed), C (changed) and ? (untracked). -v does the same but uses lowercase for files marked assume-unchanged.",
+   "--directory prints an untracked directory once, as its name with a trailing slash, instead of listing every file inside it. It only matters together with --others.",
+   "--eol shows the line-ending type of each file in the index (i/) and in the working tree (w/), plus the text/eol attribute that applies to it.",
+   "--recurse-submodules runs ls-files inside each active submodule as well, but this only works with the --cached and --stage modes."
+  ],
+  "gotchas": [
+   "-i/--ignored does not read .gitignore by itself. Without an --exclude* option (usually --exclude-standard) nothing counts as ignored.",
+   "A file whose deletion is unstaged shows up under both -d and -m, because a deletion also counts as a modification.",
+   "--format cannot be combined with several other output options."
+  ],
+  "checkedAt": "2026-11-02"
+ },
  "git merge": {
   "sourceUrl": "https://git-scm.com/docs/git-merge",
   "sourceTitle": "Git - git-merge Documentation",
