@@ -5,12 +5,19 @@
 .footer :focus-visible { outline: 2px solid #d97757; outline-offset: 3px; border-radius: 6px; }
 @media print { .footer { display: none; } }
 
-/* Brand and pitch on the left, the contact and plans cards on the right; stacked below 1100 px. */
-.intro { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); gap: 32px 48px; padding: 52px 0 40px; border-bottom: 1px solid #2a2a28; }
+/* One shared grid keeps all three cards equally tall, including when a card is toggled. */
+.intro { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); grid-auto-rows: 1fr; align-items: stretch; gap: 20px; padding: 52px 0 40px; border-bottom: 1px solid #2a2a28; }
+.intro details { align-self: stretch; width: 100%; min-width: 0; }
+.intro details:not([open]) > summary { box-sizing: border-box; height: 100%; }
 /* The left card, in the same form as the contact and plans cards beside it (landing-footer-contact.module.css). */
-.brand { display: flex; flex-direction: column; min-width: 0; overflow: hidden; border: 1px solid #f5dac6; border-radius: 14px; background: #faf9f5; color: #141413; box-shadow: 0 20px 40px -32px rgba(0, 0, 0, .8); }
-.brandHead { display: grid; gap: 8px; padding: 14px; border-bottom: 1px solid #e8e6dc; background: linear-gradient(120deg, #fef5ee, #faf9f5 70%); }
-.brandHead > a { justify-self: start; text-decoration: none; }
+.brand { align-self: start; min-width: 0; overflow: hidden; border: 1px solid #f5dac6; border-radius: 14px; background: #faf9f5; color: #141413; box-shadow: 0 20px 40px -32px rgba(0, 0, 0, .8); }
+.brandHead { display: grid; align-content: center; gap: 8px; padding: 14px; list-style: none; cursor: pointer; background: linear-gradient(120deg, #fef5ee, #faf9f5 70%); }
+.brandHead::-webkit-details-marker { display: none; }
+.brand[open] > .brandHead { border-bottom: 1px solid #e8e6dc; }
+.brandHead:focus-visible { outline-offset: -4px; }
+.brandTitle { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.chevron { flex: none; color: #8f3f23; }
+.brand[open] > .brandHead .chevron { transform: rotate(180deg); }
 .brandHead :global(.brand-name) { color: #141413; }
 .brandHead :global(.brand-mark) { color: #bb5834; }
 .brandHead p { margin: 0; font-size: 13px; line-height: 1.55; color: #5e5d59; text-align: left; }
@@ -28,8 +35,7 @@
 .secondary { border: 1px solid #e3d9cc; background: #fff; color: #3d3d3a; }
 .secondary svg { color: #bb5834; }
 .secondary:hover { border-color: #bb5834; transform: translateY(-1px); }
-.cards { display: flex; flex-wrap: wrap; align-items: stretch; justify-content: flex-end; gap: 20px; min-width: 0; }
-.cards > * { flex: 1 1 340px; }
+.cards { display: contents; }
 
 /* Five link columns: 3 on tablets, 2 on phones, 1 below 330 px. */
 .columns { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 32px 28px; padding: 40px 0 44px; }
@@ -47,12 +53,10 @@
 
 @media (max-width: 1100px) {
   .intro { grid-template-columns: minmax(0, 1fr); }
-  .cards { justify-content: flex-start; }
   .columns { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
 @media (max-width: 640px) {
   .intro { padding: 36px 0 28px; }
-  .cards > * { flex-basis: 100%; }
   .columns { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 28px 18px; padding: 30px 0; }
   .bottom { flex-direction: column; align-items: flex-start; }
   .ctas a { flex: 1 1 auto; }

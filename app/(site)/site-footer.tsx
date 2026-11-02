@@ -1,9 +1,10 @@
 import { Suspense } from "react";
 import Link from "next/link";
 import { cacheLife } from "next/cache";
-import { ArrowRight, CalendarSync, Flame, Sparkles } from "lucide-react";
+import { ArrowRight, CalendarSync, ChevronDown, Flame, Sparkles } from "lucide-react";
 import { Wordmark } from "@/components/brand-mark";
 import { FooterLinks } from "@/components/footer-links";
+import { FooterVisibility } from "@/components/footer-visibility";
 import { LandingFooterContact, LandingFooterFacts } from "@/components/landing-footer-contact";
 import { DAILY_TRACKS } from "@/lib/tech-buzz-sections";
 import styles from "./site-footer.module.css";
@@ -32,21 +33,21 @@ const COLUMNS: { title: string; links: [string, string][] }[] = [
 ];
 
 /**
- * The dark footer of every page on the site, rendered once from the root layout (user request 2026-11-02). Server-rendered;
- * the only script is the link columns' hover pill and the cards' copy buttons. The left card introduces the platform in the
+ * The shared dark footer, omitted on sign-in and sign-up by a route-aware client wrapper. Content is server-rendered;
+ * interactive features include the link columns' hover pill and the cards' copy buttons. The left card introduces the platform in the
  * same form as the "Get in touch" and "Plans and payments" cards beside it (one source for contact and billing facts).
  * Moving to the top is the site-wide round button (components/back-to-top.tsx), so the footer has no link of its own.
  * Links are not prefetched: each prefetch also preloads that page's stylesheets.
  */
 export function SiteFooter() {
-  return <footer id="site-footer" className={styles.footer}>
+  return <Suspense fallback={null}><FooterVisibility><footer id="site-footer" className={styles.footer}>
     <div className={styles.inner}>
       <div className={styles.intro}>
-        <section className={styles.brand} aria-label="About MasterClass Buddy">
-          <div className={styles.brandHead}>
-            <Link href="/" prefetch={false} aria-label="MasterClass Buddy home"><Wordmark /></Link>
+        <details className={styles.brand} data-accordion="free" aria-label="About MasterClass Buddy">
+          <summary className={styles.brandHead}>
+            <span className={styles.brandTitle}><Wordmark /><ChevronDown className={styles.chevron} size={18} aria-hidden="true" /></span>
             <p>Interview prep, system design, AI agents and weekly tech stories for working engineers, in one place.</p>
-          </div>
+          </summary>
           <div className={styles.brandBody}>
             <p className={styles.weekly}><span aria-hidden="true"><CalendarSync size={15} /></span>Five new Tech Buzz blogs every Monday at 00:00 IST</p>
             <ul className={styles.tracks} aria-label="This week's Tech Buzz tracks">
@@ -57,7 +58,7 @@ export function SiteFooter() {
               <Link className={styles.secondary} href="/tech-buzz" prefetch={false}><Flame size={15} aria-hidden="true" />Read Tech Buzz</Link>
             </div>
           </div>
-        </section>
+        </details>
         <div className={styles.cards}><LandingFooterContact /><LandingFooterFacts /></div>
       </div>
       <div className={styles.columns}>
@@ -71,5 +72,5 @@ export function SiteFooter() {
         <span className={styles.note}><Sparkles size={13} aria-hidden="true" />Members also get Study Buddy, the AI study assistant, on every page.</span>
       </div>
     </div>
-  </footer>;
+  </footer></FooterVisibility></Suspense>;
 }

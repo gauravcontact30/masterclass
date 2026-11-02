@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { ArrowRight, ArrowUpRight, CalendarSync, Check, Copy, CreditCard, Mail, MapPin, MessageCircleHeart, Phone, ReceiptText, ShieldCheck, Undo2 } from "lucide-react";
+import { ArrowRight, ArrowUpRight, CalendarSync, Check, ChevronDown, Copy, CreditCard, Mail, MapPin, MessageCircleHeart, Phone, ReceiptText, ShieldCheck, Undo2 } from "lucide-react";
 import { ADDRESS, ADDRESS_LINE, SOCIAL_PROFILES, SUPPORT } from "@/lib/site-contact";
 import { EmailLink } from "./email-link";
 import { SocialMark } from "./site-contact-links";
@@ -20,20 +20,20 @@ function CopyValue({ value, label }: Readonly<{ value: string; label: string }>)
  * The landing footer's contact details as one light panel on the dark footer (user request 2026-11-01): a heading,
  * then email, phone, Instagram and the postal address in a ruled grid (each with its own tinted icon and action), and
  * the plans as the panel's closing strip. Details come from lib/site-contact.ts, shared with the Contact page and the
- * structured data, so they never disagree. Compact (2026-11-01): the plans link sits in the header, details in one row.
+ * structured data, so they never disagree. Cards start collapsed; the summary toggles the details and closing action.
  */
 export function LandingFooterContact() {
   const instagram = SOCIAL_PROFILES.find(item => item.platform === "Instagram");
   const handle = instagram ? `@${instagram.href.replace(/\/+$/, "").split("/").at(-1)}` : null;
-  return <section className={styles.panel} aria-labelledby="footer-contact-title">
-    <header className={styles.head}>
+  return <details className={styles.panel} data-accordion="free" aria-labelledby="footer-contact-title">
+    <summary className={styles.head}>
       <span className={styles.badge} aria-hidden="true"><MessageCircleHeart size={16} /></span>
       <div>
         <h3 data-h2="" id="footer-contact-title">Get in touch</h3>
         <p>Questions about a course, billing or your account? Write, call or message us.</p>
       </div>
-      <Link className={styles.cta} href="/learning/plans">See plans<ArrowRight size={14} aria-hidden="true" /></Link>
-    </header>
+      <ChevronDown className={styles.chevron} size={18} aria-hidden="true" />
+    </summary>
     <ul className={styles.grid}>
       <li data-tone="mint">
         <span className={styles.icon} aria-hidden="true"><Mail size={15} /></span>
@@ -56,7 +56,8 @@ export function LandingFooterContact() {
         <CopyValue value={ADDRESS_LINE} label="address" />
       </li>
     </ul>
-  </section>;
+    <div className={styles.actions}><Link className={styles.cta} href="/learning/plans">See plans<ArrowRight size={14} aria-hidden="true" /></Link></div>
+  </details>;
 }
 
 /**
@@ -66,15 +67,15 @@ export function LandingFooterContact() {
  * the weekly turnover (lib/ist-week.ts); change them together.
  */
 export function LandingFooterFacts() {
-  return <section className={styles.panel} aria-labelledby="footer-facts-title">
-    <header className={styles.head}>
+  return <details className={styles.panel} data-accordion="free" aria-labelledby="footer-facts-title">
+    <summary className={styles.head}>
       <span className={styles.badge} aria-hidden="true"><ShieldCheck size={16} /></span>
       <div>
         <h3 data-h2="" id="footer-facts-title">Plans and payments</h3>
         <p>What to know before you join, in four lines.</p>
       </div>
-      <Link className={styles.cta} href="/sign-up">Sign up free<ArrowRight size={14} aria-hidden="true" /></Link>
-    </header>
+      <ChevronDown className={styles.chevron} size={18} aria-hidden="true" />
+    </summary>
     <ul className={styles.grid}>
       <li data-tone="mint">
         <span className={styles.icon} aria-hidden="true"><CalendarSync size={15} /></span>
@@ -94,5 +95,6 @@ export function LandingFooterFacts() {
         <Link className={styles.copy} href="/refund-policy" aria-label="Read the refund policy" title="Refund policy"><ArrowUpRight size={14} aria-hidden="true" /></Link>
       </li>
     </ul>
-  </section>;
+    <div className={styles.actions}><Link className={styles.cta} href="/sign-up">Sign up free<ArrowRight size={14} aria-hidden="true" /></Link></div>
+  </details>;
 }
