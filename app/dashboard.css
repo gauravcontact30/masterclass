@@ -3,7 +3,7 @@
    Super Admin layout. Order is kept from globals.css. */
 .app-shell{display:flex;min-height:100vh;min-height:100dvh}
 .sidebar-label{font-size:9px;letter-spacing:1.8px;color:#9a988f;margin:54px 15px 17px}
-.main-shell{margin-left:235px;width:calc(100% - 235px);min-width:0}
+.main-shell{display:flex;flex-direction:column;min-height:100vh;min-height:100dvh;margin-left:235px;width:calc(100% - 235px);min-width:0}.main-shell>*{min-width:0}.main-shell>main{width:100%}
 .topbar{height:82px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 44px;background:#ffffffb8}
 .topbar-actions{gap:20px}
 .topbar-divider{height:23px;border-left:1px solid var(--border)}
@@ -430,3 +430,70 @@
 .dashboard-plans{margin-top:28px}
 .dashboard-plans>h2{margin:0 0 6px;font-size:clamp(20px,2.4vw,26px);letter-spacing:-.01em}
 .dashboard-plans>p{margin:0 0 18px;color:#5e5d59;line-height:1.55}
+
+/* ---------- Learning dashboard sidebar ----------
+   The list runs edge to edge, so its 4px scrollbar sits on the sidebar's boundary with no strip beside it, and the open
+   page's bookmark ribbon sits on the left edge. Chrome draws its wide platform bar with arrows whenever scrollbar-width
+   or scrollbar-color is set, so those stay auto wherever ::-webkit-scrollbar works. */
+.learning-sidebar{--rail:16px}
+.app-shell.compact-workspace .learning-sidebar>.sidebar-label{text-transform:lowercase}
+.app-shell.compact-workspace .learning-sidebar>.sidebar-label::first-letter{text-transform:uppercase}
+.app-shell.compact-workspace>aside.learning-sidebar{background:radial-gradient(130% 260px at 0 0,rgba(217,119,87,.11),transparent 72%),#141413}
+.app-shell.compact-workspace .learning-sidebar .sidebar-label{margin-inline:11px;color:#a3a198;font-size:11.5px;font-weight:500;letter-spacing:0}
+.app-shell.compact-workspace .learning-sidebar .sidebar-options>.sidebar-label{margin:12px 0 6px;padding:12px 11px 0;border-top:1px solid #2a2a28}
+.app-shell.compact-workspace .learning-sidebar nav .sidebar-notes{gap:10px;min-height:32px;padding-block:5px;border-radius:9px;transition:background-color .15s ease,color .15s ease}
+.app-shell.compact-workspace .learning-sidebar nav .sidebar-notes svg{flex-shrink:0;transition:color .15s ease}
+.app-shell.compact-workspace .learning-sidebar nav .sidebar-notes:hover{background:rgba(255,255,255,.07);color:#faf9f5}
+.app-shell.compact-workspace .learning-sidebar nav .sidebar-notes:hover>svg:first-child{color:#e9a383}
+.app-shell.compact-workspace .learning-sidebar nav .sidebar-notes:focus-visible{outline:2px solid #d97757;outline-offset:-2px}
+.app-shell.compact-workspace .learning-sidebar .sidebar-pro-nav>a>svg:last-child:not(:first-child){opacity:0;transition:opacity .15s ease}
+.app-shell.compact-workspace .learning-sidebar .sidebar-pro-nav>a:is(:hover,:focus-visible,[aria-current="page"])>svg:last-child:not(:first-child){opacity:1}
+/* The open page: a clay wash with a ribbon on the sidebar's edge. */
+.app-shell.compact-workspace .learning-sidebar nav .sidebar-notes[aria-current="page"],.app-shell.compact-workspace .learning-sidebar nav .sidebar-search-row[data-active]{background:linear-gradient(90deg,rgba(217,119,87,.24),rgba(217,119,87,.05))}
+.app-shell.compact-workspace .learning-sidebar nav .sidebar-notes[aria-current="page"],.app-shell.compact-workspace .learning-sidebar nav .sidebar-search-row[data-active]>.sidebar-notes{color:#faf9f5;font-weight:600}
+.app-shell.compact-workspace .learning-sidebar nav .sidebar-search-row[data-active]>.sidebar-notes{background:none}
+.app-shell.compact-workspace .learning-sidebar nav .sidebar-notes[aria-current="page"]>svg:first-child,.app-shell.compact-workspace .learning-sidebar nav .sidebar-search-row[data-active]>.sidebar-notes>svg:first-child{color:#e9a383}
+.app-shell.compact-workspace:not(.sidebar-collapsed) .learning-sidebar nav .sidebar-notes[aria-current="page"]::before{content:"";position:absolute;left:calc(var(--rail) * -1);top:5px;bottom:5px;width:3px;border-radius:0 3px 3px 0;background:#d97757}
+@media (min-width:761px){
+  .app-shell.compact-workspace:not(.sidebar-collapsed) .learning-sidebar>.sidebar-options{
+    margin-inline:calc(var(--rail) * -1);padding:4px var(--rail) 14px;scrollbar-gutter:auto;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.2) transparent;
+    -webkit-mask-image:linear-gradient(to bottom,transparent,#000 8px,#000 calc(100% - 18px),transparent);
+    mask-image:linear-gradient(to bottom,transparent,#000 8px,#000 calc(100% - 18px),transparent);
+  }
+}
+/* The drawer scrolls as a whole, with the same bar; its rows drop the top bar's sideways-scroll spacing. */
+@media (max-width:760px){
+  .learning-sidebar{--rail:14px}
+  .app-shell.compact-workspace>aside.sidebar{overflow-x:hidden;scrollbar-width:thin;scrollbar-color:rgba(127,127,120,.4) transparent}
+  .app-shell.compact-workspace>aside.sidebar :is(.sidebar > nav,.sidebar-options > nav){margin:0!important;padding:0!important;overflow:visible!important;-webkit-mask-image:none;mask-image:none}
+  .app-shell.compact-workspace>aside.sidebar nav .sidebar-search-row{width:100%;margin:0;padding:0 8px 0 0!important}
+  .app-shell.compact-workspace>aside.sidebar nav .sidebar-search-row>.sidebar-notes{flex:1 1 auto!important;min-height:42px;padding:10px 12px!important;font-size:13px!important}
+  .app-shell.compact-workspace>aside.sidebar nav .sidebar-search-row>.sidebar-notes{gap:7px}
+  .app-shell.compact-workspace>aside.sidebar nav .sidebar-search-row>.sidebar-notes svg{width:16px}
+  .app-shell.compact-workspace>aside.sidebar nav .sidebar-search-row>.sidebar-ai-mode{flex:none!important;width:auto!important}
+  .learning-sidebar .sidebar-tooltip{display:none}
+}
+@supports selector(::-webkit-scrollbar){
+  @media (min-width:761px){
+    .app-shell.compact-workspace:not(.sidebar-collapsed) .learning-sidebar>.sidebar-options{scrollbar-width:auto;scrollbar-color:auto}
+    .app-shell.compact-workspace:not(.sidebar-collapsed) .learning-sidebar>.sidebar-options::-webkit-scrollbar{width:4px}
+    .app-shell.compact-workspace:not(.sidebar-collapsed) .learning-sidebar>.sidebar-options::-webkit-scrollbar-button{display:none;width:0;height:0}
+    .app-shell.compact-workspace:not(.sidebar-collapsed) .learning-sidebar>.sidebar-options::-webkit-scrollbar-track{background:transparent}
+    .app-shell.compact-workspace:not(.sidebar-collapsed) .learning-sidebar>.sidebar-options::-webkit-scrollbar-thumb{border:0;border-radius:4px;background:rgba(255,255,255,.2)}
+    .app-shell.compact-workspace:not(.sidebar-collapsed) .learning-sidebar>.sidebar-options::-webkit-scrollbar-thumb:hover{background:#d97757}
+  }
+  @media (max-width:760px){
+    .app-shell.compact-workspace>aside.sidebar{scrollbar-width:auto;scrollbar-color:auto}
+    .app-shell.compact-workspace>aside.sidebar::-webkit-scrollbar{width:4px}
+    .app-shell.compact-workspace>aside.sidebar::-webkit-scrollbar-button{display:none;width:0;height:0}
+    .app-shell.compact-workspace>aside.sidebar::-webkit-scrollbar-track{background:transparent}
+    .app-shell.compact-workspace>aside.sidebar::-webkit-scrollbar-thumb{border:0;border-radius:4px;background:rgba(127,127,120,.4)}
+  }
+}
+@media (prefers-reduced-motion:reduce){
+  .app-shell.compact-workspace .learning-sidebar nav .sidebar-notes,.app-shell.compact-workspace .learning-sidebar nav .sidebar-notes svg{transition:none}
+}
+/* Collapsed rail: room under the search button, and the list's top fade ends before the first tile. */
+@media (min-width:761px){
+  .app-shell.compact-workspace.sidebar-collapsed .learning-sidebar>.sidebar-options{margin-top:8px;padding-top:12px}
+}

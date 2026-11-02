@@ -3,7 +3,8 @@ import { cacheLife, cacheTag } from "next/cache";
 import { PUBLIC_PAGES, isIndexable, siteUrl } from "@/lib/seo";
 import { COMPARISONS } from "@/lib/comparisons";
 import { TECH_BUZZ_TAG, listPublishedTechBuzzArticles } from "@/lib/server/tech-buzz-storage";
-import { handbookSlug, handbooks, interviewTechs, vocabularyGroups, workflows } from "@/lib/public-learning";
+import { handbookName, handbookSlug, handbooks, interviewTechs, vocabularyGroups, workflows } from "@/lib/public-learning";
+import { technologyLogo } from "@/lib/technology-logo";
 
 /**
  * Every indexable URL but the API reference: the registered public pages plus the learning library (interview
@@ -26,6 +27,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // whole file. Page URLs never carry query strings; image URLs do.
   const xml = (value: string) => value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&apos;");
   const library = (path: string, priority: number, changeFrequency: MetadataRoute.Sitemap[number]["changeFrequency"] = "monthly") => ({ url: url(path), changeFrequency, priority });
+  // Technology pages list the technology's real logo (image sitemap), when it has one.
+  const technology = (path: string, priority: number, id: string, name: string) => { const logo = technologyLogo(id, name); return { ...library(path, priority), ...(logo ? { images: [url(logo)] } : {}) }; };
   // Tech Buzz articles change daily; lastModified lets crawlers pick up new ones without recrawling the rest.
   const buzz = (await listPublishedTechBuzzArticles()).map(article => ({
     url: url(`/tech-buzz/${article.slug}`), lastModified: new Date(article.publishedAt), changeFrequency: "weekly" as const, priority: article.featured ? 0.85 : 0.75,
@@ -36,9 +39,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...PUBLIC_PAGES.map(({ path, changeFrequency, priority }) => ({ url: url(path), changeFrequency, priority,
       ...(path === "/" ? { images: [url("/images/landing/hero-interviews-ads9.webp"), url("/images/landing/hero-interviews-ads17.webp")] } : {}),
       ...((path === "/tech-buzz" || path === "/library") && latestStory ? { lastModified: latestStory } : {}) })),
-    library("/interview-questions", 0.9, "weekly"), ...interviewTechs().map(tech => library(`/interview-questions/${tech.id}`, 0.8)),
+    library("/interview-questions", 0.9, "weekly"), ...interviewTechs().map(tech => technology(`/interview-questions/${tech.id}`, 0.8, tech.id, tech.title)),
     library("/workflows", 0.9, "weekly"), ...workflows().map(item => library(`/workflows/${item.id}`, 0.8)),
-    library("/learn", 0.9, "weekly"), ...handbooks().map(item => library(`/learn/${handbookSlug(item)}`, 0.7)),
+    library("/learn", 0.9, "weekly"), ...handbooks().map(item => technology(`/learn/${handbookSlug(item)}`, 0.7, "", handbookName(item))),
     library("/api-reference", 0.8, "weekly"),
     library("/compare", 0.9, "weekly"), ...COMPARISONS.map(item => library(`/compare/${item.id}`, 0.8)),
     library("/vocabulary", 0.8, "weekly"), ...vocabularyGroups().map(group => library(`/vocabulary/${group.slug}`, 0.6)),

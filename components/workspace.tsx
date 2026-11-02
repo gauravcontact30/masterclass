@@ -1,4 +1,5 @@
 "use client";
+import { AppFootline } from "./app-footline";
 import { PageBack } from "./page-back";
 import { RouteH1 } from "@/components/route-heading";
 import { DocumentationRefresh } from "./documentation-refresh";
@@ -174,7 +175,7 @@ export function Workspace({initialSuperAdmin=false,initialPlan=null,reserveResum
     {category!=="notes"&&(!data||category==="technology")&&<LearningSearch value={learningQuery} onChange={setLearningQuery}/>}
     {/* The reader's own guides (their chosen preparation) close the dashboard; "Your guides" in the jump bar lands here. */}
     {home?<div id="your-guides" className="dashboard-anchor">{showCatalog?studyCatalog:libraries}</div>:showCatalog?studyCatalog:libraries}</>}
-    <footer className="workspace-footer"><span>✦ Master Class Buddy</span><span><ExpandedText text={t("brandLine")} /></span></footer></>}<LearningSlot surface="dashboard" page={slotPage} section="bottom"/></main></div>{notesSelected&&<NotesModal key={notesSelected.id} document={notesSelected} initialProgress={progress.find(p=>p.document_id===notesSelected.id)} onClose={()=>{setNotesSelected(null);void refresh();}}/>}
+    </>}<LearningSlot surface="dashboard" page={slotPage} section="bottom"/></main><AppFootline /></div>{notesSelected&&<NotesModal key={notesSelected.id} document={notesSelected} initialProgress={progress.find(p=>p.document_id===notesSelected.id)} onClose={()=>{setNotesSelected(null);void refresh();}}/>}
     <Dialog open={confirmId!==null} onOpenChange={open=>{if(!open)setConfirmId(null);}}><DialogContent><DialogHeader><DialogTitle><ExpandedText text={t("deleteConfirm")} /></DialogTitle><DialogDescription><ExpandedText text={confirmDoc?`“${confirmDoc.title}” — `:""} /><ExpandedText text={t("deleteConfirmHelp")} /></DialogDescription></DialogHeader><DialogFooter><Button variant="outline" onClick={()=>setConfirmId(null)}><ExpandedText text={t("close")} /></Button><Button variant="destructive" disabled={busy} onClick={()=>confirmId&&void deleteDocument(confirmId)}><ExpandedText text={t("deleteConfirm")} /></Button></DialogFooter></DialogContent></Dialog>
     </div>;
 }

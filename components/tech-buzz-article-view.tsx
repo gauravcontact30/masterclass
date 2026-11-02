@@ -1,7 +1,7 @@
 "use client";
 
 import { RouteH1 } from "@/components/route-heading";
-import { TECH_BUZZ_TRACKED } from "@/lib/tech-buzz-sections";
+import { TECH_BUZZ_TRACKED, shortTech } from "@/lib/tech-buzz-sections";
 import { useState, useEffect, useCallback, useMemo, useRef, useSyncExternalStore } from "react";
 import Image from "@/components/responsive-image";
 import Link from "next/link";
@@ -772,7 +772,7 @@ export function TechBuzzArticleView({ article, related, prevStory, nextStory, to
                 <span className={styles.storyNavTitle}>{prevStory.title}</span>
                 <span className={styles.storyNavMeta}>
                   {logoOf(prevStory) && <Image src={logoOf(prevStory)!} alt="" width={15} height={15} />}
-                  <span>{prevStory.technology}</span>
+                  <span>{shortTech(prevStory.technology)}</span>
                   <span aria-hidden="true">·</span>
                   <span>{prevStory.readTimeMinutes} min read</span>
                 </span>
@@ -788,7 +788,7 @@ export function TechBuzzArticleView({ article, related, prevStory, nextStory, to
                 <span className={styles.storyNavTitle}>{nextStory.title}</span>
                 <span className={styles.storyNavMeta}>
                   {logoOf(nextStory) && <Image src={logoOf(nextStory)!} alt="" width={15} height={15} />}
-                  <span>{nextStory.technology}</span>
+                  <span>{shortTech(nextStory.technology)}</span>
                   <span aria-hidden="true">·</span>
                   <span>{nextStory.readTimeMinutes} min read</span>
                 </span>

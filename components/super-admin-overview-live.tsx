@@ -300,7 +300,7 @@ export function OverviewLive({ snapshot, onRefreshSnapshot }: { snapshot: Overvi
       ? { label: "On the site now", value: n(counts.live), note: `${n(counts.liveSigned)} signed in · page open now`, icon: Radio, tone: "mint", pulse: true }
       : { label: "On the site now", value: n(report?.totals.liveNow), note: `${n(report?.totals.liveSignedIn)} signed in · page open now`, icon: Radio, tone: "mint", pulse: true },
     { label: "Page views, last hour", value: n(hourSum.views), note: `by ${n(hourSum.people)} ${hourSum.people === 1 ? "person" : "people"}`, icon: MousePointerClick, tone: "sky" },
-    { label: `Visitors, ${day}`, value: n(fig.people), note: `${day === "today" ? "since 00:00 IST · " : ""}${n(fig.views)} page views · ${n(fig.signedIn)} signed in · ${n(fig.newVisitors)} new`, icon: Users, tone: "lavender" },
+    { label: `Visitors, ${day}`, value: n(fig.people), note: `${day === "today" ? "since 00:00 IST · " : ""}${n(fig.views)} page views · ${n(fig.signedIn)} signed in · ${n(fig.newVisitors)} ${exact ? "new guests" : "new"}`, icon: Users, tone: "lavender" },
     ...(exact ? [{ label: "Visitors, last 24 hours", value: n(daySum.people), note: `rolling, since ${clock(clockNow - 86_400_000)} IST yesterday · ${n(daySum.views)} page views · ${n(daySum.sessions)} visits`, icon: CalendarClock, tone: "sky" }] : []),
     { label: "Active, last 30 min", value: n(counts.recent), note: `${n(counts.recentSigned)} of them signed in`, icon: Flame, tone: "rose" },
     { label: `New accounts, ${sqlDay}`, value: n(t?.newAccounts), note: sqlDay === "today" ? "sign-ups since 00:00 IST" : "sign-ups in the last 24 h", icon: UserPlus, tone: "mint" },
@@ -322,7 +322,7 @@ export function OverviewLive({ snapshot, onRefreshSnapshot }: { snapshot: Overvi
     <div className={styles.kpis}>
       {kpis.map(({ label, value, note, icon: Icon, tone, pulse }) => <div key={label} className={styles.kpi} data-tone={tone}>
         <span className={styles.kpiIcon} aria-hidden="true">{pulse && <i className={styles.ring} />}<Icon size={16} /></span>
-        <span className={styles.kpiLabel}>{label}</span><strong>{value}</strong><small>{note}</small>
+        <span className={styles.kpiLabel} title={label}>{label}</span><strong>{value}</strong><small>{note}</small>
       </div>)}
     </div>
     <details className={styles.howCounted}>
@@ -331,7 +331,7 @@ export function OverviewLive({ snapshot, onRefreshSnapshot }: { snapshot: Overvi
         <li><b>Visitor</b>: one person: a signed-in account, or one device (its visits before and after a cookie reset are linked). The cards in the Live visitor stream are these same visitors.</li>
         <li><b>Visit</b>: one sitting; it ends after 30 minutes without activity. <b>Page view</b>: a page that stayed on screen for at least a second.</li>
         <li><b>Left out everywhere</b>: crawlers, automated browsers, this site&apos;s own machines and anyone who stayed under a second.</li>
-        <li><b>Reading time</b>: time pages were visible on screen (a hidden tab does not count). <b>Bounce</b>: a visit that opened only one page.</li>
+        <li><b>Reading time</b>: time pages were visible on screen (a hidden tab does not count). <b>Bounce</b>: a visit that opened only one page. <b>New guests</b>: first-time visitors who have not signed in; a first-time visitor who signs up counts under signed in and new accounts.</li>
         <li><b>Today</b> starts at 00:00 IST. <b>On the site now</b>: a page sent a heartbeat in the last 100 seconds and has not closed.</li>
         <li>Visitor figures come from the visitor stream; new accounts and bots filtered come from the database.{exact ? "" : " The stream has not loaded the whole day yet, so the database report is shown for now."}</li>
       </ul>
@@ -345,7 +345,7 @@ export function OverviewLive({ snapshot, onRefreshSnapshot }: { snapshot: Overvi
             <div data-live={counts.live > 0 || undefined}><dt>On the site now</dt><dd>{n(counts.live)}</dd><small>{counts.live ? `${n(counts.liveSigned)} signed in · ${heartbeats ? "page open now" : "page opened in the last 30 min"}` : "nobody has a page open"}</small></div>
             <div><dt>Last activity</dt><dd>{since(everyone[0].live ? clockNow : everyone[0].lastAt, clockNow)}</dd><small>{everyone[0].live ? "a visitor is reading now" : `by visitor #1, ${clock(everyone[0].lastAt)} IST`}</small></div>
             <div><dt>Reading time per visitor</dt><dd>{counts.engaged == null ? "—" : spent(counts.engaged / 1000)}</dd><small>pages on screen, all visits</small></div>
-            <div><dt>Pages per visitor</dt><dd>{counts.pages ?? "—"}</dd><small>{n(counts.signed)} signed in · {n(counts.new)} new</small></div>
+            <div><dt>Pages per visitor</dt><dd>{counts.pages ?? "—"}</dd><small>{n(counts.signed)} signed in · {n(counts.new)} new guests</small></div>
           </dl>
           <div className={styles.filters} role="group" aria-label="Show visitors">{STREAM_FILTERS.map(f => <button key={f.id} type="button" aria-pressed={streamFilter === f.id} onClick={() => { setStreamFilter(f.id); setVisitPage(1); }}><f.icon size={12} aria-hidden="true" />{f.label} <b>{n(counts[f.id])}</b></button>)}</div>
         </div>}
@@ -782,7 +782,7 @@ export function ToneTiles({ items }: { items: ToneTile[] }) {
   return <div className={`${styles.live} ${styles.tilesOnly}`}><div className={styles.kpis}>
     {items.map(({ label, value, note, icon: Icon, tone, pulse }) => <div key={label} className={styles.kpi} data-tone={tone}>
       <span className={styles.kpiIcon} aria-hidden="true">{pulse && <i className={styles.ring} />}<Icon size={16} /></span>
-      <span className={styles.kpiLabel}>{label}</span><strong>{value}</strong><small>{note}</small>
+      <span className={styles.kpiLabel} title={label}>{label}</span><strong>{value}</strong><small>{note}</small>
     </div>)}
   </div></div>;
 }

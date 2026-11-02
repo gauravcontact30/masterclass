@@ -12,6 +12,9 @@ interface PageProps {
   params: Promise<{ slug: string }>;
 }
 
+// A story not prerendered yet (published after the build) waits for its row, with no loading screen, then stays cached.
+export const instant = false;
+
 // Articles published from Super Admin are read from the database, so their pages prerender too.
 export async function generateStaticParams() {
   const articles = await listPublishedTechBuzzArticles();

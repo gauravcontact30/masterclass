@@ -4,7 +4,6 @@ import { Suspense, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ArrowLeft } from "lucide-react";
-import styles from "./page-back.module.css";
 
 /*
  * "Back to …" at the top left of every page but the landing page (user rule 2026-11-02). It goes up to the page this one
@@ -39,11 +38,11 @@ function BackLink() {
   const hydrated = useSyncExternalStore(never, () => true, () => false);
   if (!hydrated || !pathname || pathname === "/") return null;
   const parent = parentOf(pathname);
-  return <Link href={parent} prefetch={false} className={styles.link}>
+  return <Link href={parent} prefetch={false} className="page-back-link">
     <ArrowLeft size={15} aria-hidden="true" />Back to {LABELS[parent] ?? titled(parent.slice(parent.lastIndexOf("/") + 1))}
   </Link>;
 }
 
 export function PageBack() {
-  return <nav className={styles.strip} aria-label="Back"><Suspense fallback={null}><BackLink /></Suspense></nav>;
+  return <nav className="page-back-strip" aria-label="Back"><Suspense fallback={null}><BackLink /></Suspense></nav>;
 }

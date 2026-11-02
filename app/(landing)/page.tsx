@@ -19,6 +19,7 @@ import { landingBuzz } from "@/lib/server/landing-buzz";
 import { previewWorkflows } from "@/lib/landing-workflows-preview";
 import { LandingFeatures } from "@/components/landing-features";
 import { LandingCertifications } from "@/components/landing-certifications";
+import { LandingTechBuzz } from "@/components/landing-tech-buzz";
 export const metadata = pageMetadata("/");
 /** The pulse and Word power previews show three cards each (PREVIEW_COUNT in components/landing-ai-pulse.tsx). */
 const DAILY_PREVIEW = 3;
@@ -57,5 +58,5 @@ export default async function Home() {
   // Today's AI-written additions (lib/server/landing-fresh.ts); the nightly job publishes them with revalidateTag("landing").
   // The page's content turns over every Monday at 00:00 IST, so that is when it last changed.
   const updated = weekStartDate(today);
-  return <><JsonLd data={[websiteSchema(), webPageSchema("/", updated), organizationSchema({ monthly:sale?.monthly ?? prices.monthly, yearly:sale?.yearly ?? prices.yearly, endsAt:sale?.endsAt })]} /><LandingPage features={features} certifications={<LandingCertifications />} workflows={previewWorkflows(overrides)} pro={pro} library={previewLibrary(landingLibrary(pro), today)} prices={prices} daily={daily} techDocs={previewTechDocs(docs, featuredDoc)} featuredDoc={featuredDoc} fresh={fresh} today={today} overrides={overrides} coffee={blogTeasers(8, today)} buzz={buzz} /></>;
+  return <><JsonLd data={[websiteSchema(), webPageSchema("/", updated), organizationSchema({ monthly:sale?.monthly ?? prices.monthly, yearly:sale?.yearly ?? prices.yearly, endsAt:sale?.endsAt })]} /><LandingPage features={features} certifications={<LandingCertifications />} techBuzz={<LandingTechBuzz stories={buzz} week={today} />} workflows={previewWorkflows(overrides)} pro={pro} library={previewLibrary(landingLibrary(pro), today)} prices={prices} daily={daily} techDocs={previewTechDocs(docs, featuredDoc)} featuredDoc={featuredDoc} fresh={fresh} today={today} overrides={overrides} coffee={blogTeasers(8, today)} buzz={buzz} /></>;
 }

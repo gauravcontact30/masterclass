@@ -2,6 +2,7 @@ import type { MetadataRoute } from "next";
 import { cacheLife } from "next/cache";
 import { isIndexable, siteUrl } from "@/lib/seo";
 import { apiPackageEntries, apiPackages } from "@/lib/public-learning";
+import { technologyLogo } from "@/lib/technology-logo";
 
 /**
  * /api-reference/sitemap.xml: each technology's reference page and every identifier page with a checked card.
@@ -14,8 +15,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   if (!isIndexable()) return [];
   const origin = siteUrl();
   const entry = (path: string, priority: number, lastModified?: Date) => ({ url: new URL(path, origin).href, changeFrequency: "monthly" as const, priority, ...(lastModified ? { lastModified } : {}) });
+  // Each technology's page lists its real logo (image sitemap).
+  const logoImage = (id: string, name: string) => { const logo = technologyLogo(id, name); return logo ? { images: [new URL(logo, origin).href] } : {}; };
   const packages = await Promise.all(apiPackages().map(async pkg => [
-    entry(`/api-reference/${pkg.id}`, 0.6),
+    { ...entry(`/api-reference/${pkg.id}`, 0.6), ...logoImage(pkg.id, pkg.name) },
     ...(await apiPackageEntries(pkg.id)).filter(item => item.card).map(item => entry(`/api-reference/${pkg.id}/${item.slug}`, 0.5, new Date(item.card!.checkedAt))),
   ]));
   return packages.flat();

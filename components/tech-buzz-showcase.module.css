@@ -51,9 +51,10 @@ a:hover .cover > img, a:focus-visible .cover > img { transform: scale(1.05); }
 .dailyGrid { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: clamp(12px, 1.8vw, 18px); }
 .trackChip { display: inline-flex; flex-wrap: wrap; row-gap: 4px; align-items: center; align-self: start; justify-self: start; padding: 4px 10px; border-radius: 999px; background: var(--tone); color: #fff; font-size: 11px; font-weight: 700; letter-spacing: .04em; box-shadow: 0 0 0 1px rgba(255,255,255,.18) inset; }
 .daily .meta { color: #b9b6ad; }
-.dailyLead { display: grid; gap: 12px; align-content: start; grid-row: span 4; padding: clamp(12px, 1.6vw, 16px); border-radius: 18px; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.12); }
-.dailyLeadLink { display: grid; gap: 12px; }
-.dailyLeadCover { aspect-ratio: 16 / 10; border-radius: 14px; }
+.dailyLead { display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: 1fr auto; gap: 12px; grid-row: span 4; padding: clamp(12px, 1.6vw, 16px); border-radius: 18px; background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.12); }
+/* The lead spans the four cards beside it, so its cover takes whatever height they leave; no empty space under the footer. */
+.dailyLeadLink { display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: 1fr auto auto auto; gap: 12px; }
+.dailyLeadCover { min-height: clamp(220px, 22vw, 420px); border-radius: 14px; }
 .dailyLead h3 { margin: 0; font-family: var(--font-inter, "Inter"), "Inter", ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, "Nirmala UI", sans-serif; font-weight: 600; font-size: clamp(20px, 2.3vw, 28px); line-height: 1.22; letter-spacing: -.4px; }
 .dailyLead p { margin: 0; font-size: 14px; line-height: 1.6; color: #cfccc4; }
 .dailyLead footer { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
@@ -203,6 +204,7 @@ a:hover .cover > img, a:focus-visible .cover > img { transform: scale(1.05); }
   .starBoard { grid-template-columns: minmax(0, 1fr); }
   .starFeature { grid-row: auto; }
   .dailyLead { grid-row: auto; }
+  .dailyLeadCover { min-height: 0; aspect-ratio: 16 / 10; }
   .dailyGrid { grid-auto-flow: row; }
 }
 @media (max-width: 640px) {

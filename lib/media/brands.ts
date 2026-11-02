@@ -42,6 +42,7 @@ export const BRAND_SLUGS: Record<string, string> = {
   electron: "electron", expo: "expo", flutter: "flutter", dart: "dart",
   threejs: "threedotjs", socketio: "socketdotio",
   tanstack: "tanstack", neon: "neon", upstash: "upstash", betterauth: "betterauth",
+  zod: "zod", pydantic: "pydantic", polars: "polars", scipy: "scipy", keras: "keras", plotly: "plotly", scrapy: "scrapy", uv: "uv",
 };
 
 /**
@@ -121,6 +122,8 @@ const RULES: readonly (readonly [RegExp, string])[] = [
   // different product, and lending it Auth0's mark would misattribute it.
   [/\bbetter\s*auth\b/, "betterauth"],
   [/\bneon\b/, "neon"], [/\bupstash\b/, "upstash"],
+  [/\bzod\b/, "zod"], [/\bpydantic\b/, "pydantic"], [/\bpolars\b/, "polars"], [/\bscipy\b/, "scipy"], [/\bkeras\b/, "keras"],
+  [/\bplotly\b/, "plotly"], [/\bscrapy\b/, "scrapy"], [/^uv\b/, "uv"],
 ];
 
 /**

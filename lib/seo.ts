@@ -71,6 +71,7 @@ export const PUBLIC_PAGES: readonly PublicPage[] = [
   { path: "/privacy", title: "Privacy policy", label: "Privacy", description: "How MasterClass collects, uses and protects your account, payment and learning data, and what stays only in your browser.", changeFrequency: "yearly", priority: 0.3 },
   { path: "/terms", title: "Terms & conditions", label: "Terms", description: "The terms that apply when you create a MasterClass account, buy a membership and use study content and AI-assisted answers.", changeFrequency: "yearly", priority: 0.3 },
   { path: "/tech-buzz", title: "Tech Buzz — Weekly Technology Blogs on Agentic AI, LangChain & Next.js", label: "Tech Buzz", description: "Five new tech blogs every Monday at 00:00 IST, one per track: Agentic AI with LangChain, LangGraph and n8n, System Design, AWS & DevOps, Kubernetes & Docker, and Next.js & React. Reviewed, rated and clapped by developers.", changeFrequency: "weekly", priority: 0.95 },
+  { path: "/site-map", title: "Site map: every technology and learning page", label: "Site map", description: "Find any free MasterClass page: interview questions, handbooks and API reference for each technology, plus system design blueprints, comparisons, vocabulary and Tech Buzz.", changeFrequency: "weekly", priority: 0.6 },
   { path: "/refund-policy", title: "Cancellation & refund policy", label: "Refunds", description: "How to cancel a MasterClass membership, how long your access continues, and when payments are refunded, including duplicate and failed charges.", changeFrequency: "yearly", priority: 0.3 },
 ];
 
@@ -167,7 +168,7 @@ export function breadcrumbSchema(trail: readonly (readonly [string, `/${string}`
  * changed: the visible "Last updated" date and dateModified on those pages. Bump it when their content changes; never
  * set it from the build date, which would claim freshness on every deploy.
  */
-export const CONTENT_UPDATED = "2026-11-01";
+export const CONTENT_UPDATED = "2026-11-02";
 
 /** A YYYY-MM-DD date as people read it: 1 November 2026. */
 export function readableDate(date: string): string {

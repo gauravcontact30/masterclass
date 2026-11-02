@@ -1158,5 +1158,85 @@
     "license": "CC0-1.0",
     "licenseName": "CC0 1.0",
     "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  "zod": {
+    "src": "/images/brands/zod.svg",
+    "width": 24,
+    "height": 24,
+    "title": "Zod",
+    "sourceUrl": "https://simpleicons.org/?q=zod",
+    "license": "CC0-1.0",
+    "licenseName": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  "pydantic": {
+    "src": "/images/brands/pydantic.svg",
+    "width": 24,
+    "height": 24,
+    "title": "Pydantic",
+    "sourceUrl": "https://simpleicons.org/?q=pydantic",
+    "license": "CC0-1.0",
+    "licenseName": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  "polars": {
+    "src": "/images/brands/polars.svg",
+    "width": 24,
+    "height": 24,
+    "title": "Polars",
+    "sourceUrl": "https://simpleicons.org/?q=polars",
+    "license": "CC0-1.0",
+    "licenseName": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  "scipy": {
+    "src": "/images/brands/scipy.svg",
+    "width": 24,
+    "height": 24,
+    "title": "SciPy",
+    "sourceUrl": "https://simpleicons.org/?q=scipy",
+    "license": "CC0-1.0",
+    "licenseName": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  "keras": {
+    "src": "/images/brands/keras.svg",
+    "width": 24,
+    "height": 24,
+    "title": "Keras",
+    "sourceUrl": "https://simpleicons.org/?q=keras",
+    "license": "CC0-1.0",
+    "licenseName": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  "plotly": {
+    "src": "/images/brands/plotly.svg",
+    "width": 24,
+    "height": 24,
+    "title": "Plotly",
+    "sourceUrl": "https://simpleicons.org/?q=plotly",
+    "license": "CC0-1.0",
+    "licenseName": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  "scrapy": {
+    "src": "/images/brands/scrapy.svg",
+    "width": 24,
+    "height": 24,
+    "title": "Scrapy",
+    "sourceUrl": "https://simpleicons.org/?q=scrapy",
+    "license": "CC0-1.0",
+    "licenseName": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
+  },
+  "uv": {
+    "src": "/images/brands/uv.svg",
+    "width": 24,
+    "height": 24,
+    "title": "uv",
+    "sourceUrl": "https://simpleicons.org/?q=uv",
+    "license": "CC0-1.0",
+    "licenseName": "CC0 1.0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/"
   }
 }

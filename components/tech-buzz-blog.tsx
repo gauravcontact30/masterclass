@@ -1,7 +1,7 @@
 "use client";
 
 import { RouteH1 } from "@/components/route-heading";
-import { TECH_BUZZ_TRACKED } from "@/lib/tech-buzz-sections";
+import { TECH_BUZZ_TRACKED, shortTech } from "@/lib/tech-buzz-sections";
 import { useEffect, useMemo, useState, useSyncExternalStore, type CSSProperties } from "react";
 import Image from "@/components/responsive-image";
 import Link from "next/link";
@@ -846,7 +846,7 @@ export function TechBuzzBlog({ cards, groups, showcase = false }: { cards: TechB
           <article data-track-topic={TECH_BUZZ_TRACKED.featured} className={styles.hero}>
             <div className={styles.heroBadgeRow}>
               <span className={styles.heroFeaturedPill}><Flame size={13} />Featured Masterclass</span>
-              <span className={styles.heroEyebrow} style={{ color: hero.color }}><TechIcon item={hero} size={16} />{hero.technology} · {hero.category}</span>
+              <span className={styles.heroEyebrow} style={{ color: hero.color }}><TechIcon item={hero} size={16} />{shortTech(hero.technology)}{shortTech(hero.technology) === hero.category ? "" : ` · ${hero.category}`}</span>
             </div>
 
             <Link href={`/tech-buzz/${hero.slug}`} className={styles.heroLink}>
@@ -1039,7 +1039,7 @@ export function TechBuzzBlog({ cards, groups, showcase = false }: { cards: TechB
                           />
                           <span>{card.author.name}</span>
                         </span>
-                        <span className={styles.eyebrow} style={{ color: card.color }}><TechIcon item={card} />{card.technology}</span>
+                        <span className={styles.eyebrow} style={{ color: card.color }}><TechIcon item={card} />{shortTech(card.technology)}</span>
                       </div>
 
                       <h3>{card.title}</h3>
@@ -1203,7 +1203,7 @@ export function TechBuzzBlog({ cards, groups, showcase = false }: { cards: TechB
                       <span className={styles.rank}>{String(index + 1).padStart(2, "0")}</span>
                       <span>
                         <b>{card.title}</b>
-                        <small>{card.technology} · {card.readTimeMinutes} min{card.likes ? ` · ▲ ${compact(card.likes)}` : ""}</small>
+                        <small>{shortTech(card.technology)} · {card.readTimeMinutes} min{card.likes ? ` · ▲ ${compact(card.likes)}` : ""}</small>
                       </span>
                     </Link>
                   </li>
@@ -1220,7 +1220,7 @@ export function TechBuzzBlog({ cards, groups, showcase = false }: { cards: TechB
                       <Link href={`/tech-buzz/${card.slug}`}>
                         <small>{card.milestone!.label}</small>
                         <b>{card.milestone!.value}</b>
-                        <span><TechIcon item={card} size={13} />{card.technology}</span>
+                        <span><TechIcon item={card} size={13} />{shortTech(card.technology)}</span>
                       </Link>
                     </li>
                   ))}

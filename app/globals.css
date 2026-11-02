@@ -1,4 +1,8 @@
-@import "tailwindcss";
+/* Only the UI folders are scanned for class names. Tailwind's automatic scan also read lib/ and content/ (57 MB of
+   generated docs), which took 15 s per compile, hit Turbopack's PostCSS deadline and left every page on a 500. */
+@import "tailwindcss" source(none);
+@source "../app";
+@source "../components";
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
@@ -583,3 +587,12 @@ details[open] > [data-slot="accordion-summary"] > [data-slot="accordion-indicato
   box-shadow: none !important;
   border-color: #a8a69b !important;
 }
+
+/* "Back to …" above every page's content (components/page-back.tsx). The height is fixed so the page never shifts when it fills in.
+   These rules live here because the root not-found boundary renders the strip: Next preloads that boundary's CSS modules on
+   every page, and Chrome reports the unused file as "preloaded but not used". */
+.page-back-strip { display: flex; align-items: center; height: 36px; padding: 0 clamp(10px, 2vw, 24px); background: #f5f4ed; font-size: 13px; }
+.page-back-link { display: inline-flex; align-items: center; gap: 6px; min-height: 28px; padding: 0 8px; margin-left: -8px; border-radius: 8px; color: #5e5d59; font-weight: 500; text-decoration: none; white-space: nowrap; transition: background-color .15s ease, color .15s ease; }
+.page-back-link:hover { background: #ebe7dd; color: #262624; }
+.page-back-link:focus-visible { outline: 2px solid #b5573a; outline-offset: 1px; }
+@media print { .page-back-strip { display: none; } }

@@ -1,13 +1,10 @@
 import type { Metadata } from "next";
-import { CONTENT_UPDATED, readableDate, siteName, siteUrl } from "@/lib/seo";
+import { CONTENT_UPDATED, siteName, siteUrl } from "@/lib/seo";
 import { JsonLd } from "@/components/json-ld";
-import { PageAnswers } from "@/components/page-answers";
-import { HUB_ANSWERS } from "@/lib/page-answers";
 import { TechBuzzBlog, type TechBuzzGroup } from "@/components/tech-buzz-blog";
 import { listPublishedTechBuzzSummaries, withUnsplashCovers } from "@/lib/server/tech-buzz-storage";
 import { isTechnologyStory, toCard, topicLabel } from "@/lib/tech-buzz-public";
 import { withReview } from "@/lib/tech-buzz-reviews";
-import styles from "./page.module.css";
 
 // Renders only once its content is ready: no loading screen is ever shown in its place (no loading.tsx, no fallback).
 export const instant = false;
@@ -49,10 +46,6 @@ async function Blog() {
   return <>
     <JsonLd data={[itemList, page]} />
     <TechBuzzBlog cards={cards} groups={groups} showcase />
-    <div className={styles.answers}>
-      <p className={styles.updated}>Last updated <time dateTime={updated}>{readableDate(updated)}</time></p>
-      <PageAnswers answers={HUB_ANSWERS["/tech-buzz"]} />
-    </div>
   </>;
 }
 

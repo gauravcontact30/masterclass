@@ -29,7 +29,7 @@ const COLUMNS: { title: string; links: [string, string][] }[] = [
   { title: "Free library", links: [["Interview Questions", "/interview-questions"], ["Comparisons", "/compare"], ["Workflow Blueprints", "/workflows"], ["Technology Handbooks", "/learn"], ["API Reference", "/api-reference"], ["English Vocabulary", "/vocabulary"]] },
   { title: "Courses & paths", links: [["All Courses", "/courses"], ["System Design", "/learning/system-design"], ["Technology Courses", "/learning/technology"], ["English & IELTS", "/learning/languages"], ["Certifications", "/learning/certifications"], ["Free Library Overview", "/library"]] },
   { title: "Member tools", links: [["Learning Dashboard", "/learning"], ["Official Docs Explained", "/learning/official-docs"], ["API Docs", "/learning/api-docs"], ["Techy Code Lab", "/learning/techy"], ["Agentic Workflows", "/learning/workflow"], ["Interview Practice", "/learning/interview"]] },
-  { title: "Company", links: [["About Us", "/about"], ["Contact & Support", "/contact"], ["Plans & Pricing", "/learning/plans"], ["Privacy Policy", "/privacy"], ["Terms & Conditions", "/terms"], ["Cancellation & Refunds", "/refund-policy"]] },
+  { title: "Company", links: [["About Us", "/about"], ["Contact & Support", "/contact"], ["Site Map", "/site-map"], ["Plans & Pricing", "/learning/plans"], ["Privacy Policy", "/privacy"], ["Terms & Conditions", "/terms"], ["Cancellation & Refunds", "/refund-policy"]] },
 ];
 
 /**
@@ -43,7 +43,7 @@ export function SiteFooter() {
   return <Suspense fallback={null}><FooterVisibility><footer id="site-footer" className={styles.footer}>
     <div className={styles.inner}>
       <div className={styles.intro}>
-        <details className={styles.brand} data-accordion="free" aria-label="About MasterClass Buddy">
+        <details className={styles.brand} data-accordion="free" aria-label="About MasterClass Buddy" suppressHydrationWarning>
           <summary className={styles.brandHead}>
             <span className={styles.brandTitle}><Wordmark /><ChevronDown className={styles.chevron} size={18} aria-hidden="true" /></span>
             <p>Interview prep, system design, AI agents and weekly tech stories for working engineers, in one place.</p>

@@ -5,13 +5,16 @@
 .footer :focus-visible { outline: 2px solid #d97757; outline-offset: 3px; border-radius: 6px; }
 @media print { .footer { display: none; } }
 
-/* One shared grid keeps all three cards equally tall, including when a card is toggled. */
-.intro { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); grid-auto-rows: 1fr; align-items: stretch; gap: 20px; padding: 52px 0 40px; border-bottom: 1px solid #2a2a28; }
-.intro details { align-self: stretch; width: 100%; min-width: 0; }
-.intro details:not([open]) > summary { box-sizing: border-box; height: 100%; }
+/* Closed cards all share one header height. Open cards stretch to match each other, and their contents fill the height;
+   a closed card never stretches to match an open one, so opening one card leaves the others as they were. */
+.intro { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: start; gap: 12px; padding: 28px 0 24px; border-bottom: 1px solid #2a2a28; }
+.intro details { width: 100%; min-width: 0; }
+.intro summary { box-sizing: border-box; min-height: 84px; }
+.intro details[open] { display: flex; flex-direction: column; align-self: stretch; }
+.intro details[open]::details-content { display: flex; flex: 1; flex-direction: column; }
 /* The left card, in the same form as the contact and plans cards beside it (landing-footer-contact.module.css). */
 .brand { align-self: start; min-width: 0; overflow: hidden; border: 1px solid #f5dac6; border-radius: 14px; background: #faf9f5; color: #141413; box-shadow: 0 20px 40px -32px rgba(0, 0, 0, .8); }
-.brandHead { display: grid; align-content: center; gap: 8px; padding: 14px; list-style: none; cursor: pointer; background: linear-gradient(120deg, #fef5ee, #faf9f5 70%); }
+.brandHead { display: grid; align-content: center; gap: 4px; padding: 10px 12px; list-style: none; cursor: pointer; background: linear-gradient(120deg, #fef5ee, #faf9f5 70%); }
 .brandHead::-webkit-details-marker { display: none; }
 .brand[open] > .brandHead { border-bottom: 1px solid #e8e6dc; }
 .brandHead:focus-visible { outline-offset: -4px; }
@@ -20,16 +23,19 @@
 .brand[open] > .brandHead .chevron { transform: rotate(180deg); }
 .brandHead :global(.brand-name) { color: #141413; }
 .brandHead :global(.brand-mark) { color: #bb5834; }
-.brandHead p { margin: 0; font-size: 13px; line-height: 1.55; color: #5e5d59; text-align: left; }
-.brandBody { display: flex; flex: 1; flex-direction: column; justify-content: space-between; gap: 14px; padding: 14px; }
-.weekly { display: flex; align-items: center; gap: 10px; margin: 0; font-size: 13px; line-height: 1.4; color: #8f3f23; text-align: left; }
-.weekly span { display: grid; flex: none; place-items: center; width: 28px; height: 28px; border: 1px solid #f5dac6; border-radius: 8px; background: #fef5ee; color: #bb5834; }
-.tracks { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; padding: 0; list-style: none; }
-.tracks a { display: inline-flex; align-items: center; gap: 7px; min-height: 30px; padding: 0 11px; border: 1px solid #e8e6dc; border-radius: 999px; background: #fff; color: #3d3d3a; font-size: 12px; text-decoration: none; transition: border-color .2s, background-color .2s; }
+.brandHead :global(.brand-lockup) { gap: 7px; }
+.brandHead :global(.brand-lockup) :global(.brand-mark) { width: 26px; height: 26px; }
+.brandHead :global(.brand-name) { font-size: 19px; }
+.brandHead p { margin: 0; font-size: 12px; line-height: 1.4; color: #6c6b63; text-align: left; hyphens: manual; }
+.brandBody { display: flex; flex: 1; flex-direction: column; gap: 10px; padding: 10px 12px 12px; }
+.weekly { display: flex; align-items: center; gap: 8px; margin: 0; font-size: 12.5px; line-height: 1.4; color: #8f3f23; text-align: left; }
+.weekly span { display: grid; flex: none; place-items: center; width: 24px; height: 24px; border: 1px solid #f5dac6; border-radius: 7px; background: #fef5ee; color: #bb5834; }
+.tracks { display: flex; flex-wrap: wrap; gap: 4px; margin: 0; padding: 0; list-style: none; }
+.tracks a { display: inline-flex; align-items: center; gap: 6px; min-height: 26px; padding: 0 9px; border: 1px solid #e8e6dc; border-radius: 999px; background: #fff; color: #3d3d3a; font-size: 11.5px; text-decoration: none; transition: border-color .2s, background-color .2s; }
 .tracks a::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--tone, #d97757); box-shadow: 0 0 0 2px color-mix(in srgb, var(--tone, #d97757) 22%, transparent); }
 .tracks a:hover { border-color: var(--tone, #d97757); background: #fffdfa; }
-.ctas { display: flex; flex-wrap: wrap; gap: 8px; }
-.ctas a { display: inline-flex; flex: 1 1 auto; align-items: center; justify-content: center; gap: 8px; min-height: 40px; padding: 0 14px; border-radius: 10px; font-size: 13px; font-weight: 600; text-decoration: none; white-space: nowrap; transition: transform .2s, background-color .2s, border-color .2s; }
+.ctas { display: flex; flex-wrap: wrap; gap: 6px; margin-top: auto; }
+.ctas a { display: inline-flex; flex: 1 1 auto; align-items: center; justify-content: center; gap: 6px; min-height: 34px; padding: 0 12px; border-radius: 9px; font-size: 12.5px; font-weight: 600; text-decoration: none; white-space: nowrap; transition: transform .2s, background-color .2s, border-color .2s; }
 .primary { background: #bb5834; color: #fff; }
 .primary:hover { background: #a64c2c; transform: translateY(-1px); }
 .secondary { border: 1px solid #e3d9cc; background: #fff; color: #3d3d3a; }
@@ -53,10 +59,16 @@
 
 @media (max-width: 1100px) {
   .intro { grid-template-columns: minmax(0, 1fr); }
+  /* Stacked cards are in separate rows, so all three open need equal rows to match. */
+  .intro:not(:has(details:not([open]))) { grid-auto-rows: 1fr; }
+  .intro summary { min-height: 67px; }
   .columns { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
+/* Where the left card's text wraps to more lines, the shared closed height follows it. */
+@media (max-width: 699px) { .intro summary { min-height: 84px; } }
+@media (max-width: 359px) { .intro summary { min-height: 101px; } }
 @media (max-width: 640px) {
-  .intro { padding: 36px 0 28px; }
+  .intro { padding: 24px 0 20px; }
   .columns { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 28px 18px; padding: 30px 0; }
   .bottom { flex-direction: column; align-items: flex-start; }
   .ctas a { flex: 1 1 auto; }

@@ -1,4 +1,5 @@
 "use client";
+import { AppFootline } from "./app-footline";
 import { PageBack } from "./page-back";
 import dynamic from "next/dynamic";
 import { AdminLoading } from "./super-admin-feedback";
@@ -224,5 +225,5 @@ export function SuperAdminDashboard({ userId = "admin", isOwner = false }: { use
           <span>© {new Date().getFullYear()} MasterClass Super Admin Console</span>
         </div>
       </footer>
-    </main></div></div>;
+    </main><AppFootline /></div></div>;
 }

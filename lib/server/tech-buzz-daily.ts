@@ -200,7 +200,7 @@ async function writeStory(track: DailyTrack, date: string, runStarted = Date.now
     let timer: ReturnType<typeof setTimeout> | undefined;
     const timeout = new Promise<never>((_, reject) => { timer = setTimeout(() => reject(new Error("paint_timeout")), paintMs); });
     try {
-      const picture = await Promise.race([paint(learningScenePrompt({ subject: `${track.short}: ${output.title}`, scene })), timeout]);
+      const picture = await Promise.race([paint(learningScenePrompt({ subject: `${track.label}: ${output.title}`, scene })), timeout]);
       return await Promise.race([store(`${pictureBase}-${i === 0 ? "cover" : "inline"}.webp`, picture), timeout]);
     } finally { clearTimeout(timer); }
   }));

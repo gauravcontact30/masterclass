@@ -1,6 +1,0 @@
-/* "Back to …" above every page's content (components/page-back.tsx). The height is fixed so the page never shifts when it fills in. */
-.strip { display: flex; align-items: center; height: 36px; padding: 0 clamp(10px, 2vw, 24px); background: #f5f4ed; font-size: 13px; }
-.link { display: inline-flex; align-items: center; gap: 6px; min-height: 28px; padding: 0 8px; margin-left: -8px; border-radius: 8px; color: #5e5d59; font-weight: 500; text-decoration: none; white-space: nowrap; transition: background-color .15s ease, color .15s ease; }
-.link:hover { background: #ebe7dd; color: #262624; }
-.link:focus-visible { outline: 2px solid #b5573a; outline-offset: 1px; }
-@media print { .strip { display: none; } }

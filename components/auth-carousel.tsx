@@ -1,6 +1,7 @@
 "use client";
 import Image from "@/components/responsive-image";
-import { useEffect, useState, type FocusEvent } from "react";
+import { useEffect, useRef, useState, type FocusEvent } from "react";
+import { useVisiblePlayback } from "./use-visible-playback";
 import { Library, Pause, Play } from "lucide-react";
 import { useLanguage } from "./language-provider";
 import styles from "./auth-page.module.css";
@@ -19,16 +20,19 @@ type CarouselLabels = { region: string; pause: string; play: string; goTo: (n: n
  */
 export function AuthCarousel({ slides, labels, intervalMs = 5000 }: { slides: AuthSlide[]; labels: CarouselLabels; intervalMs?: number }) {
   const [index, setIndex] = useState(0);
+  const [moved, setMoved] = useState(false);
   const [playing, setPlaying] = useState(true);
   const [hovered, setHovered] = useState(false);
   const [focused, setFocused] = useState(false);
-  const rotating = playing && !hovered && !focused && slides.length > 1;
+  const regionRef = useRef<HTMLElement>(null);
+  const visible = useVisiblePlayback(regionRef);
+  const rotating = playing && visible && !hovered && !focused && slides.length > 1;
 
   // A fresh timeout per slide (rather than an interval) keeps the dot's progress
   // bar and the actual advance in step after every pause and manual jump.
   useEffect(() => {
     if (!rotating) return;
-    const timer = window.setTimeout(() => setIndex(i => (i + 1) % slides.length), intervalMs);
+    const timer = window.setTimeout(() => { setMoved(true); setIndex(i => (i + 1) % slides.length); }, intervalMs);
     return () => window.clearTimeout(timer);
   }, [rotating, index, intervalMs, slides.length]);
 
@@ -42,7 +46,7 @@ export function AuthCarousel({ slides, labels, intervalMs = 5000 }: { slides: Au
   }
 
   return (
-    <section className={styles.carousel} aria-roledescription="carousel" aria-label={labels.region} data-rotating={rotating}
+    <section ref={regionRef} className={styles.carousel} aria-roledescription="carousel" aria-label={labels.region} data-rotating={rotating}
       onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)} onFocus={() => setFocused(true)} onBlur={leaveFocus}>
       {/* Controls come first in reading order so keyboard users reach pause before the slides. */}
       <div className={styles.controls}>
@@ -51,7 +55,7 @@ export function AuthCarousel({ slides, labels, intervalMs = 5000 }: { slides: Au
         </button>
         <div className={styles.dots}>
           {slides.map((slide, i) => (
-            <button key={slide.id} type="button" className={styles.dot} aria-label={labels.goTo(i + 1)} aria-current={i === index ? "true" : undefined} onClick={() => setIndex(i)}>
+            <button key={slide.id} type="button" className={styles.dot} aria-label={labels.goTo(i + 1)} aria-current={i === index ? "true" : undefined} onClick={() => { setMoved(true); setIndex(i); }}>
               {i === index && rotating && <span key={index} className={styles.dotProgress} style={{ animationDuration: `${intervalMs}ms` }} />}
             </button>
           ))}
@@ -59,8 +63,8 @@ export function AuthCarousel({ slides, labels, intervalMs = 5000 }: { slides: Au
       </div>
       <div className={styles.slides} aria-live={rotating ? "off" : "polite"}>
         {slides.map((slide, i) => (
-          <div key={slide.id} role="group" aria-roledescription="slide" aria-label={labels.position(i + 1, slides.length)} hidden={i !== index} className={styles.slide}>
-            <div className={styles.art} aria-hidden="true"><div className={styles.photo}><Image src={slide.image} alt="" fill sizes="(max-width: 899px) 100vw, 460px" priority={i === 0} loading={i === 0 ? "eager" : "lazy"} /></div></div>
+          <div key={slide.id} role="group" aria-roledescription="slide" aria-label={labels.position(i + 1, slides.length)} hidden={i !== index} data-animate={(moved && i === index) || undefined} className={styles.slide}>
+            <div className={styles.art} aria-hidden="true"><div className={styles.photo}>{/* The current photograph and the next, so a slide never opens on an empty frame. */}{(i === index || i === (index + 1) % slides.length) && <Image src={slide.image} alt="" fill sizes="(max-width: 899px) 100vw, 460px" priority={i === 0} />}</div></div>
             <h2 className={styles.slideTitle}>{slide.title}</h2>
             <p className={styles.slideBody}>{slide.body}</p>
           </div>

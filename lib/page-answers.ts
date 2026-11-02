@@ -109,9 +109,4 @@ export const HUB_ANSWERS = {
     { question: "How do I find a function or hook here?", answer: "Open the package you are working with from the list on this page, then find the name you need on the package page. Signing in adds a dashboard where you can search and filter the whole reference across every package at once." },
     { question: "Is the API reference free?", answer: "Yes. Every entry in the API reference is free to read without an account. Signing up adds search and filters across the whole reference in your dashboard, along with handbooks, courses and practice that link back to these entries." },
   ] },
-  "/tech-buzz": { faqs: [
-    { question: "What is Tech Buzz?", answer: "Tech Buzz is the weekly technology blog on MasterClass Buddy. It explains real engineering problems and how they were solved, with code, across Agentic AI, System Design, AWS and DevOps, Kubernetes and Docker, and Next.js and React. Developers rate each story." },
-    { question: "How often are new stories published?", answer: "Five new stories go live every Monday at 00:00 IST, one per track: Agentic AI, System Design, AWS and DevOps, Kubernetes and Docker, and Next.js and React. Each story shows the date it was published, and older stories stay available here." },
-    { question: "Can I read Tech Buzz stories for free?", answer: "Every story has a free preview that anyone can read, without an account. The full story is for members, whose membership also covers the courses, certification paths and practice tests in the dashboard, billed monthly or yearly." },
-  ] },
 } as const satisfies Record<string, PageAnswers>;

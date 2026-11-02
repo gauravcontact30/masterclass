@@ -1,7 +1,8 @@
 /* Sample student stories: a fanned deck of story cards on the left, an index of reviewers on the right.
    Frame: landing-section.module.css; colours: the --nb tokens on .home (landing-home.module.css). */
 .layout { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(0, 1fr); gap: clamp(24px, 3vw, 44px); align-items: start; }
-.stage { display: grid; gap: 18px; }
+.stage { display: grid; min-width: 0; gap: 18px; }
+.deck, .card { min-width: 0; }
 
 /* The deck: two cards fanned behind the story in front. Behind-cards are decoration only, sized by the front card. */
 .deck { position: relative; display: grid; padding: 0 14px 14px 0; touch-action: pan-y; }
@@ -21,7 +22,8 @@
 /* The routine behind the story, three steps that arrive one after another. */
 .routine { display: flex; flex-wrap: wrap; gap: 8px; padding: 0; list-style: none; }
 .routine li { display: inline-flex; align-items: center; gap: 8px; min-height: 32px; padding: 4px 12px 4px 4px; border: 1px dashed var(--nb-cream-edge); border-radius: 999px; background: #fffaf6; font-size: 13.5px; color: var(--nb-text); animation: stepIn .45s ease both; animation-delay: calc(.25s + var(--i, 0) * .12s); }
-.routine b { display: grid; place-items: center; width: 24px; height: 24px; border-radius: 50%; background: var(--nb-button); color: #fff; font-size: 12px; font-weight: 700; }
+.routine li { max-width: 100%; overflow-wrap: anywhere; }
+.routine b { display: grid; flex: none; place-items: center; width: 24px; height: 24px; border-radius: 50%; background: var(--nb-button); color: #fff; font-size: 12px; font-weight: 700; }
 @keyframes stepIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
 
 .profile { display: flex; align-items: center; gap: 14px; padding-top: 16px; border-top: 1px solid var(--nb-rule); }

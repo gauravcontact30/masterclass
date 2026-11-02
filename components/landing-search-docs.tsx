@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { useDeferredValue, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import Link from "next/link";
 import Image from "@/components/responsive-image";
 import { ArrowRight, ArrowUpRight, BookOpenCheck, Gauge, Layers, Lightbulb, Search, Sparkles, TrendingUp, X } from "lucide-react";
@@ -70,13 +70,13 @@ export function LandingSearchDocs({ fresh, buzz, week = 0 }: Readonly<{ fresh?: 
   const near = useNearViewport(ref); const visible = useVisiblePlayback(ref);
   const [index, setIndex] = useState<LandingSearchIndex | null>(null); const [failed, setFailed] = useState(false);
   const [query, setQuery] = useState(""); const [logo, setLogo] = useState<string | null>(null);
-  const [result, setResult] = useState<Result | null>(null);
-  // The search runs where the input changes (typing, a filter, a popular search, the index arriving), never in render.
-  const update = (next: { query?: string; logo?: string | null }, source = index) => {
-    const q = next.query ?? query, l = next.logo === undefined ? logo : next.logo;
-    if (next.query !== undefined) setQuery(q);
-    if (next.logo !== undefined) setLogo(l);
-    if (source) setResult(search(source, q, l));
+  // Keep typing urgent; sorting the topic matches can yield to the next keystroke on slower devices.
+  const deferredQuery = useDeferredValue(query);
+  const deferredLogo = useDeferredValue(logo);
+  const result = useMemo(() => index ? search(index, deferredQuery, deferredLogo) : null, [index, deferredQuery, deferredLogo]);
+  const update = (next: { query?: string; logo?: string | null }) => {
+    if (next.query !== undefined) setQuery(next.query);
+    if (next.logo !== undefined) setLogo(next.logo);
   };
   const [placeholder, setPlaceholder] = useState(0);
   const [popularPage, setPopularPage] = useState(0); const [filterPage, setFilterPage] = useState(0);
@@ -84,7 +84,7 @@ export function LandingSearchDocs({ fresh, buzz, week = 0 }: Readonly<{ fresh?: 
     if (!near || index) return;
     const controller = new AbortController();
     fetch("/api/landing/search-index", { signal: controller.signal }).then(response => response.ok ? response.json() : Promise.reject(new Error(String(response.status))))
-      .then((body: LandingSearchIndex) => { setIndex(body); setResult(search(body, "", null)); }).catch(() => { if (!controller.signal.aborted) setFailed(true); });
+      .then((body: LandingSearchIndex) => { setIndex(body); }).catch(() => { if (!controller.signal.aborted) setFailed(true); });
     return () => controller.abort();
   }, [near, index]);
   // Popular searches: one real topic from each technology, turning over weekly, shown three per page.

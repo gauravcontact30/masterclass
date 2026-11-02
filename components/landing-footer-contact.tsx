@@ -25,7 +25,7 @@ function CopyValue({ value, label }: Readonly<{ value: string; label: string }>)
 export function LandingFooterContact() {
   const instagram = SOCIAL_PROFILES.find(item => item.platform === "Instagram");
   const handle = instagram ? `@${instagram.href.replace(/\/+$/, "").split("/").at(-1)}` : null;
-  return <details className={styles.panel} data-accordion="free" aria-labelledby="footer-contact-title">
+  return <details className={styles.panel} data-accordion="free" aria-labelledby="footer-contact-title" suppressHydrationWarning>
     <summary className={styles.head}>
       <span className={styles.badge} aria-hidden="true"><MessageCircleHeart size={16} /></span>
       <div>
@@ -67,7 +67,7 @@ export function LandingFooterContact() {
  * the weekly turnover (lib/ist-week.ts); change them together.
  */
 export function LandingFooterFacts() {
-  return <details className={styles.panel} data-accordion="free" aria-labelledby="footer-facts-title">
+  return <details className={styles.panel} data-accordion="free" aria-labelledby="footer-facts-title" suppressHydrationWarning>
     <summary className={styles.head}>
       <span className={styles.badge} aria-hidden="true"><ShieldCheck size={16} /></span>
       <div>

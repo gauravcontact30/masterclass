@@ -33,9 +33,12 @@ export type DailyTrack = {
   brief?: string;
 };
 
+/** A track name before its tool list ("Agentic AI - LangChain, LangGraph, …" → "Agentic AI"), for card labels. */
+export const shortTech = (technology: string) => technology.split(" - ")[0];
+
 export const DAILY_TRACKS: DailyTrack[] = [
   {
-    id: "agentic-ai", label: "Agentic AI - LangChain, LangGraph, LangSmith, LangFlow and n8n", short: "Agentic AI - LangChain, LangGraph, LangSmith, LangFlow and n8n",
+    id: "agentic-ai", label: "Agentic AI - LangChain, LangGraph, LangSmith, LangFlow and n8n", short: "Agentic AI",
     techIds: ["agentic-ai", "langchain", "langgraph", "langsmith", "langflow", "n8n"],
     logoIds: ["langchain", "langgraph", "langsmith", "langflow", "n8n"],
     // Each angle is a real-life problem solved end to end by one agentic workflow across the whole stack.

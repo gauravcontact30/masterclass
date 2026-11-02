@@ -91,7 +91,7 @@ export function SuperAdminThreeDays() {
     { key: "people", label: "Visitors", icon: Users, value: s => s.people, show: s => n(s.people) },
     { key: "views", label: "Page views", icon: Eye, value: s => s.views, show: s => n(s.views) },
     { key: "sessions", label: "Visits", icon: Repeat, value: s => s.sessions, show: s => n(s.sessions) },
-    { key: "new", label: "New visitors", icon: UserPlus, value: s => s.newVisitors, show: s => n(s.newVisitors) },
+    { key: "new", label: "New guests", icon: UserPlus, value: s => s.newVisitors, show: s => n(s.newVisitors) },
     { key: "signed", label: "Signed in", icon: UserCheck, value: s => s.signedIn, show: s => n(s.signedIn) },
     { key: "stay", label: "Avg. visit", icon: Timer, value: s => s.avgStayMs, show: s => spent(s.avgStayMs) },
     { key: "read", label: "Reading / visitor", icon: Clock, value: s => s.readingPerPersonMs, show: s => spent(s.readingPerPersonMs) },

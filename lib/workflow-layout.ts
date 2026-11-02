@@ -40,6 +40,11 @@ function crosses(shape: Geometry, others: Box[]) {
  * that clears every box.
  */
 function route(edge: WorkflowEdge, from: WorkflowNode, to: WorkflowNode, nodes: WorkflowNode[], height: number, thorough: boolean): Geometry {
+  // A node's arrow back to itself ("retry") has no direction to clip toward (that gave NaN coordinates): a small loop above the box.
+  if (from === to) {
+    const top = from.y - NODE_HEIGHT / 2, right = from.x + NODE_WIDTH / 2;
+    return { start: { x: right - 34, y: top - 2 }, end: { x: right - 8, y: top - 2 }, via: { x: right - 44, y: top - 34 }, via2: { x: right + 2, y: top - 34 } };
+  }
   if (edge.via) return geometry(from, to, { x: edge.via[0], y: edge.via[1] });
   const straight = geometry(from, to, null);
   const others = nodes.filter(node => node !== from && node !== to).map(node => boxOf(node, 6));

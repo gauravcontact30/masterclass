@@ -5,7 +5,7 @@ import Link from "next/link";
 import { ArrowRight, CalendarDays, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Clock, Crown, Flame, Heart, Sparkles, Star, Sunrise, ThumbsDown, ThumbsUp, Workflow, Zap } from "lucide-react";
 import { BrandMark } from "./brand-mark";
 import { pageWindow } from "./pager";
-import { DAILY_TRACKS, OTHER_GROUP, TECH_BUZZ_TRACKED, TECH_GROUPS, dailyTrackTechIds, techGroupOf, type DailyTrack, type TechGroup } from "@/lib/tech-buzz-sections";
+import { DAILY_TRACKS, OTHER_GROUP, TECH_BUZZ_TRACKED, TECH_GROUPS, dailyTrackTechIds, shortTech, techGroupOf, type DailyTrack, type TechGroup } from "@/lib/tech-buzz-sections";
 import { logoOf, techLogo, type TechBuzzCard } from "@/lib/tech-buzz-public";
 import { TechIcon } from "./tech-icon";
 import { FAVOURITE_TOPICS } from "@/lib/tech-buzz-favourites";
@@ -110,9 +110,6 @@ function Cover({ card, className, sizes, eager = false }: { card: TechBuzzCard; 
     {logo && <span className={styles.coverLogo}><Image src={logo} alt="" width={20} height={20} /></span>}
   </span>;
 }
-
-/** A track name before its tool list ("Agentic AI - LangChain, LangGraph, …" → "Agentic AI") for one-line card tags. */
-const shortTech = (technology: string) => technology.split(" - ")[0];
 
 function RatingBadge({ card }: { card: TechBuzzCard }) {
   if (card.review) return <ReviewStars review={card.review} />;
@@ -254,7 +251,7 @@ function FreshLatest({ cards }: { cards: TechBuzzCard[] }) {
         {shownTracks.map(({ track, items }, index) => <button key={track.id} id={`tb-fresh-tab-${track.id}`} type="button" role="tab"
           aria-selected={track.id === active.track.id} aria-controls={`tb-fresh-panel-${track.id}`} tabIndex={track.id === active.track.id ? 0 : -1}
           style={{ "--tone": track.color } as CSSProperties} onClick={() => setSelectedTrack(track.id)} onKeyDown={event => onKey(event, tabPage * FRESH_TABS_PER_PAGE + index)}>
-          <TrackLogos track={track.id} />{track.id === "agentic-ai" ? "Agentic AI" : track.short}<span className={styles.freshCount}>{items.length}</span>
+          <TrackLogos track={track.id} />{track.short}<span className={styles.freshCount}>{items.length}</span>
         </button>)}
       </div>
       {tracks.map(({ track, items }) => <div key={track.id} id={`tb-fresh-panel-${track.id}`} role="tabpanel"
@@ -275,7 +272,7 @@ function FreshTrack({ track, items, showAll = false }: { track: DailyTrack; item
         <span className={styles.timelineHead}><span className={styles.timelineDot} aria-hidden="true" /><time dateTime={card.publishedAt}>{formatDate(card.publishedAt)}</time></span>
         <Link href={`/tech-buzz/${card.slug}`} className={styles.freshCard}>
           <Cover card={card} className={styles.freshCover} sizes="(max-width: 640px) 90vw, (max-width: 1100px) 320px, 240px" />
-          <span className={styles.freshTech}><TechIcon item={card} />{card.technology}</span>
+          <span className={styles.freshTech}><TechIcon item={card} />{shortTech(card.technology)}</span>
           <strong className={styles.cardTitle}>{card.title}</strong>
         </Link>
         <ReactionBar card={card} />
@@ -313,7 +310,7 @@ function StarRated({ cards }: { cards: TechBuzzCard[] }) {
             <span className={styles.starFeatureBody}>
               <StarScore card={card} />
               <strong className={styles.cardTitle}>{card.title}</strong>
-              <span className={styles.meta}><TechIcon item={card} />{card.technology} · {formatDate(card.publishedAt)} · {card.readTimeMinutes} min read</span>
+              <span className={styles.meta}><TechIcon item={card} />{shortTech(card.technology)} · {formatDate(card.publishedAt)} · {card.readTimeMinutes} min read</span>
             </span>
           </Link>
           <ReactionBar card={card} />
@@ -325,7 +322,7 @@ function StarRated({ cards }: { cards: TechBuzzCard[] }) {
             <span className={styles.starBody}>
               <StarScore card={card} />
               <strong className={styles.cardTitle}>{card.title}</strong>
-              <span className={styles.meta}>{card.technology} · {formatDate(card.publishedAt)}</span>
+              <span className={styles.meta}>{shortTech(card.technology)} · {formatDate(card.publishedAt)}</span>
             </span>
           </Link>
           <ReactionBar card={card} />
@@ -420,7 +417,7 @@ function CommunityFavourites({ cards }: { cards: TechBuzzCard[] }) {
           <strong className={styles.favTitle}>{first.card.title}</strong>
           <span className={styles.favSubtitle}>{first.card.subtitle}</span>
           <span className={styles.favMeter}><span className={styles.likedBar} aria-hidden="true"><i /></span><small>{likesLine(first.likes)}</small></span>
-          <span className={styles.meta}>{first.card.technology} · {formatDate(first.card.publishedAt)} · {first.card.readTimeMinutes} min <RatingBadge card={first.card} /></span>
+          <span className={styles.meta}>{shortTech(first.card.technology)} · {formatDate(first.card.publishedAt)} · {first.card.readTimeMinutes} min <RatingBadge card={first.card} /></span>
         </Link>
         <ReactionBar card={first.card} />
       </article>
@@ -432,7 +429,7 @@ function CommunityFavourites({ cards }: { cards: TechBuzzCard[] }) {
             <Link href={`/tech-buzz/${card.slug}`} className={styles.likedLink}>
               <strong className={styles.cardTitle}>{card.title}</strong>
               <span className={styles.likedBar} aria-hidden="true"><i /></span>
-              <span className={styles.meta}>{card.technology} · {likesLine(likes)}</span>
+              <span className={styles.meta}>{shortTech(card.technology)} · {likesLine(likes)}</span>
             </Link>
             <ReactionBar card={card} />
           </li>; })}

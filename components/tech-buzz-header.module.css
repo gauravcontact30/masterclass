@@ -64,5 +64,7 @@
   .primary svg { display: none; }
   .actions { gap: 2px; }
 }
+/* The smallest phones (Galaxy Fold, 280px): the header stays inside the screen. */
+@media (max-width: 320px) { .primary { padding: 0 8px; font-size: 12px; } }
 @media (prefers-reduced-motion: reduce) { .drawer[open] .drawerPanel { animation: none; } }
 @media print { .header { display: none; } }
