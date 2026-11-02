@@ -857,6 +857,115 @@
   ],
   "checkedAt": "2026-11-02"
  },
+ "git bundle": {
+  "sourceUrl": "https://git-scm.com/docs/git-bundle",
+  "sourceTitle": "Git - git-bundle Documentation",
+  "summary": "git bundle packs Git objects and refs into a single file. You can move that file by USB, email or any other channel and clone or fetch from it later, with no network connection between the two repositories.",
+  "explanation": "`git bundle create` takes rev-list style arguments, such as branch names, `--all` or ranges like `old..new`. It writes a pack file with a header that lists the refs in the bundle. If you give exclusions such as `^old` or `old..new`, those commits become prerequisites, and the receiving repository must already have them. On the receiving side the bundle works like a read-only remote: you can clone from it, fetch from it, or list its refs. `verify` checks that the file is valid and that the prerequisites are present, `list-heads` prints the refs, and `unbundle` stores the objects through `index-pack`.",
+  "syntax": "git bundle create [-q | --quiet | --progress] [--version=<version>] <file> <git-rev-list-args>\ngit bundle verify [-q | --quiet] <file>\ngit bundle list-heads <file> [<refname>…]\ngit bundle unbundle [--progress] <file> [<refname>…]",
+  "parameters": [
+   {
+    "name": "<file>",
+    "type": "path",
+    "description": "The bundle file to write or read. Use - to write to stdout (create) or read from stdin (verify, list-heads, unbundle)."
+   },
+   {
+    "name": "<git-rev-list-args>",
+    "type": "rev-list arguments",
+    "description": "Arguments that git rev-parse and git rev-list accept, including at least one named ref. They choose which refs and objects go into the bundle, for example master, --all or master~10..master."
+   },
+   {
+    "name": "[<refname>…]",
+    "type": "ref names",
+    "description": "Limits which refs list-heads and unbundle report. This is mainly used by git fetch."
+   },
+   {
+    "name": "--progress",
+    "type": "flag",
+    "description": "Shows progress on stderr even when stderr is not a terminal."
+   },
+   {
+    "name": "--version=<version>",
+    "type": "integer (2 or 3)",
+    "description": "Sets the bundle format version. Version 2 works only with SHA-1 repositories. Version 3 supports capabilities. The default is the oldest format that works with the repository's hash algorithm."
+   },
+   {
+    "name": "-q, --quiet",
+    "type": "flag",
+    "description": "Turns off progress reporting on stderr."
+   }
+  ],
+  "returns": "create writes a bundle file. verify exits with 0 if the bundle is valid and can be applied, and prints any missing prerequisite commits. list-heads and unbundle print the refs defined in the bundle.",
+  "example": {
+   "title": "Full bundle, then an incremental update via a tag marker",
+   "code": "#!/usr/bin/env bash\nset -euo pipefail\ncd \"$(mktemp -d)\"\n\n# Source repository\ngit init -q -b main src && cd src\ngit commit -q --allow-empty -m \"first\"\n\n# Full, self-contained bundle + remember what was sent\ngit bundle create ../full.bundle main\ngit tag -f lastSent main\ncd ..\n\n# Offline side: clone straight from the file\ngit bundle verify full.bundle\ngit clone -q -b main full.bundle dst\n\n# More work on the source, then an incremental bundle\ncd src\ngit commit -q --allow-empty -m \"second\"\ngit bundle create ../full.bundle lastSent..main\ngit tag -f lastSent main\ncd ..\n\n# Receiver checks prerequisites, then pulls from the replaced file\ncd dst\ngit bundle verify ../full.bundle\ngit bundle list-heads ../full.bundle\ngit pull -q\ngit log --oneline",
+   "language": "bash",
+   "explanation": "The script sends a self-contained bundle first, then sends only the new commits in a replacement bundle, which the clone picks up with git pull because its origin remote points at the bundle file."
+  },
+  "useCases": [
+   {
+    "title": "Air-gapped transfer",
+    "scenario": "Move the history of a branch from a machine on a restricted network to an isolated one by carrying bundle files on removable media, and update with incremental ranges."
+   },
+   {
+    "title": "Consistent repository backup",
+    "scenario": "Run `git bundle create backup.bundle --all` from a scheduled job, then restore later with `git clone backup.bundle <dir>`."
+   },
+   {
+    "title": "Sharing commits without a shared server",
+    "scenario": "Email a colleague a bundle of a few local commits (for example `main ^origin/main`), which they can verify and fetch into a separate branch."
+   },
+   {
+    "title": "Streaming through pipes",
+    "scenario": "Use `-` as the file name to write a bundle to stdout or read one from stdin, so you can chain it with compression, encryption or ssh."
+   }
+  ],
+  "related": [
+   "git clone",
+   "git fetch",
+   "git ls-remote",
+   "git pack-objects",
+   "git index-pack",
+   "git rev-list",
+   "git fetch-pack",
+   "gitformat-bundle"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is a Git bundle, and how does someone use one?",
+    "answer": "A bundle is a pack file with a header that lists the refs it contains, created with `git bundle create <file> <rev-list-args>`. The receiver treats the file as a remote: they can `git clone` it, `git fetch` from it, or run `git ls-remote` against it. This lets you move history between repositories with no network connection or server.",
+    "followUp": "Can you push into a bundle? No. Bundles support only reading, so to send newer history you create a new bundle file and replace the old one."
+   },
+   {
+    "question": "How do you create an incremental bundle, and what risk does it bring?",
+    "answer": "Exclude commits the receiver already has, either with a range like `lastSent..main` or with options like `^old`, `--since` or `-10`. Those excluded commits become prerequisites that must already be in the receiving repository. To check for them, the receiver runs `git bundle verify`, which lists any missing commits and exits with a nonzero code if the bundle cannot be applied.",
+    "followUp": "How can you keep track of the cut-off point between bundles? Move a tag (for example `git tag -f lastR2bundle master`) after each bundle and use it as the left side of the next range."
+   },
+   {
+    "question": "Why does `git bundle create x.bundle $(git rev-parse HEAD)` fail?",
+    "answer": "The bundle has to record refs. A raw commit ID does not resolve to a ref name, so Git refuses with 'Refusing to create empty bundle'. Give a branch or tag name, or use `--all`. The same error happens if the right side of a range is not a ref.",
+    "followUp": "Which arguments give a bundle the same refs a normal clone would get? Use `--branches --tags` as the rev-list arguments."
+   }
+  ],
+  "keyPoints": [
+   "After you have the bundle file, the receiving repository treats it like any other read-only remote. You can map refs while fetching, for example `git fetch mybundle master:localRef`, or run `git ls-remote` on it.",
+   "A bare commit ID is not enough. The arguments must name at least one ref, or you can use `--all` to include every ref.",
+   "Run `verify` before applying a bundle that has prerequisites. It checks the file format and confirms that the commits the bundle depends on are already present in the receiving repository.",
+   "The exit status tells you whether the bundle is valid, so `git bundle verify` works well as a check in scripts or CI before an import.",
+   "Incremental bundles built with exclusions are stored as thin packs, which makes them smaller than full bundles. You cannot choose a thick pack in this case, and you don't need to.",
+   "The v2 format works only with SHA-1. Repositories that use another hash algorithm need v3, which supports capabilities such as an object filter.",
+   "You don't need to know exactly which objects the receiver is missing. Including too much is safe, because objects the destination already has are skipped when the bundle is unpacked.",
+   "You rarely need `git bundle unbundle` yourself. Use `git fetch` or `git clone`, which call it for you."
+  ],
+  "gotchas": [
+   "A bundle is read-only. You can fetch and clone from it, but you cannot push into it. To send updates, create a new bundle.",
+   "A backup made with `--all` contains only refs and the commits reachable from them. Local configuration, hooks, stashes, the index and uncommitted work are not included.",
+   "If you pass a raw SHA, or a range whose right side is not a ref (such as master~10..master~5), the command fails with 'Refusing to create empty bundle'.",
+   "Don't back up a live repository with `cp -r`. Git might write to it during the copy and leave a corrupted copy. A bundle is the safer option."
+  ],
+  "checkedAt": "2026-11-02"
+ },
  "git checkout": {
   "sourceUrl": "https://git-scm.com/docs/git-checkout",
   "sourceTitle": "Git - git-checkout Documentation",
@@ -4178,6 +4287,135 @@
   ],
   "checkedAt": "2026-11-02"
  },
+ "git rev-parse": {
+  "sourceUrl": "https://git-scm.com/docs/git-rev-parse",
+  "sourceTitle": "Git - git-rev-parse Documentation",
+  "summary": "git rev-parse is a low-level plumbing command. It turns revision expressions such as HEAD~2 or v1.0^{commit} into object names, and it can also report details about the repository, such as its top-level path, whether you are inside a work tree, and the current branch.",
+  "explanation": "git rev-parse takes a list of arguments and works out which ones are flags, which are revisions meant for git rev-list, and which are something else. It prints each result on its own line. Revisions are resolved with the extended SHA-1 syntax, which covers refs, reflog suffixes like @{n}, ancestry operators like ^ and ~, peeling like ^{type}, and paths like rev:path. Other options switch it into helper roles. It can report repository facts such as paths and booleans, quote arguments for the shell (--sq-quote), or parse script options (--parseopt). Most modes must run inside a repository.",
+  "syntax": "git rev-parse [<options>] <arg>…",
+  "parameters": [
+   {
+    "name": "<arg>…",
+    "type": "string(s)",
+    "description": "The flags and parameters to parse. Revisions use the extended SHA-1 syntax, for example HEAD, main~3, v1.0^{commit}, or @{u}."
+   },
+   {
+    "name": "--verify",
+    "type": "flag",
+    "description": "Requires exactly one argument that resolves to an object name. It prints that name, or fails."
+   },
+   {
+    "name": "-q / --quiet",
+    "type": "flag",
+    "description": "Used with --verify. If the name is invalid, it exits with a non-zero status and prints no error message."
+   },
+   {
+    "name": "--short[=<length>]",
+    "type": "flag",
+    "description": "Works like --verify but prints a unique abbreviated object name, with a minimum length of 4."
+   },
+   {
+    "name": "--abbrev-ref[=(strict|loose)]",
+    "type": "flag",
+    "description": "Prints a short ref name that is not ambiguous, such as the current branch name for HEAD."
+   },
+   {
+    "name": "--symbolic-full-name",
+    "type": "flag",
+    "description": "Prints refs as full refnames, such as refs/heads/main, and leaves out any input that is not a ref."
+   },
+   {
+    "name": "--show-toplevel / --show-prefix / --show-cdup",
+    "type": "flag",
+    "description": "Report where you are in the working tree: the path of its root, your current directory relative to the root, and the relative path back up to the root."
+   },
+   {
+    "name": "--git-dir / --absolute-git-dir / --git-path <path>",
+    "type": "flag",
+    "description": "Find the repository directory, or a file inside it, while respecting relocation variables and worktrees."
+   },
+   {
+    "name": "--is-inside-work-tree / --is-bare-repository / --is-shallow-repository",
+    "type": "flag",
+    "description": "Each prints true or false for its check."
+   },
+   {
+    "name": "--parseopt / --sq-quote",
+    "type": "flag",
+    "description": "Special operation modes for parsing options in shell scripts and for quoting arguments for the shell. They must come first."
+   }
+  ],
+  "returns": "Writes its results to standard output, usually one line per item: object names, ref names, paths, or true/false. On failure it exits with a non-zero status. In --parseopt mode a usage error exits with code 129.",
+  "example": {
+   "title": "Gather repo context safely in a shell script",
+   "code": "#!/usr/bin/env bash\nset -euo pipefail\n\n# Bail out early if not inside a work tree\nif [ \"$(git rev-parse --is-inside-work-tree 2>/dev/null)\" != \"true\" ]; then\n  echo \"not in a git work tree\" >&2\n  exit 1\nfi\n\nroot=$(git rev-parse --show-toplevel)\nbranch=$(git rev-parse --abbrev-ref HEAD)\nsha=$(git rev-parse --verify HEAD)\nshort=$(git rev-parse --short HEAD)\n\n# Validate a user-supplied revision as a commit, quietly\nrev=\"${1:-main}\"\nif commit=$(git rev-parse --quiet --verify --end-of-options \"${rev}^{commit}\"); then\n  echo \"$rev -> $commit\"\nelse\n  echo \"'$rev' is not a commit\" >&2\nfi\n\n# Upstream of the current branch, as a full ref (may be unset)\nupstream=$(git rev-parse --symbolic-full-name @{u} 2>/dev/null || echo none)\n\necho \"root=$root branch=$branch sha=$sha short=$short upstream=$upstream\"",
+   "language": "bash",
+   "explanation": "This script first checks that it is running inside a work tree. It then reads the repository root, the current branch, and the HEAD hash, checks that a revision given by the user names a commit, and looks up the branch's upstream."
+  },
+  "useCases": [
+   {
+    "title": "Stamping builds with a commit ID",
+    "scenario": "A CI job or release script runs rev-parse --short HEAD and embeds the result in an artifact name or version string."
+   },
+   {
+    "title": "Validating input in Git hooks and tools",
+    "scenario": "A hook gets a revision argument and checks it with --verify --end-of-options \"$REV^{commit}\" before running any destructive step."
+   },
+   {
+    "title": "Making scripts location-independent",
+    "scenario": "A helper script can be started from any subdirectory. It changes into the --show-toplevel path and keeps the user's relative file arguments valid by passing them through --prefix."
+   },
+   {
+    "title": "Writing Git-style option parsing in shell",
+    "scenario": "A custom git-foo shell command describes its options in a spec and passes it to --parseopt. This gives it -h usage output and --no-* negation like built-in Git commands have."
+   }
+  ],
+  "related": [
+   "git rev-list",
+   "gitrevisions",
+   "git show-ref",
+   "git symbolic-ref",
+   "git describe",
+   "git merge-base",
+   "git for-each-ref",
+   "git update-ref"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "In a script, how do you reliably get the commit hash that a user-provided revision points to?",
+    "answer": "Run git rev-parse --verify --end-of-options \"$REV^{commit}\". --verify accepts exactly one argument and fails unless it resolves to an object. The ^{commit} suffix peels the object until it reaches a commit, so the command also fails if the name does not point to a commit. Add -q if you want only a non-zero exit status instead of an error message.",
+    "followUp": "Why can git rev-parse v1.0 and git rev-parse v1.0^{commit} print different hashes? For an annotated tag, the plain name resolves to the tag object itself, and peeling with ^{commit} (or ^0) follows it to the commit the tag points at."
+   },
+   {
+    "question": "How would you get the current branch name and its upstream with rev-parse?",
+    "answer": "git rev-parse --abbrev-ref HEAD prints a short branch name such as main instead of a hash. For the upstream, git rev-parse --symbolic-full-name @{u} prints the remote-tracking ref, for example refs/remotes/origin/main. @{u} is resolved from the branch's configured remote and merge settings.",
+    "followUp": "When does @{push} differ from @{upstream}? It differs in a triangular workflow, where you pull from one remote and push to another, such as when remote.pushdefault points to a fork. In a non-triangular setup the two are the same."
+   },
+   {
+    "question": "Why use git rev-parse --git-path instead of building paths like .git/hooks or .git/HEAD yourself?",
+    "answer": "--git-path resolves a path inside $GIT_DIR while taking relocation variables such as $GIT_OBJECT_DIRECTORY and $GIT_INDEX_FILE into account. Hard-coded .git/... paths fail when .git is a gitfile, when GIT_DIR is set, or inside linked worktrees. For the same reason, --git-dir or --absolute-git-dir is the reliable way to find the repository directory itself.",
+    "followUp": "What is the difference between --sq and --sq-quote? --sq still interprets the input as rev-parse arguments and then prints the result as one shell-quoted line. --sq-quote is a separate mode that only quotes its arguments and can run outside a repository."
+   }
+  ],
+  "keyPoints": [
+   "Its original job is to split a mixed command line into flags, revision arguments for rev-list, and everything else. The filtering options --revs-only, --no-revs, --flags and --no-flags control which of these groups get printed.",
+   "--verify is the safe way to resolve one name to an object ID. Pass exactly one argument; anything else is an error. Adding a peel such as ^{commit} also makes sure the object exists and has the type you expect.",
+   "--short gives an abbreviated hash that is still unique. If you don't pass a length, it uses core.abbrev.",
+   "--abbrev-ref HEAD is the usual way to print the name of the current branch rather than its commit hash.",
+   "Scripts can find out where they are running. --show-toplevel gives the absolute path of the work tree root, and --show-prefix gives the current directory's path relative to that root.",
+   "The --is-* options print true or false. Use them in scripts to check the current environment, for example whether you are inside a work tree or whether the repository is bare or shallow.",
+   "Use --git-path when you need the location of a file inside the repository directory. It takes relocation variables and linked worktrees into account, so it is safer than building $GIT_DIR/... paths yourself.",
+   "--disambiguate=<prefix> lists every object whose name starts with a short hex prefix, which shows why a short hash is ambiguous. The prefix has a minimum length."
+  ],
+  "gotchas": [
+   "If the name comes from user input, put --end-of-options before it. Otherwise an input like --all would be read as an option instead of a revision.",
+   "--parseopt and --sq-quote are operation modes and only work when placed before every other option.",
+   "Date and count reflog suffixes such as main@{yesterday} or main@{1} read the local reflog. They fail if the ref has no reflog, for example right after a fresh clone.",
+   "Most modes need a repository and stop with a fatal error outside one. Only a few, such as --parseopt and --sq-quote, are documented as working anywhere."
+  ],
+  "checkedAt": "2026-11-02"
+ },
  "git revert": {
   "sourceUrl": "https://git-scm.com/docs/git-revert",
   "sourceTitle": "Git - git-revert Documentation",
@@ -5602,6 +5840,148 @@
    "remove fails if the worktree has untracked or modified files. You need --force for that, and --force twice if the worktree is locked.",
    "move can't relocate the main worktree or a linked worktree that contains submodules. If you move them by hand, run repair afterwards to fix the links.",
    "Using multiple worktrees with submodules is still experimental. The docs advise against checking out a superproject more than once."
+  ],
+  "checkedAt": "2026-11-02"
+ },
+ "Staging area": {
+  "sourceUrl": "https://git-scm.com/docs/gitdatamodel.html",
+  "sourceTitle": "Git - gitdatamodel Documentation",
+  "summary": "The staging area, which Git also calls the index, is one of Git's four core kinds of data. It holds the exact file snapshot your next commit will record, so you can choose what goes into a commit separately from what is in your working directory.",
+  "explanation": "Each index entry has four fields: a file type (regular, executable, symlink or gitlink), the ID of the blob holding the file's contents, a stage number and a path. Running git add stores the file's current content as a blob and points the entry at it. When you commit, Git turns this flat list of paths into nested tree objects and records that tree in the new commit. That means a commit holds whatever is staged, not whatever is on disk. During a merge conflict, one path can have several entries with stage numbers 1 to 3.",
+  "syntax": "git add [<options>] [--] [<pathspec>…]",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Stage part of your work and inspect the index",
+   "code": "set -e\nmkdir demo && cd demo && git init -q\necho 'print(\"hi\")' > hello.py\necho 'notes' > TODO.txt\n\n# Stage only hello.py\ngit add hello.py\ngit status --short        # A  hello.py / ?? TODO.txt\n\n# Look at the raw index entries: mode, blob id, stage, path\ngit ls-files --stage\n\n# Edit after staging: the new edit is NOT staged\necho 'print(\"bye\")' >> hello.py\ngit diff                  # working tree vs index\ngit diff --cached         # index vs HEAD (what will be committed)\n\n# Commit records only the staged snapshot\ngit commit -qm 'Add hello.py'\ngit status --short        # ' M hello.py' and '?? TODO.txt' remain",
+   "language": "bash",
+   "explanation": "The script stages one file, lists the index entries, then shows that an edit made after staging stays out of the commit until you run git add on that file again."
+  },
+  "useCases": [
+   {
+    "title": "Splitting work into focused commits",
+    "scenario": "You fixed a bug and refactored code in the same file. You use git add -p to stage only the bug-fix hunks, commit them, and then stage and commit the refactor separately."
+   },
+   {
+    "title": "Resolving merge conflicts",
+    "scenario": "After a conflicted merge, the index holds several stage entries for each conflicted path. Once you have edited a file to remove the conflict markers, you stage it to mark it as resolved, then you commit."
+   },
+   {
+    "title": "Reviewing exactly what will be committed",
+    "scenario": "Before you commit, git diff --cached shows the difference between HEAD and the index, so you can check that only the intended changes go in."
+   }
+  ],
+  "related": [
+   "git-add",
+   "git-commit",
+   "git-status",
+   "git-diff",
+   "git-restore",
+   "git-reset",
+   "git-rm",
+   "git-ls-files"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is the Git index and what does it actually store?",
+    "answer": "The index, also called the staging area, is a flat list of entries. Each entry has a file type, a blob ID for the contents, a stage number and a path. git add writes the file's contents as a blob and updates the entry, and git commit converts the list into tree objects for the new commit.",
+    "followUp": "Why is the index a flat list instead of a tree? A flat list of full paths is easy to update one file at a time, and Git only builds the nested trees when it creates a commit."
+   },
+   {
+    "question": "If you run git add on a file, edit it again, and then commit, what gets committed?",
+    "answer": "The version you staged gets committed. git add records the content at the moment you run it, and git commit with no arguments commits only what is staged. The later edit stays unstaged until you run git add on the file again.",
+    "followUp": "How would you see both sets of changes? git diff --cached shows staged changes (index vs HEAD), and plain git diff shows unstaged edits (working tree vs index)."
+   },
+   {
+    "question": "How does the index represent a merge conflict?",
+    "answer": "Each entry has a stage number. Normally it is 0, but when a merge conflicts, the same path can have several entries with stages 1, 2 and 3 for the different versions. Running git add on the resolved file replaces them with a single entry.",
+    "followUp": "What does git add --resolved do differently? It stages only unmerged paths that no longer contain conflict markers, and if any matching path still has markers, it refuses to stage anything."
+   }
+  ],
+  "keyPoints": [
+   "Unlike a tree object, the index has no nested directories. It is a single flat list of paths, and Git only builds the directory trees at commit time.",
+   "The stage number is normally 0. If a merge has a conflict, the same path can appear several times in the index, once for each competing version.",
+   "You rarely need to read the raw index. Usually you compare it to HEAD with git status, and you can dump its entries (mode, blob ID, stage, path) with git ls-files --stage.",
+   "You don't have to stage a whole file. git add -p shows each hunk of the difference between the index and the working tree and lets you choose which ones to stage.",
+   "git add -N (intent-to-add) creates an index entry with no content. The file then shows up in git diff, and git commit -a will pick it up.",
+   "Some changes exist only in the index. For example, git add --chmod=+x sets the executable bit on the staged entry and leaves the file on disk unchanged."
+  ],
+  "gotchas": [
+   "Staging copies the file's content at that moment. If you edit the file again before committing, the new edits are not included unless you run git add again.",
+   "Ignored files are skipped. If a glob matches an ignored file, Git skips it without any message. Use --force to stage it anyway.",
+   "git add -u updates and removes entries for files Git already tracks, but it never stages new untracked files.",
+   "If you hand-edit a patch with git add -e, the change is applied only to the index. Your working tree can then look as if it undid the staged change."
+  ],
+  "checkedAt": "2026-11-02"
+ },
+ "Working tree": {
+  "sourceUrl": "https://git-scm.com/docs/gitglossary",
+  "sourceTitle": "Git - gitglossary Documentation",
+  "summary": "The working tree is the directory of real, checked-out files that you edit. It usually starts from the tree of the HEAD commit and also holds any local changes you have not committed yet.",
+  "explanation": "Git keeps history as compressed objects inside the repository, but you work on ordinary files on disk. When you check out a branch or commit, Git writes that commit's tree into your working directory and records it in the index. After that, you can edit files freely. Git finds your changes by comparing the files on disk with the index and with HEAD. When the files match the commit HEAD points to, the working tree is clean. Once you make edits that are not committed, it is dirty. A non-bare repository has one main working tree. git worktree can attach more working trees, and each one has its own HEAD and index.",
+  "syntax": "",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Watching the working tree go from clean to dirty and back",
+   "code": "#!/usr/bin/env bash\nset -euo pipefail\ncd \"$(mktemp -d)\"\ngit init -q demo && cd demo\ngit config user.email you@example.com\ngit config user.name You\n\necho 'hello' > greet.txt\ngit add greet.txt\ngit commit -qm 'initial'\ngit status --short   # nothing printed: working tree is clean\n\necho 'world' >> greet.txt   # edit a file on disk\ngit status --short          # ' M greet.txt' -> working tree differs from index\ngit diff                    # shows working tree vs index\n\ngit restore greet.txt       # copy the index version back into the working tree\ngit status --short          # clean again\n\ngit rev-parse --show-toplevel   # prints the root of the working tree",
+   "language": "bash",
+   "explanation": "The script edits a committed file, uses git status and git diff to show that the working tree is now dirty, and then runs git restore to make it clean again."
+  },
+  "useCases": [
+   {
+    "title": "Checking state before risky commands",
+    "scenario": "Before you rebase, switch branches, or reset, run git status to find out whether the working tree has uncommitted edits. If it does, commit or stash them first so nothing gets overwritten."
+   },
+   {
+    "title": "Working on two branches at once",
+    "scenario": "An urgent fix comes in while you are halfway through a refactor. Use git worktree add to create a second working tree on another branch, so you do not have to disturb the files you are already editing."
+   },
+   {
+    "title": "Running commands from a subdirectory in scripts",
+    "scenario": "A build script runs from somewhere deep in the project. It can use git rev-parse --show-toplevel or :/ pathspecs so its paths are resolved from the root of the working tree."
+   }
+  ],
+  "related": [
+   "index",
+   "HEAD",
+   "checkout",
+   "clean",
+   "dirty",
+   "worktree",
+   "bare repository",
+   "gitfile"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do the working tree, the index and HEAD differ?",
+    "answer": "HEAD names the commit you are on, usually through the current branch. The index is a stored snapshot that will become the next commit. The working tree holds the editable files on disk. It normally matches HEAD's tree plus any uncommitted edits you have made.",
+    "followUp": "What do git diff, git diff --cached and git diff HEAD each compare? git diff compares the working tree with the index. git diff --cached compares the index with HEAD. git diff HEAD compares the working tree directly with HEAD."
+   },
+   {
+    "question": "What makes a working tree clean or dirty, and how do you check?",
+    "answer": "A working tree is clean when its contents match the revision referenced by the current head. It is dirty when it has modifications that have not been committed to the current branch. git status shows this by listing staged changes, unstaged changes and untracked files.",
+    "followUp": "Why can git status look clean even though untracked build files exist? Files that match .gitignore patterns are ignored, so git status does not list them. You can see them with git status --ignored."
+   },
+   {
+    "question": "Can a repository have zero working trees, or more than one?",
+    "answer": "Yes, both. A bare repository has no working tree, and a normal repository has one main working tree. git worktree add can attach more linked worktrees, each with its own HEAD and index, while they all share the same object database and refs.",
+    "followUp": "Why does Git refuse to check out the same branch in two worktrees by default? If two working trees had the same branch checked out, a commit in one would move that branch under the other and leave it out of sync. git worktree add only allows it with --force."
+   }
+  ],
+  "keyPoints": [
+   "The glossary defines the working tree as the set of files that are actually checked out, as opposed to objects stored in the repository database.",
+   "The index sits between your files on disk and the next commit. It stores a snapshot of the working tree, and during a merge it can hold more than one version of a file.",
+   "A bare repository has no working tree. It holds only the files Git uses to manage the repository, which is why servers usually host bare repositories.",
+   "The :/ pathspec magic (top) matches paths from the root of the working tree, even when you run a command from inside a subdirectory.",
+   "A working tree's top level can contain a plain .git file (a gitfile) that points to the real repository directory instead of a .git folder. Linked worktrees and submodules use this."
+  ],
+  "gotchas": [
+   "By default, checking out files from the index or a tree-ish only adds or updates files. In no-overlay mode, Git also deletes tracked files that are missing from the source, so you can lose files you did not expect to.",
+   "When an attr: pathspec is matched against a tree object, Git still reads the attributes from the working tree, not from that tree object. Results can change if your local .gitattributes differs.",
+   "Changes you have made but not committed make the working tree dirty. Some operations refuse to run or need --force when the tree is dirty. For example, git worktree remove only works on clean worktrees unless you force it."
   ],
   "checkedAt": "2026-11-02"
  }
