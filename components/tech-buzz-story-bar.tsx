@@ -194,10 +194,10 @@ export function StoryDock({ articleId, slug, title, author, tags, claps, comment
   return <div className={styles.dock} role="group" aria-label="Story actions">
     <div className={styles.dockGroup}>
       <span className={styles.dockClap}><ClapButton slug={slug} claps={claps} size="small" /></span>
-      <button type="button" className={styles.stat} onClick={onComments} aria-label={`Discussion: ${comments} ${comments === 1 ? "comment" : "comments"}`} title="Go to the discussion">
+      <button type="button" className={styles.statButton} onClick={onComments} aria-label={`Discussion: ${comments} ${comments === 1 ? "comment" : "comments"}`} title="Go to the discussion">
         <MessageCircle size={17} aria-hidden="true" /><span>{compact(comments)}</span>
       </button>
-      <button type="button" className={styles.stat} data-on={reposted || undefined} aria-pressed={reposted} aria-label={`${reposted ? "Undo repost" : "Repost"}: ${reposts} ${reposts === 1 ? "repost" : "reposts"}`} title={reposted ? "Undo your repost" : "Repost this story"}
+      <button type="button" className={styles.statButton} data-on={reposted || undefined} aria-pressed={reposted} aria-label={`${reposted ? "Undo repost" : "Repost"}: ${reposts} ${reposts === 1 ? "repost" : "reposts"}`} title={reposted ? "Undo your repost" : "Repost this story"}
         onClick={() => setMark("repost", articleId, !reposted).then(result => {
           if (result === "ok") onRepostChange(reposted ? -1 : 1);
           onResult(result, reposted ? "Repost removed" : "Reposted. Find it under Your reposts on Tech Buzz.");
@@ -235,7 +235,7 @@ export function FloatingActions({ articleId, slug, claps, comments, playing, can
   if (!shown) return null;
   return <div className={styles.float} role="group" aria-label="Quick story actions">
     <span className={styles.dockClap}><ClapButton slug={slug} claps={claps} size="small" /></span>
-    <button type="button" className={styles.stat} onClick={onComments} aria-label={`Discussion: ${comments} ${comments === 1 ? "comment" : "comments"}`} title="Go to the discussion"><MessageCircle size={17} aria-hidden="true" /><span>{compact(comments)}</span></button>
+    <button type="button" className={styles.statButton} onClick={onComments} aria-label={`Discussion: ${comments} ${comments === 1 ? "comment" : "comments"}`} title="Go to the discussion"><MessageCircle size={17} aria-hidden="true" /><span>{compact(comments)}</span></button>
     <button type="button" className={styles.tool} data-on={saved || undefined} aria-pressed={saved} aria-label={saved ? "Remove from reading list" : "Save to reading list"} title={saved ? "Saved to your reading list" : "Save to your reading list"}
       onClick={() => setMark("save", articleId, !saved).then(result => onResult(result, saved ? "Removed from your reading list" : "Saved to your reading list"))}>
       {saved ? <BookmarkCheck size={18} aria-hidden="true" /> : <Bookmark size={18} aria-hidden="true" />}

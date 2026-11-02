@@ -61,11 +61,11 @@
 /* The action dock: a soft tray of two groups, not a ruled strip. */
 .dock { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px 12px; margin-bottom: 2rem; padding: 6px 8px; border: 1px solid var(--tb-line); border-radius: 14px; background: var(--tb-wash); }
 .dockGroup { display: flex; align-items: center; gap: 2px; }
-.stat, .tool { display: inline-flex; align-items: center; justify-content: center; gap: 5px; min-width: 36px; min-height: 36px; padding: 0 8px; border: 0; border-radius: 10px; background: transparent; color: var(--tb-muted); font: inherit; font-size: 13px; font-variant-numeric: tabular-nums; cursor: pointer; transition: background-color .15s ease, color .15s ease; }
+.statButton, .tool { display: inline-flex; align-items: center; justify-content: center; gap: 5px; min-width: 36px; min-height: 36px; padding: 0 8px; border: 0; border-radius: 10px; background: transparent; color: var(--tb-muted); font: inherit; font-size: 13px; font-variant-numeric: tabular-nums; cursor: pointer; transition: background-color .15s ease, color .15s ease; }
 .tool { padding: 0; }
-.stat:hover, .tool:hover, .tool[aria-expanded="true"] { background: var(--tb-sheet); color: var(--tb-ink); }
-.stat[data-on], .tool[data-on] { color: var(--tb-accent); }
-.stat:focus-visible, .tool:focus-visible { outline: 2px solid var(--tb-accent); outline-offset: 1px; }
+.statButton:hover, .tool:hover, .tool[aria-expanded="true"] { background: var(--tb-sheet); color: var(--tb-ink); }
+.statButton[data-on], .tool[data-on] { color: var(--tb-accent); }
+.statButton:focus-visible, .tool:focus-visible { outline: 2px solid var(--tb-accent); outline-offset: 1px; }
 
 /* The shared clap pill, flattened to sit with the dock's other buttons. */
 .dockClap { display: inline-flex; }
@@ -89,12 +89,12 @@
 
 @media (max-width: 420px) {
   .dock { padding: 4px; }
-  .stat { padding: 0 6px; }
+  .statButton { padding: 0 6px; }
 }
 
 @media print { .chips, .follow, .dock { display: none; } }
 
 @media (prefers-reduced-motion: reduce) {
-  .chip, .chipRing, .follow, .stat, .tool, .topicCard { transition: none; }
+  .chip, .chipRing, .follow, .statButton, .tool, .topicCard { transition: none; }
   .chipToggle:hover .chipRing { transform: none; }
 }
