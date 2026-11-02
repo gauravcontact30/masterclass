@@ -26,6 +26,8 @@ export interface ArticleComment {
   text: string;
   createdAt: string;
   likes: number;
+  /** Set on a reader's stored comment (migration 0051) when the viewer may delete it. */
+  canDelete?: boolean;
 }
 
 export interface DevReactions {
@@ -114,6 +116,10 @@ export interface TechBuzzArticle {
   // Social interactions
   reactions: DevReactions;
   commentsCount: number;
+  /** The starting count before readers' comments (tech_buzz_comments) were added; set on published stories only. */
+  baseCommentsCount?: number;
+  /** Readers who reposted the story (tech_buzz_marks); set on published stories only. */
+  reposts?: number;
   comments: ArticleComment[];
 
   // Series & stacks

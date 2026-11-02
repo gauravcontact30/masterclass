@@ -29,7 +29,6 @@ const FOLLOW_UPS: [label: string, prompt: string][] = [
   ["Example", "Give me one more worked example of that."],
   ["Quiz me", "Quiz me on that: ask three short questions one at a time, wait for my answer to each, then tell me what I got right."],
   ["Interview angle", "How would an interviewer ask about that, and what is a strong answer?"],
-  ["हिंदी में", "Explain that in simple Hindi."],
 ];
 const STORE = "study-buddy:v1";
 const MAX_KEPT = 40;

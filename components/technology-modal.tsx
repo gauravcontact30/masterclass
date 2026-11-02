@@ -104,8 +104,6 @@ export function TechnologyModal({
                     ? `${tech.topicsCount}+ अध्ययन विषय`
                     : `${tech.topicsCount}+ topics covered`}
                 </span>
-                <span className={styles.subMetaDot}>•</span>
-                <span>{hi ? "द्विभाषी (EN / HI)" : "Bilingual (EN / HI)"}</span>
               </div>
             </div>
           </div>

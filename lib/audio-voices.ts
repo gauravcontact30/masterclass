@@ -33,6 +33,11 @@ export const DEFAULT_VOICE = "Sulafat";
 export const DEFAULT_VOICES: Record<VoiceGender, string> = { female: "Sulafat", male: "Algieba" };
 export const genderOf = (id: string): VoiceGender => VOICES.find(voice => voice.id === id)?.gender ?? "female";
 export const isVoice = (id: unknown): id is string => typeof id === "string" && VOICES.some(voice => voice.id === id);
+/** The calmest five of each gender, offered on Tech Buzz stories. */
+export const STORY_VOICES: Record<VoiceGender, string[]> = {
+  female: ["Sulafat", "Achernar", "Vindemiatrix", "Despina", "Callirrhoe"],
+  male: ["Algieba", "Achird", "Umbriel", "Schedar", "Rasalgethi"],
+};
 export const SPEEDS = [0.75, 1, 1.25, 1.5, 1.75, 2] as const;
 
 /** Longest text one request may voice; a lecture is read as several parts of at most this. */

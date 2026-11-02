@@ -22,8 +22,8 @@ import {
   ArrowLeft,
   ArrowUpRight,
   FileCode2,
-  GraduationCap,
-  MessageCircle,
+  
+  
   RotateCcw,
   Search,
   ShieldCheck,
@@ -118,10 +118,6 @@ export function ApiDetail({
   const kind = API_TYPES.find((type) => type.k === entry.kind)?.label || "Identifier";
   const status = API_STATUSES.find((item) => item.id === entry.status)?.label || "Reference entry";
   const { language } = page;
-  const mentorHref = `/learning/mentors?q=${encodeURIComponent(
-    `Explain ${entry.name} from ${pkg.name} with a practical example`
-  )}`;
-  const quizHref = `/learning/quiz?topic=${encodeURIComponent(`${pkg.name} ${entry.name}`)}`;
   const isAgentic = AGENTIC_FRAMEWORK_IDS.has(pkg.id);
   const lead = shortDefinition(detail.description);
   const howItWorks = toPoints(`${detail.description} ${detail.descriptionLong ?? ""}`, [lead]);
@@ -133,16 +129,6 @@ export function ApiDetail({
           <ArrowLeft size={16} />
           API Reference
         </Link>
-        <div className={styles.learnLinks}>
-          <Link href={mentorHref}>
-            <MessageCircle size={15} />
-            Ask the mentor
-          </Link>
-          <Link href={quizHref}>
-            <GraduationCap size={15} />
-            Quiz me on this
-          </Link>
-        </div>
       </div>
       <div className={styles.detailLayout}>
         <article className={styles.detail}>
@@ -178,8 +164,9 @@ export function ApiDetail({
             </p>
             {written && howItWorks.length > 0 && (
               <ul className={styles.pointCards} aria-label="How it works">
-                {howItWorks.map((point) => (
+                {howItWorks.map((point, index) => (
                   <li key={point}>
+                    <span className={styles.pointNumber} aria-hidden="true">{index + 1}</span>
                     <span>
                       <KeyText text={point} />
                     </span>
@@ -195,6 +182,7 @@ export function ApiDetail({
             )}
             {written && (
               <ApiDefinitionCards
+                numberFrom={howItWorks.length}
                 name={entry.name}
                 kindLabel={kind}
                 status={status}
@@ -672,6 +660,13 @@ export function ApiDocs() {
           onRailChange={setIndexRail}
           onChoose={choosePackage}
           renderMark={packageMark}
+          entryHref={(id, name) => apiTopicHref(pathname, id, name)}
+          onSearch={setQuery}
+          types={types}
+          statuses={statuses}
+          onToggleType={toggleType}
+          onToggleStatus={toggleStatus}
+          onClearFilters={() => { setTypes([]); setStatuses(API_STATUSES.map((item) => item.id)); }}
         />
 
         <div className={ref.main}>
@@ -811,7 +806,8 @@ export function ApiDocs() {
                 )}
               </div>
               <div className={ref.types} role="group" aria-label="Identifier types">
-                {API_TYPES.map((type) => (
+                {/* Only what the current package and search can show, most common first; a chosen type stays so it can be turned off. */}
+                {[...API_TYPES].filter((type) => typeCounts[type.k] || types.includes(type.k)).sort((a, b) => (typeCounts[b.k] ?? 0) - (typeCounts[a.k] ?? 0)).map((type) => (
                   <button
                     key={type.k}
                     type="button"

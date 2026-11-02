@@ -53,9 +53,9 @@ const SLIDES: Slide[] = [
     focus: "68% 40%",
     icon: Languages,
     tone: "honey",
-    title: ["Learn anywhere, in two languages", "कहीं भी सीखें, दो भाषाओं में"],
-    text: ["Switch smoothly between English and हिन्दी any time; smart bookmarks and revision notes keep your place across devices.", "किसी भी समय English और हिन्दी के बीच स्विच करें; स्मार्ट बुकमार्क और नोट्स आपकी प्रगति याद रखते हैं।"],
-    points: [["English / हिन्दी bilingual", "अंग्रेज़ी / हिन्दी द्विभाषी"], ["Notes & bookmarks", "नोट्स और बुकमार्क"]],
+    title: ["Learn anywhere", "Learn anywhere"],
+    text: ["Smart bookmarks and revision notes keep your place across devices.", "Smart bookmarks and revision notes keep your place across devices."],
+    points: [["Works on every device", "Works on every device"], ["Notes & bookmarks", "नोट्स और बुकमार्क"]],
   },
 ];
 
@@ -99,7 +99,6 @@ const CORE_FEATURES: FeatureCard[] = [
 ];
 
 const HIGHLIGHTS: Pair[] = [
-  ["English & हिन्दी Bilingual", "English और हिन्दी द्विभाषी"],
   ["33+ Modern Tech Stacks", "33+ आधुनिक टेक स्टैक"],
   ["Coffee & Code Daily Insights", "कॉफ़ी और कोड दैनिक इनसाइट्स"],
   ["Interactive Revision Notes", "इंटरैक्टिव रिवीज़न नोट्स"],

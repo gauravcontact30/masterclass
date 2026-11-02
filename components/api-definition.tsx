@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, type CSSProperties } from "react";
 import { Check, Copy, FileCode2, PackageOpen, Shapes } from "lucide-react";
 import { importLines, isBuiltIn, kindInfo, normalizeCode } from "@/lib/annotate-code";
 import { highlightLines, type CodeLanguage } from "@/lib/code-highlight";
@@ -67,6 +67,7 @@ function CodeBlock({ code, language, label }: { code: string; language: CodeLang
  * to import it and its complete syntax. The worked example is in the Example code section.
  */
 export function ApiDefinitionCards({
+  numberFrom = 0,
   name,
   kindLabel,
   status,
@@ -78,6 +79,8 @@ export function ApiDefinitionCards({
   language,
   missingSignature,
 }: {
+  /** How many numbered cards come before these, so one section counts straight through. */
+  numberFrom?: number;
   name: string;
   kindLabel: string;
   status: string;
@@ -104,7 +107,7 @@ export function ApiDefinitionCards({
     : "";
 
   return (
-    <div className={styles.cards}>
+    <div className={styles.cards} style={{ "--number-from": numberFrom } as CSSProperties}>
       <section className={styles.card} data-tone="violet" aria-labelledby="api-kind-title">
         <h3 id="api-kind-title" className={styles.cardTitle}>
           <span className={styles.cardIcon} aria-hidden="true">

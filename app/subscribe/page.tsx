@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { GuestCheckout } from "@/components/guest-checkout";
+import { PageBack } from "@/components/page-back";
 import { headers } from "next/headers";
 import { authConfigured, billingConfigured } from "@/lib/server/config";
 import { visitorPrices } from "@/lib/server/pricing";
@@ -14,8 +15,8 @@ export const metadata = { ...privateMetadata, title: "Subscribe" };
 export default async function Page({ searchParams }: { searchParams: Promise<{ [key: string]: string | string[] | undefined }> }) {
   if (authConfigured() && await currentUser()) redirect("/learning/plans");
   const plan = (await searchParams).plan;
-  return <GuestCheckout
+  return <><PageBack /><GuestCheckout
     initialTier={plan === "yearly" ? "yearly" : "monthly"}
     enabled={authConfigured() && billingConfigured()}
-    prices={await visitorPrices(await headers())} />;
+    prices={await visitorPrices(await headers())} /></>;
 }

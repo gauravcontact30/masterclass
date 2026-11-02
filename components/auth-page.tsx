@@ -14,7 +14,6 @@ import { hardNavigate } from "@/lib/hard-navigate";
 import { isSafeRedirect } from "@/lib/safe-redirect";
 import { en, TranslationKey } from "@/lib/i18n";
 import { useLanguage } from "./language-provider";
-import { LanguageToggle } from "./language-toggle";
 import { Button } from "./ui/button";
 import { Wordmark } from "./brand-mark";
 import { AuthStory } from "./auth-carousel";
@@ -184,7 +183,6 @@ export function AuthPage({ mode, enabled, initialEmail = "", redirectTo, linkErr
         <div className={styles.topBar}>
           <Link className={styles.back} href="/"><ArrowLeft size={15} aria-hidden="true" /><ExpandedText text={t("authBackHome")} /></Link>
           {/* Signed-out visitors have no account to save the choice to, so it stays local (persist=false). */}
-          <LanguageToggle persist={false} />
         </div>
         <div className={styles.formWrap}>
           <div className={styles.brand}><Wordmark /></div>

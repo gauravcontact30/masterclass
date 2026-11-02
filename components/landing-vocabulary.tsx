@@ -70,9 +70,7 @@ const CARD_TEXT = {
 
 function WordCard({ entry, index, total, speaking, onHear, compact = false }: { entry: DailyWord; index: number; total: number; speaking: string | null; onHear: (word: string) => void; compact?: boolean }) {
   const [failed, setFailed] = useState(false);
-  // Each card starts in English and switches on its own, so a reader can check one word in Hindi without changing the rest.
-  const [lang, setLang] = useState<"en" | "hi">("en");
-  const t = CARD_TEXT[lang];
+  const t = CARD_TEXT.en;
   const src = vocabularyImageUrl(entry.word);
   // The sentence shows the word in place, so the reader sees its form and position, not just its meaning.
   const escaped = entry.word.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -85,9 +83,6 @@ function WordCard({ entry, index, total, speaking, onHear, compact = false }: { 
         <ContentImage src={src} alt={`Picture showing the meaning of ${entry.word}`} style={{ objectFit: "cover", objectPosition: "center 40%" }} loading="lazy" decoding="async" onError={() => setFailed(true)} />}
       <span className={styles.category}>{entry.category}</span>
       {index === 0 && <span className={styles.ribbon}><Sparkles size={12} aria-hidden="true" />{t.wordOfDay}</span>}
-      <div className={styles.langToggle} role="group" aria-label={`${t.language}: ${entry.word}`}>
-        {(["en", "hi"] as const).map(choice => <button key={choice} type="button" aria-pressed={lang === choice} onClick={() => setLang(choice)} lang={choice}>{choice === "en" ? "English" : "हिन्दी"}</button>)}
-      </div>
     </div>
     <div className={`${pulse.body} ${styles.body}`}>
       <div className={styles.wordRow}>
@@ -101,15 +96,14 @@ function WordCard({ entry, index, total, speaking, onHear, compact = false }: { 
       </div>
       <div className={pulse.block}>
         <span className={pulse.label}>{t.meaning}</span>
-        <p className={`${pulse.definition} ${styles.meaning}`} lang={lang}><Editable k={k} f={lang === "hi" ? "hindi" : "meaning"} multiline>{lang === "hi" ? entry.hindi : entry.meaning}</Editable></p>
-        <p className={styles.gloss} lang={lang === "hi" ? "en" : "hi"}><Editable k={k} f={lang === "hi" ? "meaning" : "hindi"} multiline>{lang === "hi" ? entry.meaning : entry.hindi}</Editable></p>
+        <p className={`${pulse.definition} ${styles.meaning}`} ><Editable k={k} f="meaning" multiline>{entry.meaning}</Editable></p>
       </div>
       <figure className={styles.sentence}>
         <span className={pulse.label}>{t.sentence}</span>
         <Quote size={16} aria-hidden="true" />
         <blockquote lang="en">{parts.map((part, i) => i % 2 ? <mark key={i}>{part}</mark> : part)}</blockquote>
       </figure>
-      {compact ? <p className={pulse.more}>{lang === "hi" ? "समानार्थी और विलोम शब्द डैशबोर्ड में हैं।" : "Synonyms and antonyms are in the full card on your dashboard."}</p> : <div className={styles.lists}>
+      {compact ? <p className={pulse.more}>{"Synonyms and antonyms are in the full card on your dashboard."}</p> : <div className={styles.lists}>
         <RelatedColumn kind="synonyms" title={t.synonyms} icon={<Equal size={13} aria-hidden="true" />} words={entry.synonyms} speaking={speaking} onHear={onHear} t={t} />
         <RelatedColumn kind="antonyms" title={t.antonyms} icon={<EqualNot size={13} aria-hidden="true" />} words={entry.antonyms} speaking={speaking} onHear={onHear} t={t} />
       </div>}
@@ -117,7 +111,7 @@ function WordCard({ entry, index, total, speaking, onHear, compact = false }: { 
   </li>;
 }
 
-/** One column of related words, stacked: each word in its own colour, with its pronunciation, a hear button and its own English/Hindi switch. */
+/** One column of related words, stacked: each word in its own colour, with its pronunciation and a hear button. */
 function RelatedColumn({ kind, title, icon, words, speaking, onHear, t }: { kind: "synonyms" | "antonyms"; title: string; icon: ReactNode; words: RelatedWord[]; speaking: string | null; onHear: (word: string) => void; t: typeof CARD_TEXT["en"] }) {
   return <div className={styles.column} data-kind={kind}>
     <span className={styles.columnHead}><span className={styles.columnIcon}>{icon}</span>{title}</span>
@@ -126,19 +120,14 @@ function RelatedColumn({ kind, title, icon, words, speaking, onHear, t }: { kind
 }
 
 function RelatedRow({ item, speaking, onHear, t }: { item: RelatedWord; speaking: boolean; onHear: (word: string) => void; t: typeof CARD_TEXT["en"] }) {
-  // Each word starts in English (its respelling) and switches to its Hindi meaning on its own.
-  const [lang, setLang] = useState<"en" | "hi">("en");
-  const second = lang === "hi" ? item.hindi ?? "—" : item.pronunciation ? `/${item.pronunciation}/` : "—";
+  const second = item.pronunciation ? `/${item.pronunciation}/` : "—";
   return <li data-speaking={speaking}>
     <span className={styles.relatedTop}>
       <span className={styles.relatedWord} lang="en">{item.word}</span>
       <button type="button" className={styles.relatedHear} onClick={() => onHear(item.word)} aria-label={`${t.hear}: ${item.word}`} title={t.hear}><Volume2 size={13} aria-hidden="true" /></button>
     </span>
     <span className={styles.relatedBottom}>
-      <span className={styles.relatedSecond} lang={lang === "hi" ? "hi" : "en"} data-lang={lang}>{second}</span>
-      <span className={styles.miniToggle} role="group" aria-label={`${t.language}: ${item.word}`}>
-        {(["en", "hi"] as const).map(choice => <button key={choice} type="button" aria-pressed={lang === choice} disabled={choice === "hi" && !item.hindi} onClick={() => setLang(choice)}>{choice === "en" ? "EN" : "हि"}</button>)}
-      </span>
+      <span className={styles.relatedSecond} lang="en" data-lang="en">{second}</span>
     </span>
   </li>;
 }

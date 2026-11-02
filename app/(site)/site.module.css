@@ -16,12 +16,7 @@
 .cta svg { transition: transform .15s; }
 .cta:hover svg { transform: translateX(2px); }
 /* Tech Buzz pages only: a pill naming the section and its 5:00 AM edition. */
-.buzzPill { display: none; align-items: center; gap: 7px; min-height: 34px; padding: 0 14px 0 11px; border: 1px solid #f3c9b3; border-radius: 999px; background: linear-gradient(135deg, #fff4ec, #ffe6d8); color: #b5522f; font-size: 13px; font-weight: 700; text-decoration: none; white-space: nowrap; }
-.buzzPill small { padding-left: 8px; border-left: 1px solid #f0c3ab; color: #8a6a5c; font-size: 12px; font-weight: 500; }
-.buzzPill:hover { border-color: #d97757; }
-.page:has([data-tech-buzz="true"]) .buzzPill { display: inline-flex; }
 /* Tech Buzz pages hide the page links, so the menu carries them at every width. */
-.page:has([data-tech-buzz="true"]) .menu { display: block; }
 /* The phone menu: a disclosure, hidden on wider screens. */
 .menu { position: relative; display: none; }
 .menu summary { display: grid; place-items: center; width: 40px; height: 40px; border: 1px solid #e3d9cc; border-radius: 10px; background: #fff; color: #262624; cursor: pointer; list-style: none; }
@@ -34,8 +29,6 @@
 .menuSignIn { display: none !important; border-top: 1px solid #f0ece4; margin-top: 4px; }
 .main { flex: 1; width: 100%; max-width: 920px; margin: 0 auto; padding: 48px clamp(16px, 4vw, 32px) 72px; outline: none; }
 .main:has([data-full-width="true"]) { max-width: 100%; width: 100%; padding: 0; margin: 0; }
-.page:has([data-tech-buzz="true"]) .header .nav { display: none !important; }
-.page:has([data-tech-buzz="true"]) .header .actions { margin-left: auto; }
 .header a:focus-visible, .menu summary:focus-visible { outline: 2px solid #d97757; outline-offset: 2px; }
 
 .breadcrumb ol { display: flex; gap: 8px; margin: 0 0 20px; padding: 0; list-style: none; font-size: 12px; color: #6b6a64; }
@@ -64,7 +57,7 @@
 .faq details p { margin: 10px 0 0; }
 
 /* Tablets: the section pill drops its subtitle. */
-@media (max-width: 960px) { .buzzPill small { display: none; } .nav a { padding: 0 9px; } }
+@media (max-width: 960px) { .nav a { padding: 0 9px; } }
 /* Phones: one row of brand, pill and actions; the page links fold into the menu instead of a sideways strip. */
 @media (max-width: 720px) {
   .header { gap: 10px; padding-block: 10px; }
@@ -81,8 +74,6 @@
 }
 /* Small phones: the pill keeps only its flame. */
 @media (max-width: 520px) {
-  .buzzPill { width: 34px; padding: 0; justify-content: center; }
-  .buzzLabel, .buzzPill small { display: none; }
 }
 /* 320–400 px: the brand keeps its mark and drops the wordmark text. */
 @media (max-width: 400px) {

@@ -4,7 +4,7 @@ import { AccordionChevron, AccordionSummary } from "@/components/ui/accordion-ch
 
 import { useState, useMemo, useCallback, type CSSProperties } from "react";
 import Link from "next/link";
-import { Sparkles, ShieldCheck, ChevronLeft, ChevronRight, ChevronDown, Search, X, SlidersHorizontal, RotateCcw, Code2, Terminal, ArrowRight, Check, Copy, Layers, Bot, Workflow, Binary, Database, CheckCircle2, FileCode2, ArrowUpRight, MessageCircle, GraduationCap } from "lucide-react";
+import { Sparkles, ShieldCheck, ChevronLeft, ChevronRight, ChevronDown, Search, X, SlidersHorizontal, RotateCcw, Code2, Terminal, ArrowRight, Check, Copy, Layers, Bot, Workflow, Binary, Database, CheckCircle2, FileCode2, ArrowUpRight,  } from "lucide-react";
 import { WORKFLOW_USECASES, WORKFLOW_CATEGORIES, getWorkflowFrameworkLearnings, workflowFolder, type WorkflowUsecase } from "@/lib/workflow-usecases";
 import type { AnswerFile } from "@/lib/pro-learn/types";
 import { CodeFiles } from "./code-files";
@@ -409,14 +409,6 @@ function WorkflowStudioReader({
             <FileCode2 size={15} aria-hidden="true" />
             API Reference
             <ArrowUpRight size={13} aria-hidden="true" />
-          </Link>
-          <Link href={`/learning/mentors?q=${encodeURIComponent(`Explain ${workflow.title} architecture in LangGraph`)}`}>
-            <MessageCircle size={15} />
-            Ask the mentor
-          </Link>
-          <Link href={`/learning/quiz?topic=${encodeURIComponent(workflow.title)}`}>
-            <GraduationCap size={15} />
-            Quiz me on this
           </Link>
         </div>
       </div>

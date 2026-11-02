@@ -1,0 +1,100 @@
+/* Reader actions on an opened Tech Buzz story (components/tech-buzz-story-bar.tsx). Colours come from the article page's --tb-* tokens. */
+
+/* Topics: one quiet line of names, each led by a small ring that fills once followed. Phones scroll the line sideways. */
+.chips { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 6px; margin: 0 0 0 -4px; padding: 0; list-style: none; }
+.chip { position: relative; display: inline-flex; flex: none; align-items: stretch; border-radius: 999px; transition: background-color .15s ease; }
+.chip:hover, .chip[data-on] { background: var(--tb-accent-wash); }
+.chipToggle { display: inline-grid; flex: none; place-items: center; width: 24px; min-height: 24px; padding: 0; border: 0; border-radius: 50%; background: transparent; color: var(--tb-accent-strong); cursor: pointer; }
+.chipRing { display: grid; place-items: center; width: 16px; height: 16px; border: 1px solid color-mix(in srgb, var(--tb-accent) 60%, transparent); border-radius: 50%; transition: background-color .15s ease, color .15s ease, transform .2s ease; }
+.chipToggle:hover .chipRing { background: var(--tb-accent); color: var(--tb-sheet); transform: rotate(90deg); }
+.chip[data-on] .chipRing, .chip[data-on] .chipToggle:hover .chipRing { border-color: var(--tb-accent); background: var(--tb-accent); color: var(--tb-sheet); transform: none; }
+.chipName { display: inline-flex; align-items: center; padding: 0 9px 0 1px; border-radius: 0 999px 999px 0; color: var(--tb-accent-strong); font-size: 12.5px; font-weight: 600; line-height: 1.2; text-decoration: none; white-space: nowrap; }
+.chipName small { margin-left: 5px; color: var(--tb-faint); font-size: 11px; font-weight: 500; font-variant-numeric: tabular-nums; }
+.chipAll button { min-height: 24px; padding: 0 9px; border: 0; border-radius: 999px; background: transparent; color: var(--tb-muted); font: inherit; font-size: 12px; font-weight: 500; text-decoration: underline; text-decoration-color: var(--tb-line); text-underline-offset: 3px; white-space: nowrap; cursor: pointer; }
+.chipAll button:hover { color: var(--tb-accent-strong); text-decoration-color: currentColor; }
+.chipAll button[aria-pressed="true"] { color: var(--tb-accent-strong); text-decoration: none; }
+.chipAll button:focus-visible { outline: 2px solid var(--tb-accent); outline-offset: -2px; }
+
+/* A preview of a topic: only where there is a pointer and the row does not scroll (a scrolling row would clip it). */
+.topicCard { display: none; }
+@media (hover: hover) and (min-width: 721px) {
+  .topicCard { position: absolute; top: calc(100% + 6px); left: 0; z-index: 40; display: grid; gap: 10px; width: 310px; padding: 12px; border: 1px solid var(--tb-line); border-radius: 12px; background: var(--tb-sheet); box-shadow: 0 18px 40px -18px rgba(0, 0, 0, .35); opacity: 0; visibility: hidden; transform: translateY(-3px); transition: opacity .14s ease .12s, transform .14s ease .12s, visibility 0s linear .26s; }
+  /* Bridges the gap, so the pointer can reach the card. */
+  .topicCard::before { content: ""; position: absolute; inset: -8px 0 auto; height: 8px; }
+  .chip:hover .topicCard, .chip:focus-within .topicCard { opacity: 1; visibility: visible; transform: none; transition-delay: .12s, .12s, .12s; }
+  .chip:nth-last-child(-n+3) .topicCard { right: 0; left: auto; }
+}
+.topicCardHead { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.topicCardHead p { display: grid; min-width: 0; margin: 0; line-height: 1.3; }
+.topicCardHead b { color: var(--tb-ink); font-size: 14px; font-weight: 600; }
+.topicCardHead span { color: var(--tb-muted); font-size: 12px; }
+.topicCardFollow { flex: none; min-height: 30px; padding: 0 12px; border: 1px solid var(--tb-accent); border-radius: 999px; background: transparent; color: var(--tb-accent-strong); font: inherit; font-size: 12.5px; font-weight: 600; cursor: pointer; }
+.topicCardFollow:hover, .topicCardFollow[aria-pressed="true"] { background: var(--tb-accent); color: var(--tb-sheet); }
+.topicCard ul { display: grid; gap: 2px; margin: 0; padding: 0; list-style: none; }
+.topicCard ul a { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; padding: 6px; border-radius: 8px; color: var(--tb-ink); font-size: 13px; line-height: 1.35; text-decoration: none; }
+.topicCard ul a:hover { background: var(--tb-wash); color: var(--tb-accent-strong); }
+.topicCard ul small { flex: none; color: var(--tb-faint); font-size: 11.5px; }
+.topicCardNote { margin: 0; color: var(--tb-muted); font-size: 13px; line-height: 1.45; }
+.topicCardAll { color: var(--tb-accent-strong); font-size: 12.5px; font-weight: 600; text-decoration: none; }
+.topicCardAll:hover { text-decoration: underline; text-underline-offset: 2px; }
+.topicCard a:focus-visible, .topicCardFollow:focus-visible { outline: 2px solid var(--tb-accent); outline-offset: 1px; }
+
+/* The floating actions: centred, and to the left on phones to clear the round buttons at the right edge. */
+.float { position: fixed; bottom: 16px; left: 50%; z-index: 42; display: flex; align-items: center; gap: 2px; padding: 4px 8px; border: 1px solid var(--tb-line); border-radius: 999px; background: var(--tb-sheet); box-shadow: 0 12px 30px -14px rgba(0, 0, 0, .4); transform: translateX(-50%); }
+@media (max-width: 640px) { .float { left: 12px; transform: none; } }
+@media print { .float { display: none; } }
+.chipName:focus-visible, .chipToggle:focus-visible { outline: 2px solid var(--tb-accent); outline-offset: -2px; }
+@media (pointer: coarse) {
+  .chipToggle { width: 32px; min-height: 32px; }
+}
+@media (max-width: 720px) {
+  .chips { flex-wrap: nowrap; padding-right: 28px; overflow-x: auto; scrollbar-width: none; -webkit-mask-image: linear-gradient(to left, transparent, #000 28px); mask-image: linear-gradient(to left, transparent, #000 28px); }
+  .chips::-webkit-scrollbar { display: none; }
+}
+
+/* Follow the author */
+.follow { display: inline-flex; flex: none; align-items: center; gap: 5px; min-height: 28px; padding: 0 10px; border: 1px solid var(--tb-accent); border-radius: 8px; background: transparent; color: var(--tb-accent-strong); font: inherit; font-size: 12.5px; font-weight: 600; cursor: pointer; transition: background-color .15s ease, color .15s ease; }
+.follow:hover { background: var(--tb-accent-wash); }
+.follow[aria-pressed="true"] { border-color: var(--tb-line); background: var(--tb-wash); color: var(--tb-muted); }
+.follow:focus-visible { outline: 2px solid var(--tb-accent); outline-offset: 2px; }
+
+/* The action dock: a soft tray of two groups, not a ruled strip. */
+.dock { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px 12px; margin-bottom: 2rem; padding: 6px 8px; border: 1px solid var(--tb-line); border-radius: 14px; background: var(--tb-wash); }
+.dockGroup { display: flex; align-items: center; gap: 2px; }
+.stat, .tool { display: inline-flex; align-items: center; justify-content: center; gap: 5px; min-width: 36px; min-height: 36px; padding: 0 8px; border: 0; border-radius: 10px; background: transparent; color: var(--tb-muted); font: inherit; font-size: 13px; font-variant-numeric: tabular-nums; cursor: pointer; transition: background-color .15s ease, color .15s ease; }
+.tool { padding: 0; }
+.stat:hover, .tool:hover, .tool[aria-expanded="true"] { background: var(--tb-sheet); color: var(--tb-ink); }
+.stat[data-on], .tool[data-on] { color: var(--tb-accent); }
+.stat:focus-visible, .tool:focus-visible { outline: 2px solid var(--tb-accent); outline-offset: 1px; }
+
+/* The shared clap pill, flattened to sit with the dock's other buttons. */
+.dockClap { display: inline-flex; }
+.dockClap button:first-child { min-height: 36px; border-color: transparent; border-radius: 10px; background: transparent; color: var(--tb-muted); box-shadow: none; }
+.dockClap button:first-child:hover { background: var(--tb-sheet); box-shadow: none; }
+.dockClap button:first-child:not([data-mine]) > span:first-child { filter: grayscale(1) contrast(1.25); }
+
+.more { position: relative; display: inline-flex; }
+.menu { position: absolute; z-index: 20; right: 0; top: calc(100% + 6px); display: grid; width: min(260px, calc(100vw - 32px)); padding: 6px; border: 1px solid var(--tb-line); border-radius: 12px; background: var(--tb-sheet); box-shadow: 0 14px 34px -14px rgba(0, 0, 0, .3); }
+.menu button { display: flex; align-items: center; gap: 9px; min-height: 36px; padding: 0 10px; border: 0; border-radius: 8px; background: transparent; color: var(--tb-ink); font: inherit; font-size: 13.5px; text-align: left; cursor: pointer; }
+.menu button:hover, .menu button:focus-visible { background: var(--tb-wash); outline: none; }
+.menu hr { width: 100%; height: 1px; margin: 4px 0; border: 0; background: var(--tb-line); }
+.menu kbd { margin-left: auto; padding: 1px 6px; border: 1px solid var(--tb-line); border-radius: 5px; color: var(--tb-muted); font: inherit; font-size: 11.5px; }
+.menu small { padding: 0 6px; border-radius: 999px; background: var(--tb-accent-wash); color: var(--tb-accent-strong); font-size: 11px; font-weight: 700; }
+.menu .menuEnd { margin-left: auto; color: var(--tb-muted); }
+.menu .menuBack { color: var(--tb-muted); font-size: 12.5px; font-weight: 600; }
+.menu .menuDanger { color: #b4332b; }
+:global([data-theme="dark"]) .menu .menuDanger { color: #f08a80; }
+.menuCheck { display: inline-grid; flex: none; place-items: center; width: 16px; height: 16px; border: 1.5px solid var(--tb-faint); border-radius: 4px; color: var(--tb-sheet); }
+.menuCheck[data-on] { border-color: var(--tb-accent); background: var(--tb-accent); }
+
+@media (max-width: 420px) {
+  .dock { padding: 4px; }
+  .stat { padding: 0 6px; }
+}
+
+@media print { .chips, .follow, .dock { display: none; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .chip, .chipRing, .follow, .stat, .tool, .topicCard { transition: none; }
+  .chipToggle:hover .chipRing { transform: none; }
+}

@@ -22,7 +22,7 @@ export default async function VocabularyPage() {
     notesContent={<section className={styles.page} aria-labelledby="vocabulary-heading">
       <header className={styles.head}>
         <RouteH1 id="vocabulary-heading">Vocabulary</RouteH1>
-        <p>Explore English words and phrases with Hindi meanings, pronunciation, examples, synonyms and antonyms.</p>
+        <p>Explore English words and phrases with their meanings, pronunciation, examples, synonyms and antonyms.</p>
       </header>
       <EnglishWordSearch historyKey={`masterclass:vocabulary:${user?.id ?? "guest"}`} />
     </section>} />;

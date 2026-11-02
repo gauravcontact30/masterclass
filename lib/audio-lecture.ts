@@ -89,6 +89,13 @@ export function listen(id: string, title: string, text: string) {
   set({ id, title, parts, index: 0 });
   void playPart(0);
 }
+/** Starts text already cut into parts at `start`, for a page that follows along part by part. */
+export function listenParts(id: string, title: string, parts: string[], start = 0) {
+  audioState();
+  if (!parts.length) return;
+  set({ id, title, parts, index: 0 });
+  void playPart(Math.min(Math.max(start, 0), parts.length - 1));
+}
 export function toggle() {
   const player = audio();
   if (state.status === "playing") { player.pause(); set({ status: "paused" }); }

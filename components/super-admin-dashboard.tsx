@@ -1,4 +1,5 @@
 "use client";
+import { PageBack } from "./page-back";
 import dynamic from "next/dynamic";
 import { AdminLoading } from "./super-admin-feedback";
 import { Alert, AlertDescription } from "./ui/alert";
@@ -13,7 +14,7 @@ import { Input } from "@/components/ui/input";
 import { useCallback, useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { MessageSquarePlus, Newspaper, Radar, Activity, HeartPulse, ArrowLeft, ArrowUp, Bot, Layers, Receipt, LifeBuoy, Megaphone, MousePointerClick, TrendingUp, ChevronDown, ChevronRight, CreditCard, Database, ExternalLink, LogOut, RefreshCw, PanelLeftClose, PanelLeftOpen, Server, ShieldCheck, UploadCloud, UserRound, Users } from "lucide-react";
+import { MessageSquarePlus, Newspaper, Radar, Activity, HeartPulse, ArrowLeft, Bot, Layers, Receipt, LifeBuoy, Megaphone, MousePointerClick, TrendingUp, ChevronDown, ChevronRight, CreditCard, Database, ExternalLink, LogOut, RefreshCw, PanelLeftClose, PanelLeftOpen, Server, ShieldCheck, UploadCloud, UserRound, Users } from "lucide-react";
 import { SidebarTooltips } from "./sidebar-tooltips";
 import { DashboardPageHeader } from "./dashboard-page-header";
 import { Wordmark } from "./brand-mark";
@@ -26,7 +27,6 @@ import styles from "./super-admin-dashboard.module.css";
 import side from "./super-admin-sidebar.module.css";
 import { useMobileNav } from "./mobile-nav";
 import { useLanguage } from "./language-provider";
-import { LanguageSwitcher } from "./language-switcher";
 import { COPILOT_META, isCopilotPage } from "@/lib/admin-pages";
 
 const sectionLoading = () => <AdminLoading>Loading section...</AdminLoading>;
@@ -167,7 +167,6 @@ export function SuperAdminDashboard({ userId = "admin", isOwner = false }: { use
         <Button variant="outline" type="button" className={styles.headerRefresh} disabled={busy} onClick={() => void refresh()} aria-label={t("refreshMonitoring")} title={t("refreshMonitoring")}>
           <RefreshCw size={16} className={busy ? "spin" : ""} aria-hidden="true" />
         </Button>
-        <LanguageSwitcher />
         <Separator orientation="vertical" className={styles.headerDivider} />
         <DropdownMenu>
           <DropdownMenuTrigger className={styles.profileTrigger} aria-label={t("adminProfile")} disabled={signingOut}>
@@ -184,7 +183,8 @@ export function SuperAdminDashboard({ userId = "admin", isOwner = false }: { use
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
-    </header><main className={styles.main}><DashboardPageHeader eyebrow={section === "tech-buzz" ? "Content · Blogs" : section === "upload-learning" ? "Content · Publishing" : section === "notepad" ? "Writing workspace" : section === "suggestions" ? "People · Feedback" : section === "seo-audit" ? "Growth · Search & AI visibility" : "Application monitoring"} title={section === "overview" ? "Your application, at a glance." : sections.find(s => s.id === section)?.label} description={section === "tech-buzz" ? "Track /tech-buzz end to end: every page and section, the daily 5:00 AM edition, Community favourites topics and every story's reactions." : section === "upload-learning" ? "Publish your Notepad documents to any page of the Learning Dashboard, the landing page, sign in, sign up or this console, and add your own Learning Dashboard pages." : section === "notepad" ? "Write, format and export documents. Drafts autosave in this browser every two minutes." : section === "suggestions" ? "Listen, triage and keep contributors informed. Replies appear in each contributor’s private tracking view." : section === "seo-audit" ? "Make the site discoverable in search and AI answers: audit every page, track rankings, research keywords and backlinks with Ahrefs, watch competitors and see when AI search cites you." : isCopilotPage(section) ? COPILOT_META[section].description : "Keep a pulse on your learners, subscriptions, and platform."} icon={section === "tech-buzz" ? <Newspaper/> : section === "suggestions" ? <MessageSquarePlus/> : section === "upload-learning" ? <UploadCloud/> : <ShieldCheck/>}/>
+    </header>
+      <PageBack /><main className={styles.main}><DashboardPageHeader eyebrow={section === "tech-buzz" ? "Content · Blogs" : section === "upload-learning" ? "Content · Publishing" : section === "notepad" ? "Writing workspace" : section === "suggestions" ? "People · Feedback" : section === "seo-audit" ? "Growth · Search & AI visibility" : "Application monitoring"} title={section === "overview" ? "Your application, at a glance." : sections.find(s => s.id === section)?.label} description={section === "tech-buzz" ? "Track /tech-buzz end to end: every page and section, the daily 5:00 AM edition, Community favourites topics and every story's reactions." : section === "upload-learning" ? "Publish your Notepad documents to any page of the Learning Dashboard, the landing page, sign in, sign up or this console, and add your own Learning Dashboard pages." : section === "notepad" ? "Write, format and export documents. Drafts autosave in this browser every two minutes." : section === "suggestions" ? "Listen, triage and keep contributors informed. Replies appear in each contributor’s private tracking view." : section === "seo-audit" ? "Make the site discoverable in search and AI answers: audit every page, track rankings, research keywords and backlinks with Ahrefs, watch competitors and see when AI search cites you." : isCopilotPage(section) ? COPILOT_META[section].description : "Keep a pulse on your learners, subscriptions, and platform."} icon={section === "tech-buzz" ? <Newspaper/> : section === "suggestions" ? <MessageSquarePlus/> : section === "upload-learning" ? <UploadCloud/> : <ShieldCheck/>}/>
       <LearningSlot surface="super_admin" page={section} section="top" />
       {section !== "suggestions" && !writing && <div className={styles.toolbar}><div className={styles.reportFilter}><Label htmlFor="admin-report-window">Reporting window</Label><AdminSelect id="admin-report-window" label="Reporting window" value={String(days)} onValueChange={value=>setDays(Number(value))} options={[{value:"1",label:"Last 24 hours"},{value:"7",label:"Last 7 days"},{value:"30",label:"Last 30 days"},{value:"90",label:"Last 90 days"}]} /></div><Input aria-label="Search displayed records" placeholder="Search displayed records…" value={query} onChange={e => setQuery(e.target.value)} /></div>}
       {accountError && <Alert variant="destructive" className={styles.error}><AlertDescription>{accountError}</AlertDescription></Alert>}
@@ -222,13 +222,6 @@ export function SuperAdminDashboard({ userId = "admin", isOwner = false }: { use
       <footer className={styles.adminFooter}>
         <div className={styles.adminFooterInner}>
           <span>© {new Date().getFullYear()} MasterClass Super Admin Console</span>
-          <button type="button" className={styles.moveTopBtn} onClick={() => {
-            const reduce = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
-            window.scrollTo({ top: 0, behavior: reduce ? "auto" : "smooth" });
-            document.querySelector<HTMLElement>("main, [role=main]")?.focus?.({ preventScroll: true });
-          }}>
-            Move to top <ArrowUp size={14} aria-hidden="true" />
-          </button>
         </div>
       </footer>
     </main></div></div>;

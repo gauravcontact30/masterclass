@@ -21,7 +21,7 @@ export default function AboutPage() {
         <li><strong>AI and agents</strong>: LangChain, LangGraph, LangSmith, LangFlow and n8n workflow blueprints, plus the agentic AI pulse.</li>
         <li><strong>Free library</strong>: <Link href="/interview-questions">interview questions</Link> with model answers, <Link href="/compare">comparisons</Link>, <Link href="/workflows">workflow blueprints</Link>, <Link href="/learn">handbooks</Link> and an <Link href="/api-reference">API reference</Link>, free to read without an account.</li>
         <li><strong>Interviews and certifications</strong>: interview question banks, system-design case studies, quizzes and certification paths with mock exams.</li>
-        <li><strong>Workplace English</strong>: IELTS practice and professional vocabulary with Hindi meanings.</li>
+        <li><strong>Workplace English</strong>: IELTS practice and professional vocabulary.</li>
       </ul>
       <p>See every path on the <Link href="/courses">courses page</Link>.</p>
       <h2>How we teach</h2>

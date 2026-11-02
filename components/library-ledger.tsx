@@ -171,7 +171,6 @@ export function LibraryLedger({ library: initial }: { library: LandingLibrary })
           </fieldset>
           <fieldset className={styles.field}>
             <legend>{text("Language", "भाषा")}</legend>
-            <div className={styles.chips}><button type="button" className={styles.chip} aria-pressed={hindiOnly} onClick={() => setHindiOnly(value => !value)}>{text("Has a Hindi meaning", "हिन्दी अर्थ सहित")}</button></div>
           </fieldset>
           {groups.length > 1 && <fieldset className={`${styles.field} ${styles.groupField}`}>
             <legend>{text("Group", "समूह")}</legend>
@@ -276,7 +275,6 @@ function Preview({ entry, hi, text, kindLabel }: { entry: LibraryEntry; hi: bool
   return <article key={entry.id} className={styles.preview} aria-label={text(`Preview: ${entry.title}`, `पूर्वावलोकन: ${entry.title}`)} data-kind={entry.kind}>
     <p className={styles.kind}><span>{kindLabel}</span>{entry.meta && <small>{entry.meta}</small>}</p>
     <h3 lang={entry.kind === "word" ? "en" : undefined}>{entry.title}</h3>
-    {entry.hi && (entry.kind === "word" || hi) && <p lang="hi" className={styles.previewHindi}>{entry.hi}</p>}
     <p className={styles.previewNote}>{entry.note}</p>
     <Link className={styles.opens} href="/sign-up">
       <small>{text("Opens in", "यहाँ खुलता है")}</small>

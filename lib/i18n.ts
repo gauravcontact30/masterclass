@@ -510,21 +510,15 @@ export interface SupportedLanguage {
   country: string;
   flag: string;
   region: string;
-  /** Whether the site's learning content is localized for this language yet; others show as "Coming soon". */
+  /** Always true: English is the only entry. */
   available: boolean;
 }
 
 export const SUPPORTED_LANGUAGES: readonly SupportedLanguage[] = [
   { code: "en", countryCode: "US", name: "English", nativeName: "English", country: "United States / Global", flag: "🇺🇸", region: "Global", available: true },
-  { code: "hi", countryCode: "IN", name: "Hindi", nativeName: "हिन्दी", country: "India", flag: "🇮🇳", region: "South Asia / Tech Hub", available: false },
-  { code: "es", countryCode: "ES", name: "Spanish", nativeName: "Español", country: "Spain & Latin America", flag: "🇪🇸", region: "Europe & Americas", available: false },
-  { code: "ja", countryCode: "JP", name: "Japanese", nativeName: "日本語", country: "Japan", flag: "🇯🇵", region: "East Asia / AI & Robotics", available: false },
-  { code: "de", countryCode: "DE", name: "German", nativeName: "Deutsch", country: "Germany & DACH", flag: "🇩🇪", region: "Europe / Engineering", available: false },
-  { code: "fr", countryCode: "FR", name: "French", nativeName: "Français", country: "France & EU", flag: "🇫🇷", region: "Europe / AI Research", available: false },
-  { code: "zh", countryCode: "CN", name: "Chinese", nativeName: "简体中文", country: "China", flag: "🇨🇳", region: "East Asia / Deep Tech", available: false },
 ] as const;
 
-/** Only English is enabled site-wide for now; every other language shows as "Coming soon" and falls back to English. */
+/** The site is in English only. */
 export const isLanguageAvailable = (code: string): code is Language => SUPPORTED_LANGUAGES.some(item => item.code === code && item.available);
 /** Whether Hindi is switched on. While it is off, no page may offer or promise Hindi (user rule 2026-10-31). */
 export const HINDI_ENABLED = isLanguageAvailable("hi");

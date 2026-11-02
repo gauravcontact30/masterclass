@@ -8,7 +8,6 @@ import { SuggestionBox } from "./suggestion-box";
 import { LandingPlansMenu } from "./landing-plans-menu";
 import { scrollToSection } from "./hashless-navigation";
 import { useLanguage } from "./language-provider";
-import { LanguageSwitcher } from "./language-switcher";
 import { useAppFont } from "./app-font-provider";
 import dynamic from "next/dynamic";
 import styles from "./landing-home.module.css";
@@ -184,7 +183,6 @@ export function LandingNavbar({ links, prices = null, onCurrency }: { links: [st
       <div className={styles.navActions}>
         <SuggestionBox label={t("suggestionBox")} iconOnly />
         <LandingPlansMenu prices={prices} open={plans} onOpenChange={openPlans} onCurrency={onCurrency} />
-        <LanguageSwitcher iconOnly />
         <div ref={accountRef} className={styles.account}>
           <button type="button" className={styles.accountButton} aria-label={text("Account", "खाता")} aria-expanded={account} aria-controls="landing-account-menu" onClick={() => { setAccount(value => !value); setMenu(false); setPlans(false); }}>
             <UserRound size={19} strokeWidth={1.9} aria-hidden="true" />

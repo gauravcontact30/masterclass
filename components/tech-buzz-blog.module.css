@@ -1162,9 +1162,9 @@
 /* Left Topics Rail */
 .topics {
   position: sticky;
-  top: 16px;
-  max-height: calc(100vh - 32px);
-  max-height: calc(100dvh - 32px);
+  top: 72px;
+  max-height: calc(100vh - 88px);
+  max-height: calc(100dvh - 88px);
   overflow-y: auto;
   scrollbar-width: thin;
 }
@@ -2229,7 +2229,7 @@
 /* ── Right Sidebar: Highlights & Membership ──────────────────────────────────────────────── */
 .sidebar {
   position: sticky;
-  top: 16px;
+  top: 72px;
   display: grid;
   gap: 30px;
 }
@@ -2623,3 +2623,10 @@
 .roadmapsSection { content-visibility: auto; contain-intrinsic-size: auto 760px; }
 .feed { content-visibility: auto; contain-intrinsic-size: auto 2400px; }
 .categorySection { content-visibility: auto; contain-intrinsic-size: auto 900px; }
+
+/* What the reader muted or hid, each chip undoing itself. */
+.tuned { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; margin: -10px 0 20px; color: var(--muted); font-size: 12.5px; }
+.tuned > span { font-weight: 600; }
+.tuned button { display: inline-flex; align-items: center; gap: 5px; min-height: 28px; padding: 0 8px 0 10px; border: 1px dashed var(--line); border-radius: 8px; background: transparent; color: var(--body); font: inherit; cursor: pointer; }
+.tuned button:hover { border-style: solid; color: var(--ink); }
+.tuned button:focus-visible { outline: 2px solid var(--accent-ink); outline-offset: 2px; }

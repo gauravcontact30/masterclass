@@ -41,13 +41,13 @@ export function javascriptGroup(name: string) {
 export const API_CATEGORIES: { id: string; label: string; packages: string[] }[] = [
   { id: "agentic", label: "Agentic AI frameworks", packages: ["deepagents", "langchain", "langgraph", "integrations", "langsmith", "langflow"] },
   { id: "ai", label: "AI, ML & data science", packages: ["ai", "aitools", "agents", "numpy", "pandas", "polars", "scipy", "sklearn", "tensorflow", "pytorch", "keras", "seaborn", "plotly"] },
-  { id: "languages", label: "Languages & runtimes", packages: ["javascript", "jspuzzles", "typescript", "python", "node"] },
-  { id: "frontend", label: "Frontend & state", packages: ["nextjs", "react", "angular", "tanstack", "zustand", "redux", "t3"] },
-  { id: "backend", label: "Backend, APIs & validation", packages: ["express", "fastapi", "graphql", "requests", "httpx", "scrapy", "pydantic", "zod", "conform"] },
+  { id: "languages", label: "Languages & runtimes", packages: ["javascript", "python", "typescript", "go", "rust", "node", "jspuzzles"] },
+  { id: "frontend", label: "Frontend & state", packages: ["react", "nextjs", "vue", "angular", "flutter", "tanstack", "redux", "zustand", "t3"] },
+  { id: "backend", label: "Backend, APIs & validation", packages: ["express", "fastapi", "nestjs", "graphql", "requests", "httpx", "scrapy", "pydantic", "zod", "conform"] },
   { id: "auth", label: "Auth & security", packages: ["authjs", "clerk", "kinde", "betterauth", "arcjet"] },
-  { id: "data", label: "Databases & storage", packages: ["drizzle", "prisma", "neon", "redis", "upstash"] },
+  { id: "data", label: "Databases & storage", packages: ["postgresql", "redis", "supabase", "prisma", "drizzle", "neon", "upstash"] },
   { id: "testing", label: "Testing", packages: ["jest", "vitest", "rtl", "playwright", "cypress"] },
-  { id: "platform", label: "Cloud, jobs & architecture", packages: ["aws", "devops", "inngest", "systemdesign"] },
+  { id: "platform", label: "Tools, cloud & architecture", packages: ["git", "docker", "linux", "kubernetes", "aws", "devops", "n8n", "inngest", "systemdesign"] },
 ];
 
 const PACKAGE_CATEGORY = new Map(API_CATEGORIES.flatMap(category => category.packages.map(id => [id, category.id] as const)));

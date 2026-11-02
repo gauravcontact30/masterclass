@@ -51,7 +51,6 @@ import { LandingAiPulse } from "./landing-ai-pulse";
 // The interview, AI pulse and feature sections stay in the main chunk: the others share their carousel controls and
 // accordions, and a shared module imported only by split chunks is copied into each of them.
 const LibraryLedger = dynamic(() => import("./library-ledger").then(m => m.LibraryLedger));
-const LandingFooter = dynamic(() => import("./landing-footer").then(m => m.LandingFooter));
 const LandingVocabulary = dynamic(() => import("./landing-vocabulary").then(m => m.LandingVocabulary));
 const StudentReviews = dynamic(() => import("./student-reviews").then(m => m.StudentReviews));
 // Technology docs on the landing page is the Search-page preview; the dashboard keeps LandingTechDocs (dashboard-learning.tsx).
@@ -100,7 +99,7 @@ function MembershipSection({ prices, priceState, onCurrency }: { prices: Landing
 /** `international`: other currencies are offered, so the page re-prices itself where the visitor is (it is cached in rupees). */
 export type LandingPrices = { monthly: number; yearly: number; enabled: boolean; currency?: Currency; currencies?: Currency[]; local?: Currency; inr?: { monthly: number; yearly: number }; international?: boolean; sale?: SaleInfo | null };
 /** `today`: the India-calendar week number (istWeek, lib/ist-week.ts); the sections that turn over weekly, on Monday at 00:00 IST, pick their content from it. */
-export function LandingPage({ features, answers, certifications, workflows, pro, library, prices: initialPrices, daily, techDocs, copyrightYear, overrides, coffee, today = 0, fresh = null, buzz }: { buzz?: LandingBuzz[]; features?: ReactNode; answers?: ReactNode; certifications?: ReactNode; workflows: WorkflowPreview; fresh?: LandingFresh | null; today?: number; featuredDoc?: string; overrides?: ContentOverrides; coffee?: BlogTeaser[]; copyrightYear?: number; pro?: LandingProPreview; library?: LandingLibrary; prices?: LandingPrices; techDocs?: OfficialTechDocs | null; daily?: { day: string; pulse: PulseCard[]; words: DailyWord[]; locked?: { pulse: LockedTeaser | null; word: LockedTeaser | null }; totals?: { pulse: number; words: number } } }) {
+export function LandingPage({ features, answers, certifications, workflows, pro, library, prices: initialPrices, daily, techDocs, overrides, coffee, today = 0, fresh = null, buzz }: { buzz?: LandingBuzz[]; features?: ReactNode; answers?: ReactNode; certifications?: ReactNode; workflows: WorkflowPreview; fresh?: LandingFresh | null; today?: number; featuredDoc?: string; overrides?: ContentOverrides; coffee?: BlogTeaser[]; pro?: LandingProPreview; library?: LandingLibrary; prices?: LandingPrices; techDocs?: OfficialTechDocs | null; daily?: { day: string; pulse: PulseCard[]; words: DailyWord[]; locked?: { pulse: LockedTeaser | null; word: LockedTeaser | null }; totals?: { pulse: number; words: number } } }) {
   const { language, t } = useLanguage(); const hi = language === "hi";
   // Prices rendered on the server arrive in the HTML, so the plan card never paints "—" and then shifts; the fetch is only the fallback.
   // A failed re-price (to the visitor's currency) keeps the server's rupee prices rather than blanking the card.
@@ -161,6 +160,5 @@ export function LandingPage({ features, answers, certifications, workflows, pro,
     <LearningSlot surface="landing" page="home" section="bottom" className={styles.learningSlot} />
     <Part>{answers}</Part>
     </main>
-    <LandingFooter year={copyrightYear} />
   </div></ContentProvider>;
 }

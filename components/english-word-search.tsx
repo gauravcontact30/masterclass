@@ -177,11 +177,11 @@ export function EnglishWordSearch({ historyKey }: { historyKey?: string } = {}) 
       </div>
       <div className={styles.body}>
         {audioMessage && <p role="status" className={styles.status}>{audioMessage}</p>}
-        <section className={styles.meaning}><h4>Meaning</h4><p>{entry.meaning}</p><p lang="hi">{entry.hindi || "हिन्दी अर्थ अभी उपलब्ध नहीं है।"}</p></section>
+        <section className={styles.meaning}><h4>Meaning</h4><p>{entry.meaning}</p></section>
         <section className={styles.sentence}><h4>In a sentence</h4><p>{entry.sentence || "An example sentence is unavailable for this entry."}</p></section>
         <div className={styles.pairs}>{(["synonyms", "antonyms"] as const).map(kind => <section key={kind} className={styles.related} data-kind={kind}>
-          <h4>{kind === "synonyms" ? "Synonyms" : "Antonyms"} <span lang="hi">{kind === "synonyms" ? "समानार्थी" : "विलोम"}</span> <span>{entry[kind].length}</span></h4>
-          {entry[kind].length ? <ul>{entry[kind].map(pair => <li key={pair.word}><strong>{titled(pair.word)}</strong><span lang="hi">{pair.hindi || "हिन्दी अर्थ उपलब्ध नहीं है"}</span></li>)}</ul>
+          <h4>{kind === "synonyms" ? "Synonyms" : "Antonyms"} <span>{entry[kind].length}</span></h4>
+          {entry[kind].length ? <ul>{entry[kind].map(pair => <li key={pair.word}><strong>{titled(pair.word)}</strong></li>)}</ul>
             : <p>No {kind} listed for this meaning.</p>}
         </section>)}</div>
       </div>

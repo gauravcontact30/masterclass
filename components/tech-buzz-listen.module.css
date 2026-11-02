@@ -1,0 +1,65 @@
+/* The narration bar on an open story (components/tech-buzz-listen.tsx). */
+.bar { position: relative; display: flex; align-items: center; gap: 12px; margin: 0 0 1.5rem; padding: 10px 12px; border: 1px solid var(--tb-line); border-radius: 14px; background: var(--tb-wash); }
+
+/* The play button's ring is the story's progress. */
+.play { flex: none; width: 46px; height: 46px; padding: 3px; border: 0; border-radius: 50%; background: conic-gradient(var(--tb-accent) var(--done, 0%), var(--tb-accent-line) 0); color: var(--tb-sheet); cursor: pointer; }
+.play span { display: grid; place-items: center; width: 100%; height: 100%; border-radius: 50%; background: var(--tb-accent); transition: background-color .15s ease; }
+.play:hover span { background: var(--tb-accent-strong); }
+.play:focus-visible, .voice:focus-visible, .speed:focus-visible, .option:focus-visible { outline: 2px solid var(--tb-accent); outline-offset: 2px; }
+.spin { animation: spin 1s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.info { flex: 1; min-width: 0; }
+.line { display: flex; align-items: center; gap: 8px; margin: 0 0 3px; font-size: 13.5px; line-height: 1.3; color: var(--tb-ink); }
+.line strong { overflow: hidden; font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
+
+/* Four bars that move only while the voice is speaking. */
+.wave { display: none; flex: none; align-items: flex-end; gap: 2px; height: 12px; }
+.bar[data-playing] .wave { display: inline-flex; }
+.wave i { width: 2px; height: 100%; border-radius: 2px; background: var(--tb-accent); transform-origin: bottom; animation: wave 1s ease-in-out infinite; }
+.wave i:nth-child(2) { animation-delay: -.7s; }
+.wave i:nth-child(3) { animation-delay: -.35s; }
+.wave i:nth-child(4) { animation-delay: -.15s; }
+@keyframes wave { 0%, 100% { transform: scaleY(.3); } 50% { transform: scaleY(1); } }
+
+.track { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.track input { flex: 1; min-width: 40px; height: 18px; margin: 0; background: transparent; cursor: pointer; appearance: none; -webkit-appearance: none; }
+.track input::-webkit-slider-runnable-track { height: 4px; border-radius: 4px; background: linear-gradient(to right, var(--tb-accent) var(--fill, 0%), var(--tb-line) 0); }
+.track input::-moz-range-track { height: 4px; border-radius: 4px; background: var(--tb-line); }
+.track input::-moz-range-progress { height: 4px; border-radius: 4px; background: var(--tb-accent); }
+.track input::-webkit-slider-thumb { width: 12px; height: 12px; margin-top: -4px; border: 0; border-radius: 50%; background: var(--tb-accent); appearance: none; -webkit-appearance: none; }
+.track input::-moz-range-thumb { width: 12px; height: 12px; border: 0; border-radius: 50%; background: var(--tb-accent); }
+.track input:focus-visible { outline: 2px solid var(--tb-accent); outline-offset: 2px; border-radius: 4px; }
+.status { flex: none; max-width: 60%; color: var(--tb-muted); font-size: 12px; line-height: 1.25; font-variant-numeric: tabular-nums; }
+.status[data-error] { color: #b42318; }
+
+.voice { display: inline-flex; flex: none; align-items: center; gap: 7px; min-height: 36px; padding: 0 8px 0 5px; border: 1px solid var(--tb-line); border-radius: 999px; background: var(--tb-sheet); color: var(--tb-ink); font: inherit; font-size: 12.5px; font-weight: 600; cursor: pointer; }
+.voice:hover { border-color: var(--tb-accent); }
+.voiceDot { display: grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; background: var(--tb-accent-wash); color: var(--tb-accent-strong); font-size: 12px; font-weight: 700; }
+.voiceDot[data-gender="male"] { background: color-mix(in srgb, #3f6b8f 16%, var(--tb-sheet)); color: #2f5a7c; }
+.speed { flex: none; min-width: 42px; min-height: 36px; padding: 0 8px; border: 1px solid var(--tb-line); border-radius: 999px; background: var(--tb-sheet); color: var(--tb-ink); font: inherit; font-size: 12.5px; font-weight: 600; font-variant-numeric: tabular-nums; cursor: pointer; }
+.speed:hover { border-color: var(--tb-accent); }
+
+.menu { position: absolute; top: calc(100% + 6px); right: 0; z-index: 30; width: min(400px, 100%); padding: 12px; border: 1px solid var(--tb-line); border-radius: 14px; background: var(--tb-sheet); box-shadow: 0 18px 40px -18px rgba(0, 0, 0, .35); }
+.menuHint { margin: 0 4px 10px; color: var(--tb-muted); font-size: 12.5px; }
+.columns { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.columns h3 { margin: 0 8px 4px; color: var(--tb-muted); font-size: 12px; font-weight: 600; }
+.option { display: flex; align-items: center; justify-content: space-between; gap: 6px; width: 100%; min-height: 44px; padding: 4px 8px; border: 0; border-radius: 9px; background: transparent; color: var(--tb-ink); font: inherit; text-align: left; cursor: pointer; }
+.option:hover { background: var(--tb-wash); }
+.option[aria-checked="true"] { background: var(--tb-accent-wash); color: var(--tb-accent-strong); }
+.option span { display: grid; min-width: 0; line-height: 1.25; }
+.option b { overflow: hidden; font-size: 13px; font-weight: 600; text-overflow: ellipsis; }
+.option small { color: var(--tb-muted); font-size: 11.5px; }
+
+@media (max-width: 480px) {
+  .bar { gap: 9px; padding: 8px 9px; }
+  .voiceName { display: none; }
+  .voice { padding: 0 6px 0 4px; }
+  .speed { min-width: 38px; padding: 0 5px; }
+  .status { max-width: 52%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .wave i { animation: none; transform: scaleY(.7); }
+  .spin { animation-duration: 2s; }
+}
+@media print { .bar { display: none; } }

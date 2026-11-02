@@ -341,3 +341,8 @@
 .parameter:nth-child(6n + 4) { background: #edf4fc; border-color: #d3e3f5; }
 .parameter:nth-child(6n + 5) { background: #fcf0f2; border-color: #f4d9de; }
 .parameter:nth-child(6n) { background: #effafa; border-color: #d0ecec; }
+
+/* Each card's number, counting on from the cards above them. */
+.cards { counter-reset: api-card var(--number-from, 0); }
+.card { counter-increment: api-card; }
+.cardTitle::before { content: counter(api-card); content: counter(api-card) / ""; display: grid; flex: none; place-items: center; min-width: 26px; height: 26px; padding: 0 6px; border: 1px solid currentColor; border-radius: 999px; font-size: 12.5px; font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; opacity: .72; }

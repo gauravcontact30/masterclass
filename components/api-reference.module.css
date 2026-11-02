@@ -257,8 +257,264 @@
   list-style: none;
 }
 
-.indexGroup ul[hidden] {
+/* One category is open at a time: the closing and the opening one slide together. */
+.indexPanel {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  transition: grid-template-rows .26s cubic-bezier(.3, .7, .3, 1), opacity .2s ease;
+}
+
+.indexPanel[data-open] {
+  grid-template-rows: 1fr;
+  opacity: 1;
+}
+
+.indexPanel > * {
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* The search above the package list: suggestions and filters open in the panel, whose scrolling would clip a popover. */
+/* Stays at the top of the panel while the packages scroll under it; its own scroll keeps long suggestions or filters reachable. */
+.indexSearch {
+  position: sticky;
+  top: -4px;
+  z-index: 3;
+  max-height: 70vh;
+  max-height: 70dvh;
+  margin: -4px 0 6px;
+  padding: 8px 0 8px;
+  overflow-y: auto;
+  background: #f5f4ed;
+  scrollbar-width: thin;
+}
+
+.indexSearchRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.indexSearchBox {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 7px;
+  min-width: 0;
+  height: 36px;
+  padding: 0 4px 0 10px;
+  border: 1px solid var(--line-strong);
+  border-radius: 10px;
+  background: #fff;
+  color: #73726c;
+  transition: border-color .15s ease, box-shadow .15s ease;
+}
+
+.indexSearchBox:focus-within {
+  border-color: #b5573a;
+  box-shadow: 0 0 0 3px rgba(181, 87, 58, .14);
+}
+
+.indexSearchBox svg {
+  flex: none;
+}
+
+.indexSearchBox input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  font-size: 13px;
+}
+
+.indexSearchBox input::-webkit-search-cancel-button {
   display: none;
+}
+
+.indexClear {
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: var(--oat);
+  color: #5e5d59;
+  cursor: pointer;
+}
+
+.indexClear:hover {
+  background: #f3e4dc;
+  color: #96452c;
+}
+
+.indexFilterButton {
+  position: relative;
+  display: grid;
+  flex: none;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border: 1px solid var(--line-strong);
+  border-radius: 10px;
+  background: #fff;
+  color: #5e5d59;
+  cursor: pointer;
+}
+
+.indexFilterButton:hover,
+.indexFilterButton[aria-expanded="true"] {
+  border-color: #b5573a;
+  color: #96452c;
+}
+
+.indexFilterButton small {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  min-width: 16px;
+  padding: 1px 4px;
+  border-radius: 999px;
+  background: #b5573a;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 14px;
+  text-align: center;
+}
+
+.indexClear:focus-visible,
+.indexFilterButton:focus-visible,
+.indexSuggestions button:focus-visible,
+.indexFilterChips button:focus-visible,
+.indexFilterClear:focus-visible {
+  outline: 2px solid #b5573a;
+  outline-offset: 1px;
+}
+
+.indexSuggestions {
+  display: grid;
+  gap: 1px;
+  max-height: 320px;
+  margin: 6px 0 0;
+  padding: 4px;
+  overflow-y: auto;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #fff;
+  list-style: none;
+}
+
+.indexSuggestions button {
+  display: grid;
+  gap: 1px;
+  width: 100%;
+  padding: 6px 8px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.indexSuggestions li[aria-selected="true"] button,
+.indexSuggestions button:hover {
+  background: var(--oat);
+}
+
+.indexSuggestions b {
+  overflow: hidden;
+  font-size: 12.5px;
+  font-weight: 550;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.indexSuggestions mark {
+  background: transparent;
+  color: #96452c;
+  font-weight: 700;
+}
+
+.indexSuggestions small {
+  color: #73726c;
+  font-size: 11px;
+}
+
+.indexFilters {
+  padding-top: 8px;
+}
+
+.indexFilters h3 {
+  margin: 8px 0 5px;
+  color: #5e5d59;
+  font-size: 11.5px;
+  font-weight: 600;
+}
+
+.indexFilterChips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.indexFilterChips button {
+  min-height: 26px;
+  padding: 0 9px;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  background: #fff;
+  color: #5e5d59;
+  font: inherit;
+  font-size: 11.5px;
+  cursor: pointer;
+}
+
+.indexFilterChips button:hover {
+  border-color: #b5573a;
+}
+
+.indexFilterChips button[aria-pressed="true"] {
+  border-color: #b5573a;
+  background: #fbf1ec;
+  color: #96452c;
+  font-weight: 600;
+}
+
+.indexFilterClear {
+  margin-top: 8px;
+  padding: 2px 0;
+  border: 0;
+  background: transparent;
+  color: #96452c;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.indexEmpty {
+  margin: 10px 8px;
+  color: #73726c;
+  font-size: 12.5px;
+  line-height: 1.45;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .indexPanel {
+    transition: none;
+  }
 }
 
 .indexMark {

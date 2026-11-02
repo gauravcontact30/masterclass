@@ -146,7 +146,7 @@ export function BookmarkPoint({ text, children }: { text: string; children: Reac
             type="button"
             className={styles.vocabPointButton}
             aria-label={`Look up “${candidateTerm}” in Vocabulary`}
-            title={`Check “${candidateTerm}” meaning, Hindi, synonyms & antonyms`}
+            title={`Check “${candidateTerm}” meaning, synonyms & antonyms`}
             onClick={() => triggerWordLookup(candidateTerm)}
           >
             <BookA size={14} aria-hidden="true" />

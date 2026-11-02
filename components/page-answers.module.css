@@ -8,6 +8,13 @@
 .how li::before { content: counter(step); display: grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; background: #141413; color: #fff; font-size: 13px; font-weight: 700; }
 .list { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr)); gap: 12px; }
 .item { display: grid; gap: 8px; align-content: start; min-width: 0; padding: 18px; border: 1px solid #e8e6dc; border-radius: 14px; background: #fff; }
+/* A different light colour per card, repeating after six. */
+.item:nth-child(6n + 1) { border-color: #e2daf3; background: #f7f4fd; }
+.item:nth-child(6n + 2) { border-color: #d4e8da; background: #f1f8f3; }
+.item:nth-child(6n + 3) { border-color: #f3e0c3; background: #fdf6ea; }
+.item:nth-child(6n + 4) { border-color: #d3e3f5; background: #f0f6fd; }
+.item:nth-child(6n + 5) { border-color: #f4d9de; background: #fdf3f5; }
+.item:nth-child(6n) { border-color: #d0ecec; background: #f0fafa; }
 .item p { margin: 0; font-size: 15px; line-height: 1.6; color: #3d3d3a; overflow-wrap: anywhere; }
 /* The landing section's head and body */
 .head { display: grid; gap: 14px; justify-items: start; margin-bottom: 28px; }

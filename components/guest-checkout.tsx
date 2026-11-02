@@ -9,7 +9,6 @@ import { ArrowLeft, ArrowRight, Check, CircleAlert, LockKeyhole, MailCheck, Part
 import { Wordmark } from "./brand-mark";
 import { ExpandedText } from "./expanded-text";
 import { useLanguage } from "./language-provider";
-import { LanguageToggle } from "./language-toggle";
 import { requestJson, errorKey } from "@/lib/client";
 import { openSubscriptionCheckout, type SubscriptionPayment } from "@/lib/razorpay-checkout";
 import type { TranslationKey } from "@/lib/i18n";
@@ -82,7 +81,6 @@ export function GuestCheckout({ initialTier, enabled, prices: located }: { initi
       <Link href="/" className={styles.back}><ArrowLeft size={15} aria-hidden="true" /><ExpandedText text={text("Home", "होम")} /></Link>
       <Link href="/" aria-label="MasterClass Buddy home" className={styles.brand}><Wordmark /></Link>
       <div className={styles.topActions}>
-        <LanguageToggle persist={false} />
         {!outcome && <Link href="/sign-in" className={styles.signin}><ExpandedText text={text("Sign in", "साइन इन")} /></Link>}
       </div>
     </header>

@@ -66,6 +66,18 @@ const KIND_SUMMARIES: Record<string, string> = {
   Command: "A command you run in the terminal.",
   Service: "An injectable class that holds shared logic or data for the app.",
   Property: "A value stored on an object, read or set with dot notation.",
+  Concept: "An idea to understand rather than a name you call; it explains how the technology behaves.",
+  Option: "A setting you turn on or change in a configuration file.",
+  "Environment Variable": "A named value set outside the code, usually for configuration or secrets.",
+  Matcher: "An assertion that compares a value in a test and fails it when they differ.",
+  Error: "A specific kind of failure you can raise or catch and handle on its own.",
+  Provider: "A ready-made integration you add to configuration, such as a sign-in service.",
+  Tool: "A separate product or library you use alongside your code.",
+  Resource: "An object you declare in a manifest and the cluster keeps running as described.",
+  Macro: "Code that writes code at compile time, called with an exclamation mark.",
+  Trait: "A set of behaviour a type promises to provide, so generic code can rely on it.",
+  Node: "One step in a workflow: it receives items, does its job and passes the result on.",
+  Expression: "A value you reference inside a field to read data from the workflow.",
 };
 
 /** Name the kind as a learner would say it, refining "Function" to "Method" for prototype members. */

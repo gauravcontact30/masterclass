@@ -8,15 +8,10 @@ import Link from "next/link";
 import {
   ArrowLeft,
   ArrowRight,
-  ArrowUp,
   ChevronLeft,
   ChevronRight,
   Star,
-  Bookmark,
-  Share2,
-  Volume2,
-  Play,
-  Pause,
+  Trash2,
   CheckCircle2,
   Check,
   MessageSquare,
@@ -26,12 +21,11 @@ import {
   Rocket,
   Brain,
   Lightbulb,
-  Gauge
+  Gauge,
+  House
 } from "lucide-react";
-import { logoOf, type TechBuzzCard, type TechBuzzMemberContent, type TechBuzzPreview } from "@/lib/tech-buzz-public";
+import { logoOf, type TechBuzzCard, type TechBuzzMemberContent, type TechBuzzPreview, type TechBuzzTopicInfo } from "@/lib/tech-buzz-public";
 import { isUnsplash, unoptimizedRemote, unsplashLoader } from "@/lib/image-loaders";
-import { LanguageSwitcher } from "./language-switcher";
-import { useLanguage } from "./language-provider";
 import styles from "./tech-buzz-article.module.css";
 import { ReviewPanel, ReviewStars } from "./tech-buzz-review-stars";
 import { ClapButton, useClaps } from "./clap-button";
@@ -39,6 +33,14 @@ import dynamic from "next/dynamic";
 import { KeyTakeaways, ProseText, SectionLists } from "./tech-buzz-prose";
 import { plainProse } from "@/lib/prose-markup";
 import { parseStoredRecord, useStoredValue, writeStoredValue } from "@/lib/local-store";
+import { useMarksSync, type MarkResult } from "@/lib/tech-buzz-marks";
+import { audioState, listenParts, serverAudioState, stop as stopLecture, subscribe as subscribeLecture, toggle as toggleLecture } from "@/lib/audio-lecture";
+import { MAX_PART, lectureParts } from "@/lib/audio-voices";
+import { RAIL_KEY, publishOutline } from "@/lib/tech-buzz-outline";
+import { FloatingActions, FollowAuthor, StoryDock, TopicChips } from "./tech-buzz-story-bar";
+import { TechBuzzListen } from "./tech-buzz-listen";
+import { TechBuzzSideNav } from "./tech-buzz-side-nav";
+import { HighlightLayer } from "./tech-buzz-highlights";
 import type { TechBuzzMemberContent as MemberContent } from "@/lib/tech-buzz-public";
 
 /** The light, Apple-style code editor (file tree + tabs): loaded with the member body, not with the page. */
@@ -57,6 +59,8 @@ interface Props {
   related: TechBuzzCard[];
   prevStory: TechBuzzCard | null;
   nextStory: TechBuzzCard | null;
+  topics: TechBuzzTopicInfo[];
+  trackCount: number;
 }
 
 /** Local images go through the optimizer, Unsplash through its own CDN (unsplashLoader); any other remote host as is. */
@@ -97,10 +101,10 @@ function ReadingProgress() {
   return <div className={styles.readingProgressBarContainer} aria-hidden="true"><div ref={bar} className={styles.readingProgressBar} /></div>;
 }
 
-const BOOKMARKS_KEY = "masterclass:tech-buzz-bookmarks";
+/** Finishing a text selection also fires a click, which must not start the click-to-listen. */
+const isSelecting = () => !window.getSelection()?.isCollapsed;
 
-export function TechBuzzArticleView({ article, related, prevStory, nextStory }: Props) {
-  const { t } = useLanguage();
+export function TechBuzzArticleView({ article, related, prevStory, nextStory, topics, trackCount }: Props) {
   // Membership: "checking" while the member body loads, then the body or the reason it is locked.
   // Without a session cookie the visitor cannot be a member, so no request is made and the preview stays locked.
   const signedIn = useSyncExternalStore(noSubscription, hasSessionCookie, () => null);
@@ -111,16 +115,17 @@ export function TechBuzzArticleView({ article, related, prevStory, nextStory }: 
   // Claps are stored per reader in Supabase (components/clap-button.tsx); both buttons on the page share this state.
   const claps = useClaps(article.slug, article.claps);
   const [userReactions, setUserReactions] = useState<{ heart: number; unicorn: number; rocket: number; mindblown: number }>(article.reactions);
-  // Bookmarks and ticked takeaways are kept in this browser (lib/local-store.ts).
-  const savedBookmarks = useStoredValue(BOOKMARKS_KEY);
-  const bookmarked = !!parseStoredRecord<boolean>(savedBookmarks)[article.id];
+  // Follows, reposts and saved stories live on the reader's account (lib/tech-buzz-marks.ts); ticked takeaways stay in this browser.
+  useMarksSync();
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [toastLink, setToastLink] = useState<{ href: string; label: string } | null>(null);
+  // Live public counts: the page itself is cached for minutes.
+  const [engagement, setEngagement] = useState({ comments: article.commentsCount, reposts: article.reposts ?? 0, followers: 0 });
+  const storyBody = useRef<HTMLDivElement>(null);
 
-  // Audio voiceover state with speech synthesis & active reading sync
-  const [isPlayingAudio, setIsPlayingAudio] = useState<boolean>(false);
-  const [audioSpeed, setAudioSpeed] = useState<number>(1);
-  const [activeParagraphIndex, setActiveParagraphIndex] = useState<number | null>(null);
-  const [audioProgressPercent, setAudioProgressPercent] = useState<number>(0);
+  const audio = useSyncExternalStore(subscribeLecture, audioState, serverAudioState);
+  const railState = useStoredValue(RAIL_KEY);
+  const dockEnd = useRef<HTMLDivElement>(null);
 
   // Takeaways checklist state
   const defaultTakeaways = useMemo(() => [
@@ -140,6 +145,7 @@ export function TechBuzzArticleView({ article, related, prevStory, nextStory }: 
   // Comments state
   const [comments, setComments] = useState<TechBuzzMemberContent["comments"]>([]);
   const [newCommentText, setNewCommentText] = useState<string>("");
+  const [postingComment, setPostingComment] = useState(false);
 
   // The member body, checked on the server for signed-in readers.
   useEffect(() => {
@@ -158,11 +164,27 @@ export function TechBuzzArticleView({ article, related, prevStory, nextStory }: 
     return () => controller.abort();
   }, [article.slug, signedIn]);
 
-  const showToast = useCallback((msg: string) => {
+  useEffect(() => {
+    const controller = new AbortController();
+    fetch(`/api/tech-buzz/${encodeURIComponent(article.slug)}/engagement`, { signal: controller.signal })
+      .then(res => (res.ok ? res.json() : null))
+      .then((data: { comments: number; reposts: number; followers: number } | null) => { if (data) setEngagement(data); })
+      .catch(() => {});
+    return () => controller.abort();
+  }, [article.slug]);
+
+  // A link to the discussion lands before the member body has loaded, so the jump waits for it.
+  const hasMemberBody = !!memberContent;
+  useEffect(() => {
+    if (hasMemberBody && window.location.hash === "#tb-discussion") document.getElementById("tb-discussion")?.scrollIntoView();
+  }, [hasMemberBody]);
+
+  const showToast = useCallback((msg: string, link: { href: string; label: string } | null = null) => {
     setToastMessage(msg);
+    setToastLink(link);
     setTimeout(() => {
       setToastMessage(current => (current === msg ? null : current));
-    }, 3200);
+    }, link ? 6000 : 3200);
   }, []);
 
   // Where the paywall sends a reader: sign in first, or choose a plan when already signed in.
@@ -184,48 +206,66 @@ export function TechBuzzArticleView({ article, related, prevStory, nextStory }: 
     }
   };
 
-  const toggleBookmark = () => {
-    const next = !bookmarked;
-    writeStoredValue(BOOKMARKS_KEY, JSON.stringify({ ...parseStoredRecord<boolean>(savedBookmarks), [article.id]: next }));
-    showToast(next ? "Saved to your reading list" : "Removed from reading list");
-  };
+  const signInLink = useMemo(() => ({ href: `/sign-in?redirect=${encodeURIComponent(`/tech-buzz/${article.slug}`)}`, label: "Sign in" }), [article.slug]);
+  // One answer for every account action: what happened, or why it did not.
+  const handleMarkResult = useCallback((result: MarkResult, done?: string) => {
+    if (result === "ok") { if (done) showToast(done); }
+    else if (result === "signin") showToast("Sign in to follow, mute and repost, and to tune your feed.", signInLink);
+    else if (result === "unavailable") showToast("This is being set up and is not available yet.");
+    else showToast("That did not save. Check your connection and try again.");
+  }, [showToast, signInLink]);
 
+  const copyLink = useCallback(() => {
+    navigator.clipboard?.writeText(window.location.href).then(() => showToast("Link copied"), () => showToast("Your browser blocked copying the link."));
+  }, [showToast]);
+
+  // The phone's own share sheet where there is one; a copied link everywhere else.
   const handleShare = () => {
-    if (typeof window !== "undefined" && navigator.clipboard) {
-      navigator.clipboard.writeText(window.location.href);
-      showToast("Article link copied to clipboard!");
+    if (navigator.share) navigator.share({ title: article.title, text: article.subtitle, url: window.location.href }).catch(() => {});
+    else copyLink();
+  };
+
+  const goToDiscussion = () => {
+    if (access === "member" && memberContent) {
+      document.getElementById("tb-discussion")?.scrollIntoView({ behavior: "smooth" });
+      document.getElementById("tb-comment")?.focus({ preventScroll: true });
+      return;
+    }
+    document.querySelector(".paywalled-story")?.scrollIntoView({ behavior: "smooth", block: "center" });
+    showToast("The discussion is open to members.");
+  };
+
+  const handleAddComment = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const text = newCommentText.trim();
+    if (!text || postingComment) return;
+    setPostingComment(true);
+    try {
+      const res = await fetch(`/api/tech-buzz/${encodeURIComponent(article.slug)}/comments`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ text }) });
+      if (res.ok) {
+        const { comment } = await res.json() as { comment: TechBuzzMemberContent["comments"][number] };
+        setComments(prev => [comment, ...prev]);
+        setEngagement(prev => ({ ...prev, comments: prev.comments + 1 }));
+        setNewCommentText("");
+        showToast("Comment posted");
+      } else if (res.status === 401) showToast("Sign in to join the discussion.", signInLink);
+      else if (res.status === 402) showToast("The discussion is open to members.", { href: "/learning/plans", label: "See plans" });
+      else if (res.status === 429) showToast("You are commenting quickly. Wait a minute and try again.");
+      else if (res.status === 503) showToast("Comments are being set up and cannot be posted yet.");
+      else showToast("Your comment did not post. Try again.");
+    } catch {
+      showToast("Your comment did not post. Check your connection.");
+    } finally {
+      setPostingComment(false);
     }
   };
 
-  const handleAddComment = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newCommentText.trim()) return;
-
-    const newComment = {
-      id: `c-user-${Date.now()}`,
-      author: {
-        name: "Developer Community Member",
-        role: "Software Architect",
-        avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
-        handle: "@architect",
-        badge: "Subscriber"
-      },
-      text: newCommentText.trim(),
-      createdAt: "Just now",
-      likes: 1
-    };
-
-    setComments(prev => [newComment, ...prev]);
-    setNewCommentText("");
-    showToast("Comment posted to developer thread!");
-
-    if (typeof fetch !== "undefined") {
-      fetch("/api/tech-buzz/action", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "comment", articleId: article.id, text: newCommentText.trim() })
-      }).catch(() => {});
-    }
+  const deleteComment = async (id: string) => {
+    const res = await fetch(`/api/tech-buzz/${encodeURIComponent(article.slug)}/comments?id=${encodeURIComponent(id)}`, { method: "DELETE" }).catch(() => null);
+    if (!res?.ok) { showToast("That comment could not be deleted. Try again."); return; }
+    setComments(prev => prev.filter(comment => comment.id !== id));
+    setEngagement(prev => ({ ...prev, comments: Math.max(0, prev.comments - 1) }));
+    showToast("Comment deleted");
   };
 
   const toggleTakeaway = (idx: number) => {
@@ -246,69 +286,35 @@ export function TechBuzzArticleView({ article, related, prevStory, nextStory }: 
   // Read aloud as plain words: no formatting marks, code blocks or picture links.
   const allParagraphs = useMemo(() => visibleSections.flatMap(sec => sec.paragraphs.map(plainProse)), [visibleSections]);
 
-  const stopAudio = useCallback(() => {
-    setIsPlayingAudio(false);
-    setActiveParagraphIndex(null);
-    setAudioProgressPercent(0);
-    if (typeof window !== "undefined" && "speechSynthesis" in window) {
-      window.speechSynthesis.cancel();
-    }
-  }, []);
+  // Each paragraph is read as one or more parts, so the page can follow the voice paragraph by paragraph.
+  const lectureId = `tech-buzz:${article.slug}`;
+  const narration = useMemo(() => allParagraphs.flatMap((text, para) => lectureParts(text, MAX_PART).map(part => ({ text: part, para }))), [allParagraphs]);
+  const narrationParts = useMemo(() => narration.map(part => part.text), [narration]);
+  const narrating = audio.id === lectureId && audio.status !== "idle";
+  const isPlayingAudio = narrating && (audio.status === "playing" || audio.status === "loading");
+  const activeParagraphIndex = narrating && audio.status !== "error" ? narration[audio.index]?.para ?? null : null;
 
-  // Each paragraph queues the next one when it finishes, so `play` calls itself rather than the memoised callback.
-  const playFromParagraph = useCallback((start: number) => {
-    const play = (pIndex: number) => {
-      if (pIndex < 0 || pIndex >= allParagraphs.length) return;
-      setActiveParagraphIndex(pIndex);
-      setIsPlayingAudio(true);
-      setAudioProgressPercent(((pIndex + 1) / allParagraphs.length) * 100);
-
-      if (typeof window !== "undefined" && "speechSynthesis" in window) {
-        window.speechSynthesis.cancel();
-        const text = allParagraphs[pIndex];
-        const utter = new SpeechSynthesisUtterance(text);
-        utter.rate = audioSpeed;
-        utter.onend = () => {
-          if (pIndex + 1 < allParagraphs.length) {
-            play(pIndex + 1);
-          } else {
-            stopAudio();
-            showToast("Finished reading article!");
-          }
-        };
-        utter.onerror = () => {
-          setIsPlayingAudio(false);
-        };
-        window.speechSynthesis.speak(utter);
-      }
-    };
-    play(start);
-  }, [allParagraphs, audioSpeed, stopAudio, showToast]);
-
-  const toggleAudio = useCallback(() => {
-    if (isPlayingAudio) {
-      stopAudio();
-    } else {
-      playFromParagraph(activeParagraphIndex ?? 0);
-    }
-  }, [isPlayingAudio, stopAudio, playFromParagraph, activeParagraphIndex]);
-
-  const handleSpeedToggle = () => {
-    const nextSpeed = audioSpeed === 1 ? 1.25 : audioSpeed === 1.25 ? 1.5 : audioSpeed === 1.5 ? 2 : 1;
-    setAudioSpeed(nextSpeed);
-    if (isPlayingAudio && activeParagraphIndex !== null) {
-      playFromParagraph(activeParagraphIndex);
-    }
+  const startNarration = useCallback((part: number) => listenParts(lectureId, article.title, narrationParts, part), [lectureId, article.title, narrationParts]);
+  const playFromParagraph = (paragraph: number) => {
+    const part = narration.findIndex(item => item.para >= paragraph);
+    if (part >= 0) startNarration(part);
   };
+  const toggleAudio = () => { if (narrating) toggleLecture(); else startNarration(0); };
 
-  // Clean up speech on unmount
+  // Leaving the story, or the member body arriving, ends the narration: its parts no longer match the page.
+  useEffect(() => () => { if (audioState().id?.startsWith("tech-buzz:")) stopLecture(); }, [narrationParts]);
+
+  // The story's contents for the side menu; what a reader cannot open yet is listed locked.
   useEffect(() => {
-    return () => {
-      if (typeof window !== "undefined" && "speechSynthesis" in window) {
-        window.speechSynthesis.cancel();
-      }
-    };
-  }, []);
+    const items = visibleSections.flatMap((section, index) => (section.heading ? [{ id: `tb-section-${index}`, label: section.heading }] : []));
+    if (memberContent) items.push({ id: "tb-discussion", label: "Discussion" });
+    publishOutline({
+      items: memberContent ? items : [...items, ...article.outline.map((label, index) => ({ id: `tb-locked-${index}`, label, locked: true }))],
+      member: !!memberContent,
+      unlock: access === "checking" || memberContent ? null : { href: access === "subscription_required" ? "/learning/plans" : `/sign-in?redirect=${encodeURIComponent(`/tech-buzz/${article.slug}`)}`, label: access === "subscription_required" ? "Become a member" : "Sign in to keep reading" },
+    });
+    return () => publishOutline(null);
+  }, [visibleSections, memberContent, article.outline, article.slug, access]);
 
   // More Blogs pagination over the related cards the server sent.
   const MORE_PER_PAGE = 3;
@@ -318,6 +324,10 @@ export function TechBuzzArticleView({ article, related, prevStory, nextStory }: 
     (moreBlogsPage - 1) * MORE_PER_PAGE,
     moreBlogsPage * MORE_PER_PAGE
   );
+  // "Agentic AI - LangChain, ..." repeats the category crumb right before it.
+  const techLabel = article.technology.startsWith(article.category)
+    ? article.technology.slice(article.category.length).replace(/^\s*[-–—:]\s*/, "") || article.technology
+    : article.technology;
 
   return (
     // The site chrome owns <main>; the story itself is the <article>, with the page's navigation and the related
@@ -325,69 +335,33 @@ export function TechBuzzArticleView({ article, related, prevStory, nextStory }: 
     <div className={styles.articlePageRoot}>
       <ReadingProgress />
 
-      {/* Top sticky navigation */}
-      <nav data-track-topic={TECH_BUZZ_TRACKED.storyNav} className={styles.stickyArticleNav} aria-label="Article navigation">
-        <div className={styles.stickyNavInner}>
-          <Link href="/tech-buzz" className={styles.backLink} aria-label={t("techBuzzBackToGuides")}>
-            <ArrowLeft size={16} aria-hidden="true" />
-            <span className={styles.backLabel}>{t("techBuzzBackToGuides")}</span>
-          </Link>
-
-          <div className={styles.stickyNavRight}>
-            <LanguageSwitcher size="sm" />
-            {isSubscribed ? (
-              <span className={styles.subscribedPill}>
-                <CheckCircle2 size={13} />
-                <span>{t("techBuzzMemberOnly")}</span>
-              </span>
-            ) : access !== "checking" && (
-              <Link href={unlockHref} className={styles.subscribeTopBtn}>
-                <Sparkles size={13} />
-                <span>{access === "subscription_required" ? "Become a member" : "Sign in"}</span>
-              </Link>
-            )}
-
-            <ClapButton slug={article.slug} claps={claps} size="small" />
-
-            <button
-              type="button"
-              onClick={toggleBookmark}
-              className={styles.navIconBtn}
-              aria-pressed={bookmarked}
-              aria-label="Bookmark story"
-              title={bookmarked ? "Saved to your bookmarks" : "Bookmark story"}
-            >
-              <Bookmark size={18} fill={bookmarked ? "currentColor" : "none"} aria-hidden="true" />
-            </button>
-
-            <button
-              type="button"
-              onClick={handleShare}
-              className={styles.navIconBtn}
-              aria-label="Share story"
-              title="Share story"
-            >
-              <Share2 size={18} aria-hidden="true" />
-            </button>
-          </div>
-        </div>
-      </nav>
-
+      <div className={styles.storyShell} data-tb-rail={railState === "off" ? "off" : "on"}>
+      <aside className={styles.storyRail} aria-label="Tech Buzz menu and story contents"><TechBuzzSideNav /></aside>
+      <div className={styles.storyColumn}>
       <article className={styles.story} aria-labelledby="tb-story-title">
       <header data-track-topic={TECH_BUZZ_TRACKED.storyHeader} className={styles.articleHeroContainer}>
         <div className={styles.articleHeroInner}>
-          {/* The trail carries the category and technology, so no separate chips repeat them above the title. */}
-          <nav aria-label="Breadcrumb" className={styles.breadcrumbs}>
-            <ol>
-              <li><Link href="/" prefetch={false}>Home</Link></li>
-              <li><Link href="/tech-buzz">Tech Buzz</Link></li>
-              <li>{article.category}</li>
-              <li className={styles.crumbTech}>
-                {logoOf(article) && <Image src={logoOf(article)!} alt="" width={16} height={16} />}
-                <span>{article.technology}</span>
-              </li>
-            </ol>
-          </nav>
+          <div className={styles.storyMast}>
+            {logoOf(article) && (article.techId
+              ? <Link href={`/tech-buzz?topic=${encodeURIComponent(article.techId)}`} className={styles.mastLogo} aria-label={`${trackCount} ${trackCount === 1 ? "story" : "stories"} on ${techLabel}`} title={`${trackCount} ${trackCount === 1 ? "story" : "stories"} on ${techLabel}`}>
+                <Image src={logoOf(article)!} alt="" width={26} height={26} />
+                {trackCount > 1 && <small aria-hidden="true">{trackCount}</small>}
+              </Link>
+              : <span className={styles.mastLogo}><Image src={logoOf(article)!} alt="" width={26} height={26} /></span>)}
+            <div className={styles.mastRows}>
+              <nav aria-label="Breadcrumb" className={styles.breadcrumbs}>
+                <ol>
+                  <li><Link href="/" prefetch={false} className={styles.crumbHome} aria-label="Home" title="Home"><House size={14} aria-hidden="true" /></Link></li>
+                  <li><Link href="/tech-buzz">Tech Buzz</Link></li>
+                  <li><Link href={`/tech-buzz?topic=${encodeURIComponent(article.category)}`}>{article.category}</Link></li>
+                  <li className={styles.crumbTech}>{article.techId
+                    ? <Link href={`/tech-buzz?topic=${encodeURIComponent(article.techId)}`} title={article.technology}>{techLabel}</Link>
+                    : <span title={article.technology}>{techLabel}</span>}</li>
+                </ol>
+              </nav>
+              <TopicChips topics={topics} onResult={handleMarkResult} />
+            </div>
+          </div>
 
           <RouteH1 id="tb-story-title" className={styles.articleTitle}>{article.title}</RouteH1>
           <p className={styles.articleSubtitle}>{article.subtitle}</p>
@@ -404,30 +378,21 @@ export function TechBuzzArticleView({ article, related, prevStory, nextStory }: 
                 loader={loaderFor(article.author.avatar)} unoptimized={remote(article.author.avatar)}
               />
               <div className={styles.authorDetails}>
-                <p className={styles.authorName}>
-                  <span>{article.author.name}</span>
+                <div className={styles.authorName}>
+                  <span title={article.author.role}>{article.author.name}</span>
                   {article.author.verified && (
                     <CheckCircle2 size={14} className={styles.verifiedMark} role="img" aria-label="Verified author" />
                   )}
-                </p>
+                  <FollowAuthor name={article.author.name} onResult={handleMarkResult} onChange={delta => setEngagement(prev => ({ ...prev, followers: Math.max(0, prev.followers + delta) }))} />
+                </div>
                 <p className={styles.authorMetaSub}>
-                  {article.author.role} · {article.readTimeMinutes} min read · <time dateTime={article.publishedAt}>{storyDate(article.publishedAt)}</time>
+                  {article.readTimeMinutes} min read · <time dateTime={article.publishedAt}>{storyDate(article.publishedAt)}</time>
+                  {engagement.followers > 0 && ` · ${engagement.followers.toLocaleString("en-IN")} ${engagement.followers === 1 ? "follower" : "followers"}`}
                 </p>
               </div>
             </div>
 
             <div className={styles.authorActionsRight}>
-              {article.audioVoiceover && (
-                <button
-                  type="button"
-                  className={styles.listenActionBtn}
-                  onClick={() => setIsPlayingAudio(prev => !prev)}
-                >
-                  <Volume2 size={14} />
-                  <span>{isPlayingAudio ? "Pause Audio" : `Listen (${article.audioVoiceover.durationMinutes}m)`}</span>
-                </button>
-              )}
-
               <div className={styles.starBadge} title={article.rating.count ? `Rated ${article.rating.average}/5 by ${article.rating.count} readers` : "No reader ratings yet"}>
                 <Star size={13} fill="#f59e0b" color="#f59e0b" aria-hidden="true" />
                 {article.rating.count ? <>
@@ -437,6 +402,14 @@ export function TechBuzzArticleView({ article, related, prevStory, nextStory }: 
               </div>
             </div>
           </div>
+
+          <StoryDock articleId={article.id} slug={article.slug} title={article.title} claps={claps} comments={engagement.comments} reposts={engagement.reposts}
+            playing={isPlayingAudio} canListen={narration.length > 0} onComments={goToDiscussion} onListen={toggleAudio} onShare={handleShare} onCopy={copyLink}
+            author={article.author.name} tags={article.tags.slice(0, 5)}
+            onRepostChange={delta => setEngagement(prev => ({ ...prev, reposts: Math.max(0, prev.reposts + delta) }))}
+            onFollowersChange={delta => setEngagement(prev => ({ ...prev, followers: Math.max(0, prev.followers + delta) }))}
+            onResult={handleMarkResult} notify={showToast} />
+          <div ref={dockEnd} />
         </div>
 
         {/* Cover: a mood picture, not information, so it has no alt text of its own (the title is right above it). */}
@@ -457,73 +430,12 @@ export function TechBuzzArticleView({ article, related, prevStory, nextStory }: 
       </header>
 
       <div className={styles.articleBodyLayout}>
-        <div className={styles.articleBodyInner}>
+        <div ref={storyBody} className={styles.articleBodyInner}>
           <ReviewPanel review={article.review} />
           {article.credit && <p className={styles.inspiredBy}>
             Inspired by &ldquo;{article.credit.title}&rdquo; by {article.credit.author} on {article.credit.platform}. Rewritten and expanded by MCB Editorial.
           </p>}
-          {/* Enhanced Audio Voiceover Player with Speech Synthesis */}
-          {article.audioVoiceover && (
-            <div className={styles.articleAudioPlayerHero}>
-              <div className={styles.audioHeroTop}>
-                <div className={styles.audioHeroNarrator}>
-                  <div className={styles.audioHeroAvatar}>
-                    <Volume2 size={20} />
-                  </div>
-                  <div>
-                    <div className={styles.audioHeroNarratorName}>
-                      Narrated by {article.audioVoiceover.narrator}
-                    </div>
-                    <div className={styles.audioHeroEngineTag}>
-                      Voiceover Engine • Interactive Audio Sync
-                    </div>
-                  </div>
-                </div>
-
-                <div className={styles.audioHeroControls}>
-                  <button
-                    type="button"
-                    onClick={toggleAudio}
-                    className={styles.audioHeroPlayBtn}
-                  >
-                    {isPlayingAudio ? <Pause size={16} /> : <Play size={16} />}
-                    <span>{isPlayingAudio ? "Pause Audio" : "Play Voiceover"}</span>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={handleSpeedToggle}
-                    className={styles.audioHeroSpeedBtn}
-                    title="Playback speed"
-                  >
-                    {audioSpeed}x
-                  </button>
-                </div>
-              </div>
-
-              <div className={styles.audioHeroScrubRow}>
-                <span className={styles.audioHeroTime}>
-                  {activeParagraphIndex !== null ? `P${activeParagraphIndex + 1}` : "0:00"}
-                </span>
-                <input
-                  type="range"
-                  min="0"
-                  max="100"
-                  value={audioProgressPercent}
-                  onChange={e => {
-                    const pct = Number(e.target.value);
-                    const targetIdx = Math.floor((pct / 100) * allParagraphs.length);
-                    playFromParagraph(targetIdx);
-                  }}
-                  className={styles.audioHeroScrubBar}
-                  aria-label="Audio scrubber"
-                />
-                <span className={styles.audioHeroTime}>
-                  {article.audioVoiceover.durationMinutes}:00
-                </span>
-              </div>
-            </div>
-          )}
+          {narration.length > 0 && <TechBuzzListen lectureId={lectureId} title={article.title} parts={narrationParts} preview={!memberContent} onStart={startNarration} />}
 
           {/* Interactive Learning Objectives & Key Takeaways Checklist */}
           <div className={styles.takeawaysContainer}>
@@ -599,15 +511,16 @@ export function TechBuzzArticleView({ article, related, prevStory, nextStory }: 
           {visibleSections[0] && (
             <section className={styles.storySection}>
               {visibleSections[0].heading && (
-                <h2 className={styles.proseHeading}>{visibleSections[0].heading}</h2>
+                <h2 id="tb-section-0" className={styles.proseHeading}>{visibleSections[0].heading}</h2>
               )}
               {visibleSections[0].paragraphs.map((para, i) => {
                 const isReading = isPlayingAudio && activeParagraphIndex === i;
                 return (
                   <div
                     key={i}
+                    data-highlight-block
                     className={`${styles.proseBlock} ${isReading ? styles.activeReadingHighlight : ""}`}
-                    onClick={() => playFromParagraph(i)}
+                    onClick={() => { if (!isSelecting()) playFromParagraph(i); }}
                     title="Click to listen from here"
                   >
                     <ProseText text={para} paragraphClass={styles.proseParagraph} listClass={styles.proseList} orderedClass={styles.proseOrdered} />
@@ -683,7 +596,7 @@ export function TechBuzzArticleView({ article, related, prevStory, nextStory }: 
                 return (
                   <section key={idx + 1} className={styles.storySection}>
                     {section.heading && (
-                      <h2 className={styles.proseHeading}>{section.heading}</h2>
+                      <h2 id={`tb-section-${idx + 1}`} className={styles.proseHeading}>{section.heading}</h2>
                     )}
 
                     {section.image && (
@@ -701,8 +614,9 @@ export function TechBuzzArticleView({ article, related, prevStory, nextStory }: 
                       return (
                         <div
                           key={pIdx}
+                          data-highlight-block
                           className={`${styles.proseBlock} ${isReading ? styles.activeReadingHighlight : ""}`}
-                          onClick={() => playFromParagraph(globalIdx)}
+                          onClick={() => { if (!isSelecting()) playFromParagraph(globalIdx); }}
                           title="Click to listen from here"
                         >
                           <ProseText text={p} paragraphClass={styles.proseParagraph} listClass={styles.proseList} orderedClass={styles.proseOrdered} />
@@ -755,7 +669,7 @@ export function TechBuzzArticleView({ article, related, prevStory, nextStory }: 
                 <h2 id="tb-discussion" className={styles.discussionTitle}>
                   <MessageSquare size={20} className={styles.discussionIcon} aria-hidden="true" />
                   <span>Discussion</span>
-                  <span className={styles.discussionCount}>{comments.length}</span>
+                  <span className={styles.discussionCount}>{engagement.comments}</span>
                 </h2>
 
                 <form onSubmit={handleAddComment} className={styles.commentForm}>
@@ -766,10 +680,11 @@ export function TechBuzzArticleView({ article, related, prevStory, nextStory }: 
                     placeholder="Share your architectural insight, question, or experience with this tech stack..."
                     value={newCommentText}
                     onChange={e => setNewCommentText(e.target.value)}
+                    maxLength={1000}
                     required
                   />
                   <div className={styles.commentFormActions}>
-                    <button type="submit" className={styles.commentSubmit}>Post comment</button>
+                    <button type="submit" className={styles.commentSubmit} disabled={postingComment}>{postingComment ? "Posting…" : "Post comment"}</button>
                   </div>
                 </form>
 
@@ -778,12 +693,15 @@ export function TechBuzzArticleView({ article, related, prevStory, nextStory }: 
                     <li key={c.id}>
                       <article className={styles.comment} aria-label={`Comment by ${c.author.name}`}>
                         <header className={styles.commentHead}>
-                          <Image src={c.author.avatar} alt="" width={32} height={32} className={styles.commentAvatar} unoptimized />
+                          {c.author.avatar
+                            ? <Image src={c.author.avatar} alt="" width={32} height={32} className={styles.commentAvatar} unoptimized />
+                            : <span className={styles.commentInitial} aria-hidden="true">{c.author.name.charAt(0).toUpperCase()}</span>}
                           <p className={styles.commentWho}>
                             <b>{c.author.name}</b>
-                            <span>{c.author.handle} · {c.createdAt}</span>
+                            <span>{c.author.handle} · {storyDate(c.createdAt)}</span>
                           </p>
                           {c.author.badge && <span className={styles.commentBadge}>{c.author.badge}</span>}
+                          {c.canDelete && <button type="button" className={styles.commentDelete} onClick={() => deleteComment(c.id)} aria-label="Delete this comment" title="Delete comment"><Trash2 size={15} aria-hidden="true" /></button>}
                         </header>
                         <p className={styles.commentText}>{c.text}</p>
                       </article>
@@ -828,7 +746,10 @@ export function TechBuzzArticleView({ article, related, prevStory, nextStory }: 
             />
             <div>
               <p className={styles.authorBioLabel}>Written by</p>
-              <p className={styles.authorBioName}>{article.author.name}</p>
+              <div className={styles.authorBioHead}>
+                <p className={styles.authorBioName}>{article.author.name}</p>
+                <FollowAuthor name={article.author.name} onResult={handleMarkResult} onChange={delta => setEngagement(prev => ({ ...prev, followers: Math.max(0, prev.followers + delta) }))} />
+              </div>
               <p className={styles.authorBioText}>
                 {article.author.role}. Contributing deep-dive engineering architectures, cloud paradigms, and system design insights to Master Class Buddy.
               </p>
@@ -876,6 +797,8 @@ export function TechBuzzArticleView({ article, related, prevStory, nextStory }: 
           </nav>
         </div>
       )}
+      </div>
+      </div>
 
       {/* Related stories, full width */}
       <section data-track-topic={TECH_BUZZ_TRACKED.more} className={styles.moreBlogsSection} aria-labelledby="tb-more-heading">
@@ -961,24 +884,18 @@ export function TechBuzzArticleView({ article, related, prevStory, nextStory }: 
             </nav>
           )}
 
-          {/* Move to top button in article view */}
-          <div className={styles.articleMoveToTopRow}>
-            <button
-              type="button"
-              className={styles.articleMoveToTopBtn}
-              onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
-            >
-              <ArrowUp size={16} aria-hidden="true" />
-              <span>Move to top</span>
-            </button>
-          </div>
         </div>
       </section>
+
+      <HighlightLayer slug={article.slug} area={storyBody} bodyKey={memberContent ? "member" : "preview"} onResult={handleMarkResult} notify={showToast} signInLink={signInLink} />
+
+      <FloatingActions articleId={article.id} slug={article.slug} claps={claps} comments={engagement.comments} playing={isPlayingAudio} canListen={narration.length > 0} after={dockEnd} onComments={goToDiscussion} onListen={toggleAudio} onShare={handleShare} onResult={handleMarkResult} />
 
       {/* Toast Notification */}
       {toastMessage && (
         <div className={styles.toast} role="status">
           {toastMessage}
+          {toastLink && <Link href={toastLink.href} prefetch={false} className={styles.toastLink}>{toastLink.label}</Link>}
         </div>
       )}
     </div>

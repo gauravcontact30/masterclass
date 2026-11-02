@@ -102,7 +102,7 @@ export function useClaps(slug: string, initialTotal: number, { live = true }: { 
   return { ...state, signedIn: isSignedIn, burst, clap, undo };
 }
 
-type Claps = ReturnType<typeof useClaps>;
+export type Claps = ReturnType<typeof useClaps>;
 
 /**
  * The clap button. `size="large"` is the article page's button (with its count, readers and undo); `size="small"` is

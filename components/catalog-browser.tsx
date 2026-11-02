@@ -415,6 +415,8 @@ function WordDialog({ item, onClose }: { item: CatalogItem | null; onClose: () =
  * The caller supplies the marks: this component knows nothing about what it is
  * listing, which is what keeps it reusable for the next catalogue.
  */
+const EMPTY_SET: ReadonlySet<string> = new Set();
+
 export function CatalogBrowser({
   id, title, description, noun, items, categories, itemIcon, itemImage, categoryIcon, question, onAsk, onExplain,
   cover = <TopicCover label={title} />,
@@ -472,12 +474,7 @@ export function CatalogBrowser({
   // Language is per card, not per catalogue: a reader switches the one word
   // they are stuck on and leaves the rest in English. A card absent from this
   // set is in English, which is the default.
-  const [inHindi, setInHindi] = useState<ReadonlySet<string>>(() => new Set());
-  const toggleLang = useCallback((word: string) => setInHindi(shown => {
-    const next = new Set(shown);
-    if (!next.delete(word)) next.add(word);
-    return next;
-  }), []);
+  const inHindi: ReadonlySet<string> = EMPTY_SET;
   // Which cards the reader has ticked off. Kept per catalogue and restored from
   // localStorage, so progress survives a reload and one catalogue's ticks never
   // appear in another.
@@ -719,13 +716,6 @@ export function CatalogBrowser({
                   <span className={styles.cardIcon}>{itemIcon(item)}</span>
                   <span className={styles.cardName}>{item.vocabulary ? asHeadword(item.name) : item.name}</span>
                 </span>
-                {item.vocabulary?.hindi && <div className={styles.langToggle} role="group" aria-label={`Language for ${item.name}`}>
-                  {(["en", "hi"] as const).map(choice => <button key={choice} type="button" className={styles.langOption}
-                    aria-pressed={choice === "hi" ? inHindi.has(item.name) : !inHindi.has(item.name)}
-                    onClick={() => { if ((choice === "hi") !== inHindi.has(item.name)) toggleLang(item.name); }}>
-                    {choice === "en" ? "En" : "Hi"}
-                  </button>)}
-                </div>}
                 {item.vocabulary && <PronounceButton word={item.name} className={styles.headAudio} />}
                 <button type="button" className={styles.cardCheckbox} role="checkbox" aria-checked={isChecked}
                   aria-label={`${isChecked ? label(item, "done") : label(item, "studied")}: ${item.name}`}

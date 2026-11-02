@@ -27,7 +27,7 @@ export function VocabularyWordCard({ card, selected, onOpen, onUpdate, onDelete,
 }) {
   const id = useId();
   const { entry } = card;
-  const hindi = card.language === "hi";
+  const hindi = false as boolean; // English only: cards saved earlier in Hindi read in English too.
   const titled = (word: string) => word.charAt(0).toUpperCase() + word.slice(1);
   const title = titled(entry.word);
   const imageUrl = vocabularyImageUrl(entry.word);
@@ -94,7 +94,6 @@ export function VocabularyWordCard({ card, selected, onOpen, onUpdate, onDelete,
         ) : (
           <>
             <p lang="en" className={styles.flashMeaning}>{entry.meaning}</p>
-            {entry.hindi && <p lang="hi" className={styles.hindiSubMeaning}>{entry.hindi}</p>}
           </>
         )}
         <div className={styles.sentence}>
@@ -104,7 +103,6 @@ export function VocabularyWordCard({ card, selected, onOpen, onUpdate, onDelete,
           ) : (
             <>
               <p lang="en">{entry.sentence || "An example sentence is unavailable for this entry."}</p>
-              {entry.sentenceHindi && <p lang="hi" className={styles.hindiSubSentence}>{entry.sentenceHindi}</p>}
             </>
           )}
         </div>
@@ -122,9 +120,6 @@ export function VocabularyWordCard({ card, selected, onOpen, onUpdate, onDelete,
       <footer className={styles.cardFooter}>
         <div className={styles.cardControls}>
           <Button type="button" variant="outline" size="xs" onClick={hear} aria-label={`Hear it: ${entry.word}`} title="Hear it" className={styles.hearButton}><Volume2 size={13} aria-hidden="true" /><span>Hear it</span></Button>
-          <Button type="button" variant="outline" size="xs" role="switch" aria-checked={hindi} aria-label={`Hindi for ${entry.word}`} onClick={() => onUpdate({ language: hindi ? "en" : "hi" })} className={styles.languageSwitch} title={hindi ? "अंग्रेज़ी में देखें" : "Switch to Hindi"}>
-            <span data-active={!hindi || undefined}>EN</span><span data-active={hindi || undefined}>HI</span>
-          </Button>
         </div>
         <div className={styles.cardActions}>
           <Button type="button" variant="ghost" size="xs" aria-label={`Open ${entry.word}`} onClick={onOpen}>Open<ArrowUpRight size={13} aria-hidden="true" /></Button>

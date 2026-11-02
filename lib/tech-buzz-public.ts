@@ -57,7 +57,7 @@ export const techIdOf = (article: Pick<TechBuzzArticle, "techId" | "technology">
 export type TechBuzzCard = {
   id: string; slug: string; title: string; subtitle: string; category: string; technology: string; techId?: string;
   color: string; publishedAt: string; readTimeMinutes: number; featured: boolean; trendingRank?: number;
-  claps: number; likes: number; dislikes: number; reactions: number; commentsCount: number; rating: { average: number; count: number };
+  claps: number; reposts: number; likes: number; dislikes: number; reactions: number; commentsCount: number; rating: { average: number; count: number };
   author: { name: string; role: string; avatar: string; verified: boolean }; coverImage: string; tags: string[];
   summary: string[]; milestone?: { label: string; value: string };
   /** Plain-text credit when the cover is an Unsplash photo chosen for the story (lib/server/tech-buzz-storage.ts). */
@@ -78,7 +78,7 @@ export function toCard(article: TechBuzzArticle): TechBuzzCard {
     id: article.id, slug: article.slug, title: article.title, subtitle: article.subtitle, category: article.category,
     technology: article.technology, techId: techIdOf(article), color: article.techBadgeColor, publishedAt: article.publishedAt,
     readTimeMinutes: article.readTimeMinutes, featured: !!article.featured, trendingRank: article.trendingRank,
-    claps: article.claps ?? 0, likes: article.likes ?? 0, dislikes: article.dislikes ?? 0, reactions: reactions.heart + reactions.unicorn + reactions.rocket + reactions.mindblown,
+    claps: article.claps ?? 0, reposts: article.reposts ?? 0, likes: article.likes ?? 0, dislikes: article.dislikes ?? 0, reactions: reactions.heart + reactions.unicorn + reactions.rocket + reactions.mindblown,
     commentsCount: article.commentsCount ?? 0, rating: { average: article.rating?.average ?? 0, count: article.rating?.count ?? 0 },
     author: { name: article.author.name, role: article.author.role, avatar: article.author.avatar, verified: !!article.author.verified },
     coverImage: article.coverImage, tags: ownTags(article.tags).slice(0, 5), summary: article.summaryBullets.slice(0, 3),
@@ -92,6 +92,9 @@ export function toCard(article: TechBuzzArticle): TechBuzzCard {
 }
 
 /** The free part of a story: everything but the body, plus its first section's opening paragraphs and an outline. */
+/** One of an open story's topics: how many stories carry it, and a few others to read. */
+export type TechBuzzTopicInfo = { tag: string; count: number; stories: { slug: string; title: string; readTimeMinutes: number }[] };
+
 export type TechBuzzPreview = Omit<TechBuzzArticle, "contentSections" | "founderTakeaway" | "comments"> & {
   teaser: TechBuzzSection; outline: string[]; lockedCodeSamples: number; photoCredit?: string; review?: ExpertReview;
   /** The community post an imported story was written from: the one place a platform is named, as plain text. */
@@ -121,8 +124,8 @@ export const toMemberContent = (article: TechBuzzArticle): TechBuzzMemberContent
   ({ sections: article.contentSections, founderTakeaway: article.founderTakeaway, comments: article.comments ?? [] });
 
 /** Popularity for "Most popular": reader signals weighted the same way for every story. */
-export const popularity = (card: Pick<TechBuzzCard, "claps" | "likes" | "reactions" | "commentsCount" | "rating">) =>
-  card.claps + card.likes * 3 + card.reactions * 2 + card.commentsCount * 5 + card.rating.average * Math.log10(card.rating.count + 1) * 40;
+export const popularity = (card: Pick<TechBuzzCard, "claps" | "reposts" | "likes" | "reactions" | "commentsCount" | "rating">) =>
+  card.claps + card.reposts * 6 + card.likes * 3 + card.reactions * 2 + card.commentsCount * 5 + card.rating.average * Math.log10(card.rating.count + 1) * 40;
 
 /** Technologies with a logo in public/images/tech (64px PNGs); TanStack Start shares TanStack's. */
 const LOGOS = new Set(["agentic-ai","angular","aws","claude","django","docker","express","fastapi","flutter","git","go","google","graphql","javascript","kubernetes","langchain","langflow","langgraph","langsmith","linux","microsoft","n8n","nestjs","nextjs","nodejs","openai","playwright","postgresql","python","react","redis","rust","supabase","system-design","tanstack","typescript","vitest","vue","zustand"]);

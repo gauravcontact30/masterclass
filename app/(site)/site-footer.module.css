@@ -1,29 +1,33 @@
-/* The public pages' dark footer (site-footer.tsx), in the landing footer's palette: near-black #141413, warm light text,
+/* The site's dark footer (site-footer.tsx), in the landing footer's palette: near-black #141413, warm light text,
    terracotta headings. Every text colour here keeps 4.5:1 or better on the background. */
 .footer { margin-top: auto; overflow-x: clip; border-top: 1px solid #2a2a28; background: #141413; color: #e8e6dc; font-size: 13px; }
 .inner { width: min(1440px, calc(100% - clamp(32px, 8vw, 96px))); margin: 0 auto; }
 .footer :focus-visible { outline: 2px solid #d97757; outline-offset: 3px; border-radius: 6px; }
+@media print { .footer { display: none; } }
 
 /* Brand and pitch on the left, the contact and plans cards on the right; stacked below 1100 px. */
 .intro { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 2fr); gap: 32px 48px; padding: 52px 0 40px; border-bottom: 1px solid #2a2a28; }
-.brand { display: grid; align-content: start; gap: 14px; min-width: 0; }
-.brand > a { justify-self: start; text-decoration: none; }
-.brand :global(.brand-name) { color: #f5f4ed; }
-.brand :global(.brand-mark) { color: #d97757; }
-.brand p { max-width: 380px; margin: 0; font-size: 13.5px; line-height: 1.7; color: #c9c7bd; }
-.brand .weekly { display: inline-flex; align-items: center; gap: 8px; font-size: 12.5px; color: #e9a383; }
-.tracks { display: flex; flex-wrap: wrap; gap: 8px; margin: 0; padding: 0; list-style: none; }
-.tracks a { display: inline-flex; align-items: center; gap: 7px; min-height: 30px; padding: 0 12px; border: 1px solid #34332f; border-radius: 999px; background: #1d1d1b; color: #e8e6dc; font-size: 12px; text-decoration: none; transition: border-color .2s, background-color .2s; }
-.tracks a::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: color-mix(in srgb, var(--tone, #d97757) 70%, #fff); box-shadow: 0 0 0 2px color-mix(in srgb, var(--tone, #d97757) 45%, transparent); }
-/* Mixed with white: a near-black track colour (Next.js, #111827) would vanish on the dark footer. */
-.tracks a:hover { border-color: color-mix(in srgb, var(--tone, #d97757) 70%, #fff); background: #23231f; }
-.ctas { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 4px; }
-.ctas a { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 42px; padding: 0 18px; border-radius: 999px; font-size: 13.5px; font-weight: 600; text-decoration: none; transition: transform .2s, background-color .2s, border-color .2s; }
-.primary { background: #d97757; color: #1b1410; }
-.primary:hover { background: #e58a6a; transform: translateY(-1px); }
-.secondary { border: 1px solid #4a4843; color: #f5f4ed; }
-.secondary svg { color: #e9a383; }
-.secondary:hover { border-color: #d97757; transform: translateY(-1px); }
+/* The left card, in the same form as the contact and plans cards beside it (landing-footer-contact.module.css). */
+.brand { display: flex; flex-direction: column; min-width: 0; overflow: hidden; border: 1px solid #f5dac6; border-radius: 14px; background: #faf9f5; color: #141413; box-shadow: 0 20px 40px -32px rgba(0, 0, 0, .8); }
+.brandHead { display: grid; gap: 8px; padding: 14px; border-bottom: 1px solid #e8e6dc; background: linear-gradient(120deg, #fef5ee, #faf9f5 70%); }
+.brandHead > a { justify-self: start; text-decoration: none; }
+.brandHead :global(.brand-name) { color: #141413; }
+.brandHead :global(.brand-mark) { color: #bb5834; }
+.brandHead p { margin: 0; font-size: 13px; line-height: 1.55; color: #5e5d59; text-align: left; }
+.brandBody { display: flex; flex: 1; flex-direction: column; justify-content: space-between; gap: 14px; padding: 14px; }
+.weekly { display: flex; align-items: center; gap: 10px; margin: 0; font-size: 13px; line-height: 1.4; color: #8f3f23; text-align: left; }
+.weekly span { display: grid; flex: none; place-items: center; width: 28px; height: 28px; border: 1px solid #f5dac6; border-radius: 8px; background: #fef5ee; color: #bb5834; }
+.tracks { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.tracks a { display: inline-flex; align-items: center; gap: 7px; min-height: 30px; padding: 0 11px; border: 1px solid #e8e6dc; border-radius: 999px; background: #fff; color: #3d3d3a; font-size: 12px; text-decoration: none; transition: border-color .2s, background-color .2s; }
+.tracks a::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--tone, #d97757); box-shadow: 0 0 0 2px color-mix(in srgb, var(--tone, #d97757) 22%, transparent); }
+.tracks a:hover { border-color: var(--tone, #d97757); background: #fffdfa; }
+.ctas { display: flex; flex-wrap: wrap; gap: 8px; }
+.ctas a { display: inline-flex; flex: 1 1 auto; align-items: center; justify-content: center; gap: 8px; min-height: 40px; padding: 0 14px; border-radius: 10px; font-size: 13px; font-weight: 600; text-decoration: none; white-space: nowrap; transition: transform .2s, background-color .2s, border-color .2s; }
+.primary { background: #bb5834; color: #fff; }
+.primary:hover { background: #a64c2c; transform: translateY(-1px); }
+.secondary { border: 1px solid #e3d9cc; background: #fff; color: #3d3d3a; }
+.secondary svg { color: #bb5834; }
+.secondary:hover { border-color: #bb5834; transform: translateY(-1px); }
 .cards { display: flex; flex-wrap: wrap; align-items: stretch; justify-content: flex-end; gap: 20px; min-width: 0; }
 .cards > * { flex: 1 1 340px; }
 

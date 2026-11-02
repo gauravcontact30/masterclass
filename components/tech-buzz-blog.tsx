@@ -8,9 +8,8 @@ import Link from "next/link";
 import {
   ArrowRight, Binary, Bookmark, BookmarkCheck, BookOpen, Bot, Building2, CheckCircle2, ChevronDown, ChevronLeft, ChevronRight, Cloud, Clock,
   Compass, FlaskConical, Flame, Hash, Heart, Layers, LayoutGrid, LayoutList, Maximize2, MessageCircle, Minimize2, Network,
-  PanelsTopLeft, PenLine, Rocket, Search, Server, ShieldCheck, Sparkles, Star, TrendingUp, Trophy, X, Zap, type LucideIcon,
+  PanelsTopLeft, PenLine, Repeat2, Rocket,  Server, ShieldCheck, Sparkles, Star, TrendingUp, Trophy, UserCheck, X, Zap, type LucideIcon,
 } from "lucide-react";
-import { LanguageSwitcher } from "./language-switcher";
 import { BrandMark } from "./brand-mark";
 import { useLanguage } from "./language-provider";
 import { getDiwaliFestiveSaleInfo } from "@/lib/festive-sale";
@@ -22,6 +21,9 @@ import { FontFamilyDropdown } from "./font-family-dropdown";
 import styles from "./tech-buzz-blog.module.css";
 import { ReviewStars } from "./tech-buzz-review-stars";
 import { TechBuzzShowcase } from "./tech-buzz-showcase";
+import { setMark, useMarks, useMarksSync } from "@/lib/tech-buzz-marks";
+import { markKey } from "@/lib/tech-buzz-mark-keys";
+import { replaceFeedParams, subscribeUrl, urlParam } from "@/lib/tech-buzz-url";
 
 /**
  * The Tech Buzz blog: an elite, reading-first technology publication.
@@ -29,16 +31,17 @@ import { TechBuzzShowcase } from "./tech-buzz-showcase";
  * interactive learning tracks (Agentic AI, LangChain, LangGraph, LangSmith, LangFlow,
  * n8n, Next.js 16+, React 19+, System Design), and curated learning roadmaps.
  */
-type Feed = "for-you" | "latest" | "popular" | "rated" | "saved";
+type Feed = "for-you" | "following" | "latest" | "popular" | "rated" | "saved" | "reposts";
 const FEEDS: { id: Feed; label: string; icon: LucideIcon }[] = [
   { id: "for-you", label: "For you", icon: Sparkles },
+  { id: "following", label: "Following", icon: UserCheck },
   { id: "latest", label: "Latest", icon: Clock },
   { id: "popular", label: "Most popular", icon: Flame },
   { id: "rated", label: "Top rated", icon: Star },
   { id: "saved", label: "Reading list", icon: Bookmark },
+  { id: "reposts", label: "Your reposts", icon: Repeat2 },
 ];
 const PAGE = 12;
-const SAVED_KEY = "masterclass:tech-buzz-bookmarks";
 const TONES = ["#fdf0e6", "#e7f5ee", "#f0ecfb", "#e8f2fb", "#fdf6dc", "#fcebef", "#eef3e6", "#e4f5f5"];
 
 const VIEW_KEY = "masterclass:tech-buzz-view";
@@ -55,6 +58,10 @@ const writeStored = (key: string, value: string) => {
 };
 const useStored = (key: string) => useSyncExternalStore(subscribe, () => readStored(key), () => null);
 const never = () => () => {};
+const readUrlTag = () => urlParam("tag");
+const readUrlQuery = () => urlParam("q") ?? "";
+const readUrlFeed = () => urlParam("feed");
+const readUrlTopic = () => urlParam("topic");
 
 export type TechBuzzTopic = { id: string; label: string; count: number };
 export type TechBuzzGroup = { category: string; count: number; topics: TechBuzzTopic[] };
@@ -227,16 +234,33 @@ export function TechBuzzBlog({ cards, groups, showcase = false }: { cards: TechB
   const [feed, setFeed] = useState<Feed>("for-you");
   const [topic, setTopic] = useState<string | null>(null);
   const [activeRoadmapId, setActiveRoadmapId] = useState<string | null>(null);
-  const [query, setQuery] = useState("");
   const [shown, setShown] = useState(PAGE);
-  const [savedThisVisit, setSavedThisVisit] = useState<Record<string, boolean> | null>(null);
   const [viewThisVisit, setViewThisVisit] = useState<"list" | "grid" | null>(null);
-  const storedSaved = useStored(SAVED_KEY);
+  useMarksSync();
+  const saved = useMarks("save");
+  const reposted = useMarks("repost");
+  const hidden = useMarks("hide");
+  const less = useMarks("less");
+  const mutedTopics = useMarks("mute_topic");
+  const mutedAuthors = useMarks("mute_author");
+  const followedTopics = useMarks("topic");
+  const followedAuthors = useMarks("author");
+  // A topic from the URL applies until the reader clears it; a different ?tag= applies again.
+  const urlTag = useSyncExternalStore(subscribeUrl, readUrlTag, () => null);
+  // The search lives in the header, and other pages link here to a feed or a technology: each applies when the URL changes.
+  const query = useSyncExternalStore(subscribeUrl, readUrlQuery, () => "");
+  const urlFeed = useSyncExternalStore(subscribeUrl, readUrlFeed, () => null);
+  const urlTopic = useSyncExternalStore(subscribeUrl, readUrlTopic, () => null);
+  const [seenUrl, setSeenUrl] = useState<{ query: string; feed: string | null; topic: string | null }>({ query: "", feed: null, topic: null });
+  if (seenUrl.query !== query || seenUrl.feed !== urlFeed || seenUrl.topic !== urlTopic) {
+    setSeenUrl({ query, feed: urlFeed, topic: urlTopic });
+    setShown(PAGE);
+    if (seenUrl.feed !== urlFeed) setFeed(FEEDS.find(item => item.id === urlFeed)?.id ?? "for-you");
+    if (seenUrl.topic !== urlTopic) { setTopic(urlTopic); setActiveRoadmapId(null); }
+  }
+  const [clearedTag, setClearedTag] = useState<string | null>(null);
+  const tag = urlTag && urlTag !== clearedTag ? urlTag : null;
   const storedView = useStored(VIEW_KEY);
-  const saved = useMemo<Record<string, boolean>>(() => {
-    if (savedThisVisit) return savedThisVisit;
-    try { return JSON.parse(storedSaved ?? "{}"); } catch { return {}; }
-  }, [savedThisVisit, storedSaved]);
   const view = viewThisVisit ?? (storedView === "grid" ? "grid" : "list");
   const saleEnded = useSyncExternalStore(never, () => !getDiwaliFestiveSaleInfo(Date.now()).active, () => false);
   const sale = getDiwaliFestiveSaleInfo();
@@ -249,18 +273,29 @@ export function TechBuzzBlog({ cards, groups, showcase = false }: { cards: TechB
   const endTrackIndex = startTrackIndex + TRACKS_PER_PAGE;
   const currentTracks = FEATURED_TRACKS.slice(startTrackIndex, endTrackIndex);
 
-  const toggleSaved = (id: string) => {
-    const next = { ...saved, [id]: !saved[id] };
-    setSavedThisVisit(next);
-    writeStored(SAVED_KEY, JSON.stringify(next));
-  };
+  const toggleSaved = (id: string) => { void setMark("save", id, !saved[id]); };
   const chooseView = (next: "list" | "grid") => { setViewThisVisit(next); writeStored(VIEW_KEY, next); };
 
   const activeRoadmap = useMemo(() => LEARNING_ROADMAPS.find(r => r.id === activeRoadmapId) ?? null, [activeRoadmapId]);
 
+  // What the reader tuned out: hidden stories, muted authors and muted topics leave every general list on the page.
+  const tunedCards = useMemo(() => cards.filter(card =>
+    !hidden[card.id] && !mutedAuthors[markKey(card.author.name)] && !card.tags.some(item => mutedTopics[markKey(item)])
+  ), [cards, hidden, mutedAuthors, mutedTopics]);
+  // "Show less like this": the story leaves For you, and stories on the same technology or tags sink.
+  const lessLike = useMemo(() => {
+    const marked = cards.filter(card => less[card.id]);
+    return { tags: new Set(marked.flatMap(card => card.tags.map(markKey))), techs: new Set(marked.map(card => card.techId).filter(Boolean)) };
+  }, [cards, less]);
+
   const ranked = useMemo(() => {
     const q = query.trim().toLowerCase();
-    const list = cards.filter(card => {
+    // A reader's own lists stay complete, whatever they tuned out.
+    const list = (feed === "saved" || feed === "reposts" ? cards : tunedCards).filter(card => {
+      if (feed === "for-you" && less[card.id]) return false;
+      if (tag && !card.tags.some(item => markKey(item) === markKey(tag))) return false;
+      if (feed === "following" && !followedAuthors[markKey(card.author.name)] && !card.tags.some(item => followedTopics[markKey(item)])) return false;
+      if (feed === "reposts" && !reposted[card.id]) return false;
       // Roadmap filter
       if (activeRoadmap && (!card.techId || !activeRoadmap.techIds.includes(card.techId))) {
         return false;
@@ -283,26 +318,39 @@ export function TechBuzzBlog({ cards, groups, showcase = false }: { cards: TechB
     const newest = Math.max(...cards.map(card => time(card.publishedAt)), 0);
     const freshness = (card: TechBuzzCard) => Math.max(0, 30 - (newest - time(card.publishedAt)) / 86400000) * 40;
     const score: Record<Feed, (card: TechBuzzCard) => number> = {
-      "for-you": card => popularity(card) * 0.4 + freshness(card) + (card.featured ? 400 : 0),
+      "for-you": card => popularity(card) * 0.4 + freshness(card) + (card.featured ? 400 : 0)
+        - (card.techId && lessLike.techs.has(card.techId) ? 500 : 0) - card.tags.filter(item => lessLike.tags.has(markKey(item))).length * 150,
+      following: card => time(card.publishedAt),
       latest: card => time(card.publishedAt),
       popular: popularity,
       rated: card => (card.rating.count ? card.rating.average * 1000 + Math.log10(card.rating.count) : 0),
       saved: card => time(card.publishedAt),
+      reposts: card => time(card.publishedAt),
     };
     return [...list].sort((a, b) => score[feed](b) - score[feed](a));
-  }, [cards, feed, topic, activeRoadmap, query, saved]);
+  }, [cards, tunedCards, feed, topic, tag, activeRoadmap, query, saved, reposted, less, lessLike, followedTopics, followedAuthors]);
 
-  const filtered = !!(topic || activeRoadmapId || query.trim()) || feed !== "for-you";
+  const filtered = !!(topic || tag || activeRoadmapId || query.trim()) || feed !== "for-you";
   const hero = filtered ? null : ranked[0];
   const stories = hero ? ranked.slice(1) : ranked;
   const visible = stories.slice(0, shown);
-  const staffPicks = useMemo(() => [...cards].filter(card => card.rating.count).sort((a, b) => b.rating.average - a.rating.average).slice(0, 4), [cards]);
-  const trending = useMemo(() => [...cards].sort((a, b) => (a.trendingRank ?? 99) - (b.trendingRank ?? 99) || popularity(b) - popularity(a)).slice(0, 5), [cards]);
-  const milestones = useMemo(() => cards.filter(card => card.milestone && card.claps > 0).slice(0, 3), [cards]);
+  const staffPicks = useMemo(() => [...tunedCards].filter(card => card.rating.count).sort((a, b) => b.rating.average - a.rating.average).slice(0, 4), [tunedCards]);
+  const trending = useMemo(() => [...tunedCards].sort((a, b) => (a.trendingRank ?? 99) - (b.trendingRank ?? 99) || popularity(b) - popularity(a)).slice(0, 5), [tunedCards]);
+  const milestones = useMemo(() => tunedCards.filter(card => card.milestone && card.claps > 0).slice(0, 3), [tunedCards]);
   const topicLabel = groups.flatMap(group => group.topics).find(item => item.id === topic)?.label ?? topic;
   const savedCount = cards.filter(card => saved[card.id]).length;
   const spotlight = useMemo(() => groups.map(group => ({ ...group, cover: [...cards].filter(card => card.category === group.category).sort((a, b) => popularity(b) - popularity(a))[0] })), [groups, cards]);
   const resetTo = (next: () => void) => { next(); setShown(PAGE); };
+  const authorName = (key: string) => cards.find(card => markKey(card.author.name) === key)?.author.name ?? key;
+  const tagName = (key: string) => cards.flatMap(card => card.tags).find(item => markKey(item) === key) ?? key;
+  const titleOf = (id: string) => cards.find(card => card.id === id)?.title;
+  const short = (title: string) => (title.length > 34 ? `${title.slice(0, 32)}…` : title);
+  const tunedOut: { kind: "mute_author" | "mute_topic" | "hide" | "less"; key: string; label: string }[] = [
+    ...Object.keys(mutedAuthors).map(key => ({ kind: "mute_author" as const, key, label: `Author: ${authorName(key)}` })),
+    ...Object.keys(mutedTopics).map(key => ({ kind: "mute_topic" as const, key, label: `Topic: ${tagName(key)}` })),
+    ...Object.keys(less).filter(titleOf).map(key => ({ kind: "less" as const, key, label: `Less like: ${short(titleOf(key)!)}` })),
+    ...Object.keys(hidden).filter(titleOf).map(key => ({ kind: "hide" as const, key, label: `Hidden: ${short(titleOf(key)!)}` })),
+  ];
 
   // Collapsible sidebars for full-width reading experience (collapsed by default for full-width reading)
   const [leftCollapsed, setLeftCollapsed] = useState<boolean>(true);
@@ -435,18 +483,6 @@ export function TechBuzzBlog({ cards, groups, showcase = false }: { cards: TechB
         </div>
 
         <div className={styles.tools}>
-          <label className={styles.search}>
-            <Search size={16} aria-hidden="true" />
-            <span className={styles.srOnly}>Search stories</span>
-            <input
-              type="search"
-              value={query}
-              placeholder={t("techBuzzSearchPlaceholder")}
-              onChange={event => resetTo(() => setQuery(event.target.value))}
-            />
-            {query && <button type="button" onClick={() => resetTo(() => setQuery(""))} aria-label={t("techBuzzClearSearch")}><X size={14} /></button>}
-          </label>
-
           {/* Creative & Professional Shadcn UI Reading Font Dropdown (75+ Google Fonts) */}
           <FontFamilyDropdown
             value={currentFont.id}
@@ -477,14 +513,11 @@ export function TechBuzzBlog({ cards, groups, showcase = false }: { cards: TechB
             {leftCollapsed && rightCollapsed ? <Minimize2 size={15} aria-hidden="true" /> : <Maximize2 size={15} aria-hidden="true" />}
             <span>{leftCollapsed && rightCollapsed ? "Standard" : "Full width"}</span>
           </button>
-          <div className={styles.langWrapper}>
-            <LanguageSwitcher size="sm" />
-          </div>
         </div>
       </div>
     </header>
 
-    {showcase && <TechBuzzShowcase cards={cards} />}
+    {showcase && <TechBuzzShowcase cards={tunedCards} />}
 
     {/* 2. Featured Technology Learning Tracks Bar with Proper Pagination */}
     <section data-track-topic={TECH_BUZZ_TRACKED.tracks} className={styles.techTracksSection} aria-label={t("techBuzzPopularTracks")}>
@@ -637,6 +670,14 @@ export function TechBuzzBlog({ cards, groups, showcase = false }: { cards: TechB
       })}
     </div>
 
+    {/* What the reader tuned out from the More menu on a story, and the way back */}
+    {tunedOut.length > 0 && <div className={styles.tuned} role="group" aria-label="Your feed settings">
+      <span>Tuned out</span>
+      {tunedOut.map(item => <button key={`${item.kind}:${item.key}`} type="button" onClick={() => { void setMark(item.kind, item.key, false); }} aria-label={`Undo: ${item.label}`} title="Undo">
+        {item.label}<X size={13} aria-hidden="true" />
+      </button>)}
+    </div>}
+
     {/* 5. Main Content Grid Layout */}
     <div
       className={styles.layout}
@@ -786,14 +827,15 @@ export function TechBuzzBlog({ cards, groups, showcase = false }: { cards: TechB
       {/* The site chrome already renders the page's one <main>; the feed is a named region inside it. */}
       <section data-track-topic={TECH_BUZZ_TRACKED.feed} className={styles.feed} aria-label="Stories">
         {/* Active Filter Notification */}
-        {(topic || activeRoadmap || query.trim()) && (
+        {(topic || tag || activeRoadmap || query.trim()) && (
           <div className={styles.filterNote} role="status">
             <span>
               <b>{ranked.length}</b> {ranked.length === 1 ? "masterclass guide" : "masterclass guides"}
               {activeRoadmap ? ` in “${activeRoadmap.title}”` : topicLabel ? ` on ${topicLabel}` : ""}
+              {tag ? ` tagged “${tag}”` : ""}
               {query.trim() ? ` matching “${query.trim()}”` : ""}
             </span>
-            <button type="button" onClick={() => resetTo(() => { setTopic(null); setActiveRoadmapId(null); setQuery(""); })}>
+            <button type="button" onClick={() => resetTo(() => { setTopic(null); setActiveRoadmapId(null); setClearedTag(urlTag); replaceFeedParams({ q: null, topic: null, tag: null }); })}>
               {t("techBuzzResetFilters")}
             </button>
           </div>
@@ -965,13 +1007,16 @@ export function TechBuzzBlog({ cards, groups, showcase = false }: { cards: TechB
 
         {/* Stories List / Grid, under a heading that names what is listed */}
         <div className={styles.storiesHead}>
-          <h2 id="tb-stories-heading">{activeRoadmap ? activeRoadmap.title : topicLabel ? `${topicLabel} stories` : FEEDS.find(item => item.id === feed)?.label ?? "Stories"}</h2>
+          <h2 id="tb-stories-heading">{activeRoadmap ? activeRoadmap.title : tag ? `${tag} stories` : topicLabel ? `${topicLabel} stories` : FEEDS.find(item => item.id === feed)?.label ?? "Stories"}</h2>
           <span className={styles.storiesCount}>{stories.length} {stories.length === 1 ? "story" : "stories"}</span>
         </div>
         {visible.length === 0 ? (
           <div className={styles.empty}>
             <Bookmark size={28} aria-hidden="true" />
-            <p>{feed === "saved" ? "Your reading list is empty. Tap the bookmark on any story to save it here." : "No technology stories match yet. Try another technology, roadmap, or search term."}</p>
+            <p>{feed === "saved" ? "Your reading list is empty. Tap the bookmark on any story to save it here."
+              : feed === "following" ? "Nothing here yet. Open a story and follow its topics or author, and new stories will collect here."
+              : feed === "reposts" ? "You have not reposted anything yet. Use the repost button on any open story."
+              : "No technology stories match yet. Try another technology, roadmap, or search term."}</p>
           </div>
         ) : (
           <ol className={styles.stories} data-view={view} aria-labelledby="tb-stories-heading">

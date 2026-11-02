@@ -5,9 +5,8 @@ import learningCard from "./learning-card.module.css";
 import { LearningPicture } from "@/components/learning-picture";
 import { learningImageUrl } from "@/lib/learning-image";
 import { useEffect, useMemo, useState, useSyncExternalStore } from "react";
-import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import { ArrowLeft, ArrowRight, BookOpen, Check, GraduationCap, MessageCircle, Sparkles } from "lucide-react";
+import { ArrowLeft, ArrowRight, BookOpen, Check,   Sparkles } from "lucide-react";
 import type { GeneratedLesson, LessonSection, ProLesson } from "@/lib/pro-learn/types";
 import { PRO_LEVELS, PRO_TRACKS, type ProTrack } from "@/lib/pro-learn/tracks";
 import { CodeBlock } from "./pro-markdown";
@@ -60,10 +59,6 @@ function Reader({ lesson, track, siblings, done, builtIn, onToggleDone, onBack, 
       {lesson.sections.map(section => <Section key={section.h} section={section}/>)}
       <LearningResources key={track.id} technology={track.name} />
       {!!lesson.takeaways.length && <div className={styles.takeaways}><h3>Key takeaways</h3><ul>{lesson.takeaways.map(item => <li key={item}>{item}</li>)}</ul></div>}
-      <div className={styles.articleFoot}>
-        <Link className={`${styles.btn} ${styles.outline} ${styles.small}`} href={`/learning/mentors?track=${track.id}&q=${encodeURIComponent(`Go deeper on: ${lesson.title}`)}`}><MessageCircle size={15}/>Ask the mentor</Link>
-        <Link className={`${styles.btn} ${styles.outline} ${styles.small}`} href={`/learning/quiz?track=${track.id}&topic=${encodeURIComponent(lesson.title)}`}><GraduationCap size={15}/>Quiz me on this</Link>
-      </div>
       {(previous || next) && <nav className={styles.articleNav} aria-label="Lesson navigation">
         {previous ? <button onClick={() => onOpen(previous)}><small>← Previous</small><b>{previous.title}</b></button> : <span/>}
         {next ? <button onClick={() => onOpen(next)}><small>Next →</small><b>{next.title}</b></button> : <span/>}

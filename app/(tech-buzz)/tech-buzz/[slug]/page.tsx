@@ -5,6 +5,7 @@ import { siteName, siteUrl } from "@/lib/seo";
 import { getPublishedTechBuzzArticle, listPublishedTechBuzzArticles, withUnsplashCovers } from "@/lib/server/tech-buzz-storage";
 import { TechBuzzArticleView } from "@/components/tech-buzz-article-view";
 import { isTechnologyStory, techIdOf, toCard, toPreview } from "@/lib/tech-buzz-public";
+import { markKey } from "@/lib/tech-buzz-mark-keys";
 import { withReview } from "@/lib/tech-buzz-reviews";
 
 interface PageProps {
@@ -93,6 +94,13 @@ export default async function TechBuzzArticlePage({ params }: PageProps) {
   const nextStory = index >= 0 && index < stories.length - 1 ? withReview(toCard(stories[index + 1])) : null;
   const [preview] = await withUnsplashCovers([withReview({ ...toPreview(article), techId: techIdOf(article) })]);
 
+  // Real counts for the topics above the title, and a few other stories on each for its preview card.
+  const topics = article.tags.slice(0, 5).map(tag => {
+    const matching = stories.filter(story => story.tags.some(item => markKey(item) === markKey(tag)));
+    return { tag, count: matching.length, stories: matching.filter(story => story.id !== article.id).slice(0, 3).map(story => ({ slug: story.slug, title: story.title, readTimeMinutes: story.readTimeMinutes })) };
+  });
+  const trackCount = stories.filter(story => story.technology === article.technology).length;
+
   const origin = siteUrl().href;
   const pageUrl = new URL(`/tech-buzz/${article.slug}`, origin).href;
   const image = preview.photoCredit ? `${preview.coverImage}&w=1200&q=80&auto=format&fit=crop` : new URL(preview.coverImage, origin).href;
@@ -141,7 +149,7 @@ export default async function TechBuzzArticlePage({ params }: PageProps) {
   return (
     <>
       <JsonLd data={[articleSchema, breadcrumbSchema]} />
-      <TechBuzzArticleView article={preview} related={related} prevStory={prevStory} nextStory={nextStory} />
+      <TechBuzzArticleView article={preview} related={related} prevStory={prevStory} nextStory={nextStory} topics={topics} trackCount={trackCount} />
     </>
   );
 }

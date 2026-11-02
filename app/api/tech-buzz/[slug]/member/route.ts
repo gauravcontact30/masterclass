@@ -3,6 +3,7 @@ import { currentUser } from "@/lib/server/auth";
 import { account } from "@/lib/server/repository";
 import { isSuperAdminUser } from "@/lib/study/preparations";
 import { getPublishedTechBuzzArticle } from "@/lib/server/tech-buzz-storage";
+import { listComments } from "@/lib/server/tech-buzz-marks";
 import { toMemberContent } from "@/lib/tech-buzz-public";
 
 /**
@@ -18,6 +19,8 @@ export async function GET(request: Request, { params }: { params: Promise<{ slug
     const user = await currentUser();
     if (!user) return Response.json({ member: false, reason: "signin_required" });
     if (!isSuperAdminUser(user) && (await account(user.id)).tier === "free") return Response.json({ member: false, reason: "subscription_required" });
-    return Response.json({ member: true, content: toMemberContent(article) });
+    const content = toMemberContent(article);
+    const readers = await listComments(article.id, user.id, isSuperAdminUser(user));
+    return Response.json({ member: true, content: { ...content, comments: [...readers, ...content.comments] } });
   }, request);
 }

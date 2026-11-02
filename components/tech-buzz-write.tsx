@@ -3,17 +3,17 @@
 import { RouteH1 } from "@/components/route-heading";
 import { useCallback, useEffect, useRef, useState, type ChangeEvent, type ReactNode } from "react";
 import Image from "@/components/responsive-image";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowDown, ArrowLeft, ArrowUp, Code2, Eye, ImagePlus, Lightbulb, List, ListOrdered, Loader2, PenLine, Plus, Quote, Send, Trash2, X } from "lucide-react";
+import { ArrowDown, ArrowUp, Code2, Eye, ImagePlus, Lightbulb, List, ListOrdered, Loader2, PenLine, Plus, Quote, Send, Trash2, X } from "lucide-react";
 import { CodeFiles } from "./code-files";
 import { RichBody } from "./tech-buzz-rich-body";
+import { WritePanel } from "./tech-buzz-write-panel";
 import { ProseText } from "./tech-buzz-prose";
 import { INK_LIMITS, inkWords, WRITE_TECHNOLOGIES, type InkListItem, type InkSection, type InkStatus, type InkStory } from "@/lib/tech-buzz-ink";
 import styles from "./tech-buzz-write.module.css";
 
 /*
- * Write: a member's editor for their own Tech Buzz story (lib/tech-buzz-ink.ts). A story is a title, a subtitle, a
+ * Slate - Ink: a member's editor for their own Tech Buzz story (lib/tech-buzz-ink.ts). A story is a title, a subtitle, a
  * cover and sections; each section has a heading and paragraphs, plus optional steps, bullet points, code files,
  * a callout, a quote and a picture, the same parts the /tech-buzz story page renders. Drafts autosave to Supabase a
  * few seconds after typing stops; Publish puts the story live on /tech-buzz at once. A section's text has a formatting
@@ -100,7 +100,6 @@ function toSections(drafts: Draft[]): InkSection[] {
 }
 
 const TIME = new Intl.DateTimeFormat("en-IN", { hour: "numeric", minute: "2-digit", timeZone: "Asia/Kolkata" });
-const DATE = new Intl.DateTimeFormat("en-IN", { day: "numeric", month: "short", year: "numeric", timeZone: "Asia/Kolkata" });
 
 async function readError(response: Response) {
   const body = await response.json().catch(() => null) as { error?: string } | null;
@@ -220,7 +219,6 @@ export function TechBuzzWrite({ initial, stories: initialStories, authorName }: 
   }
 
   async function remove(item: InkListItem) {
-    if (!window.confirm(`Delete "${item.title}"? ${item.status === "published" ? "It will be removed from Tech Buzz. " : ""}This cannot be undone.`)) return;
     const response = await fetch(`/api/tech-buzz/write/${item.id}`, { method: "DELETE" });
     if (!response.ok) { setError(message(await readError(response))); return; }
     if (item.id === id) { router.replace("/tech-buzz/write"); router.refresh(); return; }
@@ -234,8 +232,7 @@ export function TechBuzzWrite({ initial, stories: initialStories, authorName }: 
 
   return <div className={styles.page}>
     <header className={styles.bar}>
-      <Link href="/tech-buzz" className={styles.back}><ArrowLeft size={16} aria-hidden="true" />Tech Buzz</Link>
-      <span className={styles.brand}><PenLine size={16} aria-hidden="true" />Write</span>
+      <span className={styles.brand}><PenLine size={16} aria-hidden="true" />Slate - Ink</span>
       <span className={styles.state} aria-live="polite">{status === "published" ? "Published · " : "Draft · "}{stateLine}</span>
       <span className={styles.actions}>
         <button type="button" className={styles.ghost} aria-pressed={preview} onClick={() => setPreview(value => !value)}><Eye size={15} aria-hidden="true" />{preview ? "Edit" : "Preview"}</button>
@@ -333,42 +330,7 @@ export function TechBuzzWrite({ initial, stories: initialStories, authorName }: 
         </>}
       </main>
 
-      <aside className={styles.side}>
-        <section className={styles.panel} aria-labelledby="write-settings">
-          <h2 id="write-settings">Story settings</h2>
-          <label>Technology
-            <select value={meta.technology} onChange={event => editMeta({ technology: event.target.value })}>
-              {WRITE_TECHNOLOGIES.map(item => <option key={item.id} value={item.id}>{item.label}</option>)}
-            </select>
-          </label>
-          <span className={styles.techPreview}><Image src={`/images/tech/${tech.id}.png`} alt="" width={18} height={18} />Files under {tech.label} · {tech.category}</span>
-          <label>Tags <small>(comma separated, up to {INK_LIMITS.tags})</small>
-            <input value={meta.tags} onChange={event => editMeta({ tags: event.target.value })} placeholder="LangGraph, Agents, RAG" />
-          </label>
-          <label>Key takeaways <small>(one per line, up to 5)</small>
-            <textarea rows={4} value={meta.takeaways} onChange={event => editMeta({ takeaways: event.target.value })} placeholder="What readers should remember" />
-          </label>
-          <label>Closing takeaway
-            <textarea rows={3} value={meta.founderTakeaway} onChange={event => editMeta({ founderTakeaway: event.target.value })} maxLength={600} placeholder="A short closing thought for the reader's next project" />
-          </label>
-          <p className={styles.count}>{words} words · about {Math.max(1, Math.round(words / 220))} min read{words < INK_LIMITS.minPublishWords ? ` · ${INK_LIMITS.minPublishWords - words} more to publish` : ""}</p>
-        </section>
-
-        <section className={styles.panel} aria-labelledby="write-stories">
-          <h2 id="write-stories">Your stories</h2>
-          <Link href="/tech-buzz/write" className={styles.newStory} onClick={event => { if (!id) event.preventDefault(); }}><Plus size={14} aria-hidden="true" />New story</Link>
-          {stories.length ? <ul className={styles.stories}>
-            {stories.map(item => <li key={item.id} aria-current={item.id === id ? "true" : undefined}>
-              <a href={`/tech-buzz/write?id=${item.id}`} className={styles.storyTitle}>{item.title}</a>
-              <span className={styles.storyMeta}><b data-status={item.status}>{item.status === "published" ? "Published" : "Draft"}</b>{DATE.format(Date.parse(item.status === "published" ? item.publishedAt : item.updatedAt))}</span>
-              <span className={styles.storyActions}>
-                {item.status === "published" && <Link href={`/tech-buzz/${item.slug}`}>View</Link>}
-                <button type="button" onClick={() => void remove(item)}>Delete</button>
-              </span>
-            </li>)}
-          </ul> : <p className={styles.empty}>Your drafts and published stories will appear here.</p>}
-        </section>
-      </aside>
+      <WritePanel meta={meta} story={current} words={words} status={status} stateLine={stateLine} activeId={id} stories={stories} onEdit={editMeta} onDelete={remove} />
     </div>
   </div>;
 }

@@ -8,12 +8,12 @@ import styles from "@/components/public-learning/library.module.css";
 
 export const metadata = learningMetadata({
   path: "/vocabulary",
-  title: "English vocabulary with Hindi meanings",
-  description: "Thousands of English words for work, exams and IELTS by theme, each with its meaning, Hindi meaning, pronunciation, an example, synonyms and antonyms.",
+  title: "English vocabulary with meanings and examples",
+  description: "Thousands of English words for work, exams and IELTS by theme, each with its meaning, pronunciation, an example, synonyms and antonyms.",
   keywords: [
-    "English vocabulary with Hindi meanings", "corporate English words",
-    "spoken English for software engineers", "synonyms and antonyms in Hindi", "tech industry English communication",
-    "daily English words meaning in Hindi", "English vocabulary for developers"
+    "English vocabulary with meanings", "corporate English words",
+    "spoken English for software engineers", "synonyms and antonyms", "tech industry English communication",
+    "daily English words and meanings", "English vocabulary for developers"
   ],
 });
 
@@ -21,8 +21,8 @@ export default function VocabularyIndex() {
   const groups = vocabularyGroups();
   const total = groups.reduce((sum, group) => sum + group.words.length, 0);
   return <>
-    <LibraryIntro trail={[["Vocabulary", "/vocabulary"]]} eyebrow="Word power" title="English vocabulary with Hindi meanings"
-      lead="Words grouped by where you will use them: meetings, writing, negotiation, exams and everyday speech. Every word has a plain-English meaning, its Hindi meaning, how to say it, a real sentence and the words around it."
+    <LibraryIntro trail={[["Vocabulary", "/vocabulary"]]} eyebrow="Word power" title="English vocabulary with meanings and examples"
+      lead="Words grouped by where you will use them: meetings, writing, negotiation, exams and everyday speech. Every word has a plain-English meaning, how to say it, a real sentence and the words around it."
       facts={[["Words", total], ["Themes", groups.length]]} />
     <section className={styles.section} aria-labelledby="themes">
       <h2 id="themes">Choose a theme</h2>

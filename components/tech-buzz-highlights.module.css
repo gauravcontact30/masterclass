@@ -1,0 +1,10 @@
+/* Reader highlights on an opened story (components/tech-buzz-highlights.tsx). */
+
+.toolbar { position: fixed; z-index: 60; display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 2px; width: max-content; max-width: calc(100vw - 24px); padding: 4px; border-radius: 10px; background: #262624; color: #f5f4ed; font-size: 13px; box-shadow: 0 10px 26px -10px rgba(0, 0, 0, .55); transform: translate(-50%, -100%); }
+.toolbar[data-below] { transform: translate(-50%, 0); }
+.toolbar button { display: inline-flex; align-items: center; gap: 6px; min-height: 32px; padding: 0 10px; border: 0; border-radius: 7px; background: transparent; color: inherit; font: inherit; cursor: pointer; }
+.toolbar button:hover { background: rgba(255, 255, 255, .13); }
+.toolbar button:focus-visible { outline: 2px solid #ffb48f; outline-offset: 1px; }
+.note { padding: 0 8px; color: #c8c5b9; font-size: 12px; }
+
+@media print { .toolbar { display: none; } }

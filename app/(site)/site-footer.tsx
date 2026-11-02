@@ -32,27 +32,32 @@ const COLUMNS: { title: string; links: [string, string][] }[] = [
 ];
 
 /**
- * The dark footer of every public page outside the landing page: /tech-buzz and its stories, the free library, the
- * legal and company pages (user request 2026-11-01). Server-rendered; the only script is the link columns' hover pill (FooterLinks, the landing footer's). The two cards are the
- * landing footer's "Get in touch" and "Plans and payments" (one source for contact and billing facts). Moving to the
- * top is the site-wide round button (components/back-to-top.tsx), so the footer has no link of its own. Links are not prefetched: each prefetch also preloads that page's stylesheets.
+ * The dark footer of every page on the site, rendered once from the root layout (user request 2026-11-02). Server-rendered;
+ * the only script is the link columns' hover pill and the cards' copy buttons. The left card introduces the platform in the
+ * same form as the "Get in touch" and "Plans and payments" cards beside it (one source for contact and billing facts).
+ * Moving to the top is the site-wide round button (components/back-to-top.tsx), so the footer has no link of its own.
+ * Links are not prefetched: each prefetch also preloads that page's stylesheets.
  */
 export function SiteFooter() {
-  return <footer className={styles.footer}>
+  return <footer id="site-footer" className={styles.footer}>
     <div className={styles.inner}>
       <div className={styles.intro}>
-        <div className={styles.brand}>
-          <Link href="/" prefetch={false} aria-label="MasterClass Buddy home"><Wordmark /></Link>
-          <p>Interview prep, system design, AI agents and weekly tech stories for working engineers, in one place.</p>
-          <p className={styles.weekly}><CalendarSync size={14} aria-hidden="true" />Five new Tech Buzz blogs every Monday at 00:00 IST</p>
-          <ul className={styles.tracks} aria-label="This week's Tech Buzz tracks">
-            {TRACKS.map(track => <li key={track.id}><Link href="/tech-buzz#tb-daily" prefetch={false} style={{ "--tone": track.color } as React.CSSProperties}>{track.label}</Link></li>)}
-          </ul>
-          <div className={styles.ctas}>
-            <Link className={styles.primary} href="/sign-up" prefetch={false}>Start learning<ArrowRight size={15} aria-hidden="true" /></Link>
-            <Link className={styles.secondary} href="/tech-buzz" prefetch={false}><Flame size={15} aria-hidden="true" />Read Tech Buzz</Link>
+        <section className={styles.brand} aria-label="About MasterClass Buddy">
+          <div className={styles.brandHead}>
+            <Link href="/" prefetch={false} aria-label="MasterClass Buddy home"><Wordmark /></Link>
+            <p>Interview prep, system design, AI agents and weekly tech stories for working engineers, in one place.</p>
           </div>
-        </div>
+          <div className={styles.brandBody}>
+            <p className={styles.weekly}><span aria-hidden="true"><CalendarSync size={15} /></span>Five new Tech Buzz blogs every Monday at 00:00 IST</p>
+            <ul className={styles.tracks} aria-label="This week's Tech Buzz tracks">
+              {TRACKS.map(track => <li key={track.id}><Link href="/tech-buzz#tb-daily" prefetch={false} style={{ "--tone": track.color } as React.CSSProperties}>{track.label}</Link></li>)}
+            </ul>
+            <div className={styles.ctas}>
+              <Link className={styles.primary} href="/sign-up" prefetch={false}>Start learning<ArrowRight size={15} aria-hidden="true" /></Link>
+              <Link className={styles.secondary} href="/tech-buzz" prefetch={false}><Flame size={15} aria-hidden="true" />Read Tech Buzz</Link>
+            </div>
+          </div>
+        </section>
         <div className={styles.cards}><LandingFooterContact /><LandingFooterFacts /></div>
       </div>
       <div className={styles.columns}>

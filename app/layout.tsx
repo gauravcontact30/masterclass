@@ -7,6 +7,7 @@ import { VisitTracker } from "@/components/visit-tracker";
 import { ClientMonitor } from "@/components/client-monitor";
 import { SiteAnalytics } from "@/components/site-analytics";
 import { BackToTop } from "@/components/back-to-top";
+import { SiteFooter } from "@/app/(site)/site-footer";
 import { HashlessNavigation } from "@/components/hashless-navigation";
 import { NavigationProgress } from "@/components/navigation-progress";
 import { AudioDockHost } from "@/components/audio-dock-host";
@@ -45,5 +46,5 @@ export default function RootLayout({ children }: {children: React.ReactNode}) {
   // element's own attributes only — a real mismatch inside the tree still warns.
   // The inline scripts apply a saved Application Typography choice before first paint (it stamps <html>, hence the
   // hydration suppression there too) and record the first page view before hydration (lib/early-track.ts).
-  return <html lang="en-IN" className={`h-full antialiased ${inter.variable}`} data-app-font={DEFAULT_APP_FONT_ID} suppressHydrationWarning><head><script dangerouslySetInnerHTML={{ __html: APP_FONT_SCRIPT }} /><script dangerouslySetInnerHTML={{ __html: EARLY_TRACK_SCRIPT }} /></head><body className="min-h-full" suppressHydrationWarning><AppProviders>{children}{/* Both read the URL, so each streams in its own boundary instead of blocking the prerendered shell. */}<Suspense fallback={null}><StudentChatbot /></Suspense><Suspense fallback={null}><VisitTracker /></Suspense><Suspense fallback={null}><ClientMonitor /></Suspense><Suspense fallback={null}><BackToTop /></Suspense><Suspense fallback={null}><HashlessNavigation /></Suspense><Suspense fallback={null}><NavigationProgress /></Suspense><ExclusiveAccordions /><AudioDockHost /></AppProviders><SiteAnalytics /></body></html>;
+  return <html lang="en-IN" className={`h-full antialiased ${inter.variable}`} data-app-font={DEFAULT_APP_FONT_ID} suppressHydrationWarning><head><script dangerouslySetInnerHTML={{ __html: APP_FONT_SCRIPT }} /><script dangerouslySetInnerHTML={{ __html: EARLY_TRACK_SCRIPT }} /></head><body className="min-h-full" suppressHydrationWarning><AppProviders>{children}<SiteFooter />{/* Both read the URL, so each streams in its own boundary instead of blocking the prerendered shell. */}<Suspense fallback={null}><StudentChatbot /></Suspense><Suspense fallback={null}><VisitTracker /></Suspense><Suspense fallback={null}><ClientMonitor /></Suspense><Suspense fallback={null}><BackToTop /></Suspense><Suspense fallback={null}><HashlessNavigation /></Suspense><Suspense fallback={null}><NavigationProgress /></Suspense><ExclusiveAccordions /><AudioDockHost /></AppProviders><SiteAnalytics /></body></html>;
 }

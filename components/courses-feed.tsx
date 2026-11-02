@@ -17,7 +17,6 @@ import {
   ArrowRight,
   Flame
 } from "lucide-react";
-import { LanguageToggle } from "./language-toggle";
 import { getTechnologyBrandIcon } from "./tech-buzz-brand-icons";
 import { getDiwaliFestiveSaleInfo } from "@/lib/festive-sale";
 import { parseStoredRecord, useStoredValue, writeStoredValue } from "@/lib/local-store";
@@ -516,7 +515,6 @@ export function CoursesFeed() {
         </div>
 
         <div className={styles.topBarRight}>
-          <LanguageToggle />
         </div>
       </div>
 

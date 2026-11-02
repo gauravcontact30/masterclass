@@ -7,8 +7,6 @@ import { clientIp, HttpError, jsonBody, sameOrigin } from "@/lib/server/http";
 // Newsletter subscribers memory list. Anyone can post here, so it is capped: an unbounded Set was a memory leak.
 const newsletterSubscribers: Set<string> = new Set();
 const MAX_SUBSCRIBERS = 5000;
-// Comments live in shared module memory and are shown to every reader served by this instance: cap them per story.
-const MAX_COMMENTS = 50;
 const limited = (key: string, max: number) => rateLimit(key, max, 60).then(() => false, error => (error as { status?: number }).status === 429);
 
 // In-memory state mutation helper
@@ -26,7 +24,7 @@ export function updateArticleState(
  * POST /api/tech-buzz/action
  * Handles user interactions across platforms:
  * - daily.dev: upvotes
- * - dev.to: reactions (heart, unicorn, rocket, mindblown), comments
+ * - dev.to: reactions (heart, unicorn, rocket, mindblown)
  * - medium: ratings (claps: /api/tech-buzz/[slug]/claps)
  * - substack: newsletter subscriptions
  */
@@ -156,40 +154,8 @@ export async function POST(request: Request) {
       });
     }
 
-    // 6. Community Comment action (dev.to / indiehackers style)
-    if (action === "comment") {
-      const text = typeof body.text === "string" ? body.text.trim().slice(0, 1000) : "";
-      if (!text) {
-        return NextResponse.json({ error: "Comment text cannot be empty" }, { status: 400 });
-      }
-      // Anonymous comments carry no identity, so the author name is fixed: a caller-chosen one let anyone post as anyone.
-      const authorName = "Community Developer";
-      const newComment = {
-        id: `c-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
-        author: {
-          name: authorName,
-          role: "Developer",
-          avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=120&auto=format&fit=crop&q=80",
-          handle: `@${authorName.toLowerCase().replace(/\s+/g, "_")}`,
-          badge: "Contributor",
-        },
-        text,
-        createdAt: "Just now",
-        likes: 1,
-      };
-      const updated = updateArticleState(articleId, (article: TechBuzzArticle) => {
-        if (!article.comments) article.comments = [];
-        article.comments.unshift(newComment);
-        article.comments.length = Math.min(article.comments.length, MAX_COMMENTS);
-        article.commentsCount = article.comments.length;
-      });
-      if (!updated) return NextResponse.json({ error: "Article not found" }, { status: 404 });
-      return NextResponse.json({
-        success: true,
-        comment: newComment,
-        commentsCount: updated.commentsCount,
-      });
-    }
+    // Comments are per account and stored since migration 0051: /api/tech-buzz/[slug]/comments.
+    if (action === "comment") return NextResponse.json({ error: "Comments moved to /api/tech-buzz/[slug]/comments" }, { status: 410 });
 
     return NextResponse.json({ error: "Unrecognized action" }, { status: 400 });
   } catch (error) {

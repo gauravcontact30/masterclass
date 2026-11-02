@@ -22,8 +22,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!group) return { title: "Vocabulary not found", robots: { index: false } };
   return learningMetadata({
     path: `/vocabulary/${group.slug}`,
-    title: `${group.name} vocabulary: meanings, Hindi meanings and examples`,
-    description: `${group.words.length} ${group.name.toLowerCase()} words such as ${group.words.slice(0, 5).map(word => word.word).join(", ")}, each with its meaning, Hindi meaning, pronunciation, an example sentence, synonyms and antonyms.`,
+    title: `${group.name} vocabulary: meanings and examples`,
+    description: `${group.words.length} ${group.name.toLowerCase()} words such as ${group.words.slice(0, 5).map(word => word.word).join(", ")}, each with its meaning, pronunciation, an example sentence, synonyms and antonyms.`,
     keywords: group.words.slice(0, 8).map(word => `${word.word} meaning`),
   });
 }
@@ -46,13 +46,12 @@ async function Words({ params }: Props) {
   const [previous, next] = [groups[index - 1], groups[index + 1]];
   return <>
     <LibraryIntro trail={[["Vocabulary", "/vocabulary"], [group.name, path]]} eyebrow="Word power" title={`${group.name} vocabulary`}
-      lead={`Words for ${group.name.toLowerCase()}, each with its meaning in English and Hindi, how to say it, a sentence that shows it in use, and what to say instead or the opposite.`}
+      lead={`Words for ${group.name.toLowerCase()}, each with its meaning, how to say it, a sentence that shows it in use, and what to say instead or the opposite.`}
       facts={[["Words", group.words.length]]} schema={terms} />
     <div className={`${styles.section} ${styles.cards}`}>{group.words.map(word => <article key={word.word} id={slugify(word.word)}>
       <h2 className={styles.wordTitle}>{word.word}</h2>
       {word.pronunciation && <p className={styles.meta}>/{word.pronunciation}/</p>}
       <p>{word.meaning}</p>
-      {word.hindi && <p lang="hi">{word.hindi}</p>}
       <p><em>“{word.sentence}”</em></p>
       {word.synonyms.length > 0 && <p className={styles.meta}><strong>Synonyms:</strong> {word.synonyms.join(", ")}</p>}
       {word.antonyms.length > 0 && <p className={styles.meta}><strong>Antonyms:</strong> {word.antonyms.join(", ")}</p>}

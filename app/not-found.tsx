@@ -1,12 +1,13 @@
 import Link from "next/link";
 import { Wordmark } from "@/components/brand-mark";
+import { PageBack } from "@/components/page-back";
 import { PUBLIC_PAGES } from "@/lib/seo";
 
 // Next.js already marks 404 responses noindex; only the title is needed here.
 export const metadata = { title: "Page not found" };
 
 export default function NotFound() {
-  return <main id="main-content" style={{ minHeight: "100vh", display: "grid", placeItems: "center", padding: "48px 20px", background: "#f5f4ed", color: "#262624", textAlign: "center" }}>
+  return <><PageBack /><main id="main-content" style={{ minHeight: "100vh", display: "grid", placeItems: "center", padding: "48px 20px", background: "#f5f4ed", color: "#262624", textAlign: "center" }}>
     <div style={{ maxWidth: 520 }}>
       <Link href="/" aria-label="MasterClass Buddy home"><Wordmark /></Link>
       <p style={{ marginTop: 40, fontSize: 12, letterSpacing: "1.6px", color: "#c6613f", fontWeight: 600 }}>404</p>
@@ -23,5 +24,5 @@ export default function NotFound() {
           <Link key={href} href={href} style={{ padding: "6px 12px", border: "1px solid #e39a6d", borderRadius: 999, background: "#fff", color: "#8f3f23", textDecoration: "none", fontSize: 14 }}>{label}</Link>)}
       </nav>
     </div>
-  </main>;
+  </main></>;
 }

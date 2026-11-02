@@ -42,7 +42,7 @@ export default async function LibraryHub() {
     { href: "/learn", title: "Technology handbooks", body: "Every topic explained with key points, syntax, a worked example and use cases.", count: `${handbooks().length} handbooks`, icon: BookOpenText, image: "/images/landing/feature-lessons.webp" },
     { href: "/api-reference", title: "API reference", body: "Hooks, classes, functions and CLI commands with syntax, parameters and examples.", count: `${apiPackages().length} technologies`, icon: Braces, image: "/images/landing/feature-search.webp" },
     { href: "/tech-buzz", title: "Tech Buzz blogs", body: "Community-rated deep dives on AI agents, frameworks, cloud and system design, with quick reads and audio.", count: `${articles.length} articles`, icon: Newspaper, image: "/images/news/frontend.webp" },
-    { href: "/vocabulary", title: "English vocabulary", body: "Words for work and interviews with Hindi meanings, sentences, synonyms and antonyms.", count: `${vocabulary.reduce((sum, group) => sum + group.words.length, 0).toLocaleString("en-IN")} words`, icon: Languages, image: "/images/learning/language.webp" },
+    { href: "/vocabulary", title: "English vocabulary", body: "Words for work and interviews with meanings, sentences, synonyms and antonyms.", count: `${vocabulary.reduce((sum, group) => sum + group.words.length, 0).toLocaleString("en-IN")} words`, icon: Languages, image: "/images/learning/language.webp" },
     { href: "/courses", title: "Courses & learning paths", body: `Technology, system design and language learning paths${HINDI_ENABLED ? " in English and Hindi" : ""}.`, count: "All paths", icon: GraduationCap, image: "/images/landing/feature-certifications.webp" },
   ];
 

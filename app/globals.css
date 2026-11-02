@@ -570,3 +570,16 @@ details[open] > [data-slot="accordion-summary"] > [data-slot="accordion-indicato
   .app-shell.compact-workspace>aside.sidebar :is(.sidebar > nav, .sidebar-options > nav) > :is(button,a){justify-content:flex-start!important;padding:10px 12px!important;font-size:13px!important;min-height:42px}
 }
 @media (prefers-reduced-motion:reduce){.app-shell.compact-workspace>aside.sidebar{transition:none!important}}
+
+/* Typing in a field never rings it in the accent colour, here or on the box around it (user rule 2026-11-02). A neutral
+   border still shows where the caret is. Last in the file and !important, because page styles set their own focus colours. */
+:is(input:not([type="checkbox"], [type="radio"], [type="range"], [type="button"], [type="submit"], [type="reset"], [type="file"], [type="color"]), textarea, select, [contenteditable="true"]):is(:focus, :focus-visible) {
+  outline: none !important;
+  box-shadow: none !important;
+  border-color: #a8a69b !important;
+}
+:is(div, label, form, span, section, fieldset):has(> :is(input:not([type="checkbox"], [type="radio"], [type="range"], [type="button"], [type="submit"], [type="reset"], [type="file"], [type="color"]), textarea, select):focus) {
+  outline: none !important;
+  box-shadow: none !important;
+  border-color: #a8a69b !important;
+}

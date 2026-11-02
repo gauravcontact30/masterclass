@@ -16,7 +16,8 @@ export function AudioDock() {
   const hi = language === "hi";
   const audio = useSyncExternalStore(subscribe, audioState, serverAudioState);
   const id = useId();
-  if (!audio.id) return null;
+  // An open Tech Buzz story has its own player (components/tech-buzz-listen.tsx).
+  if (!audio.id || audio.id.startsWith("tech-buzz:")) return null;
   const text = (en: string, hindi: string) => hi ? hindi : en;
   const busy = audio.status === "loading";
   const gender = genderOf(audio.voice);

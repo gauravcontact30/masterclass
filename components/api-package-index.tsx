@@ -1,27 +1,29 @@
 "use client";
 import { AccordionChevron } from "@/components/ui/accordion-chevron";
 
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useDeferredValue, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { useRouter } from "next/navigation";
 import { createPortal } from "react-dom";
 import {
   BrainCircuit,
   Boxes,
-  ChevronsDownUp,
-  ChevronsUpDown,
   Cloud,
   Code2,
   Database,
   FlaskConical,
   Layers,
+  ListFilter,
   LayoutTemplate,
   type LucideIcon,
   PanelLeftClose,
   PanelLeftOpen,
+  Search,
   Server,
   ShieldCheck,
   Sparkles,
+  X,
 } from "lucide-react";
-import type { ApiPackage } from "@/lib/api-docs";
+import { API_STATUSES, API_TYPES, type ApiPackage } from "@/lib/api-docs";
 import ref from "./api-reference.module.css";
 
 const CATEGORY_ICONS: Record<string, LucideIcon> = {
@@ -95,6 +97,31 @@ function useIndexTooltip(container: React.RefObject<HTMLElement | null>) {
   return tip;
 }
 
+type Suggestion = { key: string; label: string; detail: string; packageId: string; entry?: string };
+
+/** Up to eight matches: packages first, then names that start with the text, then names that contain it. */
+function suggestionsFor(text: string, categories: Category[]): Suggestion[] {
+  const q = text.trim().toLowerCase();
+  if (!q) return [];
+  const packages: Suggestion[] = [], starts: Suggestion[] = [], contains: Suggestion[] = [];
+  for (const category of categories) for (const pkg of category.packages) {
+    if (pkg.name.toLowerCase().includes(q)) packages.push({ key: `p:${pkg.id}`, label: pkg.name, detail: `Package, ${pkg.entries.length} identifiers`, packageId: pkg.id });
+    for (const entry of pkg.entries) {
+      const name = entry.name.toLowerCase();
+      if (!name.includes(q)) continue;
+      (name.startsWith(q) ? starts : contains).push({ key: `e:${pkg.id}:${entry.name}`, label: entry.name, detail: pkg.name, packageId: pkg.id, entry: entry.name });
+    }
+  }
+  return [...packages.slice(0, 3), ...starts, ...contains].slice(0, 8);
+}
+
+function Match({ text, query }: { text: string; query: string }) {
+  const at = text.toLowerCase().indexOf(query.trim().toLowerCase());
+  if (at < 0 || !query.trim()) return <>{text}</>;
+  const end = at + query.trim().length;
+  return <>{text.slice(0, at)}<mark>{text.slice(at, end)}</mark>{text.slice(end)}</>;
+}
+
 export function ApiPackageIndex({
   categories,
   packageId,
@@ -103,6 +130,13 @@ export function ApiPackageIndex({
   onRailChange,
   onChoose,
   renderMark,
+  entryHref,
+  onSearch,
+  types,
+  statuses,
+  onToggleType,
+  onToggleStatus,
+  onClearFilters,
 }: {
   categories: Category[];
   packageId: string;
@@ -111,18 +145,48 @@ export function ApiPackageIndex({
   onRailChange: (rail: boolean) => void;
   onChoose: (id: string) => void;
   renderMark: (pkg: ApiPackage) => ReactNode;
+  entryHref: (packageId: string, name: string) => string;
+  onSearch: (text: string) => void;
+  types: string[];
+  statuses: string[];
+  onToggleType: (kind: string) => void;
+  onToggleStatus: (id: string) => void;
+  onClearFilters: () => void;
 }) {
   const navRef = useRef<HTMLElement>(null);
   const tip = useIndexTooltip(navRef);
-  const [closed, setClosed] = useState<string[]>([]);
+  const router = useRouter();
+  const activeCategory = categories.find(category => category.packages.some(pkg => pkg.id === packageId))?.id;
+  // One category at a time, the first by default; choosing a package from elsewhere on the page opens its category.
+  const [openId, setOpenId] = useState<string | null>(categories[0]?.id ?? null);
+  const [seenActive, setSeenActive] = useState(activeCategory);
+  if (activeCategory !== seenActive) {
+    setSeenActive(activeCategory);
+    if (activeCategory) setOpenId(activeCategory);
+  }
+  const [term, setTerm] = useState("");
+  const deferredTerm = useDeferredValue(term);
+  const [suggesting, setSuggesting] = useState(false);
+  const [highlighted, setHighlighted] = useState(-1);
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const searchInput = useRef<HTMLInputElement>(null);
   const loaded = useRef(false);
 
-  // Restore saved preferences after mount so the server render and first client render match.
+  const suggestions = useMemo(() => suggestionsFor(deferredTerm, categories), [deferredTerm, categories]);
+  const q = deferredTerm.trim().toLowerCase();
+  // While searching, the list narrows to the packages that match and all of them show.
+  const shown = useMemo(() => (q
+    ? categories.map(category => ({ ...category, packages: category.packages.filter(pkg => pkg.name.toLowerCase().includes(q) || pkg.entries.some(entry => entry.name.toLowerCase().includes(q))) })).filter(category => category.packages.length > 0)
+    : categories), [categories, q]);
+  const showSuggestions = suggesting && term.trim() !== "";
+  // The last option applies the text to the whole reference on the right.
+  const optionCount = suggestions.length + 1;
+  const activeFilters = types.length + (API_STATUSES.length - statuses.length);
+
+  // Restore the rail preference after mount so the server render and first client render match.
   useEffect(() => {
     try {
-      const saved = JSON.parse(localStorage.getItem(PREFS_KEY) ?? "{}") as { rail?: boolean; closed?: string[] };
-      // eslint-disable-next-line react-hooks/set-state-in-effect -- Reads a client-only preference after mount; the initial state must match SSR output.
-      if (Array.isArray(saved.closed)) setClosed(saved.closed);
+      const saved = JSON.parse(localStorage.getItem(PREFS_KEY) ?? "{}") as { rail?: boolean };
       if (typeof saved.rail === "boolean") onRailChange(saved.rail);
     } catch {}
     loaded.current = true;
@@ -133,38 +197,128 @@ export function ApiPackageIndex({
   useEffect(() => {
     if (!loaded.current) return;
     try {
-      localStorage.setItem(PREFS_KEY, JSON.stringify({ rail, closed }));
+      localStorage.setItem(PREFS_KEY, JSON.stringify({ rail }));
     } catch {}
-  }, [rail, closed]);
-
-  const allOpen = closed.length === 0;
-  const activeCategory = categories.find(category => category.packages.some(pkg => pkg.id === packageId))?.id;
+  }, [rail]);
 
   function toggleGroup(id: string) {
-    setClosed(previous => (previous.includes(id) ? previous.filter(item => item !== id) : [...previous, id]));
+    setOpenId(current => (current === id ? null : id));
   }
 
   function openFromRail(id: string) {
-    setClosed(previous => previous.filter(item => item !== id));
+    setOpenId(id);
     onRailChange(false);
     requestAnimationFrame(() => document.getElementById(`api-index-group-${id}`)?.scrollIntoView({ block: "nearest" }));
   }
 
+  function clearSearch() {
+    setTerm("");
+    setSuggesting(false);
+    setHighlighted(-1);
+    onSearch("");
+    searchInput.current?.focus();
+  }
+
+  function applySearch() {
+    setSuggesting(false);
+    onSearch(term.trim());
+    document.getElementById("api-reference-results")?.scrollIntoView({ block: "start" });
+  }
+
+  function pick(item: Suggestion) {
+    setSuggesting(false);
+    if (item.entry) router.push(entryHref(item.packageId, item.entry));
+    else { setTerm(""); onChoose(item.packageId); }
+  }
+
+  function onSearchKey(event: React.KeyboardEvent<HTMLInputElement>) {
+    if (event.key === "Escape") { if (showSuggestions) setSuggesting(false); else if (term) clearSearch(); return; }
+    if (event.key === "Enter") {
+      event.preventDefault();
+      if (showSuggestions && highlighted >= 0 && highlighted < suggestions.length) pick(suggestions[highlighted]);
+      else if (term.trim()) applySearch();
+      return;
+    }
+    if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+      event.preventDefault();
+      setSuggesting(true);
+      const step = event.key === "ArrowDown" ? 1 : -1;
+      setHighlighted(current => (current + step + optionCount + 1) % (optionCount + 1));
+    }
+  }
+
   return (
     <nav ref={navRef} className={ref.index} data-rail={rail || undefined} aria-label="Browse packages">
+      {!rail && (
+        <div className={ref.indexSearch} role="search">
+          <div className={ref.indexSearchRow}>
+            <div className={ref.indexSearchBox}>
+              <Search size={15} aria-hidden="true" />
+              <input
+                ref={searchInput}
+                type="search"
+                role="combobox"
+                aria-label="Search packages and identifiers"
+                aria-expanded={showSuggestions}
+                aria-controls="api-index-suggestions"
+                aria-autocomplete="list"
+                aria-activedescendant={showSuggestions && highlighted >= 0 ? `api-index-option-${highlighted}` : undefined}
+                placeholder="Search packages, APIs"
+                autoComplete="off"
+                value={term}
+                onChange={event => { setTerm(event.target.value); setSuggesting(true); setHighlighted(-1); }}
+                onFocus={() => setSuggesting(true)}
+                onBlur={() => setSuggesting(false)}
+                onKeyDown={onSearchKey}
+              />
+              {term && <button type="button" className={ref.indexClear} onClick={clearSearch} aria-label="Clear search" title="Clear search"><X size={13} aria-hidden="true" /></button>}
+            </div>
+            <button type="button" className={ref.indexFilterButton} aria-expanded={filtersOpen} aria-controls="api-index-filters" aria-label={activeFilters ? `Filters, ${activeFilters} on` : "Filters"} title="Filters" onClick={() => setFiltersOpen(current => !current)}>
+              <ListFilter size={16} aria-hidden="true" />
+              {activeFilters > 0 && <small aria-hidden="true">{activeFilters}</small>}
+            </button>
+          </div>
+
+          {showSuggestions && (
+            <ul id="api-index-suggestions" className={ref.indexSuggestions} role="listbox" aria-label="Suggestions">
+              {suggestions.map((item, index) => (
+                <li key={item.key} id={`api-index-option-${index}`} role="option" aria-selected={highlighted === index}>
+                  {/* Keeps focus in the search box, whose blur would close this list before the click lands. */}
+                  <button type="button" tabIndex={-1} onMouseDown={event => event.preventDefault()} onClick={() => pick(item)}>
+                    <b><Match text={item.label} query={deferredTerm} /></b>
+                    <small>{item.detail}</small>
+                  </button>
+                </li>
+              ))}
+              <li id={`api-index-option-${suggestions.length}`} role="option" aria-selected={highlighted === suggestions.length}>
+                <button type="button" tabIndex={-1} onMouseDown={event => event.preventDefault()} onClick={applySearch}>
+                  <b>Search the reference for &ldquo;{term.trim()}&rdquo;</b>
+                  <small>{suggestions.length ? "Shows every match on the right" : "No direct matches. Try the whole reference"}</small>
+                </button>
+              </li>
+            </ul>
+          )}
+
+          <div id="api-index-filters" className={ref.indexPanel} data-open={filtersOpen || undefined} inert={!filtersOpen}>
+            <div>
+              <div className={ref.indexFilters}>
+                <h3>Status</h3>
+                <div className={ref.indexFilterChips} role="group" aria-label="Status">
+                  {API_STATUSES.map(item => <button key={item.id} type="button" aria-pressed={statuses.includes(item.id)} onClick={() => onToggleStatus(item.id)}>{item.label}</button>)}
+                </div>
+                <h3>Identifier types</h3>
+                <div className={ref.indexFilterChips} role="group" aria-label="Identifier types">
+                  {API_TYPES.map(item => <button key={item.k} type="button" aria-pressed={types.includes(item.k)} onClick={() => onToggleType(item.k)}>{item.label}</button>)}
+                </div>
+                {activeFilters > 0 && <button type="button" className={ref.indexFilterClear} onClick={onClearFilters}>Clear filters</button>}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className={ref.indexTop}>
         {!rail && <span className={ref.indexTitle}>Packages</span>}
-        {!rail && (
-          <button
-            type="button"
-            className={ref.indexIconButton}
-            aria-label={allOpen ? "Collapse all categories" : "Expand all categories"}
-            data-tip={allOpen ? "Collapse all categories" : "Expand all categories"}
-            onClick={() => setClosed(allOpen ? categories.map(category => category.id) : [])}
-          >
-            {allOpen ? <ChevronsDownUp size={15} aria-hidden="true" /> : <ChevronsUpDown size={15} aria-hidden="true" />}
-          </button>
-        )}
         <button
           type="button"
           className={ref.indexIconButton}
@@ -194,9 +348,11 @@ export function ApiPackageIndex({
         )}
       </button>
 
-      {categories.map(category => {
+      {!rail && q && shown.length === 0 && <p className={ref.indexEmpty}>No package has that name. Check the spelling, or search the whole reference.</p>}
+
+      {(rail ? categories : shown).map(category => {
         const Icon = CATEGORY_ICONS[category.id] ?? Boxes;
-        const open = !closed.includes(category.id);
+        const open = q !== "" || openId === category.id;
         const identifiers = category.packages.reduce((sum, pkg) => sum + pkg.entries.length, 0);
         const summary = `${category.label} · ${category.packages.length} packages, ${identifiers.toLocaleString("en-US")} identifiers`;
         if (rail) {
@@ -230,7 +386,8 @@ export function ApiPackageIndex({
               <span className={ref.count}>{category.packages.length}</span>
               <AccordionChevron />
             </button>
-            <ul id={`api-index-list-${category.id}`} aria-label={category.label} hidden={!open}>
+            <div className={ref.indexPanel} data-open={open || undefined} inert={!open}>
+            <ul id={`api-index-list-${category.id}`} aria-label={category.label}>
               {category.packages.map(pkg => (
                 <li key={pkg.id}>
                   <button
@@ -249,6 +406,7 @@ export function ApiPackageIndex({
                 </li>
               ))}
             </ul>
+            </div>
           </div>
         );
       })}

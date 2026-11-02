@@ -122,7 +122,7 @@ export function VocabularyHistory({ cards, selectedWord, onOpen, onUpdate, onDel
         <Label className={searchStyles.srOnly} htmlFor={`${id}-search`}>Search cards</Label>
         <InputGroup className={styles.searchField}>
           <InputGroupAddon><Search size={15} aria-hidden="true" /></InputGroupAddon>
-          <InputGroupInput id={`${id}-search`} type="search" placeholder="Word, meaning or Hindi…" value={query} onChange={event => { setQuery(event.target.value); setPage(0); }} />
+          <InputGroupInput id={`${id}-search`} type="search" placeholder="Word or meaning…" value={query} onChange={event => { setQuery(event.target.value); setPage(0); }} />
           {query && <InputGroupAddon align="inline-end"><InputGroupButton aria-label="Clear search" size="icon-xs" onClick={() => { setQuery(""); setPage(0); }}><X size={14} /></InputGroupButton></InputGroupAddon>}
         </InputGroup>
       </div>
@@ -133,7 +133,7 @@ export function VocabularyHistory({ cards, selectedWord, onOpen, onUpdate, onDel
         </PopoverTrigger>
         <PopoverContent align="end" sideOffset={8} className={styles.filterPanel}>
           <div className={styles.filterPanelHead}><PopoverTitle>Filters</PopoverTitle><Button type="button" variant="ghost" size="icon-xs" aria-label="Close filters" onClick={() => setFiltersOpen(false)}><X size={14} /></Button></div>
-      <Label className={styles.filter}>Word details<NativeSelect value={details} onChange={event => { setDetails(event.target.value); setPage(0); }}><NativeSelectOption value="all">All words</NativeSelectOption><NativeSelectOption value="hindi">With Hindi meaning</NativeSelectOption><NativeSelectOption value="synonyms">With synonyms</NativeSelectOption><NativeSelectOption value="antonyms">With antonyms</NativeSelectOption></NativeSelect></Label>
+      <Label className={styles.filter}>Word details<NativeSelect value={details} onChange={event => { setDetails(event.target.value); setPage(0); }}><NativeSelectOption value="all">All words</NativeSelectOption><NativeSelectOption value="synonyms">With synonyms</NativeSelectOption><NativeSelectOption value="antonyms">With antonyms</NativeSelectOption></NativeSelect></Label>
       <Label className={styles.filter}>Sort by<NativeSelect value={sort} onChange={event => { setSort(event.target.value); setPage(0); }}><NativeSelectOption value="recent">Newest first</NativeSelectOption><NativeSelectOption value="oldest">Oldest first</NativeSelectOption><NativeSelectOption value="az">A–Z</NativeSelectOption></NativeSelect></Label>
       <div className={styles.filterPanelActions}>{filtered && <Button type="button" variant="ghost" size="sm" className={styles.clearFilters} onClick={() => { setQuery(""); setDetails("all"); setSort("recent"); setPage(0); }}>Clear filters</Button>}<Button type="button" size="sm" onClick={() => setFiltersOpen(false)}>Done</Button></div>
         </PopoverContent>

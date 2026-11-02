@@ -1,0 +1,4 @@
+/* Painted passages (components/tech-buzz-highlights.tsx). A plain stylesheet on purpose: CSS Modules rename the identifier
+   inside ::highlight(), which then no longer matches the name registered with CSS.highlights. */
+::highlight(tb-highlight-mine) { background-color: rgba(224, 138, 106, .36); }
+::highlight(tb-highlight-top) { background-color: rgba(214, 170, 76, .24); }

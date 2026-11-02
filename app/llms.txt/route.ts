@@ -44,7 +44,7 @@ async function body() {
     "## Technology handbooks and reference",
     link("Handbooks", "/learn"),
     link("API reference for 60 technologies", "/api-reference"),
-    link("English vocabulary with Hindi meanings", "/vocabulary"),
+    link("English vocabulary with meanings and examples", "/vocabulary"),
     `- ${handbooks().length} handbooks, listed in full at ${new URL("/learn", origin).href}`,
     "",
     "## Latest Tech Buzz stories",

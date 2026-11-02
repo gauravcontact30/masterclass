@@ -272,11 +272,6 @@ export function VocabularyWordModal({
                 <h2 id="vocab-modal-title" className={styles.title}>
                   {entry?.word ? entry.word.charAt(0).toUpperCase() + entry.word.slice(1) : titledWord}
                 </h2>
-                {entry?.hindi && (
-                  <span className={styles.hindiBadge} lang="hi">
-                    {entry.hindi}
-                  </span>
-                )}
                 {(entry?.word || currentWord) && (
                   <button
                     type="button"
@@ -356,11 +351,6 @@ export function VocabularyWordModal({
                   <small style={{ color: "#a8631c", fontSize: 11 }}>{audioMessage}</small>
                 )}
                 <p className={styles.meaningEnglish}>{entry.meaning}</p>
-                {entry.hindi && (
-                  <p className={styles.meaningHindi} lang="hi">
-                    {entry.hindi}
-                  </p>
-                )}
               </section>
 
               {/* Example Sentence Section */}
@@ -385,11 +375,6 @@ export function VocabularyWordModal({
                 <p className={styles.sentenceEnglish}>
                   “{entry.sentence || "No example sentence recorded for this word."}”
                 </p>
-                {entry.sentenceHindi && (
-                  <p className={styles.sentenceHindi} lang="hi">
-                    “{entry.sentenceHindi}”
-                  </p>
-                )}
               </section>
 
               {/* Synonyms & Antonyms Grid */}
@@ -416,7 +401,6 @@ export function VocabularyWordModal({
                             title={`Click to explore ${item.word}`}
                           >
                             <strong>{item.word}</strong>
-                            {item.hindi && <span lang="hi">({item.hindi})</span>}
                           </button>
                           <button
                             type="button"
@@ -460,7 +444,6 @@ export function VocabularyWordModal({
                             title={`Click to explore ${item.word}`}
                           >
                             <strong>{item.word}</strong>
-                            {item.hindi && <span lang="hi">({item.hindi})</span>}
                           </button>
                           <button
                             type="button"
