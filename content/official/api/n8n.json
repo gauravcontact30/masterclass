@@ -808,6 +808,180 @@
   ],
   "checkedAt": "2026-11-03"
  },
+ "Credentials": {
+  "sourceUrl": "https://docs.n8n.io/build/understand-workflows/create-and-edit-credentials",
+  "sourceTitle": "Create and edit credentials | Build | n8n Docs",
+  "summary": "n8n credentials store authentication data for services used by workflows. You can create them from the menu, a project, or a node, then limit how HTTP Request nodes may use them.",
+  "explanation": "Create a credential from the side menu, a project, or a node's credential field. Select the service, enter its required values, and save it. n8n encrypts stored credential data. OAuth credentials can use one fixed credential or each end user's credential on supported Enterprise plans.",
+  "syntax": "",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Credential values",
+   "code": "const credential = {\n  apiKey: 'secret',\n  allowedDomains: 'api.example.com',\n};\n\nconsole.log(credential);",
+   "language": "typescript",
+   "explanation": "This shows the kind of values a credential can hold. In n8n, enter these values in the credential form and select the credential in a node."
+  },
+  "useCases": [
+   {
+    "title": "Service authentication",
+    "scenario": "Connect a workflow to an API or database."
+   },
+   {
+    "title": "Per-user OAuth access",
+    "scenario": "Let each person run a workflow with private service access."
+   },
+   {
+    "title": "HTTP Request domain control",
+    "scenario": "Prevent a credential from being sent to unintended URLs."
+   }
+  ],
+  "related": [
+   "Credentials",
+   "End-user credentials",
+   "Allowed HTTP Request Domains",
+   "HTTP Request credentials"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What are n8n credentials used for?",
+    "answer": "Credentials store authentication information that workflows use to connect to services such as APIs and databases. n8n encrypts the stored credential data.",
+    "followUp": "How can HTTP Request node use be restricted? Set Allowed HTTP Request Domains to All, Specific Domains, or None."
+   },
+   {
+    "question": "What is the difference between fixed and end-user credentials?",
+    "answer": "A fixed credential is shared regardless of who runs the workflow. An end-user credential uses the credential of the person running the workflow and keeps that user's data private.",
+    "followUp": "Where is this choice available? It is available for OAuth credentials on n8n Cloud Enterprise and self-hosted Enterprise."
+   },
+   {
+    "question": "How do allowed HTTP request domains work?",
+    "answer": "Allowed HTTP Request Domains controls which URLs may receive a selected credential in an HTTP Request node. It can allow all domains, restrict access to listed domains, or block HTTP Request use.",
+    "followUp": "Does it affect a dedicated service node? No. The setting has no effect when the credential is used in its own dedicated node."
+   }
+  ],
+  "keyPoints": [
+   "Credentials hold authentication data for external services, including APIs and databases.",
+   "You can start credential creation from the main menu, a project, or a node's credential selector.",
+   "Fixed credentials use the same authentication data for every workflow runner.",
+   "End-user credentials select the current user's authentication data when the workflow runs.",
+   "The None domain option prevents the credential from being used in HTTP Request nodes."
+  ],
+  "gotchas": [
+   "Allowed HTTP Request Domains only limits use through the HTTP Request node. It does not limit the service's dedicated node.",
+   "The two OAuth credential types are available only in the documented Enterprise environments.",
+   "When using domain restrictions, enter a comma-separated list of allowed domains."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "DB_TYPE": {
+  "sourceUrl": "https://docs.n8n.io/deploy/host-n8n/configure-n8n/basic-configuration/use-environment-variables/database",
+  "sourceTitle": "Database | Deploy | n8n Docs",
+  "summary": "DB_TYPE selects n8n's database engine. Self-hosted n8n uses SQLite by default and can use PostgreSQL when configured with environment variables.",
+  "explanation": "Set DB_TYPE to postgresdb to use PostgreSQL instead of the default SQLite database. Then set the PostgreSQL connection variables, such as the database name, host, port, user, and password. n8n also supports file-based values by adding _FILE to a variable name.",
+  "syntax": "DB_TYPE=sqlite|postgresdb",
+  "parameters": [
+   {
+    "name": "DB_TYPE",
+    "type": "string",
+    "description": "Selects the database engine. Supported values are sqlite and postgresdb."
+   },
+   {
+    "name": "DB_POSTGRESDB_DATABASE",
+    "type": "string",
+    "description": "Sets the PostgreSQL database name."
+   },
+   {
+    "name": "DB_POSTGRESDB_HOST",
+    "type": "string",
+    "description": "Sets the PostgreSQL server host."
+   },
+   {
+    "name": "DB_POSTGRESDB_PORT",
+    "type": "number",
+    "description": "Sets the PostgreSQL server port."
+   },
+   {
+    "name": "DB_POSTGRESDB_USER",
+    "type": "string",
+    "description": "Sets the PostgreSQL user."
+   },
+   {
+    "name": "DB_POSTGRESDB_PASSWORD",
+    "type": "string",
+    "description": "Sets the PostgreSQL password."
+   },
+   {
+    "name": "DB_POSTGRESDB_POOL_SIZE",
+    "type": "number",
+    "description": "Sets the PostgreSQL connection pool size."
+   }
+  ],
+  "returns": "Configures the database used by a self-hosted n8n instance.",
+  "example": {
+   "title": "Configure PostgreSQL",
+   "code": "export DB_TYPE=postgresdb\nexport DB_POSTGRESDB_DATABASE=n8n\nexport DB_POSTGRESDB_HOST=postgresdb\nexport DB_POSTGRESDB_PORT=5432\nexport DB_POSTGRESDB_USER=n8n\nexport DB_POSTGRESDB_PASSWORD='change-me'",
+   "language": "bash",
+   "explanation": "These variables select PostgreSQL and provide the connection settings."
+  },
+  "useCases": [
+   {
+    "title": "Use the default SQLite database",
+    "scenario": "You want a simple local setup with no separate database server."
+   },
+   {
+    "title": "Connect to PostgreSQL",
+    "scenario": "You need a separate database server for a self-hosted deployment."
+   },
+   {
+    "title": "Use file-based configuration",
+    "scenario": "You need database credentials supplied from mounted files."
+   }
+  ],
+  "related": [
+   "DB_POSTGRESDB_SCHEMA",
+   "DB_POSTGRESDB_SSL_CA",
+   "DB_POSTGRESDB_SSL_CERT",
+   "DB_POSTGRESDB_SSL_KEY",
+   "DB_POSTGRESDB_SSL_REJECT_UNAUTHORIZED",
+   "DB_PING_TIMEOUT_MS",
+   "DB_PING_MAX_FAILURES_BEFORE_RECOVERY",
+   "DB_RECOVERY_BACKOFF_MIN_MS"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you configure n8n to use PostgreSQL?",
+    "answer": "Set DB_TYPE=postgresdb. Then provide the PostgreSQL database, host, port, user, and password variables; schema and TLS variables are also available.",
+    "followUp": "How can sensitive values be stored outside the environment? Add _FILE to an individual variable name and put its value in a separate file."
+   },
+   {
+    "question": "What is the default database for self-hosted n8n?",
+    "answer": "Self-hosted n8n uses SQLite by default. Its database file is stored at ~/.n8n/database.sqlite when no other database is configured.",
+    "followUp": "Which database does n8n Cloud use? The documentation says installation types can use different databases, so the self-hosted SQLite default does not describe n8n Cloud."
+   },
+   {
+    "question": "What does the PostgreSQL pool size setting control?",
+    "answer": "DB_POSTGRESDB_POOL_SIZE controls the number of parallel open PostgreSQL connections. Raising it can improve resource use, but too many connections can reduce performance.",
+    "followUp": "What setting controls connection acquisition during recovery? DB_CONNECTION_ACQUISITION_TIMEOUT_MS sets how long a query waits, or waits forever when set to 0; it applies only to PostgreSQL."
+   }
+  ],
+  "keyPoints": [
+   "SQLite is the default when DB_TYPE is not set.",
+   "PostgreSQL is the supported alternative database for self-hosted n8n.",
+   "DB_POSTGRESDB_DATABASE sets the database name and defaults to n8n.",
+   "DB_POSTGRESDB_HOST sets the server host and defaults to localhost.",
+   "DB_POSTGRESDB_POOL_SIZE controls the number of open PostgreSQL connections.",
+   "DB_PING_INTERVAL_SECONDS controls how often n8n checks the database connection."
+  ],
+  "gotchas": [
+   "Do not configure MySQL or MariaDB. n8n no longer supports them.",
+   "Use PostgreSQL itself. PostgreSQL-compatible products such as AlloyDB, CockroachDB, and YugabyteDB are not supported.",
+   "DB_RECOVERY_BACKOFF_MAX_MS cannot be smaller than DB_RECOVERY_BACKOFF_MIN_MS.",
+   "For PostgreSQL TLS, configure a CA and certificate settings explicitly. Opportunistic encryption is not supported."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "Edit Fields": {
   "sourceUrl": "https://docs.n8n.io/integrations/builtin/core-nodes/n8n-nodes-base.set",
   "sourceTitle": "Edit Fields (Set) | Nodes | n8n Docs",
@@ -980,6 +1154,74 @@
   ],
   "checkedAt": "2026-11-03"
  },
+ "Error workflows": {
+  "sourceUrl": "https://docs.n8n.io/integrations/builtin/core-nodes/n8n-nodes-base.errortrigger",
+  "sourceTitle": "Error Trigger | Nodes | n8n Docs",
+  "summary": "An error workflow runs when a linked n8n workflow fails. Start it with Error Trigger, assign it in Workflow Settings, and use the received failure data for alerts or other handling.",
+  "explanation": "An error workflow is a separate workflow that runs when a linked workflow fails. Start it with Error Trigger, which receives information about the failed workflow and error. Assign it in the other workflow's settings to send alerts or take other recovery actions.",
+  "syntax": "",
+  "parameters": [],
+  "returns": "The Error Trigger supplies failed-workflow and error data to the error workflow.",
+  "example": {
+   "title": "Basic error workflow",
+   "code": "{\n  \"nodes\": [\n    {\n      \"parameters\": {},\n      \"name\": \"Error Trigger\",\n      \"type\": \"n8n-nodes-base.errorTrigger\",\n      \"typeVersion\": 1,\n      \"position\": [260, 300]\n    },\n    {\n      \"parameters\": {\n        \"resource\": \"message\",\n        \"operation\": \"post\",\n        \"text\": \"Workflow failed\"\n      },\n      \"name\": \"Alert\",\n      \"type\": \"n8n-nodes-base.slack\",\n      \"typeVersion\": 2,\n      \"position\": [500, 300]\n    }\n  ],\n  \"connections\": {\n    \"Error Trigger\": {\n      \"main\": [[{\"node\": \"Alert\", \"type\": \"main\", \"index\": 0}]]\n    }\n  }\n}",
+   "language": "json",
+   "explanation": "Create an error workflow with Error Trigger as its first node, then connect an alert node. Select this workflow in the failed workflow's settings."
+  },
+  "useCases": [
+   {
+    "title": "Send failure alerts",
+    "scenario": "A production workflow fails and the team needs a notification."
+   },
+   {
+    "title": "Collect error details",
+    "scenario": "A failure should include context for later diagnosis."
+   },
+   {
+    "title": "Report custom errors",
+    "scenario": "A workflow should stop with a clear, custom failure message."
+   }
+  ],
+  "related": [
+   "Error Trigger",
+   "Stop And Error",
+   "Workflow Settings",
+   "Executions",
+   "Log streaming"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you configure an error workflow?",
+    "answer": "Create a separate workflow with Error Trigger as its first node. Save it, then open the workflow that needs handling and choose it under Options > Settings > Error workflow.",
+    "followUp": "Can this workflow be unpublished? Yes. A workflow using Error Trigger does not need to be published."
+   },
+   {
+    "question": "What does Error Trigger do?",
+    "answer": "Error Trigger runs when a linked workflow fails. It receives details about the failed workflow and its errors, so later nodes can send alerts or process the failure.",
+    "followUp": "What limits the received data? Failures in the main workflow's trigger node provide less execution information because the workflow did not execute."
+   },
+   {
+    "question": "What should you know when testing and reading error data?",
+    "answer": "Automatic executions can run the error workflow, but manual workflow runs cannot test it. The error workflow can receive an execution ID and URL when executions are saved in the database.",
+    "followUp": "When is retry information included? The retryOf field is present only when the execution retries a failed execution."
+   }
+  ],
+  "keyPoints": [
+   "Use the Error Trigger node to build a workflow that responds to failures.",
+   "The node starts the error workflow and passes failure details from the linked workflow.",
+   "Put Error Trigger at the beginning of the new error workflow.",
+   "Assign the saved error workflow in the failed workflow's settings.",
+   "Stop And Error can provide a custom message for the error handler.",
+   "The execution ID is available only when n8n saves the execution in its database."
+  ],
+  "gotchas": [
+   "Manual runs do not activate error workflows. Test them through an automatic workflow execution.",
+   "A workflow containing Error Trigger uses itself as its default error workflow unless you configure another one.",
+   "The execution ID and URL are unavailable when the failure happens in the main workflow's trigger node."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "Execute Workflow": {
   "sourceUrl": "https://docs.n8n.io/build/flow-logic/break-workflows-into-smaller-parts",
   "sourceTitle": "Break workflows into smaller parts | Build | n8n Docs",
@@ -1041,6 +1283,226 @@
   "gotchas": [
    "Sub-workflow runs do not count toward the plan's monthly execution or active-workflow limits.",
    "With the Accept all data mode, the sub-workflow accepts input without defining required fields, so it must handle missing or inconsistent values itself."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "Executions": {
+  "sourceUrl": "https://docs.n8n.io/build/understand-workflows/understand-executions",
+  "sourceTitle": "Understand executions | Build | n8n Docs",
+  "summary": "An execution is one run of an n8n workflow. Runs can be manual for testing or production runs started automatically by triggers and schedules.",
+  "explanation": "An execution is one run of an n8n workflow. A run can start manually from the editor or automatically after a trigger or schedule. Manual runs help with testing, while production runs use the published workflow.",
+  "syntax": "GET /api/v1/executions",
+  "parameters": [
+   {
+    "name": "limit",
+    "type": "number",
+    "description": "Maximum number of executions to return; the documented maximum is 250."
+   },
+   {
+    "name": "cursor",
+    "type": "string",
+    "description": "Cursor from the previous response for the next page."
+   },
+   {
+    "name": "includeData",
+    "type": "boolean",
+    "description": "Include detailed execution data when true."
+   },
+   {
+    "name": "status, workflowId, startedAfter, startedBefore",
+    "type": "query filters",
+    "description": "Filter by execution status, workflow ID, or start and end times."
+   }
+  ],
+  "returns": "The API returns execution records and a nextCursor value when more pages are available. A record can include its ID, mode, status, timestamps, workflow ID, and optional detailed data.",
+  "example": {
+   "title": "List failed executions",
+   "code": "curl -H \"X-N8N-API-KEY: YOUR_API_KEY\" \\\n  \"https://your-n8n.example/api/v1/executions?status=error&limit=10\"",
+   "language": "bash",
+   "explanation": "This requests up to 10 failed executions from the n8n API."
+  },
+  "useCases": [
+   {
+    "title": "Manual testing",
+    "scenario": "Test nodes and workflow logic while building."
+   },
+   {
+    "title": "Automated processing",
+    "scenario": "Run an active workflow when an event or schedule occurs."
+   },
+   {
+    "title": "Troubleshooting",
+    "scenario": "Inspect failures and filter runs by workflow or status."
+   }
+  ],
+  "related": [
+   "Manual executions",
+   "Partial executions",
+   "Production executions",
+   "View all executions",
+   "View executions for a single workflow",
+   "Execution data redaction",
+   "Debug and re-run past executions"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do manual and production executions differ?",
+    "answer": "A manual execution starts when a user selects Execute Workflow in the editor. It is useful for testing and can use pinned node output. A production execution starts automatically after a trigger or schedule and runs the published workflow.",
+    "followUp": "What happens to pinned data in production? Production executions ignore pinned data and run the workflow nodes normally."
+   },
+   {
+    "question": "What is a partial execution?",
+    "answer": "A partial execution runs a selected node and the earlier nodes needed to provide its input. It is still a manual execution and is useful for testing one part of a workflow.",
+    "followUp": "Why might a partial execution fail before the selected node runs? It needs a connected trigger, and large branch data can exceed the message size limit."
+   },
+   {
+    "question": "How can an execution be retrieved through the API?",
+    "answer": "The API can list executions with filters such as status, workflow ID, and start time. It supports pagination with the nextCursor value returned by the previous response.",
+    "followUp": "How can detailed data be requested? Set includeData to true; use ignoreDataSizeLimit when the stored data exceeds the configured display limit."
+   }
+  ],
+  "keyPoints": [
+   "Each execution represents one complete attempt to run a workflow.",
+   "Use a manual execution to test workflow behavior from the editor.",
+   "A trigger or schedule starts a production execution automatically.",
+   "Pinned output lets later manual tests reuse fixed node data instead of calling that node again.",
+   "Disable selected nodes during development when you need to avoid contacting external services.",
+   "View production run details in the workflow's Executions tab rather than in the editor canvas.",
+   "Execution data redaction hides workflow data but keeps metadata such as status, timing, and node names."
+  ],
+  "gotchas": [
+   "Pinned node data is used only for manual runs. Production runs execute the nodes normally.",
+   "A partial run fails if the selected node is not connected to a trigger. Add a trigger, such as a manual trigger.",
+   "Manual executions do not count toward the execution quota, but automatic production executions do.",
+   "A polling trigger does not create a quota-counted execution when it finds no new data."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "EXECUTIONS_MODE": {
+  "sourceUrl": "https://docs.n8n.io/deploy/host-n8n/configure-n8n/basic-configuration/use-environment-variables/executions",
+  "sourceTitle": "Executions | Deploy | n8n Docs",
+  "summary": "Configure n8n workflow execution with environment variables. You can control execution mode, time limits, saved data, storage, and cleanup.",
+  "explanation": "n8n reads these environment variables when it starts and uses them to control workflow execution, time limits, saved execution data, and storage. Set a variable before starting n8n; some settings also let workflow users choose more specific values within the configured limits.",
+  "syntax": "NAME=value",
+  "parameters": [
+   {
+    "name": "EXECUTIONS_MODE",
+    "type": "Enum string",
+    "description": "Execution mode: regular or queue."
+   },
+   {
+    "name": "EXECUTIONS_TIMEOUT",
+    "type": "Number",
+    "description": "Default workflow timeout in seconds; -1 disables it."
+   },
+   {
+    "name": "EXECUTIONS_TIMEOUT_MAX",
+    "type": "Number",
+    "description": "Maximum per-workflow timeout in seconds."
+   },
+   {
+    "name": "EXECUTIONS_DATA_SAVE_ON_ERROR",
+    "type": "Enum string",
+    "description": "Save failed execution data: all or none."
+   },
+   {
+    "name": "EXECUTIONS_DATA_SAVE_ON_SUCCESS",
+    "type": "Enum string",
+    "description": "Save successful execution data: all or none."
+   },
+   {
+    "name": "EXECUTIONS_DATA_SAVE_ON_PROGRESS",
+    "type": "Boolean",
+    "description": "Save node progress when true."
+   },
+   {
+    "name": "EXECUTIONS_DATA_SAVE_MANUAL_EXECUTIONS",
+    "type": "Boolean",
+    "description": "Save manually started execution data."
+   },
+   {
+    "name": "N8N_EXECUTION_DATA_STORAGE_MODE",
+    "type": "Enum string",
+    "description": "Execution-data location: database, filesystem, s3, or azure."
+   },
+   {
+    "name": "N8N_STORAGE_PATH",
+    "type": "String",
+    "description": "Base path for filesystem execution data and binary data."
+   },
+   {
+    "name": "EXECUTIONS_DATA_PRUNE",
+    "type": "Boolean",
+    "description": "Delete old execution data on a rolling basis."
+   }
+  ],
+  "returns": "",
+  "example": {
+   "title": "Configure execution settings",
+   "code": "EXECUTIONS_MODE=queue\nEXECUTIONS_TIMEOUT=300\nEXECUTIONS_DATA_PRUNE=true",
+   "language": "bash",
+   "explanation": "This shell configuration makes n8n use queue mode, stops workflows after 300 seconds by default, and enables cleanup of old execution data."
+  },
+  "useCases": [
+   {
+    "title": "Use queue mode",
+    "scenario": "Run executions through workers for a scaled deployment."
+   },
+   {
+    "title": "Limit workflow runtime",
+    "scenario": "Stop workflows that run longer than an allowed duration."
+   },
+   {
+    "title": "Control saved execution data",
+    "scenario": "Choose which execution results n8n keeps."
+   },
+   {
+    "title": "Select external storage",
+    "scenario": "Store execution data outside the database."
+   }
+  ],
+  "related": [
+   "EXECUTIONS_MODE",
+   "EXECUTIONS_TIMEOUT",
+   "EXECUTIONS_TIMEOUT_MAX",
+   "EXECUTIONS_DATA_SAVE_ON_ERROR",
+   "EXECUTIONS_DATA_SAVE_ON_SUCCESS",
+   "EXECUTIONS_DATA_SAVE_ON_PROGRESS",
+   "EXECUTIONS_DATA_SAVE_MANUAL_EXECUTIONS",
+   "N8N_EXECUTION_DATA_STORAGE_MODE"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does EXECUTIONS_MODE control?",
+    "answer": "EXECUTIONS_MODE selects how n8n runs executions. The default is regular, which runs them directly; queue runs them through the queue system.",
+    "followUp": "What happens if queue mode is selected? n8n needs the queue-mode setup, including its supported queue infrastructure, so executions can be assigned and processed correctly."
+   },
+   {
+    "question": "How do the execution timeout variables work together?",
+    "answer": "EXECUTIONS_TIMEOUT sets the default workflow timeout in seconds. EXECUTIONS_TIMEOUT_MAX limits the timeout that a user can choose for one workflow.",
+    "followUp": "How can the default timeout be disabled? Set EXECUTIONS_TIMEOUT to -1, while EXECUTIONS_TIMEOUT_MAX still defines the maximum user-selectable duration."
+   },
+   {
+    "question": "How can execution-data storage be configured?",
+    "answer": "N8N_EXECUTION_DATA_STORAGE_MODE chooses where execution data is stored: database, filesystem, s3, or azure. Filesystem storage uses the base path in N8N_STORAGE_PATH.",
+    "followUp": "What else uses N8N_STORAGE_PATH? n8n also uses it for filesystem binary data, not only execution data."
+   }
+  ],
+  "keyPoints": [
+   "EXECUTIONS_MODE chooses direct execution or queue-based execution. Its default is regular.",
+   "EXECUTIONS_TIMEOUT sets the default workflow runtime limit in seconds.",
+   "EXECUTIONS_TIMEOUT_MAX limits the timeout that users can set for one workflow.",
+   "EXECUTIONS_DATA_SAVE_ON_ERROR controls whether failed execution data is saved.",
+   "EXECUTIONS_DATA_SAVE_ON_SUCCESS controls whether successful execution data is saved.",
+   "EXECUTIONS_DATA_SAVE_ON_PROGRESS can save progress after each executed node.",
+   "EXECUTIONS_DATA_PRUNE enables rolling deletion of older execution records."
+  ],
+  "gotchas": [
+   "A workflow can use a longer timeout only up to EXECUTIONS_TIMEOUT_MAX.",
+   "The default execution timeout is disabled because EXECUTIONS_TIMEOUT is -1.",
+   "S3 and Azure execution-data storage need a self-hosted Business or Enterprise plan."
   ],
   "checkedAt": "2026-11-03"
  },
@@ -1444,6 +1906,74 @@
   "gotchas": [
    "Use Switch instead of If when the workflow needs more than two conditional outputs.",
    "In legacy workflow execution order, adding a Merge node can cause both If branches to execute; this behavior applies to workflows built before n8n 1.0."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "Item linking": {
+  "sourceUrl": "https://docs.n8n.io/build/work-with-data/reference-data/link-data-items/item-linking-for-node-creators",
+  "sourceTitle": "Item linking for node creators",
+  "summary": "Item linking connects each output item to the input item that produced it. Programmatic n8n nodes must preserve or set these links when automatic matching is not possible.",
+  "explanation": "Item linking records which input item produced each output item. For programmatic nodes, add pairedItem to returned items when n8n cannot infer the relationship. This lets later expressions follow the chain to earlier data.",
+  "syntax": "{ json: { ... }, pairedItem: { item: number, input?: number } }",
+  "parameters": [],
+  "returns": "A list of output items. Each item should include pairedItem when n8n cannot infer its input relationship.",
+  "example": {
+   "title": "Set paired item links",
+   "code": "const output = items.map((item) => ({\n  json: { value: item.json.value },\n  pairedItem: { item: 0 }\n}));\nreturn output;",
+   "language": "javascript",
+   "explanation": "This programmatic node returns new items and links each one to input item 0."
+  },
+  "useCases": [
+   {
+    "title": "Preserve source relationships",
+    "scenario": "A node filters or reorders existing items while preserving their origin."
+   },
+   {
+    "title": "Link multiple outputs",
+    "scenario": "A node creates several outputs from one input item."
+   },
+   {
+    "title": "Identify the source input",
+    "scenario": "A node combines data from multiple inputs."
+   }
+  ],
+  "related": [
+   "Item linking concepts",
+   "Item linking for node creators",
+   "Preserving linking in the Code node",
+   "Item linking errors",
+   "Mapping in the UI"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is item linking?",
+    "answer": "Item linking tells n8n which input item produced each output item. Later expressions use this relationship to access data from earlier items.",
+    "followUp": "When is manual linking needed? It is needed when a programmatic node creates new items or produces unequal input and output counts that n8n cannot match automatically."
+   },
+   {
+    "question": "How do you add a link manually?",
+    "answer": "For a programmatic node, add a pairedItem property to every returned item. It can refer to an incoming item's pairedItem or specify an input item index directly.",
+    "followUp": "How do you select an input when combining inputs? Set the optional input field in pairedItem to the input number, such as 0."
+   },
+   {
+    "question": "When can n8n link items automatically?",
+    "answer": "n8n can infer links for one input and one output, one input and many outputs, and some reordered or filtered data. With equal input and output counts, it matches items by position.",
+    "followUp": "What happens when counts differ and new items are created? Automatic linking cannot determine the relationship, so the node must provide pairedItem metadata."
+   }
+  ],
+  "keyPoints": [
+   "Output items carry metadata that connects them to the input items used to create them.",
+   "The links form a chain that lets workflows reach data from earlier items.",
+   "With one input and one output, n8n connects the output to the input automatically.",
+   "With one input and several outputs, every output can link to that same input.",
+   "Equal input and output counts are matched by position.",
+   "Programmatic node authors manually preserve links by setting pairedItem on returned items."
+  ],
+  "gotchas": [
+   "Missing links can cause expressions in later nodes to fail.",
+   "A node must set links when automatic linking cannot determine them.",
+   "This manual guidance is for programmatic-style nodes, not declarative-style nodes."
   ],
   "checkedAt": "2026-11-03"
  },
@@ -1944,6 +2474,76 @@
   ],
   "checkedAt": "2026-11-03"
  },
+ "N8N_ENCRYPTION_KEY": {
+  "sourceUrl": "https://docs.n8n.io/deploy/host-n8n/configure-n8n/basic-configuration/configuration-examples/set-a-custom-encryption-key",
+  "sourceTitle": "Set a custom encryption key | Deploy | n8n Docs",
+  "summary": "Set N8N_ENCRYPTION_KEY to choose the key n8n uses to encrypt credentials in its database. In queue mode, configure it for every worker.",
+  "explanation": "n8n uses this environment variable as the key for encrypting credentials before saving them in the database. If you do not set it, n8n creates a random key on the first launch and stores it in the ~/.n8n folder. In queue mode, set the variable for every worker.",
+  "syntax": "N8N_ENCRYPTION_KEY=<SOME RANDOM STRING>",
+  "parameters": [
+   {
+    "name": "N8N_ENCRYPTION_KEY",
+    "type": "String",
+    "description": "The random string that n8n uses to encrypt credentials stored in the database."
+   }
+  ],
+  "returns": "",
+  "example": {
+   "title": "Set the encryption key",
+   "code": "export N8N_ENCRYPTION_KEY='replace-with-a-long-random-secret'",
+   "language": "bash",
+   "explanation": "Set the variable before starting n8n. Keep the same value whenever the instance starts."
+  },
+  "useCases": [
+   {
+    "title": "Use a custom instance key",
+    "scenario": "You need a known key instead of n8n's automatically generated first-launch key."
+   },
+   {
+    "title": "Share the key across workers",
+    "scenario": "You run n8n with separate queue workers."
+   },
+   {
+    "title": "Encrypt stored credentials",
+    "scenario": "You want credentials protected before database storage."
+   }
+  ],
+  "related": [
+   "Environment variables reference",
+   "Queue mode",
+   "Credentials",
+   "Configuration examples"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does N8N_ENCRYPTION_KEY do?",
+    "answer": "Set N8N_ENCRYPTION_KEY to a random secret before starting n8n. n8n uses it to encrypt credentials stored in the database.",
+    "followUp": "What happens if the variable is missing? n8n generates a random key on its first launch and saves it in ~/.n8n."
+   },
+   {
+    "question": "How should the key be configured in queue mode?",
+    "answer": "Use the same key for the main instance and every worker. This lets all parts of a queue-mode deployment read encrypted credentials.",
+    "followUp": "Why must workers share the key? They need the key to decrypt credentials that the main instance or another worker stored."
+   },
+   {
+    "question": "How can you choose a custom encryption key?",
+    "answer": "If the settings file does not already contain a key, set N8N_ENCRYPTION_KEY to a random string. The environment variable makes n8n use that custom value instead of generating one.",
+    "followUp": "Where does the default key come from? n8n creates it during the first launch and stores it in the ~/.n8n folder."
+   }
+  ],
+  "keyPoints": [
+   "Without a custom value, n8n creates the encryption key during its first launch.",
+   "The automatically created key is stored in the ~/.n8n folder.",
+   "The key protects credentials before n8n writes them to the database.",
+   "Set N8N_ENCRYPTION_KEY as an environment variable to choose the key.",
+   "A configured value replaces n8n's first-launch key generation."
+  ],
+  "gotchas": [
+   "Queue mode needs the same environment variable on every worker, not only on the main instance."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "OpenAI Chat Model": {
   "sourceUrl": "https://docs.n8n.io/integrations/builtin/cluster-nodes/sub-nodes/n8n-nodes-langchain.lmchatopenai",
   "sourceTitle": "OpenAI Chat Model | Nodes | n8n Docs",
@@ -2056,6 +2656,73 @@
   ],
   "checkedAt": "2026-11-03"
  },
+ "Pinned data": {
+  "sourceUrl": "https://docs.n8n.io/build/work-with-data/pin-and-mock-data",
+  "sourceTitle": "Pin and mock data | Build | n8n Docs",
+  "summary": "Data pinning saves a node's output during development and reuses it on later manual workflow runs. This helps test workflow logic without repeatedly calling external services.",
+  "explanation": "During workflow development, n8n can save a node's output and reuse it on later manual runs. This avoids repeated calls to external services and gives later nodes stable input. You can remove the pin to fetch fresh data. Production executions do not use pinned data.",
+  "syntax": "",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Pin node output for development",
+   "code": "// In the n8n editor:\n// 1. Run a node to load output data.\n// 2. Select \"Pin data\" in the OUTPUT view.\n// 3. Run the workflow again.\n// The pinned output is used instead of running that node.",
+   "language": "text",
+   "explanation": "Pin a node's output in the editor, then run the workflow again to reuse that saved data."
+  },
+  "useCases": [
+   {
+    "title": "Keep test input stable",
+    "scenario": "An API node returns changing data, but the downstream logic needs repeatable input."
+   },
+   {
+    "title": "Avoid repeated test calls",
+    "scenario": "A workflow makes costly or rate-limited external requests during development."
+   },
+   {
+    "title": "Test edited scenarios",
+    "scenario": "A developer needs to check edge cases without changing the source system."
+   }
+  ],
+  "related": [
+   "Data mocking",
+   "Manual executions",
+   "Partial executions",
+   "Edit pinned data",
+   "Unpin data"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does data pinning do in n8n?",
+    "answer": "Pinning freezes a node's output during manual development runs. Later runs substitute that saved output instead of executing the pinned node, so the rest of the workflow can be tested with stable input.",
+    "followUp": "What happens in production? Production executions ignore pinned data and execute the workflow with fresh data."
+   },
+   {
+    "question": "How do you pin and unpin node data?",
+    "answer": "Run the node, open its OUTPUT view, and select Pin data. To use fresh output again, select Unpin in the banner shown above the output.",
+    "followUp": "Can pinned data be changed? Yes. Switch the output to JSON view, select Edit, change the data, and save it; n8n saves the changes as pinned data."
+   },
+   {
+    "question": "Why would you use pinned data while building a workflow?",
+    "answer": "Pinning is useful when an upstream node calls an external service repeatedly. It lets development runs reuse consistent output without making another request.",
+    "followUp": "What limitation should you check first? Pinning is unavailable when the node output contains binary data."
+   }
+  ],
+  "keyPoints": [
+   "A later manual run uses the saved output instead of running the pinned node.",
+   "Unpin a node when the next run should load fresh output.",
+   "You can change pinned JSON to test different inputs and edge cases.",
+   "Mocking creates test input without connecting to a live source.",
+   "Use a mock-data node to create input, then pin its output for repeated tests."
+  ],
+  "gotchas": [
+   "A node output that contains binary data cannot be pinned.",
+   "Pinned data affects development runs only. Published workflow executions fetch current data instead.",
+   "Do not use pinning as a production data store."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "Postgres": {
   "sourceUrl": "https://docs.n8n.io/integrations/builtin/app-nodes/n8n-nodes-base.postgres",
   "sourceTitle": "Postgres | Nodes | n8n Docs",
@@ -2146,6 +2813,81 @@
    "A Delete operation without row conditions removes every row in the selected table.",
    "Transaction batching rolls back the changes when any query in the transaction fails.",
    "The Postgres Trigger needs suitable database permissions when it creates triggers and procedures."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "Queue mode": {
+  "sourceUrl": "https://docs.n8n.io/deploy/host-n8n/configure-n8n/scaling/enable-queue-mode",
+  "sourceTitle": "Enable queue mode | Deploy | n8n Docs",
+  "summary": "Queue mode runs triggers on a main instance and workflow executions on workers. Redis queues jobs, so you can add workers to increase capacity.",
+  "explanation": "Queue mode splits work between main and worker instances. The main instance receives triggers and puts execution IDs into Redis. Workers take jobs from Redis and run the workflows. Add workers to handle more executions, and remove them when demand falls.",
+  "syntax": "n8n worker --concurrency=5",
+  "parameters": [
+   {
+    "name": "--concurrency",
+    "type": "number",
+    "description": "Number of workflow jobs that one worker can run in parallel."
+   }
+  ],
+  "returns": "",
+  "example": {
+   "title": "Run a queue worker",
+   "code": "docker run --name n8n-redis -d redis:7\n\n# Main instance\nexport EXECUTIONS_MODE=queue\nexport QUEUE_BULL_REDIS_HOST=localhost\nexport N8N_DEFAULT_BINARY_DATA_MODE=s3\n\n# Worker instance\nn8n worker --concurrency=5",
+   "language": "bash",
+   "explanation": "This starts Redis, configures queue mode, and runs a worker with five parallel jobs. Configure shared binary storage when workflows use binary data."
+  },
+  "useCases": [
+   {
+    "title": "Scale execution capacity",
+    "scenario": "A self-hosted installation needs to process more workflow executions."
+   },
+   {
+    "title": "Use multi-main mode",
+    "scenario": "A deployment needs high availability for main processes."
+   },
+   {
+    "title": "Use shared binary storage",
+    "scenario": "Workflows exchange large binary files."
+   }
+  ],
+  "related": [
+   "Redis",
+   "worker instances",
+   "Postgres",
+   "N8N_MULTI_MAIN_SETUP_ENABLED",
+   "N8N_DEFAULT_BINARY_DATA_MODE",
+   "N8N_WEBHOOK_RESPONSE_RELAY_SIZE_MAX"
+  ],
+  "since": "2.34.0",
+  "interview": [
+   {
+    "question": "How does queue mode distribute work?",
+    "answer": "The main instance receives triggers and creates execution jobs. Redis stores the pending jobs, and workers retrieve and execute them. Adding workers increases execution capacity.",
+    "followUp": "What must be shared for workers to handle binary data? Use storage that every relevant instance can read, such as S3 or Azure, rather than local filesystem storage."
+   },
+   {
+    "question": "What does worker concurrency control?",
+    "answer": "Worker concurrency controls how many jobs one worker runs in parallel. The documented default is 10, and n8n recommends 5 or more for worker instances.",
+    "followUp": "Why can adding workers still cause failures? A large worker count combined with low concurrency can exhaust the database connection pool."
+   },
+   {
+    "question": "What is multi-main setup?",
+    "answer": "Multi-main mode lets several main processes provide high availability. One main process is the leader and performs at-most-once tasks; followers can take over if the leader stops responding.",
+    "followUp": "What deployment requirements apply? Main processes must use queue mode, connect to Postgres and Redis, use the same n8n version, and sit behind a load balancer with sticky sessions."
+   }
+  ],
+  "keyPoints": [
+   "Queue mode is the n8n deployment mode for scaling execution capacity.",
+   "The main instance handles incoming triggers but does not normally run the generated execution.",
+   "Redis acts as the message broker that holds pending execution jobs.",
+   "Scale capacity by adding or removing worker instances.",
+   "Set worker concurrency with the concurrency option; its default is 10 jobs per worker.",
+   "Enable multi-main mode by setting N8N_MULTI_MAIN_SETUP_ENABLED to true on main instances."
+  ],
+  "gotchas": [
+   "Do not use filesystem binary storage with queue mode. Use shared external storage such as S3 when workflows must keep binary data.",
+   "Use a worker concurrency of at least 5 when possible. Many workers with low concurrency can put too much pressure on the database.",
+   "Use the same n8n version for every main and worker process in a multi-main deployment."
   ],
   "checkedAt": "2026-11-03"
  },
@@ -2295,6 +3037,79 @@
    "A wrong run time can come from the workflow or instance timezone. Set the workflow timezone or the global timezone.",
    "Variables used by the schedule are captured at publication time. Later variable changes do not affect the published schedule.",
    "Changing the trigger interval requires unpublishing and publishing a new version before the new schedule is used."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "Self-hosting": {
+  "sourceUrl": "https://docs.n8n.io/deploy/host-n8n.md",
+  "sourceTitle": "Host n8n | Deploy | n8n Docs",
+  "summary": "Self-hosting lets you run n8n on infrastructure you manage, such as your own machine, on-premises systems, or a private cloud. You can install it with Docker Compose, a one-line setup, Docker, npm, or a cloud provider.",
+  "explanation": "Self-hosted n8n runs on infrastructure that you manage, such as your own machine, on-premises systems, or a private cloud. You can install it with methods such as Docker Compose, a one-line setup script, Docker, npm, or a cloud provider. The same core product is used in every self-hosted installation; a license key selects Business or Enterprise features.",
+  "syntax": "curl -fsSL https://get.n8n.io | sh",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Run the one-line setup",
+   "code": "curl -fsSL https://get.n8n.io | sh",
+   "language": "bash",
+   "explanation": "This command runs n8n's one-line setup script. It sets up n8n locally and requires Docker on Linux or macOS, or WSL on Windows."
+  },
+  "useCases": [
+   {
+    "title": "One-line setup",
+    "scenario": "You need a fast local installation with little manual setup."
+   },
+   {
+    "title": "Docker Compose",
+    "scenario": "You need a production deployment with a database and extra services."
+   },
+   {
+    "title": "Managed self-hosting",
+    "scenario": "You need control over infrastructure, upgrades, configuration, or security."
+   },
+   {
+    "title": "OEM integration",
+    "scenario": "You need to embed n8n inside another product."
+   }
+  ],
+  "related": [
+   "Install options",
+   "Configure n8n",
+   "Keep n8n running",
+   "Understand the architecture",
+   "Deploy as an OEM integration",
+   "Deploy with the AI starter kit",
+   "Compare editions"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does self-hosting n8n mean?",
+    "answer": "Self-hosting means running n8n on infrastructure that you control. This can be your own machine, an on-premises environment, or a private cloud. You manage the deployment and its operation.",
+    "followUp": "When might self-hosting be a better choice than n8n Cloud? Choose it when you need control over infrastructure, upgrades, configuration, security, scaling, or platform requirements."
+   },
+   {
+    "question": "Which installation methods does the documentation list?",
+    "answer": "You can install self-hosted n8n with Docker Compose, a one-line setup, Docker, npm, or a cloud provider. The best choice depends on your technical requirements and infrastructure.",
+    "followUp": "Which method fits a production deployment with extra services? Docker Compose, because the documentation describes it as a multi-container setup for persistent data and scalability."
+   },
+   {
+    "question": "How do self-hosted editions work?",
+    "answer": "All self-hosted installations use the same core n8n product. Without a license key, the installation runs the free Community edition; a Business or Enterprise key enables that edition.",
+    "followUp": "What determines the self-hosted edition? The license key determines whether the installation remains Community or uses Business or Enterprise features."
+   }
+  ],
+  "keyPoints": [
+   "Self-hosted n8n can run on infrastructure you manage, including on-premises systems and private clouds.",
+   "The documentation provides installation paths for Docker, npm, Docker Compose, and cloud providers.",
+   "The one-line setup is intended for a fast installation with little manual configuration.",
+   "Docker Compose is aimed at production setups that use databases and other services.",
+   "Docker Compose uses multiple containers and supports persistent data and scaling needs.",
+   "The one-line setup script automates dependency and configuration work."
+  ],
+  "gotchas": [
+   "The one-line setup needs Docker. On Windows, use WSL.",
+   "A self-hosted installation starts as the Community edition unless you add a license key."
   ],
   "checkedAt": "2026-11-03"
  },
@@ -2494,6 +3309,86 @@
   "gotchas": [
    "For binary input, set the split field with an expression that uses `$binary`.",
    "Dot notation is enabled by default, so names such as `parent.child` can address nested fields. Disable the option when literal dots are needed."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "Sub-workflows": {
+  "sourceUrl": "https://docs.n8n.io/build/flow-logic/break-workflows-into-smaller-parts",
+  "sourceTitle": "Break workflows into smaller parts",
+  "summary": "Sub-workflows let one n8n workflow call another. Use them to split large workflows into reusable parts and to reduce memory pressure in large workflows.",
+  "explanation": "A sub-workflow is a workflow that another workflow calls. The calling workflow uses Execute Sub-workflow, and the called workflow starts with Execute Sub-workflow Trigger, also shown as When Executed by Another Workflow. The final node's data is returned to the caller.",
+  "syntax": "Parent: Execute Workflow → Child: Execute Sub-workflow Trigger → child nodes → final output",
+  "parameters": [
+   {
+    "name": "workflow input",
+    "type": "object",
+    "description": "Inputs defined by the sub-workflow trigger and supplied by the calling workflow."
+   }
+  ],
+  "returns": "The output data from the last node of the called workflow is returned to the calling workflow.",
+  "example": {
+   "title": "Minimal sub-workflow shape",
+   "code": "{\n  \"nodes\": [\n    {\"name\":\"When Executed by Another Workflow\",\"type\":\"n8n-nodes-base.executeWorkflowTrigger\"},\n    {\"name\":\"Return data\",\"type\":\"n8n-nodes-base.noOp\"}\n  ]\n}",
+   "language": "json",
+   "explanation": "Create a sub-workflow with an Execute Sub-workflow Trigger and a final node that returns data to the calling workflow."
+  },
+  "useCases": [
+   {
+    "title": "Split a large workflow",
+    "scenario": "A workflow has grown large and is difficult to maintain."
+   },
+   {
+    "title": "Reuse workflow logic",
+    "scenario": "Several workflows need the same processing steps."
+   },
+   {
+    "title": "Build modular workflows",
+    "scenario": "A process should be organized into separate service-like units."
+   },
+   {
+    "title": "Reduce memory pressure",
+    "scenario": "A large workflow may run into memory limits."
+   }
+  ],
+  "related": [
+   "Execute Workflow",
+   "Execute Sub-workflow Trigger",
+   "When Executed by Another Workflow",
+   "Sub-workflow conversion",
+   "Workflow settings",
+   "Flow logic"
+  ],
+  "since": "1.97.0",
+  "interview": [
+   {
+    "question": "How do two n8n workflows communicate?",
+    "answer": "Use Execute Sub-workflow in the parent workflow and Execute Sub-workflow Trigger in the called workflow. The trigger receives the caller's input, and the called workflow's last node sends data back.",
+    "followUp": "What happens if the called workflow has several possible final paths? The data returned depends on the path that completes and the final node reached on that execution."
+   },
+   {
+    "question": "How is sub-workflow input defined?",
+    "answer": "The Execute Sub-workflow Trigger can define inputs as individual fields and data types, or use another input definition mode described by the node. The parent passes matching input data when it calls the sub-workflow.",
+    "followUp": "How can a team control callers? Configure the workflow setting that determines which workflows are allowed to call it."
+   },
+   {
+    "question": "What rules apply when converting nodes into a sub-workflow?",
+    "answer": "Conversion is available from n8n 1.97.0. Select a valid continuous group of non-trigger nodes with one permitted incoming boundary and one permitted outgoing boundary; n8n updates expressions and adds needed trigger parameters.",
+    "followUp": "Why can a Merge node be invalid as the incoming boundary? It can have multiple incoming branches, while conversion permits only one input branch at that boundary."
+   }
+  ],
+  "keyPoints": [
+   "Use one workflow as a reusable part of another workflow.",
+   "Sub-workflows help split a large process into smaller modules.",
+   "The parent uses Execute Workflow, while the child uses Execute Sub-workflow Trigger.",
+   "The called workflow returns its output through its final node.",
+   "Conversion adjusts node references and creates input parameters for the extracted workflow.",
+   "The conversion feature starts with n8n 1.97.0."
+  ],
+  "gotchas": [
+   "This limit behavior applies to sub-workflow executions.",
+   "When converting part of an existing workflow, select one continuous section with at most one start and one end connection.",
+   "A conversion selection cannot contain a trigger node.",
+   "The selected section cannot end at a branching node such as If."
   ],
   "checkedAt": "2026-11-03"
  },
@@ -2843,4 +3738,171 @@
   ],
   "checkedAt": "2026-11-03"
  },
- 
+ "WEBHOOK_URL": {
+  "sourceUrl": "https://docs.n8n.io/deploy/host-n8n/configure-n8n/basic-configuration/configuration-examples/configure-webhook-urls-with-reverse-proxy",
+  "sourceTitle": "Configure webhook URLs with reverse proxy | Deploy | n8n Docs",
+  "summary": "Configure n8n behind a reverse proxy by setting its public webhook URL and proxy count. Forward the original request headers from the last proxy.",
+  "explanation": "When a reverse proxy exposes n8n on a public address, n8n cannot build the correct webhook address from its internal port. Set the public address with N8N_WEBHOOK_URL. Set N8N_PROXY_HOPS to the number of proxies, and configure the last proxy to forward the original request headers.",
+  "syntax": "N8N_WEBHOOK_URL=https://n8n.example.com/\nN8N_PROXY_HOPS=1",
+  "parameters": [
+   {
+    "name": "N8N_WEBHOOK_URL",
+    "type": "environment variable",
+    "description": "The public base URL used for webhook display and registration."
+   },
+   {
+    "name": "N8N_PROXY_HOPS",
+    "type": "environment variable",
+    "description": "The number of reverse proxies in the request path."
+   },
+   {
+    "name": "X-Forwarded-For",
+    "type": "HTTP header",
+    "description": "The original client address, forwarded by the last proxy."
+   },
+   {
+    "name": "X-Forwarded-Host",
+    "type": "HTTP header",
+    "description": "The original public host, forwarded by the last proxy."
+   },
+   {
+    "name": "X-Forwarded-Proto",
+    "type": "HTTP header",
+    "description": "The original request protocol, forwarded by the last proxy."
+   }
+  ],
+  "returns": "",
+  "example": {
+   "title": "Configure n8n behind one reverse proxy",
+   "code": "export N8N_WEBHOOK_URL=https://n8n.example.com/\nexport N8N_PROXY_HOPS=1",
+   "language": "bash",
+   "explanation": "Set the public webhook address and tell n8n that one proxy is in the request path."
+  },
+  "useCases": [
+   {
+    "title": "Publish n8n with HTTPS",
+    "scenario": "A reverse proxy exposes n8n over HTTPS while n8n listens on an internal port."
+   },
+   {
+    "title": "Register external webhooks",
+    "scenario": "External services need a reachable callback address for registered webhooks."
+   },
+   {
+    "title": "Show the public editor URL",
+    "scenario": "The editor must show the same public address that users access."
+   },
+   {
+    "title": "Handle proxy chains",
+    "scenario": "Several proxies pass requests to n8n."
+   }
+  ],
+  "related": [
+   "Configuration examples",
+   "Environment variables reference",
+   "Configure the Base URL"
+  ],
+  "since": "2.35.0",
+  "interview": [
+   {
+    "question": "How do you configure n8n behind a reverse proxy?",
+    "answer": "Set N8N_WEBHOOK_URL to the public HTTPS address. Set N8N_PROXY_HOPS to the number of reverse proxies, and configure the last proxy to forward the required X-Forwarded headers.",
+    "followUp": "What happens if the public URL is not set? n8n may create webhook URLs from its internal host and port, so external services may receive incorrect callback addresses."
+   },
+   {
+    "question": "What does N8N_WEBHOOK_URL do?",
+    "answer": "N8N_WEBHOOK_URL controls the webhook address shown in the editor and used when n8n registers webhooks with external services. It should use the address that users and external services can reach.",
+    "followUp": "Why can N8N_PROTOCOL, N8N_HOST, and N8N_PORT be insufficient? The proxy may expose HTTPS on port 443 while n8n itself listens internally on port 5678."
+   },
+   {
+    "question": "Why is N8N_PROXY_HOPS needed?",
+    "answer": "N8N_PROXY_HOPS tells n8n how many proxies are between it and the original request. With one proxy, use 1 and forward the original host, protocol, and client address headers.",
+    "followUp": "Which component should set the forwarded headers? The last proxy in the request path should pass X-Forwarded-For, X-Forwarded-Host, and X-Forwarded-Proto."
+   }
+  ],
+  "keyPoints": [
+   "Without a proxy, n8n builds the webhook URL from N8N_PROTOCOL, N8N_HOST, and N8N_PORT.",
+   "A proxy can expose a different public port from n8n's internal port.",
+   "The manual URL keeps the editor display and external webhook registrations correct.",
+   "Forward these three headers from the last proxy to preserve request details."
+  ],
+  "gotchas": [
+   "Use N8N_WEBHOOK_URL instead of the deprecated WEBHOOK_URL variable.",
+   "For one reverse proxy, set N8N_PROXY_HOPS to 1.",
+   "The last proxy must forward the original request information in X-Forwarded-For, X-Forwarded-Host, and X-Forwarded-Proto."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "Workflows": {
+  "sourceUrl": "https://docs.n8n.io/build/understand-workflows/create-and-run-workflows",
+  "sourceTitle": "Create and run workflows | Build | n8n Docs",
+  "summary": "An n8n workflow is a set of connected nodes that automates a process. Build it on the workflow canvas, run it manually for testing, and publish it for automatic runs.",
+  "explanation": "A workflow is made from nodes connected on the workflow canvas. Start with a trigger node, then add nodes for the work to perform. You can execute it manually while building and testing. To run it automatically when trigger conditions are met, publish it first.",
+  "syntax": "",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "A simple workflow plan",
+   "code": "// n8n workflows are built in the editor, not in source code.\n// Example workflow shape:\n{\n  \"trigger\": \"Webhook\",\n  \"steps\": [\"Set\", \"HTTP Request\"]\n}",
+   "language": "json",
+   "explanation": "This shows the basic shape of a workflow: a trigger starts the process, and connected nodes perform the steps."
+  },
+  "useCases": [
+   {
+    "title": "Build a new workflow",
+    "scenario": "You are creating an automation from the beginning."
+   },
+   {
+    "title": "Test manually",
+    "scenario": "You need to check node behavior before enabling automation."
+   },
+   {
+    "title": "Run from a trigger",
+    "scenario": "You want an event or schedule to start the process."
+   },
+   {
+    "title": "Manage workflows",
+    "scenario": "You need to organize workflows as a project grows."
+   }
+  ],
+  "related": [
+   "Workflow components",
+   "Understand executions",
+   "Save and publish workflows",
+   "Configure workflow settings",
+   "Tag workflows",
+   "Share with others"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is an n8n workflow?",
+    "answer": "A workflow is a collection of connected nodes that automates a process. You build it on the workflow canvas.",
+    "followUp": "How would you test a workflow before enabling automatic runs? Run it manually with Execute Workflow, inspect the result, and fix any problems before publishing."
+   },
+   {
+    "question": "How do you run a workflow manually?",
+    "answer": "Use Execute Workflow to start a workflow manually. This is useful during building and testing, and it also works for workflows without a trigger node.",
+    "followUp": "When should manual execution be preferred? Use it while developing, testing, or running a workflow that has no trigger."
+   },
+   {
+    "question": "How do automatic workflow runs work?",
+    "answer": "New workflows start unpublished. Publish a workflow to make it run automatically when its trigger conditions are met; use the workflow settings menu to unpublish it.",
+    "followUp": "What happens if the workflow remains unpublished? It will not run automatically, so you must execute it manually."
+   }
+  ],
+  "keyPoints": [
+   "A workflow combines connected nodes to automate a process.",
+   "The workflow canvas is where you create and connect nodes.",
+   "Begin by adding a trigger node as the first step.",
+   "Use Execute Workflow to start a workflow by hand.",
+   "Click Publish when the workflow should become automatic.",
+   "Workflow management includes settings, tags, sharing, and maintenance."
+  ],
+  "gotchas": [
+   "A new workflow does not run automatically until you publish it.",
+   "An unpublished workflow only runs when you start it yourself.",
+   "After publishing, the workflow runs when its trigger fires."
+  ],
+  "checkedAt": "2026-11-03"
+ }
+}
