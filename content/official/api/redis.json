@@ -70,6 +70,96 @@
   ],
   "checkedAt": "2026-10-16"
  },
+ "BITCOUNT": {
+  "sourceUrl": "https://redis.io/docs/latest/commands/bitcount/",
+  "sourceTitle": "BITCOUNT | Docs",
+  "summary": "BITCOUNT returns the number of 1 bits in a Redis string. It can inspect the whole value or an inclusive range of bytes or bits.",
+  "explanation": "BITCOUNT reads a Redis string and returns how many bits have value 1. You can count the whole string or an inclusive range, using byte positions by default or bit positions with BIT.",
+  "syntax": "BITCOUNT key [start end [BYTE | BIT]]",
+  "parameters": [
+   {
+    "name": "key",
+    "type": "key",
+    "description": "The name of the Redis string key."
+   },
+   {
+    "name": "start",
+    "type": "integer",
+    "description": "The first position in the range. It is a byte offset by default, or a bit offset with BIT."
+   },
+   {
+    "name": "end",
+    "type": "integer",
+    "description": "The last position in the range, inclusive. It is a byte offset by default, or a bit offset with BIT."
+   },
+   {
+    "name": "unit",
+    "type": "BYTE | BIT",
+    "description": "Selects byte offsets with BYTE or bit offsets with BIT. BYTE is the default."
+   }
+  ],
+  "returns": "An integer equal to the number of bits set to 1.",
+  "example": {
+   "title": "Count set bits",
+   "code": "SET mykey \"foobar\"\nBITCOUNT mykey\nBITCOUNT mykey 1 1\nBITCOUNT mykey 5 30 BIT",
+   "language": "bash",
+   "explanation": "Store a string, count all its set bits, count one byte, then count a bit range."
+  },
+  "useCases": [
+   {
+    "title": "Count active days",
+    "scenario": "Store one bit per day for a user and count the days with value 1."
+   },
+   {
+    "title": "Count matching users",
+    "scenario": "Use bitmap positions for user IDs and count how many users match a condition."
+   },
+   {
+    "title": "Count a large bitmap incrementally",
+    "scenario": "Process a large bitmap in ranges and add the returned counts in the client."
+   }
+  ],
+  "related": [
+   "BITFIELD",
+   "BITFIELD_RO",
+   "BITOP",
+   "BITPOS",
+   "GETBIT",
+   "SETBIT"
+  ],
+  "since": "2.6.0",
+  "interview": [
+   {
+    "question": "What does BITCOUNT do?",
+    "answer": "BITCOUNT counts the bits set to 1 in a Redis string and returns an integer. Without a range, it examines the complete string.",
+    "followUp": "How can you count only part of the value? Pass inclusive start and end positions. They are byte positions unless BIT is provided."
+   },
+   {
+    "question": "How are ranges interpreted?",
+    "answer": "The syntax is BITCOUNT key [start end [BYTE | BIT]]. BYTE is the default unit for start and end; BIT makes them bit offsets.",
+    "followUp": "What does a negative offset mean? It indexes from the end, where -1 is the final byte or bit for the selected unit."
+   },
+   {
+    "question": "What is the performance cost?",
+    "answer": "The command has O(N) time complexity, where N is the amount of data examined. For large bitmaps, the documentation suggests counting ranges incrementally or maintaining a separate counter.",
+    "followUp": "Why might a separate counter help? It avoids scanning the bitmap for every total-count request, and the documentation notes that a small Lua script can update it atomically."
+   }
+  ],
+  "keyPoints": [
+   "It counts bits whose value is 1 in a Redis string.",
+   "With no range, the command checks the entire string.",
+   "Range positions use byte indexes unless you choose another unit.",
+   "Add BIT to interpret the range as bit offsets.",
+   "The BYTE and BIT selector is available starting in Redis 7.0.0.",
+   "The result is an integer containing the number of set bits."
+  ],
+  "gotchas": [
+   "A missing key returns 0 instead of an error.",
+   "The end position is included in the range.",
+   "Negative positions count backward from the end when using the matching index unit."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "BLPOP": {
   "sourceUrl": "https://redis.io/docs/latest/commands/blpop/",
   "sourceTitle": "BLPOP | Docs",
@@ -1760,6 +1850,198 @@
   ],
   "checkedAt": "2026-11-03"
  },
+ "GEOADD": {
+  "sourceUrl": "https://redis.io/docs/latest/commands/geoadd//",
+  "sourceTitle": "GEOADD | Docs",
+  "summary": "Adds one or more members to a Redis geospatial index. Each member has a longitude, latitude, and name; the key is created if it does not exist.",
+  "explanation": "GEOADD stores each member with a longitude and latitude in a geospatial index. Redis stores the index as a sorted set, so later commands such as GEOSEARCH can find members in a circle or box. Coordinates must use longitude first, then latitude.",
+  "syntax": "GEOADD key [NX | XX] [CH] longitude latitude member [longitude latitude member ...]",
+  "parameters": [
+   {
+    "name": "key",
+    "type": "key",
+    "description": "The sorted-set key used for the geospatial index. Redis creates it if needed."
+   },
+   {
+    "name": "condition",
+    "type": "NX | XX",
+    "description": "Optional. NX adds only new members; XX updates only existing members."
+   },
+   {
+    "name": "change",
+    "type": "CH",
+    "description": "Optional. Count all changed members instead of only newly added members."
+   },
+   {
+    "name": "data",
+    "type": "longitude latitude member ...",
+    "description": "One or more triples. Each triple contains longitude, latitude, and member name."
+   }
+  ],
+  "returns": "An integer. Normally it is the number of new members added. With CH, it is the number of members added or updated.",
+  "example": {
+   "title": "Add locations and search nearby",
+   "code": "GEOADD bikes:rentable -122.27652 37.805186 station:1\nGEOADD bikes:rentable -122.2674626 37.8062344 station:2\nGEOSEARCH bikes:rentable FROMLONLAT -122.27652 37.805186 BYRADIUS 5 km",
+   "language": "bash",
+   "explanation": "This adds two bike stations, then finds stations within 5 kilometers of the first station."
+  },
+  "useCases": [
+   {
+    "title": "Build a location index",
+    "scenario": "Store places, vehicles, stores, or other named points for later geographic queries."
+   },
+   {
+    "title": "Bulk-load locations",
+    "scenario": "Add many coordinates in one command when loading or synchronizing location data."
+   },
+   {
+    "title": "Update existing locations",
+    "scenario": "Update the position of a member only when it already exists."
+   },
+   {
+    "title": "Insert new locations only",
+    "scenario": "Prevent an existing location from being overwritten while accepting new locations."
+   }
+  ],
+  "related": [
+   "GEOSEARCH",
+   "GEODIST",
+   "GEOHASH",
+   "GEOPOS"
+  ],
+  "since": "3.2.0",
+  "interview": [
+   {
+    "question": "What does GEOADD do?",
+    "answer": "GEOADD adds one or more members to a geospatial index. Each member has a longitude and latitude, and Redis creates the key when it does not exist.",
+    "followUp": "What data structure stores the index? Redis stores it as a sorted set whose scores contain geohash data."
+   },
+   {
+    "question": "What does GEOADD return?",
+    "answer": "Without options, the integer reply counts only new members. Updating the coordinates of an existing member does not increase that count.",
+    "followUp": "How can the reply include coordinate updates? Add CH; then the count includes new members and existing members whose coordinates changed."
+   },
+   {
+    "question": "How do NX, XX, and CH affect GEOADD?",
+    "answer": "NX adds only members that do not already exist. XX updates only members that already exist and never adds new ones.",
+    "followUp": "What does CH change? It makes the reply count all changed members, including both additions and coordinate updates."
+   }
+  ],
+  "keyPoints": [
+   "GEOADD can add several locations in one command. Redis creates the key when it is missing.",
+   "XX allows coordinate updates for existing members, but it does not create new members.",
+   "CH changes the reply count from new members only to every member that was added or had its coordinates changed.",
+   "The command accepts geographic coordinates as a longitude and latitude pair.",
+   "Adding each item costs O(log(N)), where N is the number of entries in the sorted set."
+  ],
+  "gotchas": [
+   "Pass coordinates as longitude followed by latitude. Reversing them can produce the wrong location or an invalid coordinate.",
+   "Redis uses a spherical Earth model and the Haversine formula. Distance results can have errors of up to 0.5%, so use another system when exact distance matters."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "GEOSEARCH": {
+  "sourceUrl": "https://redis.io/docs/latest/commands/geosearch/",
+  "sourceTitle": "GEOSEARCH | Docs",
+  "summary": "GEOSEARCH finds members in a Redis geospatial index inside a circle or box. It can return names, ordering, limits, coordinates, distances, or geohash scores.",
+  "explanation": "GEOSEARCH reads a geospatial index and finds members inside a circle or rectangle. You choose the search center from a stored member or longitude and latitude, then choose a radius or box size. Optional flags sort results, limit their number, or add coordinates, distance, or the raw geohash score.",
+  "syntax": "GEOSEARCH key <FROMMEMBER member | FROMLONLAT longitude latitude> <BYRADIUS radius <M | KM | FT | MI> | BYBOX width height <M | KM | FT | MI>> [ASC | DESC] [COUNT count [ANY]] [WITHCOORD] [WITHDIST] [WITHHASH]",
+  "parameters": [
+   {
+    "name": "key",
+    "type": "key",
+    "description": "The sorted set that contains the geospatial index."
+   },
+   {
+    "name": "from",
+    "type": "FROMMEMBER member | FROMLONLAT longitude latitude",
+    "description": "Use a stored member, or provide the center longitude and latitude."
+   },
+   {
+    "name": "area",
+    "type": "BYRADIUS radius unit | BYBOX width height unit",
+    "description": "Use a circle radius or a box width and height, with a distance unit."
+   },
+   {
+    "name": "order",
+    "type": "ASC | DESC",
+    "description": "Optional result order: nearest first with ASC or farthest first with DESC."
+   },
+   {
+    "name": "count",
+    "type": "COUNT count [ANY]",
+    "description": "Optional maximum result count. ANY may allow an early stop."
+   },
+   {
+    "name": "with",
+    "type": "WITHCOORD | WITHDIST | WITHHASH",
+    "description": "Optional flags that add coordinates, distances, or geohash scores."
+   }
+  ],
+  "returns": "Without a WITH option, an array of matching member names. With WITHCOORD, WITHDIST, or WITHHASH, an array of arrays containing the requested values for each member.",
+  "example": {
+   "title": "Find nearby places",
+   "code": "GEOADD places 13.361389 38.115556 Palermo\nGEOADD places 15.087269 37.502669 Catania\nGEOSEARCH places FROMLONLAT 15 37 BYRADIUS 200 km ASC WITHDIST",
+   "language": "bash",
+   "explanation": "This stores two places, then returns places within 200 kilometers, ordered from nearest to farthest, with each distance included."
+  },
+  "useCases": [
+   {
+    "title": "Nearby results",
+    "scenario": "Find stores, vehicles, or other points close to a user's location."
+   },
+   {
+    "title": "Map-area search",
+    "scenario": "Search all indexed members inside a rectangular service or map area."
+   },
+   {
+    "title": "Distance-aware results",
+    "scenario": "Return distances so an application can show results from nearest to farthest."
+   }
+  ],
+  "related": [
+   "GEOADD",
+   "GEODIST",
+   "GEOHASH",
+   "GEOPOS",
+   "GEORADIUS",
+   "GEORADIUS_RO",
+   "GEORADIUSBYMEMBER",
+   "GEORADIUSBYMEMBER_RO"
+  ],
+  "since": "6.2.0",
+  "interview": [
+   {
+    "question": "What does GEOSEARCH do?",
+    "answer": "GEOSEARCH finds members in a circle or box within a geospatial index. It can use a stored member or explicit longitude and latitude as the starting point.",
+    "followUp": "How would you return only the nearest five members? Add ASC and COUNT 5."
+   },
+   {
+    "question": "How do circle and box searches differ?",
+    "answer": "BYRADIUS takes a radius and a unit. BYBOX takes width, height, and a unit; both can use meters, kilometers, feet, or miles.",
+    "followUp": "Can the search center be a member instead of coordinates? Yes. Use FROMMEMBER followed by the member name."
+   },
+   {
+    "question": "What extra result data can GEOSEARCH return?",
+    "answer": "The command returns member names unless a WITH option is used. WITHCOORD adds coordinates, WITHDIST adds distance, and WITHHASH adds the raw 52-bit geohash score.",
+    "followUp": "What is the command complexity? It is O(N+log(M)), where N is the grid-aligned bounding-box candidates and M is the matching items."
+   }
+  ],
+  "keyPoints": [
+   "It searches a geospatial index using either a circular area or a rectangular area.",
+   "The search center can be an existing member or a longitude and latitude pair.",
+   "Use BYRADIUS for a circle or BYBOX for a rectangle, with meters, kilometers, feet, or miles.",
+   "ASC and DESC control order. COUNT limits the number of returned members; ANY can stop early when enough results are found.",
+   "WITHCOORD adds each matching member's longitude and latitude.",
+   "WITHDIST adds each member's distance from the search center."
+  ],
+  "gotchas": [
+   "Without a WITH option, the result contains only member names.",
+   "WITHDIST returns distances in the unit used by the search radius.",
+   "WITHCOORD returns longitude first and latitude second."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "GET": {
   "sourceUrl": "https://redis.io/docs/latest/commands/get/",
   "sourceTitle": "GET | Docs",
@@ -1829,6 +2111,83 @@
    "GET cannot read a key whose value has another Redis data type; use the command appropriate for that type."
   ],
   "checkedAt": "2026-10-16"
+ },
+ "GETBIT": {
+  "sourceUrl": "https://redis.io/docs/latest/commands/getbit/",
+  "sourceTitle": "GETBIT | Docs",
+  "summary": "GETBIT reads one bit at a zero-based offset in a Redis String. It returns 0 or 1.",
+  "explanation": "Redis stores bitmap data inside a String. GETBIT reads the bit at a zero-based position. A missing key or a position past the string is treated as a zero-filled area, so the result is 0 there.",
+  "syntax": "GETBIT key offset",
+  "parameters": [
+   {
+    "name": "key",
+    "type": "key",
+    "description": "The name of the key that holds the String."
+   },
+   {
+    "name": "offset",
+    "type": "integer",
+    "description": "The zero-based bit position to read."
+   }
+  ],
+  "returns": "An integer reply: 0 or 1, representing the bit stored at the requested offset.",
+  "example": {
+   "title": "Read bitmap bits",
+   "code": "SETBIT user:123:flags 7 1\nGETBIT user:123:flags 7\nGETBIT user:123:flags 8",
+   "language": "bash",
+   "explanation": "This sets bit 7, then reads bits 7 and 8. The results are 1 and 0."
+  },
+  "useCases": [
+   {
+    "title": "Compact binary states",
+    "scenario": "Store one yes-or-no state per numeric ID, such as whether a device checked in."
+   },
+   {
+    "title": "Permission flags",
+    "scenario": "Represent permissions or other flags where each position has a defined meaning."
+   },
+   {
+    "title": "Read updated flags",
+    "scenario": "Check a bit after another process records it with SETBIT."
+   }
+  ],
+  "related": [
+   "SETBIT",
+   "BITCOUNT",
+   "BITOP",
+   "BITPOS"
+  ],
+  "since": "2.2.0",
+  "interview": [
+   {
+    "question": "What does GETBIT do?",
+    "answer": "GETBIT reads one bit from the String stored at a key. It takes a key and a zero-based bit offset, and returns either 0 or 1.",
+    "followUp": "What happens if the offset is outside the stored value? Redis treats the missing area as zero-filled, so the result is 0."
+   },
+   {
+    "question": "What are the arguments and return values?",
+    "answer": "The syntax is GETBIT key offset. The offset starts at zero, and the command returns the bit value at that position.",
+    "followUp": "How would you mark a bit before reading it? Use SETBIT with the same key, offset, and a value of 0 or 1."
+   },
+   {
+    "question": "What is the time complexity?",
+    "answer": "GETBIT has O(1) time complexity. Redis classifies it as a read, bitmap, and fast command.",
+    "followUp": "How are Redis bitmaps represented? They are bit operations on the String type, not a separate data type."
+   }
+  ],
+  "keyPoints": [
+   "GETBIT reads one bit from the String held by the key.",
+   "The offset is zero-based, so the first bit uses offset 0.",
+   "The result is an integer with only two possible values: 0 or 1.",
+   "The command runs in constant time, O(1).",
+   "Redis bitmaps use String values together with bit operations.",
+   "Redis added GETBIT in version 2.2.0."
+  ],
+  "gotchas": [
+   "Reading beyond the current string length returns 0. The command does not need the string to contain that position.",
+   "A missing key behaves like an empty string, so GETBIT returns 0."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "GETDEL": {
   "sourceUrl": "https://redis.io/docs/latest/commands/GETDEL/",
@@ -4363,6 +4722,83 @@
   ],
   "checkedAt": "2026-11-03"
  },
+ "MEMORY": {
+  "sourceUrl": "https://redis.io/docs/latest/commands/memory-usage/",
+  "sourceTitle": "MEMORY USAGE | Docs",
+  "summary": "MEMORY USAGE estimates how many bytes a key and its value use in RAM. For aggregate values, it can sample nested values to estimate the total size.",
+  "explanation": "MEMORY USAGE estimates the RAM needed for a key, its value, and related administrative overhead. For aggregate values, Redis can sample nested values and use their average to estimate the total; use SAMPLES 0 to inspect all nested values.",
+  "syntax": "MEMORY USAGE key [SAMPLES count]",
+  "parameters": [
+   {
+    "name": "key",
+    "type": "key",
+    "description": "The key whose RAM usage Redis should estimate."
+   },
+   {
+    "name": "count",
+    "type": "integer",
+    "description": "Optional number of nested values to sample for aggregate types. Use 0 to sample all."
+   }
+  ],
+  "returns": "The estimated memory usage in bytes for the key and its value, or a null result when the key does not exist.",
+  "example": {
+   "title": "Measure a key's memory use",
+   "code": "redis-cli SET user:1 Alice\nredis-cli MEMORY USAGE user:1\nredis-cli MEMORY USAGE user:1 SAMPLES 0",
+   "language": "bash",
+   "explanation": "Stores a key, then reports its memory use. The last command samples every nested value when the value is an aggregate."
+  },
+  "useCases": [
+   {
+    "title": "Investigate memory usage",
+    "scenario": "Find keys that consume more RAM than expected."
+   },
+   {
+    "title": "Compare data layouts",
+    "scenario": "Compare the cost of different key or value designs."
+   },
+   {
+    "title": "Inspect all nested values",
+    "scenario": "Measure a complete aggregate when an exact nested scan is needed."
+   }
+  ],
+  "related": [
+   "MEMORY",
+   "MEMORY HELP",
+   "MEMORY DOCTOR",
+   "MEMORY STATS"
+  ],
+  "since": "4.0.0",
+  "interview": [
+   {
+    "question": "What does MEMORY USAGE report?",
+    "answer": "MEMORY USAGE returns an estimate of the bytes needed to store a key and its value in RAM. It also counts data structures and administrative overhead.",
+    "followUp": "What does SAMPLES control? For aggregate values, it sets how many nested values Redis samples; SAMPLES 0 samples all nested values."
+   },
+   {
+    "question": "What is the syntax and what are the arguments?",
+    "answer": "The command syntax is MEMORY USAGE key [SAMPLES count]. The key is required, while SAMPLES and its count are optional.",
+    "followUp": "What is the default sample count? Redis uses five samples unless SAMPLES 0 or another count is supplied."
+   },
+   {
+    "question": "How does sampling affect command cost?",
+    "answer": "Its time complexity is O(N), where N is the number of samples. A larger sample count can therefore require more work.",
+    "followUp": "How can you inspect every nested value? Use SAMPLES 0, but expect the work to depend on the full nested collection."
+   }
+  ],
+  "keyPoints": [
+   "Use MEMORY USAGE to estimate how much RAM one key and its value need.",
+   "SAMPLES applies to nested or aggregate data types.",
+   "Redis averages sampled nested values to estimate the aggregate's total size.",
+   "SAMPLES 0 checks every nested value; otherwise the default is five samples.",
+   "The command's work grows with the number of samples."
+  ],
+  "gotchas": [
+   "The result includes administrative overhead, not only the stored data.",
+   "For aggregate values, the default sample count is five, so the estimate may not inspect every nested value.",
+   "Memory figures can differ on active-active Redis Software or Redis Cloud databases."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "MGET": {
   "sourceUrl": "https://redis.io/docs/latest/commands/mget/",
   "sourceTitle": "MGET | Docs - Redis",
@@ -5896,6 +6332,93 @@
    "A successful overwrite removes the old expiry unless KEEPTTL is used."
   ],
   "checkedAt": "2026-10-16"
+ },
+ "SETBIT": {
+  "sourceUrl": "https://redis.io/docs/latest/commands/setbit//",
+  "sourceTitle": "SETBIT | Docs",
+  "summary": "SETBIT sets or clears one bit in a Redis String. It creates the key when missing and returns the bit's previous value.",
+  "explanation": "SETBIT changes one bit in the string stored at a key. The offset starts at zero, and the value must be 0 or 1. Redis creates the key when needed and adds zero-filled space when the offset is beyond the current string.",
+  "syntax": "SETBIT key offset value",
+  "parameters": [
+   {
+    "name": "key",
+    "type": "key",
+    "description": "The name of the key that holds the String."
+   },
+   {
+    "name": "offset",
+    "type": "integer",
+    "description": "The zero-based bit position. It must be at least 0 and less than 2^32."
+   },
+   {
+    "name": "value",
+    "type": "integer",
+    "description": "The bit to store: 0 or 1."
+   }
+  ],
+  "returns": "An integer containing the bit value that was stored at the offset before the command ran.",
+  "example": {
+   "title": "Mark and check a user",
+   "code": "SETBIT users:online 123 1\nGETBIT users:online 123\nGETBIT users:online 456",
+   "language": "bash",
+   "explanation": "This marks user 123 as online, then checks users 123 and 456."
+  },
+  "useCases": [
+   {
+    "title": "Binary status tracking",
+    "scenario": "Track whether numbered users, devices, or sensors have performed an event."
+   },
+   {
+    "title": "Compact permissions",
+    "scenario": "Store permissions where each bit represents one allowed action."
+   },
+   {
+    "title": "Compact integer sets",
+    "scenario": "Represent a set whose members are integer IDs from 0 to N."
+   }
+  ],
+  "related": [
+   "BITCOUNT",
+   "BITFIELD",
+   "BITFIELD_RO",
+   "BITOP",
+   "BITPOS",
+   "GETBIT",
+   "GET",
+   "SET"
+  ],
+  "since": "2.2.0",
+  "interview": [
+   {
+    "question": "What does SETBIT do and return?",
+    "answer": "SETBIT sets one bit in a Redis string and returns the bit that was stored at that offset before the change. It creates the key if it does not exist.",
+    "followUp": "What happens when the offset is past the current string? Redis grows the string and fills the new bits with zero."
+   },
+   {
+    "question": "What are the valid offset and value ranges?",
+    "answer": "The offset is zero-based and must be from 0 through 2^32 - 1. The value must be either 0 or 1.",
+    "followUp": "Why is the maximum offset limited? The limit keeps the bitmap within a 512 MB string."
+   },
+   {
+    "question": "How are Redis bitmaps represented?",
+    "answer": "A bitmap uses Redis String storage. Each byte represents eight consecutive bit offsets, so normal string commands such as GET and SET can also access its bytes.",
+    "followUp": "How could a client initialize many bits efficiently? Encode the desired bits as bytes and use one SET command instead of many SETBIT calls."
+   }
+  ],
+  "keyPoints": [
+   "SETBIT changes one bit and creates the key when it is missing.",
+   "Use value 1 to set the bit or 0 to clear it.",
+   "Offsets begin at zero.",
+   "The command has constant time complexity.",
+   "The result is the old value of the selected bit.",
+   "Redis stores bitmaps as binary-safe Strings, not as a separate data type."
+  ],
+  "gotchas": [
+   "The offset cannot be negative or reach 2^32. This limits a bitmap to 512 MB.",
+   "Bits added before the requested offset start as zero.",
+   "Setting the last possible bit on a new or small string can temporarily block the server."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "SETEX": {
   "sourceUrl": "https://redis.io/docs/latest/commands/setex/",
