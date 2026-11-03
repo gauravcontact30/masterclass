@@ -70,6 +70,83 @@
   ],
   "checkedAt": "2026-10-16"
  },
+ "AUTH": {
+  "sourceUrl": "https://redis.io/docs/latest/commands/auth/index.html.md",
+  "sourceTitle": "AUTH",
+  "summary": "AUTH authenticates the current Redis connection. It accepts a password, or a username and password when Redis ACLs are used.",
+  "explanation": "AUTH checks the password for the current Redis connection. With ACLs, you can also provide a username. If you omit the username, Redis uses the default user. A successful check returns OK; a failed check returns an error.",
+  "syntax": "AUTH [username] password",
+  "parameters": [
+   {
+    "name": "username",
+    "type": "string",
+    "description": "Optional ACL username. If omitted, Redis uses the default user."
+   },
+   {
+    "name": "password",
+    "type": "string",
+    "description": "Required authentication password. With requirepass, this is the server password; with ACLs, it is the user's password."
+   }
+  ],
+  "returns": "Returns the OK status when authentication succeeds. Returns an error when authentication fails.",
+  "example": {
+   "title": "Authenticate with a password",
+   "code": "AUTH \"temp-pass\"",
+   "language": "bash",
+   "explanation": "Authenticate the current connection with a server password."
+  },
+  "useCases": [
+   {
+    "title": "Authenticate with a server password",
+    "scenario": "A Redis server uses the requirepass configuration option."
+   },
+   {
+    "title": "Authenticate an ACL user",
+    "scenario": "Redis 6.0 or later uses ACL users with separate credentials."
+   },
+   {
+    "title": "Unlock a connection",
+    "scenario": "A client has connected but Redis requires authentication before normal commands."
+   }
+  ],
+  "related": [
+   "ACL SETUSER",
+   "Redis ACL system",
+   "requirepass"
+  ],
+  "since": "1.0.0",
+  "interview": [
+   {
+    "question": "What does AUTH do?",
+    "answer": "AUTH authenticates the current connection. Use AUTH password for a server protected by requirepass, or AUTH username password with Redis ACLs. A successful authentication returns OK.",
+    "followUp": "What username does the one-argument form use with ACLs? It uses the implicit default username, named default."
+   },
+   {
+    "question": "What is the AUTH syntax?",
+    "answer": "The command syntax is AUTH [username] password. The username was added in Redis 6.0. The password is required in every form.",
+    "followUp": "What happens if the password is wrong? Redis returns an error, and the client must try another password."
+   },
+   {
+    "question": "What is the time complexity of AUTH?",
+    "answer": "AUTH has time complexity O(N), where N is the number of passwords defined for the user. This applies when Redis checks the user's configured passwords.",
+    "followUp": "Why should passwords be long? Redis can try many passwords in parallel, so short passwords are easier to attack."
+   }
+  ],
+  "keyPoints": [
+   "AUTH authenticates the current Redis connection.",
+   "Use the password-only form when the server uses requirepass.",
+   "Redis 6.0 and later support username-and-password authentication through ACLs.",
+   "The username is optional. If missing, Redis authenticates the default ACL user.",
+   "A correct password returns OK and lets the connection run commands.",
+   "A wrong password returns an error.",
+   "AUTH takes O(N) time, where N is the user's number of defined passwords."
+  ],
+  "gotchas": [
+   "Redis can test many passwords quickly. Use a strong, long password.",
+   "With ACLs, AUTH password uses the default username when you omit the username."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "BITCOUNT": {
   "sourceUrl": "https://redis.io/docs/latest/commands/bitcount/",
   "sourceTitle": "BITCOUNT | Docs",
@@ -157,6 +234,203 @@
    "A missing key returns 0 instead of an error.",
    "The end position is included in the range.",
    "Negative positions count backward from the end when using the matching index unit."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "Bitmap": {
+  "sourceUrl": "https://redis.io/docs/latest/develop/data-types/strings/bitmaps/",
+  "sourceTitle": "Redis bitmaps",
+  "summary": "Redis bitmaps use string values as compact sequences of bits. Set or read individual positions, count enabled bits, and combine bitmap keys with BITOP.",
+  "explanation": "A Redis bitmap is a string used as a sequence of bits. Each bit has a zero-based offset and can be read or changed independently. Bitmap commands also count enabled bits and combine several bitmap strings with logical operations. The newer BITOP operators support set differences and related combinations.",
+  "syntax": "SETBIT key offset value\nGETBIT key offset\nBITCOUNT key [start end [BYTE | BIT]]\nBITOP operation destkey key [key ...]",
+  "parameters": [
+   {
+    "name": "key",
+    "type": "key",
+    "description": "The Redis key containing the bitmap string."
+   },
+   {
+    "name": "offset",
+    "type": "integer",
+    "description": "A zero-based bit position."
+   },
+   {
+    "name": "value",
+    "type": "integer",
+    "description": "The bit value to store: 0 or 1."
+   },
+   {
+    "name": "destkey",
+    "type": "key",
+    "description": "The destination key for a BITOP result."
+   },
+   {
+    "name": "operator and source keys",
+    "type": "operator, keys",
+    "description": "The logical operator and one or more source bitmap keys."
+   }
+  ],
+  "returns": "SETBIT returns the previous bit value. GETBIT returns the bit at the requested offset. BITCOUNT returns the number of set bits. BITOP returns the length of the resulting string.",
+  "example": {
+   "title": "Basic bitmap operations",
+   "code": "SETBIT visits 42 1\nGETBIT visits 42\nBITCOUNT visits\nBITOP AND active_and_paid active paid\nGET active_and_paid",
+   "language": "bash",
+   "explanation": "This stores one boolean value, reads it, counts all enabled values, and creates a bitmap containing positions enabled in both source bitmaps."
+  },
+  "useCases": [
+   {
+    "title": "Boolean properties",
+    "scenario": "Track whether a user, player, or item has a property by assigning it a stable bit position."
+   },
+   {
+    "title": "Membership counts",
+    "scenario": "Count how many positions are enabled in a bitmap."
+   },
+   {
+    "title": "Set operations",
+    "scenario": "Find common, combined, different, or exclusive members across aligned bitmap sets."
+   },
+   {
+    "title": "Audience targeting",
+    "scenario": "Build an audience from several campaign or interest bitmaps."
+   }
+  ],
+  "related": [
+   "SETBIT",
+   "GETBIT",
+   "BITCOUNT",
+   "BITOP",
+   "AND",
+   "OR",
+   "XOR",
+   "NOT"
+  ],
+  "since": "8.2",
+  "interview": [
+   {
+    "question": "How do SETBIT and GETBIT work?",
+    "answer": "SETBIT changes the bit at a zero-based offset and returns the previous bit value. GETBIT reads the bit at an offset. A bitmap is stored inside a Redis string.",
+    "followUp": "How would you count enabled positions? Use BITCOUNT on the bitmap key."
+   },
+   {
+    "question": "How do you count set bits?",
+    "answer": "BITCOUNT returns the number of bits set to one in a bitmap. It is useful for counting members or enabled flags. The documented command has linear complexity in the amount of bitmap data it examines.",
+    "followUp": "How can you count only part of a bitmap? Use the range options supported by BITCOUNT, choosing the documented byte range."
+   },
+   {
+    "question": "What does BITOP do?",
+    "answer": "BITOP combines source bitmap strings and stores the result under a destination key. AND keeps bits present in every source, OR keeps bits present in at least one source, XOR keeps differing bits, and NOT inverts one source.",
+    "followUp": "What does ANDOR do? It keeps a bit when it is set in the first bitmap and in at least one additional bitmap."
+   }
+  ],
+  "keyPoints": [
+   "Use SETBIT to store a binary state at an offset. Use GETBIT to read that state.",
+   "Use BITCOUNT when you need the total number of enabled positions in a bitmap.",
+   "The basic BITOP operators are AND, OR, XOR, and NOT.",
+   "DIFF keeps positions enabled in the first bitmap but disabled in all the other supplied bitmaps.",
+   "DIFF1 keeps positions enabled in at least one later bitmap but disabled in the first bitmap.",
+   "ANDOR keeps positions enabled in the first bitmap and at least one other bitmap.",
+   "ONE keeps positions enabled in exactly one of the supplied bitmaps."
+  ],
+  "gotchas": [
+   "BITOP writes its result to the destination key, so an existing value there is replaced.",
+   "When bitmap positions represent the same people or objects, keep the source bitmaps aligned and use the same length."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "Bloom filter": {
+  "sourceUrl": "https://redis.io/docs/latest/develop/data-types/probabilistic/bloom-filter/",
+  "sourceTitle": "Bloom filter",
+  "summary": "Redis Bloom filters provide compact, fast membership checks. A negative result is certain, but a positive result may be a false positive.",
+  "explanation": "Redis Bloom filters store hashed item data instead of full items. They use little fixed-size memory and quickly test membership. A negative result is certain, but a positive result only means the item may be present because hash collisions can cause false positives.",
+  "syntax": "BF.RESERVE key error_rate capacity [EXPANSION expansion] [NONSCALING]\nBF.ADD key item\nBF.EXISTS key item\nBF.MADD key item [item ...]\nBF.MEXISTS key item [item ...]",
+  "parameters": [
+   {
+    "name": "key",
+    "type": "string",
+    "description": "The Redis key that names the Bloom filter."
+   },
+   {
+    "name": "errorRate",
+    "type": "float",
+    "description": "The desired probability of false positives, from 0 to 1."
+   },
+   {
+    "name": "capacity",
+    "type": "integer",
+    "description": "The intended number of entries."
+   },
+   {
+    "name": "item/items",
+    "type": "string or strings",
+    "description": "One item, or multiple items, to add or check."
+   }
+  ],
+  "returns": "BF.RESERVE returns OK on success. BF.ADD returns 1 when the item is newly added. BF.EXISTS returns 1 when the item may exist and 0 when it definitely does not. Multi-item commands return one result per item.",
+  "example": {
+   "title": "Create and query a Bloom filter",
+   "code": "BF.RESERVE bikes:models 0.001 1000000\nBF.ADD bikes:models \"Smoky Mountain Striker\"\nBF.EXISTS bikes:models \"Smoky Mountain Striker\"\nBF.MADD bikes:models \"Rocky Mountain Racer\" \"Cloudy City Cruiser\"\nBF.MEXISTS bikes:models \"Rocky Mountain Racer\" \"Cloudy City Cruiser\"",
+   "language": "bash",
+   "explanation": "Creates a filter for one million items with a 0.1% target false-positive rate, adds items, and checks one or many items."
+  },
+  "useCases": [
+   {
+    "title": "Skip expensive lookups",
+    "scenario": "Check a filter before reading a large database or disk-backed store."
+   },
+   {
+    "title": "Detect duplicate names",
+    "scenario": "Check whether a username, email, domain, or slug may already be used."
+   },
+   {
+    "title": "Avoid repeated recommendations",
+    "scenario": "Check whether a user has already seen an advertisement or bought a product."
+   },
+   {
+    "title": "Screen financial activity",
+    "scenario": "Check transaction history or blocked payment identifiers before deeper fraud checks."
+   }
+  ],
+  "related": [
+   "BF.RESERVE",
+   "BF.ADD",
+   "BF.EXISTS",
+   "BF.MADD",
+   "BF.MEXISTS",
+   "BF.CARD",
+   "BF.INFO",
+   "BF.INSERT"
+  ],
+  "since": "1.0.0",
+  "interview": [
+   {
+    "question": "What problem does a Bloom filter solve?",
+    "answer": "A Bloom filter is a compact probabilistic structure for membership checks. It can prove that an item is absent, but a positive result may be false because different items can set the same bits.",
+    "followUp": "Why is it useful before a disk lookup? A negative result lets the application skip the more expensive lookup, while a positive result allows the lookup to continue."
+   },
+   {
+    "question": "How does a Bloom filter work?",
+    "answer": "Adding an item hashes it and sets one or more positions in a bit array. Checking an item hashes it again; if any required bit is clear, the item is definitely absent. If all are set, the item may be present.",
+    "followUp": "What reduces false positives? Using more bits per item lowers collision risk, although it uses more memory."
+   },
+   {
+    "question": "Which Redis commands are used for common Bloom filter operations?",
+    "answer": "Use BF.RESERVE to create a filter, BF.ADD or BF.MADD to add items, and BF.EXISTS or BF.MEXISTS to test membership. BF.RESERVE takes a key, an error rate, and an intended capacity.",
+    "followUp": "What happens when the initial capacity is exceeded? Scalable Bloom filters add another filter, usually with greater capacity than the previous one."
+   }
+  ],
+  "keyPoints": [
+   "Bloom filters are useful when memory use must stay small and predictable.",
+   "The configured error rate controls how often a positive result can be incorrect.",
+   "The number of bits used per item is chosen during creation and affects accuracy.",
+   "BF.RESERVE creates a filter before you add data when you want to set its capacity and error rate.",
+   "Use BF.MADD to add several items in one command.",
+   "Use BF.MEXISTS to test several items and receive one result for each item."
+  ],
+  "gotchas": [
+   "Treat a positive result as a hint. Confirm it in the source database when correctness matters.",
+   "Choose the expected capacity and error rate when creating the filter.",
+   "A scalable filter can add sub-filters as it grows, but capacity planning still affects its accuracy and memory use."
   ],
   "checkedAt": "2026-11-03"
  },
@@ -2042,6 +2316,101 @@
   ],
   "checkedAt": "2026-11-03"
  },
+ "Geospatial": {
+  "sourceUrl": "https://redis.io/docs/latest/develop/data-types/geospatial/",
+  "sourceTitle": "Redis geospatial",
+  "summary": "Redis geospatial indexes store coordinates with named members. Search them by radius or bounding box to find nearby locations.",
+  "explanation": "Redis stores longitude, latitude, and a member name in a geospatial index. Use GEOSEARCH to find members inside a circle or box; other commands can return positions, distances, or geohashes.",
+  "syntax": "GEOADD key longitude latitude member [longitude latitude member ...]\nGEOSEARCH key FROMMEMBER member | FROMLONLAT longitude latitude BYRADIUS radius unit | BYBOX width height unit",
+  "parameters": [
+   {
+    "name": "key",
+    "type": "string",
+    "description": "The Redis key containing the geospatial index."
+   },
+   {
+    "name": "longitude",
+    "type": "number",
+    "description": "The longitude of the location."
+   },
+   {
+    "name": "latitude",
+    "type": "number",
+    "description": "The latitude of the location."
+   },
+   {
+    "name": "member",
+    "type": "string",
+    "description": "The name of the location member."
+   },
+   {
+    "name": "area",
+    "type": "radius or box",
+    "description": "The search shape, such as a radius or box."
+   }
+  ],
+  "returns": "Search commands return matching members. Optional flags can also return distances or coordinates.",
+  "example": {
+   "title": "Find nearby locations",
+   "code": "GEOADD bikes:rentable -122.27652 37.805186 station:1\nGEOADD bikes:rentable -122.2674626 37.8062344 station:2\nGEOSEARCH bikes:rentable FROMLONLAT -122.27652 37.805186 BYRADIUS 5 km WITHDIST",
+   "language": "bash",
+   "explanation": "Adds two bike stations, then finds stations within 5 kilometers and includes their distances."
+  },
+  "useCases": [
+   {
+    "title": "Nearby stations",
+    "scenario": "Find bike rental stations near a user's current location."
+   },
+   {
+    "title": "Map area search",
+    "scenario": "Find locations inside a geographic rectangle."
+   },
+   {
+    "title": "Distance checks",
+    "scenario": "Measure the distance between two indexed places."
+   }
+  ],
+  "related": [
+   "GEOADD",
+   "GEODIST",
+   "GEOHASH",
+   "GEOPOS",
+   "GEOSEARCH",
+   "GEORADIUS",
+   "GEORADIUSBYMEMBER"
+  ],
+  "since": "3.2.0",
+  "interview": [
+   {
+    "question": "How do you add and find nearby locations?",
+    "answer": "Use GEOADD with a key, longitude, latitude, and member name. Then use GEOSEARCH with a circle or box filter to find nearby members.",
+    "followUp": "How can a query return distances? Add WITHDIST to GEOSEARCH. You can also request coordinates with WITHCOORD."
+   },
+   {
+    "question": "What search areas can GEOSEARCH use?",
+    "answer": "GEOSEARCH supports a radius or a rectangular box. A radius uses a center point and a distance unit; a box uses width and height.",
+    "followUp": "Which units are supported? The documented units include meters, kilometers, miles, and feet."
+   },
+   {
+    "question": "What coordinate details must a Redis geospatial command use?",
+    "answer": "GEOADD takes longitude before latitude. GEOSEARCH can start from coordinates or from an existing member in the index.",
+    "followUp": "How would you get the stored position? Use GEOPOS for longitude and latitude, or GEOHASH for geohash strings."
+   }
+  ],
+  "keyPoints": [
+   "A geospatial index stores locations and supports searches over those locations.",
+   "Use a distance circle or a bounding box to limit the search area.",
+   "GEOADD inserts one or more named locations into the index.",
+   "GEODIST calculates the distance between two indexed members.",
+   "GEOHASH returns the geohash representation for requested members.",
+   "GEOPOS retrieves the stored longitude and latitude for members."
+  ],
+  "gotchas": [
+   "Do not treat this data type as a replacement for Redis Search. Redis Search supports more formats and query options.",
+   "GEOADD creates the key when the geospatial index does not already exist."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "GET": {
   "sourceUrl": "https://redis.io/docs/latest/commands/get/",
   "sourceTitle": "GET | Docs",
@@ -2515,6 +2884,99 @@
   ],
   "checkedAt": "2026-10-16"
  },
+ "Hash": {
+  "sourceUrl": "https://redis.io/docs/latest/develop/data-types/hashes/",
+  "sourceTitle": "Redis hashes",
+  "summary": "Redis hashes store field-value pairs under one key. They suit simple, flat objects and support field reads, updates, deletion, numeric changes, queries, and individual field expiration.",
+  "explanation": "A Redis hash stores field-value pairs under one Redis key. Use hash commands to read, change, remove, increment, and expire individual fields; field values are strings, but some commands treat them as numbers.",
+  "syntax": "HSET key field value [field value ...]\nHGET key field\nHMGET key field [field ...]\nHINCRBY key field increment\nHGETALL key",
+  "parameters": [
+   {
+    "name": "key",
+    "type": "string",
+    "description": "The Redis key that contains the hash."
+   },
+   {
+    "name": "field",
+    "type": "string",
+    "description": "The field name inside the hash."
+   },
+   {
+    "name": "value",
+    "type": "string",
+    "description": "The string value stored for the field."
+   },
+   {
+    "name": "increment",
+    "type": "integer",
+    "description": "An integer change applied by HINCRBY."
+   }
+  ],
+  "returns": "Command-specific results include field values, integer counts, or status replies.",
+  "example": {
+   "title": "Basic hash operations",
+   "code": "HSET user:42 name Ada visits 0\nHGET user:42 name\nHINCRBY user:42 visits 1\nHMGET user:42 name visits",
+   "language": "bash",
+   "explanation": "This stores two fields, reads one field, increments a numeric field, and reads both fields in one command."
+  },
+  "useCases": [
+   {
+    "title": "Simple objects",
+    "scenario": "Store a user profile with fields such as name, email, and status."
+   },
+   {
+    "title": "Counters",
+    "scenario": "Keep several counters together, such as views, likes, and errors."
+   },
+   {
+    "title": "Field-level expiration",
+    "scenario": "Expire one field without expiring the whole object."
+   },
+   {
+    "title": "Searchable flat data",
+    "scenario": "Index and query flat object fields with Redis Search."
+   }
+  ],
+  "related": [
+   "HSET",
+   "HGET",
+   "HGETALL",
+   "HMGET",
+   "HINCRBY",
+   "HEXPIRE",
+   "HPEXPIRE",
+   "HEXPIREAT"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is a Redis hash used for?",
+    "answer": "A hash is a collection of field-value pairs stored under one Redis key. It fits simple objects with a small number of flat fields.",
+    "followUp": "When would JSON be a better choice? Use JSON for deeply nested structures, arrays, or richer search features."
+   },
+   {
+    "question": "How do you read and write hash fields?",
+    "answer": "HSET writes one or more fields, and HGET reads one field. HMGET reads several named fields in one command, which can reduce client-server round trips.",
+    "followUp": "How would you read every field? Use HGETALL, but remember that its cost grows with the number of fields."
+   },
+   {
+    "question": "How do you update a counter in a hash?",
+    "answer": "HINCRBY changes an integer field by a specified amount. If the field does not exist, Redis treats its starting value as zero.",
+    "followUp": "How can a hash field expire? Use HEXPIRE for seconds, HPEXPIRE for milliseconds, or HEXPIREAT for an absolute time."
+   }
+  ],
+  "keyPoints": [
+   "A hash groups related field-value pairs under one Redis key.",
+   "Hash commands support reading, writing, deleting, and changing fields.",
+   "HINCRBY is useful for integer counters and creates a missing counter at zero.",
+   "Redis supports expiration for individual fields, not only for the whole hash key."
+  ],
+  "gotchas": [
+   "Hash values are stored as strings. Use numeric hash commands only when the field contains a valid number.",
+   "Use a hash for simple, mostly flat objects. Use JSON when the object needs nested fields or arrays."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "HDEL": {
   "sourceUrl": "https://redis.io/docs/latest/commands/hdel/",
   "sourceTitle": "HDEL",
@@ -2592,6 +3054,95 @@
    "A missing hash key produces a zero result rather than an error."
   ],
   "checkedAt": "2026-10-16"
+ },
+ "HELLO": {
+  "sourceUrl": "https://redis.io/docs/latest/commands/hello/",
+  "sourceTitle": "HELLO | Docs",
+  "summary": "HELLO performs a Redis connection handshake. It can select RESP2 or RESP3, authenticate the connection, set its name, and return server and connection details.",
+  "explanation": "HELLO performs a connection handshake. It can select RESP2 or RESP3, authenticate the connection, and set its name in one command. It also returns server and connection details such as the Redis version, protocol, connection ID, mode, role, and loaded modules.",
+  "syntax": "HELLO [protover [AUTH username password] [SETNAME clientname]]",
+  "parameters": [
+   {
+    "name": "protover",
+    "type": "integer",
+    "description": "The RESP protocol version to select. Use 2 or 3. Required when another option is present."
+   },
+   {
+    "name": "AUTH username password",
+    "type": "string pair",
+    "description": "Optional authentication credentials: a username and password."
+   },
+   {
+    "name": "SETNAME clientname",
+    "type": "string",
+    "description": "The name to assign to the current connection."
+   }
+  ],
+  "returns": "A list of current server and connection properties, including protocol, version, connection ID, mode, role, and modules.",
+  "example": {
+   "title": "Switch protocol and authenticate",
+   "code": "redis-cli HELLO 3 AUTH default secret SETNAME app-client",
+   "language": "bash",
+   "explanation": "This changes the connection to RESP3, authenticates it, and names the connection."
+  },
+  "useCases": [
+   {
+    "title": "Select RESP3",
+    "scenario": "A client needs structured RESP3 replies instead of RESP2 replies."
+   },
+   {
+    "title": "Authenticate during connection setup",
+    "scenario": "A new connection needs credentials during setup."
+   },
+   {
+    "title": "Name a connection",
+    "scenario": "Operators need to identify a connection in Redis client tools."
+   },
+   {
+    "title": "Inspect connection details",
+    "scenario": "A client needs server and connection metadata after connecting."
+   }
+  ],
+  "related": [
+   "AUTH",
+   "CLIENT GETNAME",
+   "CLIENT SETNAME",
+   "PING",
+   "RESET"
+  ],
+  "since": "6.0.0",
+  "interview": [
+   {
+    "question": "What does HELLO do?",
+    "answer": "HELLO is a connection handshake command. It can change the connection between RESP2 and RESP3, authenticate it, and set a client name.",
+    "followUp": "How does a client request RESP3? Send HELLO 3. The reply uses RESP3 data types."
+   },
+   {
+    "question": "What arguments does HELLO accept?",
+    "answer": "The syntax is HELLO [protover [AUTH username password] [SETNAME clientname]]. protover must be 2 or 3, and it is required when AUTH or SETNAME is included.",
+    "followUp": "Can AUTH be used without first calling AUTH separately? Yes. HELLO can authenticate while selecting the protocol."
+   },
+   {
+    "question": "What does HELLO return?",
+    "answer": "HELLO returns server and connection properties, including the Redis version, protocol number, connection ID, mode, role, and loaded modules. Its time complexity is O(1).",
+    "followUp": "What changes when RESP3 is selected? Replies can use more meaningful types, such as a map for HGETALL instead of an array."
+   }
+  ],
+  "keyPoints": [
+   "HELLO starts a handshake with the Redis server.",
+   "Redis supports RESP2 and RESP3 from Redis 6 onward.",
+   "A new connection starts in RESP2 mode.",
+   "Set protover to 2 or 3 to choose the protocol.",
+   "AUTH can authenticate while the command changes the protocol.",
+   "SETNAME assigns a name to the current connection.",
+   "The command returns current server and connection properties."
+  ],
+  "gotchas": [
+   "You must provide protover when using AUTH or SETNAME.",
+   "Use the username default with the older requirepass authentication method.",
+   "With no arguments, HELLO reports the current connection context in Redis 6.2 and later."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "HEXISTS": {
   "sourceUrl": "https://redis.io/docs/latest/commands/hexists/",
@@ -3432,6 +3983,85 @@
   ],
   "gotchas": [],
   "checkedAt": "2026-10-16"
+ },
+ "HyperLogLog": {
+  "sourceUrl": "https://redis.io/docs/latest/develop/data-types/probabilistic/hyperloglogs/",
+  "sourceTitle": "HyperLogLog",
+  "summary": "Redis HyperLogLog estimates the number of distinct values with low, bounded memory use. It trades exactness for a standard error rate of 0.81%.",
+  "explanation": "A HyperLogLog stores a compact summary of values instead of every value. Redis hashes added items and uses that summary to estimate how many distinct items exist. Multiple HyperLogLogs can be merged to estimate the union of their distinct items.",
+  "syntax": "PFADD key [element ...]\nPFCOUNT key [key ...]\nPFMERGE destination source [source ...]",
+  "parameters": [
+   {
+    "name": "destination",
+    "type": "key",
+    "description": "Destination HyperLogLog key for PFMERGE."
+   },
+   {
+    "name": "elements",
+    "type": "values",
+    "description": "One or more values to add with PFADD."
+   },
+   {
+    "name": "source keys",
+    "type": "keys",
+    "description": "One or more HyperLogLog keys to read or merge."
+   }
+  ],
+  "returns": "PFADD returns 1 when at least one internal register changes, otherwise 0. PFCOUNT returns the estimated number of distinct values. PFMERGE returns OK.",
+  "example": {
+   "title": "Count distinct items",
+   "code": "PFADD bikes Hyperion Deimos Phoebe Quaoar\nPFCOUNT bikes\nPFADD commuter_bikes Salacia Mimas Quaoar\nPFMERGE all_bikes bikes commuter_bikes\nPFCOUNT all_bikes",
+   "language": "bash",
+   "explanation": "This adds items to two HyperLogLogs, combines them, and estimates the total distinct items. The shared item Quaoar is counted once."
+  },
+  "useCases": [
+   {
+    "title": "Space-efficient distinct counting",
+    "scenario": "Estimate unique visitors, events, or other distinct values without storing each value."
+   },
+   {
+    "title": "Union of counts",
+    "scenario": "Combine daily or per-group HyperLogLogs to estimate distinct values across their union."
+   }
+  ],
+  "related": [
+   "PFADD",
+   "PFCOUNT",
+   "PFMERGE",
+   "cardinality",
+   "probabilistic data structure"
+  ],
+  "since": "2.8.9",
+  "interview": [
+   {
+    "question": "What problem does HyperLogLog solve?",
+    "answer": "HyperLogLog estimates the number of distinct values while using constant memory. Redis uses up to 12 KB and has a standard error rate of 0.81%.",
+    "followUp": "Why not use a set? A set gives an exact count, but its memory use grows with the number of distinct values."
+   },
+   {
+    "question": "Which Redis commands operate on HyperLogLogs?",
+    "answer": "PFADD adds values and creates the key when needed. PFCOUNT returns the estimated distinct count. PFMERGE combines one or more HyperLogLogs into a destination key.",
+    "followUp": "What does PFMERGE count for a shared value? The shared value contributes once to the estimated union."
+   },
+   {
+    "question": "What are the main time complexities?",
+    "answer": "PFCOUNT with one key is O(1) with a small average constant time. With multiple keys, it is O(N), where N is the number of keys. PFMERGE is O(N) for N HyperLogLogs.",
+    "followUp": "Why can multi-key operations need extra deployment care? In sharded environments, the keys must be placed on the same shard."
+   }
+  ],
+  "keyPoints": [
+   "HyperLogLog estimates the cardinality, or number of distinct values, rather than storing an exact set.",
+   "Redis uses at most 12 KB in the worst case and has a standard error rate of 0.81%.",
+   "PFADD adds one or more values and creates the HyperLogLog key when that key is missing.",
+   "PFCOUNT returns the estimated number of distinct values represented by one or more keys.",
+   "PFMERGE writes a combined HyperLogLog to one destination key.",
+   "Its memory use stays bounded instead of growing in proportion to the number of values counted."
+  ],
+  "gotchas": [
+   "PFMERGE does not produce an exact distinct count. Its result is an estimate across the source HyperLogLogs.",
+   "PFCOUNT across multiple keys and PFMERGE use multiple keys. In a sharded setup, place those keys on the same shard."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "INCR": {
   "sourceUrl": "https://redis.io/docs/latest/commands/incr/",
@@ -5173,6 +5803,232 @@
   ],
   "checkedAt": "2026-10-16"
  },
+ "PFADD": {
+  "sourceUrl": "https://redis.io/docs/latest/commands/pfadd/",
+  "sourceTitle": "PFADD",
+  "summary": "PFADD adds items to a HyperLogLog key. It creates the key if it does not exist and reports whether the estimated cardinality changed.",
+  "explanation": "PFADD records one or more items in a HyperLogLog stored at a key. Redis creates the HyperLogLog when the key is missing. The structure estimates how many different items were added; use PFCOUNT to read that estimate.",
+  "syntax": "PFADD key [element [element ...]]",
+  "parameters": [
+   {
+    "name": "key",
+    "type": "key",
+    "description": "The name of the HyperLogLog key."
+   },
+   {
+    "name": "element [element ...]",
+    "type": "string",
+    "description": "One or more items to add. This argument is optional."
+   }
+  ],
+  "returns": "An integer: 1 if at least one HyperLogLog internal register changed; otherwise 0.",
+  "example": {
+   "title": "Add items and count them",
+   "code": "PFADD visitors alice bob carol\nPFCOUNT visitors",
+   "language": "bash",
+   "explanation": "Adds three names, then reads the estimated number of unique names."
+  },
+  "useCases": [
+   {
+    "title": "Estimate unique items",
+    "scenario": "Track approximate unique visitors, devices, or events while using less memory than storing every item."
+   },
+   {
+    "title": "Batch observations",
+    "scenario": "Add several observations to one HyperLogLog in a single command."
+   },
+   {
+    "title": "Initialize a key",
+    "scenario": "Create an empty HyperLogLog before later updates."
+   }
+  ],
+  "related": [
+   "PFCOUNT",
+   "PFMERGE",
+   "PFDEBUG",
+   "PFSELFTEST"
+  ],
+  "since": "2.8.9",
+  "interview": [
+   {
+    "question": "What does PFADD return?",
+    "answer": "PFADD adds items to a HyperLogLog. It returns 1 when at least one internal register changes, and 0 when no register changes.",
+    "followUp": "What does a return value of 0 prove? It only says that no internal register changed. It does not by itself prove that every supplied item was already seen."
+   },
+   {
+    "question": "What is the syntax of PFADD?",
+    "answer": "The command syntax is PFADD key [element [element ...]]. The key identifies the HyperLogLog, and the elements are the values to add.",
+    "followUp": "What happens when the element list is empty? Redis creates the structure only if the key does not already exist."
+   },
+   {
+    "question": "When would you use PFADD?",
+    "answer": "PFADD is used when a memory-saving estimate of unique items is enough. Add items with PFADD, read the estimate with PFCOUNT, and combine structures with PFMERGE when needed.",
+    "followUp": "How is the count different from a set count? A HyperLogLog estimates cardinality, while a set stores the actual unique members."
+   }
+  ],
+  "keyPoints": [
+   "PFADD writes items to a HyperLogLog and creates the key when needed.",
+   "A return value of 1 means the estimated unique-item count changed.",
+   "A return value of 0 means no internal register changed.",
+   "The documented complexity is O(1) for adding each element.",
+   "The required key argument names the HyperLogLog to update.",
+   "You can provide one or more elements after the key.",
+   "Use PFCOUNT to retrieve the current estimate of unique items."
+  ],
+  "gotchas": [
+   "Calling PFADD with only a key does not add an item. It creates the HyperLogLog only when the key does not exist; otherwise it does nothing."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "PFCOUNT": {
+  "sourceUrl": "https://redis.io/docs/latest/commands/PFCOUNT/",
+  "sourceTitle": "PFCOUNT | Docs",
+  "summary": "PFCOUNT estimates the number of unique values in one or more HyperLogLog keys. With multiple keys, it estimates the size of their union.",
+  "explanation": "PFCOUNT reads one or more HyperLogLog keys. With one key, it returns that key's estimated unique-element count. With several keys, it estimates the count of their union by merging them temporarily.",
+  "syntax": "PFCOUNT key [key ...]",
+  "parameters": [
+   {
+    "name": "key [key ...]",
+    "type": "key",
+    "description": "One or more Redis keys containing HyperLogLog structures. With multiple keys, Redis estimates the union."
+   }
+  ],
+  "returns": "An integer containing the approximated number of unique elements observed through PFADD.",
+  "example": {
+   "title": "Count unique values",
+   "code": "PFADD daily_queries \"redis\" \"cache\" \"redis\"\nPFCOUNT daily_queries",
+   "language": "bash",
+   "explanation": "Add values to a HyperLogLog, then return its estimated number of unique values."
+  },
+  "useCases": [
+   {
+    "title": "Daily unique counts",
+    "scenario": "Count unique search queries during a day without storing every query."
+   },
+   {
+    "title": "Combined estimates",
+    "scenario": "Estimate unique users or events across several HyperLogLogs."
+   },
+   {
+    "title": "Memory-efficient counting",
+    "scenario": "Track large-scale distinct values with low memory use."
+   }
+  ],
+  "related": [
+   "PFADD",
+   "PFDEBUG",
+   "PFMERGE",
+   "PFSELFTEST"
+  ],
+  "since": "2.8.9",
+  "interview": [
+   {
+    "question": "What does PFCOUNT return?",
+    "answer": "PFCOUNT returns an estimated number of unique elements stored in one or more HyperLogLogs. With multiple keys, it returns the estimated cardinality of their union.",
+    "followUp": "Why can two keys with overlapping values still produce a union count? HyperLogLog merging combines their registers, so shared values are not simply added twice."
+   },
+   {
+    "question": "What is its time complexity?",
+    "answer": "A single-key call has constant time complexity, with a small average constant. For multiple keys, the complexity is O(N), where N is the number of keys, and the constant is larger.",
+    "followUp": "Why is the multi-key case slower? Redis performs an on-the-fly merge and cannot cache the resulting union cardinality."
+   },
+   {
+    "question": "How accurate and memory-efficient is PFCOUNT?",
+    "answer": "The result is approximate, not exact. Redis documents a standard error of 0.81%, while each HyperLogLog uses about 12 KB plus a small amount for its key.",
+    "followUp": "When is this useful? It is suitable for large unique-count estimates, such as daily search-query counts, when exact membership storage would use more memory."
+   }
+  ],
+  "keyPoints": [
+   "PFCOUNT estimates how many different values were added to HyperLogLog key(s).",
+   "A missing single key returns 0.",
+   "Several keys are counted as one combined set, so the result estimates their union.",
+   "The estimate has a documented standard error of 0.81%.",
+   "A HyperLogLog provides unique counting without storing every value.",
+   "PFCOUNT was added in Redis Open Source 2.8.9."
+  ],
+  "gotchas": [
+   "PFCOUNT can change the HyperLogLog internally to store a cached count, so treat it as technically a write command.",
+   "Counting several keys can be much slower because Redis merges them during the command and cannot cache the union count.",
+   "Check Redis cluster multi-key rules before calling PFCOUNT with keys that may be on different slots."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "PFMERGE": {
+  "sourceUrl": "https://redis.io/docs/latest/commands/pfmerge/",
+  "sourceTitle": "PFMERGE | Docs",
+  "summary": "PFMERGE combines one or more HyperLogLogs into a destination key. It produces an approximate count of unique items across the merged data.",
+  "explanation": "PFMERGE combines HyperLogLog values into the destination key. The destination is included in the merge, along with every source key. The result estimates the number of unique items across the inputs, so it does not store the original items.",
+  "syntax": "PFMERGE destkey [sourcekey [sourcekey ...]]",
+  "parameters": [
+   {
+    "name": "destkey",
+    "type": "key",
+    "description": "The HyperLogLog key that stores the merged result. Its current value is also part of the merge."
+   },
+   {
+    "name": "sourcekey",
+    "type": "key",
+    "description": "One or more HyperLogLog keys to combine with the destination."
+   }
+  ],
+  "returns": "A simple string reply: OK.",
+  "example": {
+   "title": "Merge HyperLogLogs",
+   "code": "PFADD bikes Hyperion Deimos Phoebe Quaoar\nPFADD commuter_bikes Salacia Mimas Quaoar\nPFMERGE all_bikes bikes commuter_bikes\nPFCOUNT all_bikes",
+   "language": "bash",
+   "explanation": "Adds items to two HyperLogLogs, combines them, then reads the estimated number of unique items."
+  },
+  "useCases": [
+   {
+    "title": "Combine separate counters",
+    "scenario": "You track unique users, devices, or events in separate HyperLogLogs and need one estimate for all of them."
+   },
+   {
+    "title": "Build a combined estimate",
+    "scenario": "You need to preserve a daily or regional HyperLogLog while adding data from other keys."
+   },
+   {
+    "title": "Estimate overall cardinality",
+    "scenario": "You want a space-efficient estimate of unique values across several groups."
+   }
+  ],
+  "related": [
+   "PFADD",
+   "PFCOUNT",
+   "PFDEBUG",
+   "PFSELFTEST"
+  ],
+  "since": "2.8.9",
+  "interview": [
+   {
+    "question": "What does PFMERGE do?",
+    "answer": "PFMERGE writes one or more HyperLogLog values into a destination key. Its syntax is PFMERGE destkey [sourcekey [sourcekey ...]]. The command returns OK when it succeeds.",
+    "followUp": "What happens if the destination already has data? The destination is included in the merge, so its existing HyperLogLog data contributes to the result."
+   },
+   {
+    "question": "What is the time complexity?",
+    "answer": "Its time complexity is O(N), where N is the number of HyperLogLogs merged. The documentation also notes that the constant factors are high.",
+    "followUp": "How would you reduce the work? Merge fewer source HyperLogLogs in each call, because the work grows with the number of inputs."
+   },
+   {
+    "question": "Is the merged count exact?",
+    "answer": "A HyperLogLog estimates set cardinality rather than storing the actual members. PFMERGE therefore produces an approximate count of unique items across the merged HyperLogLogs.",
+    "followUp": "How can you read the estimate? Run PFCOUNT on the destination key after the merge."
+   }
+  ],
+  "keyPoints": [
+   "The command combines HyperLogLog values into one destination key.",
+   "destkey is the key that receives the merged HyperLogLog.",
+   "You can provide one or more source keys after the destination key.",
+   "Existing data in the destination participates in the merge.",
+   "The work grows with the number of HyperLogLogs, and each merge can have a large constant cost.",
+   "A successful command returns the simple string OK."
+  ],
+  "gotchas": [
+   "In a Redis cluster, multi-key behavior can differ. Check the cluster rules before merging keys."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "PING": {
   "sourceUrl": "https://redis.io/docs/latest/commands/ping/",
   "sourceTitle": "PING",
@@ -6252,6 +7108,161 @@
   ],
   "checkedAt": "2026-11-03"
  },
+ "SELECT": {
+  "sourceUrl": "https://redis.io/docs/latest/commands/select/",
+  "sourceTitle": "SELECT | Docs",
+  "summary": "SELECT changes the logical Redis database for the current connection. It uses a zero-based database index.",
+  "explanation": "SELECT changes the logical Redis database used by the current connection. The database number starts at zero, and a new connection starts in database zero. The selected database belongs to the connection, so a client must select it again after reconnecting.",
+  "syntax": "SELECT index",
+  "parameters": [
+   {
+    "name": "index",
+    "type": "integer",
+    "description": "Zero-based integer of the logical database to select."
+   }
+  ],
+  "returns": "A simple string reply: OK, in RESP2 and RESP3.",
+  "example": {
+   "title": "Select a database and use it",
+   "code": "redis-cli\n127.0.0.1:6379> SELECT 2\nOK\n127.0.0.1:6379[2]> SET theme dark\nOK\n127.0.0.1:6379[2]> GET theme\ndark",
+   "language": "bash",
+   "explanation": "This switches the connection to database 2, then stores and reads a key there."
+  },
+  "useCases": [
+   {
+    "title": "Separate keys for one application",
+    "scenario": "One application needs separate key spaces within one Redis instance."
+   },
+   {
+    "title": "Restore the selected database",
+    "scenario": "A client reconnects after selecting a non-default database."
+   }
+  ],
+  "related": [
+   "AUTH",
+   "CLIENT LIST",
+   "FLUSHDB",
+   "RANDOMKEY",
+   "SWAPDB"
+  ],
+  "since": "1.0.0",
+  "interview": [
+   {
+    "question": "What does SELECT do?",
+    "answer": "SELECT changes the logical database for the current connection. Its argument is a zero-based integer, and the command runs in O(1) time.",
+    "followUp": "What happens after reconnecting? The client must select the desired database again because the selected database is connection-specific."
+   },
+   {
+    "question": "How is the database index interpreted?",
+    "answer": "The index is zero-based, so SELECT 0 chooses the first database. New connections already use database zero.",
+    "followUp": "How can you inspect the database used by a connection? CLIENT LIST shows the selected database for each client."
+   },
+   {
+    "question": "Can SELECT be used with Redis Cluster?",
+    "answer": "Redis Cluster supports only database zero, so SELECT is unavailable there. Multiple databases would not fit the cluster design for atomic operations on one database.",
+    "followUp": "How should separate applications be organized in a cluster? Use separate key namespaces or separate deployments rather than SELECT-based databases."
+   }
+  ],
+  "keyPoints": [
+   "The command switches the connection to the database identified by a zero-based integer.",
+   "A connection begins in database zero unless it selects another database.",
+   "Logical databases share the same RDB or AOF persistence file.",
+   "The same key name can exist separately in different logical databases.",
+   "The selected database belongs to the connection, not to the key or client application globally.",
+   "CLIENT LIST can show which database each connection currently uses."
+  ],
+  "gotchas": [
+   "Redis Cluster supports only database zero, so SELECT cannot be used there.",
+   "Redis Software and Redis Cloud do not provide shared logical databases; SELECT is accepted only for compatibility and does not change the database."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "Set": {
+  "sourceUrl": "https://redis.io/docs/latest/develop/data-types/sets/",
+  "sourceTitle": "Redis sets",
+  "summary": "Redis sets are unordered collections of unique strings. They support fast membership checks and set operations such as intersection, union, and difference.",
+  "explanation": "A Redis set stores unique strings without keeping them in a defined order. You can add or remove members, check membership, count members, list members, and combine sets with intersection, union, or difference operations.",
+  "syntax": "SADD key member [member ...]\nSISMEMBER key member\nSMISMEMBER key member [member ...]\nSCARD key\nSMEMBERS key\nSINTER key [key ...]\nSUNION key [key ...]\nSDIFF key [key ...]",
+  "parameters": [
+   {
+    "name": "key",
+    "type": "string",
+    "description": "The Redis key that identifies the set."
+   },
+   {
+    "name": "member",
+    "type": "string",
+    "description": "One or more string members to add or test."
+   },
+   {
+    "name": "set",
+    "type": "string",
+    "description": "One or more set keys used by set algebra commands."
+   }
+  ],
+  "returns": "Set commands return command-specific results, such as a count, membership result, or set of members.",
+  "example": {
+   "title": "Basic set operations",
+   "code": "SADD colors red blue\nSISMEMBER colors red\nSCARD colors\nSMEMBERS colors",
+   "language": "bash",
+   "explanation": "This adds two unique members, checks whether one member exists, counts the members, and returns all members."
+  },
+  "useCases": [
+   {
+    "title": "Unique collections",
+    "scenario": "Store unique values such as user IDs, product IDs, or event names."
+   },
+   {
+    "title": "Membership checks",
+    "scenario": "Check quickly whether a value belongs to a group or feature set."
+   },
+   {
+    "title": "Set relationships",
+    "scenario": "Compare groups to find shared, combined, or excluded members."
+   }
+  ],
+  "related": [
+   "SADD",
+   "SREM",
+   "SISMEMBER",
+   "SMISMEMBER",
+   "SCARD",
+   "SMEMBERS",
+   "SINTER",
+   "SUNION"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is a Redis set?",
+    "answer": "A Redis set is an unordered collection of unique strings. Adding the same member again does not create a duplicate.",
+    "followUp": "How would you find common members? Use SINTER with the set keys."
+   },
+   {
+    "question": "Which commands support common set operations?",
+    "answer": "Use SADD to add members. Use SISMEMBER to test one member, SMISMEMBER to test several, and SCARD to count members.",
+    "followUp": "Why use SMISMEMBER? It checks several values in one command, which can reduce client-server round trips."
+   },
+   {
+    "question": "How do Redis set algebra commands differ?",
+    "answer": "SINTER returns members shared by all input sets. SUNION returns members from any input set. SDIFF returns members in the first set that are absent from the remaining sets.",
+    "followUp": "What should you check when using SDIFF? Check the argument order because changing it changes the result."
+   }
+  ],
+  "keyPoints": [
+   "Sets contain strings, remove duplicates, and do not preserve a meaningful order.",
+   "Adding, removing, and checking one member are constant-time operations.",
+   "SADD keeps one copy when the same member is added more than once.",
+   "SISMEMBER is suitable for fast membership checks.",
+   "SMISMEMBER checks several candidate members in one command.",
+   "SINTER calculates the intersection of multiple sets."
+  ],
+  "gotchas": [
+   "SMEMBERS does not return members in a guaranteed order.",
+   "SDIFF depends on the order of its set arguments."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "SET": {
   "sourceUrl": "https://redis.io/docs/latest/commands/set/",
   "sourceTitle": "SET | Docs - Redis",
@@ -6958,6 +7969,97 @@
   ],
   "checkedAt": "2026-11-03"
  },
+ "Sorted Set": {
+  "sourceUrl": "https://redis.io/docs/latest/develop/data-types/sorted-sets/",
+  "sourceTitle": "Redis sorted sets",
+  "summary": "Redis sorted sets store unique string members with scores. Redis orders members by score, and uses lexicographical order when scores are equal.",
+  "explanation": "A sorted set stores unique string members with floating-point scores. Redis orders members by score; members with equal scores are ordered lexicographically. Commands can add, update, remove, count, rank, and read members by score or position.",
+  "syntax": "ZADD key score member [score member ...]",
+  "parameters": [
+   {
+    "name": "key",
+    "type": "string",
+    "description": "The key that identifies the sorted set."
+   },
+   {
+    "name": "score",
+    "type": "floating-point number",
+    "description": "A floating-point value used to order a member."
+   },
+   {
+    "name": "member",
+    "type": "string",
+    "description": "A unique string stored in the sorted set."
+   },
+   {
+    "name": "range",
+    "type": "score or rank range",
+    "description": "For range commands, a score or rank boundary and optional range options."
+   }
+  ],
+  "returns": "Commands return results based on their operation: members, scores, ranks, counts, or status. ZADD and other write commands can create or update the sorted set.",
+  "example": {
+   "title": "Create and read a leaderboard",
+   "code": "ZADD leaderboard 1250 alice\nZADD leaderboard 980 bob\nZRANGE leaderboard 0 -1 REV WITHSCORES",
+   "language": "bash",
+   "explanation": "This adds two members and then returns them from the highest score to the lowest."
+  },
+  "useCases": [
+   {
+    "title": "Leaderboards",
+    "scenario": "Keep players ordered by score and retrieve their positions."
+   },
+   {
+    "title": "Sliding-window rate limiting",
+    "scenario": "Store request timestamps and query a moving time range."
+   },
+   {
+    "title": "Lexicographical indexing",
+    "scenario": "Use equal scores and member ordering for string-range queries."
+   }
+  ],
+  "related": [
+   "ZADD",
+   "ZCARD",
+   "ZCOUNT",
+   "ZINCRBY",
+   "ZRANGE",
+   "ZRANK",
+   "ZREVRANK",
+   "ZSCORE"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is a Redis sorted set?",
+    "answer": "A sorted set contains unique string members. Each member has a floating-point score, and Redis orders members by score, then lexicographically when scores match.",
+    "followUp": "How would you read members between two scores? Use ZRANGE with BYSCORE, or the score-range commands documented for sorted sets."
+   },
+   {
+    "question": "How do you build a leaderboard?",
+    "answer": "Use ZADD to add members or change their scores. Use ZRANK for ascending position and ZREVRANK for descending position.",
+    "followUp": "What is the cost of ranking a member? ZRANK and ZREVRANK are O(log(N))."
+   },
+   {
+    "question": "How can scores change over time?",
+    "answer": "Use ZINCRBY when a member's score should increase by a numeric amount. It updates the member's score and is listed as O(log(N)).",
+    "followUp": "How can you remove the lowest-scoring entries? Use ZPOPMIN or a score-based removal command, depending on whether you need the removed values."
+   }
+  ],
+  "keyPoints": [
+   "Members are unique strings, and every member has a score that controls its order.",
+   "Sorted sets fit leaderboards because they keep members ordered by score.",
+   "A sorted set can represent request times for a sliding-window rate limiter.",
+   "ZADD inserts members and also changes scores for members that already exist.",
+   "ZCARD gives the total number of members.",
+   "ZSCORE reads one member's current score."
+  ],
+  "gotchas": [
+   "Equal scores do not create an arbitrary order. Redis uses the member strings to break ties.",
+   "Pop commands remove members. If the operation removes the final member, Redis removes the key too."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "SPOP": {
   "sourceUrl": "https://redis.io/docs/latest/commands/spop/",
   "sourceTitle": "SPOP | Docs",
@@ -7279,6 +8381,186 @@
    "The same key can appear more than once. Code that processes results should tolerate duplicates.",
    "Keys added or removed while scanning have no fixed result. A changing database can produce incomplete or extra results.",
    "SCAN is non-blocking in small calls, but it does not provide a fixed snapshot of the database."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "Stream": {
+  "sourceUrl": "https://redis.io/docs/latest/develop/use-cases/streaming/dotnet/",
+  "sourceTitle": "Redis streaming with StackExchange.Redis",
+  "summary": "Redis Streams provide an append-only event log. Producers use XADD, consumer groups use XREADGROUP, consumers use XACK, and XAUTOCLAIM recovers idle pending entries.",
+  "explanation": "A Redis Stream is an append-only log. Producers add field-value entries with XADD. Consumer groups read entries with XREADGROUP. Each group has its own cursor, and each consumer has a pending-entry list. After processing, the consumer uses XACK. XAUTOCLAIM can move idle pending entries to a healthy consumer.",
+  "syntax": "XADD key [MAXLEN ~ count] * field value [field value ...]\nXREADGROUP GROUP group consumer STREAMS key >\nXACK key group id [id ...]\nXAUTOCLAIM key group consumer min-idle-time start [COUNT count]\nXRANGE key start end [COUNT count]",
+  "parameters": [
+   {
+    "name": "key",
+    "type": "string",
+    "description": "The stream key that stores the entries."
+   },
+   {
+    "name": "field-value pairs",
+    "type": "string pairs",
+    "description": "A field and value pair stored in the entry."
+   },
+   {
+    "name": "group",
+    "type": "string",
+    "description": "The consumer group that reads the stream."
+   },
+   {
+    "name": "consumer",
+    "type": "string",
+    "description": "The consumer name within the group."
+   },
+   {
+    "name": "ids",
+    "type": "stream entry IDs",
+    "description": "The entry IDs to acknowledge."
+   }
+  ],
+  "returns": "XADD returns the new entry ID. XREADGROUP returns entries for a consumer. XACK returns the number of acknowledged entries. XAUTOCLAIM returns claimed entries, deleted IDs, and a continuation ID. XRANGE returns entries in an ID range.",
+  "example": {
+   "title": "Add an event",
+   "code": "XADD orders * type order.placed customer alice",
+   "language": "bash",
+   "explanation": "This adds one entry to the orders stream. Redis creates the entry ID."
+  },
+  "useCases": [
+   {
+    "title": "Event distribution",
+    "scenario": "Send order or notification events to several independent applications."
+   },
+   {
+    "title": "Worker scaling",
+    "scenario": "Split work among several workers in one consumer group."
+   },
+   {
+    "title": "History replay",
+    "scenario": "Read old entries for audit, repair, or replay."
+   },
+   {
+    "title": "Crash recovery",
+    "scenario": "Recover entries left pending after a worker crash."
+   }
+  ],
+  "related": [
+   "XADD",
+   "XREADGROUP",
+   "XACK",
+   "XAUTOCLAIM",
+   "XRANGE",
+   "XPENDING",
+   "XINFO STREAM",
+   "XINFO GROUPS"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "Which commands form the basic producer and consumer flow?",
+    "answer": "XADD appends field-value data to the stream and can create an ID automatically. XREADGROUP reads entries for a consumer group. XACK removes processed entries from that consumer's pending list.",
+    "followUp": "How would you recover a crashed consumer? Read its pending entries with an explicit ID such as 0-0, or let another consumer use XAUTOCLAIM after the idle threshold."
+   },
+   {
+    "question": "How do consumer groups distribute and isolate work?",
+    "answer": "A consumer group has one last-delivered ID. Each consumer also has a pending-entry list for messages delivered but not acknowledged. Consumers in one group split new work, while different groups each receive the stream independently.",
+    "followUp": "How can two applications process every event? Create two separate consumer groups; each group keeps its own cursor and pending entries."
+   },
+   {
+    "question": "How does XAUTOCLAIM recover stuck messages?",
+    "answer": "XAUTOCLAIM scans a group's pending entries and transfers entries idle for at least the configured time to a named consumer. It returns a continuation ID, so a full sweep can use repeated calls until the cursor returns to 0-0.",
+    "followUp": "What should happen when the result contains DeletedIds? Log them and send them to a dead-letter store because retention already removed their payloads."
+   }
+  ],
+  "keyPoints": [
+   "A stream stores ordered entries. Each entry has fields and values, and Redis can generate its ID.",
+   "Call XACK after successful processing so Redis removes the entry from the consumer's pending list.",
+   "Separate groups can read the same stream independently. Their progress does not share one cursor.",
+   "Adding consumers to one group lets Redis distribute new entries among them.",
+   "Use XRANGE to inspect or replay historical entries without changing a group's cursor.",
+   "A generated ID contains milliseconds and a sequence number. IDs increase within one stream."
+  ],
+  "gotchas": [
+   "Approximate MAXLEN can leave more entries than the requested limit. Use it as a retention guardrail, not as an exact size limit.",
+   "A slow consumer can lose the payload if retention trims it before recovery. XAUTOCLAIM reports such IDs as deleted entries, which cannot be retried."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "String": {
+  "sourceUrl": "https://redis.io/docs/latest/develop/data-types/strings/",
+  "sourceTitle": "Redis Strings",
+  "summary": "Redis strings store byte sequences as values. They are useful for simple key-value data, caching, counters, and bit operations.",
+  "explanation": "Redis strings store byte sequences. A value can contain text, serialized data, or binary data. Use strings for simple key-value storage, caching, counters, and bit operations. SET creates or replaces a value, while GET reads it.",
+  "syntax": "SET key value\nGET key",
+  "parameters": [
+   {
+    "name": "key",
+    "type": "string",
+    "description": "The key whose string value is read or written."
+   },
+   {
+    "name": "value",
+    "type": "string or byte sequence",
+    "description": "The bytes to store as the value."
+   }
+  ],
+  "returns": "SET returns a success result. GET returns the string value, or no value when the key is missing.",
+  "example": {
+   "title": "Store and read a string",
+   "code": "SET bike:1 Deimos\nGET bike:1",
+   "language": "bash",
+   "explanation": "This stores the string \"Deimos\" under \"bike:1\" and then reads it."
+  },
+  "useCases": [
+   {
+    "title": "Caching",
+    "scenario": "Store and retrieve a cached page or other small value."
+   },
+   {
+    "title": "Counters",
+    "scenario": "Keep a numeric value that changes by increments or decrements."
+   },
+   {
+    "title": "Serialized or binary data",
+    "scenario": "Store serialized objects or binary arrays under a key."
+   }
+  ],
+  "related": [
+   "Bitmaps",
+   "Bitfields",
+   "MGET",
+   "MSET",
+   "INCR",
+   "SETNX",
+   "SETEX"
+  ],
+  "since": "1.0.0",
+  "interview": [
+   {
+    "question": "What is a Redis string?",
+    "answer": "Redis strings store byte sequences as values. Common uses include caching, simple key-value data, counters, and bit operations.",
+    "followUp": "How can you update a numeric string atomically? Use INCR, INCRBY, or INCRBYFLOAT; a missing key starts at zero."
+   },
+   {
+    "question": "How do SET and GET work?",
+    "answer": "SET writes one string value and GET reads it. Both operations have O(1) time complexity in the documented basic case.",
+    "followUp": "How do you handle several keys? Use MSET and MGET; their complexity is O(N), where N is the number of keys."
+   },
+   {
+    "question": "How can a string write be conditional?",
+    "answer": "Use SET with NX to write only when a key does not exist, or XX to write only when it already exists. These conditions make the write conditional.",
+    "followUp": "How can a write also set a lifetime? Use an expiration option with SET, or use SETEX or PSETEX for a value with an expiration."
+   }
+  ],
+  "keyPoints": [
+   "A Redis string is the basic value type and represents a sequence of bytes.",
+   "Strings are useful for caching and can also support counters.",
+   "SET creates a missing key and writes its string value.",
+   "GET reads the string value stored at a key.",
+   "MGET reads several string keys in one atomic operation.",
+   "INCR adds one to an integer string and treats a missing key as zero."
+  ],
+  "gotchas": [
+   "A string is bytes, not only human-readable text. You can store serialized or binary data too.",
+   "Plain SET can replace an existing value. Use SETNX, or SET with NX, when replacement must not happen."
   ],
   "checkedAt": "2026-11-03"
  },
