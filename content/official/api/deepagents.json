@@ -1,0 +1,1446 @@
+{
+ "AgentCheckpointer": {
+  "sourceUrl": "https://docs.langchain.com/oss/javascript/langchain/agents",
+  "sourceTitle": "Agents - Docs by LangChain",
+  "summary": "A LangChain agent is a model that calls tools in a loop until a task is complete. In JavaScript, `createAgent` builds the configurable harness around that loop.",
+  "explanation": "An agent repeatedly asks its model what to do and can call tools during the task. The harness combines the model, prompt, tools, and middleware so the model receives the context needed at each step.",
+  "syntax": "createAgent({ model, tools })",
+  "parameters": [
+   {
+    "name": "model",
+    "type": "string",
+    "description": "The model identifier used by the agent, such as `openai:gpt-5.5`."
+   },
+   {
+    "name": "tools",
+    "type": "array",
+    "description": "The tools available to the agent during its task."
+   }
+  ],
+  "returns": "An agent object that can run the model-and-tool loop.",
+  "example": {
+   "title": "Create and invoke an agent",
+   "code": "import { createAgent } from \"langchain\";\n\nconst agent = createAgent({\n  model: \"openai:gpt-5.5\",\n  tools: [],\n});\n\nconst result = await agent.invoke({\n  messages: [{ role: \"user\", content: \"Hello\" }],\n});\n\nconsole.log(result);\n",
+   "language": "typescript",
+   "explanation": "This creates an agent with a model and no tools, then sends one user message."
+  },
+  "useCases": [
+   {
+    "title": "Tool-using assistant",
+    "scenario": "Build an application that lets a model choose and call registered tools."
+   },
+   {
+    "title": "Custom agent harness",
+    "scenario": "Control the context and behavior around the model-and-tool loop."
+   }
+  ],
+  "related": [
+   "harness",
+   "model",
+   "tools",
+   "middleware"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is an agent?",
+    "answer": "An agent is a model that calls tools in a loop until the task is complete. A harness surrounds that loop with the prompt, tools, and middleware.",
+    "followUp": "What is the harness responsible for? It supplies the model with the right context at the right time for the task."
+   },
+   {
+    "question": "How do you create a LangChain agent?",
+    "answer": "Use `createAgent` with a model identifier and a tools array. The returned agent can then be invoked with input such as user messages.",
+    "followUp": "What changes when tools are added? The model can request those tools during its loop, allowing it to perform actions or obtain data."
+   },
+   {
+    "question": "How does an agent complete a task?",
+    "answer": "The model selects the next step, and the agent runs any requested tool before continuing the loop. The loop ends when the model determines that the task is complete.",
+    "followUp": "How can behavior around the loop be shaped? Add a suitable prompt, tools, or middleware through the harness configuration."
+   }
+  ],
+  "keyPoints": [
+   "LangChain describes an agent as a model plus a harness.",
+   "`createAgent` is the main configurable way to build this harness in JavaScript.",
+   "The minimal setup provides a model and a tools array.",
+   "A harness includes the prompt, tools, and middleware that guide model behavior."
+  ],
+  "gotchas": [
+   "The model may call tools repeatedly before it finishes the task.",
+   "The harness controls the context given to the model, not only the model choice."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "ChatNVIDIAMessageCompatibilityMiddleware": {
+  "sourceUrl": "https://reference.langchain.com/python/deepagents",
+  "sourceTitle": "deepagents | LangChain Reference Deep Agents",
+  "summary": "ChatNVIDIAMessageCompatibilityMiddleware adapts standard LangChain tool-call fields for ChatNVIDIA payload metadata. Use it when a deep agent needs provider-specific NVIDIA message compatibility.",
+  "explanation": "ChatNVIDIAMessageCompatibilityMiddleware adapts standard LangChain tool-call fields into the metadata format expected by ChatNVIDIA. This helps NVIDIA-backed agents use tool calls when message fields do not match the provider's payload format.",
+  "syntax": "class ChatNVIDIAMessageCompatibilityMiddleware",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Add the middleware to an agent",
+   "code": "from deepagents import create_deep_agent\nfrom deepagents.middleware import ChatNVIDIAMessageCompatibilityMiddleware\n\nagent = create_deep_agent(\n    model=\"nvidia:llama-3.1-70b-instruct\",\n    middleware=[ChatNVIDIAMessageCompatibilityMiddleware()],\n)",
+   "language": "python",
+   "explanation": "This creates a deep agent with the NVIDIA message compatibility middleware enabled."
+  },
+  "useCases": [
+   {
+    "title": "Fix NVIDIA tool-call fields",
+    "scenario": "A deep agent uses ChatNVIDIA and tool calls are not represented in the provider's expected message metadata."
+   },
+   {
+    "title": "Add a message compatibility layer",
+    "scenario": "An agent setup needs provider-specific message adaptation without changing the main agent implementation."
+   }
+  ],
+  "related": [
+   "create_deep_agent",
+   "ChatNVIDIA",
+   "BaseChatModel",
+   "Middleware"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does ChatNVIDIAMessageCompatibilityMiddleware do?",
+    "answer": "It mirrors standard LangChain tool-call fields into ChatNVIDIA payload metadata. The middleware is intended to keep tool-call information compatible with NVIDIA chat model payloads.",
+    "followUp": "What problem does it solve? It addresses differences between common LangChain message fields and the fields ChatNVIDIA reads when constructing its request."
+   },
+   {
+    "question": "How is this class used in a deep agent?",
+    "answer": "It is middleware for a deep agent, so it can be supplied while creating the agent. The middleware changes message handling without requiring a fork of the agent harness.",
+    "followUp": "How could you customize this behavior? Replace or extend the middleware configuration when constructing the agent, while leaving the rest of the harness unchanged."
+   },
+   {
+    "question": "Why would an agent need NVIDIA-specific message compatibility?",
+    "answer": "The documented class name identifies the middleware, and the Deep Agents documentation lists it among the available middleware classes. Its purpose is provider-specific compatibility for ChatNVIDIA messages.",
+    "followUp": "Why is provider-specific middleware useful? Different model providers can use different message and tool-call fields, so an adapter can normalize those differences."
+   }
+  ],
+  "keyPoints": [
+   "It copies standard LangChain tool-call fields into ChatNVIDIA payload metadata.",
+   "It is part of the Deep Agents middleware system.",
+   "You can replace or extend this middleware without changing the whole agent harness."
+  ],
+  "gotchas": [],
+  "checkedAt": "2026-11-03"
+ },
+ "DockerSandbox": {
+  "sourceUrl": "https://reference.langchain.com/python/langsmith/sandbox",
+  "sourceTitle": "sandbox | langsmith | LangChain Reference",
+  "summary": "SandboxClient runs commands in isolated environments through the LangSmith Sandbox API. Create a snapshot from a Docker image, open a sandbox, and execute a command.",
+  "explanation": "SandboxClient uses the LangSmith Sandbox API to run code in an isolated environment. Create a snapshot from a Docker image, open a sandbox with that snapshot ID, and call run with a command.",
+  "syntax": "client = SandboxClient()\nsnapshot = client.create_snapshot(docker_image=\"...\", name=\"...\")\nwith client.sandbox(snapshot_id=snapshot.id) as sb:\n    result = sb.run(\"...\")",
+  "parameters": [
+   {
+    "name": "docker_image",
+    "type": "string",
+    "description": "Docker image used to create the snapshot."
+   },
+   {
+    "name": "name",
+    "type": "string",
+    "description": "Name assigned to the snapshot."
+   },
+   {
+    "name": "snapshot_id",
+    "type": "string",
+    "description": "ID of the snapshot used to open the sandbox."
+   },
+   {
+    "name": "command",
+    "type": "string",
+    "description": "Command to execute in the sandbox."
+   }
+  ],
+  "returns": "create_snapshot returns a snapshot object with an id. run returns a result with stdout.",
+  "example": {
+   "title": "Run a command in a sandbox",
+   "code": "from langsmith.sandbox import SandboxClient\n\nclient = SandboxClient()\nsnapshot = client.create_snapshot(\n    docker_image=\"python:3.12-slim\",\n    name=\"python-snapshot\",\n)\nwith client.sandbox(snapshot_id=snapshot.id) as sb:\n    result = sb.run(\"python --version\")\n    print(result.stdout)",
+   "language": "python",
+   "explanation": "This creates a Python snapshot, opens a sandbox from it, runs a command, and prints standard output."
+  },
+  "useCases": [
+   {
+    "title": "Isolated code execution",
+    "scenario": "Run generated Python or shell commands without running them directly on the host."
+   },
+   {
+    "title": "Snapshot-based environments",
+    "scenario": "Prepare a repeatable environment from a container image before running commands."
+   },
+   {
+    "title": "Command output handling",
+    "scenario": "Capture and inspect command output from an execution result."
+   }
+  ],
+  "related": [
+   "SandboxClient",
+   "create_snapshot",
+   "sandbox",
+   "run",
+   "snapshot.id",
+   "stdout"
+  ],
+  "since": "v0.6",
+  "interview": [
+   {
+    "question": "What is SandboxClient used for?",
+    "answer": "SandboxClient provides sandboxed code execution through the LangSmith Sandbox API. A typical flow creates a snapshot, opens a sandbox with its ID, and runs a command.",
+    "followUp": "What starts the sandbox? The snapshot ID returned by create_snapshot is passed to sandbox()."
+   },
+   {
+    "question": "How do you create the execution environment?",
+    "answer": "create_snapshot receives a Docker image and a name, then returns a snapshot object. The example uses the snapshot object's id to create a sandbox.",
+    "followUp": "Why keep the snapshot object? Its id identifies the environment used by the sandbox."
+   },
+   {
+    "question": "How do you execute a command and read its output?",
+    "answer": "Call sb.run() with the command to execute. The returned result exposes stdout, which the example prints.",
+    "followUp": "How do you get command output? Read the stdout field on the result returned by run()."
+   }
+  ],
+  "keyPoints": [
+   "The module lets Python code run inside sandboxes managed by the LangSmith Sandbox API.",
+   "Create a reusable snapshot before opening a sandbox.",
+   "A snapshot can be built from a Docker image such as Python 3.12 Slim.",
+   "Use the snapshot ID to open a sandbox with a context manager.",
+   "Call run with a shell command to execute it in the sandbox.",
+   "Read the command's standard output from the returned result."
+  ],
+  "gotchas": [
+   "The client reads LANGSMITH_ENDPOINT and LANGSMITH_API_KEY from environment variables, so configure them before creating the client."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "edit_file": {
+  "sourceUrl": "https://docs.langchain.com/oss/python/deepagents/overview",
+  "sourceTitle": "Deep Agents overview",
+  "summary": "edit_file is a Deep Agents filesystem tool that performs exact string replacements in files. You can pause before each edit with interrupt_on so a person can review or change the call.",
+  "explanation": "edit_file is a built-in Deep Agents tool for changing files. When interrupt_on includes this tool, execution pauses before each edit. A person can approve the call, provide guidance, or change its inputs. This adds a runtime control step for sensitive changes.",
+  "syntax": "create_deep_agent(..., interrupt_on={\"edit_file\": True})",
+  "parameters": [
+   {
+    "name": "interrupt_on",
+    "type": "mapping",
+    "description": "Mapping of tool names to interrupt configurations. Use it to pause selected tool calls before execution."
+   }
+  ],
+  "returns": "",
+  "example": {
+   "title": "Pause before file edits",
+   "code": "from deepagents import create_deep_agent\n\nagent = create_deep_agent(\n    model=\"anthropic:claude-sonnet-4-6\",\n    interrupt_on={\"edit_file\": True},\n)",
+   "language": "python",
+   "explanation": "This agent pauses before each edit_file call so a person can approve it, give guidance, or change the inputs."
+  },
+  "useCases": [
+   {
+    "title": "Review sensitive edits",
+    "scenario": "Require approval before changing source code or configuration files."
+   },
+   {
+    "title": "Guide an agent at runtime",
+    "scenario": "Let a person add instructions or change tool inputs during an edit workflow."
+   },
+   {
+    "title": "Restrict model-visible tools",
+    "scenario": "Hide file-edit capability while retaining the filesystem middleware."
+   }
+  ],
+  "related": [
+   "create_deep_agent",
+   "FilesystemMiddleware",
+   "excluded_tools",
+   "interrupt_on",
+   "write_file",
+   "delete",
+   "grep"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does edit_file do?",
+    "answer": "edit_file performs exact string replacements in files. It can also use global replacement mode.",
+    "followUp": "How can you require approval before edits? Pass interrupt_on={\"edit_file\": True} when creating the agent. The agent then pauses before every edit."
+   },
+   {
+    "question": "How do you add human approval for file edits?",
+    "answer": "Set interrupt_on in create_deep_agent and map edit_file to an interrupt configuration. This pauses execution before the tool runs, allowing approval, guidance, or input changes.",
+    "followUp": "How would you protect another sensitive tool? Add that tool name to the interrupt_on mapping with its interrupt configuration."
+   },
+   {
+    "question": "How can filesystem tools be limited?",
+    "answer": "Use excluded_tools to hide filesystem tools from the model while keeping FilesystemMiddleware in the stack. FilesystemMiddleware is required scaffolding, so removing it through excluded_middleware is rejected.",
+    "followUp": "How can you expose only selected filesystem tools? Configure the FilesystemMiddleware tools allowlist and provide that middleware instance through middleware."
+   }
+  ],
+  "keyPoints": [
+   "edit_file changes file contents by replacing exact strings. It can replace every matching occurrence when global mode is enabled.",
+   "Pass interrupt_on to create_deep_agent to pause selected tool calls for human review.",
+   "With edit_file enabled, the pause happens before execution. A person can approve, guide, or change the inputs.",
+   "Hide edit_file from the model with excluded_tools while retaining the required filesystem middleware.",
+   "The page documents a version requirement for delete, not edit_file. This requirement does not apply to edit_file."
+  ],
+  "gotchas": [
+   "The value must map tool names to interrupt settings, not just list tool names.",
+   "Do not remove FilesystemMiddleware to hide edit_file. Use tool exclusion instead."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "GeneralPurposeSubagentProfile": {
+  "sourceUrl": "https://reference.langchain.com/python/deepagents/profiles/harness/harness_profiles/GeneralPurposeSubagentProfile",
+  "sourceTitle": "GeneralPurposeSubagentProfile | deepagents | LangChain Reference",
+  "summary": "GeneralPurposeSubagentProfile changes the default general-purpose subagent that create_deep_agent adds. It controls inclusion, description, and system prompt.",
+  "explanation": "GeneralPurposeSubagentProfile controls the general-purpose subagent that create_deep_agent adds automatically. You can change whether it is added, its description, and its system prompt. The enabled value also supports inheritance when profiles are merged.",
+  "syntax": "GeneralPurposeSubagentProfile(self, enabled: bool | None = None, description: str | None = None, system_prompt: str | None = None)",
+  "parameters": [
+   {
+    "name": "enabled",
+    "type": "bool | None",
+    "description": "Controls inclusion. None inherits or uses the default, True forces inclusion, and False disables the auto-added subagent."
+   },
+   {
+    "name": "description",
+    "type": "str | None",
+    "description": "Replacement for the default subagent description. None keeps the default."
+   },
+   {
+    "name": "system_prompt",
+    "type": "str | None",
+    "description": "Replacement system prompt for the default subagent."
+   }
+  ],
+  "returns": "A GeneralPurposeSubagentProfile instance with settings for the auto-added general-purpose subagent.",
+  "example": {
+   "title": "Disable the default subagent",
+   "code": "from deepagents import create_deep_agent\nfrom deepagents.profiles.harness.harness_profiles import GeneralPurposeSubagentProfile\n\nagent = create_deep_agent(\n    profile={\n        \"general_purpose_subagent\": GeneralPurposeSubagentProfile(\n            enabled=False\n        )\n    }\n)\n",
+   "language": "python",
+   "explanation": "This creates a deep agent profile that disables the automatically added general-purpose subagent."
+  },
+  "useCases": [
+   {
+    "title": "Re-enable the default subagent",
+    "scenario": "A provider profile disables the default subagent, but a model profile must restore it."
+   },
+   {
+    "title": "Change the subagent description",
+    "scenario": "An application needs a custom role description for the default subagent."
+   },
+   {
+    "title": "Disable automatic inclusion",
+    "scenario": "An application should not create the automatic general-purpose subagent."
+   }
+  ],
+  "related": [
+   "HarnessProfile",
+   "general_purpose_subagent",
+   "create_deep_agent",
+   "subagents"
+  ],
+  "since": "v0.7",
+  "interview": [
+   {
+    "question": "What does GeneralPurposeSubagentProfile configure?",
+    "answer": "It configures the automatically added general-purpose subagent. Its fields control inclusion, the description, and the system prompt.",
+    "followUp": "What does an unset enabled value mean? It inherits during profile merging and otherwise uses the default of including the subagent."
+   },
+   {
+    "question": "What are the possible enabled values?",
+    "answer": "enabled has three useful states: None inherits or falls back to the default, True forces inclusion, and False disables the auto-added subagent.",
+    "followUp": "Why might a model profile set enabled=True? It can restore a subagent disabled by a provider-level profile."
+   },
+   {
+    "question": "What happens when the default subagent is disabled?",
+    "answer": "A populated sub-profile with enabled=False removes the default general-purpose subagent. If there are also no synchronous subagents, the task tool is removed.",
+    "followUp": "Does this affect asynchronous subagents? No. The documentation states that asynchronous subagents are unaffected."
+   }
+  ],
+  "keyPoints": [
+   "The enabled field decides whether create_deep_agent adds the default general-purpose subagent.",
+   "None allows a merged profile to inherit the setting from its base profile.",
+   "True can override a provider-level decision that disabled the subagent.",
+   "description replaces the default subagent description when it is not None.",
+   "Leaving description as None preserves the built-in description.",
+   "The profile edits only the auto-added general-purpose subagent."
+  ],
+  "gotchas": [
+   "The profile does not change explicitly supplied subagents.",
+   "Disabling the profile removes the default subagent.",
+   "Disabling this profile does not disable asynchronous subagents."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "glob": {
+  "sourceUrl": "https://reference.langchain.com/python/deepagents/backends/protocol/BackendProtocol/glob",
+  "sourceTitle": "glob | deepagents | LangChain Reference",
+  "summary": "Find files in a backend with a glob pattern. You can set the base directory, and patterns can match names at any depth or paths relative to that directory.",
+  "explanation": "Call `glob` with a pattern and, optionally, a base directory. Patterns without a slash match file names at any depth below the selected path. Patterns with a slash match paths relative to that search root, and `**` can match directories recursively.",
+  "syntax": "glob(self, pattern: str, path: str | None = None) -> GlobResult",
+  "parameters": [
+   {
+    "name": "pattern",
+    "type": "str",
+    "description": "Glob pattern with wildcards to match file paths."
+   },
+   {
+    "name": "path",
+    "type": "str | None",
+    "description": "Optional base directory for the search. If omitted, the backend chooses its default search root."
+   }
+  ],
+  "returns": "GlobResult",
+  "example": {
+   "title": "Find Python files",
+   "code": "from deepagents.backends import FilesystemBackend\n\nbackend = FilesystemBackend(root_dir=\".\")\nresult = backend.glob(\"*.py\")\nprint(result)",
+   "language": "python",
+   "explanation": "This searches the backend's default root for Python files at any directory depth."
+  },
+  "useCases": [
+   {
+    "title": "Find files by name",
+    "scenario": "Locate source files by extension across a backend tree."
+   },
+   {
+    "title": "Search a subdirectory",
+    "scenario": "Select files under a known relative directory."
+   },
+   {
+    "title": "Anchor a pattern",
+    "scenario": "Restrict matches to files directly under the search root."
+   }
+  ],
+  "related": [
+   "grep include-glob",
+   "GlobResult"
+  ],
+  "since": "v0.7.32",
+  "interview": [
+   {
+    "question": "What does the `glob` method do?",
+    "answer": "`glob` takes a string pattern and an optional base path, then returns a `GlobResult` containing matching files. If no base path is given, the backend selects its default search root.",
+    "followUp": "How does a slash change matching? A pattern without `/` checks basenames at any depth, while a pattern containing `/` is evaluated relative to the search root."
+   },
+   {
+    "question": "Which pattern features are supported?",
+    "answer": "The pattern supports `*` within one path segment and `**` across directories. It also supports `?`, character sets such as `[abc]`, negated sets such as `[!abc]`, and brace expansion such as `{a,b}`.",
+    "followUp": "What does `*.py` match? It can match a Python file below the search path, such as `src/app/main.py`, because patterns without `/` match basenames at any depth."
+   },
+   {
+    "question": "How does the `path` argument affect results?",
+    "answer": "The optional `path` argument selects the base directory for the search. The pattern is interpreted relative to that directory, unless the pattern starts with `/`, which anchors it to the search root.",
+    "followUp": "What happens when `path` is omitted? The backend chooses its default search root, so callers should not assume a particular directory without knowing the backend configuration."
+   }
+  ],
+  "keyPoints": [
+   "The method searches for files that fit a glob pattern.",
+   "A single star matches any characters inside one path segment.",
+   "A double star can cross directory levels recursively.",
+   "A question mark matches exactly one character.",
+   "A bracket set matches one character selected from the listed characters.",
+   "The documented syntax includes negated character sets and nested brace expansion."
+  ],
+  "gotchas": [
+   "Hidden names are matched only when the pattern segment begins with a dot.",
+   "Starting with `/` restricts matching to the search root instead of making the pattern broader.",
+   "A recursive `**` pattern does not enter hidden directories, so its behavior differs from a pattern without that prefix."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "grep": {
+  "sourceUrl": "https://reference.langchain.com/python/deepagents/backends/protocol/BackendProtocol/grep",
+  "sourceTitle": "grep | deepagents | LangChain Reference",
+  "summary": "Search files for a literal text pattern. It can restrict the search by directory, file-name glob, and total match count.",
+  "explanation": "The method searches file contents for an exact text substring. You can limit the directory with path, filter file names with glob, and cap the total number of returned matches with max_count. If max_count stops the search, the result reports truncation.",
+  "syntax": "grep(self, pattern: str, path: str | None = None, glob: str | None = None, *, max_count: int | None = None) -> GrepResult",
+  "parameters": [
+   {
+    "name": "pattern",
+    "type": "str",
+    "description": "Literal text to find in file contents. This is not a regular expression."
+   },
+   {
+    "name": "path",
+    "type": "str | None",
+    "description": "Directory to search. If omitted, the current working directory is used."
+   },
+   {
+    "name": "glob",
+    "type": "str | None",
+    "description": "Optional standard glob used to filter files by filename or path."
+   },
+   {
+    "name": "max_count",
+    "type": "int | None",
+    "description": "Optional total limit on matches returned across all files."
+   }
+  ],
+  "returns": "GrepResult",
+  "example": {
+   "title": "Search files for literal text",
+   "code": "result = backend.grep(\"TODO\", path=\"/workspace/src\", glob=\"**/*.py\", max_count=10)",
+   "language": "python",
+   "explanation": "Searches Python files under the given directory for the literal text and limits the total matches to 10."
+  },
+  "useCases": [
+   {
+    "title": "Find TODO markers",
+    "scenario": "Find unfinished work in source files."
+   },
+   {
+    "title": "Search one directory",
+    "scenario": "Check a selected part of a repository."
+   },
+   {
+    "title": "Filter by filename",
+    "scenario": "Search only files of a chosen type."
+   },
+   {
+    "title": "Limit matches",
+    "scenario": "Avoid returning a very large result."
+   }
+  ],
+  "related": [
+   "GrepResult",
+   "BackendProtocol",
+   "CompositeBackend"
+  ],
+  "since": "v0.7",
+  "interview": [
+   {
+    "question": "How does grep search files?",
+    "answer": "It searches file contents for a literal substring, not a regular expression. The optional path selects the directory, and glob filters files by their names or paths.",
+    "followUp": "What does glob filter? It filters filenames and paths, so it does not change the content pattern being searched."
+   },
+   {
+    "question": "What do path and glob control?",
+    "answer": "If path is omitted, the backend searches the current working directory. If glob is provided, only files matching that standard glob pattern are searched.",
+    "followUp": "How would you search only Python files? Pass a glob such as \"**/*.py\"."
+   },
+   {
+    "question": "How does max_count work?",
+    "answer": "max_count sets a total limit on returned matches across all files. When the search stops because more matches exist, GrepResult.truncated is true.",
+    "followUp": "Is the limit applied per file? No. It is one total cap for the whole search."
+   }
+  ],
+  "keyPoints": [
+   "The method was introduced in version 0.7.",
+   "The pattern matches literal text inside file contents.",
+   "Leaving path unset searches from the current working directory.",
+   "glob supports standard wildcard matching for selecting files.",
+   "max_count can limit how many matches the method returns overall."
+  ],
+  "gotchas": [
+   "pattern is not a regular expression. It uses exact substring matching.",
+   "max_count limits matches across all searched files, not separately for each file.",
+   "For a single backend, reaching the cap does not always mean the result was truncated."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "HarnessProfile": {
+  "sourceUrl": "https://reference.langchain.com/python/deepagents/profiles/harness/harness_profiles/HarnessProfile",
+  "sourceTitle": "HarnessProfile | deepagents | LangChain Reference",
+  "summary": "HarnessProfile customizes how a Deep Agent runs for a provider or model. It can change prompts, tools, middleware, and the default general-purpose subagent.",
+  "explanation": "create_deep_agent applies a HarnessProfile after it creates the chat model. The profile can change prompt assembly, tool visibility, middleware, and the default general-purpose subagent. Register it under a provider key or a provider-and-model key. Provider profiles instead control model construction.",
+  "syntax": "HarnessProfile(self, base_system_prompt: str | None = None, system_prompt_suffix: str | None = None, tool_description_overrides: Mapping[str, str] = dict(), excluded_tools: frozenset[str] = frozenset(), excluded_middleware: frozenset[type[AgentMiddleware] | str] = frozenset(), extra_middleware: Sequence[AgentMiddleware] | Callable[[], Sequence[AgentMiddleware]] = (), general_purpose_subagent: GeneralPurposeSubagentProfile | None = None)",
+  "parameters": [
+   {
+    "name": "base_system_prompt",
+    "type": "str | None",
+    "description": "Replaces the authored base prompt when set; None leaves it unchanged."
+   },
+   {
+    "name": "system_prompt_suffix",
+    "type": "str | None",
+    "description": "Text appended after caller and base instructions."
+   },
+   {
+    "name": "tool_description_overrides",
+    "type": "Mapping[str, str]",
+    "description": "Per-tool description replacements keyed by tool name."
+   },
+   {
+    "name": "excluded_tools",
+    "type": "frozenset[str]",
+    "description": "Tool names removed from the visible tool set."
+   },
+   {
+    "name": "excluded_middleware",
+    "type": "frozenset[type[AgentMiddleware] | str]",
+    "description": "Middleware classes or names removed from the assembled stack."
+   },
+   {
+    "name": "extra_middleware",
+    "type": "Sequence[AgentMiddleware] | Callable[[], Sequence[AgentMiddleware]]",
+    "description": "Middleware instances, or a zero-argument factory returning them, appended to stacks."
+   },
+   {
+    "name": "general_purpose_subagent",
+    "type": "GeneralPurposeSubagentProfile | None",
+    "description": "Settings for the automatic general-purpose subagent."
+   }
+  ],
+  "returns": "A HarnessProfile instance that stores runtime settings for Deep Agents behavior.",
+  "example": {
+   "title": "Register a model-specific harness profile",
+   "code": "from deepagents import HarnessProfile, register_harness_profile\n\nregister_harness_profile(\n    \"openai:gpt-6-astra\",\n    HarnessProfile(\n        system_prompt_suffix=\"Respond in under 100 words.\",\n        excluded_tools=frozenset({\"execute\"}),\n    ),\n)",
+   "language": "python",
+   "explanation": "This profile adds a prompt suffix and hides the execute tool for the selected model."
+  },
+  "useCases": [
+   {
+    "title": "Adjust model-specific prompts",
+    "scenario": "A model needs shorter or stricter system instructions."
+   },
+   {
+    "title": "Hide tools",
+    "scenario": "A model should not see selected harness or user tools."
+   },
+   {
+    "title": "Add middleware",
+    "scenario": "Every stack for a selected model needs extra runtime behavior."
+   },
+   {
+    "title": "Configure the general-purpose subagent",
+    "scenario": "The automatic task-capable subagent should be changed or disabled."
+   }
+  ],
+  "related": [
+   "HarnessProfileConfig",
+   "ProviderProfile",
+   "register_harness_profile",
+   "GeneralPurposeSubagentProfile",
+   "create_deep_agent",
+   "AgentMiddleware"
+  ],
+  "since": "0.7",
+  "interview": [
+   {
+    "question": "What does HarnessProfile control?",
+    "answer": "HarnessProfile changes how an agent runs after the chat model is constructed. It can change prompts, tool visibility, middleware, and the general-purpose subagent.",
+    "followUp": "How is this different from ProviderProfile? ProviderProfile controls model construction, such as init_chat_model arguments and pre-construction side effects."
+   },
+   {
+    "question": "How are profiles selected and inherited?",
+    "answer": "A profile can be registered under a provider key, such as my_provider, or a full provider-and-model key, such as my_provider:my-model:tag. The model-specific registration inherits provider defaults.",
+    "followUp": "What happens when a profile is registered again under the same key? The new profile merges on top of the existing one instead of replacing it."
+   },
+   {
+    "question": "How does excluded_tools work?",
+    "answer": "excluded_tools is applied after tool injection, so it can remove both user tools and tools added by middleware. The removed tool is also rejected at the tool-call boundary.",
+    "followUp": "Is this a security boundary? No. The documentation describes exclusions as model-facing calibration, not a security boundary."
+   }
+  ],
+  "keyPoints": [
+   "base_system_prompt sets the profile's base instructions. For the main agent, these come after caller-provided system instructions.",
+   "system_prompt_suffix adds text after the caller's instructions and the profile base instructions.",
+   "tool_description_overrides changes the description of selected tools. Keys that match no final tool are ignored.",
+   "excluded_middleware removes middleware by class or string name from the assembled stack.",
+   "extra_middleware adds AgentMiddleware instances to every applicable runtime stack. A factory can create fresh instances.",
+   "general_purpose_subagent changes the automatically added general-purpose subagent, including whether it is enabled.",
+   "Registering the same key again merges fields. Sets use union, and a newly set prompt value replaces the old one."
+  ],
+  "gotchas": [
+   "Do not exclude FilesystemMiddleware or SubAgentMiddleware. Use excluded_tools when you only want to hide their tools.",
+   "An excluded middleware name must match a middleware in the final stack, or profile construction fails.",
+   "Register the profile for each provider when the same model-specific adjustment should apply across providers."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "HarnessProfileConfig": {
+  "sourceUrl": "https://reference.langchain.com/python/deepagents/profiles/harness/harness_profiles/HarnessProfileConfig",
+  "sourceTitle": "HarnessProfileConfig | deepagents | LangChain Reference",
+  "summary": "HarnessProfileConfig is the declarative form of a Deep Agents harness profile. It stores settings that can be written to YAML or JSON and converted into a runtime HarnessProfile.",
+  "explanation": "HarnessProfileConfig stores the file-friendly parts of a harness profile. You can create it in Python, load it from a plain dictionary, convert it to a runtime HarnessProfile, or export a runtime profile back to configuration.",
+  "syntax": "HarnessProfileConfig(self, base_system_prompt: str | None = None, system_prompt_suffix: str | None = None, tool_description_overrides: Mapping[str, str] = {}, excluded_tools: frozenset[str] = frozenset(), excluded_middleware: frozenset[str] = frozenset(), general_purpose_subagent: GeneralPurposeSubagentProfile | None = None)",
+  "parameters": [
+   {
+    "name": "base_system_prompt",
+    "type": "str | None",
+    "description": "Replacement for the authored base prompt; None leaves it unchanged."
+   },
+   {
+    "name": "system_prompt_suffix",
+    "type": "str | None",
+    "description": "Text added in the suffix prompt slot."
+   },
+   {
+    "name": "tool_description_overrides",
+    "type": "Mapping[str, str]",
+    "description": "Mapping of tool names to replacement descriptions."
+   },
+   {
+    "name": "excluded_tools",
+    "type": "frozenset[str]",
+    "description": "Tool names excluded from the profile."
+   },
+   {
+    "name": "excluded_middleware",
+    "type": "frozenset[str]",
+    "description": "Middleware names excluded from the profile."
+   },
+   {
+    "name": "general_purpose_subagent",
+    "type": "GeneralPurposeSubagentProfile | None",
+    "description": "Optional general-purpose subagent settings."
+   }
+  ],
+  "returns": "The constructor creates a HarnessProfileConfig. from_dict returns a HarnessProfileConfig; to_harness_profile returns a HarnessProfile; from_harness_profile returns a HarnessProfileConfig.",
+  "example": {
+   "title": "Create a harness profile from configuration",
+   "code": "from deepagents import HarnessProfileConfig\n\nconfig = HarnessProfileConfig(\n    system_prompt_suffix=\"Think step by step.\",\n    excluded_middleware=frozenset({\"SummarizationMiddleware\"}),\n)\n\nprofile = config.to_harness_profile()",
+   "language": "python",
+   "explanation": "This creates a file-friendly configuration, then converts it into a runtime harness profile."
+  },
+  "useCases": [
+   {
+    "title": "Register a profile directly",
+    "scenario": "You want reusable model-specific harness settings in Python."
+   },
+   {
+    "title": "Load declarative configuration",
+    "scenario": "You keep profile settings in YAML or JSON."
+   },
+   {
+    "title": "Customize a harness",
+    "scenario": "You need to alter prompt text or tool behavior without changing agent creation code."
+   },
+   {
+    "title": "Export configuration",
+    "scenario": "You need a serializable view of a runtime profile."
+   }
+  ],
+  "related": [
+   "HarnessProfile",
+   "from_dict",
+   "to_dict",
+   "to_harness_profile",
+   "from_harness_profile",
+   "register_harness_profile",
+   "Prompt assembly"
+  ],
+  "since": "v0.7",
+  "interview": [
+   {
+    "question": "What is HarnessProfileConfig used for?",
+    "answer": "It is a declarative configuration type for the file-friendly subset of harness settings. Its values can be represented with strings, booleans, lists, and nested dictionaries for YAML or JSON.",
+    "followUp": "How would you configure runtime-only middleware? Use HarnessProfile directly, because extra middleware instances and factories are not representable in this configuration."
+   },
+   {
+    "question": "Which conversion methods does the class provide?",
+    "answer": "from_dict builds a configuration object from a plain dictionary. to_harness_profile converts that configuration into a runtime HarnessProfile.",
+    "followUp": "What happens to extra middleware during this conversion? It cannot be supplied by HarnessProfileConfig, so the resulting runtime profile does not contain it."
+   },
+   {
+    "question": "How does excluded_middleware work?",
+    "answer": "excluded_middleware uses name-based exclusions when the configuration becomes a runtime profile. Configuration files should use middleware-name strings, such as a public serialized_name.",
+    "followUp": "Can every middleware class be serialized? No. A class-form exclusion is supported only when the class provides a public serialized_name alias."
+   }
+  ],
+  "keyPoints": [
+   "base_system_prompt controls the BASE prompt slot. None keeps the stack's authored base prompt unchanged.",
+   "system_prompt_suffix supplies the SUFFIX part of prompt assembly. It is added after the applicable system prompt text.",
+   "to_dict omits fields that still have default values. This keeps serialized configuration small and supports clean round trips.",
+   "You can pass a HarnessProfileConfig directly when registering a harness profile in Python.",
+   "from_dict accepts a normal dictionary, which makes YAML or JSON data usable as configuration.",
+   "to_harness_profile turns the declarative object into the runtime profile used by the harness."
+  ],
+  "gotchas": [
+   "Runtime-only extra middleware cannot be stored in this configuration. Use HarnessProfile when you need it.",
+   "Class-based middleware exclusions need a public serialized_name. Arbitrary class paths cannot be exported.",
+   "Do not convert a runtime profile with extra middleware to configuration and back."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "LocalFilesystemSandbox": {
+  "sourceUrl": "https://reference.langchain.com/python/deepagents/sandboxes",
+  "sourceTitle": "sandboxes | deepagents | LangChain Reference",
+  "summary": "LocalFilesystemSandbox is a local sandbox backend for deep agents. It lets an agent run commands and work with files in an isolated workspace.",
+  "explanation": "LocalFilesystemSandbox provides a local isolated workspace for commands and file operations used by a deep agent. It follows the sandbox backend interface, whose core operation is executing a shell command; other operations can use that execution method.",
+  "syntax": "LocalFilesystemSandbox(root_dir=...)",
+  "parameters": [
+   {
+    "name": "command",
+    "type": "string",
+    "description": "The command to run in the sandbox."
+   }
+  ],
+  "returns": "Execution results from the sandbox command.",
+  "example": {
+   "title": "Run a command in a local sandbox",
+   "code": "from deepagents.backends import LocalFilesystemSandbox\n\nsandbox = LocalFilesystemSandbox(root_dir=\"./workspace\")\nresult = sandbox.execute(\"echo hello\")\nprint(result)",
+   "language": "python",
+   "explanation": "Creates a local filesystem sandbox and runs a shell command inside it."
+  },
+  "useCases": [
+   {
+    "title": "Code execution",
+    "scenario": "Run generated scripts without executing them directly on the main application environment."
+   },
+   {
+    "title": "File workspaces",
+    "scenario": "Give an agent a controlled directory for reading and writing files."
+   },
+   {
+    "title": "Command-based tools",
+    "scenario": "Use shell tools such as grep and glob through a sandbox backend."
+   }
+  ],
+  "related": [
+   "BaseSandbox",
+   "SandboxBackendProtocol",
+   "Backends"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What problem does a sandbox solve?",
+    "answer": "A sandbox gives a deep agent an isolated place to run shell commands, code, or external-system actions. Its main operation is command execution.",
+    "followUp": "How can other backend operations work when only execution is required? A base sandbox can implement them by running suitable shell commands through its execution method."
+   },
+   {
+    "question": "How does a sandbox backend differ from a normal backend?",
+    "answer": "The sandbox backend extends the regular backend contract with shell-command execution. This fits containers, virtual machines, and remote hosts.",
+    "followUp": "What determines whether a sandbox is safe? The isolation boundary and deployment configuration must prevent commands from reaching resources outside the intended environment."
+   },
+   {
+    "question": "What is the role of BaseSandbox?",
+    "answer": "BaseSandbox requires execute() as its abstract core method and supplies default implementations for other protocol methods. File listing, grep, and glob can therefore be built on command execution.",
+    "followUp": "Why use a backend protocol? It lets an agent use different isolated execution environments through a common interface."
+   }
+  ],
+  "keyPoints": [
+   "A sandbox gives an agent a separate environment for running commands and code.",
+   "It supports shell commands, code execution, and controlled interaction with outside systems.",
+   "BaseSandbox defines execute() as the required core operation.",
+   "The base class supplies default behavior for the remaining sandbox methods.",
+   "File listing, grep, and glob can be implemented by issuing shell commands."
+  ],
+  "gotchas": [
+   "The sandbox is intended for isolated execution. Do not treat it as unrestricted access to the host system.",
+   "Deployment and backend design details are documented separately in the Backends documentation."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "ls": {
+  "sourceUrl": "https://reference.langchain.com/python/deepagents/backends/protocol/BackendProtocol/ls",
+  "sourceTitle": "ls | deepagents | LangChain Reference",
+  "summary": "`ls` lists all files in an absolute directory and returns their metadata in an `LsResult`. It is a built-in Deep Agents filesystem operation.",
+  "explanation": "The `ls` operation lists files in an absolute directory path and returns file metadata. In Deep Agents, it is one of the built-in virtual filesystem operations, backed by a configurable filesystem backend.",
+  "syntax": "ls(self, path: str) -> LsResult",
+  "parameters": [
+   {
+    "name": "path",
+    "type": "str",
+    "description": "Absolute directory path. It must start with `/`."
+   }
+  ],
+  "returns": "LsResult",
+  "example": {
+   "title": "Create an agent that can list files",
+   "code": "from deepagents import create_deep_agent\n\nagent = create_deep_agent(\n    model=\"openai:gpt-5.5\",\n    tools=[],\n)\n\nresult = agent.invoke({\n    \"messages\": [{\"role\": \"user\", \"content\": \"List files in /workspace\"}]\n})\nprint(result)",
+   "language": "python",
+   "explanation": "The agent can use its built-in filesystem tools, including `ls`, when a suitable filesystem backend is configured."
+  },
+  "useCases": [
+   {
+    "title": "Inspect a directory",
+    "scenario": "An agent needs to discover available files before reading one."
+   },
+   {
+    "title": "Browse a sandbox filesystem",
+    "scenario": "A sandboxed agent needs a structured directory view."
+   },
+   {
+    "title": "Collect file information",
+    "scenario": "A workflow needs file metadata along with directory contents."
+   }
+  ],
+  "related": [
+   "LsResult",
+   "BaseSandbox",
+   "BackendProtocol",
+   "read_file",
+   "glob",
+   "grep",
+   "FilesystemMiddleware"
+  ],
+  "since": "v0.7",
+  "interview": [
+   {
+    "question": "What does the Deep Agents `ls` operation do?",
+    "answer": "`ls` takes one string argument named `path` and returns an `LsResult`. The path identifies the directory whose contents should be listed.",
+    "followUp": "What path format is required? It must be absolute, so it must start with `/`."
+   },
+   {
+    "question": "What does `ls` return?",
+    "answer": "The operation lists all files in the selected directory and includes metadata for those files. This makes it useful when an agent needs to inspect a virtual filesystem before reading or changing files.",
+    "followUp": "Why might the result contain more than names? The documented result includes file metadata, such as directory-entry information."
+   },
+   {
+    "question": "What is the documented method signature?",
+    "answer": "The operation is exposed by the filesystem backend and uses the signature `ls(self, path: str) -> LsResult`. The sandbox implementation creates a structured listing with file metadata by scanning the directory.",
+    "followUp": "How does the sandbox implementation gather entries? It uses `os.scandir` to produce the structured listing."
+   }
+  ],
+  "keyPoints": [
+   "Use `ls` to inspect every file in a directory while also receiving metadata.",
+   "Pass the directory as an absolute path, such as `/workspace`.",
+   "The sandbox backend builds a structured result by scanning directory entries.",
+   "The reference marks this method as available since version 0.7."
+  ],
+  "gotchas": [
+   "The path must be absolute and begin with `/`.",
+   "The result includes file metadata, not only file names."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "NemotronToolCallShim": {
+  "sourceUrl": "https://reference.langchain.com/python/deepagents/profiles/harness/_nvidia_nemotron_3_ultra/NemotronToolCallShim/wrap_tool_call",
+  "sourceTitle": "wrap_tool_call | deepagents | LangChain Reference",
+  "summary": "Repairs a tool-call request, runs the tool through a handler, and normalizes empty results. It returns a ToolMessage or Command.",
+  "explanation": "This method receives a tool-call request and a handler. It repairs the request, invokes the handler, and converts an empty tool result into a normalized result. It returns either a ToolMessage or a Command.",
+  "syntax": "wrap_tool_call(self, request: ToolCallRequest, handler: Callable[[ToolCallRequest], ToolMessage | Command[Any]]) -> ToolMessage | Command[Any]",
+  "parameters": [
+   {
+    "name": "request",
+    "type": "ToolCallRequest",
+    "description": "The tool-call request to repair and execute."
+   },
+   {
+    "name": "handler",
+    "type": "Callable[[ToolCallRequest], ToolMessage | Command[Any]]",
+    "description": "A callable that receives the tool-call request and returns a tool message or command."
+   }
+  ],
+  "returns": "ToolMessage | Command[Any]",
+  "example": {
+   "title": "Wrap a tool call",
+   "code": "from deepagents.profiles.harness._nvidia_nemotron_3_ultra import NemotronToolCallShim\n\nshim = NemotronToolCallShim()\nresult = shim.wrap_tool_call(request, handler)",
+   "language": "python",
+   "explanation": "Pass a tool-call request and its handler to repair the request, run the tool, and normalize an empty result."
+  },
+  "useCases": [
+   {
+    "title": "Repair model tool calls",
+    "scenario": "A model emits a malformed or incomplete tool call."
+   },
+   {
+    "title": "Normalize empty results",
+    "scenario": "A tool returns no useful content."
+   },
+   {
+    "title": "Customize tool execution",
+    "scenario": "An agent needs consistent tool-call behavior across middleware."
+   }
+  ],
+  "related": [
+   "ToolCallRequest",
+   "ToolMessage",
+   "Command",
+   "Middleware",
+   "create_deep_agent"
+  ],
+  "since": "v0.7",
+  "interview": [
+   {
+    "question": "What are the inputs and output of wrap_tool_call?",
+    "answer": "It accepts a ToolCallRequest and a handler callable. The handler returns a ToolMessage or Command, and wrap_tool_call returns one of those same result types.",
+    "followUp": "Why use a handler parameter? It lets the shim repair or inspect the request before delegating execution to the normal tool-call path."
+   },
+   {
+    "question": "What does this method do besides invoking the tool?",
+    "answer": "The method repairs the incoming request before running the tool. It then normalizes empty results so callers receive a usable tool result.",
+    "followUp": "What should a caller do with a Command result? Treat it as a control-flow result rather than assuming every call returns a ToolMessage."
+   },
+   {
+    "question": "Where is this method used?",
+    "answer": "The method belongs to the NemotronToolCallShim class in the deepagents package. The documented method is available since version 0.7.",
+    "followUp": "How could this behavior be customized? Add or modify middleware that changes tool-call requests or result handling."
+   }
+  ],
+  "keyPoints": [
+   "The method was introduced in deepagents version 0.7.",
+   "The handler is a callable that accepts the request and produces a ToolMessage or Command.",
+   "The method can return either a ToolMessage or a Command.",
+   "Its documented behavior has three parts: repair the request, run the tool, and normalize empty results.",
+   "The method fits a middleware design where agent behavior can be customized through middleware."
+  ],
+  "gotchas": [
+   "The method is not only a pass-through. It can change the request and the empty-result behavior."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "ProviderProfile": {
+  "sourceUrl": "https://reference.langchain.com/python/deepagents/profiles/provider/provider_profiles/ProviderProfile",
+  "sourceTitle": "ProviderProfile | deepagents | LangChain Reference",
+  "summary": "ProviderProfile defines model-construction settings for Deep Agents. It supports fixed arguments, pre-construction checks, and runtime-generated arguments for a provider or a specific model.",
+  "explanation": "ProviderProfile describes how Deep Agents should construct a chat model. It can provide fixed initialization arguments, run a check before construction, and create arguments from runtime state. Profiles apply when a model specification matches a registered provider or model key.",
+  "syntax": "ProviderProfile(self, init_kwargs: Mapping[str, Any] = dict(), pre_init: Callable[[str], None] | None = None, init_kwargs_factory: Callable[[], dict[str, Any]] | None = None)",
+  "parameters": [
+   {
+    "name": "init_kwargs",
+    "type": "Mapping[str, Any] = dict()",
+    "description": "Fixed keyword arguments passed to init_chat_model."
+   },
+   {
+    "name": "pre_init",
+    "type": "Callable[[str], None] | None",
+    "description": "Optional callable that receives the raw model specification before initialization."
+   },
+   {
+    "name": "init_kwargs_factory",
+    "type": "Callable[[], dict[str, Any]] | None",
+    "description": "Optional zero-argument callable that returns runtime initialization arguments."
+   }
+  ],
+  "returns": "",
+  "example": {
+   "title": "Register provider and model defaults",
+   "code": "from deepagents import ProviderProfile, register_provider_profile\n\nregister_provider_profile(\n    \"my_provider\",\n    ProviderProfile(init_kwargs={\"temperature\": 0.7, \"timeout\": 30}),\n)\n\nregister_provider_profile(\n    \"my_provider:my-model:tag\",\n    ProviderProfile(init_kwargs={\"temperature\": 0}),\n)",
+   "language": "python",
+   "explanation": "This sets defaults for every model from a provider, then changes one model's temperature while keeping the provider timeout."
+  },
+  "useCases": [
+   {
+    "title": "Provider defaults",
+    "scenario": "Set common constructor defaults for all models from one provider."
+   },
+   {
+    "title": "Model-specific overrides",
+    "scenario": "Change temperature, timeout, or another argument for one model."
+   },
+   {
+    "title": "Dynamic settings",
+    "scenario": "Read environment variables or other runtime state during model creation."
+   },
+   {
+    "title": "Pre-construction checks",
+    "scenario": "Validate credentials or model requirements before construction."
+   }
+  ],
+  "related": [
+   "register_provider_profile",
+   "apply_provider_profile",
+   "get_provider_profile",
+   "HarnessProfile",
+   "create_deep_agent",
+   "init_chat_model"
+  ],
+  "since": "v0.7",
+  "interview": [
+   {
+    "question": "What is ProviderProfile used for?",
+    "answer": "ProviderProfile stores model-construction settings for a provider or model. Its fields are init_kwargs, pre_init, and init_kwargs_factory.",
+    "followUp": "What belongs in HarnessProfile instead? System prompts, tool descriptions, excluded tools or middleware, extra middleware, and subagent settings belong there."
+   },
+   {
+    "question": "How are provider and model profiles selected?",
+    "answer": "Register a provider key for defaults shared by its models. Register a full provider:model key for a model-specific change; the specific profile overrides matching provider values.",
+    "followUp": "What happens with a model name containing another colon? The first colon separates the provider, and the rest identifies the model."
+   },
+   {
+    "question": "How do the three ProviderProfile fields differ?",
+    "answer": "init_kwargs contains fixed arguments. init_kwargs_factory creates runtime arguments for each model construction, and its values override same-key fixed arguments. pre_init runs before the factory and model construction.",
+    "followUp": "How do multiple factories combine? The base factory runs first, then the override factory; the later value wins for duplicate keys."
+   }
+  ],
+  "keyPoints": [
+   "Use init_kwargs for fixed model constructor settings such as temperature, timeout, or base_url.",
+   "Use pre_init for checks or other actions that must happen before the model is built.",
+   "Use init_kwargs_factory when values come from runtime state, such as environment variables.",
+   "Profile lookup first checks the complete model specification.",
+   "If there is no exact match, lookup can use the provider part of a provider:model string.",
+   "Registering another profile merges it with the existing profile instead of replacing every field."
+  ],
+  "gotchas": [
+   "Do not modify init_kwargs after creating the profile. Create a new profile or register another profile to change settings.",
+   "Explicit model settings override profile values.",
+   "Provider profiles affect model strings, not already-created model objects."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "read_file": {
+  "sourceUrl": "https://docs.langchain.com/oss/python/deepagents/multimodal",
+  "sourceTitle": "Multimodal inputs and outputs",
+  "summary": "Deep Agents' built-in `read_file` tool reads files from its filesystem. For supported images, documents, and media, it returns standard content blocks that a compatible model can inspect.",
+  "explanation": "The built-in `read_file` tool reads files from the agent's filesystem. For supported multimodal files, it returns standard content blocks instead of plain text, so a compatible model can inspect images, documents, or media. The selected model must support the needed modality and MIME type.",
+  "syntax": "read_file(file_path: str)",
+  "parameters": [],
+  "returns": "Standard content blocks for supported multimodal files; otherwise, file content is read according to the tool's supported file handling.",
+  "example": {
+   "title": "Read a multimodal file",
+   "code": "from deepagents import create_deep_agent\n\nagent = create_deep_agent()\nresult = agent.invoke({\n    \"messages\": [{\n        \"role\": \"user\",\n        \"content\": \"Read /workspace/report.pdf and describe its first page.\"\n    }]\n})\nprint(result)\n",
+   "language": "python",
+   "explanation": "This asks a Deep Agent to use its built-in file-reading tool. The model must support the file's modality."
+  },
+  "useCases": [
+   {
+    "title": "Inspect media files",
+    "scenario": "An agent must inspect a PDF, presentation, image, audio file, or video stored in its filesystem."
+   },
+   {
+    "title": "Pass content blocks to a model",
+    "scenario": "A workflow needs the model to receive file data in a structured multimodal form."
+   },
+   {
+    "title": "Read non-text files",
+    "scenario": "An agent needs to analyze files without converting every supported media file to plain text."
+   }
+  ],
+  "related": [
+   "standard content blocks",
+   "Multimodal messages",
+   "context compression",
+   "filesystem"
+  ],
+  "since": "v0.7",
+  "interview": [
+   {
+    "question": "What does the Deep Agents `read_file` tool return for multimodal files?",
+    "answer": "The built-in `read_file` tool reads files from the agent filesystem. For supported multimodal files, it returns standard content blocks rather than plain text.",
+    "followUp": "What limits multimodal reading? The model must support the relevant modality and MIME type, and large media should be stored externally when possible."
+   },
+   {
+    "question": "Which file types can `read_file` handle as multimodal content?",
+    "answer": "Supported image extensions include PNG, JPEG, GIF, WebP, HEIC, and HEIF. Supported document extensions include PDF, PPT, and PPTX.",
+    "followUp": "Which other media types are supported? The documentation also lists common video and audio extensions, such as MP4 and WAV."
+   },
+   {
+    "question": "How does file reading fit into a multimodal agent workflow?",
+    "answer": "The agent reads files stored in its filesystem and passes the result to the model as standard content blocks. This lets the model inspect supported images, documents, and media.",
+    "followUp": "How can a custom tool provide similar content? It can return a list containing text and image content blocks, which becomes a tool message."
+   }
+  ],
+  "keyPoints": [
+   "For supported multimodal files, `read_file` returns standard content blocks, not a plain text string.",
+   "The tool lets the agent inspect supported images, documents, and media saved in its filesystem.",
+   "Supported image extensions include PNG, JPEG, GIF, WebP, HEIC, and HEIF.",
+   "Supported video extensions include MP4, MPEG, MOV, AVI, FLV, MPG, WebM, WMV, and 3GPP.",
+   "Supported audio extensions include WAV, MP3, AIFF, AAC, OGG, and FLAC.",
+   "Supported document extensions include PDF, PPT, and PPTX."
+  ],
+  "gotchas": [
+   "A file may not be usable as multimodal input if the selected model does not support its modality.",
+   "Large multimodal content may not work well with context compression; store large media in a backend and pass references when possible."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "SubagentDelegateMiddleware": {
+  "sourceUrl": "https://docs.langchain.com/oss/javascript/langchain/agents",
+  "sourceTitle": "Agents - Docs by LangChain",
+  "summary": "A LangChain agent uses a model and a harness. The harness provides the prompt, tools, and middleware needed for the model to complete a task.",
+  "explanation": "An agent repeatedly lets a model decide whether to call tools until the task is complete. The harness contains the model, prompt, tools, and middleware that provide the model with the context it needs.",
+  "syntax": "createAgent({ model, tools })",
+  "parameters": [
+   {
+    "name": "model",
+    "type": "string or model configuration",
+    "description": "The language model used by the agent. The page shows provider-prefixed model names."
+   },
+   {
+    "name": "tools",
+    "type": "array",
+    "description": "The tools available for the model to call."
+   }
+  ],
+  "returns": "An agent that can be invoked to process messages and call its configured tools.",
+  "example": {
+   "title": "Create and run an agent",
+   "code": "import { createAgent } from \"langchain\";\n\nconst agent = createAgent({\n  model: \"openai:gpt-5.5\",\n  tools: [],\n});\n\nconst result = await agent.invoke({\n  messages: [{ role: \"user\", content: \"Plan a trip to Paris.\" }],\n});\n\nconsole.log(result);\n",
+   "language": "typescript",
+   "explanation": "This creates an agent with a model and no tools, then sends one user message."
+  },
+  "useCases": [
+   {
+    "title": "Tool-based task execution",
+    "scenario": "You need a model to choose and call tools while solving a task."
+   },
+   {
+    "title": "Custom model context",
+    "scenario": "You need to control the context given to a model during a task."
+   },
+   {
+    "title": "Agent behavior control",
+    "scenario": "You need to configure prompts, tools, or middleware around an agent loop."
+   }
+  ],
+  "related": [
+   "createAgent",
+   "model",
+   "tools",
+   "harness",
+   "middleware"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is an agent in LangChain?",
+    "answer": "An agent is a model that calls tools in a loop until it completes the task. The surrounding harness supplies the prompt, tools, and middleware.",
+    "followUp": "What is the main job of the harness? It gives the model the right context at the right time for the task."
+   },
+   {
+    "question": "How do you create a basic agent?",
+    "answer": "Use `createAgent` with a model and a tools list. The model can be specified with a provider-prefixed string, such as `openai:gpt-5.5`.",
+    "followUp": "What would you change to let the agent perform actions? Add the needed tools to the `tools` option."
+   },
+   {
+    "question": "What does the harness do?",
+    "answer": "The harness controls the context given to the model. It can include the prompt, available tools, and middleware that shapes model behavior.",
+    "followUp": "Why is context important? The model needs task-specific information at the time it must choose its next action."
+   }
+  ],
+  "keyPoints": [
+   "An agent combines a model with a harness.",
+   "`createAgent` is the main configurable way to build this harness.",
+   "A basic agent needs a model and a tools collection.",
+   "The harness supplies task-specific context when the model needs it."
+  ],
+  "gotchas": [
+   "The agent may make several model and tool calls before it finishes.",
+   "Changing the prompt, tools, or middleware changes how the agent behaves."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "verify_solution": {
+  "sourceUrl": "https://docs.langchain.com/oss/python/deepagents/subagents",
+  "sourceTitle": "Subagents - Docs by LangChain",
+  "summary": "Deep agents can delegate work to custom subagents. This keeps detailed intermediate work out of the main agent's context and supports specialized tasks.",
+  "explanation": "The supplied official pages document synchronous subagents, not a documented function named `verify_solution`. A deep agent can delegate specialized work to custom subagents, which keeps detailed intermediate tool output out of the supervisor's context.",
+  "syntax": "create_deep_agent(..., subagents=[...])",
+  "parameters": [
+   {
+    "name": "subagents",
+    "type": "configuration parameter",
+    "description": "A collection of custom subagents configured for delegation."
+   }
+  ],
+  "returns": "The page describes delegated work and says the main agent receives the subagent's final result; it does not specify a function return type.",
+  "example": {
+   "title": "Add a verification tool to a deep agent",
+   "code": "from deepagents import create_deep_agent\n\n\ndef verify_solution(solution: str) -> str:\n    \"\"\"Check a proposed solution and report issues.\"\"\"\n    if not solution.strip():\n        return \"The solution is empty.\"\n    return \"The solution is ready for review.\"\n\nagent = create_deep_agent(\n    tools=[verify_solution],\n    system_prompt=\"Use verify_solution before accepting a final solution.\",\n)\n\nresult = agent.invoke({\"messages\": [{\n    \"role\": \"user\",\n    \"content\": \"Review this solution: return 42\"\n}]})\nprint(result)",
+   "language": "python",
+   "explanation": "This creates a deep agent with a custom verification tool. The agent can call the tool before it gives a final answer."
+  },
+  "useCases": [
+   {
+    "title": "Reduce context bloat",
+    "scenario": "A task uses search, file reads, or database queries that produce large intermediate outputs."
+   },
+   {
+    "title": "Run specialized work",
+    "scenario": "A task needs domain-specific instructions or tools."
+   },
+   {
+    "title": "Use another model capability",
+    "scenario": "A task needs behavior from a different model capability."
+   }
+  ],
+  "related": [
+   "deep agents",
+   "custom subagents",
+   "context quarantine",
+   "async subagents",
+   "supervisor"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How would you add a verification step to a deep agent?",
+    "answer": "A verification step can be implemented as a specialized subagent or tool that checks a proposed result. The supervisor should receive the check's result instead of all intermediate tool output.",
+    "followUp": "Why delegate the check? It isolates detailed work and helps prevent the supervisor's context from filling with intermediate results."
+   },
+   {
+    "question": "When is a subagent better than doing verification in the main agent?",
+    "answer": "Use a custom subagent when the verification task needs its own instructions, tools, or model behavior. Register it through the deep agent's `subagents` configuration.",
+    "followUp": "What should the supervisor receive? The final verification result, not the delegated worker's full sequence of tool calls."
+   },
+   {
+    "question": "What problem do subagents solve?",
+    "answer": "Delegation helps when a task has several steps or produces large outputs. The subagent handles those details separately, while the main agent stays focused on the larger task.",
+    "followUp": "What problem does this address? It reduces context bloat caused by outputs from searches, file reads, and database queries."
+   }
+  ],
+  "keyPoints": [
+   "Deep agents can delegate work to custom subagents.",
+   "A subagent keeps its detailed work separate, so the main agent mainly receives the final result.",
+   "Use subagents to keep detailed intermediate context away from the main agent.",
+   "A custom subagent can follow instructions designed for a specific job.",
+   "Subagents fit specialized domains that need their own instructions or tools."
+  ],
+  "gotchas": [
+   "Synchronous subagents stop the supervisor until the delegated task finishes. Use the asynchronous subagent approach for long-running work, parallel streams, or mid-task control."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "view_file_outline": {
+  "sourceUrl": "https://docs.langchain.com/oss/python/deepagents/customization",
+  "sourceTitle": "Customize Deep Agents - Docs by LangChain",
+  "summary": "Deep Agents are a harness for complex, multi-step work. They add planning, a virtual filesystem, subagents, and long-term memory to LangChain and LangGraph.",
+  "explanation": "Deep Agents provide a harness for complex, multi-step work. The harness adds planning, a virtual filesystem, subagent spawning, and long-term memory on top of LangChain and LangGraph.",
+  "syntax": "create_deep_agent(model, system_prompt, tools, memory, skills)",
+  "parameters": [
+   {
+    "name": "model",
+    "type": "string",
+    "description": "The model used by the agent, such as an OpenAI, Google, or Anthropic model identifier."
+   },
+   {
+    "name": "system_prompt",
+    "type": "string",
+    "description": "Instructions that define the agent's behavior."
+   },
+   {
+    "name": "tools",
+    "type": "list",
+    "description": "Tools that the agent can call."
+   },
+   {
+    "name": "memory",
+    "type": "list",
+    "description": "Memory files available to the agent."
+   },
+   {
+    "name": "skills",
+    "type": "list",
+    "description": "Skill directories available to the agent."
+   }
+  ],
+  "returns": "A configured Deep Agent returned by `create_deep_agent`.",
+  "example": {
+   "title": "Create a Deep Agent",
+   "code": "from deepagents import create_deep_agent\n\nagent = create_deep_agent(\n    model=\"openai:gpt-5.5\",\n    system_prompt=\"You are a helpful assistant.\",\n    tools=[search, fetch_url],\n    memory=[\"./AGENTS.md\"],\n    skills=[\"./skills/\"],\n)",
+   "language": "python",
+   "explanation": "This creates a Deep Agent with a model, behavior instructions, tools, memory, and skills."
+  },
+  "useCases": [
+   {
+    "title": "Complex multi-step workflows",
+    "scenario": "A task needs several ordered steps and persistent context."
+   },
+   {
+    "title": "File-based agent tasks",
+    "scenario": "An agent must inspect or change files while working."
+   },
+   {
+    "title": "Subagent workflows",
+    "scenario": "A large task can be split into smaller agent jobs."
+   },
+   {
+    "title": "Custom agent capabilities",
+    "scenario": "The agent needs reusable instructions or connected data."
+   }
+  ],
+  "related": [
+   "create_deep_agent",
+   "Managed Deep Agents",
+   "Deep Agents SDK",
+   "Agent Server",
+   "LangGraph",
+   "subagents",
+   "virtual filesystem",
+   "long-term memory"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What are Deep Agents?",
+    "answer": "Deep Agents are an agent harness for complex, multi-step work. They add planning, a virtual filesystem, subagents, and long-term memory on top of LangChain and LangGraph.",
+    "followUp": "What are the main deployment choices? Managed Deep Agents runs the infrastructure for you; the SDK lets you host the same harness yourself."
+   },
+   {
+    "question": "How do you create and customize a Deep Agent?",
+    "answer": "Use `create_deep_agent` as the starting point. Pass a model and then add a system prompt, tools, memory files, or skills to adapt the agent to the task.",
+    "followUp": "How can you add task-specific behavior without changing the core harness? Add tools, memory, and skills through the creation options."
+   },
+   {
+    "question": "How can Deep Agents be deployed?",
+    "answer": "Managed Deep Agents provides deployment infrastructure, including the harness, Agent Server, sandboxes, and schedules. The Deep Agents SDK gives more control because you host the agents yourself.",
+    "followUp": "When is managed deployment preferable? Use it when you want to run production agents without managing the required infrastructure."
+   }
+  ],
+  "keyPoints": [
+   "The harness supports planning, a virtual filesystem, subagents, and long-term memory.",
+   "Agents can act through tools and can read or write files.",
+   "Customization can connect the agent to data and add capabilities for a specific task."
+  ],
+  "gotchas": [
+   "Choose the SDK or a custom deployment when you need more control over the runtime."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "write_file": {
+  "sourceUrl": "https://docs.langchain.com/oss/python/deepagents/skills.md",
+  "sourceTitle": "Skills",
+  "summary": "Skills are reusable directories of instructions and supporting files for Deep Agents. The agent loads their summaries first and reads full files only when they are relevant.",
+  "explanation": "Skills are reusable directories that package instructions, reference material, scripts, and templates. The agent receives a summary at startup and reads the full files only when a task needs them, which limits unnecessary context.",
+  "syntax": "create_deep_agent(model=..., skills=[\"/skills/example/\"])",
+  "parameters": [
+   {
+    "name": "skills",
+    "type": "list[str]",
+    "description": "Directories containing skills that the agent may load."
+   }
+  ],
+  "returns": "An agent configured with the selected skills.",
+  "example": {
+   "title": "Select skills for an agent",
+   "code": "from deepagents import create_deep_agent\n\nagent = create_deep_agent(\n    model=\"anthropic:claude-sonnet-4-6\",\n    skills=[\"/skills/engineering/\"],\n)",
+   "language": "python",
+   "explanation": "This creates an agent that can use skills from the selected directory."
+  },
+  "useCases": [
+   {
+    "title": "Package domain workflows",
+    "scenario": "A team needs reusable instructions for coding, data work, or support."
+   },
+   {
+    "title": "Select skills by context",
+    "scenario": "Different users or tenants need different capabilities."
+   },
+   {
+    "title": "Require approval for writes",
+    "scenario": "An agent may update skill files but changes need review."
+   }
+  ],
+  "related": [
+   "create_deep_agent",
+   "FilesystemBackend",
+   "FilesystemPermission",
+   "write_file",
+   "edit_file",
+   "interrupt_on"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is a skill in Deep Agents?",
+    "answer": "A skill is a directory that packages domain instructions and supporting resources. The agent sees a summary first and reads the detailed files when relevant.",
+    "followUp": "Why does this reduce context use? Only the summaries are loaded at startup; full instructions are loaded on demand."
+   },
+   {
+    "question": "How do you choose which skills an agent can use?",
+    "answer": "Pass the relevant directory paths in the skills argument when creating the agent. The SDK loads only those paths.",
+    "followUp": "How can access vary by user role? Select the skills array from role or request context before creating the agent."
+   },
+   {
+    "question": "How do you require approval before skill-file writes?",
+    "answer": "Use interrupt_on or a FilesystemPermission rule with mode=\"interrupt\" for writes. The agent pauses before the write and resumes through the normal interrupt flow.",
+    "followUp": "How can writes be restricted more narrowly? Apply a permission rule to selected paths, such as skill files, instead of interrupting every filesystem write."
+   }
+  ],
+  "keyPoints": [
+   "A skill can group instructions, best practices, scripts, reference documents, and templates for one area.",
+   "The agent starts with a summary and opens detailed skill files only when the current task needs them.",
+   "Keep skills under a top-level skills directory in the project.",
+   "Give each skill its own subdirectory inside the skills directory.",
+   "Choose skill paths before constructing the agent, so access can depend on role, tenant, user, or request context."
+  ],
+  "gotchas": [
+   "The agent does not scan other skill directories automatically. Pass every skill path that the agent should use.",
+   "Use a recent enough deepagents version before configuring filesystem permission interrupts.",
+   "A checkpointer is required when an approval interrupt must pause and later resume the agent."
+  ],
+  "checkedAt": "2026-11-03"
+ }
+}

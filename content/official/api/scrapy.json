@@ -1,4 +1,154 @@
 {
+ "CONCURRENT_REQUESTS": {
+  "sourceUrl": "https://docs.scrapy.org/en/2.15/topics/broad-crawls.html",
+  "sourceTitle": "Broad Crawls — Scrapy 2.15.2 documentation",
+  "summary": "CONCURRENT_REQUESTS sets Scrapy’s global limit for simultaneous downloader requests. For broad crawls, the documentation suggests starting at 100 and tuning it based on CPU and memory use.",
+  "explanation": "CONCURRENT_REQUESTS sets the global limit for downloader requests that run at the same time. Raising it can help a broad crawl process many domains in parallel, but it also increases memory use. Choose a value by testing CPU and memory use.",
+  "syntax": "CONCURRENT_REQUESTS = integer",
+  "parameters": [
+   {
+    "name": "CONCURRENT_REQUESTS",
+    "type": "integer",
+    "description": "Maximum number of simultaneous requests performed by the downloader. Use 0 for no limit."
+   }
+  ],
+  "returns": "A settings value that controls the global downloader concurrency limit.",
+  "example": {
+   "title": "Raise global concurrency",
+   "code": "CONCURRENT_REQUESTS = 100",
+   "language": "python",
+   "explanation": "Set this in settings.py to allow up to 100 downloader requests at the same time."
+  },
+  "useCases": [
+   {
+    "title": "Process many domains in parallel",
+    "scenario": "Many-domain crawl"
+   },
+   {
+    "title": "Increase throughput after testing CPU and memory limits",
+    "scenario": "Performance tuning"
+   }
+  ],
+  "related": [
+   "CONCURRENT_REQUESTS_PER_DOMAIN",
+   "REACTOR_THREADPOOL_MAXSIZE"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does CONCURRENT_REQUESTS control?",
+    "answer": "CONCURRENT_REQUESTS is the global maximum number of downloader requests that can run at the same time. The default is 16.",
+    "followUp": "How would you tune it? Test several values and choose one where CPU use is about 80–90%, while checking memory use."
+   },
+   {
+    "question": "How is the global limit different from the per-domain limit?",
+    "answer": "It limits requests across the whole Scrapy downloader, not only requests to one domain. A separate per-domain limit is controlled by CONCURRENT_REQUESTS_PER_DOMAIN.",
+    "followUp": "What should you change for a broad crawl? Raise the global limit and review the per-domain limit so it does not become the bottleneck."
+   },
+   {
+    "question": "How should you choose a value for a broad crawl?",
+    "answer": "A value of 100 is a useful starting point for a broad crawl. The suitable value depends on the CPU and memory available to the crawler.",
+    "followUp": "What other resource can slow high-concurrency crawls? DNS resolution can become slow because Scrapy uses a blocking resolver thread pool."
+   }
+  ],
+  "keyPoints": [
+   "The setting limits simultaneous downloader requests across the crawler.",
+   "Set it to 0 to remove the global request limit.",
+   "For a broad crawl, 100 is suggested as a starting value.",
+   "Use testing to find a value that keeps CPU use near 80–90%."
+  ],
+  "gotchas": [
+   "A higher value can use more memory. Lower the limit if memory becomes a problem.",
+   "The default is aimed at focused crawls, not many-domain crawls. Broad crawls usually need a higher value."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "CrawlerProcess": {
+  "sourceUrl": "https://docs.scrapy.org/en/master/topics/practices.md",
+  "sourceTitle": "Common Practices — Scrapy 2.19.0 documentation",
+  "summary": "CrawlerProcess runs Scrapy from a Python script. It starts the reactor, schedules spiders with crawl(), and runs them with start().",
+  "explanation": "CrawlerProcess starts and manages the reactor for a script. Call crawl() to schedule a spider, then start() to run it until the crawl finishes. Use CrawlerRunner instead when the application already manages the reactor.",
+  "syntax": "AsyncCrawlerProcess(settings=None); process.crawl(spider, *args, **kwargs); process.start()",
+  "parameters": [
+   {
+    "name": "settings",
+    "type": "dict or Settings",
+    "description": "Optional Scrapy settings used by the crawler process or runner."
+   },
+   {
+    "name": "crawl spider",
+    "type": "class or string",
+    "description": "Spider class or spider name, plus spider arguments."
+   },
+   {
+    "name": "spider arguments",
+    "type": "keyword arguments",
+    "description": "Arguments passed to the spider when it is created."
+   }
+  ],
+  "returns": "crawl() returns an awaitable task; start() runs until scheduled crawling finishes.",
+  "example": {
+   "title": "Run a spider from a Python script",
+   "code": "import scrapy\nfrom scrapy.crawler import AsyncCrawlerProcess\n\nclass QuotesSpider(scrapy.Spider):\n    name = \"quotes\"\n    start_urls = [\"https://quotes.toscrape.com/page/1\"]\n\n    def parse(self, response):\n        yield {\"text\": response.css(\"span.text::text\").get()}\n\nprocess = AsyncCrawlerProcess(settings={\n    \"FEEDS\": {\"items.json\": {\"format\": \"json\"}},\n})\nprocess.crawl(QuotesSpider)\nprocess.start()",
+   "language": "python",
+   "explanation": "This creates a crawler process, starts one spider, and writes items to a JSON file."
+  },
+  "useCases": [
+   {
+    "title": "Standalone scripts",
+    "scenario": "A Python script needs to run one or more spiders and finish after crawling."
+   },
+   {
+    "title": "Scrapy project scripts",
+    "scenario": "A project wants to reuse its configured settings and locate a spider by name."
+   },
+   {
+    "title": "Existing asyncio applications",
+    "scenario": "A notebook or ASGI application already owns an asyncio event loop."
+   }
+  ],
+  "related": [
+   "AsyncCrawlerRunner",
+   "CrawlerRunner",
+   "get_project_settings()",
+   "TWISTED_REACTOR_ENABLED",
+   "install_reactor()",
+   "react()",
+   "configure_logging()"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "When should you use AsyncCrawlerProcess?",
+    "answer": "AsyncCrawlerProcess is the simple choice for a standalone script. It starts the reactor, configures logging, and stops after the scheduled crawl finishes.",
+    "followUp": "What should an application use if it already owns the reactor? Use AsyncCrawlerRunner and run the spider in that existing reactor."
+   },
+   {
+    "question": "How do you run multiple spiders in one process?",
+    "answer": "Call crawl() for each spider and then call start(). The process blocks until all scheduled crawling jobs finish.",
+    "followUp": "How can two spiders run at the same time? Schedule both with crawl() before calling start()."
+   },
+   {
+    "question": "How can Scrapy use an existing asyncio loop?",
+    "answer": "Use AsyncCrawlerRunner with TWISTED_REACTOR_ENABLED set to False when an existing asyncio event loop should run Scrapy. This is useful for environments such as notebook kernels or ASGI applications.",
+    "followUp": "What is a limitation of this mode? The documentation calls running without a Twisted reactor experimental and points to additional limitations."
+   }
+  ],
+  "keyPoints": [
+   "AsyncCrawlerProcess is the main helper for running a spider from a standalone script.",
+   "The process helper starts the Twisted reactor and prepares logging and shutdown handling.",
+   "Pass a settings dictionary when creating the crawler process.",
+   "With AsyncCrawlerRunner, handle crawl errors where the returned task is awaited.",
+   "Choose AsyncCrawlerRunner when another part of the application already runs the Twisted reactor.",
+   "AsyncCrawlerRunner.join() waits until all currently scheduled crawler tasks finish."
+  ],
+  "gotchas": [
+   "A script needs a Twisted reactor or an asyncio event loop. The process helper can start the required runtime.",
+   "Multiple spiders do not share crawler objects, middleware instances, or resolved settings.",
+   "The no-reactor mode may have limitations. Use it carefully, especially in production applications."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "CrawlSpider": {
   "sourceUrl": "https://docs.scrapy.org/en/latest/_modules/scrapy/spiders/crawl.html",
   "sourceTitle": "Source code for scrapy.spiders.crawl",
@@ -60,6 +210,212 @@
    "Rule order matters: when several rules match a link, only the first matching rule is selected."
   ],
   "checkedAt": "2026-10-15"
+ },
+ "DOWNLOAD_DELAY": {
+  "sourceUrl": "https://docs.scrapy.org/en/latest/topics/settings.html",
+  "sourceTitle": "Settings — Scrapy 2.19.0 documentation",
+  "summary": "Scrapy settings configure components and request downloading. Use global settings for defaults and DOWNLOAD_SLOTS for per-domain concurrency, delays, and jitter.",
+  "explanation": "Scrapy settings are key-value options used by the engine, extensions, pipelines, and spiders. You select a settings module with SCRAPY_SETTINGS_MODULE, then values are combined from several sources; command-line values have the highest priority. Download settings control request timing, timeouts, response sizes, and per-domain limits.",
+  "syntax": "SCRAPY_SETTINGS_MODULE = \"myproject.settings\"\nDOWNLOAD_DELAY = 2.5\nDOWNLOAD_DELAY_JITTER = 0.5\nDOWNLOAD_SLOTS = {\"example.com\": {\"concurrency\": 1, \"delay\": 2, \"jitter\": 0}}",
+  "parameters": [
+   {
+    "name": "SCRAPY_SETTINGS_MODULE",
+    "type": "environment variable",
+    "description": "Python import path of the settings module, such as myproject.settings."
+   },
+   {
+    "name": "DOWNLOAD_DELAY",
+    "type": "number",
+    "description": "Minimum seconds between consecutive requests to the same domain."
+   },
+   {
+    "name": "DOWNLOAD_DELAY_JITTER",
+    "type": "number",
+    "description": "Random variation applied to DOWNLOAD_DELAY; zero disables it."
+   },
+   {
+    "name": "DOWNLOAD_BIND_ADDRESS",
+    "type": "string or tuple",
+    "description": "Local outgoing host, or a host-and-port tuple."
+   },
+   {
+    "name": "DOWNLOAD_SLOTS",
+    "type": "dict",
+    "description": "Per-slot concurrency, delay, and jitter mapping."
+   },
+   {
+    "name": "DOWNLOAD_TIMEOUT",
+    "type": "number",
+    "description": "Downloader timeout in seconds."
+   },
+   {
+    "name": "DOWNLOAD_MAXSIZE",
+    "type": "integer",
+    "description": "Maximum response body size in bytes; zero disables the limit."
+   },
+   {
+    "name": "DOWNLOAD_WARNSIZE",
+    "type": "integer",
+    "description": "Response size at which Scrapy logs a warning; zero disables the warning."
+   }
+  ],
+  "returns": "",
+  "example": {
+   "title": "Set download delays",
+   "code": "DOWNLOAD_DELAY = 2.5\nDOWNLOAD_DELAY_JITTER = 0\n\nDOWNLOAD_SLOTS = {\n    \"example.com\": {\n        \"concurrency\": 1,\n        \"delay\": 3,\n        \"jitter\": 0,\n    },\n}",
+   "language": "python",
+   "explanation": "This sets a global delay and disables its random variation. Requests for example.com use their own slot settings."
+  },
+  "useCases": [
+   {
+    "title": "Throttle crawling",
+    "scenario": "Slow down requests to reduce load on a website."
+   },
+   {
+    "title": "Per-domain control",
+    "scenario": "Apply different limits to different domains."
+   },
+   {
+    "title": "Limit response size",
+    "scenario": "Prevent very large responses from consuming resources."
+   },
+   {
+    "title": "Bind download connections",
+    "scenario": "Use a specific local interface for outgoing connections."
+   }
+  ],
+  "related": [
+   "CONCURRENT_REQUESTS_PER_DOMAIN",
+   "DOWNLOAD_HANDLERS",
+   "DOWNLOAD_FAIL_ON_DATALOSS",
+   "Request.meta",
+   "download_slot",
+   "download_timeout",
+   "download_maxsize",
+   "download_warnsize"
+  ],
+  "since": "2.19.0",
+  "interview": [
+   {
+    "question": "What do DOWNLOAD_DELAY and DOWNLOAD_DELAY_JITTER control?",
+    "answer": "DOWNLOAD_DELAY sets the minimum wait between two requests to the same domain. DOWNLOAD_DELAY_JITTER adds random variation around that delay; a value of zero disables the variation.",
+    "followUp": "How would you configure different limits for two domains? Use DOWNLOAD_SLOTS with a mapping for each domain, including delay, concurrency, and jitter values."
+   },
+   {
+    "question": "How does per-domain throttling work?",
+    "answer": "DOWNLOAD_SLOTS configures concurrency and timing per download slot, usually one slot per URL domain. For fields not given in a slot, Scrapy uses DOWNLOAD_DELAY, CONCURRENT_REQUESTS_PER_DOMAIN, and DOWNLOAD_DELAY_JITTER.",
+    "followUp": "How can a request use a slot that is not its URL domain? Set Request.meta['download_slot'] to the desired slot name; redirects keep that slot name."
+   },
+   {
+    "question": "What does DOWNLOAD_MAXSIZE do?",
+    "answer": "DOWNLOAD_MAXSIZE limits the response body in bytes, both before and after compression. A value of zero disables the limit, and a larger response is aborted and ignored.",
+    "followUp": "Can one request use a different limit? Yes. Set the download_maxsize Request.meta key for that request."
+   }
+  ],
+  "keyPoints": [
+   "Set SCRAPY_SETTINGS_MODULE to a Python import path such as myproject.settings, and make sure Python can import that module.",
+   "Settings can come from several levels. Command-line values override spider values, which override project values.",
+   "DOWNLOAD_DELAY controls the minimum interval between consecutive requests to one domain. Decimal values are allowed.",
+   "DOWNLOAD_DELAY_JITTER controls random variation around DOWNLOAD_DELAY. For example, 0.2 varies the delay from 80% to 120%.",
+   "DOWNLOAD_BIND_ADDRESS chooses the local address for download connections. It can be a host string or a host-and-port tuple.",
+   "DOWNLOAD_TIMEOUT sets the downloader timeout in seconds. Its documented default is 180.",
+   "DOWNLOAD_MAXSIZE limits response bodies to 1 GiB by default. It applies before and after decompression.",
+   "DOWNLOAD_WARNSIZE logs a warning when a response exceeds the configured size. Set it to zero to disable this warning."
+  ],
+  "gotchas": [
+   "A delay can reduce the real concurrency for a domain. If responses arrive faster than the delay, that domain may effectively use only one request at a time.",
+   "Per-slot settings normally use the URL domain. A custom download_slot value in Request.meta can assign a request to another slot.",
+   "A request can override the global timeout through its download_timeout metadata key.",
+   "Third-party download handlers might not support timeout or response-size checks."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "Downloader middleware": {
+  "sourceUrl": "https://docs.scrapy.org/en/latest/topics/downloader-middleware.md",
+  "sourceTitle": "Downloader Middleware — Scrapy 2.19.0 documentation",
+  "summary": "Downloader middleware provides hooks for changing Scrapy requests and responses at the HTTP level. Middleware order controls request and response processing, and hooks can continue, replace, reschedule, or handle work.",
+  "explanation": "Downloader middleware adds hooks around Scrapy's HTTP request and response flow. Scrapy runs process_request methods in order, then runs process_response methods in reverse order. A middleware can continue processing, return a response, replace the request, or handle an exception.",
+  "syntax": "class DownloaderMiddleware:\n    def process_request(self, request): ...\n    def process_response(self, request, response): ...\n    def process_exception(self, request, exception): ...",
+  "parameters": [
+   {
+    "name": "request",
+    "type": "scrapy.http.Request",
+    "description": "The request being processed or the request that caused the response or exception."
+   },
+   {
+    "name": "response",
+    "type": "scrapy.http.Response",
+    "description": "The response being processed by process_response."
+   },
+   {
+    "name": "exception",
+    "type": "Exception",
+    "description": "The exception raised during downloading or request processing."
+   }
+  ],
+  "returns": "process_request: None, Response, Request, or IgnoreRequest. process_response: Response, Request, or IgnoreRequest. process_exception: None, Response, or Request.",
+  "example": {
+   "title": "Configure middleware",
+   "code": "DOWNLOADER_MIDDLEWARES = {\n    \"myproject.middlewares.CustomDownloaderMiddleware\": 543,\n    \"scrapy.downloadermiddlewares.useragent.UserAgentMiddleware\": None,\n}",
+   "language": "python",
+   "explanation": "This enables a custom middleware and disables the built-in user-agent middleware."
+  },
+  "useCases": [
+   {
+    "title": "Customize outgoing requests",
+    "scenario": "Add or change headers before a request is downloaded."
+   },
+   {
+    "title": "Control downloads",
+    "scenario": "Return a cached response or retry a request after an error."
+   },
+   {
+    "title": "Download supporting data",
+    "scenario": "Fetch required data while processing another request."
+   }
+  ],
+  "related": [
+   "DOWNLOADER_MIDDLEWARES",
+   "DOWNLOADER_MIDDLEWARES_BASE",
+   "process_request",
+   "process_response",
+   "process_exception",
+   "IgnoreRequest",
+   "DefaultHeadersMiddleware",
+   "DownloadTimeoutMiddleware"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "In what order do downloader middleware methods run?",
+    "answer": "Scrapy calls process_request for each middleware in increasing order. It calls process_response in decreasing order. This makes the first middleware closer to the engine and the last one closer to the downloader.",
+    "followUp": "What happens if process_request returns a Response? Scrapy skips the remaining process_request and process_exception methods and sends that response through process_response."
+   },
+   {
+    "question": "What can process_request return?",
+    "answer": "process_request may return None, a Response, or a Request, or raise IgnoreRequest. None continues the normal chain; a Response stops downloading; and a returned Request is scheduled instead.",
+    "followUp": "What happens if process_response returns a Request? The response chain stops and Scrapy schedules that request for a later download."
+   },
+   {
+    "question": "How can middleware handle download errors?",
+    "answer": "process_exception runs when a download handler or process_request raises an exception. Returning None passes the exception to the next middleware; returning a Response starts response processing; returning a Request reschedules work.",
+    "followUp": "What if no middleware handles the exception? Scrapy uses its default exception handling, including the request errback where applicable."
+   }
+  ],
+  "keyPoints": [
+   "Enable a middleware by adding its class path and numeric order to DOWNLOADER_MIDDLEWARES.",
+   "Request hooks run from the lowest order to the highest order.",
+   "Response hooks run from the highest order back to the lowest order.",
+   "A Response from process_request prevents later request and exception hooks from running.",
+   "A returned Request stops the current request chain and schedules the new request.",
+   "Returning None from process_exception lets later exception handlers try to handle the error."
+  ],
+  "gotchas": [
+   "Choose the order carefully because middleware can depend on work done by another middleware.",
+   "A middleware request must not wait for the request that is waiting for it.",
+   "When several requests need the same data, cache the download task to avoid starting duplicate downloads."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "Field": {
   "sourceUrl": "https://docs.scrapy.org/en/latest/topics/items.html",
@@ -213,6 +569,163 @@
   ],
   "checkedAt": "2026-10-15"
  },
+ "Item pipelines": {
+  "sourceUrl": "https://docs.scrapy.org/en/latest/topics/item-pipeline.html",
+  "sourceTitle": "Item Pipeline — Scrapy 2.19.0 documentation",
+  "summary": "An item pipeline processes each item yielded by a spider. Components run in order and can change, pass on, or drop an item.",
+  "explanation": "After a spider yields an item, Scrapy sends it through the enabled pipeline components in order. Each component can change the item, pass it on by returning it, or stop processing by raising DropItem.",
+  "syntax": "process_item(self, item)",
+  "parameters": [
+   {
+    "name": "item",
+    "type": "item object",
+    "description": "The scraped item object passed to the pipeline component."
+   }
+  ],
+  "returns": "process_item must return an item object, or it may raise DropItem.",
+  "example": {
+   "title": "Validate and change an item",
+   "code": "from itemadapter import ItemAdapter\nfrom scrapy.exceptions import DropItem\n\nclass PricePipeline:\n    vat_factor = 1.15\n\n    def process_item(self, item):\n        adapter = ItemAdapter(item)\n        if adapter.get(\"price\"):\n            if adapter.get(\"price_excludes_vat\"):\n                adapter[\"price\"] *= self.vat_factor\n            return item\n        raise DropItem(\"Missing price\")",
+   "language": "python",
+   "explanation": "This pipeline increases prices that exclude VAT. It drops items without a price."
+  },
+  "useCases": [
+   {
+    "title": "Clean item data",
+    "scenario": "Remove unwanted markup or normalize scraped values before output."
+   },
+   {
+    "title": "Validate items",
+    "scenario": "Check required fields and reject incomplete items."
+   },
+   {
+    "title": "Find duplicates",
+    "scenario": "Prevent repeated records from continuing through the pipeline."
+   },
+   {
+    "title": "Store items",
+    "scenario": "Write accepted items to a file or database."
+   }
+  ],
+  "related": [
+   "DropItem",
+   "ITEM_PIPELINES",
+   "open_spider",
+   "close_spider",
+   "from_crawler",
+   "ItemAdapter",
+   "Feed exports"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What must process_item do?",
+    "answer": "Scrapy calls process_item for every enabled pipeline component. The method must return an item object for continued processing or raise DropItem to stop processing that item.",
+    "followUp": "How can a pipeline prepare and release resources? Define open_spider for setup and close_spider for cleanup. Either method may be a coroutine."
+   },
+   {
+    "question": "How do you enable a pipeline?",
+    "answer": "Set ITEM_PIPELINES to a mapping from the pipeline's import path to an order value. Scrapy runs enabled components sequentially according to the pipeline configuration.",
+    "followUp": "How would you verify that Scrapy loaded the class? Check the crawl log for the Enabled item pipelines entry."
+   },
+   {
+    "question": "How should a pipeline manage external resources?",
+    "answer": "A pipeline can use from_crawler to read settings and receive the crawler. For example, a MongoDB pipeline reads its URI and database name, opens the client in open_spider, and closes it in close_spider.",
+    "followUp": "What should happen if a required resource is unavailable before crawling? open_spider may raise CloseSpider to stop the spider."
+   }
+  ],
+  "keyPoints": [
+   "An item passes through enabled pipeline components one at a time.",
+   "A component can clean, validate, transform, store, or check an item.",
+   "The main method receives the scraped item.",
+   "process_item, open_spider, and close_spider can be asynchronous.",
+   "A pipeline can detect duplicate items and discard them.",
+   "A pipeline can save items to a database such as MongoDB."
+  ],
+  "gotchas": [
+   "Adding a pipeline class to a spider does not enable it. Add its import path to ITEM_PIPELINES.",
+   "If process_item changes an item but returns nothing, the next component receives None.",
+   "Raise DropItem only when the item should leave the pipeline."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "ITEM_PIPELINES": {
+  "sourceUrl": "https://docs.scrapy.org/en/latest/topics/item-pipeline.html",
+  "sourceTitle": "Item Pipeline — Scrapy 2.19.0 documentation",
+  "summary": "ITEM_PIPELINES enables Scrapy item pipeline classes and sets their order. Lower order values run first; each pipeline must return the item or raise DropItem.",
+  "explanation": "Scrapy sends each scraped item through the enabled pipeline classes in order. Each class receives the item in process_item(); it must return the item for continued processing or raise DropItem to stop that item. Add pipeline classes and their order values to ITEM_PIPELINES.",
+  "syntax": "ITEM_PIPELINES = {\"package.module.PipelineClass\": order}",
+  "parameters": [
+   {
+    "name": "component",
+    "type": "class object or string",
+    "description": "Pipeline class or import path used as a key in ITEM_PIPELINES."
+   },
+   {
+    "name": "order",
+    "type": "integer",
+    "description": "Execution order for the pipeline. Lower values run first."
+   }
+  ],
+  "returns": "process_item() returns the processed item, or raises DropItem to discard it.",
+  "example": {
+   "title": "Enable item pipelines",
+   "code": "ITEM_PIPELINES = {\n    \"myproject.pipelines.PricePipeline\": 300,\n    \"myproject.pipelines.JsonWriterPipeline\": 800,\n}",
+   "language": "python",
+   "explanation": "This enables two pipeline classes. PricePipeline runs before JsonWriterPipeline because 300 is lower than 800."
+  },
+  "useCases": [
+   {
+    "title": "Validate and clean scraped data",
+    "scenario": "A spider produces incomplete or incorrectly typed fields."
+   },
+   {
+    "title": "Remove duplicate items",
+    "scenario": "Several pages contain the same record."
+   },
+   {
+    "title": "Store processed items",
+    "scenario": "Scraped records must be saved after processing."
+   }
+  ],
+  "related": [
+   "ITEM_PIPELINES_BASE",
+   "ITEM_PROCESSOR",
+   "DropItem",
+   "ItemAdapter",
+   "process_item"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you enable and order item pipelines?",
+    "answer": "Scrapy enables pipeline classes through ITEM_PIPELINES. The setting maps each class or import path to an order value, and lower values run first.",
+    "followUp": "What happens if two entries use the same pipeline class? It is a regular dictionary, so duplicate component definitions should be avoided because the component may be configured more than once."
+   },
+   {
+    "question": "What must process_item() return?",
+    "answer": "process_item() runs for every pipeline component. It must return an item, or raise DropItem when the item should be removed from later processing.",
+    "followUp": "Why is returning None a bug? The next pipeline receives None instead of the scraped item, so later processing can fail or produce incorrect output."
+   },
+   {
+    "question": "How does the order value work?",
+    "answer": "A lower order number runs earlier than a higher one. Scrapy commonly uses numbers from 0 through 1000, but the values themselves are not required to be in that range.",
+    "followUp": "How can you check that Scrapy loaded a pipeline? Look near the start of the crawl log for the enabled item pipelines message and verify the expected import path appears."
+   }
+  ],
+  "keyPoints": [
+   "The pipeline receives items after a spider scrapes them.",
+   "Pipelines can clean data, validate fields, find duplicates, or store items.",
+   "The integer in ITEM_PIPELINES controls when each pipeline class runs.",
+   "A class with order 300 runs before one with order 800."
+  ],
+  "gotchas": [
+   "Adding a pipeline class to a spider or another location does not enable it. Put its import path in ITEM_PIPELINES.",
+   "If process_item() changes an item but returns nothing, the next component receives None.",
+   "Do not list the same pipeline twice, including once by class object and once by import path."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "ItemLoader": {
   "sourceUrl": "https://docs.scrapy.org/en/latest/topics/loaders.html",
   "sourceTitle": "Item Loaders — Scrapy 2.19.0 documentation",
@@ -291,6 +804,142 @@
    "The item is not finalized merely by adding values; call load_item() after collection to obtain the populated item."
   ],
   "checkedAt": "2026-10-15"
+ },
+ "LinkExtractor": {
+  "sourceUrl": "https://docs.scrapy.org/en/latest/topics/link-extractors.html",
+  "sourceTitle": "Link Extractors — Scrapy 2.19.0 documentation",
+  "summary": "LxmlLinkExtractor finds links in Scrapy responses and returns Link objects. Configure it to keep or reject links by URL, domain, page region, HTML element, text, and other rules.",
+  "explanation": "LxmlLinkExtractor scans an HTML response and returns Link objects that pass its filters. You can limit links by URL patterns, domains, page regions, tags, attributes, text, and file extensions. It is commonly used by CrawlSpider rules, but regular spiders can call extract_links directly.",
+  "syntax": "LxmlLinkExtractor(allow=(), deny=(), allow_domains=(), deny_domains=(), restrict_xpaths=(), tags=('a', 'area'), attrs=('href',), canonicalize=False, unique=True, process_value=None, deny_extensions=None, restrict_css=(), strip=True, restrict_text=None, deny_tags=(), deny_attrs=())",
+  "parameters": [
+   {
+    "name": "allow",
+    "type": "str, Pattern[str], or iterable",
+    "description": "Regular expression or expressions that the absolute URL must match."
+   },
+   {
+    "name": "deny",
+    "type": "str, Pattern[str], or iterable",
+    "description": "Regular expression or expressions that exclude matching URLs."
+   },
+   {
+    "name": "allow_domains",
+    "type": "str or iterable[str]",
+    "description": "Domain or domains allowed for extracted links."
+   },
+   {
+    "name": "deny_domains",
+    "type": "str or iterable[str]",
+    "description": "Domain or domains excluded from extraction."
+   },
+   {
+    "name": "restrict_xpaths",
+    "type": "str or iterable[str]",
+    "description": "XPath regions to scan for links."
+   },
+   {
+    "name": "restrict_css",
+    "type": "str or iterable[str]",
+    "description": "CSS selector regions to scan for links."
+   },
+   {
+    "name": "tags",
+    "type": "str or iterable[str] or None",
+    "description": "HTML tags to inspect; defaults to a and area."
+   },
+   {
+    "name": "attrs",
+    "type": "str or iterable[str] or None",
+    "description": "Attributes to inspect on the selected tags; defaults to href."
+   },
+   {
+    "name": "canonicalize",
+    "type": "bool",
+    "description": "Whether to canonicalize each extracted URL."
+   },
+   {
+    "name": "unique",
+    "type": "bool",
+    "description": "Whether to remove duplicate links."
+   },
+   {
+    "name": "process_value",
+    "type": "Callable or None",
+    "description": "Callable that can transform or reject an attribute value before extraction."
+   },
+   {
+    "name": "deny_extensions",
+    "type": "str or iterable[str] or None",
+    "description": "File extensions to ignore; defaults to IGNORED_EXTENSIONS when omitted."
+   }
+  ],
+  "returns": "A list of matching Link objects. Duplicate links are omitted when unique=True.",
+  "example": {
+   "title": "Extract selected links",
+   "code": "from scrapy.linkextractors import LinkExtractor\n\nextractor = LinkExtractor(\n    allow_domains=\"example.com\",\n    restrict_css=\"main article\",\n)\n\nlinks = extractor.extract_links(response)\nfor link in links:\n    print(link.url, link.text)",
+   "language": "python",
+   "explanation": "This creates an extractor for links inside the selected article area and keeps only links from the chosen domain."
+  },
+  "useCases": [
+   {
+    "title": "Crawl matching pages",
+    "scenario": "Follow selected site links from a CrawlSpider."
+   },
+   {
+    "title": "Limit extraction to a page section",
+    "scenario": "Find links only inside a CSS or XPath region."
+   },
+   {
+    "title": "Use extraction outside CrawlSpider",
+    "scenario": "Inspect links from a normal Spider callback."
+   },
+   {
+    "title": "Process nonstandard link values",
+    "scenario": "Convert custom HTML attribute values into URLs."
+   }
+  ],
+  "related": [
+   "CrawlSpider",
+   "Rule",
+   "Link",
+   "scrapy.linkextractors.LinkExtractor",
+   "scrapy.linkextractors.lxmlhtml.LxmlLinkExtractor",
+   "extract_links"
+  ],
+  "since": "2.17.0 for deny_tags and deny_attrs",
+  "interview": [
+   {
+    "question": "What is a link extractor in Scrapy?",
+    "answer": "Use LinkExtractor, also available as scrapy.linkextractors.LinkExtractor. Call extract_links(response) to get a list of matching Link objects.",
+    "followUp": "How can a regular Spider use it? Create the extractor as a class attribute or instance member, then call extract_links in a callback and schedule each link URL."
+   },
+   {
+    "question": "How do you filter extracted links?",
+    "answer": "LxmlLinkExtractor accepts filters such as allow, deny, allow_domains, deny_domains, restrict_xpaths, and restrict_css. Only links that satisfy the configured settings are returned.",
+    "followUp": "How can extraction be limited by visible link text? Use restrict_text with one regular expression or a list; a list accepts a link when at least one expression matches."
+   },
+   {
+    "question": "What information does a Link contain?",
+    "answer": "Each result is a Link object. Its fields include the absolute URL, anchor text, URL fragment, and whether the anchor has a nofollow relation.",
+    "followUp": "What happens to duplicate results? unique=True removes duplicate links; set it to False to keep them."
+   }
+  ],
+  "keyPoints": [
+   "A link extractor reads a response and finds links in its content.",
+   "extract_links(response) returns matching Link objects.",
+   "LxmlLinkExtractor is the main documented implementation and uses lxml's HTML parser.",
+   "You can import the same extractor through the shorter LinkExtractor name.",
+   "restrict_xpaths limits scanning to areas selected by XPath.",
+   "restrict_css provides the same region-limiting behavior with CSS selectors.",
+   "By default, extraction considers anchor and area elements.",
+   "Set tags='*' to inspect every HTML tag."
+  ],
+  "gotchas": [
+   "Canonicalization can change the URL sent to the server, so use it carefully when the raw URL matters.",
+   "With unique=True, repeated matching links are removed from the result.",
+   "Whitespace is stripped from extracted attributes by default; set strip=False when whitespace is part of the value."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "parse": {
   "sourceUrl": "https://docs.scrapy.org/en/latest/topics/spiders.html",
@@ -596,6 +1245,327 @@
   ],
   "checkedAt": "2026-10-15"
  },
+ "response.css": {
+  "sourceUrl": "https://docs.scrapy.org/en/latest/_sources/topics/selectors.rst.txt",
+  "sourceTitle": "Selectors — Scrapy 2.19.0 documentation",
+  "summary": "Use response.css() to select HTML elements in a Scrapy callback. Use ::text or ::attr(name) to select text or attributes, then call get() or getall() to extract values.",
+  "explanation": "In a spider callback, use response.css() with a CSS selector to get a SelectorList. Add ::text for text nodes or ::attr(name) for an attribute. Call get() for the first result or getall() for every result.",
+  "syntax": "response.css(query)",
+  "parameters": [
+   {
+    "name": "query",
+    "type": "str",
+    "description": "A CSS selector string, such as \"title::text\" or \"a::attr(href)\"."
+   }
+  ],
+  "returns": "A SelectorList containing selectors that match the CSS query. Calling get() or getall() on it extracts values.",
+  "example": {
+   "title": "Select text with response.css",
+   "code": "import scrapy\n\nclass QuotesSpider(scrapy.Spider):\n    name = \"quotes\"\n    start_urls = [\"https://quotes.toscrape.com/\"]\n\n    def parse(self, response):\n        for title in response.css(\"title::text\").getall():\n            yield {\"title\": title}\n",
+   "language": "python",
+   "explanation": "The callback selects title text and returns every match as an item."
+  },
+  "useCases": [
+   {
+    "title": "Extract text",
+    "scenario": "Read page text such as a title, heading, or item name."
+   },
+   {
+    "title": "Extract attributes",
+    "scenario": "Read links, image sources, IDs, or other HTML attributes."
+   },
+   {
+    "title": "Extract nested data",
+    "scenario": "Select a group of elements, then query each element for its nested fields."
+   },
+   {
+    "title": "Extract with regular expressions",
+    "scenario": "Apply a regular expression to selected content."
+   }
+  ],
+  "related": [
+   "scrapy.Selector",
+   "SelectorList",
+   "response.xpath()",
+   "Selector.attrib",
+   "Selector.re()",
+   "Selector.re_first()"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does response.css() return, and how do you select text or attributes?",
+    "answer": "response.css() returns a SelectorList. Use ::text to select text nodes and ::attr(name) to select an attribute value.",
+    "followUp": "How do you get every matching value? Call getall() on the SelectorList."
+   },
+   {
+    "question": "What is the difference between get() and getall()?",
+    "answer": "get() returns the first match, or None when there are no matches. getall() returns a list containing all matches.",
+    "followUp": "How can you avoid None for a missing value? Pass a default argument, such as get(default=\"unknown\")."
+   },
+   {
+    "question": "How can you extract data from elements selected inside another element?",
+    "answer": "Selectors can be nested because css() and xpath() return selectors. For example, select each image and then read its src attribute with attrib or XPath.",
+    "followUp": "What does SelectorList.attrib return? It returns the attributes of the first matching element, or an empty dictionary when there are no matches."
+   }
+  ],
+  "keyPoints": [
+   "A Selector can be built from a TextResponse or from markup supplied as text.",
+   "Response objects provide CSS and XPath shortcuts, so callbacks usually do not need to create a Selector manually.",
+   "Selection creates selector objects; get() or getall() extracts their string values.",
+   "In a CSS query, use ::text to select text nodes below matching elements.",
+   "Use ::attr(name) in a CSS query to read an attribute such as href or src.",
+   "You can run another CSS or XPath query on each selected element to extract nested data."
+  ],
+  "gotchas": [
+   "The ::text and ::attr(name) CSS forms are not standard CSS. They may not work in other libraries.",
+   "get() returns None when there is no match, so use a default value or check the result.",
+   "Do not chain ::text or ::attr(...), because the result is already text or an attribute value."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "response.follow": {
+  "sourceUrl": "https://docs.scrapy.org/en/latest/intro/tutorial.html",
+  "sourceTitle": "Scrapy Tutorial — Scrapy 2.19.0 documentation",
+  "summary": "response.follow creates a Request from a link in the current response. Yield the returned Request so Scrapy schedules it; it also resolves relative URLs for you.",
+  "explanation": "response.follow creates a Request from a relative URL, selector, or link element. It returns the Request, so the callback must yield it for Scrapy to schedule the download. Use response.follow_all to create several requests from matching links.",
+  "syntax": "response.follow(url, callback=None, **kwargs)",
+  "parameters": [
+   {
+    "name": "url",
+    "type": "str or Selector",
+    "description": "A relative or absolute URL, a selector, or an anchor selector that identifies the link."
+   },
+   {
+    "name": "callback",
+    "type": "callable",
+    "description": "The callback that handles the downloaded response."
+   },
+   {
+    "name": "**kwargs",
+    "type": "keyword arguments",
+    "description": "Additional request arguments supported by Request."
+   }
+  ],
+  "returns": "A scrapy.Request instance.",
+  "example": {
+   "title": "Follow the next page",
+   "code": "import scrapy\n\nclass QuotesSpider(scrapy.Spider):\n    name = \"quotes\"\n    start_urls = [\"https://quotes.toscrape.com/page/1/\"]\n\n    def parse(self, response):\n        yield from response.follow_all(\n            css=\"li.next a\",\n            callback=self.parse,\n        )\n        for quote in response.css(\"div.quote\"):\n            yield {\"text\": quote.css(\"span.text::text\").get()}",
+   "language": "python",
+   "explanation": "The callback follows the next-page link and extracts one field from each quote."
+  },
+  "useCases": [
+   {
+    "title": "Follow the next page link",
+    "scenario": "Pagination"
+   },
+   {
+    "title": "Open author or detail pages",
+    "scenario": "Linked pages"
+   },
+   {
+    "title": "Create requests without urljoin",
+    "scenario": "Relative links"
+   }
+  ],
+  "related": [
+   "scrapy.Request",
+   "response.follow_all",
+   "response.urljoin",
+   "Request.callback",
+   "Request.cb_kwargs"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does response.follow do?",
+    "answer": "response.follow builds and returns a Request using the response as the URL base. The spider must yield that Request so Scrapy can schedule it.",
+    "followUp": "How would you follow several links? Use response.follow_all with a selector or iterable, then yield from the returned requests."
+   },
+   {
+    "question": "What can be passed to response.follow?",
+    "answer": "It accepts a relative or absolute URL, a selector that extracts an attribute, or an anchor selector. A callback can be supplied for the resulting request.",
+    "followUp": "Why is it useful for relative URLs? It resolves them against the current response without a separate urljoin call."
+   },
+   {
+    "question": "When should you use response.follow_all?",
+    "answer": "response.follow_all creates multiple Request objects. It can receive an iterable of selectors or use a CSS query directly, and the requests must be yielded.",
+    "followUp": "How can different pages use different callbacks? Pass the required callback when calling response.follow or response.follow_all."
+   }
+  ],
+  "keyPoints": [
+   "Use response.follow instead of manually constructing a Request when a link comes from the current response.",
+   "Relative links are resolved against the current response URL.",
+   "A selector can provide the link value instead of a URL string.",
+   "Passing an anchor selector lets response.follow read href automatically.",
+   "Use response.follow_all when several links should produce requests.",
+   "A CSS query can be given directly to response.follow_all."
+  ],
+  "gotchas": [
+   "Calling response.follow without yielding or returning its result does not schedule the request.",
+   "Do not require urljoin for a relative link passed to response.follow.",
+   "When passing an anchor selector, Scrapy reads its href attribute automatically."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "response.xpath": {
+  "sourceUrl": "https://docs.scrapy.org/en/master/topics/shell.html",
+  "sourceTitle": "Scrapy shell — Scrapy 2.19.0 documentation",
+  "summary": "`response.xpath()` selects parts of a Scrapy response with XPath. Use `.get()` to read the first match, and test expressions in the Scrapy shell before using them in a spider.",
+  "explanation": "`response.xpath()` creates selectors for nodes that match an XPath expression. You can call `.get()` on the result to return the first matched value, such as the text inside the page title. XPath can also inspect page content, not only document structure.",
+  "syntax": "response.xpath(xpath)\nscrapy shell <url>",
+  "parameters": [
+   {
+    "name": "xpath",
+    "type": "str",
+    "description": "XPath expression evaluated against the current response."
+   },
+   {
+    "name": "url_or_request",
+    "type": "str or scrapy.Request",
+    "description": "Optional URL, or a Scrapy Request, passed to the shell's `fetch` shortcut."
+   }
+  ],
+  "returns": "`response.xpath()` returns selector objects. Calling `.get()` returns the first selected value, or `None` when there is no match.",
+  "example": {
+   "title": "Use response.xpath to read a title",
+   "code": "import scrapy\n\nclass ExampleSpider(scrapy.Spider):\n    name = \"example\"\n    start_urls = [\"https://quotes.toscrape.com/\"]\n\n    def parse(self, response):\n        title = response.xpath(\"//title/text()\").get()\n        yield {\"title\": title}",
+   "language": "python",
+   "explanation": "This spider gets the page title with an XPath expression and returns it as an item."
+  },
+  "useCases": [
+   {
+    "title": "Develop extraction code",
+    "scenario": "Check whether an XPath expression selects the expected HTML before running a spider."
+   },
+   {
+    "title": "Extract response data",
+    "scenario": "Read text or elements from a response inside a spider's `parse` method."
+   },
+   {
+    "title": "Inspect response HTML",
+    "scenario": "Open the current response in a browser while debugging selectors."
+   }
+  ],
+  "related": [
+   "scrapy.shell",
+   "scrapy.shell.inspect_response",
+   "Selector",
+   "CSS selectors",
+   "fetch",
+   "view"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does `response.xpath()` do in Scrapy?",
+    "answer": "`response.xpath()` evaluates an XPath expression against the current response and returns selector objects. Calling `.get()` returns the first selected value, while the expression can target elements or text nodes.",
+    "followUp": "Why might XPath be useful instead of CSS? XPath can inspect content, so it can select an element based on text such as a link labeled “Next Page”."
+   },
+   {
+    "question": "What is the difference between `//title` and `//title/text()`?",
+    "answer": "`//title` selects the title element, while `//title/text()` selects its text node. Using `.get()` on the latter returns the title text as a string.",
+    "followUp": "How would you inspect multiple matches? Keep the selector result without `.get()` and use Scrapy's selector methods for all selected nodes."
+   },
+   {
+    "question": "Why use the Scrapy shell?",
+    "answer": "The Scrapy shell lets you test extraction expressions interactively without running the spider for every change. Start it with `scrapy shell <url>`, then inspect `response` with XPath or CSS.",
+    "followUp": "How can you inspect the exact response handled by a running spider? Call `scrapy.shell.inspect_response` from the spider, then leave the shell to resume crawling."
+   }
+  ],
+  "keyPoints": [
+   "Use the Scrapy shell to test XPath or CSS extraction expressions before placing them in a spider.",
+   "Start an interactive shell for a page with `scrapy shell <url>`.",
+   "Select title text with `response.xpath(\"//title/text()\").get()`.",
+   "XPath is a core part of Scrapy selectors and can navigate HTML while also checking content.",
+   "Use `view(response)` to open the current response in a browser while choosing selectors.",
+   "The shell's `fetch` shortcut requests a URL and updates the local response objects; redirects are followed by default."
+  ],
+  "gotchas": [
+   "Do not use the shell's `fetch` shortcut while an inspection shell is open from a running spider.",
+   "CSS and XPath are not separate extraction engines in Scrapy; CSS selectors are converted internally to XPath."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "ROBOTSTXT_OBEY": {
+  "sourceUrl": "https://docs.scrapy.org/en/2.13/topics/downloader-middleware.html",
+  "sourceTitle": "Downloader Middleware — Scrapy 2.13.4 documentation",
+  "summary": "RobotsTxtMiddleware checks Scrapy requests against a site's robots.txt rules. Enable the middleware and ROBOTSTXT_OBEY to block requests that the site forbids.",
+  "explanation": "When enabled, this downloader middleware checks a site's robots.txt rules before a request is downloaded. It chooses the matching user agent, loads and parses the site's robots.txt file, and ignores requests that the file forbids. Set request.meta[\"dont_obey_robotstxt\"] to True to skip the check for one request.",
+  "syntax": "async process_request(request: Request, spider: Spider | None = None) -> None",
+  "parameters": [
+   {
+    "name": "request",
+    "type": "scrapy.http.Request",
+    "description": "The request to check against robots.txt rules."
+   },
+   {
+    "name": "spider",
+    "type": "scrapy.Spider | None",
+    "description": "The spider that produced the request; it may be None."
+   }
+  ],
+  "returns": "process_request returns None when the request is allowed or bypassed; forbidden requests are ignored by the middleware.",
+  "example": {
+   "title": "Enable robots.txt checks",
+   "code": "ROBOTSTXT_OBEY = True\nROBOTSTXT_USER_AGENT = \"my-crawler\"\nROBOTSTXT_PARSER = \"scrapy.robotstxt.ProtegoRobotParser\"",
+   "language": "python",
+   "explanation": "Put these settings in your Scrapy project settings file. The middleware then checks robots.txt before downloading requests."
+  },
+  "useCases": [
+   {
+    "title": "Respect robots.txt",
+    "scenario": "A crawler should follow site rules before downloading pages."
+   },
+   {
+    "title": "Choose a parser",
+    "scenario": "A project needs different robots.txt matching behavior."
+   },
+   {
+    "title": "Set the matching user agent",
+    "scenario": "A site uses a specific crawler identity in its robots.txt file."
+   }
+  ],
+  "related": [
+   "ROBOTSTXT_OBEY",
+   "ROBOTSTXT_PARSER",
+   "ROBOTSTXT_USER_AGENT",
+   "DOWNLOADER_MIDDLEWARES",
+   "scrapy.robotstxt.ProtegoRobotParser",
+   "scrapy.robotstxt.PythonRobotParser"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you make Scrapy respect robots.txt?",
+    "answer": "Set ROBOTSTXT_OBEY to True and make sure RobotsTxtMiddleware is enabled. The middleware filters requests that robots.txt forbids.",
+    "followUp": "How can one request skip the check? Set request.meta[\"dont_obey_robotstxt\"] to True."
+   },
+   {
+    "question": "Which user agent does the middleware use?",
+    "answer": "ROBOTSTXT_USER_AGENT selects the user-agent string used for robots.txt matching. If it is None, Scrapy uses the request's User-Agent header, or USER_AGENT when that header is not set.",
+    "followUp": "What happens when the setting is omitted? Scrapy falls back to the request header and then the global USER_AGENT setting."
+   },
+   {
+    "question": "How do you change the robots.txt parser?",
+    "answer": "The default parser is scrapy.robotstxt.ProtegoRobotParser. You can select another parser with ROBOTSTXT_PARSER, such as scrapy.robotstxt.PythonRobotParser.",
+    "followUp": "What behavior differs between parsers? Parser support for wildcards and length-based Allow or Disallow rules can differ."
+   }
+  ],
+  "keyPoints": [
+   "It prevents downloads that the site's robots.txt rules forbid.",
+   "Both the middleware and ROBOTSTXT_OBEY must be enabled for the policy to apply.",
+   "Scrapy includes Protego, RobotFileParser, and Robotexclusionrulesparser parser options.",
+   "Use ROBOTSTXT_USER_AGENT when robots.txt matching should use a specific user-agent value.",
+   "Downloader middleware order controls where this component sits in request and response processing."
+  ],
+  "gotchas": [
+   "A request can bypass this middleware when its meta dictionary contains dont_obey_robotstxt=True.",
+   "The middleware needs a compatible robots.txt parser. Scrapy uses Protego by default.",
+   "The setting reference lists False as the fallback default, but projects created with startproject enable it in settings.py."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "Rule": {
   "sourceUrl": "https://docs.scrapy.org/en/latest/topics/spiders.html",
   "sourceTitle": "Spiders — Scrapy 2.19.0 documentation",
@@ -705,6 +1675,336 @@
    "Do not copy the rule metadata key into requests created by another rule, because response dispatch can select the wrong callback."
   ],
   "checkedAt": "2026-10-15"
+ },
+ "scrapy crawl": {
+  "sourceUrl": "https://docs.scrapy.org/en/latest/topics/commands.html",
+  "sourceTitle": "Command line tool — Scrapy 2.19.0 documentation",
+  "summary": "scrapy crawl starts a named spider in a Scrapy project. You can pass arguments and write scraped items by appending to or overwriting an output file.",
+  "explanation": "The command runs a spider by its name from a Scrapy project. You can pass spider arguments with -a. Use -o to append items to a file or -O to replace the file. Add :FORMAT to an output path when you need a specific format.",
+  "syntax": "scrapy crawl <spider> [-a NAME=VALUE] [--output FILE[:FORMAT] | --overwrite-output FILE[:FORMAT]]",
+  "parameters": [
+   {
+    "name": "spider",
+    "type": "string",
+    "description": "Name of the spider to run."
+   },
+   {
+    "name": "-a NAME=VALUE",
+    "type": "option",
+    "description": "Spider attribute assignment. Repeat for multiple arguments."
+   },
+   {
+    "name": "-o FILE[:FORMAT]",
+    "type": "option",
+    "description": "Append scraped items to a file, or use - for standard output."
+   },
+   {
+    "name": "-O FILE[:FORMAT]",
+    "type": "option",
+    "description": "Overwrite a file with scraped items."
+   }
+  ],
+  "returns": "The command runs the crawl and writes scraped items to the selected output destination when an output option is used.",
+  "example": {
+   "title": "Run a spider with output and an argument",
+   "code": "scrapy crawl quotes -O quotes.json -a tag=humor",
+   "language": "bash",
+   "explanation": "Runs the quotes spider, overwrites quotes.json, and passes the spider argument tag=humor."
+  },
+  "useCases": [
+   {
+    "title": "Run a crawl",
+    "scenario": "Start a spider from a Scrapy project."
+   },
+   {
+    "title": "Configure a crawl",
+    "scenario": "Send a value such as a tag or category to the spider."
+   },
+   {
+    "title": "Export scraped items",
+    "scenario": "Save results for later processing."
+   }
+  ],
+  "related": [
+   "scrapy list",
+   "scrapy runspider",
+   "scrapy check",
+   "Feed exports",
+   "spider arguments"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you start a spider?",
+    "answer": "Use scrapy crawl followed by the spider name. The command must run inside a Scrapy project, and the named spider must be available to the project.",
+    "followUp": "How can you save the results? Use -o to append or -O to overwrite, and add :FORMAT to choose the output format."
+   },
+   {
+    "question": "How do you pass data to a spider from the command line?",
+    "answer": "Use -a NAME=VALUE. Scrapy passes the value to the spider and makes it available as a spider attribute by default.",
+    "followUp": "How would a spider handle an optional argument? Read it with getattr(self, \"name\", default) and choose a default when it is absent."
+   },
+   {
+    "question": "What is the difference between -o and -O?",
+    "answer": "The -o FILE option appends scraped items, while -O FILE replaces an existing file. A format can be selected with FILE:FORMAT.",
+    "followUp": "Why is JSON Lines often better for repeated appends? Each item is stored on its own line, so adding records does not create invalid JSON."
+   }
+  ],
+  "keyPoints": [
+   "Use scrapy crawl NAME to start the spider named NAME.",
+   "Run this command from a Scrapy project.",
+   "Use -a NAME=VALUE to pass a spider argument. You can repeat this option.",
+   "The -o option adds new items to the end of the selected file.",
+   "The -O option replaces the selected output file.",
+   "Choose an output format by writing it after a colon, such as output.csv:csv."
+  ],
+  "gotchas": [
+   "Do not use -o to append separate runs to a JSON file. Use JSON Lines when records must be appended.",
+   "The spider name must be registered in the project and appear in the output of scrapy list."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "scrapy genspider": {
+  "sourceUrl": "https://docs.scrapy.org/en/latest/topics/commands.html",
+  "sourceTitle": "Command line tool — Scrapy 2.19.0 documentation",
+  "summary": "`scrapy genspider` creates a new spider from a template. It needs a spider name and a domain or URL, and it can run without a Scrapy project.",
+  "explanation": "Run this command from a shell to create a spider file. Scrapy uses the given name and domain or URL, then applies the selected template. When run inside a project, it places the new spider in that project's spiders folder; otherwise, it uses the current folder.",
+  "syntax": "scrapy genspider [-t template] <name> <domain or URL>",
+  "parameters": [
+   {
+    "name": "template",
+    "type": "option",
+    "description": "Optional spider template to use."
+   },
+   {
+    "name": "name",
+    "type": "required argument",
+    "description": "Name for the new spider."
+   },
+   {
+    "name": "domain or URL",
+    "type": "required argument",
+    "description": "Domain or URL associated with the spider."
+   }
+  ],
+  "returns": "Creates a new spider file in the current folder or the current project's spiders folder.",
+  "example": {
+   "title": "Create a spider",
+   "code": "scrapy genspider -t basic quotes quotes.toscrape.com",
+   "language": "bash",
+   "explanation": "This creates a spider named `quotes` in the current folder or the project's spiders folder."
+  },
+  "useCases": [
+   {
+    "title": "Add a project spider",
+    "scenario": "Start a new spider in an existing Scrapy project."
+   },
+   {
+    "title": "Generate outside a project",
+    "scenario": "Create a spider file before setting up a full project."
+   },
+   {
+    "title": "Select a template",
+    "scenario": "Choose a different built-in spider template."
+   }
+  ],
+  "related": [
+   "scrapy startproject",
+   "scrapy crawl",
+   "scrapy -h"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does `scrapy genspider` do?",
+    "answer": "`scrapy genspider` creates a new spider. Its required arguments are the spider name and a domain or URL, and it can also accept a template option.",
+    "followUp": "Where does it write the spider? It uses the current folder outside a project, or the current project's spiders folder inside one."
+   },
+   {
+    "question": "What is the syntax of the command?",
+    "answer": "The command has the form `scrapy genspider [-t template] <name> <domain or URL>`. The template option selects the spider template.",
+    "followUp": "What happens if no project directory is available? The command can still run because it does not require a project."
+   },
+   {
+    "question": "Must this command run inside a Scrapy project?",
+    "answer": "The command does not require a project. Its behavior and output location depend on whether it is run inside a Scrapy project.",
+    "followUp": "How can you inspect command options? Run `scrapy genspider -h`; Scrapy documents this as the general help form for commands."
+   }
+  ],
+  "keyPoints": [
+   "The command accepts an optional template and requires a spider name plus a domain or URL.",
+   "You can run this command without an active Scrapy project.",
+   "Outside a project, the generated spider is created in the current folder.",
+   "Inside a project, Scrapy places the generated spider in the project's spiders folder.",
+   "The destination depends on whether the command is run from inside a project."
+  ],
+  "gotchas": [
+   "The output location changes depending on whether the command runs inside a Scrapy project.",
+   "This command does not require an active Scrapy project, but other commands do."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "scrapy shell": {
+  "sourceUrl": "https://docs.scrapy.org/en/latest/topics/shell.html",
+  "sourceTitle": "Scrapy shell — Scrapy 2.19.0 documentation",
+  "summary": "Scrapy shell is an interactive Python console for testing scraping code. It lets you fetch pages and try CSS or XPath selectors before running a spider.",
+  "explanation": "The command downloads a page and opens an interactive Python console. The shell adds objects such as response and request, plus shortcuts for fetching another URL or viewing the response. You can test CSS or XPath selectors and extract values before changing a spider.",
+  "syntax": "scrapy shell [url]\nfetch(url[, redirect=True])\nfetch(request)\nview(response)\nshelp()",
+  "parameters": [
+   {
+    "name": "url or request",
+    "type": "str or scrapy.Request",
+    "description": "URL or request to download; fetch() also accepts redirect=False to stop following HTTP 3xx redirects."
+   },
+   {
+    "name": "redirect",
+    "type": "bool",
+    "description": "Whether fetch() follows HTTP redirects. Defaults to True."
+   }
+  ],
+  "returns": "The shell creates or updates a Response object and related shell objects; selector methods return SelectorList or extracted values.",
+  "example": {
+   "title": "Test a selector",
+   "code": "scrapy shell 'https://quotes.toscrape.com/page/1/'\n>>> response.css('title::text').get()\n'Quotes to Scrape'\n>>> response.css('div.quote span.text::text').getall()",
+   "language": "bash",
+   "explanation": "This opens the shell, fetches the page, and tests a CSS selector for quote text."
+  },
+  "useCases": [
+   {
+    "title": "Test selectors",
+    "scenario": "You are writing a spider and need to check whether a CSS or XPath expression selects the intended content."
+   },
+   {
+    "title": "Inspect a response",
+    "scenario": "You want to inspect a page with Scrapy's downloader before adding code to a spider."
+   },
+   {
+    "title": "Work with a local file",
+    "scenario": "You have a saved HTML page and want to test extraction locally."
+   },
+   {
+    "title": "Fetch another page",
+    "scenario": "You need to compare responses from several URLs during debugging."
+   }
+  ],
+  "related": [
+   "shelp()",
+   "fetch()",
+   "view()",
+   "response",
+   "request",
+   "scrapy shell",
+   "Selector",
+   "XPath selectors"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you start the Scrapy shell?",
+    "answer": "Use `scrapy shell <url>` to open the shell with a downloaded page. You can also start it without a URL, and it supports explicit local file paths.",
+    "followUp": "How do you avoid following a redirect for the initial URL? Use the command option `--no-redirect`; inside the shell, `fetch(url)` follows redirects by default unless passed `redirect=False`."
+   },
+   {
+    "question": "How do you test and extract page data?",
+    "answer": "The shell provides `response`, which contains the last downloaded page. Use `response.css()` or `response.xpath()` to test selectors, then call methods such as `get()` or `getall()` to extract values.",
+    "followUp": "What happens after `fetch()`? It downloads the new target and updates related objects, including `response` and `request`."
+   },
+   {
+    "question": "Which built-in objects and shortcuts are available?",
+    "answer": "The shell creates objects including `crawler`, `spider`, `request`, `response`, and `settings`. Its shortcuts include `shelp()`, `fetch()`, and `view()`.",
+    "followUp": "How can the shell use a particular spider? Pass `--spider=SPIDER` to bypass automatic spider detection."
+   }
+  ],
+  "keyPoints": [
+   "Use it to test scraping code without running the spider.",
+   "Try XPath and CSS selectors interactively while building a spider.",
+   "fetch() loads another URL and refreshes the shell's related objects.",
+   "Pass redirect=False to fetch() when you need the redirect response itself.",
+   "Use view() to inspect a response in a browser.",
+   "The shell prepares useful page and Scrapy objects after downloading."
+  ],
+  "gotchas": [
+   "Quote command-line URLs, especially when they contain an ampersand.",
+   "Use ./ or ../ for relative local files; an unprefixed name may be treated as a domain.",
+   "view() creates a temporary browser file that Scrapy does not remove automatically."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "scrapy startproject": {
+  "sourceUrl": "https://docs.scrapy.org/en/latest/intro/tutorial.html?highlight=xpath",
+  "sourceTitle": "Scrapy Tutorial — Scrapy 2.19.0 documentation",
+  "summary": "`scrapy startproject` creates a new Scrapy project. It accepts a project name and an optional destination directory.",
+  "explanation": "The `scrapy startproject` command creates the files and directories for a new Scrapy project. Give it a project name and optionally a different destination directory. If you omit the destination, Scrapy uses a directory with the project name.",
+  "syntax": "scrapy startproject myproject [project_dir]",
+  "parameters": [
+   {
+    "name": "myproject",
+    "type": "string",
+    "description": "The name of the new Scrapy project."
+   },
+   {
+    "name": "project_dir",
+    "type": "string",
+    "description": "Optional directory where Scrapy creates the project."
+   }
+  ],
+  "returns": "Creates a new Scrapy project directory and its initial files.",
+  "example": {
+   "title": "Create a project and spider",
+   "code": "scrapy startproject quotes\ncd quotes\nscrapy genspider quotes quotes.toscrape.com",
+   "language": "bash",
+   "explanation": "Creates a project, enters its directory, and adds a spider."
+  },
+  "useCases": [
+   {
+    "title": "Create the initial project",
+    "scenario": "Starting a new crawler"
+   },
+   {
+    "title": "Put the project in a specific directory",
+    "scenario": "Choosing a workspace location"
+   },
+   {
+    "title": "Set up the Scrapy structure",
+    "scenario": "Preparing to add spiders"
+   }
+  ],
+  "related": [
+   "scrapy genspider",
+   "scrapy crawl",
+   "scrapy.cfg",
+   "Project-specific commands"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is the syntax of `scrapy startproject`?",
+    "answer": "Run `scrapy startproject myproject [project_dir]`. The first argument is the project name. The optional second argument chooses where the project files are created.",
+    "followUp": "What happens if the second argument is missing? Scrapy uses a directory with the same name as the project."
+   },
+   {
+    "question": "What does the command create?",
+    "answer": "It creates the initial project structure, including `scrapy.cfg`, a Python package, settings, middleware, pipeline, item, and spider directories. This gives later Scrapy commands a project to manage.",
+    "followUp": "Which command creates a spider after this? Run `scrapy genspider name domain` from inside the new project."
+   },
+   {
+    "question": "Where should the command be run, and what should happen next?",
+    "answer": "After creation, change into the new project directory before managing it. Commands such as `crawl` are project-specific and require an active Scrapy project.",
+    "followUp": "How can command-specific help be shown? Run `scrapy startproject -h`."
+   }
+  ],
+  "keyPoints": [
+   "Use this command to make the starting structure for a new Scrapy project.",
+   "The command takes a project name and an optional destination directory.",
+   "The project files are placed under the destination directory.",
+   "Change into the created directory before using project management commands.",
+   "The new directory is the normal working location for the Scrapy tool."
+  ],
+  "gotchas": [
+   "Do not assume every command works anywhere. Project-specific commands need to run inside the project directory.",
+   "When no destination is given, the command creates the project in a directory named after the project."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "Selector": {
   "sourceUrl": "https://docs.scrapy.org/en/latest/topics/selectors.html",

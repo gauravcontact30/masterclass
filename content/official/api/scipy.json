@@ -1876,6 +1876,114 @@
   ],
   "checkedAt": "2026-10-15"
  },
+ "interpolate.interp1d": {
+  "sourceUrl": "https://docs.scipy.org/doc/scipy/reference/generated/scipy.interpolate.interp1d.html",
+  "sourceTitle": "interp1d — SciPy v1.18.0 Manual",
+  "summary": "interp1d creates a callable object that estimates values between one-dimensional sample points. It supports several interpolation methods and optional handling of points outside the sample range.",
+  "explanation": "The constructor stores sample coordinates and values, then returns a callable interpolator. Calling that object estimates values at new coordinates using the selected method. By default, it uses linear interpolation along the last axis of y and does not extrapolate outside the x range.",
+  "syntax": "scipy.interpolate.interp1d(x, y, kind='linear', axis=-1, copy=True, bounds_error=None, fill_value=np.nan, assume_sorted=False)",
+  "parameters": [
+   {
+    "name": "x",
+    "type": "array_like",
+    "description": "One-dimensional array of real sample coordinates."
+   },
+   {
+    "name": "y",
+    "type": "array_like",
+    "description": "N-dimensional real data. Its length along axis must equal len(x)."
+   },
+   {
+    "name": "kind",
+    "type": "str or int",
+    "description": "Interpolation method name or integer spline order. Default: linear."
+   },
+   {
+    "name": "axis",
+    "type": "int",
+    "description": "Axis in y associated with x. Default: -1."
+   },
+   {
+    "name": "copy",
+    "type": "bool",
+    "description": "Copy x and y when true. Default: true."
+   },
+   {
+    "name": "bounds_error",
+    "type": "bool or None",
+    "description": "Raise ValueError outside x when true; otherwise use fill_value. Default: None."
+   },
+   {
+    "name": "fill_value",
+    "type": "array-like, pair of array-like, or string",
+    "description": "Value for out-of-range points, or extrapolate."
+   },
+   {
+    "name": "assume_sorted",
+    "type": "bool",
+    "description": "Sort x when false. When true, require increasing x. Default: false."
+   }
+  ],
+  "returns": "A callable interpolation object. Calling it with new x coordinates evaluates the interpolant.",
+  "example": {
+   "title": "Linear interpolation",
+   "code": "import numpy as np\nfrom scipy.interpolate import interp1d\n\nx = np.array([0, 1, 2])\ny = np.array([0, 10, 20])\nf = interp1d(x, y)\nprint(f([0.5, 1.5]))",
+   "language": "python",
+   "explanation": "This creates a linear interpolator and evaluates it at two new points."
+  },
+  "useCases": [
+   {
+    "title": "Fill gaps between samples",
+    "scenario": "Estimate values between measured samples, such as sensor readings or lookup-table entries."
+   },
+   {
+    "title": "Build a reusable callable",
+    "scenario": "Evaluate the same sampled relationship at many new coordinates."
+   },
+   {
+    "title": "Select an interpolation rule",
+    "scenario": "Choose linear, nearest, spline, previous, or next behavior for one-dimensional data."
+   }
+  ],
+  "related": [
+   "splrep",
+   "splev",
+   "UnivariateSpline",
+   "interp2d"
+  ],
+  "since": "0.17.0",
+  "interview": [
+   {
+    "question": "What does interp1d return?",
+    "answer": "interp1d takes one-dimensional x values and y values, then returns a callable object for estimating new values. The length of y on the interpolation axis must match the length of x.",
+    "followUp": "What happens if x is unsorted? With assume_sorted=False, SciPy sorts x first. With assume_sorted=True, x must already be monotonically increasing."
+   },
+   {
+    "question": "How can the interpolation method be selected?",
+    "answer": "The default kind is linear. Other documented choices include nearest, nearest-up, zero, slinear, quadratic, cubic, previous, and next; an integer can specify a spline order.",
+    "followUp": "How do nearest and nearest-up differ? At half-integer positions, nearest rounds down while nearest-up rounds up."
+   },
+   {
+    "question": "How are points outside the data range handled?",
+    "answer": "bounds_error=True raises ValueError for a requested point outside the x range. With bounds_error=False, out-of-range points use fill_value; fill_value=\"extrapolate\" estimates beyond the data range.",
+    "followUp": "What is the default behavior? Unless extrapolation is requested, an out-of-range request raises an error by default."
+   }
+  ],
+  "keyPoints": [
+   "The constructor returns a callable interpolator. Call it with new coordinates to get estimated values.",
+   "The selected y axis must have the same length as x.",
+   "Interpolation uses the last y axis by default. Set axis to use another axis.",
+   "kind accepts named methods such as linear, cubic, nearest, previous, and next, or an integer spline order.",
+   "When assume_sorted is false, x may be unordered and is sorted before interpolation.",
+   "copy controls whether the interpolator copies x and y. The default is true."
+  ],
+  "gotchas": [
+   "Do not use NaN values in x or y. The result is undefined.",
+   "Avoid duplicate values in x. The result can depend on the selected interpolation kind.",
+   "With assume_sorted=True, x must already be in increasing order."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "interpolate.RBFInterpolator": {
   "sourceUrl": "https://docs.scipy.org/doc/scipy-1.13.1/reference/generated/scipy.interpolate.RBFInterpolator.html",
   "sourceTitle": "scipy.interpolate.RBFInterpolator — SciPy v1.13.1 Manual",
@@ -5481,6 +5589,118 @@
   ],
   "gotchas": [],
   "checkedAt": "2026-10-15"
+ },
+ "scipy.integrate": {
+  "sourceUrl": "https://docs.scipy.org/doc/scipy//tutorial/integrate.html",
+  "sourceTitle": "Integration (scipy.integrate) — SciPy v1.18.0 Manual",
+  "summary": "SciPy's scipy.integrate package provides numerical tools for definite integrals, multiple integrals, sampled data, and ordinary differential equations. Use quad for one variable, nquad for many dimensions, and solve_ivp for first-order vector ODEs.",
+  "explanation": "Use quad for a one-variable definite integral. Pass a callable and the lower and upper limits. The function can also receive extra values through args. The returned pair contains the estimated integral and an estimated absolute error. Use dblquad, tplquad, or nquad for more dimensions, and solve_ivp for first-order ordinary differential equations.",
+  "syntax": "scipy.integrate.quad(func, a, b, args=())\nscipy.integrate.solve_ivp(fun, t_span, y0, ...)",
+  "parameters": [
+   {
+    "name": "func",
+    "type": "callable",
+    "description": "Callable function to integrate."
+   },
+   {
+    "name": "a",
+    "type": "float",
+    "description": "Lower integration limit."
+   },
+   {
+    "name": "b",
+    "type": "float",
+    "description": "Upper integration limit."
+   },
+   {
+    "name": "args",
+    "type": "tuple, optional",
+    "description": "Additional fixed arguments passed to func."
+   },
+   {
+    "name": "fun",
+    "type": "callable",
+    "description": "ODE derivative function."
+   },
+   {
+    "name": "t_span",
+    "type": "2-item sequence",
+    "description": "ODE time interval [t_start, t_end]."
+   },
+   {
+    "name": "y0",
+    "type": "array_like",
+    "description": "Initial state vector."
+   }
+  ],
+  "returns": "quad returns (integral, estimated_absolute_error). solve_ivp returns an object with time values in t and solution values in y.",
+  "example": {
+   "title": "Integrate a function with quad",
+   "code": "import numpy as np\nfrom scipy.integrate import quad\n\nvalue, error = quad(lambda x: x**2 + 1, 0, 1)\nprint(value)\nprint(error)",
+   "language": "python",
+   "explanation": "This integrates a function from 0 to 1. The result includes the estimated value and an absolute error estimate."
+  },
+  "useCases": [
+   {
+    "title": "One-dimensional integration",
+    "scenario": "You need the area under a callable function over a finite or infinite interval."
+   },
+   {
+    "title": "Multiple integration",
+    "scenario": "You need a double, triple, or higher-dimensional integral with constant or variable bounds."
+   },
+   {
+    "title": "Sampled-data integration",
+    "scenario": "You have values sampled on a grid and need a numerical integral."
+   },
+   {
+    "title": "Ordinary differential equations",
+    "scenario": "You need to solve a first-order vector ODE from initial conditions."
+   }
+  ],
+  "related": [
+   "quad",
+   "dblquad",
+   "tplquad",
+   "nquad",
+   "simpson",
+   "LowLevelCallable",
+   "solve_ivp"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does quad do and what does it return?",
+    "answer": "Use quad for a function of one variable between two limits. It returns the estimated integral and an absolute error estimate.",
+    "followUp": "How do you pass extra values? Define the callable with those parameters and pass them in args, such as args=(a, b)."
+   },
+   {
+    "question": "How should you choose among the multiple-integration functions?",
+    "answer": "Use dblquad or tplquad for two or three nested integrals. For more dimensions, use nquad. Inner limits can be functions of outer variables.",
+    "followUp": "What must match in an nquad call? The function argument order must match the order of the bounds, starting with the innermost integral."
+   },
+   {
+    "question": "How does solve_ivp represent and solve an ODE?",
+    "answer": "solve_ivp integrates a first-order vector ODE from an initial state over a time span. Its solution object stores time values in t and solution columns in y.",
+    "followUp": "How can a second-order ODE be used? Add intermediate derivatives to the state vector so the equation becomes first order."
+   }
+  ],
+  "keyPoints": [
+   "quad computes a definite integral for a one-variable callable over two limits.",
+   "Use positive or negative infinity as an integration limit when the interval is unbounded.",
+   "quad returns the estimated integral first and the estimated absolute error second.",
+   "Pass fixed parameters for the callable with the args argument.",
+   "dblquad and tplquad provide two-dimensional and three-dimensional integration helpers.",
+   "Use nquad for integration with an arbitrary number of nested dimensions.",
+   "Simpson's rule is exact for cubic-or-lower polynomials with an odd number of equally spaced samples.",
+   "solve_ivp integrates first-order vector ordinary differential equations from initial conditions."
+  ],
+  "gotchas": [
+   "Numerical integration cannot guarantee accurate results for every integrand and limit. Choose limits that closely cover the important part of the function.",
+   "If the integrand calls another numerical integration routine, its reported error can be too small.",
+   "For nquad, put bounds and function arguments in inner-to-outer order."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "scipy.linalg": {
   "sourceUrl": "https://docs.scipy.org/doc/scipy/reference/linalg.html",

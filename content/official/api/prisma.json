@@ -544,6 +544,84 @@
   ],
   "checkedAt": "2026-10-16"
  },
+ "@map": {
+  "sourceUrl": "https://www.prisma.io/docs/orm/v7/prisma-schema/data-model/database-mapping",
+  "sourceTitle": "Database mapping (Prisma ORM v7) | Prisma Documentation",
+  "summary": "Prisma mapping attributes connect friendly schema and Client names to existing database names. Use @map for fields and enum values, and @@map for models and enums.",
+  "explanation": "Use @map for a field or enum value, and @@map for a model, enum, or table name. Prisma Client then exposes the schema names while Prisma connects them to the existing database names. Index and constraint defaults use database entity names, even when schema names are mapped.",
+  "syntax": "fieldName Type @map(\"database_field\")\nmodel ModelName {\n  @@map(\"database_table\")\n}\nenum EnumName {\n  VALUE @map(\"database_value\")\n  @@map(\"database_enum\")\n}",
+  "parameters": [
+   {
+    "name": "databaseName",
+    "type": "string",
+    "description": "The database name of the mapped field or enum value."
+   },
+   {
+    "name": "databaseName",
+    "type": "string",
+    "description": "The database name of the mapped model or enum."
+   }
+  ],
+  "returns": "The mapping attributes change names used by Prisma Client without changing the mapped database entities.",
+  "example": {
+   "title": "Map Prisma names to database names",
+   "code": "model Comment {\n  content String @map(\"comment_text\")\n  email   String @map(\"commenter_email\")\n\n  @@map(\"comments\")\n}",
+   "language": "hcl",
+   "explanation": "Prisma Client uses Comment and content, while the database keeps comments, comment_text, and commenter_email."
+  },
+  "useCases": [
+   {
+    "title": "Keep a clean Client API",
+    "scenario": "An existing table uses plural or snake_case names, but application code should use singular PascalCase models."
+   },
+   {
+    "title": "Rename fields in the schema only",
+    "scenario": "A legacy column name is unclear or inconsistent with current code conventions."
+   },
+   {
+    "title": "Map enum identifiers",
+    "scenario": "Database enum names or values must stay unchanged while schema names improve."
+   }
+  ],
+  "related": [
+   "Prisma Schema",
+   "Models",
+   "Indexes",
+   "What is introspection?"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is the difference between @map and @@map?",
+    "answer": "Use @@map on a model to keep a different table name in the database. Use @map on a field to keep a different column name. These attributes separate Prisma Client naming from database naming.",
+    "followUp": "How are enum mappings handled? Use @@map for the database enum name and @map for an enum value. In Prisma ORM v7, generated TypeScript uses the mapped enum value."
+   },
+   {
+    "question": "How can you use Prisma names without renaming existing tables?",
+    "answer": "A model can use a singular PascalCase name such as Comment while @@map(\"comments\") points to the existing comments table. Client code uses prisma.comment, but the database table is unchanged.",
+    "followUp": "Can a field be mapped too? Yes. For example, content @map(\"comment_text\") makes content the Prisma field and comment_text the database column."
+   },
+   {
+    "question": "How does Prisma name indexes and constraints?",
+    "answer": "When no explicit names are supplied, Prisma generates names for primary keys, unique constraints, indexes, and foreign keys. The patterns use database table and column names, such as {tablename}_{column_names}_idx for a non-unique index.",
+    "followUp": "What happens during introspection? Names that follow Prisma's convention may be omitted from the schema, while nonconforming names are added."
+   }
+  ],
+  "keyPoints": [
+   "Mapping lets the generated Prisma Client use names that differ from the underlying database.",
+   "Use @@map on a model when its database table or collection has another name.",
+   "Use @map on a field when its database column has another name.",
+   "Enum values can use @map, and the enum itself can use @@map.",
+   "The default primary-key name follows the table-name pattern with the _pkey suffix.",
+   "A default non-unique index name combines the database table name, column names, and _idx."
+  ],
+  "gotchas": [
+   "For Prisma ORM v7, mapped enum values are represented by their mapped database values in generated TypeScript, not by the schema names.",
+   "Default index and constraint names are based on database table and column names, not only the names written in the Prisma schema.",
+   "Long generated index or constraint names can be shortened to fit the database's maximum identifier length."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "@relation": {
   "sourceUrl": "https://www.prisma.io/docs/orm/v7/reference/prisma-schema-reference",
   "sourceTitle": "Prisma Schema API (Prisma ORM v7)",
@@ -1614,6 +1692,80 @@
   ],
   "checkedAt": "2026-10-16"
  },
+ "AND": {
+  "sourceUrl": "https://www.prisma.io/docs/orm",
+  "sourceTitle": "What is Prisma ORM? | Prisma Documentation",
+  "summary": "Prisma ORM is a typed data layer for TypeScript. Define models in a contract, then use generated queries and migrations to work with supported databases.",
+  "explanation": "Prisma ORM is a typed data layer for TypeScript applications. You define models in a contract, then use the generated database object for typed queries and migrations against supported databases.",
+  "syntax": "const rows = await db.orm.public.User.include(\"posts\").all();",
+  "parameters": [],
+  "returns": "Typed query results based on the data contract.",
+  "example": {
+   "title": "Read users with posts",
+   "code": "import { db } from \"./src/prisma/db\";\n\nconst users = await db.orm.public.User.include(\"posts\").all();\nconsole.dir(users, { depth: null });\nawait db.close();",
+   "language": "typescript",
+   "explanation": "This query reads all users and includes their related posts. The generated database object provides the types."
+  },
+  "useCases": [
+   {
+    "title": "Build typed database access",
+    "scenario": "A TypeScript app needs database reads and writes with compile-time types."
+   },
+   {
+    "title": "Query relations",
+    "scenario": "An application must load records and their related data together."
+   },
+   {
+    "title": "Manage migrations",
+    "scenario": "A team changes its data model and needs controlled database changes."
+   },
+   {
+    "title": "Run transactions",
+    "scenario": "Several writes must be treated as one operation."
+   }
+  ],
+  "related": [
+   "Prisma Client",
+   "Prisma Schema",
+   "Prisma Migrate",
+   "Prisma CLI",
+   "Prisma Postgres",
+   "Prisma Compute"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is Prisma ORM?",
+    "answer": "Prisma ORM is a typed data layer for TypeScript. It uses a contract to define models and provides typed queries and migrations for supported databases.",
+    "followUp": "What replaces schema.prisma in ORM 8? The contract replaces it, and contract emit generates the files needed by the application."
+   },
+   {
+    "question": "How do you query related records?",
+    "answer": "Use the generated db object to query models. For example, db.orm.public.User.include(\"posts\").all() reads users and related posts in the public PostgreSQL schema.",
+    "followUp": "How do you make the result type-safe? The result fields are typed from the contract, including fields on related posts."
+   },
+   {
+    "question": "What command follows a contract change?",
+    "answer": "After changing the contract, run npx prisma contract emit. To plan and apply database changes, use the migration commands described by the current ORM documentation instead of the older Prisma 7 workflow.",
+    "followUp": "What changed from Prisma ORM 7? ORM 8 changes the contract, generated client, query shape, and migration workflow."
+   }
+  ],
+  "keyPoints": [
+   "It gives TypeScript applications a typed way to read and write database data.",
+   "The contract contains the application's data models.",
+   "Query results receive types from the contract, including fields in related records.",
+   "Use db.orm to access typed queries for the models.",
+   "The include operation lets one query load related records.",
+   "Transactions group multiple writes so they succeed or fail as one operation.",
+   "Run contract emit after editing the contract to regenerate the ORM files."
+  ],
+  "gotchas": [
+   "Prisma ORM 8 is not a final release yet.",
+   "ORM 8 does not use the @prisma/client package. Import the generated db object instead.",
+   "MongoDB support is early access and does not include every PostgreSQL feature."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "contains": {
   "sourceUrl": "https://docs.prisma.io/docs/orm/reference/prisma-client-reference",
   "sourceTitle": "Prisma Client API",
@@ -1904,6 +2056,105 @@
   ],
   "checkedAt": "2026-10-16"
  },
+ "createManyAndReturn": {
+  "sourceUrl": "https://www.prisma.io/docs/orm/v6/prisma-client/queries/crud",
+  "sourceTitle": "CRUD (Reference) (Prisma ORM v6)",
+  "summary": "createManyAndReturn() inserts multiple records and returns the created objects. It supports field selection, omission, relation loading, and duplicate skipping on supported databases.",
+  "explanation": "Call createManyAndReturn() with a data array to insert several records and receive the created objects. Use select, omit, or include to control the returned fields. The query is available for PostgreSQL, CockroachDB, and SQLite.",
+  "syntax": "prisma.<model>.createManyAndReturn({ data, select?, omit?, include?, skipDuplicates? })",
+  "parameters": [
+   {
+    "name": "data",
+    "type": "Enumerable<UserCreateManyInput>",
+    "description": "Records to insert. Each item uses the model's create-many input type."
+   },
+   {
+    "name": "select",
+    "type": "XOR<UserSelect, null>",
+    "description": "Fields to include in each returned object."
+   },
+   {
+    "name": "omit",
+    "type": "XOR<UserOmit, null>",
+    "description": "Fields to exclude from each returned object."
+   },
+   {
+    "name": "include",
+    "type": "XOR<UserInclude, null>",
+    "description": "Relations to load in each returned object."
+   },
+   {
+    "name": "skipDuplicates?",
+    "type": "boolean",
+    "description": "Skip rows with duplicate unique or ID values when supported."
+   }
+  ],
+  "returns": "A JavaScript array of typed model objects, such as User[].",
+  "example": {
+   "title": "Create and return records",
+   "code": "const users = await prisma.user.createManyAndReturn({\n  data: [\n    { name: \"Alice\", email: \"alice@prisma.io\" },\n    { name: \"Bob\", email: \"bob@prisma.io\" },\n  ],\n  select: { id: true, email: true },\n});\n\nconsole.log(users);",
+   "language": "typescript",
+   "explanation": "This creates two users and returns only their IDs and email addresses."
+  },
+  "useCases": [
+   {
+    "title": "Batch insert with results",
+    "scenario": "Insert several independent records and immediately use their generated IDs or other returned fields."
+   },
+   {
+    "title": "Limit returned fields",
+    "scenario": "Return a small payload after inserting records by using select."
+   },
+   {
+    "title": "Return related data",
+    "scenario": "Load selected relations after the records are created by using include."
+   }
+  ],
+  "related": [
+   "createMany()",
+   "create()",
+   "update()",
+   "select",
+   "omit",
+   "include",
+   "skipDuplicates",
+   "relationLoadStrategy"
+  ],
+  "since": "5.14.0",
+  "interview": [
+   {
+    "question": "What does createManyAndReturn() do?",
+    "answer": "createManyAndReturn() inserts multiple records and returns the resulting objects. It supports select, omit, and include to control the returned data.",
+    "followUp": "Which databases support it? Prisma documents support for PostgreSQL, CockroachDB, and SQLite."
+   },
+   {
+    "question": "What are the main options?",
+    "answer": "The data argument contains an array of UserCreateManyInput values. Optional select, omit, include, and skipDuplicates arguments change the result or insert behavior.",
+    "followUp": "Which field controls duplicate handling? skipDuplicates skips rows that conflict with unique or ID fields when the database supports the needed conflict operation."
+   },
+   {
+    "question": "What limitations should callers handle?",
+    "answer": "The returned array order is not guaranteed. Also, nested relation writes are not allowed inside a top-level createManyAndReturn() call.",
+    "followUp": "How can related records be written? Use a supported nested write in create() or update(), or use separate operations suited to the relation."
+   }
+  ],
+  "keyPoints": [
+   "The method is available from Prisma ORM 5.14.0 for PostgreSQL, CockroachDB, and SQLite.",
+   "It combines a batch insert with a returned array of created records.",
+   "The required data value is an array of model create-many input objects.",
+   "select lets you return only chosen scalar fields.",
+   "omit removes selected fields from each returned object.",
+   "include loads selected relations on the returned records.",
+   "skipDuplicates can ignore conflicting unique or ID values when supported."
+  ],
+  "gotchas": [
+   "Do not depend on the returned array having the same order as the input data.",
+   "Relations cannot be created or connected inside this top-level query.",
+   "The join relation loading strategy cannot be used with createManyAndReturn().",
+   "skipDuplicates is not supported by MongoDB or SQL Server."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "cursor": {
   "sourceUrl": "https://docs.prisma.io/docs/v6/orm/prisma-client/queries/pagination",
   "sourceTitle": "Pagination",
@@ -1991,6 +2242,152 @@
   ],
   "checkedAt": "2026-10-16"
  },
+ "data": {
+  "sourceUrl": "https://www.prisma.io/docs/orm/v6",
+  "sourceTitle": "ORM (Prisma ORM v6) | Prisma Documentation",
+  "summary": "Prisma ORM is a Node.js and TypeScript ORM. It provides a data model, automated migrations, type-safe database access, and editor auto-completion.",
+  "explanation": "You define models in a Prisma schema. Prisma uses that model definition to provide a typed database client and migration tools. The client can read, create, update, delete, filter, sort, paginate, and load related records. Migrations apply database structure changes over time.",
+  "syntax": "new PrismaClient();",
+  "parameters": [],
+  "returns": "A typed database client and migration workflow for applications built with Node.js and TypeScript.",
+  "example": {
+   "title": "Read records with Prisma Client",
+   "code": "import { PrismaClient } from \"@prisma/client\";\n\nconst prisma = new PrismaClient();\n\nconst users = await prisma.user.findMany({\n  where: { email: { contains: \"@example.com\" } },\n  orderBy: { id: \"asc\" }\n});\n\nconsole.log(users);\nawait prisma.$disconnect();",
+   "language": "typescript",
+   "explanation": "This creates a typed Prisma Client and reads matching users from the database."
+  },
+  "useCases": [
+   {
+    "title": "Database access",
+    "scenario": "Build a TypeScript server that reads and writes application records."
+   },
+   {
+    "title": "Database migrations",
+    "scenario": "Change tables as an application grows while keeping changes tracked."
+   },
+   {
+    "title": "Structured queries",
+    "scenario": "Load records with filters, sorting, pagination, or related data."
+   }
+  ],
+  "related": [
+   "Prisma Client",
+   "Prisma Schema",
+   "Prisma Migrate",
+   "Prisma Studio"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is Prisma ORM?",
+    "answer": "Prisma ORM is a Node.js and TypeScript ORM. It provides a data model, automated migrations, type safety, and editor auto-completion. Applications use Prisma Client to access database data.",
+    "followUp": "How does Prisma help when the data model changes? Define the new model shape, create a migration, review it, and apply it to the database."
+   },
+   {
+    "question": "How does Prisma provide type safety?",
+    "answer": "The schema defines models, fields, and relationships. Prisma uses it to generate a typed client that matches the data model, so many query mistakes can be found while writing TypeScript.",
+    "followUp": "What happens if the database already exists? Introspect the existing tables and use the result as the starting model."
+   },
+   {
+    "question": "What problem does Prisma Migrate solve?",
+    "answer": "Prisma Migrate tracks changes to the database structure. After changing the schema, generate a migration, review it, and apply it so the database matches the model.",
+    "followUp": "Why review a migration before applying it? A migration can change or remove database structures, so reviewing it helps catch unsafe changes."
+   }
+  ],
+  "keyPoints": [
+   "Prisma ORM is an ORM for Node.js and TypeScript. It lets an application work with database data through models instead of writing every query by hand.",
+   "It includes tools for database migrations, compile-time type checking, and editor completion.",
+   "Prisma Client is the generated, type-safe API that application code uses to query the database.",
+   "The Prisma schema describes the application's data model, including its models and relationships.",
+   "Queries can retrieve records and can filter, sort, and paginate the results.",
+   "Related records can be loaded in the same query with the include option."
+  ],
+  "gotchas": [
+   "The current documentation describes Prisma ORM 8 as a release candidate, so it is not a final release.",
+   "The current Prisma ORM 8 documentation does not yet list MySQL, SQL Server, or CockroachDB as supported databases."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "datasource": {
+  "sourceUrl": "https://www.prisma.io/docs/orm/v6/prisma-schema/overview/data-sources",
+  "sourceTitle": "Data sources (Reference) (Prisma ORM v6) | Prisma Documentation",
+  "summary": "A Prisma data source tells Prisma ORM how to connect to a database. In Prisma ORM v6, define one datasource block with a provider and connection URL in the schema.",
+  "explanation": "A data source tells Prisma ORM how to connect to a database. In Prisma ORM v6, define it with a datasource block that names a provider and usually includes a connection URL; a schema can contain only one data source.",
+  "syntax": "datasource <name> {\n  provider = \"<provider>\"\n  url      = \"<connection-url>\"\n}",
+  "parameters": [
+   {
+    "name": "provider",
+    "type": "string",
+    "description": "The database connector, such as postgresql."
+   },
+   {
+    "name": "url",
+    "type": "string",
+    "description": "The database connection string."
+   }
+  ],
+  "returns": "",
+  "example": {
+   "title": "PostgreSQL data source",
+   "code": "datasource db {\n  provider = \"postgresql\"\n  url      = \"postgresql://johndoe:mypassword@localhost:5432/mydb?schema=public\"\n}",
+   "language": "text",
+   "explanation": "This declares one PostgreSQL data source and gives Prisma the database connection URL."
+  },
+  "useCases": [
+   {
+    "title": "Database connection",
+    "scenario": "Connect Prisma ORM to a PostgreSQL database."
+   },
+   {
+    "title": "Shadow database",
+    "scenario": "Use a separate database while Prisma Migrate develops and checks migrations."
+   },
+   {
+    "title": "SSL/TLS connection",
+    "scenario": "Protect a database connection with provider-specific certificates and encryption settings."
+   }
+  ],
+  "related": [
+   "Prisma schema",
+   "Prisma Client",
+   "Prisma Migrate",
+   "shadow database",
+   "SSL/TLS"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is a Prisma data source?",
+    "answer": "A data source is the datasource block in a Prisma schema. It specifies how Prisma connects to a database, including the provider and connection URL.",
+    "followUp": "How many data sources can one Prisma schema have? Only one, although the client URL and the migration shadow database URL can be overridden separately."
+   },
+   {
+    "question": "How do you configure a PostgreSQL data source?",
+    "answer": "In Prisma ORM v6, set provider to the database type and url to the connection string. For example, PostgreSQL uses provider = \"postgresql\".",
+    "followUp": "What changed in Prisma ORM v7? The url, directUrl, and shadowDatabaseUrl fields moved out of the schema and are configured in Prisma Config."
+   },
+   {
+    "question": "How can a data source use a secure connection?",
+    "answer": "Some providers support SSL or TLS settings in the connection URL. These settings can include certificate locations and other security parameters.",
+    "followUp": "Where should a relative certificate path point? It is resolved from ./prisma, or from ./prisma/schema for a multi-file schema."
+   }
+  ],
+  "keyPoints": [
+   "A data source supplies Prisma with database connection settings.",
+   "The datasource block controls the connection method.",
+   "Write the data source inside a datasource block.",
+   "A PostgreSQL configuration uses the postgresql provider and a URL.",
+   "You can replace the configured URL when creating PrismaClient.",
+   "Prisma Migrate can use a separate shadow database URL for cloud-hosted development databases.",
+   "Supported providers can be configured to use encrypted SSL or TLS connections."
+  ],
+  "gotchas": [
+   "A Prisma schema cannot define multiple data sources.",
+   "Do not use the old provider array form.",
+   "Certificate paths are resolved from ./prisma; multi-file schemas use ./prisma/schema instead."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "Decimal": {
   "sourceUrl": "https://www.prisma.io/docs/orm/v7/prisma-client/special-fields-and-types",
   "sourceTitle": "Fields & types (Prisma ORM v7)",
@@ -2049,6 +2446,88 @@
    "Decimal fields are not currently supported when the Prisma datasource uses MongoDB."
   ],
   "checkedAt": "2026-10-16"
+ },
+ "delete": {
+  "sourceUrl": "https://www.prisma.io/docs/orm/reference/orm-client",
+  "sourceTitle": "Prisma ORM client reference | Prisma Documentation",
+  "summary": "delete() removes one row that matches a preceding where() filter. It returns the deleted row, or null when no row matches.",
+  "explanation": "Call delete() after where() to remove one matching row. The method returns the removed row, or null when no row matches. PostgreSQL can apply ordering and other row-selection refinements to choose which row is deleted.",
+  "syntax": "collection.where(filter).delete()",
+  "parameters": [
+   {
+    "name": "where",
+    "type": "filter object",
+    "description": "The filter that identifies rows to consider. Call where() before delete()."
+   },
+   {
+    "name": "select",
+    "type": "field names",
+    "description": "Optional selected scalar fields returned from the deleted row."
+   },
+   {
+    "name": "include",
+    "type": "relation names",
+    "description": "Optional related records returned with the deleted row."
+   }
+  ],
+  "returns": "The deleted row, or null when no row matches.",
+  "example": {
+   "title": "Delete one matching row",
+   "code": "const removed = await db.orm.public.User\n  .where({ email: \"alice@example.com\" })\n  .delete();\n\nconsole.log(removed);",
+   "language": "typescript",
+   "explanation": "This removes the matching user and returns the deleted row, or null if no row matches."
+  },
+  "useCases": [
+   {
+    "title": "Delete one record",
+    "scenario": "Remove one known record after checking its identifier or another filter."
+   },
+   {
+    "title": "Delete with a smaller result",
+    "scenario": "Return only chosen fields from the removed record."
+   },
+   {
+    "title": "Delete with relations",
+    "scenario": "Return related records together with the removed record."
+   }
+  ],
+  "related": [
+   "where()",
+   "first()",
+   "deleteAll()",
+   "deleteAndCount()",
+   "select()",
+   "include()"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does delete() return?",
+    "answer": "delete() removes one row selected by the preceding where() filter. It returns the deleted row, or null when no row matches.",
+    "followUp": "How do you remove several rows? Use deleteAll() with a filter; it returns the number of deleted rows."
+   },
+   {
+    "question": "Why must delete() follow where()?",
+    "answer": "The query must include where() first. PostgreSQL checks this at compile time, while MongoDB checks at runtime and reports ORM.WHERE_MISSING.",
+    "followUp": "Why is this required? It prevents an accidental unfiltered delete that could remove an unpredictable row or every row."
+   },
+   {
+    "question": "How does PostgreSQL choose the row to delete?",
+    "answer": "On PostgreSQL, delete() can use query refinements before deletion, so it removes the row that first() would select. If no row matches, it returns null.",
+    "followUp": "What happens with limit(0)? No row is selected, so delete() removes nothing and returns null."
+   }
+  ],
+  "keyPoints": [
+   "delete() removes one matching row and returns that row. It returns null when no row matches.",
+   "The method works with PostgreSQL and MongoDB.",
+   "MongoDB checks that delete() has a filter and throws ORM.WHERE_MISSING when it does not.",
+   "On PostgreSQL, ordering and other supported refinements can decide which matching row is deleted."
+  ],
+  "gotchas": [
+   "A filter is required before delete(). Without one, PostgreSQL does not compile the query, and MongoDB throws an error.",
+   "On PostgreSQL, delete() removes the same row that first() would return after supported ordering, offset, cursor, or distinct refinements."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "deleteMany": {
   "sourceUrl": "https://www.prisma.io/docs/orm/v7/reference/prisma-client-reference#deletemany",
@@ -2118,6 +2597,90 @@
    "When combining dependent bulk deletions in `$transaction`, arrange them in an order that satisfies the relation constraints; dependent records may need deletion first."
   ],
   "checkedAt": "2026-10-16"
+ },
+ "distinct": {
+  "sourceUrl": "https://www.prisma.io/docs/orm/v7/reference/prisma-client-reference",
+  "sourceTitle": "Prisma Client API (Prisma ORM v7)",
+  "summary": "Use Prisma Client's `distinct` option to remove duplicate records by one or more fields. Combine it with `where` to filter records and `select` to control the returned fields.",
+  "explanation": "Use `distinct` with `findMany` or `findFirst` to remove duplicate records based on one or more fields. Add `where` to filter first, and `select` to control the fields in each returned object.",
+  "syntax": "await prisma.user.findMany({ distinct: [\"city\", \"country\"] })",
+  "parameters": [
+   {
+    "name": "where",
+    "type": "UserWhereInput",
+    "description": "Filters records before distinct processing."
+   },
+   {
+    "name": "select",
+    "type": "XOR<UserSelect, null>",
+    "description": "Chooses the fields and relations returned."
+   },
+   {
+    "name": "distinct",
+    "type": "Enumerable<UserDistinctFieldEnum>",
+    "description": "Lists fields used to remove duplicate rows."
+   }
+  ],
+  "returns": "A JavaScript array of typed model objects, such as `User[]`; an empty array is returned when no records match.",
+  "example": {
+   "title": "Select unique field combinations",
+   "code": "const cities = await prisma.user.findMany({\n  select: { city: true, country: true },\n  distinct: [\"city\", \"country\"],\n});",
+   "language": "typescript",
+   "explanation": "This returns one row for each unique city and country combination."
+  },
+  "useCases": [
+   {
+    "title": "Remove duplicates from a field",
+    "scenario": "Build a list of unique cities or categories."
+   },
+   {
+    "title": "Deduplicate combinations",
+    "scenario": "Return one row for each unique pair of values."
+   },
+   {
+    "title": "Filter before deduplicating",
+    "scenario": "Limit uniqueness to records matching a condition."
+   }
+  ],
+  "related": [
+   "findMany",
+   "findFirst",
+   "select",
+   "where",
+   "nativeDistinct",
+   "UserDistinctFieldEnum"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does Prisma Client's `distinct` option do?",
+    "answer": "`distinct` removes duplicate results using the fields listed in its array. For example, `distinct: [\"city\", \"country\"]` keeps one result for each city-and-country combination.",
+    "followUp": "How would you filter the source rows first? Add a `where` object alongside `distinct`; only matching rows are considered."
+   },
+   {
+    "question": "How do you select distinct values from selected fields?",
+    "answer": "Use `select` to return only the fields needed, such as `city` and `country`. The distinct fields can be selected together with other query options.",
+    "followUp": "Can you filter while selecting distinct values? Yes. Put the filter in `where`, projection in `select`, and fields in `distinct`."
+   },
+   {
+    "question": "What is `nativeDistinct`, and what is its trade-off?",
+    "answer": "The `nativeDistinct` preview feature pushes distinct processing to the database when supported. This can improve performance, but provider support and behavior vary.",
+    "followUp": "What should you check before enabling it? Test the field combinations on the target database provider because support is not uniform."
+   }
+  ],
+  "keyPoints": [
+   "Use `distinct` with `findMany` or `findFirst` to deduplicate returned records.",
+   "A single field in the `distinct` array removes duplicates based on that field.",
+   "List multiple fields to keep one result for each unique combination of their values.",
+   "Combine `where` with `distinct` when uniqueness should apply only to filtered records.",
+   "Use `select` to limit the properties included in each distinct result.",
+   "The `nativeDistinct` preview feature moves distinct processing to the database layer where supported."
+  ],
+  "gotchas": [
+   "Native database-level distinct behavior may not support every field combination.",
+   "Results or support can vary between database providers."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "driverAdapters": {
   "sourceUrl": "https://www.prisma.io/docs/orm/v6/overview/databases/database-drivers",
@@ -2261,6 +2824,219 @@
   ],
   "gotchas": [],
   "checkedAt": "2026-10-16"
+ },
+ "enum": {
+  "sourceUrl": "https://www.prisma.io/docs/orm/data-modeling",
+  "sourceTitle": "Data modeling in Prisma ORM | Prisma Documentation",
+  "summary": "Prisma enums define a fixed set of allowed values. Model fields can use an enum type instead of an unrestricted scalar.",
+  "explanation": "An enum defines a fixed set of allowed values. A model field can use that enum type, and `@default(...)` can choose one enum member for new records.",
+  "syntax": "enum Name {\n  MEMBER\n  OTHER = \"stored-value\"\n}\n\nmodel Model {\n  field Name\n}",
+  "parameters": [
+   {
+    "name": "EnumName",
+    "type": "identifier",
+    "description": "The enum name identifies the set of allowed values and is used as a field type."
+   },
+   {
+    "name": "Member",
+    "type": "identifier or assigned value",
+    "description": "A member is one permitted value in the enum."
+   }
+  ],
+  "returns": "A named enum type that model fields can use to restrict their values.",
+  "example": {
+   "title": "Declare and use an enum",
+   "code": "enum Role {\n  USER\n  ADMIN\n}\n\nmodel User {\n  id   Int  @id @default(autoincrement())\n  role Role @default(USER)\n}",
+   "language": "hcl",
+   "explanation": "The `role` field accepts only the values declared in `Role`. New users use `USER` unless another value is supplied."
+  },
+  "useCases": [
+   {
+    "title": "Model a status",
+    "scenario": "A record has a status such as draft, published, or archived."
+   },
+   {
+    "title": "Restrict roles",
+    "scenario": "A field must use one of a small, stable set of roles."
+   },
+   {
+    "title": "Map values to text",
+    "scenario": "The database must store readable text values for fixed choices."
+   }
+  ],
+  "related": [
+   "Scalar fields",
+   "Data model definition",
+   "Supported databases",
+   "Default values"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is an enum in Prisma?",
+    "answer": "An enum is a named set of allowed values in the Prisma schema. A field can use the enum type instead of a general string or number, which makes the allowed values explicit.",
+    "followUp": "How can enum values be stored as text? Define a database type with `@@type`, such as `@@type(\"pg/text@1\")`, and assign string values to the members."
+   },
+   {
+    "question": "How do you use an enum in a model?",
+    "answer": "Declare the members inside an `enum` block. Use the enum name as a model field type, and optionally set a member with `@default(...)`.",
+    "followUp": "What happens if a field needs several enum values? Use a list field such as `roles Role[]` when the schema and database design require multiple values."
+   },
+   {
+    "question": "How does Prisma choose enum storage?",
+    "answer": "Prisma can infer storage when `@@type` is omitted. String members use text storage, while whole-number members use integer storage.",
+    "followUp": "How do you control storage explicitly? Add `@@type` with the database type and its version, such as `@@type(\"pg/text@1\")`."
+   }
+  ],
+  "keyPoints": [
+   "Create an enum with the `enum` keyword, followed by a name and its allowed members.",
+   "Enum members may have explicit stored values, such as `Low = \"low\"`.",
+   "Leaving out `@@type` lets Prisma infer the storage representation from the member values.",
+   "String-valued enums use text storage by inference; whole-number enums use integer storage.",
+   "For MongoDB, use the MongoDB enum storage declaration when explicit storage typing is needed."
+  ],
+  "gotchas": [
+   "An enum restricts a field to the members declared in its enum block. Add members when the allowed set changes, then update the database schema as needed."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "equals": {
+  "sourceUrl": "https://www.prisma.io/docs/orm/v7/reference/prisma-client-reference",
+  "sourceTitle": "Prisma Client API (Prisma ORM v7) | Prisma Documentation",
+  "summary": "`findUnique()` retrieves one record by an ID or unique field. It returns the record or `null` when no matching record exists.",
+  "explanation": "Use `findUnique()` to retrieve one record by an ID or another unique field. Put the lookup value in `where`; use `select`, `include`, or `omit` to control the returned fields. The result is the record or `null` when no record matches.",
+  "syntax": "prisma.<model>.findUnique({ where, select?, include?, omit?, relationLoadStrategy? })",
+  "parameters": [
+   {
+    "name": "options",
+    "type": "UserFindUniqueArgs",
+    "description": "Unique selector and optional result-shaping and relation-loading options."
+   }
+  ],
+  "returns": "A typed User object, a plain object shaped by the query options, or null when no record is found.",
+  "example": {
+   "title": "Find a user by a unique field",
+   "code": "const user = await prisma.user.findUnique({\n  where: { email: \"alice@prisma.io\" },\n});\n\nconsole.log(user);",
+   "language": "typescript",
+   "explanation": "This asks Prisma Client for one User whose unique email matches the value."
+  },
+  "useCases": [
+   {
+    "title": "Find by ID",
+    "scenario": "Load one user by ID before showing a profile page."
+   },
+   {
+    "title": "Find by a unique field",
+    "scenario": "Look up an account by its unique email address."
+   },
+   {
+    "title": "Shape the result",
+    "scenario": "Read a record and selected related data in one query."
+   }
+  ],
+  "related": [
+   "findUniqueOrThrow()",
+   "findFirst()",
+   "findMany()",
+   "select",
+   "include",
+   "omit",
+   "relationLoadStrategy"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does `findUnique()` do?",
+    "answer": "`findUnique()` returns one matching record or `null`. It uses `where` with an ID or unique attribute, and `select`, `include`, or `omit` controls the result shape.",
+    "followUp": "How should code handle a missing record? Use `findUniqueOrThrow()` if absence should be an error; otherwise, check for `null`."
+   },
+   {
+    "question": "What belongs in `where`?",
+    "answer": "The required `where` value is a `UserWhereUniqueInput` for the model. It can contain an ID, a unique field, or a compound unique key.",
+    "followUp": "How do compound unique keys work? Reference the generated compound key object and provide each field in that key."
+   },
+   {
+    "question": "How can the returned data be shaped?",
+    "answer": "`select` chooses fields, `include` loads relations, and `omit` excludes fields. These options determine which properties appear in the returned object.",
+    "followUp": "How can relation loading be configured? Use `relationLoadStrategy` with `join` or `query` when the `relationJoins` preview feature is enabled."
+   }
+  ],
+  "keyPoints": [
+   "Use `findUnique()` for one record selected by its ID or a unique field.",
+   "Prisma Client can batch compatible `findUnique()` calls automatically.",
+   "Choose returned fields with `select`; load related records with `include`. `omit` can exclude fields.",
+   "Relation loading defaults to `join`. The `relationLoadStrategy` option needs the `relationJoins` preview feature."
+  ],
+  "gotchas": [
+   "`findUnique()` returns `null` when no record exists. Use `findUniqueOrThrow()` when a missing record should raise an error.",
+   "JSON fields do not support the usual filter operators in this query."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "every": {
+  "sourceUrl": "https://www.prisma.io/docs/orm",
+  "sourceTitle": "What is Prisma ORM?",
+  "summary": "Prisma ORM is a typed data layer for TypeScript applications. It defines data models and provides type-safe queries, migrations, and relation loading.",
+  "explanation": "Prisma ORM is a typed data layer for TypeScript applications. You define models and their relationships in a Prisma schema, then Prisma Client provides typed database queries, migrations change the database structure, and editor completion helps you write valid code.",
+  "syntax": "npx prisma generate",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Read related records",
+   "code": "import { PrismaClient } from \"@prisma/client\";\n\nconst prisma = new PrismaClient();\n\nconst users = await prisma.user.findMany({\n  include: { posts: true }\n});\n\nconsole.dir(users, { depth: null });\nawait prisma.$disconnect();",
+   "language": "typescript",
+   "explanation": "This creates a Prisma Client, reads users with their related posts, prints the result, and closes the database connection."
+  },
+  "useCases": [
+   {
+    "title": "Application data access",
+    "scenario": "Build a TypeScript application that reads and writes relational data."
+   },
+   {
+    "title": "Database migrations",
+    "scenario": "Keep database structure changes in a repeatable migration history."
+   },
+   {
+    "title": "Relation queries",
+    "scenario": "Fetch records together with their related records."
+   }
+  ],
+  "related": [
+   "Prisma Client",
+   "Prisma Schema",
+   "Prisma Migrate",
+   "Transactions",
+   "Supported databases"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is Prisma ORM?",
+    "answer": "Prisma ORM is a Node.js and TypeScript ORM. It provides a data model, automated migrations, type-safe queries, and editor auto-completion.",
+    "followUp": "How does Prisma keep queries typed? The generated client uses the declared model fields and relations to type query inputs and results."
+   },
+   {
+    "question": "What is the purpose of the Prisma schema?",
+    "answer": "The Prisma schema describes models, fields, and relationships. Prisma uses that description to provide database queries and migration support.",
+    "followUp": "What happens after changing the schema? Generate the client again, then create and apply a migration when the database structure must change."
+   },
+   {
+    "question": "How do you query related records?",
+    "answer": "Prisma Client reads and writes database records with typed methods. It can also load related records in the same query by using include.",
+    "followUp": "How can one query return related data? Add an include option for the relation, such as include: { posts: true }."
+   }
+  ],
+  "keyPoints": [
+   "Prisma ORM is designed for Node.js and TypeScript applications.",
+   "Its main features include a data model, migrations, type-safe queries, and editor completion.",
+   "You describe database models, fields, and relationships in the Prisma schema.",
+   "Prisma Client supports fetching, filtering, sorting, pagination, and record changes."
+  ],
+  "gotchas": [
+   "The current documentation describes Prisma ORM 8 as a release candidate, so it is not yet a final release.",
+   "The current Prisma ORM 8 setup does not use the traditional @prisma/client package."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "findFirst": {
   "sourceUrl": "https://docs.prisma.io/docs/orm/reference/prisma-client-reference",
@@ -2799,6 +3575,82 @@
   ],
   "checkedAt": "2026-10-16"
  },
+ "gt": {
+  "sourceUrl": "https://www.prisma.io/docs/orm/v7/reference/prisma-client-reference",
+  "sourceTitle": "Prisma Client API (Prisma ORM v7)",
+  "summary": "Prisma Client lets you compare two fields from the same model in a non-unique filter. Use `<model>.fields.<field>` as the comparison value.",
+  "explanation": "Use the model's `fields` property to compare one field with another field in the same model. The fields must have matching types. This works with non-unique filters, such as `findMany`; unique filters need raw SQL.",
+  "syntax": "prisma.<model>.findMany({ where: { <field>: { <operator>: prisma.<model>.fields.<otherField> } } })",
+  "parameters": [
+   {
+    "name": "where",
+    "type": "ModelWhereInput",
+    "description": "The comparison filter, such as `lte`, containing a field reference from the same model."
+   },
+   {
+    "name": "<model>.fields.<field>",
+    "type": "FieldReference",
+    "description": "The referenced field on the queried model."
+   }
+  ],
+  "returns": "The selected records that satisfy the field-to-field comparison.",
+  "example": {
+   "title": "Compare two fields in one model",
+   "code": "const products = await prisma.product.findMany({\n  where: {\n    quantity: { lte: prisma.product.fields.warnQuantity },\n  },\n});",
+   "language": "typescript",
+   "explanation": "This returns products whose quantity is at or below their own warning quantity."
+  },
+  "useCases": [
+   {
+    "title": "Compare stock with a warning level",
+    "scenario": "Find products that need replenishment when current stock is at or below a per-product threshold."
+   },
+   {
+    "title": "Compare monetary columns",
+    "scenario": "Find orders where a due amount is below another amount stored on the same row."
+   }
+  ],
+  "related": [
+   "findMany",
+   "findUnique",
+   "findUniqueOrThrow",
+   "groupBy",
+   "having",
+   "by",
+   "Using Raw SQL"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you compare two columns in the same table?",
+    "answer": "Use `<model>.fields` inside a non-unique filter. For example, `quantity: { lte: prisma.product.fields.warnQuantity }` compares two columns in the same row.",
+    "followUp": "What restriction applies to the compared fields? They must be fields on the same model and have the same type."
+   },
+   {
+    "question": "What type and model restrictions apply?",
+    "answer": "The fields must have the same type, and both must belong to the model being queried. A cross-model comparison through one model's `fields` property is not valid.",
+    "followUp": "How can fields from separate models be compared? Use standard relation queries rather than the same-model `fields` comparison."
+   },
+   {
+    "question": "When must you use raw SQL?",
+    "answer": "The `fields` comparison is for non-unique filters. For `findUnique` or `findUniqueOrThrow`, or when comparing a field with a unique constraint, use a raw query.",
+    "followUp": "What additional `groupBy` rule applies? Referenced fields used in `having` must also appear in `by`."
+   }
+  ],
+  "keyPoints": [
+   "Use a model's `fields` property to compare two columns in the same table.",
+   "Each model exposes its fields through the model-specific `fields` property.",
+   "The two compared fields must have the same data type.",
+   "Comparisons involving separate models can use normal relation queries."
+  ],
+  "gotchas": [
+   "Both fields in the comparison must use the same type. Comparing a string field with an integer field causes a type error.",
+   "The compared fields must belong to the same model. Use standard queries for comparisons involving separate models.",
+   "Use raw SQL when the comparison is needed in a unique filter.",
+   "When using `groupBy` with `having`, include every referenced field in `by`."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "gte": {
   "sourceUrl": "https://www.prisma.io/docs/orm/v7/reference/prisma-client-reference",
   "sourceTitle": "Prisma Client API (Prisma ORM v7)",
@@ -2865,6 +3717,69 @@
   ],
   "gotchas": [],
   "checkedAt": "2026-10-16"
+ },
+ "in": {
+  "sourceUrl": "https://www.prisma.io/docs/orm/v7/prisma-client",
+  "sourceTitle": "Prisma Client overview (Prisma ORM v7) | Prisma Documentation",
+  "summary": "Prisma Client is a generated, type-safe query builder for Node.js, Bun, and Deno. It creates model-based methods and typed results from your Prisma schema.",
+  "explanation": "Prisma Client is generated from your schema. It provides typed query methods for your models, including filters, relations, ordering, and nested writes. Query results are plain JavaScript objects, and the same client API supports several databases.",
+  "syntax": "const prisma = new PrismaClient();\nconst records = await prisma.model.findMany();",
+  "parameters": [],
+  "returns": "Query methods return typed JavaScript objects based on the selected records.",
+  "example": {
+   "title": "Read users with Prisma Client",
+   "code": "import { PrismaClient } from \"./generated/client\";\n\nconst prisma = new PrismaClient();\n\nconst users = await prisma.user.findMany();\nconsole.log(users);\n",
+   "language": "typescript",
+   "explanation": "This creates the generated client and reads all User records."
+  },
+  "useCases": [
+   {
+    "title": "Database queries",
+    "scenario": "Read records from a database using model methods."
+   },
+   {
+    "title": "Type-safe development",
+    "scenario": "Use editor help while writing filters and relation queries."
+   },
+   {
+    "title": "Cross-database applications",
+    "scenario": "Share one query API across supported database systems."
+   }
+  ],
+  "related": [
+   "Prisma Schema",
+   "Prisma Client API reference",
+   "Prisma CLI generate command",
+   "Prisma Client Setup and Configuration"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is Prisma Client?",
+    "answer": "Prisma Client is a generated, type-safe query builder based on the application's Prisma schema. It gives model-specific methods and typed results.",
+    "followUp": "How does the client know the available models? It gets them from the schema during client generation."
+   },
+   {
+    "question": "How do you read records with Prisma Client?",
+    "answer": "A basic query creates a PrismaClient instance and calls a model method such as user.findMany(). The result is an array of plain JavaScript objects.",
+    "followUp": "What could you add to findMany()? Filters, relation selections, ordering, or other query options."
+   },
+   {
+    "question": "What setup steps are required?",
+    "answer": "First define a client generator in schema.prisma. Then install the client package, generate the client, import it from its generated location, and create a PrismaClient instance.",
+    "followUp": "Why must generation happen after schema changes? The generated API must be rebuilt to match the updated models."
+   }
+  ],
+  "keyPoints": [
+   "Prisma Client is generated code for type-safe database queries in Node.js, Bun, and Deno apps.",
+   "The generated client exposes query methods based on your data models.",
+   "Editor support includes autocomplete for filters, relations, ordering, and nested writes.",
+   "Queries return ordinary JavaScript objects.",
+   "One client API supports PostgreSQL, MySQL, SQLite, MongoDB, and other databases.",
+   "Use a model method such as findMany to read multiple records."
+  ],
+  "gotchas": [],
+  "checkedAt": "2026-11-03"
  },
  "include": {
   "sourceUrl": "https://www.prisma.io/docs/orm/v7/prisma-client/queries/relation-queries",
@@ -2934,6 +3849,78 @@
   ],
   "checkedAt": "2026-10-16"
  },
+ "is": {
+  "sourceUrl": "https://www.prisma.io/docs/orm/v7/prisma-client",
+  "sourceTitle": "Prisma Client overview (Prisma ORM v7) | Prisma Documentation",
+  "summary": "Prisma Client is a generated, type-safe query builder for Node.js, Bun, and Deno. It creates model-based methods from your Prisma schema and returns plain JavaScript objects.",
+  "explanation": "Prisma Client is generated from your Prisma schema. It provides typed query methods for your models and returns plain JavaScript objects, so database operations fit normal application code.",
+  "syntax": "generator client {\n  provider = \"prisma-client\"\n  output   = \"./generated\"\n}",
+  "parameters": [],
+  "returns": "Query methods return typed JavaScript objects representing the selected database records.",
+  "example": {
+   "title": "Read users with Prisma Client",
+   "code": "import { PrismaClient } from \"./generated/client\";\n\nconst prisma = new PrismaClient();\nconst users = await prisma.user.findMany();\nconsole.log(users);",
+   "language": "typescript",
+   "explanation": "This creates the generated client, reads all User records, and prints the returned objects."
+  },
+  "useCases": [
+   {
+    "title": "CRUD database work",
+    "scenario": "Read, create, update, or delete records through typed model methods."
+   },
+   {
+    "title": "Work with relations",
+    "scenario": "Query related records with typed relation operations."
+   },
+   {
+    "title": "Use transactions",
+    "scenario": "Group several database operations into one transaction."
+   },
+   {
+    "title": "Use raw SQL",
+    "scenario": "Run SQL directly when a supported query method is not enough."
+   }
+  ],
+  "related": [
+   "Prisma Schema",
+   "Prisma Client API reference",
+   "Prisma CLI generate command",
+   "CRUD queries",
+   "relations",
+   "transactions",
+   "raw SQL"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is Prisma Client?",
+    "answer": "Prisma Client is a generated, type-safe query builder for Node.js, Bun, and Deno. Its API is based on the models in the Prisma schema.",
+    "followUp": "What happens after the schema changes? Regenerate the client so its types and query methods match the updated schema."
+   },
+   {
+    "question": "How do you set up Prisma Client?",
+    "answer": "Define a client generator in the Prisma schema, install the Prisma Client package, generate the client, and import PrismaClient from the generated output path.",
+    "followUp": "Why use a custom output path? It lets the application import the generated code from the location declared in the schema."
+   },
+   {
+    "question": "How does a schema affect queries?",
+    "answer": "A model such as User produces typed methods such as prisma.user.findMany(). The result is a predictable plain JavaScript object array.",
+    "followUp": "How does Prisma support relations? The generated API provides typed relation queries and nested operations based on the schema."
+   }
+  ],
+  "keyPoints": [
+   "Prisma Client is generated from the schema and acts as the application's query builder.",
+   "The generated API follows your models and gives compile-time type information.",
+   "Editor completion covers common query parts, including filters, relations, ordering, and nested writes.",
+   "Query results are returned as ordinary JavaScript objects.",
+   "The same client style supports the databases listed in the documentation."
+  ],
+  "gotchas": [
+   "The generated client must be installed before your application can import and use it.",
+   "Run the generation command after defining the generator so the client code exists."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "isNot": {
   "sourceUrl": "https://www.prisma.io/docs/orm/v7/prisma-client/queries/relation-queries",
   "sourceTitle": "Relation queries (Concepts) (Prisma ORM v7)",
@@ -2998,6 +3985,97 @@
    "Use `isNot` for to-one relations; it is not the relation-list filter for to-many relations."
   ],
   "checkedAt": "2026-10-16"
+ },
+ "lt": {
+  "sourceUrl": "https://www.prisma.io/docs/orm/reference/orm-client",
+  "sourceTitle": "Prisma ORM client reference",
+  "summary": "Prisma ORM Client is a typed query API for reading and writing model data. Build a query from a database client, then execute it with methods such as all() or first().",
+  "explanation": "Prisma ORM Client provides typed model methods for reading and writing PostgreSQL or MongoDB data. A PostgreSQL client is created with a contract and connection URL, then model queries are built with methods such as where(), select(), and all().",
+  "syntax": "db.orm.<schema>.<Model>.where(filter).select(...fields).all()",
+  "parameters": [
+   {
+    "name": "filter",
+    "type": "callback, object, or MongoFieldFilter",
+    "description": "The filter condition, supplied as a callback, an exact-match object, or a MongoDB field filter."
+   },
+   {
+    "name": "fields",
+    "type": "string",
+    "description": "Names of scalar fields to return."
+   },
+   {
+    "name": "relationName",
+    "type": "string",
+    "description": "The relation name to load."
+   },
+   {
+    "name": "refineFn",
+    "type": "callback",
+    "description": "A PostgreSQL-only callback that narrows or aggregates the included relation."
+   }
+  ],
+  "returns": "Query methods return a collection that can be refined and executed. Execution methods such as all() return model-shaped JavaScript objects; select() returns only the selected scalar fields.",
+  "example": {
+   "title": "Find one user's fields",
+   "code": "import postgres from '@prisma/orm-postgres/runtime';\nimport { contractFromJson } from '@prisma/orm-postgres/static';\nimport type { Contract } from './contract.d';\nimport contractJson from './contract.json' with { type: 'json' };\n\nconst contract = contractFromJson<Contract>(contractJson);\nconst db = postgres({ contract, url: process.env.DATABASE_URL! });\n\nconst users = await db.orm.public.User\n  .where({ email: 'alice@example.com' })\n  .select('id', 'email')\n  .all();\n\nconsole.log(users);",
+   "language": "typescript",
+   "explanation": "This creates a PostgreSQL client, filters users by email, selects two fields, and runs the query."
+  },
+  "useCases": [
+   {
+    "title": "Filter data",
+    "scenario": "Read matching records from PostgreSQL or MongoDB."
+   },
+   {
+    "title": "Select fields",
+    "scenario": "Return only the fields an API response needs."
+   },
+   {
+    "title": "Include relations",
+    "scenario": "Load related records with a result."
+   }
+  ],
+  "related": [
+   "where()",
+   "whereUnique()",
+   "select()",
+   "include()",
+   "all()",
+   "first()",
+   "PostgreSQL",
+   "MongoDB"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How does where() filter records?",
+    "answer": "where() narrows a collection to matching rows. PostgreSQL accepts a callback with column operators or an object of exact field-value matches.",
+    "followUp": "How would you combine conditions? Call where() more than once; the filters are combined with AND."
+   },
+   {
+    "question": "What does select() do?",
+    "answer": "select() limits the returned scalar fields to the names supplied. The result objects contain only those selected fields.",
+    "followUp": "How would you load related records too? Use include(), optionally refining the related PostgreSQL collection."
+   },
+   {
+    "question": "When should whereUnique() be used?",
+    "answer": "whereUnique() targets a single row using a primary key or unique constraint. It is PostgreSQL-only, and its input must include every field of one such key.",
+    "followUp": "What restriction follows from it? Methods that address many rows, such as all() and orderBy(), become compile errors."
+   }
+  ],
+  "keyPoints": [
+   "The client is generated from the data contract, so its model methods and types match your models.",
+   "For PostgreSQL, create one client with postgres() and access models through db.orm and the database schema name.",
+   "Use select() to return a smaller object containing only the scalar fields you request.",
+   "Use include() to attach related records to query results.",
+   "Filter values use the same types as the corresponding model fields."
+  ],
+  "gotchas": [
+   "Parameterized database types still accept ordinary JavaScript values in filters and writes; no cast is needed.",
+   "When comparing an included MongoDB relation ID, convert that ObjectId to a string first.",
+   "Many-to-many relations need an explicit join model with both foreign keys and a composite ID."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "lte": {
   "sourceUrl": "https://docs.prisma.io/docs/orm/reference/prisma-client-reference",
@@ -3064,6 +4142,80 @@
    "For a same-table column comparison, reference the other column through the model's `fields` property rather than supplying a literal value."
   ],
   "checkedAt": "2026-10-16"
+ },
+ "mode": {
+  "sourceUrl": "https://www.prisma.io/docs/orm/v6/prisma-schema/overview",
+  "sourceTitle": "Prisma schema (Prisma ORM v6) | Prisma Documentation",
+  "summary": "The Prisma schema is the main configuration file for Prisma ORM. It declares data sources, generated clients, and the models and relations that describe application data.",
+  "explanation": "The Prisma schema is the main configuration file for Prisma ORM. It declares data sources, generated clients, and the models and relations that describe application data.",
+  "syntax": "datasource <name> {\n  provider = \"<database>\"\n}\n\ngenerator <name> {\n  provider = \"<generator>\"\n}\n\nmodel <Name> {\n  <field> <Type> [attributes]\n}",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "A simple Prisma model",
+   "code": "model User {\n  id    Int    @id @default(autoincrement())\n  email String @unique\n}",
+   "language": "text",
+   "explanation": "This model declares a User record with an auto-incrementing ID and a unique email."
+  },
+  "useCases": [
+   {
+    "title": "Project configuration",
+    "scenario": "Set up Prisma ORM for an application by declaring its database connection and generated client."
+   },
+   {
+    "title": "Data modeling",
+    "scenario": "Describe tables, fields, enums, and relationships in an application data model."
+   },
+   {
+    "title": "Environment-based configuration",
+    "scenario": "Keep database and generator settings configurable without storing secrets in the schema."
+   },
+   {
+    "title": "Schema formatting",
+    "scenario": "Standardize schema files with Prisma's fixed formatting rules."
+   }
+  ],
+  "related": [
+   "Data sources",
+   "Generators",
+   "Data model definition",
+   "Prisma Schema Language",
+   "Prisma Client",
+   "prisma format",
+   "schema.prisma"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is the Prisma schema used for?",
+    "answer": "The Prisma schema is the main configuration for Prisma ORM. It contains data sources, generators, and the data model with its relations.",
+    "followUp": "What can the data model define? It can describe application models, scalar fields, relations, enums, IDs, defaults, and database mappings."
+   },
+   {
+    "question": "What are data sources and generators?",
+    "answer": "A data source tells Prisma which database to connect to. A generator tells Prisma which client or other assets to create from the schema.",
+    "followUp": "Why are generators needed? Prisma uses them to produce artifacts such as Prisma Client from the declared data model."
+   },
+   {
+    "question": "What syntax and file layout does a Prisma schema use?",
+    "answer": "Prisma schema files use Prisma Schema Language. The usual file is schema.prisma, but Prisma can also use multiple .prisma files in a configured location.",
+    "followUp": "How do you keep schema formatting consistent? Run prisma format or use the Prisma VS Code extension's format action."
+   }
+  ],
+  "keyPoints": [
+   "The schema is the central configuration for a Prisma ORM project.",
+   "Data sources describe the databases that Prisma ORM connects to.",
+   "Generators declare which generated artifacts Prisma should create.",
+   "The data model defines application data shapes and relationships.",
+   "A schema is usually named schema.prisma, but it can be split across multiple .prisma files.",
+   "Environment variables can supply configuration values when Prisma commands run.",
+   "Use prisma format to format Prisma schema files automatically."
+  ],
+  "gotchas": [
+   "Do not put database URLs directly in the schema. Use environment variables so secrets stay out of source files.",
+   "Comments that are not attached to a schema node are not available in the schema AST."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "model": {
   "sourceUrl": "https://www.prisma.io/docs/orm/v6/prisma-schema/data-model/models",
@@ -4811,6 +5963,92 @@
   ],
   "checkedAt": "2026-10-16"
  },
+ "Prisma.join": {
+  "sourceUrl": "https://docs.prisma.io/docs/orm/prisma-client/queries/relation-queries",
+  "sourceTitle": "Relations and joins in Prisma ORM | Prisma Documentation",
+  "summary": "Use `include` to read related records in the same Prisma query. Prisma supports one-to-one, one-to-many, and many-to-many relations, plus relation filters on PostgreSQL.",
+  "explanation": "Use `include` to load related records with a parent record. Prisma returns the related data as a nested field, with types based on the relation in your data model. Relations can be one-to-one, one-to-many, or many-to-many. In PostgreSQL, relation filters can select parents by child records, while MongoDB does not support these relation filters.",
+  "syntax": ".include(relation)\n.where(relationFilter)",
+  "parameters": [
+   {
+    "name": "relation",
+    "type": "string or relation callback",
+    "description": "The relation name to include, optionally with a PostgreSQL callback that filters or narrows the related records."
+   },
+   {
+    "name": "relation filter",
+    "type": "callback",
+    "description": "A relation filter callback such as `some`, `none`, or `every` inside `where` on PostgreSQL."
+   }
+  ],
+  "returns": "A parent record or list of parent records with requested related records nested on each result.",
+  "example": {
+   "title": "Load related records",
+   "code": "import { PrismaClient } from \"@prisma/client\";\n\nconst prisma = new PrismaClient();\n\nconst users = await prisma.user.findMany({\n  include: { posts: true },\n});\n\nconsole.log(users);",
+   "language": "typescript",
+   "explanation": "This loads users and their related posts. The posts are nested inside each user."
+  },
+  "useCases": [
+   {
+    "title": "Read related data",
+    "scenario": "Load a user and its posts in one query."
+   },
+   {
+    "title": "Filter by child records",
+    "scenario": "Find users with at least one published post on PostgreSQL."
+   },
+   {
+    "title": "Write relations",
+    "scenario": "Connect existing records or create related records during a write."
+   },
+   {
+    "title": "Inspect join records",
+    "scenario": "Read fields stored on an explicit many-to-many join model."
+   }
+  ],
+  "related": [
+   "include",
+   "where",
+   "some",
+   "none",
+   "every",
+   "connect",
+   "disconnect",
+   "create"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you read related records?",
+    "answer": "Use `include` to request related records in the same Prisma query. The results are nested under the parent record, and their types follow the model relations.",
+    "followUp": "How can you limit the related records? On PostgreSQL, pass a callback to `include` and use filtering, selection, or ordering there."
+   },
+   {
+    "question": "How do you model and query many-to-many data?",
+    "answer": "For a many-to-many relation, define a join model. Its primary key contains exactly the foreign keys to the two related models, and the relation is traversed through two nested includes.",
+    "followUp": "How do you read join-table fields? Query the join model directly, then include the related model."
+   },
+   {
+    "question": "How do relation filters work?",
+    "answer": "On PostgreSQL, `.some` finds parents with at least one matching child, `.none` finds parents with no matching children, and `.every` requires all children to match. These filters are not available on MongoDB.",
+    "followUp": "What happens with `.every` when a parent has no children? It still matches, so add another condition if an empty relation should be excluded."
+   }
+  ],
+  "keyPoints": [
+   "Add `include` to read related records together with the parent.",
+   "Related records appear as a nested property on each parent result.",
+   "PostgreSQL relation filters can inspect child records while filtering parents.",
+   "Use `.some` when at least one related record must satisfy the condition.",
+   "Use `.none` when no related record may satisfy the condition.",
+   "Use `.every` when every related record must satisfy the condition."
+  ],
+  "gotchas": [
+   "Relation filters and nested relation writes are not available on MongoDB.",
+   "Many-to-many relations need an explicit join model with a two-field composite primary key.",
+   "With `every`, a parent with no related records also satisfies the condition."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "Prisma.raw": {
   "sourceUrl": "https://www.prisma.io/docs/orm/prisma-client/using-raw-sql/raw-queries",
   "sourceTitle": "Raw queries",
@@ -5645,6 +6883,71 @@
   ],
   "checkedAt": "2026-10-16"
  },
+ "some": {
+  "sourceUrl": "https://www.prisma.io/docs/orm",
+  "sourceTitle": "What is Prisma ORM?",
+  "summary": "Prisma Client is a generated, type-safe API for reading and writing database data. It creates model queries from a Prisma data definition and returns typed results.",
+  "explanation": "Prisma Client is the generated, type-safe interface that an application uses to read and write database data. It is created from the Prisma schema and provides model operations, relation queries, and typed results.",
+  "syntax": "const rows = await prisma.model.findMany({ include: { relation: true } });",
+  "parameters": [],
+  "returns": "Typed model records, optionally containing included related records.",
+  "example": {
+   "title": "Read related records",
+   "code": "import { PrismaClient } from \"@prisma/client\";\n\nconst prisma = new PrismaClient();\n\nconst users = await prisma.user.findMany({\n  include: { posts: true },\n});\n\nconsole.dir(users, { depth: null });\nawait prisma.$disconnect();",
+   "language": "typescript",
+   "explanation": "This query returns users together with their related posts, with result types generated from the Prisma schema."
+  },
+  "useCases": [
+   {
+    "title": "Database queries",
+    "scenario": "Read application data from database models."
+   },
+   {
+    "title": "Relation loading",
+    "scenario": "Load a record together with related records."
+   },
+   {
+    "title": "Type-safe data access",
+    "scenario": "Check query results at compile time in TypeScript."
+   }
+  ],
+  "related": [
+   "Prisma ORM",
+   "Prisma schema",
+   "Prisma Migrate",
+   "data model",
+   "relations"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is Prisma Client?",
+    "answer": "Prisma Client is a generated TypeScript interface for database access. Its operations and result types come from the data definition, so application code receives type checking for models and selected fields.",
+    "followUp": "How do relation results become typed? Include a relation in the query, and the generated types include that relation with the correct nested fields."
+   },
+   {
+    "question": "How can you read records and related data?",
+    "answer": "Use a model query such as findMany to read several records. Add relation inclusion when the result should also contain related records.",
+    "followUp": "How would you avoid loading every field? Select only the fields needed by the application and include relations deliberately."
+   },
+   {
+    "question": "How does Prisma provide type safety?",
+    "answer": "The generated client exposes model operations based on the schema. A query can include related records, and the returned object is typed to match that query.",
+    "followUp": "What must happen after changing the schema? Run the documented generation command before using the changed client types."
+   }
+  ],
+  "keyPoints": [
+   "Returned fields receive types from the Prisma data definition.",
+   "The client exposes typed queries grouped by model.",
+   "Queries can read model records and print the resulting objects.",
+   "A relation can be included so related records appear in the result."
+  ],
+  "gotchas": [
+   "Use the current Prisma ORM documentation rather than archived version pages when starting a new project.",
+   "Regenerate the client after changing the data definition."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "startsWith": {
   "sourceUrl": "https://www.prisma.io/docs/orm/v7/reference/prisma-client-reference",
   "sourceTitle": "Prisma Client API (Prisma ORM v7)",
@@ -6175,6 +7478,77 @@
    "The upsert method is not available for required composite types; use update instead."
   ],
   "checkedAt": "2026-10-16"
+ },
+ "where": {
+  "sourceUrl": "https://www.prisma.io/docs/orm",
+  "sourceTitle": "What is Prisma ORM? | Prisma Documentation",
+  "summary": "Prisma ORM is a TypeScript ORM for modeling data and using typed queries with PostgreSQL or MongoDB. It also supports relations, transactions, and database migrations.",
+  "explanation": "Prisma ORM uses a data contract to describe models, fields, and relationships. It provides typed queries for reading and writing records, supports relational queries and transactions, and helps plan and apply database migrations after the contract changes.",
+  "syntax": "npx prisma contract emit\nnpx prisma migration plan",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Read related records",
+   "code": "import { PrismaClient } from \"@prisma/client\";\n\nconst prisma = new PrismaClient();\n\nconst users = await prisma.user.findMany({\n  include: { posts: true },\n});\n\nconsole.log(users);",
+   "language": "typescript",
+   "explanation": "This query reads users and their related posts in one call."
+  },
+  "useCases": [
+   {
+    "title": "Model data",
+    "scenario": "Define application data and its relationships in a database-backed TypeScript app."
+   },
+   {
+    "title": "Query records",
+    "scenario": "Build typed database reads and writes."
+   },
+   {
+    "title": "Manage schema changes",
+    "scenario": "Change database tables while reviewing the generated migration."
+   },
+   {
+    "title": "Run transactions",
+    "scenario": "Group related writes into one operation."
+   }
+  ],
+  "related": [
+   "Prisma Client",
+   "Prisma schema",
+   "Prisma Migrate",
+   "Prisma CLI",
+   "Prisma Postgres"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is Prisma ORM?",
+    "answer": "Prisma ORM is a TypeScript ORM. It lets an application describe its data models and use typed queries to read and write database records.",
+    "followUp": "How are related records loaded? Use a relation query such as include so related data is returned in the same query."
+   },
+   {
+    "question": "How does Prisma ORM support database changes?",
+    "answer": "A contract describes models, fields, and relationships. After changing it, emit the contract and create a migration plan for review before applying the migration.",
+    "followUp": "What records the development database change? The documented migration command applies the migration and records that it advanced the database reference."
+   },
+   {
+    "question": "What operations can Prisma ORM perform?",
+    "answer": "Prisma ORM can read, filter, sort, and paginate records. It can also create, update, delete, and query related records.",
+    "followUp": "How can several writes be grouped? Use a transaction so the writes succeed together or fail together."
+   }
+  ],
+  "keyPoints": [
+   "You define the structure of application data, including relationships between models.",
+   "The query API supports common record-reading and record-writing operations.",
+   "Relations can be loaded with include during a query.",
+   "Transactions group multiple writes into one all-or-nothing operation.",
+   "After changing the contract, emit the generated contract before planning a migration.",
+   "Migration planning creates a migration that you can inspect before applying it."
+  ],
+  "gotchas": [
+   "Query results are typed from the contract, including fields inside related records.",
+   "In Prisma ORM 8, use the documented contract and migration commands instead of the older development migration command."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "withAccelerate": {
   "sourceUrl": "https://www.prisma.io/docs/accelerate/local-development",

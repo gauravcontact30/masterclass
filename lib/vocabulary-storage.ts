@@ -1,5 +1,6 @@
 "use client";
 
+import { maybeSignedIn } from "./auth-listener";
 import { englishWordSchema, type WordLookup, type EnglishWord } from "./english-word";
 import type { WordHistoryCard } from "@/components/vocabulary-history";
 
@@ -143,10 +144,15 @@ export function getCachedWordLookup(word: string): WordLookup | null {
   return null;
 }
 
+const LOOKUP_REFUSED = { 401: "Sign in to look up words.", 402: "Word lookup is for subscribers. Choose a plan to use it." };
+let lookupRefused: string | null = null;
+
 /**
  * Prefetches word details in background so they are ready before the modal opens.
  */
 export function prefetchWordDetails(word: string): Promise<WordLookup> {
+  // Background warm-up only: a visitor who cannot use the lookup would just collect 401s (most of this route's traffic).
+  if (!maybeSignedIn()) return Promise.reject(new Error(LOOKUP_REFUSED[401]));
   const key = word.trim().toLowerCase();
   const cached = getCachedWordLookup(key);
   if (cached) return Promise.resolve(cached);
@@ -176,6 +182,8 @@ export async function fetchWordDetails(word: string, signal?: AbortSignal): Prom
   const key = word.trim().toLowerCase();
   const cached = lookupCache.get(key);
   if (cached) return cached;
+  // The answer will not change on this page: signing in or subscribing ends in a full navigation, which resets this.
+  if (lookupRefused) throw new Error(lookupRefused);
 
   const response = await fetch("/api/pro-learn/word", {
     method: "POST",
@@ -185,6 +193,10 @@ export async function fetchWordDetails(word: string, signal?: AbortSignal): Prom
   });
 
   const body = await response.json();
+  if (response.status === 401 || response.status === 402) {
+    lookupRefused = LOOKUP_REFUSED[response.status as 401 | 402];
+    throw new Error(lookupRefused);
+  }
   if (!response.ok) {
     throw new Error(body.error ?? "Word lookup is unavailable right now.");
   }

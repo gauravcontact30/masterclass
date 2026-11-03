@@ -1,0 +1,222 @@
+{
+ "GET /api/v1/version": {
+  "sourceUrl": "https://docs.langflow.org/api-projects",
+  "sourceTitle": "Projects endpoints | Langflow Documentation",
+  "summary": "Use `GET /api/v1/projects/` to list Langflow projects. Authenticate with an API key in the `x-api-key` header.",
+  "explanation": "Send a GET request to the projects endpoint. Set the Langflow base URL and API key, then read the JSON response. The endpoint returns project information, including IDs, names, and descriptions.",
+  "syntax": "GET {LANGFLOW_URL}/api/v1/projects/",
+  "parameters": [
+   {
+    "name": "LANGFLOW_URL",
+    "type": "environment variable",
+    "description": "The base URL of the Langflow deployment."
+   },
+   {
+    "name": "LANGFLOW_API_KEY",
+    "type": "environment variable",
+    "description": "The API key used to authenticate the request."
+   }
+  ],
+  "returns": "A JSON response containing a list of Langflow projects, with project IDs, names, and descriptions.",
+  "example": {
+   "title": "List projects",
+   "code": "import os\nimport requests\n\nurl = f\"{os.getenv('LANGFLOW_URL', '')}/api/v1/projects/\"\nheaders = {\n    \"accept\": \"application/json\",\n    \"x-api-key\": os.getenv(\"LANGFLOW_API_KEY\", \"\"),\n}\nresponse = requests.get(url, headers=headers)\nresponse.raise_for_status()\nprint(response.text)",
+   "language": "python",
+   "explanation": "This sends an authenticated request to list Langflow projects."
+  },
+  "useCases": [
+   {
+    "title": "Read project metadata",
+    "scenario": "Inspect available projects before selecting one for an application."
+   },
+   {
+    "title": "Show projects in a user interface",
+    "scenario": "Build an administration tool that displays Langflow projects."
+   },
+   {
+    "title": "Automate project checks",
+    "scenario": "Check project data from a script or service."
+   }
+  ],
+  "related": [
+   "Langflow API",
+   "OpenAPI specification",
+   "/docs endpoint",
+   "Projects endpoints"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you list Langflow projects?",
+    "answer": "Use GET on `/api/v1/projects/` to retrieve Langflow projects. The response includes project IDs, names, and descriptions.",
+    "followUp": "How would you authenticate the request? Send the API key in the `x-api-key` header."
+   },
+   {
+    "question": "What request details are needed?",
+    "answer": "Build the URL from the Langflow deployment URL and `/api/v1/projects/`. Send an `Accept: application/json` header and the API key header.",
+    "followUp": "What should the client do after receiving the response? Check the HTTP status before processing the response body."
+   },
+   {
+    "question": "What operations does the projects endpoint support?",
+    "answer": "The projects endpoint is used for project CRUD operations: create, read, update, and delete. Listing projects is the read operation shown by the GET example.",
+    "followUp": "What information does a listed project contain? The documentation identifies its ID, name, and description."
+   }
+  ],
+  "keyPoints": [
+   "A GET request lists projects and returns each project's ID, name, and description.",
+   "Create the endpoint URL by combining the deployment URL with `/api/v1/projects/`.",
+   "Set the Accept header to request a JSON response.",
+   "Send the Langflow API key in the `x-api-key` request header."
+  ],
+  "gotchas": [
+   "The endpoint supports more than reading projects. Use the correct HTTP method for creating, updating, or deleting them."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "LANGFLOW_SUPERUSER_PASSWORD": {
+  "sourceUrl": "https://docs.langflow.org/api-keys-and-authentication",
+  "sourceTitle": "API keys and authentication | Langflow Documentation",
+  "summary": "Langflow supports user sign-in, Langflow API keys, and session tokens. Disable automatic login, set a strong superuser password, and protect the server before exposing it to other users or networks.",
+  "explanation": "Langflow uses LANGFLOW_SUPERUSER_PASSWORD for the server superuser when automatic login is off. Set LANGFLOW_AUTO_LOGIN=false, use a non-default LANGFLOW_SECRET_KEY, and protect the server with a reverse proxy. API requests that run flows must include a Langflow API key in the x-api-key header or query parameter.",
+  "syntax": "LANGFLOW_AUTO_LOGIN=false\nLANGFLOW_SUPERUSER_PASSWORD=<strong-password>\nLANGFLOW_SECRET_KEY=<secret-key>\nx-api-key: <langflow-api-key>",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Start Langflow with authentication",
+   "code": "export LANGFLOW_SUPERUSER_PASSWORD='use-a-strong-password'\nexport LANGFLOW_AUTO_LOGIN=false\nexport LANGFLOW_SECRET_KEY='generate-and-store-a-secret-key'\nuv run langflow run",
+   "language": "bash",
+   "explanation": "This starts Langflow with password authentication instead of automatic login."
+  },
+  "useCases": [
+   {
+    "title": "Enable server authentication",
+    "scenario": "You need to protect a shared Langflow server with user sign-in."
+   },
+   {
+    "title": "Authenticate flow requests",
+    "scenario": "An application needs to run a Langflow flow through the REST API."
+   },
+   {
+    "title": "Disable usage tracking",
+    "scenario": "Many requests update the database and API-key usage writes cause contention."
+   }
+  ],
+  "related": [
+   "LANGFLOW_AUTO_LOGIN",
+   "LANGFLOW_SECRET_KEY",
+   "LANGFLOW_SUPERUSER",
+   "LANGFLOW_SUPERUSER_PASSWORD",
+   "LANGFLOW_SKIP_AUTH_AUTO_LOGIN",
+   "LANGFLOW_DISABLE_TRACK_APIKEY_USAGE",
+   "LANGFLOW_ENABLE_SUPERUSER_CLI",
+   "LANGFLOW_NEW_USER_IS_ACTIVE"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you enable password authentication for Langflow?",
+    "answer": "Set LANGFLOW_AUTO_LOGIN=false and provide LANGFLOW_SUPERUSER_PASSWORD before startup. LANGFLOW_SUPERUSER is optional and defaults to langflow.",
+    "followUp": "What happens if the password is missing? Startup fails instead of creating a default password."
+   },
+   {
+    "question": "How do you authenticate a Langflow API request?",
+    "answer": "Send the key in an x-api-key header or as a query parameter. Flow-running endpoints require this key, including /api/v1/run and /api/v1/predict.",
+    "followUp": "Can a session token replace the key? It can authenticate management API requests, but flow-running requests still require a Langflow API key."
+   },
+   {
+    "question": "What are the risks of automatic login?",
+    "answer": "With LANGFLOW_AUTO_LOGIN=true, the visual editor signs users in as the configured superuser. Users share that environment, so automatic login should not be enabled on a shared or production server.",
+    "followUp": "What does LANGFLOW_SKIP_AUTH_AUTO_LOGIN=true do? It also skips authentication for API requests, allowing unauthenticated requests to run as the configured superuser."
+   }
+  ],
+  "keyPoints": [
+   "Langflow API keys authenticate Langflow API calls and server actions such as running flows and uploading files.",
+   "Send a Langflow API key in the x-api-key header or in the query string.",
+   "Langflow records how many times a key was used and when it was last used.",
+   "Set LANGFLOW_DISABLE_TRACK_APIKEY_USAGE=True when usage writes cause database contention under high concurrency.",
+   "Management requests accept either a Langflow API key or a session token.",
+   "Send a session token in the access_token_lf cookie or as an Authorization Bearer token."
+  ],
+  "gotchas": [
+   "Do not expose the Langflow port directly to the internet. Use a reverse proxy with authentication.",
+   "Do not use the old password value langflow. Startup fails instead.",
+   "Turning off automatic login does not invalidate sessions or API keys that already exist."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "POST /api/v1/custom_component": {
+  "sourceUrl": "https://docs.langflow.org/api-reference-api-examples",
+  "sourceTitle": "Get started with the Langflow API",
+  "summary": "The Langflow API lets programs work with flows and custom components. Use the deployment's `/docs` endpoint to inspect and test available API operations.",
+  "explanation": "The Langflow API provides HTTP endpoints for working with flows and custom components. The custom component endpoint accepts component-related requests, while the component itself is a Python class that inherits from Component and defines descriptive attributes and behavior.",
+  "syntax": "POST /api/v1/custom_component",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Send a custom component request",
+   "code": "curl -X POST \"http://localhost:7860/api/v1/custom_component\" \\\n  -H \"Content-Type: application/json\" \\\n  -d '{\"code\":\"from langflow.custom import Component\\n\\nclass MyComponent(Component):\\n    display_name = \\\"My component\\\"\\n    description = \\\"Example component\\\"\\n\\n    def build(self):\\n        return \\\"Hello\\\"'",
+   "language": "bash",
+   "explanation": "This sends component source code to the custom-component endpoint. Check the deployment's OpenAPI documentation for the exact request fields."
+  },
+  "useCases": [
+   {
+    "title": "Create and edit flows",
+    "scenario": "Automate flow management from a script or service."
+   },
+   {
+    "title": "Build applications with flows",
+    "scenario": "Run Langflow workflows from an application."
+   },
+   {
+    "title": "Create custom components",
+    "scenario": "Add Python-based behavior to the visual workflow editor."
+   },
+   {
+    "title": "Use Langflow as a dependency",
+    "scenario": "Embed Langflow in a larger software system."
+   }
+  ],
+  "related": [
+   "Langflow quickstart",
+   "OpenAPI specification",
+   "/docs",
+   "/v1/run",
+   "Component",
+   "Custom component quickstart",
+   "dataframe_processor.py",
+   "__init__.py"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How can a developer discover and test Langflow API endpoints?",
+    "answer": "Langflow exposes a REST API for programmatic work with flows and applications. Its deployment provides an OpenAPI page at /docs, which can be used to view and test endpoints.",
+    "followUp": "How would you verify a request before coding it? Open the deployment's /docs endpoint and inspect the generated request details for the target operation."
+   },
+   {
+    "question": "What is the structure of a Langflow custom component?",
+    "answer": "A custom component is a Python class that inherits from Component. It also defines class attributes, inputs and outputs, and methods that implement its behavior.",
+    "followUp": "What else belongs in a custom component? Internal variables can support error handling and logging."
+   },
+   {
+    "question": "What are common uses of the Langflow API?",
+    "answer": "The API can support creating and editing flows, including flow file management. It can also be used by applications that run Langflow flows.",
+    "followUp": "What broader integration is described? Langflow can be used as a dependency inside a larger application, codebase, or service."
+   }
+  ],
+  "keyPoints": [
+   "Use the API when software must work with Langflow instead of relying only on the visual interface.",
+   "The API supports creating and changing flows, including their files.",
+   "Applications can call Langflow flows programmatically.",
+   "The API documentation lists custom-component development as a supported use.",
+   "Langflow can be included as part of a larger software system.",
+   "Custom components use a Python class derived from Component."
+  ],
+  "gotchas": [
+   "The exact endpoint fields can vary, so inspect the OpenAPI specification at the deployment's /docs path before sending requests.",
+   "A custom component must be placed in a Python file.",
+   "The component folder needs an __init__.py file and must be loaded into Langflow."
+  ],
+  "checkedAt": "2026-11-03"
+ }
+}

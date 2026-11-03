@@ -1,4 +1,410 @@
 {
+ "ConnectionError": {
+  "sourceUrl": "https://requests.readthedocs.io/en/stable/_modules/requests/exceptions/",
+  "sourceTitle": "requests.exceptions — Requests 2.34.2 documentation",
+  "summary": "Requests uses RequestException as the common base for request failures. More specific classes describe timeouts, connection problems, invalid URLs, redirects, and response-processing errors.",
+  "explanation": "Requests defines a hierarchy of exceptions for failures during HTTP requests. The common base is RequestException, with separate classes for connection problems, timeouts, invalid URLs, redirects, decoding, and other failures.",
+  "syntax": "class RequestException(IOError)",
+  "parameters": [
+   {
+    "name": "*args, **kwargs",
+    "type": "Any",
+    "description": "Optional positional exception arguments and keyword arguments. The constructor accepts request and response objects as keyword arguments."
+   }
+  ],
+  "returns": "An exception object. RequestException stores the optional request and response objects.",
+  "example": {
+   "title": "Handle Requests exceptions",
+   "code": "import requests\n\ntry:\n    response = requests.get(\"https://example.com\", timeout=2)\n    response.raise_for_status()\nexcept requests.exceptions.ConnectTimeout:\n    print(\"The connection timed out and can be retried.\")\nexcept requests.exceptions.Timeout:\n    print(\"The request timed out.\")\nexcept requests.exceptions.RequestException as error:\n    print(f\"Request failed: {error}\")",
+   "language": "python",
+   "explanation": "This catches a connection timeout separately, then handles other timeout and Requests errors. The final handler also catches the more specific exceptions because they inherit from RequestException."
+  },
+  "useCases": [
+   {
+    "title": "Catch the common base exception",
+    "scenario": "Handle all Requests failures in one place."
+   },
+   {
+    "title": "Handle ConnectTimeout",
+    "scenario": "Retry a failed connection attempt."
+   },
+   {
+    "title": "Handle URL and header errors",
+    "scenario": "Report malformed request input."
+   },
+   {
+    "title": "Handle decoding and stream errors",
+    "scenario": "Separate response-processing failures from network failures."
+   }
+  ],
+  "related": [
+   "RequestException",
+   "InvalidJSONError",
+   "JSONDecodeError",
+   "HTTPError",
+   "ConnectionError",
+   "ProxyError",
+   "SSLError",
+   "Timeout"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is RequestException?",
+    "answer": "RequestException is the common base class for exceptions raised by Requests. Specific classes, such as ConnectionError, Timeout, and HTTPError, inherit from it.",
+    "followUp": "Which timeout classes should a caller know? Timeout covers both ConnectTimeout and ReadTimeout; ConnectTimeout also inherits from ConnectionError."
+   },
+   {
+    "question": "What does ConnectTimeout mean?",
+    "answer": "ConnectTimeout occurs while trying to connect to the remote server. The documentation says requests that cause this error are safe to retry.",
+    "followUp": "Is every Timeout safe to retry? No. The page gives the retry guarantee specifically for ConnectTimeout, not for all timeout types."
+   },
+   {
+    "question": "Which Requests exceptions also inherit from ValueError?",
+    "answer": "Several exception classes also inherit from built-in exceptions. For example, MissingSchema, InvalidSchema, InvalidURL, and InvalidHeader inherit from ValueError.",
+    "followUp": "Why can this matter? Code can catch either the Requests-specific class or the broader built-in ValueError, depending on the desired scope."
+   }
+  ],
+  "keyPoints": [
+   "RequestException is the base class for failures while handling a request.",
+   "HTTPError represents an HTTP-related error.",
+   "ConnectionError represents a connection failure.",
+   "ProxyError is a specialized ConnectionError for proxy failures.",
+   "Timeout represents a request that exceeded its time limit.",
+   "URLRequired is raised when a valid URL is needed but missing.",
+   "TooManyRedirects represents exceeding the configured redirect limit.",
+   "ContentDecodingError indicates that response content could not be decoded."
+  ],
+  "gotchas": [
+   "Catching Timeout also catches ConnectTimeout and ReadTimeout.",
+   "ConnectTimeout errors are documented as safe to retry.",
+   "ReadTimeout means the server did not provide data before the allowed time ended."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "headers": {
+  "sourceUrl": "https://requests.readthedocs.io/en/latest/api/",
+  "sourceTitle": "Developer Interface — Requests 2.34.2 documentation",
+  "summary": "Use `requests.get()` to send an HTTP GET request. It returns a `Response` object that contains the server's reply.",
+  "explanation": "The `requests.get()` function creates and sends a GET request. It returns a `Response` object. Query parameters go in `params`, and the response body can be read as JSON with `response.json()`.",
+  "syntax": "requests.get(url, **kwargs) → Response",
+  "parameters": [
+   {
+    "name": "method",
+    "type": "str",
+    "description": "HTTP method for the request."
+   },
+   {
+    "name": "url",
+    "type": "UriType",
+    "description": "Target URL."
+   },
+   {
+    "name": "params",
+    "type": "ParamsType",
+    "description": "Optional query-string data."
+   },
+   {
+    "name": "data",
+    "type": "DataType",
+    "description": "Optional request body data."
+   },
+   {
+    "name": "json",
+    "type": "JsonType",
+    "description": "Optional JSON-serializable request body."
+   },
+   {
+    "name": "headers",
+    "type": "HeadersType",
+    "description": "Optional HTTP headers."
+   },
+   {
+    "name": "timeout",
+    "type": "TimeoutType",
+    "description": "Optional timeout in seconds, or a connect/read timeout tuple."
+   },
+   {
+    "name": "allow_redirects",
+    "type": "bool",
+    "description": "Whether to follow redirects."
+   },
+   {
+    "name": "verify",
+    "type": "VerifyType",
+    "description": "TLS verification setting or CA bundle path."
+   },
+   {
+    "name": "stream",
+    "type": "bool",
+    "description": "Whether to download response content immediately."
+   }
+  ],
+  "returns": "A `requests.Response` object.",
+  "example": {
+   "title": "Send a GET request",
+   "code": "import requests\n\nresponse = requests.get(\n    \"https://httpbin.org/get\",\n    params={\"topic\": \"python\"},\n    timeout=5,\n)\nresponse.raise_for_status()\nprint(response.json())",
+   "language": "python",
+   "explanation": "This sends a GET request with a query parameter, waits up to five seconds, raises an error for an unsuccessful status, and prints the JSON response."
+  },
+  "useCases": [
+   {
+    "title": "Fetch API data",
+    "scenario": "Read data from a web API."
+   },
+   {
+    "title": "Send query parameters",
+    "scenario": "Add filters or search terms to a URL."
+   },
+   {
+    "title": "Handle HTTP status errors",
+    "scenario": "Check whether a request succeeded before using its result."
+   }
+  ],
+  "related": [
+   "requests.request",
+   "requests.post",
+   "requests.Response",
+   "requests.Session",
+   "requests.Response.raise_for_status"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does `requests.get()` return?",
+    "answer": "`requests.get()` sends a GET request and returns a `Response` object. The `params` argument adds data to the URL query string.",
+    "followUp": "How would you control waiting time? Pass a number for one timeout, or a `(connect_timeout, read_timeout)` tuple for separate limits."
+   },
+   {
+    "question": "How should code handle an HTTP error?",
+    "answer": "`raise_for_status()` raises an HTTP error for unsuccessful responses. Without it, the response object is still returned and the caller must inspect its status.",
+    "followUp": "What does a timeout handle? It limits waiting for the server; it does not guarantee that the whole operation completes within that time."
+   },
+   {
+    "question": "What does the `verify` argument do?",
+    "answer": "The `verify` argument controls server TLS certificate verification. It defaults to `True`; it can also be a path to a CA bundle.",
+    "followUp": "What is the safe exception? Setting it to `False` is suitable only for testing because it accepts invalid certificates."
+   }
+  ],
+  "keyPoints": [
+   "Put query-string values in `params`. A dictionary, list of tuples, or bytes can be used.",
+   "Use `json` to send a JSON-serializable Python value in the request body.",
+   "Set `timeout` to limit how long the client waits for the server to send data.",
+   "The function returns a `Response` object, which contains the server's reply.",
+   "Use `verify=True` for normal TLS certificate validation, or provide a CA bundle path when needed."
+  ],
+  "gotchas": [
+   "Do not set `verify=False` in normal use. It disables TLS certificate checks and can allow man-in-the-middle attacks.",
+   "Use `stream=True` when a large response should not be loaded into memory at once."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "HTTPAdapter": {
+  "sourceUrl": "https://requests.readthedocs.io/en/stable/user/advanced/",
+  "sourceTitle": "Advanced Usage — Requests 2.34.2 documentation",
+  "summary": "HTTPAdapter is Requests' built-in transport adapter for HTTP and HTTPS. Mount it on a Session to control connection pools, retries, and service-specific transport behavior.",
+  "explanation": "HTTPAdapter is Requests' built-in transport adapter for HTTP and HTTPS. A Session mounts adapters for URL prefixes, and the adapter manages urllib3 connection pools, proxies, TLS settings, requests, and responses.",
+  "syntax": "HTTPAdapter(pool_connections=10, pool_maxsize=10, max_retries=0, pool_block=False)",
+  "parameters": [
+   {
+    "name": "pool_connections",
+    "type": "int",
+    "description": "Number of urllib3 connection pools to cache."
+   },
+   {
+    "name": "pool_maxsize",
+    "type": "int",
+    "description": "Maximum number of connections to save in each pool."
+   },
+   {
+    "name": "max_retries",
+    "type": "int | Retry",
+    "description": "Maximum retries for eligible connection failures, or a urllib3 Retry object."
+   },
+   {
+    "name": "pool_block",
+    "type": "bool",
+    "description": "Whether to wait when the connection pool has no free connection."
+   }
+  ],
+  "returns": "An HTTPAdapter instance that manages HTTP and HTTPS transport for a Session.",
+  "example": {
+   "title": "Retry requests with HTTPAdapter",
+   "code": "import requests\nfrom requests.adapters import HTTPAdapter\nfrom urllib3.util import Retry\n\nsession = requests.Session()\nretry_policy = Retry(\n    total=3,\n    backoff_factor=0.1,\n    status_forcelist=[502, 503, 504],\n    allowed_methods={\"GET\"},\n)\nsession.mount(\"https://\", HTTPAdapter(max_retries=retry_policy))\n\nresponse = session.get(\"https://example.com\", timeout=5)\nprint(response.status_code)",
+   "language": "python",
+   "explanation": "This session uses an HTTPAdapter with a urllib3 retry policy for selected temporary server errors. The timeout prevents the request from waiting forever."
+  },
+  "useCases": [
+   {
+    "title": "Retry selected failures",
+    "scenario": "A service sometimes returns temporary gateway errors."
+   },
+   {
+    "title": "Reuse pooled connections",
+    "scenario": "Many requests go to the same host."
+   },
+   {
+    "title": "Mount a service-specific adapter",
+    "scenario": "One API needs transport behavior different from other URLs."
+   },
+   {
+    "title": "Customize TLS transport",
+    "scenario": "A server requires a custom TLS setting."
+   }
+  ],
+  "related": [
+   "BaseAdapter",
+   "Session",
+   "Retry",
+   "PoolManager",
+   "Transport Adapters",
+   "Streaming Requests"
+  ],
+  "since": "1.0.0",
+  "interview": [
+   {
+    "question": "What is HTTPAdapter?",
+    "answer": "HTTPAdapter is Requests' built-in transport adapter. It uses urllib3 and provides the default handling for HTTP and HTTPS in a Session.",
+    "followUp": "How would you apply different behavior to one service? Mount a custom adapter to that service's URL prefix, such as https://api.example.com/."
+   },
+   {
+    "question": "How do you configure retries?",
+    "answer": "Create a Retry object, give it the retry rules, and pass it as max_retries to HTTPAdapter. Mount that adapter on the Session for the desired URL scheme or prefix.",
+    "followUp": "How can retries be limited to selected server errors? Set status_forcelist and choose the allowed HTTP methods in the Retry configuration."
+   },
+   {
+    "question": "How does adapter mounting select an adapter?",
+    "answer": "A Session mounts adapters to URL prefixes. It uses the adapter whose prefix is the longest match, so a service-specific prefix can override a broader scheme prefix.",
+    "followUp": "What prefix detail can cause a security or routing mistake? A prefix without a final slash can also match another hostname that merely starts with the same text."
+   }
+  ],
+  "keyPoints": [
+   "Transport adapters define how Requests interacts with an HTTP service.",
+   "Requests includes HTTPAdapter as its built-in transport adapter.",
+   "A new Session has an adapter for HTTP and another for HTTPS.",
+   "HTTPAdapter uses urllib3 to handle normal HTTP and HTTPS connections.",
+   "pool_connections controls how many urllib3 connection pools the adapter caches.",
+   "pool_maxsize controls the maximum number of connections kept in a pool.",
+   "pool_block decides whether the pool waits when no free connection is available."
+  ],
+  "gotchas": [
+   "A default HTTPAdapter does not retry failed connections. Pass a Retry object when retry behavior is needed.",
+   "When several adapters match a URL, Requests uses the adapter with the longest matching prefix.",
+   "A short host prefix can match unintended hosts. End a complete hostname with a slash.",
+   "Methods such as init_poolmanager and get_connection are extension hooks, not normal application methods."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "HTTPError": {
+  "sourceUrl": "https://requests.readthedocs.io/en/latest/user/quickstart/",
+  "sourceTitle": "Quickstart — Requests 2.34.2 documentation",
+  "summary": "Requests sends HTTP requests with simple method functions such as get() and post(). The returned Response object provides the status, headers, cookies, body, and decoded JSON.",
+  "explanation": "A request method returns a Response object. Use its status, headers, cookies, content, or JSON methods to inspect the result. Set a timeout because Requests waits indefinitely when no timeout is given, and call raise_for_status() when unsuccessful HTTP statuses should become exceptions.",
+  "syntax": "requests.request(method, url, **kwargs)\nrequests.get(url, **kwargs)\nrequests.post(url, data=None, json=None, **kwargs)",
+  "parameters": [
+   {
+    "name": "method",
+    "type": "str",
+    "description": "HTTP method to use when constructing a request."
+   },
+   {
+    "name": "url",
+    "type": "str",
+    "description": "Target URL for the request."
+   },
+   {
+    "name": "params",
+    "type": "dict or bytes",
+    "description": "Optional query-string values."
+   },
+   {
+    "name": "data",
+    "type": "dict, bytes, or file-like object",
+    "description": "Optional request body."
+   },
+   {
+    "name": "headers",
+    "type": "dict",
+    "description": "Optional HTTP headers."
+   },
+   {
+    "name": "cookies",
+    "type": "dict or CookieJar",
+    "description": "Optional cookies to send."
+   },
+   {
+    "name": "timeout",
+    "type": "float or tuple",
+    "description": "Maximum time, in seconds, to wait for a response byte."
+   }
+  ],
+  "returns": "requests.request() and the HTTP method helpers return a Response object. Response.json() returns decoded JSON content; raise_for_status() returns None for a successful status.",
+  "example": {
+   "title": "GET JSON data safely",
+   "code": "import requests\n\nresponse = requests.get(\n    \"https://api.github.com/events\",\n    timeout=10,\n)\nresponse.raise_for_status()\nprint(response.status_code)\nprint(response.json())",
+   "language": "python",
+   "explanation": "This sends a GET request, limits waiting time, checks for an HTTP error, and reads the JSON response."
+  },
+  "useCases": [
+   {
+    "title": "API requests",
+    "scenario": "Call a JSON API and inspect its decoded result."
+   },
+   {
+    "title": "Send request data",
+    "scenario": "Upload form data or files with POST."
+   },
+   {
+    "title": "Use a session",
+    "scenario": "Keep cookies and shared settings across several requests."
+   },
+   {
+    "title": "Stream response content",
+    "scenario": "Process a large response without loading it all at once."
+   }
+  ],
+  "related": [
+   "Response",
+   "Response.raise_for_status()",
+   "Response.json()",
+   "requests.Session",
+   "requests.codes",
+   "requests.exceptions.RequestException",
+   "requests.exceptions.HTTPError",
+   "requests.exceptions.ConnectionError"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you send different HTTP methods with Requests?",
+    "answer": "Use requests.get(), requests.post(), requests.put(), requests.delete(), requests.head(), or requests.options(). Each returns a Response object. The general requests.request(method, url, **kwargs) form also constructs and sends a request.",
+    "followUp": "How would you send query parameters? Pass them with the params argument, which places them in the request query string."
+   },
+   {
+    "question": "How should HTTP status results be handled?",
+    "answer": "Response.status_code contains the integer HTTP status. response.raise_for_status() raises HTTPError for an unsuccessful status and returns None when the status is successful.",
+    "followUp": "How can you compare a status without hard-coding a number? Use the case-insensitive status lookup object, such as requests.codes.ok."
+   },
+   {
+    "question": "What exceptions can a request raise?",
+    "answer": "Requests raises ConnectionError for network problems, Timeout when the configured wait limit is exceeded, and TooManyRedirects after too many redirects. These exceptions inherit from RequestException, so that base class can catch all explicitly raised Requests exceptions.",
+    "followUp": "Which exception handles invalid JSON? Requests JSONDecodeError inherits from InvalidJSONError and RequestException."
+   }
+  ],
+  "keyPoints": [
+   "HTTP method functions return a Response object that contains the server result.",
+   "Read response headers through response.headers; header names are case-insensitive.",
+   "Pass a dictionary or cookie jar with cookies= to attach cookies to a request.",
+   "Call response.json() to decode JSON returned by the server.",
+   "Use response.iter_content() or response.iter_lines() when processing large responses incrementally.",
+   "Use Session to keep cookies, reuse connections, and share request configuration."
+  ],
+  "gotchas": [
+   "A missing timeout can make a request wait indefinitely.",
+   "Network success does not mean the server returned a successful HTTP status; check the response or raise the error."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "json": {
   "sourceUrl": "https://requests.readthedocs.io/en/latest/api/",
   "sourceTitle": "Developer Interface — Requests 2.34.2 documentation",
@@ -319,6 +725,77 @@
   ],
   "checkedAt": "2026-10-15"
  },
+ "RequestException": {
+  "sourceUrl": "https://requests.readthedocs.io/en/latest/api/",
+  "sourceTitle": "Developer Interface — Requests 2.34.2 documentation",
+  "summary": "Requests provides a common RequestException base class and more specific subclasses for connection, HTTP, timeout, URL, redirect, and JSON errors. Catch a specific subclass when the failure needs special handling; otherwise catch RequestException.",
+  "explanation": "Requests defines a hierarchy of exceptions for failed HTTP operations. Catch the broad RequestException type for general handling, or catch a more specific subclass when the failure needs different treatment.",
+  "syntax": "class requests.RequestException(*args: Any, **kwargs: Any)",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Handle Requests exceptions",
+   "code": "import requests\n\ntry:\n    response = requests.get(\"https://example.com\", timeout=1)\n    response.raise_for_status()\nexcept requests.exceptions.ConnectTimeout:\n    print(\"The connection timed out; retrying is safe.\")\nexcept requests.exceptions.ReadTimeout:\n    print(\"The server sent no data in time.\")\nexcept requests.exceptions.RequestException as error:\n    print(f\"Request failed: {error}\")",
+   "language": "python",
+   "explanation": "This code separates connection timeouts, read timeouts, and other Requests errors."
+  },
+  "useCases": [
+   {
+    "title": "General request error handling",
+    "scenario": "Catch all request failures in one error boundary."
+   },
+   {
+    "title": "Retry connection timeouts",
+    "scenario": "Retry a failed connection attempt."
+   },
+   {
+    "title": "Process JSON decoding failures",
+    "scenario": "Handle invalid response JSON separately."
+   }
+  ],
+  "related": [
+   "ConnectionError",
+   "HTTPError",
+   "Timeout",
+   "ConnectTimeout",
+   "ReadTimeout",
+   "JSONDecodeError",
+   "TooManyRedirects",
+   "InvalidURL"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is RequestException?",
+    "answer": "RequestException is the general Requests exception type. Its subclasses include connection, HTTP, timeout, URL, and decoding errors.",
+    "followUp": "Which timeout errors can one catch together? Timeout catches both ConnectTimeout and ReadTimeout."
+   },
+   {
+    "question": "What is the difference between ConnectTimeout and ReadTimeout?",
+    "answer": "ConnectTimeout occurs while connecting to the remote server. The documentation marks requests that cause it as safe to retry.",
+    "followUp": "How does it differ from ReadTimeout? ReadTimeout happens after connection when the server fails to send data in time."
+   },
+   {
+    "question": "When does Requests raise JSONDecodeError?",
+    "answer": "JSONDecodeError is raised when response text cannot be decoded as JSON. It is part of the Requests exception hierarchy.",
+    "followUp": "What should code do when JSON is optional? Catch JSONDecodeError and handle the response as non-JSON or report the invalid payload."
+   }
+  ],
+  "keyPoints": [
+   "RequestException is the general base class for request-related failures.",
+   "ConnectionError represents a failure to connect or maintain the connection.",
+   "HTTPError represents an HTTP-level error.",
+   "TooManyRedirects signals that request following exceeded the allowed redirect limit.",
+   "InvalidSchema is used when the URL scheme is not valid or supported.",
+   "ContentDecodingError means Requests could not decode response content."
+  ],
+  "gotchas": [
+   "A ConnectTimeout indicates that the connection attempt timed out. The documentation says requests that produce this error are safe to retry.",
+   "ReadTimeout means the server did not send data within the allowed time.",
+   "Proxy URLs must include a scheme, such as http://. A proxy value without one can raise MissingSchema."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "requests.delete": {
   "sourceUrl": "https://requests.readthedocs.io/en/latest/api/",
   "sourceTitle": "Developer Interface — Requests 2.34.2 documentation",
@@ -476,6 +953,231 @@
    "Streaming changes response-body handling, so close the response when finished, preferably with a context manager."
   ],
   "checkedAt": "2026-10-15"
+ },
+ "requests.head": {
+  "sourceUrl": "https://requests.readthedocs.io/en/stable/user/advanced/",
+  "sourceTitle": "Advanced Usage — Requests 2.34.2 documentation",
+  "summary": "Use Requests sessions to keep settings, cookies, and connections across several HTTP calls. Use Response methods to read data, stream large bodies, and check HTTP errors.",
+  "explanation": "A Session stores settings and cookies for several requests. It can also reuse connections to the same host. Request-specific values override session defaults, but they do not become defaults for later requests.",
+  "syntax": "requests.Session()\nSession.request(method, url, **kwargs) -> Response",
+  "parameters": [
+   {
+    "name": "method",
+    "type": "str",
+    "description": "The HTTP method, such as GET, POST, PUT, PATCH, or DELETE."
+   },
+   {
+    "name": "url",
+    "type": "UriType",
+    "description": "The target URL."
+   },
+   {
+    "name": "params",
+    "type": "ParamsType | None",
+    "description": "Optional query-string values."
+   },
+   {
+    "name": "data",
+    "type": "DataType | None",
+    "description": "Optional request body data."
+   },
+   {
+    "name": "json",
+    "type": "JsonType | None",
+    "description": "Optional JSON body value."
+   },
+   {
+    "name": "headers",
+    "type": "HeadersType | None",
+    "description": "Optional HTTP headers."
+   },
+   {
+    "name": "cookies",
+    "type": "dict, CookieJar, or RequestsCookieJar",
+    "description": "Optional cookies for the request."
+   },
+   {
+    "name": "auth",
+    "type": "AuthType | None",
+    "description": "Optional authentication handler or credentials tuple."
+   },
+   {
+    "name": "timeout",
+    "type": "TimeoutType | None",
+    "description": "Seconds to wait for a response, or a connect/read timeout tuple."
+   },
+   {
+    "name": "allow_redirects",
+    "type": "bool",
+    "description": "Whether to follow redirects; the default is True."
+   },
+   {
+    "name": "proxies",
+    "type": "dict[str, str] | None",
+    "description": "Proxy settings mapped by protocol or host."
+   },
+   {
+    "name": "verify",
+    "type": "VerifyType",
+    "description": "Whether to verify the server TLS certificate, or a CA bundle path."
+   }
+  ],
+  "returns": "A requests.Response object.",
+  "example": {
+   "title": "Send a GET request",
+   "code": "import requests\n\nwith requests.Session() as session:\n    response = session.get(\"https://api.example.com/items\", timeout=10)\n    response.raise_for_status()\n    print(response.json())",
+   "language": "python",
+   "explanation": "This creates a session, sends a GET request with a timeout, checks for an HTTP error, and decodes the JSON body."
+  },
+  "useCases": [
+   {
+    "title": "Share request settings",
+    "scenario": "Several calls use the same authentication, headers, cookies, or proxy settings."
+   },
+   {
+    "title": "Reuse connections",
+    "scenario": "A client sends many requests to one host."
+   },
+   {
+    "title": "Read streamed data",
+    "scenario": "A response is large or arrives over time."
+   },
+   {
+    "title": "Parse JSON responses",
+    "scenario": "A response body should be handled as JSON."
+   }
+  ],
+  "related": [
+   "requests.request",
+   "requests.get",
+   "requests.post",
+   "requests.head",
+   "requests.options",
+   "requests.patch",
+   "requests.put",
+   "requests.delete"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "Why use requests.Session instead of requests.get for every call?",
+    "answer": "A Session keeps settings and cookies between requests. It also uses connection pooling, so requests to the same host can reuse the TCP connection.",
+    "followUp": "How can a request override a session default? Pass the value to that request method. The method-level value takes precedence, but it is not saved for later requests."
+   },
+   {
+    "question": "How does streaming a response work?",
+    "answer": "With stream=True, Requests downloads response data later instead of immediately. Use iter_content(), iter_lines(), or content to consume it, and close the response if it is not fully consumed.",
+    "followUp": "Why does this matter for performance? Reading all data or closing the response releases the connection so the session can reuse it."
+   },
+   {
+    "question": "How do you read JSON from a response safely?",
+    "answer": "Response.json() parses the response body as a Python value such as a dictionary or list. It raises requests.exceptions.JSONDecodeError when the body is not valid JSON.",
+    "followUp": "Does json() prove the HTTP request succeeded? No. Check the status separately, for example with raise_for_status()."
+   }
+  ],
+  "keyPoints": [
+   "Use a Session when several requests share settings such as headers, authentication, or proxies.",
+   "Cookies received by one request in a session can be sent with later requests in that session.",
+   "A value passed to one request overrides the matching session value for that request only.",
+   "A response provides the status code, headers, cookies, body, timing, and the request that produced it.",
+   "By default, Requests loads the response body before the call returns.",
+   "iter_content() lets you process a streamed response in chunks instead of loading it all at once.",
+   "Call raise_for_status() to turn an unsuccessful HTTP status into an HTTPError."
+  ],
+  "gotchas": [
+   "When using stream=True, read the whole response or close it. Otherwise, the connection cannot return to the connection pool.",
+   "Do not disable TLS verification in normal use. It accepts invalid certificates and can allow man-in-the-middle attacks.",
+   "Do not call iter_lines() from multiple places on the same response. Use one saved iterator instead."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "requests.patch": {
+  "sourceUrl": "https://requests.readthedocs.io/en/latest/api/",
+  "sourceTitle": "Developer Interface — Requests 2.34.2 documentation",
+  "summary": "requests.patch() sends an HTTP PATCH request and returns a Response. Use data or json to provide the request body.",
+  "explanation": "Call requests.patch() with the target URL. Pass update data with data or a JSON-serializable object with json. Extra request options, such as timeout, can be passed through kwargs. The function sends the request and returns a Response object.",
+  "syntax": "requests.patch(url, data=None, json=None, **kwargs)",
+  "parameters": [
+   {
+    "name": "url",
+    "type": "str or URL-like value",
+    "description": "Target URL for the new request."
+   },
+   {
+    "name": "data",
+    "type": "optional body value",
+    "description": "Optional request body. It may be a dictionary, list of tuples, bytes, or file-like object."
+   },
+   {
+    "name": "json",
+    "type": "optional JSON value",
+    "description": "Optional JSON-serializable value for the request body."
+   },
+   {
+    "name": "**kwargs",
+    "type": "request keyword arguments",
+    "description": "Other options accepted by requests.request(), such as headers, timeout, auth, proxies, verify, stream, and cert."
+   }
+  ],
+  "returns": "requests.Response",
+  "example": {
+   "title": "Send a PATCH request",
+   "code": "import requests\n\nresponse = requests.patch(\n    \"https://api.example.com/items/42\",\n    json={\"enabled\": True},\n    timeout=10,\n)\nresponse.raise_for_status()\nprint(response.json())",
+   "language": "python",
+   "explanation": "This sends a partial update and returns the server response."
+  },
+  "useCases": [
+   {
+    "title": "Partial resource update",
+    "scenario": "Change selected fields on an existing API resource without replacing the whole resource."
+   },
+   {
+    "title": "JSON API update",
+    "scenario": "Send a JSON object to an API endpoint that uses PATCH."
+   },
+   {
+    "title": "Configured request",
+    "scenario": "Add request settings such as a timeout, headers, or authentication."
+   }
+  ],
+  "related": [
+   "requests.request",
+   "requests.put",
+   "requests.post",
+   "requests.delete",
+   "requests.Response",
+   "requests.exceptions.HTTPError",
+   "Response.json",
+   "Response.raise_for_status"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does requests.patch() do?",
+    "answer": "requests.patch() sends an HTTP PATCH request. It accepts a URL, optional data, and other request options, then returns a Response.",
+    "followUp": "How can you send JSON? Pass the object with the json keyword, for example json={\"enabled\": True}."
+   },
+   {
+    "question": "What can you pass in the request body?",
+    "answer": "The data argument can contain a dictionary, a list of tuples, bytes, or a file-like object. The function also accepts a JSON-serializable object through json.",
+    "followUp": "When would a list of tuples help? It can represent repeated form fields or preserve the order of submitted pairs."
+   },
+   {
+    "question": "What does the function return?",
+    "answer": "The returned Response contains the server's result. You can inspect its status and content, and call raise_for_status() to raise an exception for an HTTP error.",
+    "followUp": "What exception can JSON parsing cause? Response.json() can raise JSONDecodeError when the response cannot be decoded as JSON."
+   }
+  ],
+  "keyPoints": [
+   "Use PATCH for a partial update of a resource. The call returns a Response.",
+   "Pass shared request options through keyword arguments, such as headers, authentication, timeout, or TLS settings.",
+   "The data argument supports several body types, including mappings, byte data, and file-like objects.",
+   "The current API supports json for sending a JSON-serializable Python value in the request body."
+  ],
+  "gotchas": [
+   "Use json for a JSON-serializable body. Do not confuse it with data, which sends the request body in another supported form."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "requests.post": {
   "sourceUrl": "https://requests.readthedocs.io/en/latest/api/",
@@ -653,6 +1355,176 @@
   ],
   "checkedAt": "2026-10-15"
  },
+ "Response": {
+  "sourceUrl": "https://requests.readthedocs.io/en/latest/api/",
+  "sourceTitle": "Developer Interface — Requests 2.34.2 documentation",
+  "summary": "Requests HTTP functions return a Response object. Use it to inspect the result of a request, read response data, and handle request errors.",
+  "explanation": "The Response class represents the result returned by a Requests HTTP call. It contains the server result and request-related data, and it can be used to inspect status, headers, content, and decoded JSON.",
+  "syntax": "requests.request(method: str, url: UriType, **kwargs: Unpack[RequestKwargs]) -> Response",
+  "parameters": [
+   {
+    "name": "url",
+    "type": "UriType",
+    "description": "The URL for the request."
+   },
+   {
+    "name": "params",
+    "type": "ParamsType",
+    "description": "Query-string data, such as a dictionary, tuple list, or bytes."
+   },
+   {
+    "name": "data",
+    "type": "DataType",
+    "description": "Request body data, such as a dictionary, tuple list, bytes, or file-like object."
+   },
+   {
+    "name": "json",
+    "type": "JsonType",
+    "description": "A JSON-serializable object for the request body."
+   },
+   {
+    "name": "headers",
+    "type": "HeadersType",
+    "description": "HTTP headers to send."
+   },
+   {
+    "name": "timeout",
+    "type": "TimeoutType",
+    "description": "Seconds to wait for a connection and response data; may be one number or a connect/read tuple."
+   },
+   {
+    "name": "verify",
+    "type": "VerifyType",
+    "description": "Whether to verify the server TLS certificate, or a CA bundle path."
+   },
+   {
+    "name": "stream",
+    "type": "bool | None",
+    "description": "Whether to download response content immediately."
+   }
+  ],
+  "returns": "requests.Response",
+  "example": {
+   "title": "Send a GET request",
+   "code": "import requests\n\nresponse = requests.get(\n    \"https://httpbin.org/get\",\n    params={\"limit\": 10},\n    timeout=5,\n)\nresponse.raise_for_status()\nprint(response.json())",
+   "language": "python",
+   "explanation": "This sends a GET request with a query parameter and a timeout. It raises an exception for an unsuccessful HTTP status, then reads the JSON response."
+  },
+  "useCases": [
+   {
+    "title": "HTTP requests",
+    "scenario": "Call an HTTP endpoint and inspect its returned status, headers, or body."
+   },
+   {
+    "title": "Request data",
+    "scenario": "Send query parameters, form data, JSON, headers, cookies, or files."
+   },
+   {
+    "title": "Session-based clients",
+    "scenario": "Reuse cookies, connections, and settings across several requests."
+   }
+  ],
+  "related": [
+   "requests.request",
+   "requests.get",
+   "requests.post",
+   "requests.Session",
+   "requests.Response",
+   "requests.exceptions.RequestException",
+   "requests.exceptions.JSONDecodeError"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is a Response object?",
+    "answer": "A Response is the object returned by Requests methods such as get, post, and request. It lets code inspect the result of the HTTP operation, including status and response data.",
+    "followUp": "How can code fail fast on an unsuccessful status? Call response.raise_for_status(), then handle the resulting HTTPError."
+   },
+   {
+    "question": "How do you read JSON from a Response?",
+    "answer": "Use response.json() when the response body contains JSON. Requests raises JSONDecodeError if the response text cannot be decoded as JSON.",
+    "followUp": "What should code do when JSON is optional? Catch the JSON decoding exception and use a suitable fallback or report the invalid response."
+   },
+   {
+    "question": "Why use a Session?",
+    "answer": "A Session keeps cookies between requests and provides connection pooling and shared configuration. Use it as a context manager so it closes its adapters when the work is complete.",
+    "followUp": "When is a Session better than separate top-level calls? Use it when several requests share cookies, authentication, headers, proxies, or connection settings."
+   }
+  ],
+  "keyPoints": [
+   "The main Requests functions return a Response object.",
+   "Use requests.get() for a GET operation.",
+   "Use requests.post() to send form data or a JSON body.",
+   "A Session keeps cookies, reuses connections, and stores shared settings.",
+   "Session.prepare_request() builds a prepared request using request and session settings.",
+   "RequestException timeout errors include both connection and response-read timeout errors."
+  ],
+  "gotchas": [
+   "Do not set verify to False in normal use. It accepts any server TLS certificate and can allow man-in-the-middle attacks.",
+   "HEAD requests do not follow redirects by default, unlike the general request function."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "response.raise_for_status": {
+  "sourceUrl": "https://requests.readthedocs.io/en/latest/api/",
+  "sourceTitle": "Developer Interface — Requests 2.34.2 documentation",
+  "summary": "Response.raise_for_status() checks an HTTP response status. It raises HTTPError for an unsuccessful response and returns None when the status is successful.",
+  "explanation": "Call this method on a Response object after a request. It checks the HTTP status and raises requests.exceptions.HTTPError when the response is unsuccessful. For a successful response, it returns None.",
+  "syntax": "Response.raise_for_status()",
+  "parameters": [],
+  "returns": "None for a successful response; raises requests.exceptions.HTTPError for an unsuccessful HTTP status.",
+  "example": {
+   "title": "Raise an error for a bad response",
+   "code": "import requests\n\nresponse = requests.get(\"https://httpbin.org/status/404\")\ntry:\n    response.raise_for_status()\nexcept requests.exceptions.HTTPError as error:\n    print(error)",
+   "language": "python",
+   "explanation": "This sends a GET request and raises an HTTPError for an unsuccessful status."
+  },
+  "useCases": [
+   {
+    "title": "Validate a response",
+    "scenario": "Stop normal processing when an HTTP request fails."
+   },
+   {
+    "title": "Handle request errors",
+    "scenario": "Convert HTTP failure statuses into exceptions that application code can catch."
+   }
+  ],
+  "related": [
+   "Response.status_code",
+   "requests.codes",
+   "requests.exceptions.HTTPError",
+   "requests.exceptions.RequestException"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does Response.raise_for_status() do?",
+    "answer": "Call raise_for_status() on the Response object. It raises HTTPError when the server returns an unsuccessful HTTP status, and returns None otherwise.",
+    "followUp": "Does it check whether the response body contains valid JSON? No. JSON parsing is separate, so use response.json() only when the body format is appropriate."
+   },
+   {
+    "question": "What happens for 404 and 200 responses?",
+    "answer": "A 404 response causes raise_for_status() to raise HTTPError. A response with status 200 does not raise and returns None.",
+    "followUp": "How can you inspect the status before raising? Read response.status_code or compare it with a value from requests.codes."
+   },
+   {
+    "question": "Which exception should application code catch?",
+    "answer": "The exception belongs to Requests' exception hierarchy. It can be handled specifically as requests.exceptions.HTTPError.",
+    "followUp": "How would you handle connection failures too? Catch the broader requests.exceptions.RequestException when one handler should cover all exceptions explicitly raised by Requests."
+   }
+  ],
+  "keyPoints": [
+   "The method raises for client errors and server errors.",
+   "Call it after receiving a response to validate the HTTP status.",
+   "A successful response leaves the call without an exception.",
+   "HTTPError is part of the common Requests exception family."
+  ],
+  "gotchas": [
+   "The method does not raise for a successful response.",
+   "Catch requests.exceptions.HTTPError when you want to handle this failure."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "Session": {
   "sourceUrl": "https://requests.readthedocs.io/en/latest/user/advanced/",
   "sourceTitle": "Session Objects — Requests: HTTP for Humans",
@@ -724,6 +1596,81 @@
   ],
   "checkedAt": "2026-10-15"
  },
+ "session.mount": {
+  "sourceUrl": "https://requests.readthedocs.io/en/latest/user/advanced/",
+  "sourceTitle": "Advanced Usage — Requests 2.34.2 documentation",
+  "summary": "A transport adapter controls how a Requests Session sends matching HTTP requests. Mount an adapter on a URL prefix to apply custom behavior.",
+  "explanation": "A Session uses transport adapters to send requests. The default HTTPAdapter handles HTTP and HTTPS, but you can mount another adapter on a URL prefix. Requests selects the adapter whose prefix matches the URL most specifically.",
+  "syntax": "session.mount(prefix, adapter)",
+  "parameters": [
+   {
+    "name": "prefix",
+    "type": "string",
+    "description": "URL prefix used to choose the adapter."
+   },
+   {
+    "name": "adapter",
+    "type": "Transport Adapter",
+    "description": "Adapter instance to use for matching requests."
+   }
+  ],
+  "returns": "",
+  "example": {
+   "title": "Mount an HTTP adapter",
+   "code": "import requests\n\nwith requests.Session() as session:\n    session.mount(\"https://\", requests.adapters.HTTPAdapter())\n    response = session.get(\"https://example.com\")\n    response.raise_for_status()\n    print(response.status_code)",
+   "language": "python",
+   "explanation": "This creates a session and mounts an HTTP adapter for HTTPS URLs. Requests then uses that adapter for matching requests."
+  },
+  "useCases": [
+   {
+    "title": "Customize transport behavior",
+    "scenario": "A service needs a custom SSL version or other transport setting."
+   },
+   {
+    "title": "Route requests by URL prefix",
+    "scenario": "Different URL groups need different request handling."
+   },
+   {
+    "title": "Extend the default adapter",
+    "scenario": "A client needs custom retry or connection behavior."
+   }
+  ],
+  "related": [
+   "requests.adapters.HTTPAdapter",
+   "requests.adapters.BaseAdapter",
+   "requests.Session.mount()"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is a transport adapter in Requests?",
+    "answer": "A transport adapter connects a Session to the code that sends requests. Requests includes HTTPAdapter as its default adapter for HTTP and HTTPS.",
+    "followUp": "How do you use a custom adapter? Create or subclass an adapter, then call Session.mount() with a URL prefix and the adapter instance."
+   },
+   {
+    "question": "How do you mount an adapter?",
+    "answer": "Call session.mount(prefix, adapter). Requests uses the adapter for URLs that start with the prefix.",
+    "followUp": "Which adapter is used when several prefixes match? The one with the longest matching prefix."
+   },
+   {
+    "question": "Why would you create a custom adapter?",
+    "answer": "The default HTTPAdapter uses urllib3 for HTTP and HTTPS. A custom adapter can change transport behavior, such as SSL settings or retry behavior.",
+    "followUp": "What should you check when mounting a host prefix? Add a trailing slash to a complete hostname so it does not match another hostname that merely begins with the same text."
+   }
+  ],
+  "keyPoints": [
+   "Requests provides HTTPAdapter as its built-in transport adapter.",
+   "HTTPAdapter supplies the normal HTTP and HTTPS behavior.",
+   "Attach a custom adapter to a Session with mount().",
+   "Mounted adapters apply when the request URL starts with their registered prefix.",
+   "You can implement custom transport behavior instead of using only the built-in adapter."
+  ],
+  "gotchas": [
+   "A more specific mounted prefix takes priority over a shorter matching prefix.",
+   "A prefix without a final slash can match unintended host names. End full host names with a slash."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "status_code": {
   "sourceUrl": "https://requests.readthedocs.io/en/latest/api/",
   "sourceTitle": "Developer Interface — Requests 2.34.2 documentation",
@@ -787,5 +1734,193 @@
    "Do not treat Response.ok as an exact 200 check; status_code itself is the appropriate property for testing a particular code."
   ],
   "checkedAt": "2026-10-15"
+ },
+ "Timeout": {
+  "sourceUrl": "https://requests.readthedocs.io/en/stable/user/quickstart/",
+  "sourceTitle": "Quickstart — Requests 2.34.2 documentation",
+  "summary": "Requests sends HTTP requests with simple Python functions such as get() and post(). The returned Response object provides the status, content, headers, redirect history, and JSON data.",
+  "explanation": "Pass a timeout to the request method to limit how long Requests waits for server data. A successful call returns a Response object. Use its status, content, headers, history, and JSON methods to inspect the result. Call raise_for_status() when an unsuccessful HTTP status should become an exception.",
+  "syntax": "requests.request(method, url, **kwargs)",
+  "parameters": [
+   {
+    "name": "method",
+    "type": "string",
+    "description": "HTTP method to use."
+   },
+   {
+    "name": "url",
+    "type": "string",
+    "description": "URL for the request."
+   },
+   {
+    "name": "params",
+    "type": "dictionary or bytes",
+    "description": "Optional query-string data."
+   },
+   {
+    "name": "data",
+    "type": "dictionary, bytes, or file-like object",
+    "description": "Optional request body."
+   },
+   {
+    "name": "timeout",
+    "type": "float",
+    "description": "Optional request timeout in seconds."
+   },
+   {
+    "name": "allow_redirects",
+    "type": "boolean",
+    "description": "Whether to follow redirects."
+   }
+  ],
+  "returns": "A Response object.",
+  "example": {
+   "title": "GET request with a timeout",
+   "code": "import requests\n\nresponse = requests.get(\"https://api.github.com/events\", timeout=10)\nresponse.raise_for_status()\nprint(response.status_code)\nprint(response.json())",
+   "language": "python",
+   "explanation": "This sends a GET request, stops waiting after 10 seconds, checks for an unsuccessful HTTP status, and reads the response as JSON."
+  },
+  "useCases": [
+   {
+    "title": "API calls",
+    "scenario": "Fetch data from a web API and decode its JSON response."
+   },
+   {
+    "title": "Form submission",
+    "scenario": "Submit form data to a web service."
+   },
+   {
+    "title": "Bounded waiting",
+    "scenario": "Prevent a network call from waiting forever."
+   }
+  ],
+  "related": [
+   "requests.request",
+   "requests.get",
+   "requests.post",
+   "requests.put",
+   "requests.patch",
+   "requests.delete",
+   "requests.head",
+   "requests.options"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does the timeout parameter control?",
+    "answer": "The timeout value is used when the server has not provided response data for that period. It is not a limit for downloading the complete response.",
+    "followUp": "How can code handle a timeout? Catch requests.exceptions.Timeout, then retry or report the failure according to the application’s policy."
+   },
+   {
+    "question": "How should an application detect request errors?",
+    "answer": "Requests returns a Response object for each request. Its status_code reports the HTTP status, and raise_for_status() raises HTTPError for an unsuccessful status.",
+    "followUp": "How are network failures different from HTTP failures? Network problems raise ConnectionError, while an HTTP error requires calling raise_for_status()."
+   },
+   {
+    "question": "Which HTTP methods does Requests provide directly?",
+    "answer": "GET, POST, PUT, DELETE, HEAD, and OPTIONS have dedicated helper functions. Each helper returns a Response object and accepts request options such as data or timeout.",
+    "followUp": "How can the same operation support a dynamic method? Use requests.request(method, url, **kwargs)."
+   }
+  ],
+  "keyPoints": [
+   "Use a method helper such as requests.get() or requests.post() to send common HTTP requests.",
+   "Every request returns a Response object that contains the server result.",
+   "Redirect responses are available in the history list when Requests follows a redirect.",
+   "Set timeout to bound waiting time for a request.",
+   "RequestException is the common base class for Requests exceptions."
+  ],
+  "gotchas": [
+   "Without timeout, a request can wait indefinitely.",
+   "Timeout measures gaps while waiting for server data, not the total download time.",
+   "A response with an error status does not raise automatically; call raise_for_status()."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "TooManyRedirects": {
+  "sourceUrl": "https://requests.readthedocs.io/en/latest/user/quickstart/",
+  "sourceTitle": "Quickstart — Requests 2.34.2 documentation",
+  "summary": "Requests makes common HTTP calls simple in Python. Send a request, inspect the returned Response, and set a timeout and status check for safer code.",
+  "explanation": "Requests provides functions for common HTTP methods and returns a Response object. You can inspect its content and status, pass query or form data, set headers, follow redirects, and define a timeout. Network failures and unsuccessful status checks use specific exceptions.",
+  "syntax": "requests.get(url, **kwargs)\nrequests.post(url, data=None, **kwargs)\nrequests.put(url, data=None, **kwargs)\nrequests.delete(url, **kwargs)\nrequests.head(url, **kwargs)\nrequests.options(url, **kwargs)",
+  "parameters": [
+   {
+    "name": "url",
+    "type": "string",
+    "description": "The target URL for the HTTP request."
+   },
+   {
+    "name": "data",
+    "type": "mapping or other supported request data",
+    "description": "Data sent with methods such as POST and PUT."
+   },
+   {
+    "name": "timeout",
+    "type": "number",
+    "description": "Maximum wait time in seconds for the underlying socket."
+   }
+  ],
+  "returns": "A requests.Response object for a completed request.",
+  "example": {
+   "title": "Make a checked GET request",
+   "code": "import requests\n\nresponse = requests.get(\n    \"https://api.github.com/events\",\n    timeout=10,\n)\nresponse.raise_for_status()\nprint(response.status_code)\nprint(response.json())",
+   "language": "python",
+   "explanation": "This sends a GET request, limits how long it can wait, checks for an unsuccessful HTTP status, and reads the JSON response."
+  },
+  "useCases": [
+   {
+    "title": "API requests",
+    "scenario": "Call a web API and read its JSON result."
+   },
+   {
+    "title": "Form submission",
+    "scenario": "Send form fields to a server."
+   },
+   {
+    "title": "HTTP method operations",
+    "scenario": "Check the result of a resource update or removal."
+   }
+  ],
+  "related": [
+   "requests.get",
+   "requests.post",
+   "requests.put",
+   "requests.delete",
+   "requests.head",
+   "requests.options",
+   "requests.Response",
+   "Response.raise_for_status"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you make a basic GET request?",
+    "answer": "Use requests.get() for a GET request and requests.post() for a POST request. Each returns a Response object that exposes the result.",
+    "followUp": "How should a client avoid waiting forever? Pass an explicit timeout, because Requests has no default timeout."
+   },
+   {
+    "question": "How do you detect an unsuccessful HTTP response?",
+    "answer": "Call response.raise_for_status() after the request. It raises HTTPError when the server returns an unsuccessful status code.",
+    "followUp": "Does this handle every failure? No. Network problems raise ConnectionError, time limits raise Timeout, and excessive redirects raise TooManyRedirects."
+   },
+   {
+    "question": "How do you limit request waiting time?",
+    "answer": "Pass timeout=seconds to the request. Requests applies the timeout to waiting for a response or data on the underlying socket.",
+    "followUp": "What happens if the timeout is omitted? The request has no timeout and may wait indefinitely."
+   }
+  ],
+  "keyPoints": [
+   "Import the library with import requests before calling its request functions.",
+   "HTTP calls return a Response object that contains the result.",
+   "The library offers direct functions for common HTTP methods such as GET, POST, PUT, DELETE, HEAD, and OPTIONS.",
+   "Use the response object to inspect returned data and other response details.",
+   "A timeout produces requests.exceptions.Timeout.",
+   "DNS failures, refused connections, and similar network problems produce ConnectionError."
+  ],
+  "gotchas": [
+   "A request can wait indefinitely unless you set a timeout.",
+   "A response object does not automatically raise an error for an unsuccessful HTTP status; call raise_for_status().",
+   "Catch RequestException when you need one base class for Requests errors."
+  ],
+  "checkedAt": "2026-11-03"
  }
 }

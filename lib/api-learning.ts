@@ -116,6 +116,12 @@ function scriptProject(pkg: ApiPackage, entry: ApiEntry, detail: ApiDetail, read
     ],
     instructions: ["Press Run: the code builds in the browser and its real console output appears below.", "Edit src/example, press Save, and the output updates."],
   };
+  // A Playwright example is a test file: its runner starts the browsers and provides `test` and `page`.
+  if (pkg.id === "playwright") return {
+    title: `${entry.name} in practice`, template: "local", entry: `/tests/example.spec.${extension}`, dependencies: {},
+    files: [{ path: `/tests/example.spec.${extension}`, code }, { path: `/tests/example_explained.spec.${extension}`, code: annotateCode(code, language) }, { path: "/README.md", code: readme }],
+    instructions: ["Playwright drives real browsers, so this test runs on your machine, not in this page.", "npm init playwright@latest, copy this file into tests/, then npx playwright test"],
+  };
   return {
     title: `${entry.name} in practice`, template: "local", entry: `/src/example.${extension}`, dependencies,
     files: [...shared, { path: "/package.json", code: `${JSON.stringify({ name: "api-lab", private: true, type: "module", dependencies }, null, 2)}\n` }],

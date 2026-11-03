@@ -1,0 +1,2296 @@
+{
+ "Availability": {
+  "sourceUrl": "https://github.com/donnemartin/system-design-primer",
+  "sourceTitle": "GitHub - donnemartin/system-design-primer: Learn how to design large-scale systems. Prep for the system design interview. Includes Anki flashcards.",
+  "summary": "Availability describes how often a service is available. It is usually measured as uptime percentage and changes based on whether components are arranged in sequence or in parallel.",
+  "explanation": "Availability measures how often a service is available, usually as uptime. For components in sequence, multiply their availability. For components in parallel, calculate one minus the product of their unavailability.",
+  "syntax": "",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Availability calculation",
+   "code": "# No runnable syntax is defined for availability in the documentation.",
+   "language": "text",
+   "explanation": "The documentation explains availability as a system property, not as a command or code construct."
+  },
+  "useCases": [
+   {
+    "title": "Define an uptime target",
+    "scenario": "Set a service reliability target, such as 99.99% uptime."
+   },
+   {
+    "title": "Evaluate sequential dependencies",
+    "scenario": "Estimate the effect of adding a required dependency."
+   },
+   {
+    "title": "Design for higher availability",
+    "scenario": "Compare a single component with redundant components."
+   }
+  ],
+  "related": [
+   "Fail-over",
+   "Replication",
+   "Active-passive",
+   "Active-active",
+   "Availability in numbers"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How is availability commonly measured?",
+    "answer": "Availability is commonly expressed as uptime percentage. The documentation also describes it using the number of nines, so 99.99% is four nines.",
+    "followUp": "How do two components affect availability when placed in sequence? Multiply their availability values; two components at 99.9% give 99.8%."
+   },
+   {
+    "question": "How do you calculate availability for components in sequence?",
+    "answer": "For components that must all work, total availability is the product of their individual availability values. Therefore, adding sequential dependencies lowers total availability when each is below 100%.",
+    "followUp": "What happens when components are redundant and placed in parallel? Total availability becomes one minus the product of their failure probabilities."
+   },
+   {
+    "question": "Why can parallel components increase availability?",
+    "answer": "Parallel components improve availability because the service works if at least one component remains available. The formula is 1 - (1 - A) * (1 - B).",
+    "followUp": "What is the result for two components at 99.9% availability? The documentation gives 99.9999%."
+   }
+  ],
+  "keyPoints": [
+   "Measure availability by the percentage of time that the service stays available, or by its downtime.",
+   "People often describe availability by counting the nines in the uptime percentage.",
+   "Sequential dependencies reduce the service's total availability because every component must work.",
+   "For two sequential components, multiply their availability values to get the total.",
+   "Parallel components raise availability because one working component can serve when another fails.",
+   "For two parallel components, subtract the product of their failure probabilities from one."
+  ],
+  "gotchas": [
+   "Adding a load balancer does not automatically remove every single point of failure. A single load balancer can itself fail, so multiple load balancers may be needed, which adds complexity.",
+   "Fail-over can lose recent data when replication has not completed before the active system fails."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "BASE": {
+  "sourceUrl": "https://github.com/donnemartin/system-design-primer/blob/master/README.md?plain=1",
+  "sourceTitle": "GitHub - donnemartin/system-design-primer: Learn how to design large-scale systems. Prep for the system design interview. Includes Anki flashcards.",
+  "summary": "Scalable system design adds resources to handle more work or larger data. A good design clarifies requirements, sketches major components, details the core parts, and then removes bottlenecks.",
+  "explanation": "Scalable design adds resources so a system can handle more work or larger data. A performance problem makes one user’s request slow; a scalability problem appears when the system becomes slow under heavy load. Design usually starts with requirements, then a high-level plan, core components, and bottleneck analysis.",
+  "syntax": "",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Simple horizontal scaling model",
+   "code": "from dataclasses import dataclass\n\n@dataclass\nclass Service:\n    name: str\n    requests_per_second: int\n\ndef scale(service: Service, instances: int) -> int:\n    return service.requests_per_second * instances\n\nservice = Service(\"api\", 100)\nprint(scale(service, 3))  # 300 requests per second",
+   "language": "python",
+   "explanation": "This small example shows the idea of adding resources to handle more work."
+  },
+  "useCases": [
+   {
+    "title": "Improve performance",
+    "scenario": "A service is slow for one user."
+   },
+   {
+    "title": "Improve scalability",
+    "scenario": "A service slows down during high traffic."
+   },
+   {
+    "title": "Plan system capacity",
+    "scenario": "A design must support large traffic or data growth."
+   }
+  ],
+  "related": [
+   "Vertical scaling",
+   "Horizontal scaling",
+   "Caching",
+   "Load balancing",
+   "Database replication",
+   "Database partitioning",
+   "Latency vs throughput",
+   "Availability vs consistency"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is the difference between performance and scalability?",
+    "answer": "Performance describes how quickly a system handles work. Scalability describes how well performance improves as resources are added, or how well the system handles larger workloads.",
+    "followUp": "How would you find a scalability bottleneck? Start with expected traffic and data size, then inspect overloaded resources and consider load balancing, horizontal scaling, caching, replication, or sharding."
+   },
+   {
+    "question": "How do latency and throughput differ?",
+    "answer": "Latency is the time needed for one action or result. Throughput is the number of actions or results completed per unit of time. A useful design seeks high throughput while keeping latency acceptable.",
+    "followUp": "Can throughput rise while latency worsens? Yes. More concurrent work can increase completed requests while queues and contention make each request take longer."
+   },
+   {
+    "question": "What does the CAP theorem require a designer to consider?",
+    "answer": "CAP describes consistency, availability, and partition tolerance. Because network partitions must be tolerated in distributed systems, a design usually makes a trade-off between consistency and availability during a partition.",
+    "followUp": "What does consistency mean here? Every read gets the newest write or an error; availability means every request gets a response without promising the newest data."
+   }
+  ],
+  "keyPoints": [
+   "A scalable service gains performance roughly in proportion to the resources added.",
+   "A single-user slowdown is a performance problem, not necessarily a scaling problem.",
+   "A system can be fast for one user but slow when many users create load.",
+   "Learn a wide set of system design topics, then study selected areas in greater depth.",
+   "Before designing, clarify users, data size, request rate, and the read-to-write ratio.",
+   "After the core design, find bottlenecks and evaluate solutions such as caching, load balancing, or sharding."
+  ],
+  "gotchas": [
+   "Do not choose components without discussing their costs and alternatives.",
+   "System design preparation should match the role, experience, interview company, and available time.",
+   "Passive failover can lose recent writes when replication has not finished before failure."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "Cache": {
+  "sourceUrl": "https://github.com/donnemartin/system-design-primer/blob/HEAD/solutions/system_design/query_cache/README.md",
+  "sourceTitle": "system-design-primer/solutions/system_design/query_cache/README.md at ae9bbd7b02d90b9866215de185217d33f39ab733 · donnemartin/system-design-primer",
+  "summary": "A cache stores recent query results so repeated requests can return quickly without repeating expensive backend work. An LRU policy removes the least recently used entry when the cache is full.",
+  "explanation": "A cache stores recent query results so repeated requests can avoid slower services. The cache checks for a matching key first. On a miss, the system computes the result, stores it, and returns it. A limited cache can use least recently used eviction. For many machines, shard entries across the cache cluster, often with consistent hashing.",
+  "syntax": "get(query) -> result | None\nset(query, results)",
+  "parameters": [
+   {
+    "name": "MAX_SIZE",
+    "type": "integer",
+    "description": "Maximum number of entries the cache can hold."
+   },
+   {
+    "name": "query",
+    "type": "string",
+    "description": "The query used as the cache key."
+   },
+   {
+    "name": "results",
+    "type": "any",
+    "description": "The result stored for the query."
+   }
+  ],
+  "returns": "get returns the cached result for a query, or None on a miss. set stores or updates the result.",
+  "example": {
+   "title": "LRU cache",
+   "code": "from collections import OrderedDict\n\nclass LRUCache:\n    def __init__(self, capacity):\n        self.capacity = capacity\n        self.data = OrderedDict()\n\n    def get(self, key):\n        if key not in self.data:\n            return None\n        self.data.move_to_end(key, last=False)\n        return self.data[key]\n\n    def set(self, key, value):\n        self.data.pop(key, None)\n        self.data[key] = value\n        self.data.move_to_end(key, last=False)\n        if len(self.data) > self.capacity:\n            self.data.popitem(last=True)\n\ncache = LRUCache(2)\ncache.set(\"cat\", [\"doc1\"])\nprint(cache.get(\"cat\"))",
+   "language": "python",
+   "explanation": "This small cache keeps recently used entries first and removes the least recently used entry when full."
+  },
+  "useCases": [
+   {
+    "title": "Speed up repeated queries",
+    "scenario": "A user repeats a popular search query."
+   },
+   {
+    "title": "Reduce backend load",
+    "scenario": "Many users request the same results."
+   },
+   {
+    "title": "Shard a cache cluster",
+    "scenario": "The result set is too large for one cache machine."
+   }
+  ],
+  "related": [
+   "cache-aside",
+   "time to live (TTL)",
+   "Memory Cache",
+   "Redis",
+   "Memcached",
+   "consistent hashing",
+   "Load Balancer",
+   "Query API server"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What happens on a cache hit or miss?",
+    "answer": "A cache hit returns the stored result and avoids calls to the slower search services. A cache miss computes the result, stores it, and then returns it.",
+    "followUp": "How would you scale the cache? Shard entries across machines and use hashing, preferably consistent hashing, to select a cache machine."
+   },
+   {
+    "question": "How can a cache evict entries?",
+    "answer": "Use an LRU policy when memory is limited. New or accessed entries move to the front, and the oldest entry at the tail is removed when capacity is reached.",
+    "followUp": "What data structures support fast LRU operations? Use a hash table for lookup and a doubly linked list for ordering."
+   },
+   {
+    "question": "How do you limit stale cached results?",
+    "answer": "Set a time-to-live so entries are refreshed after a maximum age. Also update entries when content, membership, or ranking changes.",
+    "followUp": "What is the trade-off? A short TTL reduces staleness but causes more recomputation; a long TTL improves reuse but may serve old results."
+   }
+  ],
+  "keyPoints": [
+   "Keep popular query results in a memory cache to reduce read latency and reduce load on backend services.",
+   "On a hit, return the stored result and mark it as recently used.",
+   "A hash table gives fast key lookup for cache entries.",
+   "An LRU implementation can put newest entries at the head and evict entries from the tail.",
+   "For a large cache cluster, shard cached data across machines to spread memory use and request load."
+  ],
+  "gotchas": [
+   "An LRU cache removes older entries when its capacity is reached. It does not keep every result forever.",
+   "Cached data can become stale after content or ranking changes. Use expiration or another update policy.",
+   "Giving each cache machine separate data is simple, but requests may miss even when another machine has the result."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "Cache Invalidation": {
+  "sourceUrl": "https://github.com/donnemartin/system-design-primer/blob/master/README.md",
+  "sourceTitle": "system-design-primer/README.md at master · donnemartin/system-design-primer · GitHub",
+  "summary": "Cache invalidation keeps cached values consistent with the database or other source of truth. It requires deciding when to remove or update entries after the underlying data changes.",
+  "explanation": "Cache invalidation keeps cached data aligned with the source of truth, such as a database. When underlying data changes, the application removes or updates the related cached object; the correct timing depends on the chosen cache update strategy.",
+  "syntax": "",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Cache-aside read",
+   "code": "def get_user(user_id):\n    user = cache.get(user_id)\n    if user is None:\n        user = database.load_user(user_id)\n        cache.set(user_id, user)\n    return user",
+   "language": "python",
+   "explanation": "The application checks the cache first. On a miss, it loads the value from the database, stores it, and returns it."
+  },
+  "useCases": [
+   {
+    "title": "Updated user data",
+    "scenario": "A user profile changes and the application removes the cached profile object before the next read."
+   },
+   {
+    "title": "Changed query data",
+    "scenario": "A table value changes and the application removes query results that may contain the old value."
+   },
+   {
+    "title": "Asynchronous object refresh",
+    "scenario": "Workers consume a newly assembled object after older cached data is replaced."
+   }
+  ],
+  "related": [
+   "Cache-aside",
+   "Caching at the database query level",
+   "Caching at the object level",
+   "Application caching",
+   "Least recently used (LRU)"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is cache invalidation?",
+    "answer": "Cache invalidation is the process of keeping cached data consistent with the source of truth. If the underlying data changes, the related cached object should be removed or updated.",
+    "followUp": "What makes invalidation difficult? The application must decide which entries are affected and when updates should happen."
+   },
+   {
+    "question": "How does cache-aside relate to invalidation?",
+    "answer": "Cache-aside lets the application read and write both the cache and storage. A read checks the cache first; after a miss, the application loads the database value, adds it to the cache, and returns it.",
+    "followUp": "What happens after a database update? The application should remove or update the related cached entry so later reads do not use stale data."
+   },
+   {
+    "question": "Why can query-cache invalidation be hard?",
+    "answer": "Query caching stores a query result under a key made from the query. When source data changes, many cached queries may need removal because each result can include the changed value.",
+    "followUp": "Why might object caching be easier? An object can be removed when its own underlying data changes, without finding every query result that contains it."
+   }
+  ],
+  "keyPoints": [
+   "Object caching can invalidate an entry when the data used to build that object changes.",
+   "Complex query results are difficult to invalidate precisely.",
+   "A single changed database value may require deleting many cached query results.",
+   "Cache capacity is limited, so the invalidation policy must fit the application's access pattern.",
+   "In cache-aside design, the application manages communication with both the cache and storage."
+  ],
+  "gotchas": [
+   "Cache invalidation adds consistency work because the cache and database can become different.",
+   "Choosing when to remove or update cached data is difficult and adds system complexity."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "Cache-Aside": {
+  "sourceUrl": "https://github.com/donnemartin/system-design-primer/blob/master/README.md",
+  "sourceTitle": "system-design-primer/README.md at master · donnemartin/system-design-primer · GitHub",
+  "summary": "Cache-aside makes the application check the cache first and use the database after a miss. The application then stores the database result in the cache for later reads.",
+  "explanation": "The application controls both the cache and the database. It first looks for an item in the cache. If the item is missing, it reads the database, puts the result in the cache, and returns it. This is also called lazy loading because only requested data is cached.",
+  "syntax": "get(key) → value; if missing: database query → cache.set(key, value)",
+  "parameters": [
+   {
+    "name": "user_id",
+    "type": "identifier",
+    "description": "The identifier used to build the cache key and find the database record."
+   }
+  ],
+  "returns": "The requested user record, retrieved from the cache or database.",
+  "example": {
+   "title": "Cache-aside read",
+   "code": "def get_user(user_id):\n    key = f\"user.{user_id}\"\n    user = cache.get(key)\n    if user is None:\n        user = db.query(\"SELECT * FROM users WHERE user_id = %s\", user_id)\n        if user is not None:\n            cache.set(key, user)\n    return user",
+   "language": "python",
+   "explanation": "The application checks the cache first. On a miss, it reads the database, stores the result, and returns it."
+  },
+  "useCases": [
+   {
+    "title": "User profiles",
+    "scenario": "A user profile is requested repeatedly."
+   },
+   {
+    "title": "Rendered web pages",
+    "scenario": "A complete page is expensive to build and is requested again."
+   },
+   {
+    "title": "Activity streams",
+    "scenario": "A feed is read often after it is created."
+   },
+   {
+    "title": "User graph data",
+    "scenario": "Relationships between users are read frequently."
+   }
+  ],
+  "related": [
+   "Write-through",
+   "Write-behind (write-back)",
+   "Refresh-ahead",
+   "Cache",
+   "When to update the cache"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How does cache-aside work?",
+    "answer": "The application reads the cache first. When the item is absent, it reads the database, stores the result in the cache, and returns it.",
+    "followUp": "What problem can this create? A database update can leave an old cached value, so expiration or explicit invalidation is needed."
+   },
+   {
+    "question": "Why is cache-aside also called lazy loading?",
+    "answer": "It caches data only after an application request misses the cache. This avoids filling the cache with items that nobody requests.",
+    "followUp": "When might this be unsuitable? A workload that needs predictable first-read latency may prefer a strategy that preloads or synchronously updates entries."
+   },
+   {
+    "question": "Which component controls the data flow?",
+    "answer": "The cache does not read or write storage by itself. The application performs the cache lookup, database read, and cache write.",
+    "followUp": "How does this differ from write-through? In write-through, the cache is used as the main data store and synchronously writes updates to the database."
+   }
+  ],
+  "keyPoints": [
+   "The application, not the cache, controls database reads and writes.",
+   "A read starts with a cache lookup. If no value exists, the lookup is a miss.",
+   "After a miss, the application gets the requested value from the database.",
+   "The application stores a database result in the cache for later reads.",
+   "The cache grows from actual requests instead of being filled with unrelated records."
+  ],
+  "gotchas": [
+   "A cached value can be older than the database value. Use a time-to-live or another update strategy to reduce this risk.",
+   "A miss needs extra cache and database operations, so the first read can be slower.",
+   "A replacement cache node has no entries, so early requests can have more misses and higher latency."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "CDN": {
+  "sourceUrl": "https://github.com/donnemartin/system-design-primer",
+  "sourceTitle": "GitHub - donnemartin/system-design-primer: Learn how to design large-scale systems. Prep for the system design interview. Includes Anki flashcards.",
+  "summary": "A CDN is a distributed network of proxy servers that serves content from locations near users. It can improve performance and reduce requests to origin servers.",
+  "explanation": "A content delivery network is a distributed group of proxy servers. It serves content from a location near the user. It can reduce response time and reduce requests sent to the origin server.",
+  "syntax": "",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Simple CDN cache model",
+   "code": "const cdn = {\n  origin: \"https://example.com\",\n  cached: new Set<string>(),\n  fetch(path: string) {\n    if (this.cached.has(path)) return `cached: ${path}`;\n    this.cached.add(path);\n    return `fetched from origin: ${path}`;\n  }\n};\n\nconsole.log(cdn.fetch(\"/app.js\"));\nconsole.log(cdn.fetch(\"/app.js\"));",
+   "language": "typescript",
+   "explanation": "The first request gets the file from the origin. Later requests use the cached copy."
+  },
+  "useCases": [
+   {
+    "title": "Global static content",
+    "scenario": "Serve static files such as scripts, styles, images, and videos from locations near users."
+   },
+   {
+    "title": "Infrequently updated content",
+    "scenario": "Use push delivery when content changes rarely and traffic is small."
+   },
+   {
+    "title": "High-traffic content",
+    "scenario": "Use pull delivery when traffic is high and only recently requested content should stay cached."
+   }
+  ],
+  "related": [
+   "Domain name system",
+   "Push CDNs",
+   "Pull CDNs",
+   "Caching",
+   "Cache-aside"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is a CDN, and why use one?",
+    "answer": "A CDN is a globally distributed set of proxy servers. It serves content from locations closer to users, which can improve performance and reduce work for origin servers.",
+    "followUp": "What is the trade-off of using a CDN? It adds cost and can serve stale content if cache updates are not handled correctly."
+   },
+   {
+    "question": "How does a push CDN work?",
+    "answer": "A push CDN receives new or changed content from the origin. The application uploads content and uses URLs that point to the CDN.",
+    "followUp": "When is push useful? It fits sites with little traffic or content that changes rarely because content is uploaded only when it changes."
+   },
+   {
+    "question": "How does a pull CDN work?",
+    "answer": "A pull CDN gets content from the origin when a user first requests it. A time-to-live controls how long the content remains cached.",
+    "followUp": "What is one drawback? Expired files can cause repeated origin requests even when the files have not changed."
+   }
+  ],
+  "keyPoints": [
+   "A CDN uses proxy servers distributed across many locations.",
+   "Nearby CDN locations can lower the distance between users and content.",
+   "Cache hits reduce the number of requests handled by origin servers.",
+   "With push delivery, the origin sends new or changed content to the CDN.",
+   "With pull delivery, the CDN fetches content after the first request.",
+   "Pull-CDN entries remain cached for the configured TTL."
+  ],
+  "gotchas": [
+   "A pull CDN may be slower for the first request because it must fetch the content from the origin.",
+   "A CDN can add substantial cost when traffic is high."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "Connection Pooling": {
+  "sourceUrl": "https://github.com/donnemartin/system-design-primer/blob/master/README.md?plain=1",
+  "sourceTitle": "system-design-primer/README.md at master · donnemartin/system-design-primer · GitHub",
+  "summary": "Connection pooling reuses open connections between clients and a service. It can reduce the cost of maintaining many separate connections, but open connections still consume resources.",
+  "explanation": "Connection pooling keeps a reusable group of connections instead of creating a new connection for every operation. Reusing connections can reduce the cost of many open connections between web-server threads and a service such as memcached.",
+  "syntax": "",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Borrow and release a connection",
+   "code": "const pool = new Pool({ max: 10 });\nconst client = await pool.connect();\ntry {\n  await client.query('SELECT 1');\n} finally {\n  client.release();\n}",
+   "language": "javascript",
+   "explanation": "This shows the connection-pooling pattern: borrow a connection, use it, and return it to the pool."
+  },
+  "useCases": [
+   {
+    "title": "Reuse backend connections",
+    "scenario": "A web server makes repeated requests to a backend service such as memcached."
+   },
+   {
+    "title": "Bound connection overhead",
+    "scenario": "Many server threads need access to the same network service."
+   }
+  ],
+  "related": [
+   "TCP",
+   "UDP",
+   "memcached",
+   "web servers"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is connection pooling?",
+    "answer": "Connection pooling reuses open connections. A caller takes one from the pool, performs work, and returns it instead of opening a new connection each time.",
+    "followUp": "What trade-off should you consider? A pool reduces setup work, but too many open connections can increase memory and service-resource use."
+   },
+   {
+    "question": "Why can connection pooling help scalability?",
+    "answer": "It can reduce the cost of maintaining many separate connections between web-server threads and another service. The pool lets multiple operations share a bounded set of reusable connections.",
+    "followUp": "How could you limit resource use? Configure a maximum pool size and make callers return connections promptly after each operation."
+   },
+   {
+    "question": "Does connection pooling make TCP behave like UDP?",
+    "answer": "The page presents pooling as useful for expensive open connections and discusses it alongside TCP and UDP choices. Pooling does not provide UDP's transport behavior; it only manages connection reuse.",
+    "followUp": "When might UDP still be chosen? Use it when low latency matters more than reliable delivery, with application-level handling if needed."
+   }
+  ],
+  "keyPoints": [
+   "A pool reuses connections, which can reduce the overhead of repeatedly opening connections.",
+   "Pool size should be bounded because each open connection consumes resources.",
+   "Keeping many connections open may support throughput but can increase memory use.",
+   "Pooling is most naturally paired with reliable connection-oriented services when setup and open-connection costs matter."
+  ],
+  "gotchas": [
+   "A large pool can use substantial resources when many server threads keep connections open.",
+   "Pooling addresses connection overhead; it does not replace choosing a suitable transport protocol."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "Consistent Hashing": {
+  "sourceUrl": "https://github.com/donnemartin/system-design-primer/blob/ae9bbd7b02d90b9866215de185217d33f39ab733/solutions/system_design/query_cache/README.md",
+  "sourceTitle": "system-design-primer/solutions/system_design/query_cache/README.md at ae9bbd7b02d90b9866215de185217d33f39ab733 · donnemartin/system-design-primer · GitHub",
+  "summary": "Consistent hashing maps cache keys to machines in a cluster. It reduces the amount of data that must move when machines are added or removed.",
+  "explanation": "Consistent hashing places cache keys and machines on a logical hash ring. A key is assigned to the next machine on the ring. When machines change, only part of the key mapping changes, so less data must move than with a simple hash over the machine count.",
+  "syntax": "machine = hash(query)",
+  "parameters": [
+   {
+    "name": "key",
+    "type": "string",
+    "description": "The cache key or query used to select a machine."
+   },
+   {
+    "name": "nodes",
+    "type": "array",
+    "description": "The machines or cache nodes in the cluster."
+   }
+  ],
+  "returns": "The cache machine responsible for the key.",
+  "example": {
+   "title": "Mapping a key to a cache node",
+   "code": "function nodeFor(key, nodes) {\n  let hash = 0;\n  for (const ch of key) hash = (hash * 31 + ch.charCodeAt(0)) >>> 0;\n  return nodes[hash % nodes.length];\n}\n\nconst nodes = [\"cache-a\", \"cache-b\", \"cache-c\"];\nconsole.log(nodeFor(\"user:42\", nodes));",
+   "language": "javascript",
+   "explanation": "This small example maps a key to one cache node. A production design should use consistent hashing so that adding or removing a node moves less cached data."
+  },
+  "useCases": [
+   {
+    "title": "Distributed query cache",
+    "scenario": "A cache cluster stores query results across several machines."
+   },
+   {
+    "title": "Small remapping during scaling",
+    "scenario": "A cluster changes as machines join or leave."
+   },
+   {
+    "title": "Sharded storage",
+    "scenario": "A large dataset is divided among machines."
+   }
+  ],
+  "related": [
+   "Sharding",
+   "Caching",
+   "Key-value store",
+   "Cache-aside",
+   "Read replicas"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is consistent hashing used for?",
+    "answer": "Consistent hashing assigns keys and machines to a shared hash space. A key uses the next machine in that space. This reduces the amount of data that must move when machines change.",
+    "followUp": "What problem can still occur? Data can be unevenly distributed, so one machine may receive much more traffic or data than others."
+   },
+   {
+    "question": "Why is consistent hashing better than hashing by machine count?",
+    "answer": "A simple hash such as hash(key) modulo the machine count can remap many keys when the machine count changes. Consistent hashing limits remapping to the affected parts of the hash space.",
+    "followUp": "Where is this useful? It is useful for sharded caches and distributed data stores where moving cached or stored data is costly."
+   },
+   {
+    "question": "How can consistent hashing support a distributed query cache?",
+    "answer": "A cache cluster can keep a separate cache on each machine and use hashing to select the machine for a query. The page says the cache can be sharded across the cluster and that consistent hashing is likely desirable.",
+    "followUp": "What tradeoff follows? Sharding can improve memory use and distribution, but it adds routing and rebalancing complexity."
+   }
+  ],
+  "keyPoints": [
+   "Use consistent hashing when machines may be added or removed. It reduces the data that needs to move.",
+   "A distributed cache can divide entries across machines instead of copying every entry everywhere.",
+   "Hash the query key to choose the machine that stores its cached result.",
+   "The machine-selection rule can be expressed as hashing the query.",
+   "With per-machine caches, each machine stores only its local entries.",
+   "Copying the complete cache to every machine is simple but uses memory inefficiently."
+  ],
+  "gotchas": [
+   "A poor distribution can overload one machine or shard.",
+   "Splitting data across machines makes cross-machine operations harder.",
+   "The design needs more machines and more application complexity."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "Denormalization": {
+  "sourceUrl": "https://github.com/donnemartin/system-design-primer",
+  "sourceTitle": "GitHub - donnemartin/system-design-primer: Learn how to design large-scale systems. Prep for the system design interview. Includes Anki flashcards.",
+  "summary": "Denormalization stores redundant copies of data to avoid expensive joins. It can speed up reads, but it adds write work and consistency complexity.",
+  "explanation": "Denormalization stores extra copies of data so common reads need fewer expensive joins. It can help when reads greatly outnumber writes, but every copy must stay consistent, which adds write and design complexity.",
+  "syntax": "",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Separate related data into tables",
+   "code": "CREATE TABLE user_profiles (\n  user_id BIGINT PRIMARY KEY,\n  display_name VARCHAR(100),\n  avatar_url TEXT\n);\n\nCREATE TABLE user_posts (\n  post_id BIGINT PRIMARY KEY,\n  user_id BIGINT NOT NULL,\n  body TEXT\n);",
+   "language": "text",
+   "explanation": "This example stores profile data separately from post data. A read that needs both can join the tables, while duplicated fields could avoid that join."
+  },
+  "useCases": [
+   {
+    "title": "Optimize frequent reads",
+    "scenario": "A read-heavy system needs to serve joined data quickly."
+   },
+   {
+    "title": "Avoid distributed joins",
+    "scenario": "Data is split across federated or sharded databases."
+   },
+   {
+    "title": "Use materialized views",
+    "scenario": "A database supports stored query results."
+   }
+  ],
+  "related": [
+   "Relational database management system (RDBMS)",
+   "Federation",
+   "Sharding",
+   "SQL tuning",
+   "Materialized views"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is database denormalization?",
+    "answer": "Denormalization duplicates data in multiple tables to avoid expensive joins. It trades some write performance and consistency complexity for faster reads.",
+    "followUp": "When is normalization safer? When writes are frequent or data consistency is more important than read speed, normalized tables usually reduce duplication."
+   },
+   {
+    "question": "Why can denormalization make reads faster?",
+    "answer": "It can improve read performance because the database does less join work. The application or database must update the redundant copies when source data changes.",
+    "followUp": "What is the main operational risk? A failed or incomplete update can leave copies inconsistent and produce conflicting results."
+   },
+   {
+    "question": "When should a system consider denormalization?",
+    "answer": "It is useful when reads greatly outnumber writes or when data is distributed across databases and cross-database joins are costly. It can store the fields needed by a read together.",
+    "followUp": "What trade-off appears with distributed data? Duplicating data can avoid complex joins across data centers, but synchronization becomes harder."
+   }
+  ],
+  "keyPoints": [
+   "The main trade-off is faster reads in exchange for more work during writes.",
+   "A design may repeat fields in several tables so common queries do not need costly joins.",
+   "Materialized views can hold redundant query results and help manage their stored copies.",
+   "A read-heavy workload is a strong reason to consider this technique.",
+   "It can reduce the need to combine data across federated or sharded databases."
+  ],
+  "gotchas": [
+   "Denormalization creates redundant data. Updates must keep those copies synchronized.",
+   "It may reduce read cost but hurt performance when the system has many writes."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "DNS": {
+  "sourceUrl": "https://github.com/donnemartin/system-design-primer/blob/master/README.md?plain=1",
+  "sourceTitle": "system-design-primer/README.md at master · donnemartin/system-design-primer · GitHub",
+  "summary": "DNS maps domain names to IP addresses. It uses a hierarchy and cached results, so updates may not appear immediately.",
+  "explanation": "DNS is a hierarchical system that maps domain names, such as example.com, to IP addresses. Clients may receive DNS server information from a router or internet provider, and lower-level servers, browsers, or operating systems can cache mappings for a time controlled by TTL.",
+  "syntax": "",
+  "parameters": [],
+  "returns": "An IP address or other DNS record result for a queried domain name.",
+  "example": {
+   "title": "Look up a domain address",
+   "code": "const dns = require('node:dns').promises;\n\nconst result = await dns.lookup('example.com');\nconsole.log(result.address);",
+   "language": "javascript",
+   "explanation": "This Node.js example looks up an address for a domain name. The system design page describes DNS behavior, but it does not provide an implementation command."
+  },
+  "useCases": [
+   {
+    "title": "Website routing",
+    "scenario": "Map a public website name to its server address."
+   },
+   {
+    "title": "Mail delivery",
+    "scenario": "Identify the servers that accept email for a domain."
+   },
+   {
+    "title": "Traffic routing",
+    "scenario": "Send users to different servers by location or measured latency."
+   }
+  ],
+  "related": [
+   "Content delivery network",
+   "Load balancer",
+   "Availability patterns",
+   "Active-active",
+   "Fail-over"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does DNS do?",
+    "answer": "DNS translates a domain name into an IP address. It is hierarchical, and lookup results can be cached by DNS servers, browsers, or operating systems.",
+    "followUp": "Why can a DNS change take time to appear? Cached results remain available until their TTL expires, and propagation can also delay the new mapping."
+   },
+   {
+    "question": "What are common DNS record types?",
+    "answer": "An A record maps a name to an IP address. An MX record identifies mail servers, an NS record identifies DNS servers, and a CNAME points one name to another name or an A record.",
+    "followUp": "When might a CNAME be useful? It can make one name resolve through another canonical name instead of storing a separate address mapping."
+   },
+   {
+    "question": "How can DNS help route traffic?",
+    "answer": "DNS services can route traffic using weighted round robin, latency, or geolocation methods. Weighted routing can support maintenance, uneven cluster sizes, or A/B testing.",
+    "followUp": "What is a trade-off of DNS-based routing? Cached answers may continue directing clients to an old destination until the cache lifetime ends."
+   }
+  ],
+  "keyPoints": [
+   "DNS converts a readable domain name into an IP address.",
+   "DNS uses levels, with authoritative servers near the top.",
+   "Browsers and operating systems can cache DNS results until their TTL period ends.",
+   "An NS record names the DNS servers for a domain or subdomain.",
+   "An MX record identifies mail servers that accept messages.",
+   "An A record points a name to an IP address."
+  ],
+  "gotchas": [
+   "Cached records can be stale while DNS changes propagate.",
+   "A lookup adds some delay, although caching can reduce it.",
+   "A DNS provider outage or attack can prevent users from reaching a site by its name."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "Eventual Consistency": {
+  "sourceUrl": "https://github.com/donnemartin/system-design-primer/blob/master/README.md?plain=1",
+  "sourceTitle": "system-design-primer/README.md at master · donnemartin/system-design-primer · GitHub",
+  "summary": "Eventual consistency lets reads temporarily return old data after a write. Replicas update asynchronously and later converge on the new value.",
+  "explanation": "Eventual consistency means that a read may not show a new write immediately. After replication finishes, later reads should see the write, assuming no newer changes arrive.",
+  "syntax": "",
+  "parameters": [],
+  "returns": "A read eventually returns the latest written value after replication converges, but it may return an older value before then.",
+  "example": {
+   "title": "A read after a write",
+   "code": "function readAfterWrite(store, key) {\n  store.write(key, \"new value\");\n  return store.read(key); // May return the old value for a while.\n}\n\nconst store = {\n  value: \"old value\",\n  write(key, value) { this.value = value; },\n  read(key) { return Math.random() < 0.5 ? \"old value\" : this.value; }\n};\n\nconsole.log(readAfterWrite(store, \"item\"));",
+   "language": "javascript",
+   "explanation": "This small example models asynchronous replication: a read made soon after a write may still return an older value."
+  },
+  "useCases": [
+   {
+    "title": "Highly available systems",
+    "scenario": "A distributed service must keep responding while replicas update at different times."
+   },
+   {
+    "title": "DNS",
+    "scenario": "Different servers can briefly disagree without breaking the user experience."
+   },
+   {
+    "title": "Email",
+    "scenario": "Messages can appear on different servers at slightly different times."
+   }
+  ],
+  "related": [
+   "Consistency patterns",
+   "Weak consistency",
+   "Strong consistency",
+   "CAP theorem",
+   "AP - availability and partition tolerance",
+   "DNS",
+   "Email"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does eventual consistency mean?",
+    "answer": "Eventual consistency allows a read to return an older value for a while after a write. Replicas are updated asynchronously, and they later converge if no new input arrives.",
+    "followUp": "How does it differ from strong consistency? Strong consistency makes a read see the write immediately, while eventual consistency permits a temporary stale read."
+   },
+   {
+    "question": "When is eventual consistency a good choice?",
+    "answer": "It is useful when a system needs high availability and can tolerate temporary differences between replicas. The page lists DNS and email as examples.",
+    "followUp": "When should it not be used? Avoid it when each read must immediately reflect the latest write, such as operations that require strong transaction behavior."
+   },
+   {
+    "question": "How is eventual consistency different from weak consistency?",
+    "answer": "Weak consistency does not promise that a later read will see the write. Eventual consistency adds a convergence promise: reads will see it eventually, usually within milliseconds.",
+    "followUp": "What assumption supports convergence? Replicas must be able to receive the update, and the system must stop receiving new input during the convergence period."
+   }
+  ],
+  "keyPoints": [
+   "A read may be stale immediately after a write, but it should show the update later.",
+   "Copies receive changes independently instead of waiting for every copy to update first.",
+   "DNS and email are examples of systems that use this consistency approach.",
+   "It fits systems that prioritize continued availability over immediate agreement between copies."
+  ],
+  "gotchas": [
+   "The update is not visible immediately. A short delay is normal.",
+   "A successful write does not mean every copy has already changed."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "Failover": {
+  "sourceUrl": "https://github.com/donnemartin/system-design-primer/blob/master/README.md",
+  "sourceTitle": "system-design-primer/README.md at master · donnemartin/system-design-primer · GitHub",
+  "summary": "Failover keeps a service running when a server fails. A standby server can take over, or multiple servers can share traffic and provide redundancy.",
+  "explanation": "Failover moves service from a failed active server to another server. In active-passive failover, the standby server receives heartbeats and takes over the active server's IP address when those heartbeats stop. The standby may be hot or cold, which affects downtime. In active-active failover, both servers handle traffic.",
+  "syntax": "",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Active-passive failover",
+   "code": "heartbeat_is_healthy = check_heartbeat()\n\nif not heartbeat_is_healthy:\n    passive_server.take_over_active_ip()\n    passive_server.resume_service()",
+   "language": "python",
+   "explanation": "This pseudocode shows the passive server taking over after the heartbeat stops."
+  },
+  "useCases": [
+   {
+    "title": "Active-passive recovery",
+    "scenario": "A service needs to continue after its only active server fails."
+   },
+   {
+    "title": "Active-active traffic handling",
+    "scenario": "A public service needs two servers to handle traffic and provide redundancy."
+   },
+   {
+    "title": "High availability",
+    "scenario": "A system must reduce downtime during server maintenance or failure."
+   }
+  ],
+  "related": [
+   "Replication",
+   "Master-slave replication",
+   "Master-master replication",
+   "Availability",
+   "Reverse proxy",
+   "Load balancer"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How does active-passive failover work?",
+    "answer": "In active-passive failover, one server handles traffic and another waits in standby. Heartbeats detect failure, and the standby takes over the active server's IP address.",
+    "followUp": "What affects recovery time? Whether the standby is already running as a hot standby or must start as a cold standby affects downtime."
+   },
+   {
+    "question": "How is active-active failover different?",
+    "answer": "Active-active failover lets both servers handle traffic. Public systems need DNS to know both public IP addresses, while internal systems need application logic that can use both servers.",
+    "followUp": "What is one operational cost? Active-active systems require traffic distribution and logic that can work with either server."
+   },
+   {
+    "question": "What are the main disadvantages of failover?",
+    "answer": "Failover improves availability by providing another server, but it adds hardware and system complexity. Replication timing can also create a window where recent data is missing.",
+    "followUp": "How can a design reduce a single point of failure? Redundant failover components are needed, although each extra component increases configuration and operational complexity."
+   }
+  ],
+  "keyPoints": [
+   "The active and standby servers exchange heartbeats so the standby can detect a failure.",
+   "After detecting failure, the passive server takes the active IP address and continues serving requests.",
+   "In active-passive mode, the standby does not normally serve user traffic.",
+   "In active-active mode, both servers handle requests and share the workload.",
+   "Hot standby usually reduces recovery downtime compared with cold standby because it is already running.",
+   "Failover needs extra infrastructure and makes the system harder to configure and operate."
+  ],
+  "gotchas": [
+   "Data can be lost if the active server fails before recent writes reach the passive server.",
+   "A failover design can still fail if it has one shared component that is not redundant."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "Health Check": {
+  "sourceUrl": "https://github.com/donnemartin/system-design-primer/blob/master/README.md?plain=1",
+  "sourceTitle": "system-design-primer/README.md at master · donnemartin/system-design-primer · GitHub",
+  "summary": "Service discovery helps services find one another by storing names, addresses, and ports. Health checks help identify services that are working before clients use them.",
+  "explanation": "A service registry can store service names, addresses, and ports so services can find one another. Health checks, often exposed through HTTP endpoints, help verify that a registered service is working before it is selected.",
+  "syntax": "",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Find healthy load balancers",
+   "code": "consul_addr=\"http://127.0.0.1:8500\"\nservice_name=\"load-balancer\"\n\ncurl \"$consul_addr/v1/health/service/$service_name?passing=true\"",
+   "language": "bash",
+   "explanation": "This asks Consul for load-balancer instances whose health checks pass."
+  },
+  "useCases": [
+   {
+    "title": "Find service instances",
+    "scenario": "A client needs to locate a service without fixed addresses."
+   },
+   {
+    "title": "Filter unhealthy instances",
+    "scenario": "A client should avoid sending requests to failed instances."
+   },
+   {
+    "title": "Store shared configuration",
+    "scenario": "Several services need shared configuration values."
+   }
+  ],
+  "related": [
+   "Consul",
+   "Etcd",
+   "Zookeeper",
+   "Health checks",
+   "HTTP endpoint",
+   "Key-value store"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is service discovery?",
+    "answer": "Service discovery lets services find one another through registered names, addresses, and ports. Consul, Etcd, and Zookeeper are examples named in the documentation.",
+    "followUp": "What should prevent an unhealthy instance from receiving traffic? A health check should verify service integrity, commonly through an HTTP endpoint."
+   },
+   {
+    "question": "What information does a service registry keep?",
+    "answer": "A registry records the identity and network location of a service. A client can use that information instead of hard-coding every service address.",
+    "followUp": "What extra signal is needed? Health status helps the client distinguish usable instances from failed ones."
+   },
+   {
+    "question": "How do health checks help service discovery?",
+    "answer": "Health checks verify service integrity. The documentation says they are often performed through an HTTP endpoint.",
+    "followUp": "Why is this useful for load balancers? A registry can expose only instances that pass the required check, helping clients avoid failed nodes."
+   }
+  ],
+  "keyPoints": [
+   "A service registry maps registered service names to their addresses and ports.",
+   "An HTTP health endpoint can report whether a service is working.",
+   "Consul and Etcd also provide a built-in key-value store for configuration and shared data.",
+   "The key-value store can hold configuration values and other data shared by services."
+  ],
+  "gotchas": [
+   "Using service discovery with separate services can make deployments and operations more complex."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "Horizontal Scaling": {
+  "sourceUrl": "https://github.com/donnemartin/system-design-primer/blob/master/README.md",
+  "sourceTitle": "system-design-primer/README.md at master · donnemartin/system-design-primer · GitHub",
+  "summary": "Horizontal scaling adds more servers to share work. A load balancer can distribute requests among these servers to improve performance and availability.",
+  "explanation": "Horizontal scaling adds more servers to share work instead of making one server larger. A load balancer can distribute requests across cloned servers, while shared storage keeps user data available to any server.",
+  "syntax": "",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Distribute requests across servers",
+   "code": "const servers = [\"app-1\", \"app-2\", \"app-3\"];\nlet next = 0;\n\nfunction handleRequest(request) {\n  const server = servers[next];\n  next = (next + 1) % servers.length;\n  return `${server} handled ${request}`;\n}\n\nconsole.log(handleRequest(\"GET /users\"));\nconsole.log(handleRequest(\"GET /posts\"));",
+   "language": "javascript",
+   "explanation": "This small example sends requests across several servers. A real load balancer can distribute traffic this way."
+  },
+  "useCases": [
+   {
+    "title": "Handle more traffic",
+    "scenario": "Traffic grows beyond one server's capacity."
+   },
+   {
+    "title": "Improve availability",
+    "scenario": "A server fails and another server should continue serving requests."
+   },
+   {
+    "title": "Scale with commodity hardware",
+    "scenario": "You want to use several ordinary machines instead of one larger machine."
+   }
+  ],
+  "related": [
+   "Vertical scaling",
+   "Load balancer",
+   "Caching",
+   "Database replication",
+   "Database partitioning",
+   "Reverse proxy (web server)"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is horizontal scaling?",
+    "answer": "Horizontal scaling means adding more servers to share the work. It can improve performance and availability, and it often uses less expensive commodity machines than scaling one server up.",
+    "followUp": "What must application servers avoid storing locally? They should avoid user-related state, such as sessions, so any server can handle a request."
+   },
+   {
+    "question": "How does a load balancer help horizontal scaling?",
+    "answer": "A load balancer distributes requests among cloned servers. This allows the service to handle more traffic and can reduce the effect of one server failing.",
+    "followUp": "What shared components may become stressed? Databases and caches may need to handle more simultaneous connections from the additional servers."
+   },
+   {
+    "question": "What are the main trade-offs?",
+    "answer": "Horizontal scaling makes a service more complex because several server copies must work together. A single load balancer can also be a single point of failure, so multiple load balancers add more complexity.",
+    "followUp": "What is one way to reduce this failure risk? Use multiple load balancers, while accepting the extra configuration and operational complexity."
+   }
+  ],
+  "keyPoints": [
+   "A load balancer can spread traffic across multiple servers to increase capacity and availability.",
+   "Adding ordinary machines can cost less than upgrading one server with specialized hardware.",
+   "Stateless application servers let requests move between server copies without losing user data.",
+   "Store sessions in shared storage, such as a database or persistent cache, rather than on one server.",
+   "The service must support multiple copies of the same server, which adds design and operational work."
+  ],
+  "gotchas": [
+   "Adding servers increases system complexity because the service must run correctly on multiple copies.",
+   "Keep user sessions and other user data outside individual servers, such as in a database or persistent cache.",
+   "Caches and databases may receive more connections as the number of application servers grows.",
+   "The load balancer itself needs enough capacity, or it can limit the whole system."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "HTTP": {
+  "sourceUrl": "https://github.com/donnemartin/system-design-primer/blob/master/README.md",
+  "sourceTitle": "system-design-primer/README.md at master · donnemartin/system-design-primer · GitHub",
+  "summary": "HTTP is a request/response protocol for moving data between clients and servers. Requests use methods and resources; responses provide content and completion status information.",
+  "explanation": "HTTP uses a request and response between a client and a server. A request names a resource and uses a method such as GET, POST, PUT, PATCH, or DELETE. HTTP can pass through routers and servers that provide functions such as load balancing, caching, encryption, and compression.",
+  "syntax": "METHOD /resource",
+  "parameters": [
+   {
+    "name": "method",
+    "type": "HTTP method",
+    "description": "The HTTP method, such as GET, POST, PUT, PATCH, or DELETE."
+   },
+   {
+    "name": "resource",
+    "type": "HTTP endpoint",
+    "description": "The resource identified by the endpoint."
+   }
+  ],
+  "returns": "A server response containing relevant content and completion status information.",
+  "example": {
+   "title": "Read a resource",
+   "code": "fetch('/users/42').then(response => response.json())",
+   "language": "javascript",
+   "explanation": "This sends an HTTP GET request for a user resource and reads the JSON response."
+  },
+  "useCases": [
+   {
+    "title": "Read a resource with GET",
+    "scenario": "A client needs to read data from a server."
+   },
+   {
+    "title": "Create or trigger work with POST",
+    "scenario": "A client needs to create data or start a server process."
+   },
+   {
+    "title": "Replace a resource with PUT",
+    "scenario": "A client needs to replace an existing resource."
+   },
+   {
+    "title": "Partially update a resource with PATCH",
+    "scenario": "A client needs to update only part of a resource."
+   }
+  ],
+  "related": [
+   "TCP",
+   "UDP",
+   "REST",
+   "RPC",
+   "Caching",
+   "Load balancing"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How does HTTP communication work?",
+    "answer": "HTTP is a request/response protocol. A client sends a request with a method and resource, and the server sends a response with content and completion status information.",
+    "followUp": "Why can HTTP work through several intermediate systems? Its messages are self-contained, so routers and servers can perform tasks such as load balancing, caching, encryption, and compression."
+   },
+   {
+    "question": "Compare GET and POST.",
+    "answer": "GET reads a resource and is safe, idempotent, and cacheable. POST creates a resource or starts a process and is not idempotent.",
+    "followUp": "Why does idempotency matter? A method is idempotent when calling it many times has the same result as calling it once."
+   },
+   {
+    "question": "What is the difference between PUT and PATCH?",
+    "answer": "PUT creates or replaces a resource and is idempotent. PATCH partially updates a resource and is not idempotent.",
+    "followUp": "When would PATCH be useful? Use it when the client needs to change only part of an existing resource."
+   }
+  ],
+  "keyPoints": [
+   "HTTP defines how a client and server encode and transport data.",
+   "Communication has two sides: the client sends a request, and the server returns a response.",
+   "A basic request identifies an operation and the resource on which it acts.",
+   "GET reads a resource and can be safe, repeated without a changed outcome, and cached.",
+   "PUT creates or replaces a resource and can be repeated without changing the final outcome."
+  ],
+  "gotchas": [
+   "POST is not idempotent, so repeating the same request can produce a different result.",
+   "PATCH changes part of a resource and is not idempotent.",
+   "HTTP depends on lower-level network protocols, so HTTP alone does not provide the whole network connection."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "Latency": {
+  "sourceUrl": "https://github.com/donnemartin/system-design-primer/blob/master/README.md",
+  "sourceTitle": "system-design-primer/README.md at master · donnemartin/system-design-primer · GitHub",
+  "summary": "Latency is the time needed for one action or result. Throughput is the number of actions or results completed per unit of time.",
+  "explanation": "Latency is the time needed to perform an action or produce a result. It differs from throughput, which measures how many actions or results occur in a unit of time. A system should seek high throughput while keeping latency acceptable.",
+  "syntax": "",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Measure latency",
+   "code": "const start = Date.now();\nconst result = doWork();\nconst latencyMs = Date.now() - start;",
+   "language": "javascript",
+   "explanation": "Measure the time from the start of an action until it produces a result."
+  },
+  "useCases": [
+   {
+    "title": "Diagnose request performance",
+    "scenario": "Checking whether one request is slow"
+   },
+   {
+    "title": "Evaluate scalability",
+    "scenario": "Testing behavior as traffic grows"
+   },
+   {
+    "title": "Balance throughput and latency",
+    "scenario": "Comparing system designs"
+   }
+  ],
+  "related": [
+   "Performance vs scalability",
+   "Throughput",
+   "Scalability"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is the difference between latency and throughput?",
+    "answer": "Latency is the time required for one action or result. Throughput is the number of actions or results completed per unit of time.",
+    "followUp": "How can a system improve both? Add resources or reduce work per request, then measure whether latency remains acceptable as throughput rises."
+   },
+   {
+    "question": "How do latency and scalability problems differ?",
+    "answer": "A latency problem means one user's request is slow. A scalability problem means the system may be fast for one user but becomes slow under heavy load.",
+    "followUp": "What should you measure during load testing? Measure request latency at different loads and also measure completed work per unit of time."
+   },
+   {
+    "question": "What is the practical design goal?",
+    "answer": "The design target is not simply the highest possible throughput. The system should maximize throughput while keeping latency within an acceptable limit.",
+    "followUp": "Why can maximizing throughput alone be harmful? A design can process many requests while making each request wait too long, which harms users."
+   }
+  ],
+  "keyPoints": [
+   "Latency measures the time taken by one action or result.",
+   "Throughput measures how many actions or results happen during a time period.",
+   "A good design seeks high throughput without allowing latency to become too large.",
+   "A performance problem can appear even when only one user is using the system.",
+   "A scalability problem appears when load increases, even if single-user performance is good."
+  ],
+  "gotchas": [
+   "High throughput does not make latency irrelevant. Both measures matter."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "Load Balancer": {
+  "sourceUrl": "https://github.com/donnemartin/system-design-primer",
+  "sourceTitle": "GitHub - donnemartin/system-design-primer: Learn how to design large-scale systems. Prep for the system design interview. Includes Anki flashcards.",
+  "summary": "A load balancer distributes client requests across application servers or databases. It can avoid unhealthy or overloaded resources and improve fault tolerance.",
+  "explanation": "A load balancer receives client requests and sends them to suitable application servers or databases. It can avoid unhealthy or overloaded resources and reduce a single point of failure. Multiple load balancers can use active-passive or active-active operation. Layer 4 uses transport details such as IP addresses and ports, while layer 7 can inspect headers, messages, and cookies.",
+  "syntax": "",
+  "parameters": [],
+  "returns": "The response from the selected computing resource is returned to the appropriate client.",
+  "example": {
+   "title": "Simple round-robin load balancer",
+   "code": "const http = require('http');\n\nconst servers = [\n  { host: '127.0.0.1', port: 3001 },\n  { host: '127.0.0.1', port: 3002 },\n];\nlet next = 0;\n\nhttp.createServer((req, res) => {\n  const target = servers[next];\n  next = (next + 1) % servers.length;\n  res.end(`Forward request to ${target.host}:${target.port}`);\n}).listen(8080);",
+   "language": "javascript",
+   "explanation": "This small example chooses backend servers in round-robin order. A production load balancer also checks server health and forwards the request and response."
+  },
+  "useCases": [
+   {
+    "title": "Distribute traffic",
+    "scenario": "Several application servers provide the same service."
+   },
+   {
+    "title": "Protect backends",
+    "scenario": "Some servers may be unhealthy or overloaded."
+   },
+   {
+    "title": "Reduce a single point of failure",
+    "scenario": "A service needs more fault tolerance."
+   },
+   {
+    "title": "Keep client sessions on one instance",
+    "scenario": "An application does not keep session state centrally."
+   }
+  ],
+  "related": [
+   "Active-passive",
+   "Active-active",
+   "Layer 4 load balancing",
+   "Layer 7 load balancing",
+   "Horizontal scaling",
+   "Reverse proxy (web server)",
+   "SSL termination",
+   "Session persistence"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does a load balancer do?",
+    "answer": "A load balancer distributes incoming requests across application servers or databases. It can avoid unhealthy servers, reduce overload, and help remove a single point of failure.",
+    "followUp": "What changes between layer 4 and layer 7 balancing? Layer 4 uses transport information such as source and destination addresses and ports. Layer 7 can use application headers, messages, and cookies."
+   },
+   {
+    "question": "Compare active-passive and active-active modes.",
+    "answer": "Active-passive uses one active load balancer while another waits to take over. Active-active allows both load balancers to serve traffic.",
+    "followUp": "Why use multiple load balancers? One device can fail, but multiple devices add configuration and operational complexity."
+   },
+   {
+    "question": "How do layer 4 and layer 7 load balancing differ?",
+    "answer": "Layer 4 forwards network packets using transport-layer information and performs network address translation. Layer 7 terminates the connection, reads the request, chooses a server, and opens a new connection to that server.",
+    "followUp": "When can session persistence help? It routes a client's requests to the same instance when the application does not track sessions outside that instance."
+   }
+  ],
+  "keyPoints": [
+   "A load balancer sends incoming client requests to resources such as application servers and databases.",
+   "Health-aware routing keeps requests away from unhealthy servers.",
+   "Using load balancers can help remove a single point of failure.",
+   "Routing may use random choice, load, session data, round robin, or weighted round robin.",
+   "Layer 4 balancing uses transport-layer information, including addresses and ports, rather than packet contents.",
+   "Layer 7 balancing can use application headers, messages, and cookies."
+  ],
+  "gotchas": [
+   "A load balancer can itself limit performance when it lacks resources or has poor configuration.",
+   "One load balancer can fail as a single point of failure; adding more improves resilience but increases complexity.",
+   "Session persistence may be needed when the application does not store session state elsewhere."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "Load Balancing": {
+  "sourceUrl": "https://github.com/donnemartin/system-design-primer/blob/master/README.md?plain=1",
+  "sourceTitle": "system-design-primer/README.md at master · donnemartin/system-design-primer · GitHub",
+  "summary": "A load balancer distributes client requests across upstream servers. It can improve performance and availability, but it adds complexity and can become a failure point if deployed alone.",
+  "explanation": "A load balancer receives client traffic and chooses an upstream server for each request. It can use methods such as least loaded, cookies, round robin, or weighted round robin. Multiple load balancers can improve fault tolerance, while horizontal scaling adds more servers to improve performance and availability.",
+  "syntax": "",
+  "parameters": [],
+  "returns": "The selected upstream server receives the forwarded client request and returns the response through the load balancer.",
+  "example": {
+   "title": "Round-robin request routing",
+   "code": "const servers = [\"app-1\", \"app-2\", \"app-3\"];\nlet next = 0;\n\nfunction loadBalance(request) {\n  const server = servers[next];\n  next = (next + 1) % servers.length;\n  return { server, request };\n}\n\nconsole.log(loadBalance(\"GET /users\"));\nconsole.log(loadBalance(\"GET /orders\"));",
+   "language": "javascript",
+   "explanation": "This small example sends each request to the next server in a round-robin sequence."
+  },
+  "useCases": [
+   {
+    "title": "Distribute requests",
+    "scenario": "Several application servers provide the same service."
+   },
+   {
+    "title": "Provide failover",
+    "scenario": "A service needs to keep working when one balancer fails."
+   },
+   {
+    "title": "Route by request information",
+    "scenario": "Traffic must go to different servers based on cookies or application data."
+   },
+   {
+    "title": "Scale horizontally",
+    "scenario": "An application needs more capacity than one server can provide."
+   }
+  ],
+  "related": [
+   "Active-passive",
+   "Active-active",
+   "Layer 4 load balancing",
+   "Layer 7 load balancing",
+   "Horizontal scaling",
+   "Reverse proxy (web server)",
+   "Load balancer vs reverse proxy"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What problem does a load balancer solve?",
+    "answer": "A load balancer distributes requests across multiple servers. It can choose targets randomly, by current load, by session information, or with round-robin rules.",
+    "followUp": "How can it avoid becoming a single point of failure? Use multiple load balancers in active-passive or active-active mode, accepting added complexity."
+   },
+   {
+    "question": "What is the difference between Layer 4 and Layer 7 load balancing?",
+    "answer": "Layer 4 balancing uses transport information such as source and destination IP addresses and ports. It does not normally inspect packet contents.",
+    "followUp": "When would Layer 7 be preferable? Use it when routing depends on headers, messages, cookies, or application content."
+   },
+   {
+    "question": "What trade-offs come with horizontal scaling?",
+    "answer": "Horizontal scaling adds more servers, often using commodity machines. It can improve performance and availability, but it increases operational complexity and requires servers to be stateless.",
+    "followUp": "Where can session data go? It can be stored in a shared database or a persistent cache such as Redis or Memcached."
+   }
+  ],
+  "keyPoints": [
+   "Routing can use random choice, least-loaded selection, session cookies, round robin, weighted round robin, or network layer.",
+   "Layer 4 balancing uses transport-layer data and generally forwards packets without reading their contents.",
+   "Layer 7 balancing can inspect headers, messages, and cookies before selecting a server.",
+   "A Layer 7 balancer ends the client connection, reads the request, selects a target, and opens a new connection to that target.",
+   "Adding ordinary machines can cost less and provide more availability than scaling up one expensive server.",
+   "Shared storage such as a database or persistent cache lets stateless application servers serve requests consistently."
+  ],
+  "gotchas": [
+   "A load balancer may become a bottleneck when it lacks enough resources or has poor configuration.",
+   "Using only one load balancer creates a single point of failure; multiple balancers improve resilience but add complexity.",
+   "Horizontally scaled servers should avoid storing user state locally. Put sessions in shared storage instead."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "Master-Slave Replication": {
+  "sourceUrl": "https://github.com/donnemartin/system-design-primer/blob/master/README.md?plain=1",
+  "sourceTitle": "system-design-primer/README.md at master · donnemartin/system-design-primer · GitHub",
+  "summary": "Master-slave replication uses one master for reads and writes and one or more read-only slaves. If the master fails, reads can continue while a slave is promoted or a new master is created.",
+  "explanation": "A master handles both reads and writes. It copies writes to one or more slaves, which handle reads only. Slaves may copy data to more slaves in a tree. If the master fails, the system can keep serving reads until a slave becomes the new master or another master is created.",
+  "syntax": "",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Concept only",
+   "code": "--",
+   "language": "text",
+   "explanation": "The documentation describes a database design pattern, not a runnable command or program."
+  },
+  "useCases": [
+   {
+    "title": "Scale read traffic",
+    "scenario": "An application has many more reads than writes."
+   },
+   {
+    "title": "Support failover",
+    "scenario": "The master needs a recovery path."
+   },
+   {
+    "title": "Build a replication tree",
+    "scenario": "A large replica topology is needed."
+   }
+  ],
+  "related": [
+   "Relational database management system (RDBMS)",
+   "Master-master replication",
+   "Replication",
+   "Fail-over"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How does master-slave replication work?",
+    "answer": "The master accepts reads and writes. It sends writes to read-only slaves, which can also copy them to more slaves.",
+    "followUp": "What happens when the master fails? The system can serve reads while a slave is promoted or a replacement master is provisioned."
+   },
+   {
+    "question": "Why use read replicas?",
+    "answer": "It can spread read traffic across multiple slaves. A tree of replicas can extend the replication structure beyond the first level.",
+    "followUp": "What is the trade-off of adding replicas? More slaves require more replication, which can increase replication lag."
+   },
+   {
+    "question": "What are the main risks?",
+    "answer": "The system may lose recent writes if the master fails before replication finishes. Replicas can also spend resources replaying writes instead of serving reads.",
+    "followUp": "How can failover affect writes? Writes should be directed to the promoted or newly provisioned master after the role changes."
+   }
+  ],
+  "keyPoints": [
+   "The master is the write node and also serves reads.",
+   "Slaves are read-only nodes.",
+   "A slave can forward replication to other slaves.",
+   "Reads can continue after the master goes offline.",
+   "Recovery requires promoting a slave or creating another master."
+  ],
+  "gotchas": [
+   "Failover needs extra logic to choose and promote a new master.",
+   "Writes that have not reached another node may be lost if the master fails.",
+   "Many writes can reduce a replica's ability to serve reads."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "Message Queue": {
+  "sourceUrl": "https://github.com/donnemartin/system-design-primer/blob/master/README.md",
+  "sourceTitle": "system-design-primer/README.md at master · donnemartin/system-design-primer · GitHub",
+  "summary": "A message queue stores work until a worker can process it. This lets a request finish without waiting for slow background work.",
+  "explanation": "An application puts slow work into a message queue instead of doing it during the user request. A worker takes the job, processes it, and reports completion later. This keeps the user from waiting, but the system must handle queue growth, retries, and possible duplicate delivery.",
+  "syntax": "",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Simple background job queue",
+   "code": "const queue = [];\nconst worker = setInterval(() => {\n  const job = queue.shift();\n  if (job) console.log(`Processed: ${job}`);\n}, 100);\n\nqueue.push(\"resize-image\");\nconsole.log(\"Job accepted; process it in the background.\");\nsetTimeout(() => clearInterval(worker), 500);",
+   "language": "javascript",
+   "explanation": "The application adds a job and continues. A worker later takes the job and processes it."
+  },
+  "useCases": [
+   {
+    "title": "Run slow work in the background",
+    "scenario": "A user submits work that takes too long for one request."
+   },
+   {
+    "title": "Buffer jobs for workers",
+    "scenario": "A service must process many independent jobs over time."
+   },
+   {
+    "title": "Run scheduled tasks",
+    "scenario": "A system needs scheduled or expensive computation."
+   }
+  ],
+  "related": [
+   "Asynchronism",
+   "Task queues",
+   "Back pressure",
+   "Redis",
+   "RabbitMQ",
+   "Amazon SQS",
+   "Celery",
+   "Exponential backoff"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How does a message queue make a slow operation asynchronous?",
+    "answer": "A message queue holds jobs until a worker can process them. The application publishes the job and can return a status to the user, while the worker handles the job in the background.",
+    "followUp": "What should happen when workers cannot keep up? Limit queue growth with back pressure, return a busy or HTTP 503 response, and retry with exponential backoff."
+   },
+   {
+    "question": "What is a task queue used for?",
+    "answer": "A task queue stores a task and its related data, runs it, and returns the result. It can also schedule work and is useful for computationally expensive jobs.",
+    "followUp": "How would you choose between a message queue and a task queue? Use a message queue for background messages or jobs, and a task queue when execution, results, or scheduling are central."
+   },
+   {
+    "question": "What is back pressure and why is it needed?",
+    "answer": "The queue should be bounded so it does not grow beyond memory. When it fills, the service can reject work temporarily and ask clients to retry later.",
+    "followUp": "How can retries affect correctness? A worker should make processing safe to repeat because some systems can deliver a message twice."
+   }
+  ],
+  "keyPoints": [
+   "A message queue accepts messages, keeps them, and later gives them to consumers.",
+   "The request handler can publish work and tell the user that processing is ongoing.",
+   "Workers take queued jobs, perform the work, and report completion.",
+   "The user request can finish before the slow background operation finishes.",
+   "Task queues can delay work until a planned time and move expensive computation out of the request path."
+  ],
+  "gotchas": [
+   "A simple Redis-based broker may lose messages.",
+   "Amazon SQS may deliver one message more than once, so workers should tolerate duplicate jobs.",
+   "An unchecked queue can exceed memory and cause slower disk-based work.",
+   "Back pressure can reject new requests when the queue is full; clients should retry later."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "Microservices": {
+  "sourceUrl": "https://github.com/donnemartin/system-design-primer/blob/master/README.md",
+  "sourceTitle": "system-design-primer/README.md at master · donnemartin/system-design-primer · GitHub",
+  "summary": "Microservices split an application into small, modular services. Each service can be deployed independently and communicates through a lightweight, well-defined interface.",
+  "explanation": "Microservices are small, modular services that can be deployed independently. Each service runs as its own process, communicates through a defined lightweight interface, and handles one business goal.",
+  "syntax": "",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Call a service",
+   "code": "const services = {\n  profile: \"http://profile-service\",\n  search: \"http://search-service\"\n};\n\nasync function getProfile(id) {\n  const response = await fetch(`${services.profile}/users/${id}`);\n  if (!response.ok) throw new Error(\"Profile service failed\");\n  return response.json();\n}\n\ngetProfile(\"42\").then(console.log);",
+   "language": "javascript",
+   "explanation": "This example shows an application calling one independently deployed service through a defined HTTP endpoint."
+  },
+  "useCases": [
+   {
+    "title": "Split business functions",
+    "scenario": "A large application has separate user profile, follower, feed, search, and photo upload functions."
+   },
+   {
+    "title": "Scale services independently",
+    "scenario": "A growing system needs separate scaling for different parts."
+   },
+   {
+    "title": "Discover service locations",
+    "scenario": "Services need to locate changing service instances."
+   }
+  ],
+  "related": [
+   "Application layer",
+   "Service discovery",
+   "Consul",
+   "Etcd",
+   "Zookeeper",
+   "Message queues"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What are microservices?",
+    "answer": "Microservices are a group of small, modular services that can be deployed independently. Each service runs as a separate process and communicates through a well-defined, lightweight mechanism.",
+    "followUp": "What is one operational cost? Independent services can increase deployment and operations complexity."
+   },
+   {
+    "question": "How should services be divided?",
+    "answer": "A service should focus on a business goal and communicate through a defined interface. For example, a system could separate user profiles, search, and photo uploads into different services.",
+    "followUp": "Why split the web and application layers? They can then be scaled and configured independently."
+   },
+   {
+    "question": "How do services find each other?",
+    "answer": "Service discovery keeps registered service names, addresses, and ports so services can find one another. Health checks can verify whether a service is working, often through an HTTP endpoint.",
+    "followUp": "What shared data can some discovery systems store? Consul and Etcd include key-value stores for configuration and other shared data."
+   }
+  ],
+  "keyPoints": [
+   "A microservice system is made of small services that can be deployed separately.",
+   "Each service runs as its own process.",
+   "Services communicate through a clear and lightweight interface.",
+   "Each service is responsible for a business goal.",
+   "Service discovery records service names, network addresses, and ports.",
+   "Health checks help detect whether a registered service is healthy."
+  ],
+  "gotchas": [
+   "Using many independent services can make deployment and operations more complex than using one monolithic system."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "Partitioning": {
+  "sourceUrl": "https://github.com/donnemartin/system-design-primer/blob/master/README.md",
+  "sourceTitle": "system-design-primer/README.md at master · donnemartin/system-design-primer · GitHub",
+  "summary": "Partitioning splits data across separate databases or logical groups. It can reduce per-database load and support parallel work, but it makes application logic and cross-database queries more complex.",
+  "explanation": "Partitioning splits data or work across separate parts so each part handles only a subset. In this project, database federation divides data by function, while sharding divides rows across databases. Both can reduce traffic and improve parallel writes, but they require application changes and make cross-part queries more complex.",
+  "syntax": "",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Assign records to shards",
+   "code": "const shard = (userId, shardCount) => userId % shardCount;\n\nconst users = [\n  { id: 1, name: \"Ana\" },\n  { id: 2, name: \"Bo\" },\n  { id: 3, name: \"Cy\" },\n];\n\nconst buckets = Array.from({ length: 2 }, () => []);\nfor (const user of users) {\n  buckets[shard(user.id, buckets.length)].push(user);\n}\n\nconsole.log(buckets);",
+   "language": "javascript",
+   "explanation": "This simple example assigns each user to a database subset using the user ID."
+  },
+  "useCases": [
+   {
+    "title": "Split a large dataset",
+    "scenario": "A user database is growing beyond one database's practical capacity."
+   },
+   {
+    "title": "Separate database functions",
+    "scenario": "Different product areas have separate data and traffic patterns."
+   },
+   {
+    "title": "Increase write parallelism",
+    "scenario": "Independent subsets need to accept writes at the same time."
+   }
+  ],
+  "related": [
+   "Federation",
+   "Sharding",
+   "Database replication",
+   "Partition tolerance"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does partitioning mean in system design?",
+    "answer": "Partitioning divides data among separate databases or logical groups. Federation partitions by function, such as users, forums, and products; sharding partitions a dataset into subsets such as users by region.",
+    "followUp": "What is one trade-off of federation? It can reduce traffic per database, but application code must choose the database and cross-database joins become harder."
+   },
+   {
+    "question": "Why might a system use sharding?",
+    "answer": "Sharding can reduce read and write traffic per database, reduce index sizes, improve cache locality, and allow parallel writes. It also requires the application to work with multiple shards.",
+    "followUp": "How can a shard failure affect the system? Other shards may continue operating, but replication is needed to help prevent data loss."
+   },
+   {
+    "question": "How does federation differ from sharding?",
+    "answer": "Federation separates data by function instead of keeping it in one large database. Smaller databases can hold more data in memory and can reduce replication lag.",
+    "followUp": "When is federation less effective? It is less effective when the schema depends on very large functions or tables."
+   }
+  ],
+  "keyPoints": [
+   "Federation places different functions in different databases, such as users, forums, and products.",
+   "Sharding spreads records across databases so each database owns only part of the dataset.",
+   "Sharding can make indexes smaller, which may help queries run faster.",
+   "Separate partitions can accept writes in parallel instead of using one central write point.",
+   "Splitting data makes operations that need records from multiple databases more difficult."
+  ],
+  "gotchas": [
+   "Sharding changes how the application finds data. Code must select the correct shard.",
+   "Queries that combine data from separate partitions are harder to implement.",
+   "A failed shard can still make part of the data unavailable, so replication is needed to reduce data-loss risk."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "Read Replicas": {
+  "sourceUrl": "https://github.com/donnemartin/system-design-primer/blob/master/solutions/system_design/scaling_aws/README.md",
+  "sourceTitle": "system-design-primer/solutions/system_design/scaling_aws/README.md at master · donnemartin/system-design-primer · GitHub",
+  "summary": "Read replicas serve database reads from copies of a write master. They reduce read load on the master, but replication lag and extra operational complexity are trade-offs.",
+  "explanation": "A read replica is a database copy used for read operations. The application sends writes to the primary database and routes reads to replicas, often through a load balancer. This reduces read pressure on the primary, but replicas must replay writes, so their data can lag behind the primary.",
+  "syntax": "",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Round-robin reads",
+   "code": "const replicas = [\"reader-1\", \"reader-2\"];\nlet next = 0;\n\nfunction readDatabase(sql) {\n  const replica = replicas[next++ % replicas.length];\n  console.log(`Read ${sql} from ${replica}`);\n}\n\nreadDatabase(\"SELECT * FROM users\");",
+   "language": "javascript",
+   "explanation": "This simple example distributes read operations across two replica nodes."
+  },
+  "useCases": [
+   {
+    "title": "Add read capacity",
+    "scenario": "A service receives many more reads than writes."
+   },
+   {
+    "title": "Reduce primary load",
+    "scenario": "The primary database is overloaded by queries."
+   },
+   {
+    "title": "Distribute reads",
+    "scenario": "Several database copies serve the same read workload."
+   }
+  ],
+  "related": [
+   "MySQL Write Master",
+   "Memory Cache",
+   "Load Balancers",
+   "Federation",
+   "Sharding",
+   "Denormalization",
+   "SQL Tuning"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is a read replica?",
+    "answer": "Read replicas are copies of the primary database that serve read traffic. The application sends writes to the primary and distributes reads among replicas to reduce primary load.",
+    "followUp": "What consistency issue must the application handle? A replica may lag behind the primary, so a read immediately after a write may not show the new value."
+   },
+   {
+    "question": "When should a system use read replicas?",
+    "answer": "Read replicas help when a service is read-heavy. They provide additional read capacity while keeping writes on the primary database.",
+    "followUp": "What if writes also exceed primary capacity? Consider other SQL scaling methods such as federation, sharding, denormalization, or SQL tuning."
+   },
+   {
+    "question": "How are reads routed to replicas?",
+    "answer": "The application needs separate read and write paths. Reads can be sent through a load balancer to replicas, while writes continue to use the primary database.",
+    "followUp": "How can failures be handled? The system needs health checks and a policy for removing failed replicas or routing reads elsewhere."
+   }
+  ],
+  "keyPoints": [
+   "Use MySQL read replicas to move read work away from the write master.",
+   "The application must distinguish write requests from read requests.",
+   "A load balancer can distribute reads across multiple replicas.",
+   "Read replicas are especially useful when reads greatly outnumber writes."
+  ],
+  "gotchas": [
+   "A primary failure can lose recent writes that replicas have not received yet.",
+   "Heavy write traffic can reduce the capacity available for reads.",
+   "Adding more replicas can increase replication lag and replication work.",
+   "Replicas increase infrastructure and operational complexity."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "Replication": {
+  "sourceUrl": "https://github.com/donnemartin/system-design-primer/blob/master/README.md",
+  "sourceTitle": "system-design-primer/README.md at master · donnemartin/system-design-primer · GitHub",
+  "summary": "Replication keeps data copies on multiple systems. The page covers master-slave and master-master replication, including their availability benefits and trade-offs.",
+  "explanation": "Replication keeps copies of data on multiple systems so service can continue when one system fails and reads can be spread across systems. The page describes master-slave replication, where one master handles reads and writes while slaves handle reads, and master-master replication, where both masters handle reads and writes and coordinate writes.",
+  "syntax": "",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Replication patterns",
+   "code": "// No runnable example applies: the page describes replication patterns rather than a specific API.",
+   "language": "text",
+   "explanation": "The page compares replication patterns and does not define an implementation command or code interface."
+  },
+  "useCases": [
+   {
+    "title": "Read scaling",
+    "scenario": "Serve many read requests"
+   },
+   {
+    "title": "Higher availability",
+    "scenario": "Keep service running after a node failure"
+   },
+   {
+    "title": "Replica fan-out",
+    "scenario": "Distribute data copies across a replica tree"
+   }
+  ],
+  "related": [
+   "Master-slave replication",
+   "Master-master replication",
+   "Fail-over",
+   "Availability in numbers",
+   "Sharding"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How does master-slave replication work?",
+    "answer": "In master-slave replication, the master handles reads and writes. It copies writes to one or more slaves, which handle reads. If the master fails, the system may remain read-only until a slave becomes the new master.",
+    "followUp": "Why can read replicas become slow? Replicas must replay writes from the master. Heavy write traffic can consume capacity that would otherwise serve reads."
+   },
+   {
+    "question": "What is master-master replication?",
+    "answer": "In master-master replication, both masters handle reads and writes. They coordinate changes between themselves, so either can continue serving both operation types if the other fails.",
+    "followUp": "What makes master-master harder? Concurrent writes can conflict, and synchronization can either weaken consistency or increase write latency."
+   },
+   {
+    "question": "What are the main trade-offs of replication?",
+    "answer": "Replication can improve availability and read capacity, but it does not remove failure risk. Data may be lost before replication finishes, and replicas can fall behind as write volume grows.",
+    "followUp": "How would you reduce the impact of lag? Route suitable reads to replicas only when stale data is acceptable, and monitor lag before relying on a replica."
+   }
+  ],
+  "keyPoints": [
+   "Master-slave replication separates write handling from read handling.",
+   "A replica can copy data onward to other replicas.",
+   "Master-master replication can keep reads and writes available after one master fails.",
+   "Master-master designs trade stronger consistency for write speed or coordination.",
+   "More write nodes and higher network delay make conflicts harder to resolve."
+  ],
+  "gotchas": [
+   "A failure can lose recent writes that have not reached another node.",
+   "Adding read replicas increases replication work and can increase lag.",
+   "Replication requires more systems and more operational logic."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "REST": {
+  "sourceUrl": "https://github.com/donnemartin/system-design-primer/blob/master/README.md",
+  "sourceTitle": "system-design-primer/README.md at master · donnemartin/system-design-primer · GitHub",
+  "summary": "REST is a stateless, cacheable style for client-server APIs. Clients use URIs and HTTP methods to act on resources and receive representations.",
+  "explanation": "REST is an architectural style for client and server communication. The client acts on server-managed resources through URIs, HTTP methods, headers, request bodies, and status codes. Communication is stateless and cacheable, which supports horizontal scaling and partitioning.",
+  "syntax": "GET /someresources/anId\nPUT /someresources/anId\n{\"anotherdata\":\"another value\"}",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Read a resource",
+   "code": "GET /users/123\n\nHTTP/1.1 200 OK\nContent-Type: application/json\n\n{\"id\":\"123\",\"name\":\"Ada\"}",
+   "language": "text",
+   "explanation": "A client requests one user resource by URI. The server returns a representation of that resource."
+  },
+  "useCases": [
+   {
+    "title": "Public HTTP APIs",
+    "scenario": "A public web API exposes users, orders, or other resources through HTTP."
+   },
+   {
+    "title": "Horizontal scaling",
+    "scenario": "A service needs requests that can be distributed across many servers."
+   },
+   {
+    "title": "Resource-based communication",
+    "scenario": "Clients and servers need a generic interface based on resource URIs and HTTP methods."
+   }
+  ],
+  "related": [
+   "RPC",
+   "HTTP",
+   "URI",
+   "client/server model",
+   "cacheable communication",
+   "horizontal scaling",
+   "partitioning",
+   "GET"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is REST?",
+    "answer": "REST exposes data as resources. A client identifies resources with URIs and uses HTTP verbs, headers, request bodies, and status codes to operate on them. Communication is stateless and cacheable.",
+    "followUp": "Why can REST scale horizontally? Stateless requests do not require a client to stay tied to one server, so requests can be partitioned across servers."
+   },
+   {
+    "question": "What qualities does the page list for a RESTful interface?",
+    "answer": "A REST interface identifies resources with stable URIs, changes them through HTTP verbs and representations, and reports errors with HTTP status codes. HATEOAS is also listed as a REST quality.",
+    "followUp": "What is a limitation of this style? It may need several round trips for one view and can return fields a client does not need."
+   },
+   {
+    "question": "How does REST differ from RPC?",
+    "answer": "REST is often used for public HTTP APIs because it uses a generic way to expose resources. RPC focuses on behaviors and can use native calls for internal performance needs, but it couples clients more closely to service implementations.",
+    "followUp": "When might RPC be a better choice? Use it when operations are the main abstraction, the target platform is known, and performance or control over access matters."
+   }
+  ],
+  "keyPoints": [
+   "REST uses a client-server model. The server manages resources, and the client acts on their representations.",
+   "Each request carries the information needed to process it. REST communication is also designed to be cacheable.",
+   "Use URIs to identify resources rather than creating a different URI for every operation.",
+   "Use HTTP methods, headers, and the request body to describe changes to a resource.",
+   "Use standard HTTP status codes to describe the result of a request instead of inventing a separate error system.",
+   "Stateless requests make REST useful when distributing work across servers or partitions."
+  ],
+  "gotchas": [
+   "REST may be a poor fit when the data is not naturally organized as a simple resource hierarchy.",
+   "A screen that needs data from several resources can require multiple client-server round trips.",
+   "Adding response fields can increase payload size and latency for older clients."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "Reverse Proxy": {
+  "sourceUrl": "https://github.com/donnemartin/system-design-primer/blob/master/README.md",
+  "sourceTitle": "system-design-primer/README.md at master · donnemartin/system-design-primer · GitHub",
+  "summary": "A reverse proxy is a web server between clients and internal services. It forwards requests and can add security, SSL termination, compression, caching, and static-file serving.",
+  "explanation": "A reverse proxy is a web server placed between clients and internal services. It forwards each request to a server that can handle it, then sends the response back. It can also hide backend details, terminate SSL, compress responses, cache results, and serve static files.",
+  "syntax": "",
+  "parameters": [],
+  "returns": "The reverse proxy returns the selected backend server's response to the client.",
+  "example": {
+   "title": "Forward requests through a reverse proxy",
+   "code": "server {\n  listen 80;\n  location / {\n    proxy_pass http://app_servers;\n  }\n}",
+   "language": "nginx",
+   "explanation": "This forwards incoming web requests to application servers."
+  },
+  "useCases": [
+   {
+    "title": "Unified public interface",
+    "scenario": "Several internal services need one public entry point."
+   },
+   {
+    "title": "Hide backend details",
+    "scenario": "Backend servers should not be exposed directly."
+   },
+   {
+    "title": "Offload request processing",
+    "scenario": "Backend servers should avoid repeated SSL, compression, or cache work."
+   },
+   {
+    "title": "Serve static content",
+    "scenario": "The system serves static files alongside dynamic responses."
+   }
+  ],
+  "related": [
+   "Load balancer",
+   "Application layer",
+   "Service discovery",
+   "Caching"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is a reverse proxy?",
+    "answer": "A reverse proxy receives client requests and forwards them to an internal server. It then returns that server's response to the client.",
+    "followUp": "Why use one with only one backend server? It can still provide SSL termination, caching, compression, security controls, and static-file serving."
+   },
+   {
+    "question": "How does a reverse proxy differ from a load balancer?",
+    "answer": "A load balancer usually distributes traffic across multiple servers that provide the same function. A reverse proxy can also be useful with only one web or application server.",
+    "followUp": "Can one product provide both functions? Yes. The page names NGINX and HAProxy as examples that support reverse proxying and load balancing."
+   },
+   {
+    "question": "What benefits can a reverse proxy provide?",
+    "answer": "It can hide backend server information, limit client connections, terminate SSL, compress responses, cache responses, and serve static content.",
+    "followUp": "What is a main operational risk? A single reverse proxy is a single point of failure, so failover proxies may be needed, with added complexity."
+   }
+  ],
+  "keyPoints": [
+   "It gives public clients one interface for several internal services.",
+   "It sends each request to an internal server that can handle it.",
+   "Clients do not directly see the addresses of backend servers.",
+   "It can handle SSL work so backend servers do not need to perform it.",
+   "It can answer some requests from its cache instead of contacting a backend.",
+   "It can serve files such as HTML, CSS, JavaScript, photos, and videos itself."
+  ],
+  "gotchas": [
+   "Adding a reverse proxy makes the system more complex.",
+   "One reverse proxy can stop all traffic if it fails."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "Service Discovery": {
+  "sourceUrl": "https://github.com/donnemartin/system-design-primer/blob/master/README.md",
+  "sourceTitle": "system-design-primer/README.md at master · donnemartin/system-design-primer · GitHub",
+  "summary": "Service discovery helps services find one another. It tracks service names, addresses, and ports, and can use health checks to verify service integrity.",
+  "explanation": "Services register their names, network addresses, and ports in a discovery system. Other services use that information to find them. Health checks can test whether a service is working, often through an HTTP endpoint. Consul and Etcd can also store configuration and shared data.",
+  "syntax": "",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Service discovery",
+   "code": "// No runnable example applies: this concept is described in the guide, not through an API.",
+   "language": "text",
+   "explanation": "Service discovery is an architecture concept rather than a callable interface."
+  },
+  "useCases": [
+   {
+    "title": "Find service instances",
+    "scenario": "A service needs to call another service whose location can change."
+   },
+   {
+    "title": "Check service health",
+    "scenario": "A system must avoid sending requests to failed instances."
+   },
+   {
+    "title": "Store shared configuration",
+    "scenario": "Several services need shared configuration values."
+   }
+  ],
+  "related": [
+   "Microservices",
+   "Consul",
+   "Etcd",
+   "Zookeeper",
+   "Health checks",
+   "Key-value store"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What problem does service discovery solve?",
+    "answer": "Service discovery keeps a registry of service names, addresses, and ports. A client can use the registry to locate the service it needs.",
+    "followUp": "What else should the registry provide? Health checks should help verify service integrity, often through an HTTP endpoint."
+   },
+   {
+    "question": "Which systems can provide service discovery?",
+    "answer": "Examples named in the guide include Consul, Etcd, and Zookeeper. They track registered service locations so services can find one another.",
+    "followUp": "What additional capability do some listed systems provide? Consul and Etcd include a key-value store for configuration and shared data."
+   },
+   {
+    "question": "How do health checks relate to service discovery?",
+    "answer": "A health check tests whether a registered service is healthy. The guide says this is often done through an HTTP endpoint.",
+    "followUp": "Why is this useful? It helps avoid treating an unhealthy service as available."
+   }
+  ],
+  "keyPoints": [
+   "A discovery system records each service's name, address, and port.",
+   "Health checks help determine whether a registered service is working.",
+   "An HTTP endpoint is a common way to perform the health check.",
+   "Consul and Etcd also provide a built-in key-value store.",
+   "That store can hold configuration values and other shared data."
+  ],
+  "gotchas": [
+   "Using separate services can make deployment and operations more complex."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "Sharding": {
+  "sourceUrl": "https://github.com/donnemartin/system-design-primer/blob/master/README.md?plain=1",
+  "sourceTitle": "system-design-primer/README.md at master · donnemartin/system-design-primer · GitHub",
+  "summary": "Sharding splits data across databases so each database manages only part of the data. It can improve scale and parallel writes, but it adds routing, rebalancing, and cross-shard query complexity.",
+  "explanation": "Sharding splits data across multiple databases. Each database stores only part of the data. As data grows, more shards can be added. This can reduce traffic, replication work, and index size, and it can allow writes to run in parallel. The application must know how to find the correct shard.",
+  "syntax": "shard = chooseShard(shardKey)",
+  "parameters": [
+   {
+    "name": "shard key",
+    "type": "application-defined value",
+    "description": "A value used to select the shard, such as a user name initial or geographic location."
+   },
+   {
+    "name": "shard cluster",
+    "type": "collection of databases",
+    "description": "The set of databases that hold separate subsets of the data."
+   }
+  ],
+  "returns": "The selected shard stores and serves the relevant subset of data.",
+  "example": {
+   "title": "Simple shard selection",
+   "code": "const shard = (userId, shardCount) => userId % shardCount;\n\nconst users = [\n  { id: 101, name: \"Ava\" },\n  { id: 202, name: \"Noah\" },\n];\n\nfor (const user of users) {\n  console.log(`user ${user.id} -> shard ${shard(user.id, 4)}`);\n}",
+   "language": "javascript",
+   "explanation": "This example assigns each user to a shard from the user ID. A real system must also handle rebalancing and data access across shards."
+  },
+  "useCases": [
+   {
+    "title": "Split a growing user dataset",
+    "scenario": "A users table is too large for one database."
+   },
+   {
+    "title": "Spread database traffic",
+    "scenario": "One database cannot handle the required read and write traffic."
+   },
+   {
+    "title": "Increase write parallelism",
+    "scenario": "Writes need to run across independent data partitions."
+   }
+  ],
+  "related": [
+   "Federation",
+   "Replication",
+   "Consistent hashing",
+   "Denormalization",
+   "Database"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is database sharding, and why use it?",
+    "answer": "Sharding distributes data across several databases, with each database holding a subset of the data. It can reduce per-database traffic and index size, and it can support parallel writes.",
+    "followUp": "What problem can occur with a geographic shard key? A region may grow faster than others, creating an overloaded shard. Rebalancing or a different shard key may be needed."
+   },
+   {
+    "question": "How can data be divided among shards?",
+    "answer": "A shard key determines which database stores a record. Common examples in the documentation include a user’s last-name initial and geographic location.",
+    "followUp": "How can consistent hashing help? It can reduce the amount of data that must move when shards are added or removed."
+   },
+   {
+    "question": "What are the main trade-offs of sharding?",
+    "answer": "Sharding makes application logic more complex. Cross-shard joins are harder, data can become unevenly distributed, and replication is still needed to reduce the risk of data loss.",
+    "followUp": "What happens if one shard fails? Other shards can remain operational, but records on the failed shard need replication or another recovery method to avoid data loss."
+   }
+  ],
+  "keyPoints": [
+   "Each shard owns only a portion of the full dataset.",
+   "A system can add shards as the stored user data grows.",
+   "Splitting data can lower work on each database and improve cache behavior.",
+   "Smaller indexes can make lookups faster.",
+   "Separate shards can accept writes in parallel instead of using one central write point.",
+   "A failure in one shard does not necessarily stop all other shards."
+  ],
+  "gotchas": [
+   "A shard can receive much more load than others when data is not distributed evenly.",
+   "Moving data between shards when the cluster changes requires extra coordination.",
+   "Queries that combine records from different shards are harder to design and run.",
+   "The application must choose the correct shard, which can make queries and routing more complex."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "Single Point of Failure": {
+  "sourceUrl": "https://github.com/donnemartin/system-design-primer/blob/master/README.md?plain=1",
+  "sourceTitle": "system-design-primer/README.md at master · donnemartin/system-design-primer · GitHub",
+  "summary": "A load balancer distributes client requests across backend resources. Multiple balancers can improve availability, while routing rules can use health, load, cookies, or network and application data.",
+  "explanation": "A single load balancer can become a single point of failure. Using multiple load balancers in active-active or active-passive mode helps protect against that failure. The balancers distribute requests to healthy resources and can also terminate SSL or keep a client on one server.",
+  "syntax": "",
+  "parameters": [],
+  "returns": "The response from the selected computing resource, returned to the appropriate client.",
+  "example": {
+   "title": "Simple round-robin routing",
+   "code": "const loadBalancers = [\"lb-a\", \"lb-b\"];\nlet active = 0;\n\nfunction route(request) {\n  const target = loadBalancers[active];\n  active = (active + 1) % loadBalancers.length;\n  return { target, request };\n}\n\nconsole.log(route(\"GET /health\"));\nconsole.log(route(\"GET /users\"));",
+   "language": "javascript",
+   "explanation": "This small example shows active-active routing with round robin. A production load balancer must also check server health and handle failures."
+  },
+  "useCases": [
+   {
+    "title": "Share traffic across servers",
+    "scenario": "Several application servers provide the same service and requests must be spread across them."
+   },
+   {
+    "title": "Avoid failed resources",
+    "scenario": "Some servers are unhealthy or overloaded and should not receive new requests."
+   },
+   {
+    "title": "Terminate SSL at the edge",
+    "scenario": "Backend servers should not perform incoming and outgoing TLS work."
+   },
+   {
+    "title": "Keep session affinity",
+    "scenario": "Clients need to remain associated with one server when sessions are local."
+   }
+  ],
+  "related": [
+   "Reverse proxy",
+   "Horizontal scaling",
+   "Layer 4 load balancing",
+   "Layer 7 load balancing",
+   "Session persistence",
+   "Active-passive",
+   "Active-active"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does a load balancer do?",
+    "answer": "A load balancer distributes incoming client requests across resources such as application servers or databases. It returns the selected resource's response to the client and can avoid unhealthy or overloaded servers.",
+    "followUp": "What happens if the balancer fails? Use multiple balancers in active-active or active-passive mode so one failure does not stop traffic."
+   },
+   {
+    "question": "How do Layer 4 and Layer 7 load balancing differ?",
+    "answer": "Layer 4 balancing uses transport information such as source and destination IP addresses and ports. Layer 7 balancing can inspect application headers, messages, and cookies before selecting a server.",
+    "followUp": "When might Layer 4 be preferable? It generally needs less time and computing power, while Layer 7 provides more routing flexibility."
+   },
+   {
+    "question": "How does load balancing support horizontal scaling?",
+    "answer": "Horizontal scaling adds more servers instead of making one server larger. A load balancer sends requests across those servers, but shared data such as sessions may need a centralized database or persistent cache.",
+    "followUp": "How can sessions work without sticky routing? Store session data in a shared database or persistent cache so any server can serve the client."
+   }
+  ],
+  "keyPoints": [
+   "A load balancer sends client requests to backend resources and sends their responses back to the correct clients.",
+   "Health-aware routing keeps traffic away from servers that cannot serve requests.",
+   "SSL termination moves encryption work from backend servers to the load balancer.",
+   "Routing can use methods such as random choice, least load, cookies, or round robin.",
+   "Layer 7 routing can use application-level information to choose a backend.",
+   "Adding servers lets the system handle more traffic, while the balancer spreads requests among them."
+  ],
+  "gotchas": [
+   "A load balancer still needs enough capacity. Otherwise, it can limit the whole system.",
+   "Do not rely on only one load balancer when availability is required.",
+   "Scaling application servers can increase connection pressure on caches and databases."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "SLA": {
+  "sourceUrl": "https://github.com/donnemartin/system-design-primer/blob/HEAD/README.md",
+  "sourceTitle": "system-design-primer/README.md at ae9bbd7b02d90b9866215de185217d33f39ab733 · donnemartin/system-design-primer · GitHub",
+  "summary": "An SLA is not defined as a separate feature in this documentation. The page explains availability targets as uptime percentages, such as 99.9% and 99.99%, and shows their allowed downtime.",
+  "explanation": "The page discusses availability as uptime or downtime expressed as a percentage. It describes targets with a count of nines, such as 99.9% or 99.99%, and gives the downtime allowed over several time periods. It does not define SLA terms, service credits, or an SLA declaration.",
+  "syntax": "",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Availability target",
+   "code": "# No example: the source describes availability targets and formulas, not an SLA declaration.\n",
+   "language": "text",
+   "explanation": "The documentation does not define a command or code interface for an SLA."
+  },
+  "useCases": [
+   {
+    "title": "Availability budgeting",
+    "scenario": "Set an uptime target for a service and translate it into allowed downtime."
+   },
+   {
+    "title": "Architecture comparison",
+    "scenario": "Compare designs that use sequential or parallel components."
+   },
+   {
+    "title": "Failover planning",
+    "scenario": "Choose a recovery arrangement for failed servers."
+   }
+  ],
+  "related": [
+   "fail-over",
+   "active-passive",
+   "active-active",
+   "replication",
+   "load balancer",
+   "availability in numbers"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How does the page quantify availability?",
+    "answer": "The page presents availability as the percentage of time a service is available. It describes 99.9% as three nines and 99.99% as four nines.",
+    "followUp": "What does 99.99% allow? The page lists about 52 minutes and 36 seconds of downtime per year."
+   },
+   {
+    "question": "How do component relationships affect availability?",
+    "answer": "For components in sequence, total availability is the product of their availabilities. Two components at 99.9% each therefore provide about 99.8% overall availability.",
+    "followUp": "What changes with parallel components? The page gives the formula 1 - (1 - Foo) * (1 - Bar), which improves total availability."
+   },
+   {
+    "question": "Compare active-passive and active-active failover.",
+    "answer": "Active-passive failover uses heartbeats and lets a standby server take over when the active server stops responding. Active-active failover lets both servers handle traffic.",
+    "followUp": "What is a trade-off of failover? It adds hardware and complexity, and replicated data may be lost if failure happens first."
+   }
+  ],
+  "keyPoints": [
+   "Availability targets are often named by their number of nines.",
+   "A 99.99% target permits about 52 minutes and 36 seconds of downtime each year.",
+   "For sequential components, every component contributes another possible failure, so total availability goes down.",
+   "Parallel availability uses the chance that both components fail to calculate the remaining service availability.",
+   "Active-passive failover monitors the active server and uses a standby server for takeover.",
+   "Active-active failover keeps both servers serving requests instead of reserving one only for recovery."
+  ],
+  "gotchas": [
+   "An SLA is not documented as a separate object or contract here. The page only explains availability measurement.",
+   "Adding failover or parallel components can increase complexity, so availability targets must include the whole service design."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "Throughput": {
+  "sourceUrl": "https://github.com/donnemartin/system-design-primer/blob/master/README.md",
+  "sourceTitle": "system-design-primer/README.md at master · donnemartin/system-design-primer · GitHub",
+  "summary": "Throughput is the amount of work completed in a unit of time. It is different from latency, which is the time needed for one action or result.",
+  "explanation": "Throughput measures how many actions or results a system completes in a unit of time. It differs from latency, which measures how long one action or result takes. A system should seek high throughput while keeping latency within an acceptable range.",
+  "syntax": "",
+  "parameters": [],
+  "returns": "The number of actions or results completed per unit of time.",
+  "example": {
+   "title": "Calculate throughput",
+   "code": "const requests = 1200;\nconst seconds = 60;\nconst throughput = requests / seconds;\nconsole.log(`${throughput} requests per second`);",
+   "language": "javascript",
+   "explanation": "This calculates the number of completed requests per second."
+  },
+  "useCases": [
+   {
+    "title": "Estimate completed work per second",
+    "scenario": "Capacity planning"
+   },
+   {
+    "title": "Compare system output under load",
+    "scenario": "Performance testing"
+   },
+   {
+    "title": "Balance throughput with acceptable latency",
+    "scenario": "System design"
+   }
+  ],
+  "related": [
+   "Latency",
+   "Performance vs scalability",
+   "Scalability",
+   "Asynchronism"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is throughput, and how is it different from latency?",
+    "answer": "Throughput is the number of actions or results completed per unit of time. Latency is the time needed for one action or result.",
+    "followUp": "How can a system improve throughput? Add resources or parallel work, but check that latency remains acceptable."
+   },
+   {
+    "question": "Can high throughput still produce a poor user experience?",
+    "answer": "A system can complete many operations over time while still making each user wait too long. Throughput describes total work over time; latency describes the delay for an individual operation.",
+    "followUp": "What metric would you inspect for a slow single request? Inspect latency, then find the part of the request path causing the delay."
+   },
+   {
+    "question": "What performance goal does the guide recommend?",
+    "answer": "The target is not simply the highest possible throughput. The guide says to maximize throughput while keeping latency acceptable.",
+    "followUp": "Why should both metrics be measured? They describe different failure modes, so one metric cannot fully describe system performance."
+   }
+  ],
+  "keyPoints": [
+   "Throughput counts completed actions or results during a time interval.",
+   "Latency measures the time required for one action or result.",
+   "A useful design goal combines high throughput with latency users can accept.",
+   "Heavy load can reveal a scalability problem even when one-user performance looks good."
+  ],
+  "gotchas": [
+   "High throughput alone is not enough. Keep latency within an acceptable limit."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "TTL": {
+  "sourceUrl": "https://github.com/donnemartin/system-design-primer/blob/master/solutions/system_design/query_cache/README.md",
+  "sourceTitle": "system-design-primer/solutions/system_design/query_cache/README.md at master · donnemartin/system-design-primer · GitHub",
+  "summary": "TTL sets the maximum time a cached query result may stay in the cache before it is refreshed. It limits how long the result can remain stale.",
+  "explanation": "TTL is the maximum time a cached result stays usable before the system refreshes it. In a query cache, the application can load a result, store it, and later replace it after the TTL expires.",
+  "syntax": "",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "A simple TTL cache",
+   "code": "const TTL_MS = 60_000;\nconst cache = new Map();\n\nasync function getQuery(query, load) {\n  const saved = cache.get(query);\n  if (saved && Date.now() - saved.time < TTL_MS) return saved.value;\n\n  const value = await load(query);\n  cache.set(query, { value, time: Date.now() });\n  return value;\n}\n\ngetQuery(\"cats\", async q => `results for ${q}`).then(console.log);",
+   "language": "javascript",
+   "explanation": "This example keeps a query result for a limited time, then loads it again after the TTL expires."
+  },
+  "useCases": [
+   {
+    "title": "Reduce repeated query work",
+    "scenario": "A web server repeats expensive database queries."
+   },
+   {
+    "title": "Limit stale results",
+    "scenario": "Data changes, but a short delay is acceptable."
+   },
+   {
+    "title": "Spread entries across machines",
+    "scenario": "One cache machine cannot hold all query results."
+   }
+  ],
+  "related": [
+   "Cache-aside",
+   "Write-through",
+   "Write-behind (write-back)",
+   "Refresh ahead",
+   "Cache Consistency patterns"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does TTL mean in a cache?",
+    "answer": "TTL is the maximum time that a cached entry can remain before it is refreshed. It helps limit how long a query result can remain stale.",
+    "followUp": "What other cache update pattern could avoid waiting for expiry? Write-through updates the data store and cache together, so the cache does not become stale after a successful update."
+   },
+   {
+    "question": "How does cache-aside work for query results?",
+    "answer": "A query cache can use cache-aside: check the cache first, load the result from the database on a miss, store it, and return it. Only requested data is added, which avoids filling the cache with unused data.",
+    "followUp": "What is the cost of a miss? It needs the cache lookup, a database read, and a cache write before returning the result."
+   },
+   {
+    "question": "How can a query cache scale across machines?",
+    "answer": "A large cache can be split across machines by hashing the key to choose a machine. This uses memory more efficiently than keeping a full copy on every machine, but it adds complexity.",
+    "followUp": "What happens when a cache machine fails? Requests for its keys may miss, and a replacement node may add latency until its cache is populated."
+   }
+  ],
+  "keyPoints": [
+   "Set a maximum lifetime for each cached result. This lifetime is the TTL.",
+   "With cache-aside, the application reads the cache first and fills it after a miss.",
+   "Sharding spreads cache entries across machines and is usually more memory-efficient than duplicating the full cache."
+  ],
+  "gotchas": [],
+  "checkedAt": "2026-11-03"
+ },
+ "Vertical Scaling": {
+  "sourceUrl": "https://github.com/donnemartin/system-design-primer/blob/master/solutions/system_design/scaling_aws/README.md",
+  "sourceTitle": "system-design-primer/solutions/system_design/scaling_aws/README.md at master · donnemartin/system-design-primer · GitHub",
+  "summary": "Vertical scaling increases capacity by choosing a larger server. Start simply, monitor resource use, and scale up when metrics show a bottleneck.",
+  "explanation": "Vertical scaling means moving a workload to a larger server instead of adding more servers. Monitor CPU, memory, disk input/output, and network use to find bottlenecks, then increase the instance size as needed.",
+  "syntax": "",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Increase instance size",
+   "code": "# Choose a larger EC2 instance when metrics show the current one is a bottleneck.\naws ec2 modify-instance-attribute \\\n  --instance-id i-0123456789abcdef0 \\\n  --instance-type \"{\\\"Value\\\":\\\"m7i.large\\\"}\"",
+   "language": "bash",
+   "explanation": "This changes an EC2 instance to a larger size. Check resource metrics first, then choose a size that addresses the bottleneck."
+  },
+  "useCases": [
+   {
+    "title": "Start small",
+    "scenario": "A new service has very few users and needs a simple deployment."
+   },
+   {
+    "title": "Remove a bottleneck",
+    "scenario": "A single server reaches a CPU, memory, storage, or network limit."
+   },
+   {
+    "title": "Delay horizontal scaling",
+    "scenario": "The system is not yet ready for multiple application servers."
+   }
+  ],
+  "related": [
+   "Horizontal scaling",
+   "CloudWatch",
+   "EC2",
+   "Load balancing"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is vertical scaling?",
+    "answer": "Vertical scaling increases the capacity of one server, such as by choosing a larger EC2 instance. It is simple and can be a good starting point for a small workload.",
+    "followUp": "What is the main alternative? Horizontal scaling adds more server instances, usually behind a load balancer, but it adds operational complexity."
+   },
+   {
+    "question": "How do you decide when to scale vertically?",
+    "answer": "Use monitoring to identify the limiting resource before changing the server. Useful measurements include CPU, memory, input/output, and network usage.",
+    "followUp": "Why avoid scaling based only on CPU? Memory, storage, or network limits can be the actual bottleneck."
+   },
+   {
+    "question": "What are the trade-offs of vertical scaling?",
+    "answer": "Vertical scaling keeps the design simple because the workload remains on one box. Its main drawbacks are high cost at larger sizes and the lack of redundancy or failover.",
+    "followUp": "When would horizontal scaling be preferred? It is preferred when higher availability or more capacity than one server can provide is required."
+   }
+  ],
+  "keyPoints": [
+   "Increase capacity by selecting a larger server instance.",
+   "Use measurements to decide when the current server needs more capacity.",
+   "Check CPU, memory, input/output, and network metrics when looking for bottlenecks.",
+   "A single server is a reasonable starting design for a very small user base."
+  ],
+  "gotchas": [
+   "A larger server can cost much more as resource needs grow.",
+   "One vertically scaled server does not provide a backup if it fails."
+  ],
+  "checkedAt": "2026-11-03"
+ }
+}

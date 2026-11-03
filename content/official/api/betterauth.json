@@ -75,6 +75,102 @@
   "gotchas": [],
   "checkedAt": "2026-10-15"
  },
+ "Account": {
+  "sourceUrl": "https://better-auth.com/docs/concepts/users-accounts",
+  "sourceTitle": "User & Accounts",
+  "summary": "Better Auth represents each sign-in method as an account linked to a user. You can list linked accounts and control linking with trusted providers, email rules, and unlinking settings.",
+  "explanation": "Better Auth stores each authentication method as an account linked to a user. You can list these accounts, use an account's local id for account-management calls, and configure linking rules such as trusted providers and whether different emails are allowed.",
+  "syntax": "const { data: accounts, error } = await authClient.listAccounts();",
+  "parameters": [
+   {
+    "name": "account",
+    "type": "Account",
+    "description": "An account has a local id, providerId, and provider accountId. The listAccounts call takes no parameters."
+   },
+   {
+    "name": "trustedProviders",
+    "type": "string[] | async (request) => string[]",
+    "description": "Provider names trusted for account linking. This may be a static list or a request-based function."
+   },
+   {
+    "name": "allowDifferentEmails",
+    "type": "boolean",
+    "description": "Whether users may link accounts that have different email addresses."
+   },
+   {
+    "name": "allowUnlinkingAll",
+    "type": "boolean",
+    "description": "Whether users may unlink every linked account."
+   }
+  ],
+  "returns": "listAccounts returns the current user's linked accounts. Each account includes identifiers such as id, providerId, and the provider's accountId.",
+  "example": {
+   "title": "List linked accounts",
+   "code": "const { data: accounts, error } = await authClient.listAccounts();\nif (error) throw new Error(error.message);\n\nconst googleAccount = accounts?.find(\n  (account) => account.providerId === \"google\"\n);\nconsole.log(googleAccount?.id);",
+   "language": "typescript",
+   "explanation": "This lists the signed-in user's linked accounts and finds the Google account."
+  },
+  "useCases": [
+   {
+    "title": "Show linked sign-in methods",
+    "scenario": "Account settings page"
+   },
+   {
+    "title": "Find an account before unlinking it",
+    "scenario": "Provider management"
+   },
+   {
+    "title": "Restrict automatic account linking",
+    "scenario": "OAuth security configuration"
+   },
+   {
+    "title": "Encrypt provider tokens before database storage",
+    "scenario": "Token storage"
+   }
+  ],
+  "related": [
+   "listAccounts",
+   "accountLinking",
+   "trustedProviders",
+   "allowDifferentEmails",
+   "allowUnlinkingAll",
+   "disableImplicitLinking",
+   "updateUserInfoOnLink",
+   "encryptOAuthTokens"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is the difference between a user and an account?",
+    "answer": "An account is one authentication method connected to a user. Its local id identifies the Better Auth account record, while providerId plus the provider's accountId identifies the external identity.",
+    "followUp": "Why should account-management calls keep the local id? Because the APIs use the Better Auth record id as accountId, not necessarily the external provider identifier."
+   },
+   {
+    "question": "How do you list a user's linked accounts?",
+    "answer": "The listAccounts client method returns every authentication method linked to the current user. The returned account id can later be used to unlink the account or call another account-specific API.",
+    "followUp": "How would you select one provider? Find the returned item whose providerId matches the provider, then keep its id for later operations."
+   },
+   {
+    "question": "Which settings control account linking?",
+    "answer": "accountLinking controls linking behavior. It can enable linking, define trusted providers, allow different email addresses, permit unlinking all accounts, and copy selected provider profile fields to the local user.",
+    "followUp": "How can implicit OAuth linking be stopped? Set disableImplicitLinking to true; authenticated users can still link providers explicitly with linkSocial()."
+   }
+  ],
+  "keyPoints": [
+   "Email/password, Google, and enterprise identity methods are represented as separate accounts connected to the same user.",
+   "Use the account's local id as accountId when an account-management API requires a specific account.",
+   "providerId names the configured provider, while accountId is the stable identifier assigned by that provider.",
+   "Call authClient.listAccounts() to get the signed-in user's linked authentication methods.",
+   "The accountLinking.enabled setting controls whether account linking is available, and it defaults to true.",
+   "trustedProviders can be a fixed list or an asynchronous function that chooses providers from the request."
+  ],
+  "gotchas": [
+   "OAuth access and refresh tokens are not encrypted by default. Enable account token encryption or encrypt tokens with database hooks before saving them.",
+   "Enabling updateUserInfoOnLink can change the local name and image, but it never changes the local email or emailVerified fields.",
+   "Unlinking every authentication method can leave a user without a way to sign in, so configure this option deliberately."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "admin": {
   "sourceUrl": "https://better-auth.com/docs/plugins/admin",
   "sourceTitle": "Admin | Better Auth",
@@ -143,6 +239,87 @@
    "Administrator status can come from the admin role or from the configured administrator user-ID list."
   ],
   "checkedAt": "2026-10-15"
+ },
+ "advanced": {
+  "sourceUrl": "https://better-auth.com/docs/reference/options",
+  "sourceTitle": "Options",
+  "summary": "The advanced option groups low-level Better Auth settings. It controls IP tracking, cookies, database behavior, background tasks, and route matching.",
+  "explanation": "The advanced option groups lower-level Better Auth settings. It controls client IP handling, cookie behavior, database IDs and queries, background work, and route matching. Use these settings only when the defaults do not fit your deployment.",
+  "syntax": "betterAuth({ advanced: { ... } })",
+  "parameters": [
+   {
+    "name": "advanced",
+    "type": "object",
+    "description": "Advanced Better Auth settings, including IP, cookies, database, background tasks, and route matching."
+   }
+  ],
+  "returns": "",
+  "example": {
+   "title": "Configure advanced options",
+   "code": "import { betterAuth } from \"better-auth\";\n\nexport const auth = betterAuth({\n  advanced: {\n    database: {\n      generateId: \"uuid\",\n      defaultFindManyLimit: 50,\n      joins: true,\n      validateSchema: true,\n    },\n    skipTrailingSlashes: true,\n  },\n});",
+   "language": "typescript",
+   "explanation": "This configuration changes database behavior and route matching. It uses UUID IDs, limits findMany results to 50, enables supported database joins, validates the schema, and ignores trailing slashes."
+  },
+  "useCases": [
+   {
+    "title": "Control record IDs",
+    "scenario": "Use UUIDs or another ID policy instead of the default ID generator."
+   },
+   {
+    "title": "Defer non-critical work",
+    "scenario": "Run cleanup or rate-limit updates after sending a response."
+   },
+   {
+    "title": "Enable database joins",
+    "scenario": "Support adapters that can load related records with SQL joins."
+   },
+   {
+    "title": "Relax route matching",
+    "scenario": "Accept routes with or without a final slash."
+   }
+  ],
+  "related": [
+   "ipAddress",
+   "useSecureCookies",
+   "cookies",
+   "defaultCookieAttributes",
+   "cookiePrefix",
+   "database",
+   "backgroundTasks",
+   "skipTrailingSlashes"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is the purpose of advanced in Better Auth?",
+    "answer": "The advanced option is a group for lower-level Better Auth configuration. It includes IP tracking, cookie settings, database behavior, background tasks, and trailing-slash handling.",
+    "followUp": "Which advanced setting controls database IDs? The database.generateId setting accepts a custom function, false, serial, or uuid."
+   },
+   {
+    "question": "How can database behavior be customized?",
+    "answer": "advanced.database.generateId controls how Better Auth creates record IDs. It can use a custom function, disable generation, use database serial IDs, or generate UUIDs.",
+    "followUp": "How can query behavior also be changed? Set defaultFindManyLimit to cap results and joins to enable supported database joins."
+   },
+   {
+    "question": "What does backgroundTasks do?",
+    "answer": "advanced.backgroundTasks accepts a handler for deferred work, such as a platform waitUntil function. This can improve response time, but it introduces eventual consistency for that work.",
+    "followUp": "When should it be avoided? Do not use it when the response must wait for the deferred operation to complete."
+   }
+  ],
+  "keyPoints": [
+   "advanced.ipAddress configures how Better Auth gets client IPs and whether it tracks them.",
+   "advanced.cookies lets you change individual cookie names and attributes.",
+   "advanced.defaultCookieAttributes supplies shared defaults for Better Auth cookies.",
+   "advanced.database.generateId supports a custom generator, false, serial, or uuid.",
+   "advanced.database.defaultFindManyLimit sets the default findMany result limit; its default is 100.",
+   "advanced.database.joins enables joins when the database adapter supports them.",
+   "advanced.skipTrailingSlashes allows routes with trailing slashes; its default is false."
+  ],
+  "gotchas": [
+   "Background task handlers can make writes finish after the response, so later reads may briefly show older data.",
+   "A dynamic base URL fallback can conceal a bad host or proxy setup instead of failing immediately."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "anonymous": {
   "sourceUrl": "https://better-auth.com/docs/reference/telemetry",
@@ -365,6 +542,96 @@
    "The Apple client secret is not a static arbitrary string; generate it dynamically as a JWT using the required Apple key material."
   ],
   "checkedAt": "2026-10-15"
+ },
+ "Auth": {
+  "sourceUrl": "https://better-auth.com/docs/concepts/oauth",
+  "sourceTitle": "OAuth",
+  "summary": "Better Auth supports OAuth 2.0 and OpenID Connect through built-in social providers. Configure client credentials, then sign in, link accounts, request scopes, and manage provider tokens.",
+  "explanation": "Better Auth supports OAuth 2.0 and OpenID Connect through built-in social providers. Configure a provider with its client credentials, then use social sign-in or account linking; use Generic OAuth for providers that are not built in.",
+  "syntax": "betterAuth({ socialProviders: { google: { clientId, clientSecret } } });\nauthClient.signIn.social({ provider });\nauthClient.linkSocial({ provider });",
+  "parameters": [
+   {
+    "name": "socialProviders",
+    "type": "object",
+    "description": "Provider configuration under socialProviders, including clientId and clientSecret."
+   },
+   {
+    "name": "provider",
+    "type": "string",
+    "description": "The configured provider identifier, such as \"google\"."
+   },
+   {
+    "name": "accountId / useAccountCookie",
+    "type": "string / boolean",
+    "description": "The Better Auth account record ID, or useAccountCookie to select the account from its signed cookie."
+   }
+  ],
+  "returns": "Sign-in and linking start an OAuth redirect flow. getAccessToken returns the selected account's access token; accountInfo returns account, user, and raw provider data.",
+  "example": {
+   "title": "Configure Google OAuth",
+   "code": "import { betterAuth } from \"better-auth\";\n\nexport const auth = betterAuth({\n  socialProviders: {\n    google: {\n      clientId: process.env.GOOGLE_CLIENT_ID!,\n      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,\n    },\n  },\n});\n\nawait authClient.signIn.social({\n  provider: \"google\",\n  callbackURL: \"/dashboard\",\n});",
+   "language": "typescript",
+   "explanation": "Configure the provider on the server, then start sign-in from the client."
+  },
+  "useCases": [
+   {
+    "title": "Social sign-in",
+    "scenario": "Let users sign in with Google, GitHub, or another built-in provider."
+   },
+   {
+    "title": "Account linking",
+    "scenario": "Attach a provider account to a signed-in user."
+   },
+   {
+    "title": "Additional scopes",
+    "scenario": "Ask for permissions such as repository or Drive access later."
+   },
+   {
+    "title": "Generic OAuth",
+    "scenario": "Connect a corporate or custom OAuth/OIDC identity provider."
+   }
+  ],
+  "related": [
+   "signIn.social",
+   "linkSocial",
+   "getAccessToken",
+   "refreshToken",
+   "accountInfo",
+   "user.validateUserInfo",
+   "genericOAuth",
+   "getOAuthState"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you enable a built-in social provider?",
+    "answer": "Configure the provider under socialProviders with clientId and clientSecret. Start the flow with authClient.signIn.social({ provider: \"google\" }).",
+    "followUp": "How do you support an unlisted provider? Use the Generic OAuth plugin and register its provider configuration."
+   },
+   {
+    "question": "How do you link an OAuth account or request more scopes?",
+    "answer": "Use linkSocial with the same provider. This starts another OAuth flow and can request additional scopes while keeping the existing connection.",
+    "followUp": "How do you read the linked account token? Call getAccessToken with the Better Auth account record ID, or select the signed account cookie."
+   },
+   {
+    "question": "How can an application validate OAuth users?",
+    "answer": "Use user.validateUserInfo to reject an identity before user creation, account linking, or sign-in. The callback can inspect the mapped user and OAuth provider information.",
+    "followUp": "How can server-derived data survive the redirect safely? Store it with addOAuthServerContext and read serverContext from getOAuthState on the callback."
+   }
+  ],
+  "keyPoints": [
+   "Built-in OAuth support covers both OAuth 2.0 and OpenID Connect.",
+   "A built-in provider needs a client ID and client secret in socialProviders.",
+   "Start client sign-in with authClient.signIn.social, or use auth.api.signInSocial on the server.",
+   "Use authClient.linkSocial or auth.api.linkSocialAccount to attach a provider account to an existing user.",
+   "getAccessToken refreshes an expired linked-account token before returning it.",
+   "accountInfo returns the selected account, mutable user fields, and raw provider data in separate parts."
+  ],
+  "gotchas": [
+   "Token and profile requests need the Better Auth account record ID or the signed account cookie. A provider ID alone is not enough.",
+   "Validate and sanitize additionalData before using it in OAuth callback hooks."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "auth.api.getSession": {
   "sourceUrl": "https://better-auth.com/docs/concepts/api.mdx",
@@ -776,6 +1043,84 @@
   ],
   "checkedAt": "2026-10-15"
  },
+ "AuthContext": {
+  "sourceUrl": "https://better-auth.com/docs/concepts/oauth",
+  "sourceTitle": "OAuth",
+  "summary": "Better Auth supports OAuth 2.0 and OpenID Connect through built-in social providers. Configure a provider with its client ID and client secret, then start social sign-in through the client or server API.",
+  "explanation": "Better Auth can authenticate users through OAuth 2.0 and OpenID Connect. Add a supported provider under `socialProviders` and give it a client ID and client secret; use the client or server API to start social sign-in.",
+  "syntax": "betterAuth({ socialProviders: { google: { clientId, clientSecret } } })",
+  "parameters": [
+   {
+    "name": "clientId",
+    "type": "string",
+    "description": "The OAuth provider client identifier."
+   },
+   {
+    "name": "clientSecret",
+    "type": "string",
+    "description": "The OAuth provider client secret."
+   }
+  ],
+  "returns": "",
+  "example": {
+   "title": "Configure Google OAuth",
+   "code": "import { betterAuth } from \"better-auth\";\n\nexport const auth = betterAuth({\n  socialProviders: {\n    google: {\n      clientId: \"YOUR_GOOGLE_CLIENT_ID\",\n      clientSecret: \"YOUR_GOOGLE_CLIENT_SECRET\",\n    },\n  },\n});",
+   "language": "typescript",
+   "explanation": "This creates a Better Auth server configuration with Google enabled."
+  },
+  "useCases": [
+   {
+    "title": "Social sign-in",
+    "scenario": "Let users create or access an account with Google, Facebook, GitHub, or another built-in provider."
+   },
+   {
+    "title": "Custom provider integration",
+    "scenario": "Connect a provider that Better Auth does not support directly."
+   },
+   {
+    "title": "Additional scopes",
+    "scenario": "Request provider permissions during an OAuth flow."
+   }
+  ],
+  "related": [
+   "Generic OAuth Plugin",
+   "socialProviders",
+   "signIn.social",
+   "authClient",
+   "auth.api",
+   "OAuth 2.0",
+   "OpenID Connect"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "Which authentication protocols and providers does Better Auth support?",
+    "answer": "Better Auth supports OAuth 2.0 and OpenID Connect. It includes built-in support for providers such as Google, Facebook, and GitHub.",
+    "followUp": "What should you use for a provider that is not built in? Use the Generic OAuth Plugin."
+   },
+   {
+    "question": "How do you configure Google as a social provider?",
+    "answer": "Place the provider in the `socialProviders` configuration. For Google, set `clientId` and `clientSecret` inside `socialProviders.google`.",
+    "followUp": "What values are required for the provider configuration? The provider's client ID and client secret."
+   },
+   {
+    "question": "What setup is needed before using a social OAuth provider?",
+    "answer": "Install the `better-auth` package, then configure the provider in the Better Auth server setup. The shown configuration uses `betterAuth` from `better-auth`.",
+    "followUp": "How can a custom OAuth provider be integrated? Use the Generic OAuth Plugin documented by Better Auth."
+   }
+  ],
+  "keyPoints": [
+   "The built-in OAuth support covers OAuth 2.0 and OpenID Connect.",
+   "Built-in provider examples include Google, Facebook, and GitHub.",
+   "Use the Generic OAuth Plugin when the provider is not directly supported.",
+   "Provider setup requires a client ID and client secret.",
+   "Google is configured as an entry under the social provider settings."
+  ],
+  "gotchas": [
+   "A provider needs both a client ID and a client secret before it can be enabled."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "baseURL": {
   "sourceUrl": "https://better-auth.com/docs/reference/options",
   "sourceTitle": "Options | Better Auth",
@@ -922,6 +1267,112 @@
    "Server-side session retrieval requires the request to include the Authorization Bearer header."
   ],
   "checkedAt": "2026-10-15"
+ },
+ "betterAuth": {
+  "sourceUrl": "https://better-auth.com/docs/concepts/oauth",
+  "sourceTitle": "OAuth",
+  "summary": "Better Auth supports OAuth 2.0 and OpenID Connect social providers. Configure provider credentials, then use client or server methods to sign in or link accounts.",
+  "explanation": "Better Auth uses OAuth 2.0 and OpenID Connect providers for social login. Configure a provider with its client credentials, then call a sign-in method; you can also link accounts, request scopes, map profiles, and customize provider behavior.",
+  "syntax": "betterAuth({ socialProviders: { provider: { clientId, clientSecret, scope?, redirectURI? } } });\nauthClient.signIn.social({ provider, callbackURL? });\nauth.api.signInSocial({ body: { provider } });",
+  "parameters": [
+   {
+    "name": "provider",
+    "type": "string",
+    "description": "The configured social provider identifier, such as google, github, or apple."
+   },
+   {
+    "name": "clientId",
+    "type": "string or string[]",
+    "description": "Provider client credentials configured under socialProviders."
+   },
+   {
+    "name": "clientSecret",
+    "type": "string",
+    "description": "Provider secret configured under socialProviders."
+   },
+   {
+    "name": "scope",
+    "type": "string[]",
+    "description": "Requested provider permissions, such as email or profile."
+   },
+   {
+    "name": "callbackURL",
+    "type": "string",
+    "description": "URL used after provider authentication."
+   },
+   {
+    "name": "additionalData",
+    "type": "object",
+    "description": "Extra client-supplied data carried through the OAuth callback."
+   }
+  ],
+  "returns": "The sign-in and linking methods complete the OAuth flow and establish or update the Better Auth account; the documentation does not define a detailed return type.",
+  "example": {
+   "title": "Configure social sign-in",
+   "code": "import { betterAuth } from \"better-auth\";\n\nexport const auth = betterAuth({\n  socialProviders: {\n    google: {\n      clientId: process.env.GOOGLE_CLIENT_ID!,\n      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,\n      scope: [\"email\", \"profile\"],\n    },\n  },\n});\n\nawait authClient.signIn.social({\n  provider: \"google\",\n  callbackURL: \"/dashboard\",\n});",
+   "language": "typescript",
+   "explanation": "Configure Google with its client credentials, then start sign-in from the client."
+  },
+  "useCases": [
+   {
+    "title": "Social login",
+    "scenario": "Users sign in with Google, GitHub, Apple, or another supported provider."
+   },
+   {
+    "title": "Account linking",
+    "scenario": "An existing user adds a provider account to the same profile."
+   },
+   {
+    "title": "Requesting OAuth scopes",
+    "scenario": "The application needs permissions beyond the provider's default set."
+   },
+   {
+    "title": "Mapping a provider profile",
+    "scenario": "A provider profile lacks an email address."
+   }
+  ],
+  "related": [
+   "signIn.social",
+   "signInSocial",
+   "linkSocial",
+   "linkSocialAccount",
+   "socialProviders",
+   "mapProfileToUser",
+   "getOAuthState",
+   "addOAuthServerContext"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you configure and start social sign-in?",
+    "answer": "Add the provider under socialProviders and provide clientId and clientSecret. Then call authClient.signIn.social with the provider ID.",
+    "followUp": "How can a server start the same flow? Call auth.api.signInSocial with a body containing the provider ID."
+   },
+   {
+    "question": "How do you link a social account to an existing user?",
+    "answer": "Use authClient.linkSocial on the client. On the server, call auth.api.linkSocialAccount and include request headers containing the user's session token.",
+    "followUp": "How do you pass extra information through the flow? Put it in additionalData, then read it during the callback with getOAuthState."
+   },
+   {
+    "question": "How do you handle a provider that does not return an email?",
+    "answer": "Use mapProfileToUser to create an email from a stable provider identifier when the provider profile has no email. Choose an identifier documented as stable for that provider.",
+    "followUp": "What must be considered when using a placeholder email? It cannot receive mail, so email-based features cannot deliver messages to it."
+   }
+  ],
+  "keyPoints": [
+   "Better Auth supports both OAuth 2.0 and OpenID Connect.",
+   "A social provider needs clientId and clientSecret in the socialProviders configuration.",
+   "Start client sign-in with authClient.signIn.social, or use auth.api.signInSocial on the server.",
+   "Link an existing user's provider account with authClient.linkSocial or the server-side linkSocialAccount method.",
+   "Set scope to an array such as [\"email\", \"profile\"] when the provider needs specific permissions.",
+   "Set redirectURI to replace the default callback address for a provider."
+  ],
+  "gotchas": [
+   "Every user record needs an email. If a provider can omit it, map a stable provider ID to a placeholder address. A placeholder is not a contact address.",
+   "Treat additionalData as untrusted input. Validate and sanitize it before using it in OAuth callback hooks.",
+   "Store Apple's email the first time it is returned, because it may not be available on later sign-ins."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "BetterAuthOptions": {
   "sourceUrl": "https://better-auth.com/docs/reference/options",
@@ -1399,6 +1850,94 @@
    "Use fetchOptions when every request needs shared fetch configuration."
   ],
   "checkedAt": "2026-10-15"
+ },
+ "customSession": {
+  "sourceUrl": "https://better-auth.com/docs/concepts/session-management",
+  "sourceTitle": "Session Management",
+  "summary": "The customSession plugin lets you add or change fields returned by getSession and useSession. Use customSessionClient to expose the added fields to client-side types.",
+  "explanation": "The customSession plugin changes the object returned by getSession and useSession. Its callback receives the current user and session, then returns the fields exposed to the client. Custom fields are calculated whenever the session is fetched, even when session data comes from secondary storage or a cookie cache.",
+  "syntax": "customSession(async ({ user, session }, ctx) => ({ user, session, ...customFields }), options, pluginOptions)",
+  "parameters": [
+   {
+    "name": "callback",
+    "type": "({ user, session }, ctx) => Promise<object>",
+    "description": "Callback that receives the current user and session and returns the customized session response."
+   },
+   {
+    "name": "options",
+    "type": "BetterAuthOptions",
+    "description": "Optional Better Auth options used to improve type inference for plugin and custom fields."
+   },
+   {
+    "name": "pluginOptions",
+    "type": "object",
+    "description": "Optional settings object. It can include shouldMutateListDeviceSessionsEndpoint."
+   }
+  ],
+  "returns": "A customized session response containing user, session, and any additional fields returned by the callback.",
+  "example": {
+   "title": "Add fields to the session response",
+   "code": "import { betterAuth } from \"better-auth\";\nimport { customSession } from \"better-auth/plugins\";\n\nexport const auth = betterAuth({\n  plugins: [\n    customSession(async ({ user, session }) => ({\n      roles: [\"reader\"],\n      user: { ...user, newField: \"newField\" },\n      session,\n    })),\n  ],\n});",
+   "language": "typescript",
+   "explanation": "This adds a roles field and a newField property to the session response."
+  },
+  "useCases": [
+   {
+    "title": "Add user roles",
+    "scenario": "Your application needs authorization data with the current session."
+   },
+   {
+    "title": "Extend the user response",
+    "scenario": "The client needs profile data that is not in the standard user object."
+   },
+   {
+    "title": "Improve type inference",
+    "scenario": "Plugin fields need correct TypeScript types in the callback and client."
+   },
+   {
+    "title": "Mutate device-session results",
+    "scenario": "The device list should include the customized session response."
+   }
+  ],
+  "related": [
+   "getSession",
+   "useSession",
+   "customSessionClient",
+   "multi-session/list-device-sessions",
+   "shouldMutateListDeviceSessionsEndpoint",
+   "BetterAuthOptions"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How can you add custom data to a Better Auth session response?",
+    "answer": "Use the customSession plugin. Its callback receives user and session data and returns the response object, so it can add fields such as roles or extend the user object.",
+    "followUp": "How are custom fields handled with cached sessions? They are not stored in secondary storage or the cookie cache; the callback runs when the session is fetched."
+   },
+   {
+    "question": "How does the client learn the types of added session fields?",
+    "answer": "Register customSession in the auth configuration and return the original session together with the added fields. The client can use customSessionClient with the auth type to infer the added fields.",
+    "followUp": "What client methods receive the customized result? The documented example uses both useSession and getSession."
+   },
+   {
+    "question": "How can customSession affect the device-session list endpoint?",
+    "answer": "The multi-session device-list endpoint is not changed by default. Set shouldMutateListDeviceSessionsEndpoint to true in the customSession options when that endpoint should use the customized response.",
+    "followUp": "Why might this option be left disabled? Device-list responses may need their default shape instead of the custom session shape."
+   }
+  ],
+  "keyPoints": [
+   "Register customSession to change the data returned by getSession and useSession.",
+   "The callback can add top-level fields and can also extend the user object.",
+   "The customized response is available through the client's getSession method.",
+   "The customized response is also available through the client's useSession hook.",
+   "Use customSessionClient with the auth instance type so client code can infer custom fields.",
+   "Passing the auth options to customSession helps infer fields added by plugins and custom fields."
+  ],
+  "gotchas": [
+   "The callback's session type does not automatically include fields added by other plugins. Pass the auth options to customSession to improve type inference.",
+   "customSession does not change the multi-session device-list response unless shouldMutateListDeviceSessionsEndpoint is set to true."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "database": {
   "sourceUrl": "https://better-auth.com/docs/concepts/database",
@@ -2857,6 +3396,76 @@
   ],
   "checkedAt": "2026-10-15"
  },
+ "InferUser": {
+  "sourceUrl": "https://better-auth.com/docs/concepts/users-accounts",
+  "sourceTitle": "User & Accounts",
+  "summary": "Better Auth lets clients update user information with `updateUser`. User authentication data is stored in the user table, which can be extended with extra fields or plugins.",
+  "explanation": "Call the client’s `updateUser` function with an object containing the user fields to change. The user table keeps authentication data, and you can extend it with extra fields or plugin data.",
+  "syntax": "await authClient.updateUser({ image: \"https://example.com/image.jpg\", name: \"John Doe\" })",
+  "parameters": [
+   {
+    "name": "user",
+    "type": "object",
+    "description": "An object containing the user properties to update, such as `image` and `name`."
+   }
+  ],
+  "returns": "Not specified on the page.",
+  "example": {
+   "title": "Update user information",
+   "code": "import { authClient } from \"@/lib/auth-client\"\n\nawait authClient.updateUser({\n  image: \"https://example.com/image.jpg\",\n  name: \"John Doe\",\n})",
+   "language": "typescript",
+   "explanation": "This updates the signed-in user's image and name."
+  },
+  "useCases": [
+   {
+    "title": "Edit profile details",
+    "scenario": "A signed-in user changes their display name."
+   },
+   {
+    "title": "Change profile image",
+    "scenario": "A user replaces their profile picture."
+   },
+   {
+    "title": "Store extra user data",
+    "scenario": "An application needs to keep data beyond the built-in user fields."
+   }
+  ],
+  "related": [
+   "updateUser",
+   "user table",
+   "additional fields",
+   "plugins"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you update a user’s profile information?",
+    "answer": "Use the client’s `updateUser` function and pass an object with the fields to change. The documented example updates the image and name.",
+    "followUp": "What should hold application-specific user data? Use additional fields in the user schema or data supplied by a plugin."
+   },
+   {
+    "question": "What does the `updateUser` call receive?",
+    "answer": "`updateUser` accepts an object. The example passes `image` and `name`, so the call changes those user details.",
+    "followUp": "How would you add another stored field? Extend the core user schema with an additional field, when the application needs it."
+   },
+   {
+    "question": "How can the user data model be extended?",
+    "answer": "Better Auth stores authentication-related user data in its user table. The schema can also be extended, or plugins can add more user data.",
+    "followUp": "Where should plugin-owned information be stored? Let the relevant plugin add and manage its additional data."
+   }
+  ],
+  "keyPoints": [
+   "Use the client’s `updateUser` function to change user information.",
+   "Pass the fields to change inside an object.",
+   "The user table stores the user’s authentication data.",
+   "Add custom user fields by extending the core schema.",
+   "Plugins can also store extra user data."
+  ],
+  "gotchas": [
+   "The user table is for authentication data. Add other data through schema extensions or plugins."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "jwt": {
   "sourceUrl": "https://better-auth.com/docs/plugins/jwt",
   "sourceTitle": "JWT",
@@ -2993,6 +3602,190 @@
    "Changing Better Auth’s auth-route base path requires updating Kick’s registered redirect URL."
   ],
   "checkedAt": "2026-10-15"
+ },
+ "kyselyAdapter": {
+  "sourceUrl": "https://better-auth.com/docs/plugins/scim.md",
+  "sourceTitle": "System for Cross-domain Identity Management (SCIM)",
+  "summary": "Better Auth's SCIM plugin lets a directory provision users and groups. It requires database adapters with interactive transaction support and does not grant users sign-in access.",
+  "explanation": "The SCIM plugin provides an inbound SCIM 2.0 service. A directory can manage users and groups in Better Auth. Each SCIM user connects to a Better Auth user, but provisioning alone does not create login access. Resource requests need an adapter with interactive transaction support.",
+  "syntax": "scim({ connections: [{ id, provisioningDomainId, credentials: [{ type: \"bearer\", id, token }] }] })",
+  "parameters": [
+   {
+    "name": "options",
+    "type": "object",
+    "description": "SCIM plugin configuration, including connections and credentials."
+   }
+  ],
+  "returns": "A Better Auth SCIM plugin configuration.",
+  "example": {
+   "title": "Configure a SCIM connection",
+   "code": "import { scim } from \"@better-auth/scim\";\nimport { betterAuth } from \"better-auth\";\n\nconst token = process.env.SCIM_WORKFORCE_TOKEN;\nif (!token) throw new Error(\"SCIM_WORKFORCE_TOKEN is required\");\n\nexport const auth = betterAuth({\n  baseURL: \"https://app.example.com/api/auth\",\n  plugins: [\n    scim({\n      connections: [{\n        id: \"workforce-acme\",\n        provisioningDomainId: \"workspace-acme\",\n        credentials: [{\n          type: \"bearer\",\n          id: \"workforce-primary\",\n          token,\n        }],\n      }],\n    }),\n  ],\n});",
+   "language": "typescript",
+   "explanation": "This config enables SCIM with one bearer-token connection. Store the token in an environment variable and use the same value in the directory."
+  },
+  "useCases": [
+   {
+    "title": "Directory user provisioning",
+    "scenario": "An organization uses an identity directory to create and update application users automatically."
+   },
+   {
+    "title": "Group provisioning",
+    "scenario": "A directory manages team membership in the application."
+   },
+   {
+    "title": "User lifecycle management",
+    "scenario": "An organization needs directory-driven deactivation or deletion of users."
+   }
+  ],
+  "related": [
+   "SCIM reference",
+   "RFC 7643",
+   "RFC 7644",
+   "database adapters",
+   "interactive transactions",
+   "provisioningDomainId"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does the SCIM plugin provide?",
+    "answer": "The plugin exposes an inbound SCIM 2.0 service. A directory can use it to create, update, deactivate, and delete users and groups.",
+    "followUp": "Does provisioning also enable sign-in? No. The application must configure authentication separately."
+   },
+   {
+    "question": "What database requirement does the plugin have?",
+    "answer": "SCIM resource requests need an adapter with native interactive transaction support. The adapter must be configured to enable transactions.",
+    "followUp": "Why does this matter? Resource changes need transactional database behavior so related updates can complete consistently."
+   },
+   {
+    "question": "How is a SCIM connection configured?",
+    "answer": "A connection contains an ID, optional provisioning domain ID, and credentials such as a bearer token. The token should be stored in a secret manager and configured in both systems.",
+    "followUp": "What does the connection ID do? It owns the resources provisioned with that credential."
+   }
+  ],
+  "keyPoints": [
+   "The plugin adds an inbound SCIM 2.0 service to Better Auth.",
+   "A directory can manage the full lifecycle of users and groups.",
+   "Each provisioned SCIM user is linked to a Better Auth user.",
+   "The connection ID determines which resources belong to a credential."
+  ],
+  "gotchas": [
+   "Use a database adapter that supports native interactive transactions.",
+   "Cloudflare D1 cannot be used for the required SCIM resource transactions.",
+   "Configure authentication separately; SCIM provisioning does not give users login access."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "lastLoginMethod": {
+  "sourceUrl": "https://better-auth.com/docs/plugins/last-login-method",
+  "sourceTitle": "Last Login Method",
+  "summary": "Better Auth's last login method plugin records the user's latest sign-in method, such as email or Google. It stores the value in a cookie by default and can also save it on the user record.",
+  "explanation": "The server plugin records the latest sign-in or sign-up method. By default it uses a browser cookie, and the client plugin reads that cookie for login-page UI. You can also save the value on the user record, choose a custom cookie or database field name, and block cookie storage until consent is given.",
+  "syntax": "lastLoginMethod(options?)\nlastLoginMethodClient(options?)",
+  "parameters": [
+   {
+    "name": "cookieName",
+    "type": "string",
+    "description": "Cookie name used to store or read the method. Default: better-auth.last_used_login_method."
+   },
+   {
+    "name": "maxAge",
+    "type": "number",
+    "description": "Cookie lifetime in seconds. Default: 2592000."
+   },
+   {
+    "name": "storeInDatabase",
+    "type": "boolean",
+    "description": "Whether to save the method in the database. Default: false."
+   },
+   {
+    "name": "customResolveMethod",
+    "type": "(ctx: GenericEndpointContext) => string | null",
+    "description": "Function that returns a method name, or null to use default resolution."
+   },
+   {
+    "name": "beforeStoreCookie",
+    "type": "(ctx: GenericEndpointContext, lastUsedLoginMethod: string) => Promise<boolean> | boolean",
+    "description": "Hook that returns true to set the cookie and false to prevent it."
+   },
+   {
+    "name": "schema",
+    "type": "object",
+    "description": "Maps the database field to a custom column name."
+   },
+   {
+    "name": "domain",
+    "type": "string",
+    "description": "Client cookie domain used when clearing a cross-subdomain cookie."
+   }
+  ],
+  "returns": "The client methods return the stored method, a boolean comparison result, or clear the stored value. customResolveMethod returns a string or null; beforeStoreCookie returns a boolean or promise of a boolean.",
+  "example": {
+   "title": "Install and use the plugin",
+   "code": "import { betterAuth } from \"better-auth\"\nimport { lastLoginMethod } from \"better-auth/plugins\"\nimport { createAuthClient } from \"better-auth/client\"\nimport { lastLoginMethodClient } from \"better-auth/client/plugins\"\n\nexport const auth = betterAuth({\n  plugins: [lastLoginMethod({ storeInDatabase: true })]\n})\n\nexport const authClient = createAuthClient({\n  plugins: [lastLoginMethodClient()]\n})\n\nconst method = authClient.getLastUsedLoginMethod()\nconst usedGoogle = authClient.isLastUsedLoginMethod(\"google\")\nauthClient.clearLastUsedLoginMethod()",
+   "language": "typescript",
+   "explanation": "Register the server and client plugins. The client can then read, test, or clear the saved method."
+  },
+  "useCases": [
+   {
+    "title": "Login guidance",
+    "scenario": "Show a “last signed in with” label on a login page."
+   },
+   {
+    "title": "Database persistence",
+    "scenario": "Keep the method available in user sessions and records."
+   },
+   {
+    "title": "Custom method detection",
+    "scenario": "Support custom providers or authentication endpoints."
+   },
+   {
+    "title": "Cookie consent",
+    "scenario": "Meet consent requirements for non-essential cookies."
+   }
+  ],
+  "related": [
+   "lastLoginMethod",
+   "lastLoginMethodClient",
+   "getLastUsedLoginMethod",
+   "isLastUsedLoginMethod",
+   "clearLastUsedLoginMethod",
+   "storeInDatabase",
+   "customResolveMethod",
+   "beforeStoreCookie"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you install and use the plugin?",
+    "answer": "Add lastLoginMethod() to betterAuth and lastLoginMethodClient() to createAuthClient. The client then exposes getLastUsedLoginMethod, isLastUsedLoginMethod, and clearLastUsedLoginMethod.",
+    "followUp": "How can storage be changed? Enable storeInDatabase on the server, run the migration, and read session.user.lastLoginMethod."
+   },
+   {
+    "question": "How does database persistence work?",
+    "answer": "The default is cookie storage. Setting storeInDatabase to true adds lastLoginMethod to the user table, so server and client session user objects can expose it.",
+    "followUp": "How can you avoid the cookie while keeping database storage? Set beforeStoreCookie to a function that returns false."
+   },
+   {
+    "question": "How is the login method identified?",
+    "answer": "The plugin maps common flows to method names such as email, an OAuth provider ID, passkey, siwe, magic-link, or email-otp. customResolveMethod can replace this decision for custom flows.",
+    "followUp": "What happens if customResolveMethod returns null? The plugin falls back to its default method resolution."
+   }
+  ],
+  "keyPoints": [
+   "It records the newest authentication method, such as email or an OAuth provider.",
+   "The client API can read the value, compare it with a method name, and clear it.",
+   "Cookie-only storage is the default; database storage is optional.",
+   "Database mode adds a field to the user table after you apply the migration.",
+   "customResolveMethod lets custom authentication flows decide their own method name.",
+   "Cross-domain cookie settings follow Better Auth's central cookie configuration."
+  ],
+  "gotchas": [
+   "The default cookie is readable by browser JavaScript, so do not treat it as a secret.",
+   "For cross-subdomain cookies, set the client plugin domain to the server cookie domain or clearing may fail.",
+   "Use beforeStoreCookie to require consent before saving the cookie."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "linkedin": {
   "sourceUrl": "https://better-auth.com/docs/authentication/linkedin",
@@ -3217,6 +4010,86 @@
   ],
   "checkedAt": "2026-10-15"
  },
+ "listSessions": {
+  "sourceUrl": "https://better-auth.com/docs/concepts/session-management",
+  "sourceTitle": "Session Management",
+  "summary": "Better Auth stores sessions in cookies and verifies the session token on each request. The session API can read, list, update, and revoke sessions.",
+  "explanation": "Better Auth uses a cookie-based session. The cookie contains the session token, which the server checks on each request before returning user data. The session table stores details such as the user, expiry time, IP address, and user agent. Client helpers can read, list, revoke, or update sessions.",
+  "syntax": "authClient.getSession()\nauthClient.useSession()\nauthClient.listSessions()\nauthClient.revokeSession({ token })\nauthClient.revokeOtherSessions()\nauthClient.revokeSessions()\nauthClient.updateSession({ ...customFields })",
+  "parameters": [
+   {
+    "name": "updateSession input",
+    "type": "object",
+    "description": "Session custom fields to change, such as `theme` or `language`."
+   },
+   {
+    "name": "token",
+    "type": "string",
+    "description": "The token identifying the session to revoke."
+   }
+  ],
+  "returns": "Session data for a valid current session; session lists for list operations; mutation results for revoke and update operations.",
+  "example": {
+   "title": "Read the current session",
+   "code": "import { authClient } from \"@/lib/auth-client\"\n\nconst { data: session } = await authClient.getSession()\nconsole.log(session)",
+   "language": "typescript",
+   "explanation": "This asks Better Auth for the current session and returns the session data when the session is valid."
+  },
+  "useCases": [
+   {
+    "title": "Read the current session",
+    "scenario": "A page needs to know whether a user is signed in."
+   },
+   {
+    "title": "Manage active sessions",
+    "scenario": "A security screen shows where the user is signed in."
+   },
+   {
+    "title": "Update session data",
+    "scenario": "A user changes a preference stored as a custom session field."
+   }
+  ],
+  "related": [
+   "Session table",
+   "Session expiration",
+   "getSession",
+   "useSession",
+   "listSessions",
+   "revokeSession",
+   "revokeOtherSessions",
+   "revokeSessions"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How does Better Auth manage a session?",
+    "answer": "Better Auth uses a traditional cookie-based session. The session token in the cookie identifies the server-side session, and the server verifies it on each request.",
+    "followUp": "What does the session table contain? It includes the session ID, token, user ID, expiry time, IP address, and user agent."
+   },
+   {
+    "question": "How can client code access session data?",
+    "answer": "Use `getSession` to read the current session. Use `useSession` when the client needs a reactive session value.",
+    "followUp": "How can active sessions be managed? Use `listSessions` to view them, then revoke one, the other sessions, or all sessions with the matching helper."
+   },
+   {
+    "question": "How can a custom session field be updated?",
+    "answer": "Call `updateSession` with custom fields that were added to the session schema. The client can send fields such as `theme` and `language`; the server version also needs request headers containing the user's session token.",
+    "followUp": "Which fields are protected? Core fields, including `token`, `userId`, and `expiresAt`, cannot be changed through this endpoint."
+   }
+  ],
+  "keyPoints": [
+   "The session table keeps the stored data for each session.",
+   "A session lasts seven days by default unless the configuration changes its expiration.",
+   "Use `useSession` when the interface should react to session changes.",
+   "Use `listSessions` to get the user's currently active sessions.",
+   "Use `revokeOtherSessions` to keep the current login and end the user's other logins.",
+   "Use `revokeSessions` to end every active session for the user."
+  ],
+  "gotchas": [
+   "The update endpoint only changes custom session fields. It cannot change core fields such as the token, user, expiry, or request metadata."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "magicLink": {
   "sourceUrl": "https://better-auth.com/docs/plugins/magic-link",
   "sourceTitle": "Magic link - Better Auth",
@@ -3291,6 +4164,71 @@
    "The link flow both authenticates the user and redirects to the callback URL supplied during sign-in."
   ],
   "checkedAt": "2026-10-15"
+ },
+ "memoryAdapter": {
+  "sourceUrl": "https://better-auth.com/docs/adapters/community-adapters",
+  "sourceTitle": "Community Adapters",
+  "summary": "Community adapters extend Better Auth to support databases beyond its official adapters. You can browse the community list or create and share a custom adapter.",
+  "explanation": "Better Auth uses adapters to connect to a database and store users, sessions, and other data. Official adapters are maintained by the project, while community adapters add support for more databases. You can also create a custom adapter by following the database-adapter guide.",
+  "syntax": "",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Configure a community adapter",
+   "code": "import { betterAuth } from \"better-auth\";\n\nexport const auth = betterAuth({\n  database: {\n    adapter: communityAdapter(),\n  },\n});",
+   "language": "typescript",
+   "explanation": "Use a community adapter in the database configuration. Replace `communityAdapter()` with the adapter's documented setup."
+  },
+  "useCases": [
+   {
+    "title": "Use another database",
+    "scenario": "You need to connect Better Auth to a database not covered by an official adapter."
+   },
+   {
+    "title": "Create a custom adapter",
+    "scenario": "You want to add database support for a system that Better Auth does not currently cover."
+   },
+   {
+    "title": "Share an adapter",
+    "scenario": "You have built a working adapter and want other developers to find it."
+   }
+  ],
+  "related": [
+   "Create a Database Adapter",
+   "Stateless Session Management",
+   "CLI",
+   "Database adapters",
+   "Plugin schemas"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does a database adapter do in Better Auth?",
+    "answer": "Better Auth uses database adapters to connect to a database. The database stores data such as users and sessions, and plugins may add their own tables.",
+    "followUp": "Can Better Auth run without a database? Yes. The documentation says it also supports stateless session management."
+   },
+   {
+    "question": "What is a community adapter?",
+    "answer": "Community adapters are built by the community to support additional databases. They extend Better Auth beyond the official adapters maintained by the project.",
+    "followUp": "How would you find a suitable adapter? Browse the community-adapter list, then follow that adapter's own setup instructions."
+   },
+   {
+    "question": "How can a developer add an adapter?",
+    "answer": "You can create a custom adapter by following the Create a Database Adapter guide. If you want to share it, submit a pull request to add it to the community list.",
+    "followUp": "What should you check before sharing one? Confirm that the adapter works with Better Auth and that its entry follows the community list's expected format."
+   }
+  ],
+  "keyPoints": [
+   "Adapters are the connection layer between Better Auth and a database.",
+   "The connected database stores core authentication data, including users and sessions.",
+   "Plugins may add database tables for their own data.",
+   "A database is optional when using stateless session management.",
+   "Community adapters extend Better Auth with support for additional databases."
+  ],
+  "gotchas": [
+   "Community adapters are not the same as official adapters maintained by Better Auth."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "microsoft": {
   "sourceUrl": "https://better-auth.com/docs/authentication/microsoft",
@@ -3996,6 +4934,67 @@
    "A custom reference path is relative to, and appended to, the authentication server's base path."
   ],
   "checkedAt": "2026-10-15"
+ },
+ "organization": {
+  "sourceUrl": "https://better-auth.com/docs/plugins",
+  "sourceTitle": "Plugins",
+  "summary": "The Organization plugin adds organization, team, and member management to Better Auth. Enable it in the auth configuration's plugin list.",
+  "explanation": "The Organization plugin adds support for organizations, teams, and members to Better Auth. Add it to the `plugins` array in the auth configuration, then use its documented routes and APIs for organization management.",
+  "syntax": "plugins: [organization()]",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Enable the Organization plugin",
+   "code": "import { betterAuth } from \"better-auth\";\nimport { organization } from \"better-auth/plugins\";\n\nexport const auth = betterAuth({\n  plugins: [organization()],\n});",
+   "language": "typescript",
+   "explanation": "This adds the Organization plugin to the Better Auth configuration."
+  },
+  "useCases": [
+   {
+    "title": "Manage organizations",
+    "scenario": "An application needs separate groups of users with shared membership management."
+   },
+   {
+    "title": "Manage teams",
+    "scenario": "A product needs teams inside larger organizations."
+   },
+   {
+    "title": "Manage members",
+    "scenario": "An application needs to maintain organization members and their access structure."
+   }
+  ],
+  "related": [
+   "Admin",
+   "SSO",
+   "SCIM",
+   "API Key",
+   "JWT"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What problem does the Organization plugin solve?",
+    "answer": "The Organization plugin is used to manage organizations, teams, and members in Better Auth. It belongs to the authorization and management group of plugins.",
+    "followUp": "When should another plugin be used instead? Use the Admin plugin for administrative user management, or the SSO plugin for SAML 2.0 single sign-on."
+   },
+   {
+    "question": "How do you enable the plugin?",
+    "answer": "Register it in the `plugins` array passed to `betterAuth`. The plugin then extends the authentication system with organization-related features.",
+    "followUp": "How can the configured features be used? Use the plugin's documented client and server APIs after enabling it."
+   },
+   {
+    "question": "How does this plugin differ from token plugins?",
+    "answer": "The plugin covers organization, team, and member management. These are separate from API token features such as API keys, JWTs, and bearer tokens.",
+    "followUp": "Which plugin supports directory synchronization? The SCIM plugin supports cross-domain identity management and directory sync."
+   }
+  ],
+  "keyPoints": [
+   "It provides features for managing organizations, teams, and members.",
+   "The documentation identifies the plugin as `Organization`.",
+   "Better Auth uses plugins to add extra authentication and management features."
+  ],
+  "gotchas": [],
+  "checkedAt": "2026-11-03"
  },
  "passkey": {
   "sourceUrl": "https://better-auth.com/docs/plugins/passkey",
@@ -6747,6 +7746,92 @@
    "Changing usernames remains possible unless immutableUsername is enabled."
   ],
   "checkedAt": "2026-10-15"
+ },
+ "useSession": {
+  "sourceUrl": "https://better-auth.com/docs/concepts/session-management",
+  "sourceTitle": "Session Management",
+  "summary": "Better Auth uses cookies to manage sessions. Its client API can read, observe, list, update, and revoke sessions, while optional signed cookie caching reduces repeated database reads.",
+  "explanation": "Better Auth keeps a session identifier in a cookie that the server checks on requests. Client methods can read the current session, watch it reactively, list active sessions, revoke sessions, or update custom session fields. Optional cookie caching stores signed session data briefly to reduce database reads.",
+  "syntax": "authClient.getSession(); authClient.useSession(); authClient.listSessions(); authClient.revokeSession({ token }); authClient.revokeOtherSessions(); authClient.revokeSessions(); authClient.updateSession(fields);",
+  "parameters": [
+   {
+    "name": "token",
+    "type": "string",
+    "description": "Session token used to identify the session to revoke."
+   },
+   {
+    "name": "custom fields",
+    "type": "object",
+    "description": "Additional configured session fields to update."
+   }
+  ],
+  "returns": "getSession returns the current session. useSession exposes the session reactively. listSessions returns active sessions. Revoke methods end sessions. updateSession updates configured additional fields.",
+  "example": {
+   "title": "Read and manage a session",
+   "code": "import { createAuthClient } from \"better-auth/client\";\n\nconst authClient = createAuthClient();\n\nconst { data: session } = await authClient.getSession();\nconsole.log(session?.user.email);\n\nawait authClient.revokeOtherSessions();",
+   "language": "typescript",
+   "explanation": "This reads the current session, then ends every other session for the user."
+  },
+  "useCases": [
+   {
+    "title": "Read or observe the current session",
+    "scenario": "Show the signed-in user in a client application."
+   },
+   {
+    "title": "List active sessions",
+    "scenario": "Provide an account page listing browser or device logins."
+   },
+   {
+    "title": "Revoke sessions",
+    "scenario": "End access from a lost device or sign out everywhere."
+   },
+   {
+    "title": "Update custom session fields",
+    "scenario": "Store application-specific session preferences."
+   }
+  ],
+  "related": [
+   "getSession",
+   "useSession",
+   "listSessions",
+   "revokeSession",
+   "revokeOtherSessions",
+   "revokeSessions",
+   "updateSession",
+   "cookieCache"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is the difference between getSession and useSession?",
+    "answer": "getSession reads the current active session once. useSession provides reactive access, so client UI can reflect session changes such as sign-out.",
+    "followUp": "How can repeated session reads avoid a database request? Enable session.cookieCache. Better Auth then uses a short-lived signed cookie and refreshes the data after maxAge."
+   },
+   {
+    "question": "How can sessions be revoked?",
+    "answer": "revokeSession ends the session identified by the supplied token. revokeOtherSessions ends all sessions except the current one, while revokeSessions ends every session.",
+    "followUp": "What is the main cache-related limitation of revocation? Other devices can continue using cached session data until the cache expires or cache use is disabled."
+   },
+   {
+    "question": "How can the session response be customized?",
+    "answer": "The customSession plugin changes the object returned by getSession and useSession. It can add fields such as roles or add fields to the user object; customSessionClient enables client-side type inference.",
+    "followUp": "What typing caveat does the page mention? The callback's session does not infer fields added by plugins unless auth options are lifted and passed through the configuration."
+   }
+  ],
+  "keyPoints": [
+   "Better Auth uses cookie-based sessions. The server checks the cookie and returns user data when the session is valid.",
+   "Use getSession when code needs a one-time read of the current session.",
+   "Use useSession in client UI when session changes should update the view.",
+   "listSessions lets a user view the sessions currently active for their account.",
+   "Pass a session token to revokeSession to end that particular session.",
+   "updateSession can change extra fields configured on the session, such as application preferences.",
+   "Cookie caching uses signed, short-lived data to reduce database reads while periodically refreshing session information."
+  ],
+  "gotchas": [
+   "With cookie caching, another device may keep using revoked session data until its cache expires. Use a shorter maxAge, disable the cache, or disable it for sensitive operations.",
+   "The updateSession method is for additional session fields. Core fields such as the token, user ID, and expiry cannot be changed through it."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "verifyEmail": {
   "sourceUrl": "https://better-auth.com/docs/concepts/email",

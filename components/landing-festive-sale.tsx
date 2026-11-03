@@ -13,9 +13,9 @@ const pad = (value: number) => String(Math.max(0, value)).padStart(2, "0");
 /** Painted scenes with a real poster composited on the wall (scripts/generate-festive-poster-images.tsx). */
 const FESTIVE_SLIDES = [
   {
-    src: "/images/landing/diwali-poster-langgraph.webp",
-    altEn: "A young professional learning on her laptop beside a marigold rangoli and glowing diyas on Diwali night, under a Master Class Buddy poster for LangGraph on the wall",
-    altHi: "दिवाली की रात रंगोली और दीयों के पास लैपटॉप पर सीखती एक युवा प्रोफ़ेशनल, दीवार पर LangGraph का Master Class Buddy पोस्टर",
+    src: "/images/landing/diwali-poster-langchain-family.webp",
+    altEn: "Two young engineers smiling over a laptop in a home library on Diwali evening, beside a bowl of floating marigolds and candles, under a Master Class Buddy Agentic AI poster with the LangChain, LangGraph, LangSmith and LangFlow logos",
+    altHi: "दिवाली की शाम घर के पुस्तकालय में लैपटॉप पर मुस्कुराते दो युवा इंजीनियर, दीवार पर LangChain, LangGraph, LangSmith और LangFlow के लोगो वाला Master Class Buddy पोस्टर",
   },
   {
     src: "/images/landing/diwali-poster-zustand.webp",

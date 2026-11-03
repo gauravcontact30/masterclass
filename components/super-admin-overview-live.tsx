@@ -132,6 +132,8 @@ export function OverviewLive({ snapshot, onRefreshSnapshot }: { snapshot: Overvi
   const feed = useRef<StreamFeed | null>(null);
   const streamBusy = useRef(false);
 
+  // Set when the server refuses this session: the 5-second reads stop until Refresh is pressed.
+  const refused = useRef(false);
   const loadStream = useCallback(async (signal?: AbortSignal) => {
     // One read at a time: two incremental reads built on the same prior feed would each drop the other's rows.
     if (streamBusy.current) return;
@@ -142,6 +144,7 @@ export function OverviewLive({ snapshot, onRefreshSnapshot }: { snapshot: Overvi
       // A minute of overlap: a row stamped just before the last read can land just after it.
       const query = incremental ? `?since=${encodeURIComponent(new Date(Date.parse(prior.generatedAt) - 60_000).toISOString())}` : "";
       const response = await fetch(`/api/super-admin/activity/stream${query}`, { cache: "no-store", signal: withTimeout(signal) });
+      if (response.status === 401 || response.status === 403) refused.current = true;
       const body = await response.json().catch(() => ({}));
       if (!response.ok || !Array.isArray(body?.visits)) { setStreamStale(true); if (!feed.current) setStreamFailed(true); return; }
       const days = Number(body.days) || VISIT_RETENTION_DAYS, generatedAt = typeof body.generatedAt === "string" ? body.generatedAt : new Date().toISOString();
@@ -181,6 +184,7 @@ export function OverviewLive({ snapshot, onRefreshSnapshot }: { snapshot: Overvi
     reportBusy.current = true;
     try {
       const response = await fetch("/api/super-admin/activity?day=today", { cache: "no-store", signal: withTimeout(signal) });
+      if (response.status === 401 || response.status === 403) refused.current = true;
       const body = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(body.error ?? "service_error");
       // A malformed payload must degrade this panel, never take the whole dashboard down with it.
@@ -197,9 +201,9 @@ export function OverviewLive({ snapshot, onRefreshSnapshot }: { snapshot: Overvi
     const controller = new AbortController();
     queueMicrotask(() => { if (!controller.signal.aborted) void load(controller.signal); });
     if (paused) return () => controller.abort();
-    const timer = setInterval(() => { if (document.visibilityState === "visible") { void load(controller.signal); onRefreshSnapshot(); } }, REFRESH_MS);
+    const timer = setInterval(() => { if (document.visibilityState === "visible" && !refused.current) { void load(controller.signal); onRefreshSnapshot(); } }, REFRESH_MS);
     // Back on a hidden tab: refresh at once instead of showing figures from when it was left.
-    const onVisible = () => { if (document.visibilityState === "visible") { void load(controller.signal); onRefreshSnapshot(); } };
+    const onVisible = () => { if (document.visibilityState === "visible" && !refused.current) { void load(controller.signal); onRefreshSnapshot(); } };
     document.addEventListener("visibilitychange", onVisible);
     return () => { controller.abort(); clearInterval(timer); document.removeEventListener("visibilitychange", onVisible); };
   }, [load, paused, onRefreshSnapshot]);
@@ -339,7 +343,7 @@ export function OverviewLive({ snapshot, onRefreshSnapshot }: { snapshot: Overvi
     <header className={styles.head}>
       <div><p className={styles.kicker}><span className={styles.dot} data-paused={paused || undefined} aria-hidden="true" />{paused ? "Live updates paused" : "Live"}</p><h2>Live command centre</h2></div>
       <div className={styles.actions}>
-        <button type="button" className={styles.button} onClick={() => { void load(); onRefreshSnapshot(); }}><RefreshCw size={14} aria-hidden="true" />Refresh</button>
+        <button type="button" className={styles.button} onClick={() => { refused.current = false; void load(); onRefreshSnapshot(); }}><RefreshCw size={14} aria-hidden="true" />Refresh</button>
         <button type="button" className={styles.button} aria-pressed={paused} onClick={() => setPaused(p => !p)}>{paused ? <Play size={14} aria-hidden="true" /> : <Pause size={14} aria-hidden="true" />}{paused ? "Resume" : "Pause"}</button>
       </div>
     </header>
@@ -741,7 +745,7 @@ export function OverviewLive({ snapshot, onRefreshSnapshot }: { snapshot: Overvi
           <span className={styles.filters} role="group" aria-label="Trace filter">{TRACE_FILTERS.map(f => <button key={f.id} type="button" aria-pressed={traceFilter === f.id} onClick={() => { setTraceFilter(f.id); setTracePage(1); }}><f.icon size={12} aria-hidden="true" />{f.label}</button>)}</span>
         </h3>
         <dl className={styles.traceStats}>
-          <div><dt>Requests</dt><dd>{n(snapshot?.requests.count)}</dd><small>in the reporting window</small></div>
+          <div><dt>Requests</dt><dd>{n(snapshot?.requests.count)}</dd><small>in the reporting window · successful admin calls are not logged</small></div>
           <div data-tone={snapshot?.requests.errors ? "warn" : "ok"}><dt>Error rate</dt><dd>{pct(snapshot?.requests.errors ?? 0, snapshot?.requests.count ?? 0)}</dd><small>{n(snapshot?.requests.errors)} failed · {n(traceStats.client)} 4xx · {n(traceStats.server)} 5xx shown</small></div>
           <div><dt>Latency p50 / p95</dt><dd>{traceStats.p50 == null ? "—" : `${n(traceStats.p50)} / ${n(snapshot?.requests.p95 == null ? traceStats.p95 : Math.round(snapshot.requests.p95))} ms`}</dd><small>avg {traceStats.avg == null ? "—" : `${n(traceStats.avg)} ms`}</small></div>
           <div data-tone={traceStats.slow ? "warn" : "ok"}><dt>Slowest</dt><dd>{traceStats.max == null ? "—" : `${n(traceStats.max)} ms`}</dd><small>{n(traceStats.slow)} request{traceStats.slow === 1 ? "" : "s"} took 1 s or more</small></div>

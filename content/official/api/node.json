@@ -276,6 +276,93 @@
   ],
   "checkedAt": "2026-10-15"
  },
+ "assert": {
+  "sourceUrl": "https://nodejs.org/api/assert.html",
+  "sourceTitle": "Assert | Node.js v26.13.0 Documentation",
+  "summary": "The node:assert module checks conditions and compares values. Failed assertions throw an error, so it is mainly useful for tests and internal checks.",
+  "explanation": "Import the strict version of node:assert when you want predictable comparisons. Assertion methods return normally when checks pass. When a check fails, they throw an AssertionError containing the actual value, expected value, operator, and an error message.",
+  "syntax": "import assert from 'node:assert/strict';\nassert(value[, message]);\nassert.deepStrictEqual(actual, expected[, message]);\nassert.strictEqual(actual, expected[, message]);",
+  "parameters": [
+   {
+    "name": "value or actual",
+    "type": "any",
+    "description": "Value being checked or the actual value passed to a comparison."
+   },
+   {
+    "name": "expected",
+    "type": "any",
+    "description": "Expected value for a comparison method."
+   },
+   {
+    "name": "message",
+    "type": "string | Error | Function",
+    "description": "Optional string, Error, or function used to create the failure message."
+   }
+  ],
+  "returns": "Assertion methods return normally when the assertion passes. They throw an AssertionError, or the supplied Error, when it fails.",
+  "example": {
+   "title": "Check values with strict assertions",
+   "code": "import assert from 'node:assert/strict';\n\nconst result = { status: 'ok', count: 2 };\nassert.deepStrictEqual(result, { status: 'ok', count: 2 });\nassert.strictEqual(result.status, 'ok');",
+   "language": "javascript",
+   "explanation": "This checks an object with strict deep equality, then checks one property with strict equality."
+  },
+  "useCases": [
+   {
+    "title": "Test results",
+    "scenario": "Check a function's returned value against the expected value."
+   },
+   {
+    "title": "Verify invariants",
+    "scenario": "Stop execution when an internal invariant is false."
+   },
+   {
+    "title": "Test errors",
+    "scenario": "Check that synchronous or asynchronous code throws or rejects as expected."
+   }
+  ],
+  "related": [
+   "assert.AssertionError",
+   "assert.Assert",
+   "assert.deepEqual()",
+   "assert.deepStrictEqual()",
+   "assert.equal()",
+   "assert.strictEqual()",
+   "assert.throws()",
+   "assert.rejects()"
+  ],
+  "since": "v0.1.21",
+  "interview": [
+   {
+    "question": "What is the node:assert module used for?",
+    "answer": "node:assert provides functions that check conditions and comparisons. A failed check throws an AssertionError.",
+    "followUp": "What does a failed AssertionError contain? It includes actual, expected, operator, generatedMessage, and code set to ERR_ASSERTION."
+   },
+   {
+    "question": "How does strict assertion mode differ from legacy mode?",
+    "answer": "Strict assertion mode makes non-strict methods use their strict counterparts. For example, deepEqual behaves like deepStrictEqual.",
+    "followUp": "How can strict mode be enabled? Import node:assert/strict, or use the strict export from node:assert."
+   },
+   {
+    "question": "What does deepStrictEqual compare?",
+    "answer": "deepStrictEqual compares values recursively and applies strict comparison rules. It also checks object prototypes and constructors unless an Assert instance uses skipPrototype: true.",
+    "followUp": "What happens with two different Promise, WeakMap, or WeakSet instances? They are unequal unless they are the same object."
+   }
+  ],
+  "keyPoints": [
+   "Use node:assert to check conditions and expected values.",
+   "Strict mode changes methods such as deepEqual to use strict behavior.",
+   "Strict mode gives object comparison failures a readable difference report.",
+   "assert(value, message) is an alias for assert.ok(value, message) in the current strict mode.",
+   "Assertion failures use the AssertionError class.",
+   "The Assert constructor can use diff: 'full' for complete comparison output."
+  ],
+  "gotchas": [
+   "The default module uses legacy comparison for some methods. Prefer node:assert/strict or the strict export.",
+   "Do not destructure methods from Assert when its custom options must remain active.",
+   "An Error or message function cannot be combined with extra message arguments."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "AsyncLocalStorage": {
   "sourceUrl": "https://nodejs.org/docs/latest/api/async_context.html",
   "sourceTitle": "Asynchronous context tracking",
@@ -366,66 +453,86 @@
   "checkedAt": "2026-10-15"
  },
  "Blob": {
-  "sourceUrl": "https://nodejs.org/dist/latest/docs/api/buffer.html",
-  "sourceTitle": "Buffer | Node.js v26.4.0 Documentation",
-  "summary": "Blob encapsulates immutable raw data that can be safely shared across worker threads. It combines string or binary parts and supports byte, text, ArrayBuffer, and stream-based reads.",
-  "explanation": "The global Blob class stores immutable raw data assembled from strings or binary parts. Its size and MIME type are available synchronously; arrayBuffer(), bytes(), text(), and stream() provide asynchronous or streaming access to the content, while the original data remains safely shareable across worker threads.",
-  "syntax": "new buffer.Blob([sources[, options]])",
+  "sourceUrl": "https://nodejs.org/docs/latest/api/buffer.html",
+  "sourceTitle": "Buffer | Node.js v26.13.0 Documentation",
+  "summary": "Buffer is Node.js's type for working with raw binary data. Create one with Buffer.from() or Buffer.alloc(), then read, write, copy, compare, and encode its bytes.",
+  "explanation": "A Buffer stores raw bytes and is available globally in Node.js. Use Buffer.from() to create one from text or existing data, and use methods such as toString(), subarray(), and readUInt32BE() to convert, view, or read its bytes.",
+  "syntax": "Buffer.alloc(size[, fill[, encoding]])",
   "parameters": [
    {
-    "name": "sources",
-    "type": "string[] | ArrayBuffer[] | TypedArray[] | DataView[] | Blob[]",
-    "description": "Array of strings, ArrayBuffer, TypedArray, DataView, or Blob values to concatenate into the new Blob."
+    "name": "size",
+    "type": "integer",
+    "description": "The number of bytes for the new buffer."
    },
    {
-    "name": "options",
-    "type": "Object",
-    "description": "Optional settings. endings may be transparent or native; type specifies the content type."
+    "name": "fill",
+    "type": "string | Buffer | Uint8Array | integer",
+    "description": "The value used to initialize the buffer. It defaults to zero."
+   },
+   {
+    "name": "encoding",
+    "type": "string",
+    "description": "The encoding used when fill is a string. It defaults to utf8."
    }
   ],
-  "returns": "A Blob instance containing the concatenated source data.",
+  "returns": "A new Buffer with the requested size, initialized with fill or with zeros.",
   "example": {
-   "title": "Create and read a Blob",
-   "code": "const blob = new Blob([\"hello\", \" world\"], { type: \"text/plain\" });\n\nconsole.log(blob.size, blob.type);\nconsole.log(await blob.text());\n\nconst bytes = await blob.bytes();\nconsole.log(bytes.length);",
+   "title": "Create and inspect a Buffer",
+   "code": "const { Buffer } = require('node:buffer');\n\nconst data = Buffer.from('hello', 'utf8');\nconsole.log(data.length); // 5\nconsole.log(data.toString('hex')); // 68656c6c6f",
    "language": "javascript",
-   "explanation": "Creates a text Blob, inspects its metadata, reads it as UTF-8 text, and obtains its bytes."
+   "explanation": "Creates a Buffer from UTF-8 text, then reads its byte length and hexadecimal form."
   },
   "useCases": [
    {
-    "title": "Binary and text payloads",
-    "scenario": "Representing request or response payloads with an explicit MIME type."
+    "title": "Handle binary network data",
+    "scenario": "Build binary protocol messages or parse binary input from a network connection."
    },
    {
-    "title": "Worker communication",
-    "scenario": "Passing immutable data between worker threads through MessagePort."
+    "title": "Convert between text and bytes",
+    "scenario": "Convert text to bytes or bytes back to text using a selected character encoding."
    },
    {
-    "title": "Flexible data access",
-    "scenario": "Reading content as bytes, UTF-8 text, an ArrayBuffer, or a stream."
+    "title": "Process byte data",
+    "scenario": "Store and modify byte sequences when working with files, streams, or cryptographic APIs."
    }
   ],
   "related": [
-   "Blob.prototype.arrayBuffer()",
-   "Blob.prototype.bytes()",
-   "Blob.prototype.stream()",
-   "Blob.prototype.text()",
-   "MessagePort"
+   "Buffer.from()",
+   "Buffer.allocUnsafe()",
+   "Buffer.byteLength()",
+   "buf.toString()",
+   "buf.subarray()",
+   "Uint8Array"
   ],
-  "since": "v18.0.0",
+  "since": "v5.10.0",
+  "interview": [
+   {
+    "question": "What is a Buffer in Node.js?",
+    "answer": "A Buffer is a global type for working with binary data. It represents a fixed-length sequence of bytes and extends Uint8Array behavior.",
+    "followUp": "How can a Buffer share memory with an ArrayBuffer? Buffer.from(arrayBuffer) creates a view over the ArrayBuffer, so changes can be visible through both objects."
+   },
+   {
+    "question": "How do Buffer.from() and Buffer.alloc() differ?",
+    "answer": "Buffer.from() creates a Buffer from text, an array, another Buffer, or an ArrayBuffer. Buffer.alloc() creates a new buffer and fills it with zeros by default.",
+    "followUp": "Why not use the deprecated Buffer constructor? Use Buffer.from() or Buffer.alloc() because the old constructor has unsafe and ambiguous behavior."
+   },
+   {
+    "question": "How do you read data from a Buffer?",
+    "answer": "A Buffer can be read as text with toString(encoding), or as numbers with methods such as readUInt32BE() and readInt32LE(). The BE and LE forms select byte order.",
+    "followUp": "What happens when a numeric read is outside the buffer? The method throws because the requested bytes are not available."
+   }
+  ],
   "keyPoints": [
-   "Blob represents immutable raw data suitable for safe sharing between worker threads.",
-   "The constructor combines all supplied parts in order into one Blob.",
-   "The size property reports the Blob's byte length.",
-   "The type property exposes the configured MIME content type.",
-   "bytes() asynchronously returns the content as a Uint8Array.",
-   "stream() exposes Blob content through a ReadableStream."
+   "Buffer is built into Node.js, so code can use it without importing the class.",
+   "Buffer.alloc(size) creates a buffer with the requested byte count.",
+   "Without a fill value, Buffer.alloc() initializes every byte to zero.",
+   "Buffers support iteration over byte values, indexes, or index-value pairs."
   ],
   "gotchas": [
-   "String parts are encoded as UTF-8 and copied, so later changes to the original string source cannot affect the Blob.",
-   "arrayBuffer() returns copied data rather than a view into the Blob's internal storage.",
-   "Worker messaging can share a Blob without immediate transfer or copying; copying occurs when arrayBuffer() or text() is called."
+   "Buffer.alloc() is slower than Buffer.allocUnsafe(), but it clears the memory first. Use the unsafe form only when your code will fill every byte.",
+   "Buffer.alloc() prevents old memory contents from appearing in the new buffer."
   ],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-11-03"
  },
  "Buffer": {
   "sourceUrl": "https://nodejs.org/api/buffer.html",
@@ -606,56 +713,88 @@
   "checkedAt": "2026-10-15"
  },
  "ClientRequest": {
-  "sourceUrl": "https://nodejs.org/docs/latest/api/http.html",
-  "sourceTitle": "HTTP",
-  "summary": "http.ClientRequest is the writable stream representing an in-progress HTTP client request. It is returned by http.request(), accepts request data and headers, and emits the server response when response headers arrive.",
-  "explanation": "ClientRequest is the writable stream returned by http.request() while an HTTP request is in progress. Configure its headers or write request data, listen for the response and errors, then call end() to complete a request that has no more body data.",
-  "syntax": "class http.ClientRequest",
-  "parameters": [],
-  "returns": "An instance of the http.ClientRequest class is returned by http.request().",
+  "sourceUrl": "https://beta.docs.nodejs.org/https/request-2",
+  "sourceTitle": "https.request | Node.js 26.13.0 Documentation",
+  "summary": "`https.request()` sends a request to a secure web server and returns an `http.ClientRequest`. Use the request object to send data and finish the request.",
+  "explanation": "`https.request()` sends a request to a secure web server and returns an `http.ClientRequest`. The options can be an object, a string, or a URL. Use the returned writable request to send body data, then call `end()` to finish it.",
+  "syntax": "https.request(url, options?, callback?) : http.ClientRequest",
+  "parameters": [
+   {
+    "name": "url",
+    "type": "string | URL",
+    "description": "A URL string or WHATWG URL object for the request."
+   },
+   {
+    "name": "options",
+    "type": "Object | string | URL",
+    "description": "Request settings, including HTTP and supported TLS options."
+   },
+   {
+    "name": "callback",
+    "type": "Function",
+    "description": "Optional function called once for the response event."
+   }
+  ],
+  "returns": "An `http.ClientRequest` instance.",
   "example": {
-   "title": "Make an HTTP request",
-   "code": "const http = require('node:http');\n\nconst request = http.request('http://example.com', (response) => {\n  response.on('data', (chunk) => process.stdout.write(chunk));\n  response.on('end', () => console.log('\\nDone'));\n});\n\nrequest.on('error', console.error);\nrequest.end();",
+   "title": "Send an HTTPS request",
+   "code": "import { request } from 'node:https';\n\nconst req = request('https://example.com', (res) => {\n  console.log(res.statusCode);\n  res.on('data', (chunk) => process.stdout.write(chunk));\n});\n\nreq.on('error', console.error);\nreq.end();",
    "language": "javascript",
-   "explanation": "This creates a ClientRequest through http.request(), consumes the response, handles request errors, and ends the request."
+   "explanation": "Creates an HTTPS request, handles the response, and finishes the request."
   },
   "useCases": [
    {
-    "title": "HTTP client calls",
-    "scenario": "Send HTTP requests and process their responses asynchronously."
+    "title": "Make a secure GET request",
+    "scenario": "Retrieve data from an HTTPS endpoint."
    },
    {
-    "title": "Request-body uploads",
-    "scenario": "Upload form data, JSON, or file contents in a request body."
+    "title": "Upload a request body",
+    "scenario": "Send JSON or other data to a secure endpoint."
    },
    {
-    "title": "Header management",
-    "scenario": "Set, inspect, or remove request headers before transmission."
+    "title": "Customize the TLS connection",
+    "scenario": "Configure certificates or other TLS settings."
    }
   ],
   "related": [
-   "http.request()",
-   "http.IncomingMessage",
-   "setHeader(name, value)",
-   "getHeader(name)",
-   "removeHeader(name)",
-   "request.end()"
+   "http.request",
+   "http.ClientRequest",
+   "https.get",
+   "https.globalAgent",
+   "tls.connect"
   ],
-  "since": "v0.1.17",
+  "since": "v0.3.6",
+  "interview": [
+   {
+    "question": "What does `https.request()` return?",
+    "answer": "It sends a request to a secure web server and returns an `http.ClientRequest`. The returned object is writable, so request data can be written before calling `end()`.",
+    "followUp": "How would you send a request body? Call `req.write(data)` for body data, then call `req.end()` to finish the request."
+   },
+   {
+    "question": "How do you read the response?",
+    "answer": "The callback is registered for the response event. The response provides values such as `statusCode` and `headers`, and its data can be read from the response stream.",
+    "followUp": "How should response data be handled? Attach a `data` listener to consume chunks and handle `end` when no more data remains."
+   },
+   {
+    "question": "What forms can the options argument take?",
+    "answer": "The options may be an object, string, or URL object. HTTPS uses port 443 and `https.globalAgent` as defaults, and TLS options such as `ca`, `cert`, and `key` are accepted.",
+    "followUp": "Which security-related options can be passed? TLS options include certificate authorities, client certificates, keys, cipher settings, and `rejectUnauthorized`."
+   }
+  ],
   "keyPoints": [
-   "Applications normally obtain ClientRequest instances from http.request(), rather than constructing them directly.",
-   "The object tracks an HTTP request that has started and has queued its headers.",
-   "Headers can be inspected, changed, or removed through the request's header methods while they remain mutable.",
-   "Request bodies can be supplied by writing data to the ClientRequest stream.",
-   "Listen for response to begin processing the server's response after its headers arrive.",
-   "The response event provides an IncomingMessage containing the incoming HTTP response."
+   "Use it to make an HTTPS request to a secure server.",
+   "The function accepts a URL, optional options, and an optional callback.",
+   "A WHATWG URL object can be passed as the options value.",
+   "The returned `ClientRequest` can receive request body data.",
+   "TLS connection options such as `ca`, `cert`, and `ciphers` are supported.",
+   "The callback runs once when the response event occurs."
   ],
   "gotchas": [
-   "Header changes must be made before the first body chunk is written or before end() sends the request.",
-   "The response is delivered through the request's response event rather than as a direct return value.",
-   "For uploads, write request-body data to the ClientRequest because it is the writable side of the operation."
+   "The returned request is a writable stream. For a request body, write data to it and finish with `end()`.",
+   "A string options value is parsed as a URL, so it must be a valid URL string.",
+   "HTTPS requests use `https.globalAgent` by default unless another agent is supplied."
   ],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-11-03"
  },
  "cluster": {
   "sourceUrl": "https://nodejs.org/api/cluster.html",
@@ -795,6 +934,99 @@
    "A custom logger requires writable output streams; do not assume it uses the process standard streams."
   ],
   "checkedAt": "2026-10-15"
+ },
+ "createHash": {
+  "sourceUrl": "https://beta.docs.nodejs.org/crypto/Hash",
+  "sourceTitle": "Hash | Node.js 26.13.0 Documentation",
+  "summary": "The Hash class creates hash digests from data. Use createHash() to make one, update() to add data, and digest() to get the result.",
+  "explanation": "A Hash object accepts data through update(). Calling digest() finishes the calculation and returns the result as a Buffer or an encoded string. Hash objects can also work as streams, so data can be piped into them.",
+  "syntax": "crypto.createHash(algorithm[, options])\nhash.update(data[, inputEncoding])\nhash.digest([encoding])",
+  "parameters": [
+   {
+    "name": "algorithm",
+    "type": "string",
+    "description": "The hash algorithm name, such as 'sha256' or 'sha512'."
+   },
+   {
+    "name": "options",
+    "type": "Object",
+    "description": "Options that control stream behavior. XOF algorithms can use outputLength."
+   },
+   {
+    "name": "data",
+    "type": "string | Buffer | TypedArray | DataView",
+    "description": "Data to add to the hash."
+   },
+   {
+    "name": "inputEncoding",
+    "type": "string",
+    "description": "The string encoding for data. It is ignored for binary input."
+   },
+   {
+    "name": "encoding",
+    "type": "string",
+    "description": "The output encoding for the digest."
+   }
+  ],
+  "returns": "createHash() returns a Hash object. digest() returns a Buffer or a string, depending on whether an encoding is supplied. update() returns void. copy() returns a Hash object.",
+  "example": {
+   "title": "Create a SHA-256 digest",
+   "code": "import { createHash } from 'node:crypto';\n\nconst hash = createHash('sha256');\nhash.update('some data to hash');\nconsole.log(hash.digest('hex'));",
+   "language": "javascript",
+   "explanation": "This creates a SHA-256 hash, adds text, and prints the digest as hexadecimal."
+  },
+  "useCases": [
+   {
+    "title": "Generate a data digest",
+    "scenario": "Create a checksum for text or binary data."
+   },
+   {
+    "title": "Hash a file stream",
+    "scenario": "Process a file without loading the complete file into memory."
+   },
+   {
+    "title": "Create rolling hashes",
+    "scenario": "Compare several intermediate states while adding data."
+   }
+  ],
+  "related": [
+   "crypto.createHash",
+   "Hash.copy",
+   "Hash.update",
+   "Hash.digest",
+   "crypto.getHashes"
+  ],
+  "since": "v0.1.92",
+  "interview": [
+   {
+    "question": "How do you create a hash with Node.js?",
+    "answer": "Use createHash() with an algorithm name, call update() for the data, then call digest(). The digest can be a Buffer or an encoded string.",
+    "followUp": "How can you hash a large file? Create a readable file stream and pipe it into the Hash object, or update it with each data chunk before calling digest()."
+   },
+   {
+    "question": "What controls which hash algorithms can be used?",
+    "answer": "createHash() returns a Hash object. The algorithm must be available in the OpenSSL configuration used by the Node.js process.",
+    "followUp": "How do you find usable algorithm names? Call crypto.getHashes() and choose an available name."
+   },
+   {
+    "question": "Can a Hash object be used as a stream?",
+    "answer": "Hash supports both stream usage and direct update() and digest() calls. Stream usage produces the digest after the input ends.",
+    "followUp": "What does copy() provide? It makes a deep copy of the current internal state, which can be used to calculate intermediate digests."
+   }
+  ],
+  "keyPoints": [
+   "The Hash class calculates a fixed digest from input data.",
+   "For small inputs, call update() one or more times and finish with digest().",
+   "Use crypto.createHash(algorithm) to create a Hash instance.",
+   "Pass an encoding such as 'hex' to digest() for a string; omit it for a Buffer.",
+   "Call update() repeatedly to add chunks of data.",
+   "Use copy() to preserve the current state and calculate an intermediate digest."
+  ],
+  "gotchas": [
+   "Do not call digest() more than once or use the Hash object afterward.",
+   "String input uses UTF-8 when no input encoding is given."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "createHmac": {
   "sourceUrl": "https://nodejs.org/download/release/v8.9.3/docs/api/crypto.html",
@@ -952,65 +1184,189 @@
   ],
   "checkedAt": "2026-10-15"
  },
+ "createServer": {
+  "sourceUrl": "https://beta.docs.nodejs.org/https/createServer",
+  "sourceTitle": "https.createServer | Node.js 26.13.0 Documentation",
+  "summary": "Creates an HTTPS server with TLS settings and an optional request handler. It returns an https.Server that can listen for secure HTTP connections.",
+  "explanation": "https.createServer() builds an HTTPS server from TLS and HTTP options. The optional listener handles incoming HTTP requests, and the returned server can be started with listen().",
+  "syntax": "https.createServer(options?, requestListener?)",
+  "parameters": [
+   {
+    "name": "options",
+    "type": "Object",
+    "description": "TLS, secure-context, and HTTP server settings."
+   },
+   {
+    "name": "requestListener",
+    "type": "Function",
+    "description": "Optional function added to the request event."
+   }
+  ],
+  "returns": "https.Server",
+  "example": {
+   "title": "Basic HTTPS server",
+   "code": "import { createServer } from 'node:https';\nimport { readFileSync } from 'node:fs';\n\nconst server = createServer({\n  key: readFileSync('private-key.pem'),\n  cert: readFileSync('certificate.pem')\n}, (_request, response) => {\n  response.writeHead(200);\n  response.end('hello world\\n');\n});\n\nserver.listen(8000);",
+   "language": "javascript",
+   "explanation": "This starts an HTTPS server on port 8000 using a private key and certificate, then sends a response for each request."
+  },
+  "useCases": [
+   {
+    "title": "Secure web server",
+    "scenario": "Serve HTTP responses over TLS using a private key and certificate."
+   },
+   {
+    "title": "PFX certificate setup",
+    "scenario": "Use a PKCS#12 certificate bundle instead of separate key and certificate files."
+   },
+   {
+    "title": "Request-based response handling",
+    "scenario": "Attach request handling when the server is created."
+   }
+  ],
+  "related": [
+   "https.Server",
+   "tls.createServer()",
+   "tls.createSecureContext()",
+   "http.createServer()",
+   "https.get()",
+   "https.request()"
+  ],
+  "since": "v0.3.4",
+  "interview": [
+   {
+    "question": "What does https.createServer() do?",
+    "answer": "It creates and returns an https.Server. The first argument supplies TLS and HTTP settings, while the optional listener is attached to the request event.",
+    "followUp": "What must a basic TLS setup provide? A private key and a certificate, such as the key and cert files used in the example."
+   },
+   {
+    "question": "How does the request listener handle a request?",
+    "answer": "The request listener receives the request and response objects. The example sends status 200 and ends the response with text.",
+    "followUp": "How would you select different content? Inspect request properties such as the URL and method before writing the response."
+   },
+   {
+    "question": "How does the returned server begin accepting connections?",
+    "answer": "The returned server is not listening until listen() is called. The example starts it on port 8000.",
+    "followUp": "What happens if the selected port is already in use? Listening fails and the server emits an error event, which application code should handle."
+   }
+  ],
+  "keyPoints": [
+   "The function accepts optional options and an optional request listener, and returns an HTTPS server.",
+   "The requestListener handles incoming HTTP requests.",
+   "The result is an https.Server instance.",
+   "A handler can send a status code and finish the response with body text.",
+   "The listener receives request and response arguments."
+  ],
+  "gotchas": [
+   "The options object can contain settings from TLS, secure-context, and HTTP server APIs."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "createWriteStream": {
-  "sourceUrl": "https://nodejs.org/docs/latest/api/fs.html",
-  "sourceTitle": "File System",
-  "summary": "Creates and returns a writable stream connected to a file. Use it to write data incrementally while controlling file-opening behavior through options.",
-  "explanation": "createWriteStream opens a file-backed writable stream. Data can be supplied incrementally with stream methods such as write() and end(); options control how the file is opened, encoded, positioned, and permissioned.",
+  "sourceUrl": "https://nodejs.org/docs/latest-v10.x/api/fs.html",
+  "sourceTitle": "File System | Node.js v10.24.1 Documentation",
+  "summary": "fs.createWriteStream() creates a writable stream for a file. It can replace, append, or modify file data, depending on its options.",
+  "explanation": "fs.createWriteStream() returns a writable stream for a file. By default, it replaces the file, uses UTF-8 text, and closes its file descriptor automatically. Set flags to r+ when changing an existing file without replacing it. If you provide fd, Node.js uses it instead of opening path.",
   "syntax": "fs.createWriteStream(path[, options])",
   "parameters": [
    {
     "name": "path",
-    "type": "string | Buffer | URL | integer",
-    "description": "File path to open, or a path-like value accepted by the Node.js file-system API."
+    "type": "string | Buffer",
+    "description": "The file name or path. It can be a string or Buffer."
    },
    {
     "name": "options",
-    "type": "object | string",
-    "description": "Optional stream and file-opening settings, including flags, encoding, fd, mode, and start."
+    "type": "string | Object",
+    "description": "A string encoding or an object containing flags, encoding, fd, mode, autoClose, and start."
+   },
+   {
+    "name": "options.flags",
+    "type": "string",
+    "description": "File open mode. Default: w."
+   },
+   {
+    "name": "options.encoding",
+    "type": "string",
+    "description": "Text encoding. Default: utf8."
+   },
+   {
+    "name": "options.fd",
+    "type": "integer",
+    "description": "Existing file descriptor. Default: null."
+   },
+   {
+    "name": "options.mode",
+    "type": "integer",
+    "description": "File mode used when creating the file. Default: 0o666."
+   },
+   {
+    "name": "options.autoClose",
+    "type": "boolean",
+    "description": "Whether to close the descriptor automatically. Default: true."
+   },
+   {
+    "name": "options.start",
+    "type": "integer",
+    "description": "Starting file position for writes."
    }
   ],
-  "returns": "A new WriteStream object.",
+  "returns": "fs.WriteStream",
   "example": {
-   "title": "Write text incrementally to a file",
-   "code": "import { createWriteStream } from 'node:fs';\n\nconst output = createWriteStream('output.txt');\noutput.write('First line\\n');\noutput.end('Last line\\n');\noutput.on('finish', () => console.log('File written'));",
+   "title": "Append text with a write stream",
+   "code": "const fs = require('node:fs');\n\nconst stream = fs.createWriteStream('notes.txt', {\n  flags: 'a',\n  encoding: 'utf8'\n});\n\nstream.write('New note\\n');\nstream.end();\nstream.on('finish', () => console.log('Saved'));",
    "language": "javascript",
-   "explanation": "Creates a writable file stream, writes two chunks, and reports completion after the stream finishes."
+   "explanation": "This opens notes.txt for appending, writes text, and ends the stream."
   },
   "useCases": [
    {
-    "title": "Incremental file output",
-    "scenario": "Write logs or generated content progressively without constructing the entire file in memory."
+    "title": "Stream output",
+    "scenario": "Write a file piece by piece without loading all data into memory."
    },
    {
-    "title": "Streaming generated data",
-    "scenario": "Produce a file while another operation generates chunks over time."
+    "title": "Append a log",
+    "scenario": "Add new records to the end of an existing log."
    },
    {
-    "title": "Offset or in-place writes",
-    "scenario": "Write to a chosen file offset or modify an existing file with suitable flags."
+    "title": "Update part of a file",
+    "scenario": "Write at a chosen file position with a compatible flag."
    }
   ],
   "related": [
-   "WriteStream",
-   "Writable Stream",
+   "fs.WriteStream",
    "fs.createReadStream",
-   "fs.write"
+   "fs.writeFile",
+   "fs.open",
+   "net.Socket"
   ],
   "since": "v0.1.31",
+  "interview": [
+   {
+    "question": "What does fs.createWriteStream() return, and what are its main defaults?",
+    "answer": "fs.createWriteStream() creates a writable stream for a file. Its default flags are w, its default encoding is utf8, and autoClose defaults to true.",
+    "followUp": "How would you append instead of replace? Set flags to a, or use r+ when modifying an existing file at a position."
+   },
+   {
+    "question": "How can writing begin at a specific position?",
+    "answer": "The start option sets a file position from which writing can begin. To change an existing file rather than replace it, a suitable flag such as r+ may be needed.",
+    "followUp": "What happens if fd is also supplied? Node.js uses fd, ignores path, and does not emit open."
+   },
+   {
+    "question": "How does autoClose affect resource handling?",
+    "answer": "With autoClose true, the descriptor closes automatically on an error or when writing finishes. With autoClose false, the application must close it and prevent descriptor leaks.",
+    "followUp": "Why should non-blocking descriptors not be used here? The documentation says to pass them to net.Socket instead."
+   }
+  ],
   "keyPoints": [
-   "The function returns a writable file stream that follows Node.js Writable Stream behavior.",
-   "Use start to begin writing at an offset instead of position zero.",
-   "The default opening mode is w, while r+ is relevant for in-place modification.",
-   "The stream's default encoding can be selected from encodings supported by Buffer.",
-   "A supplied descriptor should be blocking; non-blocking descriptors are not appropriate for this API."
+   "The function returns a writable file stream.",
+   "The defaults replace the file, encode strings as UTF-8, use no supplied descriptor, and set mode to 0o666.",
+   "Use start to begin writing after the start of the file.",
+   "A string options value is treated as the text encoding."
   ],
   "gotchas": [
-   "The default w flag replaces or creates the file; choose r+ when modifying an existing file without truncating it.",
-   "When supplying fd, the path is ignored and the stream uses that descriptor instead.",
-   "A caller-provided file descriptor does not cause the stream to emit open."
+   "Turning off autoClose means your code must close the file descriptor, including after errors.",
+   "The default w flag replaces the file. Use r+ when you need to modify existing contents.",
+   "When fd is supplied, path is ignored and no open event is emitted."
   ],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-11-03"
  },
  "crypto": {
   "sourceUrl": "https://nodejs.org/docs/latest/api/crypto.html",
@@ -1095,6 +1451,97 @@
    "Signature verification requires feeding the same signed data into the verifier before calling its final verification method."
   ],
   "checkedAt": "2026-10-15"
+ },
+ "dns": {
+  "sourceUrl": "https://nodejs.org/docs/latest/api/dns.html",
+  "sourceTitle": "DNS | Node.js v26.13.0 Documentation",
+  "summary": "Node.js's `node:dns` module resolves host names. `dns.lookup()` uses the operating system, while other DNS methods query a DNS server.",
+  "explanation": "The `node:dns` module resolves host names. `dns.lookup()` uses the operating system's name-resolution facilities, while methods such as `dns.resolve4()` send queries to a DNS server. Use `lookup()` when you want behavior similar to other applications on the same system.",
+  "syntax": "dns.lookup(hostname[, options], callback)",
+  "parameters": [
+   {
+    "name": "hostname",
+    "type": "string",
+    "description": "The host name to resolve."
+   },
+   {
+    "name": "options",
+    "type": "integer | Object",
+    "description": "An address family, options object, or omitted value. The object can include `family`, `hints`, `all`, and `order`."
+   },
+   {
+    "name": "callback",
+    "type": "Function",
+    "description": "Receives an error and either one address plus family, or an array of address objects when `all` is true."
+   }
+  ],
+  "returns": "The callback receives an IPv4 or IPv6 address and its family. With `all: true`, it receives an array of objects containing `address` and `family`. The promisified form returns a Promise for an object with `address` and `family` when `all` is not true.",
+  "example": {
+   "title": "Look up a host name",
+   "code": "import dns from 'node:dns';\n\ndns.lookup('example.org', (error, address, family) => {\n  if (error) throw error;\n  console.log(address, family);\n});",
+   "language": "javascript",
+   "explanation": "This looks up one IPv4 or IPv6 address using the operating system."
+  },
+  "useCases": [
+   {
+    "title": "System-based lookup",
+    "scenario": "Resolve a host name using the same name-resolution behavior as other applications on the machine."
+   },
+   {
+    "title": "Collect all addresses",
+    "scenario": "Request all available IPv4 and IPv6 addresses for a host."
+   },
+   {
+    "title": "Query DNS directly",
+    "scenario": "Force an actual DNS query instead of using operating-system name sources."
+   },
+   {
+    "title": "Control resolution options",
+    "scenario": "Choose address-family behavior with `family`, `hints`, or `order`."
+   }
+  ],
+  "related": [
+   "dns.Resolver",
+   "dns.getServers()",
+   "dns.lookupService()",
+   "dns.resolve()",
+   "dns.resolve4()",
+   "dns.resolve6()",
+   "dns.reverse()",
+   "dns.setDefaultResultOrder()"
+  ],
+  "since": "v0.1.90",
+  "interview": [
+   {
+    "question": "How does `dns.lookup()` differ from `dns.resolve4()`?",
+    "answer": "`dns.lookup()` uses the operating system's name-resolution facilities and may not use the DNS protocol. Other `node:dns` resolution methods query an actual DNS server over the network.",
+    "followUp": "Which method should be used to bypass sources such as `/etc/hosts`? Use a method such as `dns.resolve4()` because it always performs a DNS query."
+   },
+   {
+    "question": "How does the `all` option change the callback result?",
+    "answer": "With `all: false`, the callback receives one address and its family. With `all: true`, it receives an array of objects, each containing `address` and `family`.",
+    "followUp": "What happens when `family` is `0` and `all` is true? The system resolver can return IPv4 addresses, IPv6 addresses, or both."
+   },
+   {
+    "question": "What do `family` and `hints` control?",
+    "answer": "The `family` option accepts `4`, `6`, or `0`; `0` allows either address family. The `hints` option can combine supported flags such as `ADDRCONFIG`, `V4MAPPED`, and `ALL` with bitwise OR.",
+    "followUp": "What does `V4MAPPED` do? With IPv6 requested and no IPv6 result, it can return IPv4-mapped IPv6 addresses, where supported."
+   }
+  ],
+  "keyPoints": [
+   "Import `node:dns` to resolve host names into IP addresses and to query DNS record types.",
+   "`dns.lookup()` can resolve a name without network traffic because it uses operating-system facilities.",
+   "Methods other than `lookup()` always use the network for DNS queries and do not use the same local configuration files.",
+   "Set `all: true` to receive every resolved address as objects instead of one address and family pair.",
+   "Set `family` to `0` when either IPv4 or IPv6 is acceptable; use `4` or `6` to request one family.",
+   "A `dns.Resolver` can set its local IPv4 and IPv6 source addresses with `setLocalAddress()`."
+  ],
+  "gotchas": [
+   "`dns.lookup()` may use local system sources such as host configuration, so it does not always send a DNS query.",
+   "`ENOTFOUND` can also mean another lookup failure, such as a lack of available file descriptors.",
+   "Use `order` in new code when controlling address order; it takes precedence over the deprecated `verbatim` option."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "Duplex": {
   "sourceUrl": "https://nodejs.org/docs/latest/api/stream.html",
@@ -1577,56 +2024,90 @@
   "checkedAt": "2026-10-15"
  },
  "fs": {
-  "sourceUrl": "https://nodejs.org/dist/latest/docs/api/fs.html",
-  "sourceTitle": "File system | Node.js v26.4.0 Documentation",
-  "summary": "The `node:fs` module provides Node.js access to files and directories through synchronous, callback-based, and promise-based APIs. It is suited to reading, writing, opening, inspecting, and streaming filesystem data.",
-  "explanation": "The `node:fs` module provides filesystem access through callback, synchronous, and promise-based APIs. Import the promise variant when asynchronous operations should be composed with `await`; common operations accept paths and optional encoding or options, while reads return data and writes complete after the file has been updated.",
-  "syntax": "import * as fs from 'node:fs';\nimport * as fs from 'node:fs/promises';",
-  "parameters": [],
-  "returns": "",
+  "sourceUrl": "https://nodejs.org/api/fs.html",
+  "sourceTitle": "File system | Node.js v26.13.0 Documentation",
+  "summary": "Node.js `node:fs` provides file-system operations modeled on POSIX functions. It supports promise, callback, and synchronous APIs through ES modules and CommonJS.",
+  "explanation": "The module provides file-system operations in three forms: promise-based, callback-based, and synchronous. Promise operations run asynchronously, while synchronous calls stop the event loop until they finish. Use `node:fs/promises` for promises and `node:fs` for callbacks or synchronous methods.",
+  "syntax": "import * as fs from 'node:fs/promises';\nimport * as fs from 'node:fs';",
+  "parameters": [
+   {
+    "name": "path",
+    "type": "string | Buffer | URL",
+    "description": "A file path accepted by the selected method."
+   },
+   {
+    "name": "callback",
+    "type": "Function",
+    "description": "The callback used by callback-style methods."
+   },
+   {
+    "name": "options",
+    "type": "Object",
+    "description": "Options such as encoding, mode, or an abort signal, depending on the method."
+   }
+  ],
+  "returns": "Promise-based methods return a promise. Callback methods report completion through their callback. Synchronous methods return directly or throw an exception.",
   "example": {
-   "title": "Copy transformed file contents",
-   "code": "import { readFile, writeFile } from 'node:fs/promises';\n\nconst input = await readFile('input.txt', 'utf8');\nawait writeFile('output.txt', input.toUpperCase());\nconsole.log('Wrote output.txt');",
+   "title": "Delete a file asynchronously",
+   "code": "import { unlink } from 'node:fs/promises';\n\ntry {\n  await unlink('/tmp/hello');\n  console.log('Deleted the file.');\n} catch (error) {\n  console.error('Delete failed:', error.message);\n}",
    "language": "javascript",
-   "explanation": "Reads a UTF-8 text file and writes an uppercase copy using promise-based filesystem APIs."
+   "explanation": "This removes a file with the promise API. The try block handles success, and catch handles an error."
   },
   "useCases": [
    {
-    "title": "Read files",
-    "scenario": "Read configuration, templates, or other small files during asynchronous application work."
+    "title": "Asynchronous file work",
+    "scenario": "Read or write files without blocking the event loop."
    },
    {
-    "title": "Write files",
-    "scenario": "Persist generated content, logs, or application state."
+    "title": "Performance-sensitive operations",
+    "scenario": "Use completion callbacks when execution time and memory allocation need to be minimized."
    },
    {
-    "title": "Stream file data",
-    "scenario": "Process large files incrementally without loading them fully into memory."
+    "title": "Synchronous scripts",
+    "scenario": "Run simple file operations in scripts where blocking is acceptable."
    },
    {
-    "title": "Manage filesystem resources",
-    "scenario": "Inspect paths, permissions, metadata, and directory contents."
+    "title": "FileHandle workflows",
+    "scenario": "Manage an opened file through a reusable file descriptor wrapper."
    }
   ],
   "related": [
    "node:fs/promises",
-   "fs.readFile",
-   "fs.writeFile",
-   "fs.open",
-   "fs.access",
-   "fs.createReadStream",
-   "fs.createWriteStream"
+   "fsPromises.open()",
+   "FileHandle",
+   "filehandle.close()",
+   "fs.unlink()",
+   "fs.unlinkSync()"
   ],
-  "since": "",
+  "since": "v0.10.0",
+  "interview": [
+   {
+    "question": "How do the Node.js file-system API forms differ?",
+    "answer": "Use `node:fs/promises` when you want methods that return promises. Use `node:fs` for callback and synchronous methods. Both module forms work with ES modules and CommonJS.",
+    "followUp": "Which form is preferred for maximum execution and memory performance? The callback API is preferred when maximum performance is required."
+   },
+   {
+    "question": "What happens when a synchronous file-system method runs?",
+    "answer": "A synchronous method blocks the event loop and throws errors immediately. Handle those errors with `try...catch` or let them propagate.",
+    "followUp": "Why can this hurt a server? Blocking stops other JavaScript work, including handling other connections, until the operation finishes."
+   },
+   {
+    "question": "What is a FileHandle?",
+    "answer": "A `FileHandle` wraps a numeric file descriptor and is created by `fsPromises.open()`. Close it explicitly with `filehandle.close()` after use.",
+    "followUp": "What can happen if it is not closed? Node.js may try automatic cleanup and emit a warning, but that behavior is unreliable."
+   }
+  ],
   "keyPoints": [
-   "`node:fs` exposes filesystem operations modeled after POSIX behavior.",
-   "Most filesystem work can be expressed as blocking synchronous calls, callbacks, or promises.",
-   "Use `node:fs/promises` when you want promise-returning operations.",
-   "Use `node:fs` for callback-oriented and synchronous filesystem APIs.",
-   "Synchronous filesystem calls block the event loop, so they should be reserved for suitable contexts."
+   "`node:fs` lets a program work with files and directories.",
+   "Most operations are available as synchronous, callback, and promise-based methods.",
+   "The promise API returns promises for asynchronous file-system work.",
+   "Callback methods receive the completion callback as their final argument."
   ],
-  "gotchas": [],
-  "checkedAt": "2026-10-15"
+  "gotchas": [
+   "Concurrent changes to the same file are not synchronized. Coordinate them yourself, or data corruption can occur.",
+   "Synchronous methods block the event loop and later JavaScript execution until the operation ends."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "globalThis": {
   "sourceUrl": "https://nodejs.org/docs/latest/api/globals.html",
@@ -1972,48 +2453,83 @@
   "checkedAt": "2026-10-15"
  },
  "MessagePort": {
-  "sourceUrl": "https://nodejs.org/api/worker_threads.html",
-  "sourceTitle": "Worker threads | Node.js 26.10.0 Documentation",
-  "summary": "MessagePort is one endpoint of an asynchronous, two-way channel in Node.js worker_threads. It sends structured-clone data and can transfer memory regions or other MessagePort instances between workers.",
-  "explanation": "A MessagePort is one endpoint of an asynchronous, bidirectional communication channel. Obtain linked ports from MessageChannel, register a message listener, and use postMessage() to send structured-clone data; ports can also be transferred between workers.",
-  "syntax": "MessagePort",
-  "parameters": [],
-  "returns": "",
+  "sourceUrl": "https://beta.docs.nodejs.org/worker_threads/MessagePort",
+  "sourceTitle": "MessagePort | Node.js 26.13.0 Documentation",
+  "summary": "MessagePort is one end of an asynchronous, two-way channel. It sends structured data between threads with postMessage() and receives it through message events.",
+  "explanation": "A MessagePort is one end of an asynchronous, two-way channel. Use postMessage() to send structured data, listen for message events to receive it, and close() when communication is finished. Ports can also transfer memory regions and other MessagePort objects.",
+  "syntax": "class MessagePort extends EventTarget\nport.postMessage(value, transferList?)\nport.close()\nport.hasRef()\nport.ref()\nport.start()\nport.unref()",
+  "parameters": [
+   {
+    "name": "value",
+    "type": "any",
+    "description": "The JavaScript value to send. It is processed using the HTML structured clone algorithm."
+   },
+   {
+    "name": "transferList",
+    "type": "Object[]",
+    "description": "Optional objects to transfer instead of cloning when supported and required."
+   }
+  ],
+  "returns": "postMessage(), close(), start(), ref(), and unref() return void. hasRef() returns a boolean.",
   "example": {
-   "title": "Exchange a message through a MessageChannel",
-   "code": "const { MessageChannel } = require('node:worker_threads');\n\nconst { port1, port2 } = new MessageChannel();\nport1.once('message', (message) => {\n  console.log(message);\n  port1.close();\n  port2.close();\n});\nport2.postMessage({ status: 'ready' });",
+   "title": "Send a message through a channel",
+   "code": "import { MessageChannel } from 'node:worker_threads';\n\nconst { port1, port2 } = new MessageChannel();\n\nport1.on('message', (message) => {\n  console.log(message);\n  port1.close();\n});\n\nport2.postMessage({ text: 'hello' });",
    "language": "javascript",
-   "explanation": "Creates a linked pair of ports, sends structured data through one port, and receives it from the other."
+   "explanation": "This creates two linked ports. One port sends a structured value, and the other receives it and then closes the channel."
   },
   "useCases": [
    {
     "title": "Worker communication",
-    "scenario": "Exchange messages between the main thread and a worker."
+    "scenario": "Send work results between a main thread and a worker."
    },
    {
-    "title": "Thread-local messaging",
-    "scenario": "Create an in-process asynchronous communication channel with MessageChannel."
+    "title": "Transfer a port",
+    "scenario": "Pass a communication endpoint to another worker."
    },
    {
-    "title": "Transfer communication resources",
-    "scenario": "Pass transferable ports or memory-backed data between workers."
+    "title": "Structured data exchange",
+    "scenario": "Send data without JSON serialization."
    }
   ],
   "related": [
    "MessageChannel",
    "Worker",
-   "parentPort",
-   "worker_threads"
+   "worker_threads.parentPort",
+   "worker_threads.receiveMessageOnPort",
+   "BroadcastChannel"
   ],
-  "since": "",
+  "since": "v10.5.0",
+  "interview": [
+   {
+    "question": "What is a MessagePort?",
+    "answer": "MessagePort represents one end of an asynchronous, two-way communication channel. A MessageChannel creates two linked ports, and a message sent with one port can be received by the other.",
+    "followUp": "How are values sent? They use the HTML structured clone algorithm, so circular data and types such as Map, Set, BigInt, and typed arrays can be supported."
+   },
+   {
+    "question": "How does MessagePort.postMessage() handle data?",
+    "answer": "postMessage(value, transferList) sends a value to the other side. The value is structured-cloned, while transferable objects listed in transferList are transferred instead of cloned.",
+    "followUp": "What happens with unsupported native objects? They cannot be cloned unless they are among the documented supported types, so sending one can throw a cloning error."
+   },
+   {
+    "question": "How do close(), ref(), and unref() affect a port?",
+    "answer": "close() disables further sending on both sides and causes the close event on both ports. unref() lets the thread exit when the port is its only active handle; ref() restores the normal keeping-alive behavior.",
+    "followUp": "When does a port start receiving events? Adding a message listener starts it automatically; start() can be called explicitly when needed."
+   }
+  ],
   "keyPoints": [
-   "A MessagePort represents one endpoint of an asynchronous, two-way communication channel.",
-   "Ports support transferring structured data, memory regions, and other MessagePort instances between workers.",
-   "MessagePort is provided by the node:worker_threads module, which supports parallel JavaScript execution.",
-   "MessageChannel creates the communication channel whose endpoints are MessagePort instances."
+   "Each MessagePort is one endpoint of a two-way asynchronous channel.",
+   "Ports can transfer structured data, memory regions, and other MessagePort objects between workers.",
+   "postMessage() sends a value to the port at the other end.",
+   "Structured cloning supports circular references, unlike JSON serialization.",
+   "hasRef() reports whether the port keeps the Node.js event loop active.",
+   "unref() allows the thread to exit when this port is its only active handle."
   ],
-  "gotchas": [],
-  "checkedAt": "2026-10-15"
+  "gotchas": [
+   "Not every JavaScript object can be sent. For example, posting a URL object raises a DataCloneError.",
+   "close() stops sending on both ends of the channel and emits close on both MessagePort objects.",
+   "start() is normally automatic when a message listener is added. It is mainly useful when messages should be ignored without a listener."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "module.exports": {
   "sourceUrl": "https://nodejs.org/docs/latest/api/modules.html",
@@ -2083,79 +2599,104 @@
  },
  "net": {
   "sourceUrl": "https://nodejs.org/api/net.html",
-  "sourceTitle": "Net | Node.js v26.10.0 Documentation",
-  "summary": "The `node:net` module provides asynchronous, stream-based networking for TCP and IPC. It supplies APIs for creating servers and clients that communicate through sockets.",
-  "explanation": "The `node:net` module exposes asynchronous, stream-oriented networking for TCP and inter-process communication. Use `createServer()` to accept socket connections and `createConnection()` or `connect()` to open clients; sockets provide duplex stream behavior for reading and writing data.",
-  "syntax": "import net from 'node:net';\nnet.createServer([options][, connectionListener]);\nnet.connect(options[, connectListener]);\nnet.connect(path[, connectListener]);\nnet.connect(port[, host][, connectListener]);",
+  "sourceTitle": "Net | Node.js v26.13.0 Documentation",
+  "summary": "node:net provides asynchronous APIs for stream-based TCP and IPC servers and clients. Use it to create servers, accept sockets, connect clients, and exchange data.",
+  "explanation": "The node:net module provides asynchronous APIs for TCP and IPC servers and clients. A server accepts connections and receives net.Socket objects, while a client uses a socket to connect and exchange stream data.",
+  "syntax": "import net from 'node:net';\nconst server = net.createServer(connectionListener);\nserver.listen(port[, host][, callback]);\nconst socket = net.createConnection(port[, host][, connectListener]);",
   "parameters": [
    {
     "name": "options",
-    "type": "object",
-    "description": "Connection options, including the destination port, host, or IPC path."
+    "type": "Object",
+    "description": "Server options, such as connection settings."
+   },
+   {
+    "name": "connectionListener",
+    "type": "Function",
+    "description": "Function called for each new connection."
    },
    {
     "name": "port",
     "type": "number",
-    "description": "TCP destination port."
+    "description": "TCP port, or 0 to request an operating-system-selected port."
    },
    {
     "name": "host",
     "type": "string",
-    "description": "TCP destination host; defaults to localhost when omitted."
+    "description": "Host address to bind or connect to."
    },
    {
-    "name": "path",
-    "type": "string",
-    "description": "IPC endpoint path."
-   },
-   {
-    "name": "connectListener",
-    "type": "function",
-    "description": "Function invoked when the connection is established."
+    "name": "data",
+    "type": "string | Buffer",
+    "description": "Data to send through a socket."
    }
   ],
-  "returns": "`net.createConnection()` and `net.connect()` return a new `net.Socket`; `net.createServer()` returns a new server.",
+  "returns": "net.createServer() returns a net.Server. net.connect() returns a net.Socket. socket.write() returns a boolean.",
   "example": {
-   "title": "Minimal TCP echo server",
-   "code": "import net from 'node:net';\n\nconst server = net.createServer((socket) => {\n  socket.setEncoding('utf8');\n  socket.on('data', (data) => socket.write(`echo: ${data}`));\n});\n\nserver.listen(3000, '127.0.0.1', () => {\n  console.log('TCP server listening on 127.0.0.1:3000');\n});",
-   "language": "javascript",
-   "explanation": "Creates a TCP server that echoes received text, then starts listening on localhost port 3000."
+   "title": "Create a TCP echo server",
+   "code": "import net from 'node:net';\n\nconst server = net.createServer((socket) => {\n  socket.on('data', (data) => socket.write(data));\n});\n\nserver.listen(0, '127.0.0.1', () => {\n  const address = server.address();\n  console.log(`Listening on ${address.port}`);\n});",
+   "language": "typescript",
+   "explanation": "This server listens on a system-chosen TCP port and sends received data back to each client."
   },
   "useCases": [
    {
     "title": "TCP servers",
-    "scenario": "Build a lightweight TCP service that accepts socket connections and exchanges byte or text streams."
-   },
-   {
-    "title": "IPC communication",
-    "scenario": "Connect backend components through local Unix-domain or Windows named-pipe endpoints."
+    "scenario": "Build a TCP service that accepts client connections and exchanges stream data."
    },
    {
     "title": "TCP clients",
-    "scenario": "Create custom TCP clients for internal protocols or persistent service connections."
+    "scenario": "Connect a client to a TCP service and send or receive data."
+   },
+   {
+    "title": "IPC endpoints",
+    "scenario": "Communicate between local processes without a network port."
+   },
+   {
+    "title": "IP blocking",
+    "scenario": "Control access to selected IP addresses or ranges."
    }
   ],
   "related": [
-   "net.connect()",
-   "net.createConnection()",
-   "net.createServer()",
+   "net.BlockList",
+   "net.SocketAddress",
    "net.Server",
    "net.Socket",
-   "server.listen()",
-   "socket.connect()"
+   "net.BoundSocket",
+   "net.connect()",
+   "net.createConnection()",
+   "net.createServer()"
   ],
-  "since": "",
+  "since": "v0.1.90",
+  "interview": [
+   {
+    "question": "How do you create and start a TCP server?",
+    "answer": "Use net.createServer() to create a TCP or IPC server. Call server.listen() to start accepting connections, then handle each net.Socket in the connection listener.",
+    "followUp": "How can the server use an OS-assigned port? Pass 0 as the port and read server.address().port after listening."
+   },
+   {
+    "question": "What is net.Socket?",
+    "answer": "A net.Socket is a duplex stream, so it can both read incoming data and write outgoing data. The server receives one when its connection event fires, and a client gets one from net.createConnection().",
+    "followUp": "What does a false result from socket.write() mean? Some data is queued in user memory, and drain signals that the buffer has room again."
+   },
+   {
+    "question": "How does node:net support IPC?",
+    "answer": "The net module supports IPC through named pipes on Windows and Unix domain sockets on other systems. Use a path with server.listen() or net.connect() for these endpoints.",
+    "followUp": "What path rule applies on Unix? The pathname has a platform-dependent length limit, so long socket paths can fail."
+   }
+  ],
   "keyPoints": [
-   "Use this module for asynchronous, stream-based networking rather than request/response HTTP abstractions.",
-   "The module supports both TCP and IPC, with dedicated server and client factory APIs.",
-   "Import the built-in module with the `node:net` specifier.",
-   "`net.connect()` is an alias of `net.createConnection()`."
+   "Use node:net for asynchronous, stream-based TCP or IPC networking.",
+   "IPC uses named pipes on Windows and Unix domain sockets elsewhere.",
+   "A server's connection event provides the newly connected net.Socket.",
+   "A missing or zero port lets the operating system choose an available port.",
+   "socket.write() returns true when all data reached the kernel buffer; otherwise it queues data.",
+   "net.connect() creates a socket and applies its options to construction and connection."
   ],
   "gotchas": [
-   "For IPC, pass a filesystem path rather than a TCP port and host.",
-   "Omitting the host selects localhost for TCP connections; specify it explicitly when another interface or address is required."
+   "Read the server address only after the server emits listening.",
+   "server.close() stops new connections but waits for existing connections to end.",
+   "A socket timeout reports inactivity; it does not close the socket automatically."
   ],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-11-03"
  },
  "node:assert": {
   "sourceUrl": "https://nodejs.org/docs/latest/api/assert.html",
@@ -2248,6 +2789,102 @@
    "`assert.rejects()` is for asynchronous rejection; it waits for the promise before evaluating the expected error."
   ],
   "checkedAt": "2026-10-15"
+ },
+ "node:async_hooks": {
+  "sourceUrl": "https://nodejs.org/api/async_hooks.html",
+  "sourceTitle": "Async hooks | Node.js v26.13.0 Documentation",
+  "summary": "node:async_hooks lets you observe the life cycle of asynchronous resources. It is a low-level API; use AsyncLocalStorage for asynchronous context tracking.",
+  "explanation": "The module reports asynchronous resource life-cycle events. Create a hook with optional callbacks, then call enable() to receive events. init() reports creation, before() and after() surround callbacks, destroy() reports cleanup, and promiseResolve() reports promise resolution. Use AsyncLocalStorage instead when the goal is to keep context across asynchronous work.",
+  "syntax": "async_hooks.createHook(options)",
+  "parameters": [
+   {
+    "name": "options",
+    "type": "Object",
+    "description": "Object containing optional init, before, after, destroy, and promiseResolve callback functions."
+   },
+   {
+    "name": "asyncId",
+    "type": "number",
+    "description": "Unique number for the asynchronous resource."
+   },
+   {
+    "name": "type",
+    "type": "string",
+    "description": "Name identifying the asynchronous resource type."
+   },
+   {
+    "name": "triggerAsyncId",
+    "type": "number",
+    "description": "ID of the resource that caused this resource to be created."
+   },
+   {
+    "name": "resource",
+    "type": "Object",
+    "description": "Object representing the asynchronous operation."
+   }
+  ],
+  "returns": "createHook() returns an AsyncHook. enable() and disable() return the same AsyncHook. Hook callbacks return void.",
+  "example": {
+   "title": "Track asynchronous resources",
+   "code": "import { createHook } from \"node:async_hooks\";\nimport { writeSync } from \"node:fs\";\nimport { stdout } from \"node:process\";\n\nconst hook = createHook({\n  init(asyncId, type, triggerAsyncId) {\n    writeSync(stdout.fd, `${type} ${asyncId} <- ${triggerAsyncId}\\n`);\n  },\n  destroy(asyncId) {\n    writeSync(stdout.fd, `destroy ${asyncId}\\n`);\n  }\n}).enable();\n\nsetTimeout(() => {\n  hook.disable();\n}, 10);",
+   "language": "typescript",
+   "explanation": "This hook records resource creation and cleanup. Direct synchronous writes avoid the recursive activity that normal console output can cause inside hook callbacks."
+  },
+  "useCases": [
+   {
+    "title": "Resource life-cycle tracing",
+    "scenario": "Record when asynchronous resources are created and destroyed for diagnostics."
+   },
+   {
+    "title": "Async causality analysis",
+    "scenario": "Compare the current execution context with the resource that caused a callback."
+   },
+   {
+    "title": "Promise event observation",
+    "scenario": "Observe promise resolution events during low-level runtime investigation."
+   }
+  ],
+  "related": [
+   "AsyncLocalStorage",
+   "process.getActiveResourcesInfo()",
+   "executionAsyncId()",
+   "triggerAsyncId()",
+   "executionAsyncResource()",
+   "async_hooks.asyncWrapProviders"
+  ],
+  "since": "v8.1.0",
+  "interview": [
+   {
+    "question": "How do you start and stop an AsyncHook?",
+    "answer": "createHook() registers optional callbacks for asynchronous resource events. The hook is disabled at first, so enable() is required before callbacks run.",
+    "followUp": "What happens after disable()? The hook is removed from the callbacks that can run and stays inactive until enable() is called again."
+   },
+   {
+    "question": "What does init() report?",
+    "answer": "init() runs when a resource that may emit an asynchronous event is created. It receives a unique asyncId, a resource type, the ID that caused creation, and the resource object.",
+    "followUp": "Can init() be followed by before() and after()? No. A resource may be closed before its callback runs, so destroy() can occur without those callbacks."
+   },
+   {
+    "question": "How do executionAsyncId() and triggerAsyncId() differ?",
+    "answer": "executionAsyncId() identifies the context currently executing. triggerAsyncId() identifies the resource responsible for calling the current callback; these describe timing and causality, respectively.",
+    "followUp": "Which API is better for carrying application context? AsyncLocalStorage, because the documentation identifies it as the stable API for context tracking."
+   }
+  ],
+  "keyPoints": [
+   "Import node:async_hooks when you need to observe asynchronous resource life cycles.",
+   "Pass only the callbacks needed for your task. A cleanup-only hook can use destroy() alone.",
+   "Call enable() before expecting events. It returns the same AsyncHook object.",
+   "Use before() to mark the start of a resource callback. Handles may call it many times; requests normally call it once.",
+   "Use after() to mark the end of the resource callback.",
+   "Use promiseResolve() for promise resolution events. It is not a general callback for every resource."
+  ],
+  "gotchas": [
+   "Do not let a hook callback throw. Node.js exits the process when one does.",
+   "Do not make lifecycle callbacks async functions. Their returned promises can create more tracked resources.",
+   "Treat the resource argument as an internal object. Do not depend on undocumented properties or methods.",
+   "Prefer AsyncLocalStorage for asynchronous context and process.getActiveResourcesInfo() for active-resource information."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "node:buffer": {
   "sourceUrl": "https://nodejs.org/api/buffer.html",
@@ -2977,6 +3614,271 @@
   ],
   "checkedAt": "2026-10-15"
  },
+ "node:fs": {
+  "sourceUrl": "https://nodejs.org/learn/manipulating-files/reading-files-with-nodejs",
+  "sourceTitle": "Reading files with Node.js | Node.js Learn",
+  "summary": "Node.js can read files with callback, synchronous, or promise-based APIs. These APIs load the whole file into memory, so streams are better for large files.",
+  "explanation": "Node.js provides callback, synchronous, and promise-based ways to read files. The promise form reads the complete file before returning its contents, while a stream is better for large files.",
+  "syntax": "fs.readFile(path, encoding, callback)\nfs.readFileSync(path, encoding)\nfsPromises.readFile(path, options)",
+  "parameters": [
+   {
+    "name": "path",
+    "type": "string, Buffer, URL, or integer file descriptor",
+    "description": "The file path to read."
+   },
+   {
+    "name": "encoding/options",
+    "type": "string or object",
+    "description": "The text encoding, or an options object containing encoding."
+   },
+   {
+    "name": "callback",
+    "type": "function",
+    "description": "The completion function for the callback form."
+   }
+  ],
+  "returns": "The callback form calls its callback with an error and data. The synchronous form returns the file data. The promise form fulfills with the file data.",
+  "example": {
+   "title": "Read a text file",
+   "code": "import { readFile } from 'node:fs/promises';\n\ntry {\n  const text = await readFile('notes.txt', { encoding: 'utf8' });\n  console.log(text);\n} catch (error) {\n  console.error(error);\n}",
+   "language": "javascript",
+   "explanation": "This reads the whole file as a UTF-8 string and handles a read error."
+  },
+  "useCases": [
+   {
+    "title": "Asynchronous text reading",
+    "scenario": "Read a small text or configuration file without blocking the event loop."
+   },
+   {
+    "title": "Synchronous scripts",
+    "scenario": "Read a file in a short script where simple control flow matters more than concurrency."
+   },
+   {
+    "title": "Streaming large files",
+    "scenario": "Process a large file without loading all contents into memory."
+   }
+  ],
+  "related": [
+   "node:fs",
+   "node:fs/promises",
+   "fs.readFile",
+   "fs.readFileSync",
+   "fsPromises.readFile",
+   "fs.createReadStream"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you read a text file asynchronously with promises?",
+    "answer": "Use readFile from node:fs/promises when you want promise-based asynchronous code. Pass the path and an encoding such as utf8; the promise resolves with the file data.",
+    "followUp": "What should you use for a very large file? Use a readable stream so the application can process data in parts instead of loading the whole file at once."
+   },
+   {
+    "question": "How does the callback form report errors?",
+    "answer": "readFile takes a path, an encoding or options, and a callback. The callback receives an error first; on success, the error is null or undefined and the data contains the file contents.",
+    "followUp": "Why check the error before using data? A failed operation may not provide usable file data, so the error must be handled first."
+   },
+   {
+    "question": "How does readFileSync differ from readFile?",
+    "answer": "readFileSync returns the file contents directly and throws if the operation fails. Handle the exception with try...catch when the error must be managed.",
+    "followUp": "When can this form be acceptable? It can suit startup code or simple scripts, but it should not block an event-driven workload unnecessarily."
+   }
+  ],
+  "keyPoints": [
+   "Use fs.readFile() for callback-based asynchronous reads.",
+   "Use fs.readFileSync() when a direct, blocking result is suitable.",
+   "Use fs/promises readFile() with await for promise-based asynchronous code.",
+   "The callback is the last argument, and Node.js calls it after the asynchronous operation finishes.",
+   "Promise-based file operations finish by fulfilling a promise."
+  ],
+  "gotchas": [
+   "The complete file is loaded into memory. Use a stream when the file may be large.",
+   "Synchronous reads pause the event loop. Avoid them in code that must handle other work at the same time."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "node:fs/promises": {
+  "sourceUrl": "https://nodejs.org/docs/latest/api/fs.html",
+  "sourceTitle": "File system | Node.js v26.13.0 Documentation",
+  "summary": "Node.js fs/promises provides asynchronous file operations with promises. FileHandle methods let you open, read, write, stream, synchronize, and close files.",
+  "explanation": "A FileHandle represents an opened file. Its promise methods perform asynchronous file operations, such as reading data, changing metadata, or creating streams. Close the handle when work finishes. Some stream methods can close it automatically when configured to do so.",
+  "syntax": "import * as fs from \"node:fs/promises\";\nconst file = await fs.open(path, flags[, mode]);",
+  "parameters": [
+   {
+    "name": "path",
+    "type": "string | Buffer | URL",
+    "description": "File path or file URL to open."
+   },
+   {
+    "name": "flags",
+    "type": "string | number",
+    "description": "Open mode or flags, such as r for reading or w for writing."
+   },
+   {
+    "name": "mode",
+    "type": "number",
+    "description": "Optional file mode used when creating a file."
+   },
+   {
+    "name": "options",
+    "type": "object",
+    "description": "Options for a method, such as encoding, byte positions, autoClose, signal, or flush."
+   }
+  ],
+  "returns": "The documented FileHandle methods return Promises for asynchronous operations. readFile() fulfills with a Buffer or string, stream methods return streams, and close() fulfills with undefined on success.",
+  "example": {
+   "title": "Read and close a file handle",
+   "code": "import { open } from \"node:fs/promises\";\n\nconst file = await open(\"notes.txt\", \"r\");\ntry {\n  const text = await file.readFile({ encoding: \"utf8\" });\n  console.log(text);\n} finally {\n  await file.close();\n}",
+   "language": "javascript",
+   "explanation": "This opens a file, reads all remaining contents as text, and closes the file even if reading fails."
+  },
+  "useCases": [
+   {
+    "title": "Load file contents",
+    "scenario": "Read a complete file as bytes or text."
+   },
+   {
+    "title": "Create a read stream",
+    "scenario": "Process a file progressively instead of loading it all at once."
+   },
+   {
+    "title": "Create a write stream",
+    "scenario": "Write data while controlling the file position and close behavior."
+   },
+   {
+    "title": "Manage a FileHandle",
+    "scenario": "Ensure an opened file is released after asynchronous work."
+   }
+  ],
+  "related": [
+   "FileHandle",
+   "filehandle.close()",
+   "filehandle.createReadStream()",
+   "filehandle.createWriteStream()",
+   "filehandle.read()",
+   "filehandle.readFile()",
+   "filehandle.readableWebStream()",
+   "fsPromises.open()"
+  ],
+  "since": "v10.0.0",
+  "interview": [
+   {
+    "question": "What does filehandle.close() do?",
+    "answer": "filehandle.close() waits for pending operations on that handle and then closes it. It fulfills with undefined when successful.",
+    "followUp": "How should cleanup be handled if opening or reading fails? Store the handle after open succeeds and call close in a finally block, using optional chaining if opening might fail."
+   },
+   {
+    "question": "How does filehandle.readFile() return file data?",
+    "answer": "readFile() reads the file asynchronously. Without encoding it returns a Buffer; with an encoding it returns a string. It reads from the current file position when earlier reads changed that position.",
+    "followUp": "How can a caller control the destination memory? Pass a buffer, or pass a function that receives the file size and returns a buffer; a buffer that is too small causes failure."
+   },
+   {
+    "question": "How does filehandle.createReadStream() handle ranges and cleanup?",
+    "answer": "createReadStream() returns an fs.ReadStream and can read a byte range with inclusive start and end values. Its default autoClose behavior closes the descriptor on stream error or end.",
+    "followUp": "What happens when autoClose is false? The application must close the file descriptor itself, even when the stream errors."
+   }
+  ],
+  "keyPoints": [
+   "close() waits for work already submitted through the handle before releasing the file resource.",
+   "createReadStream() can select a byte range, and both boundary positions are included.",
+   "Promise APIs let you await completion and catch file-system errors with normal try/catch handling.",
+   "Stream encoding options use the encodings supported by Node.js Buffer.",
+   "Metadata operations such as chown() and datasync() resolve without a value when successful."
+  ],
+  "gotchas": [
+   "After using filehandle.read(), readFile() starts at the handle’s current position rather than necessarily at byte zero.",
+   "With autoClose disabled on a file stream, your code must close the descriptor, including after errors, or it can leak a file descriptor.",
+   "A FileHandle can create only one readable Web stream, and it must not already be closed or closing."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "node:http": {
+  "sourceUrl": "https://nodejs.org/api/http.html",
+  "sourceTitle": "HTTP | Node.js v26.13.0 Documentation",
+  "summary": "`node:http` provides low-level HTTP client and server APIs. It uses streams, so requests and responses do not need to be buffered in full.",
+  "explanation": "The `node:http` module provides low-level HTTP client and server APIs. It parses messages into headers and bodies and uses streams, so applications can handle large messages without buffering a complete request or response.",
+  "syntax": "import http from 'node:http';\nconst server = http.createServer((request, response) => {});\nconst request = http.request(options[, callback]);\nconst request = http.get(options[, callback]);",
+  "parameters": [
+   {
+    "name": "options / url",
+    "type": "Object | string | URL",
+    "description": "Options or a URL describing the request, plus an optional response callback."
+   },
+   {
+    "name": "callback",
+    "type": "Function",
+    "description": "Optional function called when the response is received."
+   }
+  ],
+  "returns": "`http.request()` returns an `http.ClientRequest`; `http.get()` also returns a request and calls `request.end()` automatically. `http.createServer()` returns an HTTP server.",
+  "example": {
+   "title": "Create a server and make a request",
+   "code": "import http from 'node:http';\n\nconst server = http.createServer((request, response) => {\n  response.writeHead(200, {'Content-Type': 'text/plain'});\n  response.end('Hello');\n});\n\nserver.listen(3000, '127.0.0.1', () => {\n  http.get('http://127.0.0.1:3000', (response) => {\n    response.setEncoding('utf8');\n    response.on('data', (chunk) => process.stdout.write(chunk));\n    response.on('end', () => server.close());\n  });\n});",
+   "language": "typescript",
+   "explanation": "This starts an HTTP server, sends a plain-text response, then makes a request to that server and prints the response."
+  },
+  "useCases": [
+   {
+    "title": "HTTP server",
+    "scenario": "Build a small HTTP service that receives requests and sends status codes, headers, and body data."
+   },
+   {
+    "title": "HTTP client",
+    "scenario": "Call an HTTP endpoint and consume its response as a stream."
+   },
+   {
+    "title": "Connection pooling",
+    "scenario": "Reuse TCP connections for multiple requests to the same host and port."
+   },
+   {
+    "title": "Tunnels and upgrades",
+    "scenario": "Handle HTTP CONNECT or protocol upgrade traffic using the underlying duplex stream."
+   }
+  ],
+  "related": [
+   "http.Agent",
+   "http.createServer()",
+   "http.get()",
+   "http.request()",
+   "http.IncomingMessage",
+   "http.ServerResponse",
+   "request.destroy()",
+   "request.setTimeout()"
+  ],
+  "since": "v0.1.0",
+  "interview": [
+   {
+    "question": "What does `node:http` provide?",
+    "answer": "The module exposes low-level HTTP client and server APIs. It handles stream processing and message parsing, but it does not parse the actual header values or body format.",
+    "followUp": "How can an application process a large request body? Read the request stream incrementally instead of collecting the entire body first."
+   },
+   {
+    "question": "What is the role of `http.Agent`?",
+    "answer": "An `http.Agent` manages client connection persistence and reuse. It queues pending requests by host and port and can keep idle sockets in a pool when `keepAlive` is enabled.",
+    "followUp": "Why can a reused request still fail with `ECONNRESET`? The server may close the connection just as the agent reuses it."
+   },
+   {
+    "question": "Which client events handle HTTP responses and upgrades?",
+    "answer": "The `response` event is emitted once when a response arrives. A 1xx response uses the `information` event, while a 101 protocol switch uses `upgrade` instead.",
+    "followUp": "What should a client do with the stream from `upgrade`? Handle it as the new protocol connection and consume or write its data."
+   }
+  ],
+  "keyPoints": [
+   "Import `node:http` to use both HTTP client and server features.",
+   "HTTP data is streamed instead of being buffered as one complete message.",
+   "Use `rawHeaders` when you need the original header names and ordering.",
+   "Use an agent to control how client connections are queued, reused, and pooled.",
+   "A client request emits `response` once when the server sends its main response.",
+   "Listen for `information` to receive intermediate 1xx responses other than 101."
+  ],
+  "gotchas": [
+   "Header names in the parsed header object are lowercase. Header values keep their received values.",
+   "A request timeout only reports socket inactivity. Destroy the request yourself when the timeout handler runs.",
+   "Do not use the deprecated `request.abort()` method. Destroy the request instead.",
+   "If a client expects protocol upgrades, listen for the `upgrade` event or Node.js closes the connection for a 101 response."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "node:https": {
   "sourceUrl": "https://nodejs.org/api/https.html",
   "sourceTitle": "HTTPS | Node.js v26.11.1 Documentation",
@@ -3057,6 +3959,102 @@
    "TLS-related options are accepted, but unsafe certificate-validation changes should be considered carefully."
   ],
   "checkedAt": "2026-10-15"
+ },
+ "node:module": {
+  "sourceUrl": "https://nodejs.org/api/module.html",
+  "sourceTitle": "Modules: `node:module` API | Node.js v26.13.0 Documentation",
+  "summary": "The `node:module` API provides utilities for working with Node.js modules. It can test built-in modules, create `require` in ES modules, locate package files, strip TypeScript types, and customize loading.",
+  "explanation": "The `node:module` API provides tools for working with Node.js modules. It includes functions for finding built-in modules, creating a `require` function in an ES module, finding package files, and changing module loading behavior.",
+  "syntax": "import module from 'node:module';\nmodule.isBuiltin(moduleName);\nmodule.createRequire(filename);\nmodule.findPackageJSON(specifier[, base]);\nmodule.registerHooks(options);",
+  "parameters": [
+   {
+    "name": "moduleName",
+    "type": "string",
+    "description": "The module name to test."
+   },
+   {
+    "name": "filename",
+    "type": "string | URL",
+    "description": "A file URL, file URL string, or absolute path used as the basis for the returned `require` function."
+   },
+   {
+    "name": "specifier",
+    "type": "string | URL",
+    "description": "The module specifier whose package.json path should be found."
+   },
+   {
+    "name": "base",
+    "type": "string | URL",
+    "description": "The containing module location. Use `import.meta.url` in ES modules or `__filename` in CommonJS."
+   }
+  ],
+  "returns": "`isBuiltin()` returns boolean. `createRequire()` returns a `require` function. `findPackageJSON()` returns a path string or `undefined. `stripTypeScriptTypes()` returns transformed JavaScript text. Other listed APIs return arrays or no value as documented.",
+  "example": {
+   "title": "Check for a built-in module",
+   "code": "import { isBuiltin } from \"node:module\";\n\nconsole.log(isBuiltin(\"node:fs\")); // true\nconsole.log(isBuiltin(\"my-package\")); // false",
+   "language": "javascript",
+   "explanation": "This checks whether each module name is provided by Node.js itself."
+  },
+  "useCases": [
+   {
+    "title": "Create a require function",
+    "scenario": "An ES module must load a CommonJS dependency with `require`."
+   },
+   {
+    "title": "Identify built-in modules",
+    "scenario": "A tool needs to distinguish Node.js modules from third-party packages."
+   },
+   {
+    "title": "Find package metadata",
+    "scenario": "A package tool needs the location of a package's `package.json`."
+   },
+   {
+    "title": "Customize module loading",
+    "scenario": "A runtime needs to rewrite or redirect module loading."
+   }
+  ],
+  "related": [
+   "Module",
+   "module.builtinModules",
+   "module.createRequire()",
+   "module.findPackageJSON()",
+   "module.isBuiltin()",
+   "module.register()",
+   "module.registerHooks()",
+   "module.stripTypeScriptTypes()"
+  ],
+  "since": "v18.6.0, v16.17.0",
+  "interview": [
+   {
+    "question": "Why would you use `module.createRequire()` in an ES module?",
+    "answer": "`createRequire()` builds a `require` function from a file URL or an absolute path. In an ES module, pass `import.meta.url` when you need to load a CommonJS module or use CommonJS resolution.",
+    "followUp": "Can custom asynchronous hooks change this function? No. The documentation says user-created `require` functions are customizable only by synchronous hooks."
+   },
+   {
+    "question": "How can code detect a built-in Node.js module?",
+    "answer": "`builtinModules` is an array containing the names of modules supplied by Node.js. `isBuiltin(name)` is the direct boolean test for whether one module name is built in.",
+    "followUp": "What changed for `builtinModules` in Node.js 23.5.0? It began including prefix-only modules such as `node:test`."
+   },
+   {
+    "question": "How do synchronous module customization hooks work?",
+    "answer": "`registerHooks()` installs synchronous `resolve` and `load` hooks on the current thread. Hooks form a chain, and each hook normally calls its `next...` function so later hooks and the default resolver can run.",
+    "followUp": "Which hook runs first when registering twice? The most recently registered hook runs first, so the chain is last in, first out."
+   }
+  ],
+  "keyPoints": [
+   "`builtinModules` lists module names supplied by Node.js. Use it when you need the complete list.",
+   "`createRequire(filename)` accepts a file URL, a file URL string, or an absolute path and returns a `require` function.",
+   "`isBuiltin(moduleName)` returns a boolean that directly reports whether the supplied module name is built in.",
+   "`findPackageJSON()` returns the nearest or package-root `package.json` path, depending on whether the specifier is relative, absolute, or bare.",
+   "Use `registerHooks()` with `resolve` and `load` functions when module resolution or loading must be customized synchronously.",
+   "`stripTypeScriptTypes()` can remove type annotations, or transform supported TypeScript features when its mode is `transform`."
+  ],
+  "gotchas": [
+   "Do not use `findPackageJSON()` to decide whether a module uses CommonJS or ES modules. The package file is only one part of that decision.",
+   "The result of `stripTypeScriptTypes()` can change between Node.js versions because its TypeScript parser can change.",
+   "`syncBuiltinESMExports()` updates existing live bindings, but it does not add new exports or remove exports from the ES module."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "node:net": {
   "sourceUrl": "https://nodejs.org/api/net.html",
@@ -3400,6 +4398,82 @@
   ],
   "checkedAt": "2026-10-15"
  },
+ "node:process": {
+  "sourceUrl": "https://beta.docs.nodejs.org/process",
+  "sourceTitle": "Process | Node.js 26.13.0 Documentation",
+  "summary": "The global `process` object provides information about and control over the current Node.js process. It is also an EventEmitter for process lifecycle and error events.",
+  "explanation": "The global `process` object describes and controls the running Node.js process. It is an EventEmitter, so you can listen for lifecycle events such as `beforeExit`, `exit`, promise rejection events, and uncaught exceptions.",
+  "syntax": "import process from 'node:process';\nconst process = require('node:process');",
+  "parameters": [],
+  "returns": "An object representing the current Node.js process.",
+  "example": {
+   "title": "Observe process shutdown",
+   "code": "import process from 'node:process';\n\nprocess.on('beforeExit', (code) => {\n  console.log(`Event loop is empty. Exit code: ${code}`);\n});\n\nprocess.on('exit', (code) => {\n  console.log(`Exiting with code: ${code}`);\n});",
+   "language": "javascript",
+   "explanation": "This logs the exit code when Node.js has no more work and again just before the process ends."
+  },
+  "useCases": [
+   {
+    "title": "Observe shutdown",
+    "scenario": "A script needs to record its final status."
+   },
+   {
+    "title": "Monitor promise failures",
+    "scenario": "An application needs to track rejected promises."
+   },
+   {
+    "title": "Handle fatal errors",
+    "scenario": "A service needs last-resort synchronous cleanup after an uncaught error."
+   },
+   {
+    "title": "Receive process messages",
+    "scenario": "A child process uses an IPC channel."
+   }
+  ],
+  "related": [
+   "process.exitCode",
+   "process.exit()",
+   "process.on()",
+   "beforeExit",
+   "exit",
+   "unhandledRejection",
+   "rejectionHandled",
+   "uncaughtException"
+  ],
+  "since": "v0.10.0",
+  "interview": [
+   {
+    "question": "When does `beforeExit` run, and can it delay shutdown?",
+    "answer": "`beforeExit` runs when the event loop has no more scheduled work. Its listener can schedule asynchronous work, which can keep the process running. It is not emitted for explicit termination or uncaught exceptions.",
+    "followUp": "How does it differ from `exit`? `exit` runs after the process is committed to ending and cannot be delayed by asynchronous work."
+   },
+   {
+    "question": "What restrictions apply to an `exit` listener?",
+    "answer": "`exit` runs when the process is about to terminate because `process.exit()` was called or because the event loop has no more work. Its callback receives the exit code, but it must perform only synchronous operations.",
+    "followUp": "What happens to a timer created in the listener? The process ends immediately after the listeners finish, so the timer callback does not run."
+   },
+   {
+    "question": "What is the default behavior for an uncaught exception?",
+    "answer": "An uncaught exception normally prints its stack trace to standard error and ends the process with code 1. Adding an `uncaughtException` listener changes that default, so it should be used only for synchronous cleanup before shutdown.",
+    "followUp": "How can an application recover reliably? Use an external monitor in another process to detect failure and restart the application."
+   }
+  ],
+  "keyPoints": [
+   "Import `node:process` to inspect or control the current Node.js process.",
+   "Register listeners with `process.on(eventName, callback)`.",
+   "A `beforeExit` listener may schedule more asynchronous work and keep the process alive.",
+   "Use `exit` to perform final synchronous actions before termination.",
+   "Listen for `unhandledRejection` to track rejected promises without a handler within one event-loop turn.",
+   "A later error handler can cause `rejectionHandled` after the rejection was reported as unhandled.",
+   "Use `uncaughtException` as a last-resort signal for uncaught synchronous errors."
+  ],
+  "gotchas": [
+   "Use only synchronous work in an `exit` listener. Asynchronous callbacks will not run.",
+   "An `uncaughtExceptionMonitor` listener records an error but does not stop the process from crashing.",
+   "Treat an uncaught exception as a fatal state. Clean up synchronously, then shut down."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "node:querystring": {
   "sourceUrl": "https://nodejs.org/api/querystring.html",
   "sourceTitle": "Query Strings",
@@ -3491,6 +4565,102 @@
    "Parsing is not a general URL parser: provide the query-string portion rather than a complete URL."
   ],
   "checkedAt": "2026-10-15"
+ },
+ "node:readline": {
+  "sourceUrl": "https://nodejs.org/api/readline.html",
+  "sourceTitle": "Readline | Node.js v26.13.0 Documentation",
+  "summary": "Node.js readline reads a Readable stream one line at a time. It supports interactive prompts, line events, command history, completion, and promise-based or callback APIs.",
+  "explanation": "Create an interface with an input Readable stream and, when needed, an output Writable stream. Read lines with the line event or an async iteration loop. Close the interface after interactive work so the process can finish.",
+  "syntax": "readline.createInterface(options)\nreadlinePromises.createInterface(options)",
+  "parameters": [
+   {
+    "name": "input",
+    "type": "Readable",
+    "description": "The Readable stream that supplies input."
+   },
+   {
+    "name": "output",
+    "type": "Writable",
+    "description": "The Writable stream used to display prompts and terminal output."
+   },
+   {
+    "name": "crlfDelay",
+    "type": "number",
+    "description": "A number used to recognize a CRLF pair as one line break; Infinity recognizes all CRLF pairs."
+   },
+   {
+    "name": "signal",
+    "type": "AbortSignal",
+    "description": "An AbortSignal that closes the interface when aborted."
+   }
+  ],
+  "returns": "createInterface() returns a readline.Interface or readlinePromises.Interface, depending on the module used.",
+  "example": {
+   "title": "Read a file line by line",
+   "code": "import { createReadStream } from 'node:fs';\nimport { createInterface } from 'node:readline';\n\nconst rl = createInterface({\n  input: createReadStream('input.txt'),\n  crlfDelay: Infinity,\n});\n\nfor await (const line of rl) {\n  console.log(line);\n}",
+   "language": "javascript",
+   "explanation": "Reads input.txt one line at a time and prints each line."
+  },
+  "useCases": [
+   {
+    "title": "Interactive command-line prompts",
+    "scenario": "Read terminal input and respond after Enter."
+   },
+   {
+    "title": "Line-by-line file processing",
+    "scenario": "Process a large text file without reading it all at once."
+   },
+   {
+    "title": "Command completion",
+    "scenario": "Provide command suggestions as a user types."
+   },
+   {
+    "title": "Input history",
+    "scenario": "Save or filter previously entered commands."
+   }
+  ],
+  "related": [
+   "readline.Interface",
+   "readlinePromises.Interface",
+   "readline.createInterface()",
+   "readlinePromises.createInterface()",
+   "rl.question()",
+   "'line' event",
+   "'close' event",
+   "readline.emitKeypressEvents()"
+  ],
+  "since": "v0.10.0",
+  "interview": [
+   {
+    "question": "What does the Node.js readline module do?",
+    "answer": "The module reads a Readable stream one line at a time. createInterface() connects the input stream and can also use an output stream for prompts.",
+    "followUp": "How can a large file be processed without loading it all into memory? Create an interface over createReadStream() and handle each line with for await...of or the line event."
+   },
+   {
+    "question": "When is the line event emitted?",
+    "answer": "createInterface() returns a readline.Interface. The line event fires for newline characters and also for remaining data when the stream ends without a final newline.",
+    "followUp": "Which option helps with Windows-style line endings? Use crlfDelay: Infinity so CRLF is recognized as one line break."
+   },
+   {
+    "question": "How do the promise and callback APIs differ?",
+    "answer": "The promise API is provided by node:readline/promises, while callback and synchronous APIs are provided by node:readline. The promise interface lets question() be awaited.",
+    "followUp": "How should an interactive interface be finished? Call rl.close(), or use an AbortSignal through the signal option to close it when aborted."
+   }
+  ],
+  "keyPoints": [
+   "readline is useful for consuming terminal input, file streams, and other Readable streams one line at a time.",
+   "Each interface has one input stream and one output stream. The output is used for prompts.",
+   "The line event handles \\n, \\r, and \\r\\n endings, and supplies the received line as a string.",
+   "The history event can be used to save or filter interactive command history.",
+   "A completer receives the current partial line and returns matching entries plus the substring used for matching.",
+   "Use node:readline/promises when you want the promise-based Interface API."
+  ],
+  "gotchas": [
+   "An interface using standard input keeps the process running until it receives EOF. Call process.stdin.unref() when the program must exit without waiting.",
+   "Set crlfDelay to Infinity when reading files that may contain CRLF line endings. This treats each CRLF pair as one line break.",
+   "Listen for the error event when the input stream can fail. Its listener receives the Error object."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "node:stream": {
   "sourceUrl": "https://nodejs.org/docs/latest/api/stream.html",
@@ -4084,6 +5254,94 @@
   ],
   "checkedAt": "2026-10-15"
  },
+ "node:v8": {
+  "sourceUrl": "https://beta.docs.nodejs.org/v8",
+  "sourceTitle": "V8 | Node.js 26.13.0 Documentation",
+  "summary": "The `node:v8` module provides APIs tied to the V8 engine used by Node.js. It supports heap inspection, snapshots, coverage, serialization, profiling, and promise lifecycle hooks.",
+  "explanation": "The `node:v8` module exposes APIs for the V8 engine used by Node.js. `getHeapStatistics()` returns a snapshot of heap-wide memory statistics, while related APIs provide information about individual heap spaces or heap code.",
+  "syntax": "import v8 from 'node:v8';\nconst v8 = require('node:v8');",
+  "parameters": [
+   {
+    "name": "options",
+    "type": "Object",
+    "description": "Optional settings for the heap snapshot, such as exposing internals or numeric values."
+   },
+   {
+    "name": "limit",
+    "type": "integer",
+    "description": "The maximum number of heap snapshots to keep near the heap limit."
+   }
+  ],
+  "returns": "This card covers several `node:v8` APIs. Return types include integers, objects, arrays of objects, readable streams, and void, depending on the API.",
+  "example": {
+   "title": "Read V8 heap statistics",
+   "code": "import { getHeapStatistics } from 'node:v8';\n\nconsole.log(getHeapStatistics());",
+   "language": "javascript",
+   "explanation": "This prints an object containing statistics about the V8 heap."
+  },
+  "useCases": [
+   {
+    "title": "Inspect heap memory",
+    "scenario": "Find memory usage by heap area while diagnosing leaks or growth."
+   },
+   {
+    "title": "Capture a heap snapshot",
+    "scenario": "Create a heap snapshot for offline memory analysis."
+   },
+   {
+    "title": "Collect coverage on demand",
+    "scenario": "Write runtime coverage data when a test or diagnostic phase ends."
+   },
+   {
+    "title": "Track promise activity",
+    "scenario": "Observe promise lifecycle events for low-level async diagnostics."
+   }
+  ],
+  "related": [
+   "v8.getHeapCodeStatistics",
+   "v8.getHeapSnapshot",
+   "v8.getHeapSpaceStatistics",
+   "v8.cachedDataVersionTag",
+   "v8.takeCoverage",
+   "v8.stopCoverage",
+   "v8.writeHeapSnapshot",
+   "promiseHooks"
+  ],
+  "since": "v4.0.0",
+  "interview": [
+   {
+    "question": "What is the purpose of the `node:v8` module?",
+    "answer": "The `node:v8` module gives access to APIs tied to the V8 engine in the Node.js binary. It includes memory statistics, heap snapshots, coverage controls, serialization, and profiling APIs.",
+    "followUp": "Why can code using this module be version-sensitive? Its behavior and data can depend on the V8 version bundled with Node.js."
+   },
+   {
+    "question": "How do heap-wide and heap-space statistics differ?",
+    "answer": "`getHeapStatistics()` returns an object with overall V8 heap statistics. `getHeapSpaceStatistics()` returns an array with statistics for individual heap spaces.",
+    "followUp": "Can the array order from `getHeapSpaceStatistics()` be used as a stable interface? No. The documentation says neither ordering nor space availability is guaranteed."
+   },
+   {
+    "question": "What are the main costs of creating a heap snapshot?",
+    "answer": "A heap snapshot shows the heap at a point in time and can help investigate memory use. Creating one needs memory roughly twice the heap size and synchronously blocks the event loop.",
+    "followUp": "How should an application account for worker threads? A snapshot from one isolate does not include information from other worker isolates, so each relevant worker must create its own snapshot."
+   }
+  ],
+  "keyPoints": [
+   "Import the module with `node:v8` to use Node.js APIs specific to its bundled V8 engine.",
+   "`getHeapSpaceStatistics()` reports data for the separate segments that make up the V8 heap.",
+   "`getHeapCodeStatistics()` reports memory used by code and related metadata.",
+   "`cachedDataVersionTag()` creates a compatibility tag from the V8 version, flags, and CPU features.",
+   "`takeCoverage()` writes the current coverage data to the directory named by `NODE_V8_COVERAGE`.",
+   "`stopCoverage()` ends coverage collection and lets V8 release execution-count records.",
+   "`promiseHooks` can observe lifecycle events produced by promises."
+  ],
+  "gotchas": [
+   "These APIs depend on the V8 version included in the Node.js binary.",
+   "Do not rely on heap-space order or assume that every space exists.",
+   "Do not build tools that require a fixed heap-snapshot schema.",
+   "Heap snapshots can pause event processing while they are created."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "node:vm": {
   "sourceUrl": "https://nodejs.org/api/vm.html",
   "sourceTitle": "VM (Executing JavaScript) | Node.js v26.12.0 Documentation",
@@ -4259,6 +5517,87 @@
   ],
   "checkedAt": "2026-10-15"
  },
+ "node:zlib": {
+  "sourceUrl": "https://nodejs.org/api/zlib.html",
+  "sourceTitle": "Zlib | Node.js v26.13.0 Documentation",
+  "summary": "The node:zlib module compresses and decompresses data with Gzip, Deflate/Inflate, Brotli, and Zstd. It supports both streams and one-step buffer operations.",
+  "explanation": "The module offers stream-based and one-step compression and decompression. A zlib transform receives data, processes it, and sends the result to another stream; one-step functions instead return a buffer through a callback or a promise made with promisify.",
+  "syntax": "import zlib from 'node:zlib';\nconst zlib = require('node:zlib');",
+  "parameters": [
+   {
+    "name": "options",
+    "type": "object",
+    "description": "Optional settings for the selected compressor or decompressor, such as compression behavior."
+   }
+  ],
+  "returns": "Stream APIs return zlib Transform streams. One-step asynchronous APIs provide a Buffer through a callback; they can also be promisified.",
+  "example": {
+   "title": "Compress a file with gzip",
+   "code": "import { createReadStream, createWriteStream } from 'node:fs';\nimport { createGzip } from 'node:zlib';\nimport { pipeline } from 'node:stream/promises';\n\nawait pipeline(\n  createReadStream('input.txt'),\n  createGzip(),\n  createWriteStream('input.txt.gz'),\n);",
+   "language": "javascript",
+   "explanation": "This reads input.txt, compresses its data with gzip, and writes the result to input.txt.gz."
+  },
+  "useCases": [
+   {
+    "title": "Stream compression",
+    "scenario": "A file or network body must be processed without loading it all into memory."
+   },
+   {
+    "title": "Buffer compression",
+    "scenario": "A complete buffer must be compressed or decompressed in one operation."
+   },
+   {
+    "title": "HTTP content encoding",
+    "scenario": "An HTTP server or client needs standard content encodings."
+   },
+   {
+    "title": "Low-latency output",
+    "scenario": "A partial compressed response should be sent before the stream ends."
+   }
+  ],
+  "related": [
+   "createGzip",
+   "createGunzip",
+   "createDeflate",
+   "createInflate",
+   "createBrotliCompress",
+   "createBrotliDecompress",
+   "createZstdCompress",
+   "createZstdDecompress"
+  ],
+  "since": "v0.10.0",
+  "interview": [
+   {
+    "question": "How do you compress a file with node:zlib?",
+    "answer": "Use createGzip() or another transform for streaming data through Node.js streams. For a complete buffer, use a one-step function such as deflate() and handle its callback or promisify it.",
+    "followUp": "Why can streaming be preferable for a file? It processes data through the Streams API instead of requiring the whole file in one buffer."
+   },
+   {
+    "question": "How is zlib used with HTTP compression?",
+    "answer": "The client lists supported encodings in Accept-Encoding. The server chooses one, sets Content-Encoding, and sends data through the matching compressor; Vary should include Accept-Encoding.",
+    "followUp": "How should a server avoid repeated work? Keep compressed and uncompressed versions, or cache compressed results."
+   },
+   {
+    "question": "What does flush() do on a compression stream?",
+    "answer": "Calling flush() asks the compression stream to emit as much output as it can currently produce. It is useful for partial responses that must reach the client quickly, but can reduce compression quality.",
+    "followUp": "What trade-off does flush() make? Lower buffering can improve latency while producing less efficient compression."
+   }
+  ],
+  "keyPoints": [
+   "node:zlib supports Gzip, Deflate/Inflate, Brotli, and Zstd compression.",
+   "Transform streams let you compress or decompress data as it flows between streams.",
+   "One-step functions can process a complete string or buffer and return compressed data.",
+   "HTTP clients use Accept-Encoding to list compression formats they can read.",
+   "Servers use Content-Encoding to tell the client which format was applied."
+  ],
+  "gotchas": [
+   "Most zlib operations use the internal threadpool. Starting many at once can affect performance.",
+   "Do not create thousands of zlib objects concurrently. This can fragment memory.",
+   "Cache compressed results when possible, instead of compressing the same data repeatedly.",
+   "flush() makes pending compressed data available sooner, but it can reduce compression quality."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "os": {
   "sourceUrl": "https://nodejs.org/api/os.html",
   "sourceTitle": "OS | Node.js v26.12.0 Documentation",
@@ -4413,71 +5752,90 @@
  },
  "performance": {
   "sourceUrl": "https://nodejs.org/api/perf_hooks.html",
-  "sourceTitle": "Performance measurement APIs | Node.js v26.10.0 Documentation",
-  "summary": "Node.js’s `performance` object provides high-resolution timing and Performance Timeline operations for measuring code and inspecting runtime metrics.",
-  "explanation": "The `performance` object from `node:perf_hooks` exposes high-resolution timing and the Performance Timeline for the current Node.js process. Record marks, create measures between them, inspect entries, and clear entries when they are no longer needed.",
-  "syntax": "import { performance } from 'node:perf_hooks';",
+  "sourceTitle": "Performance measurement APIs | Node.js v26.13.0 Documentation",
+  "summary": "Node.js performance APIs record high-resolution timing data. Use marks for points in time and measures for elapsed durations between marks.",
+  "explanation": "Use the `node:perf_hooks` performance object to record marks and measures, inspect performance entries, and read high-resolution elapsed time. Marks record points in time; measures calculate the milliseconds between marks or between a mark and the current time.",
+  "syntax": "import { performance } from 'node:perf_hooks';\nperformance.mark(name[, options]);\nperformance.measure(name[, startMarkOrOptions[, endMark]]);",
   "parameters": [
    {
     "name": "name",
     "type": "string",
-    "description": "Name of the mark or measure entry; measure calls may also accept start and end mark names."
+    "description": "The required name for a performance mark or measure."
    },
    {
-    "name": "startMark",
-    "type": "string",
-    "description": "Optional starting mark name or timing point for a measure."
+    "name": "startMarkOrOptions",
+    "type": "string | Object",
+    "description": "An optional mark name, timestamp, or options object used as the measure start."
    },
    {
     "name": "endMark",
     "type": "string",
-    "description": "Optional ending mark name or timing point for a measure."
+    "description": "An optional mark name used as the measure end."
    }
   ],
-  "returns": "A Performance object that provides timing methods and access to entries in the Performance Timeline.",
+  "returns": "performance.now() returns a number of milliseconds. The entry-query methods return arrays of PerformanceEntry objects. performance.mark() and performance.measure() add entries to the performance timeline.",
   "example": {
-   "title": "Measure an asynchronous operation",
-   "code": "import { performance } from 'node:perf_hooks';\n\nperformance.mark('start');\nawait new Promise((resolve) => setTimeout(resolve, 20));\nperformance.mark('end');\nperformance.measure('work', 'start', 'end');\n\nconst [entry] = performance.getEntriesByName('work');\nconsole.log(`${entry.name}: ${entry.duration.toFixed(2)} ms`);",
+   "title": "Measure elapsed time",
+   "code": "import { performance } from 'node:perf_hooks';\n\nperformance.mark('start');\nawait new Promise((resolve) => setTimeout(resolve, 20));\nperformance.mark('end');\nperformance.measure('work', 'start', 'end');\n\nconst result = performance.getEntriesByName('work')[0];\nconsole.log(`${result.name}: ${result.duration.toFixed(2)} ms`);\nperformance.clearMarks();\nperformance.clearMeasures();",
    "language": "javascript",
-   "explanation": "Creates marks around asynchronous work, measures the interval, and prints the resulting duration."
+   "explanation": "This records two marks, measures the time between them, reads the measure, and then removes the entries."
   },
   "useCases": [
    {
-    "title": "Benchmark an operation",
-    "scenario": "Measure the duration of synchronous or asynchronous application work."
+    "title": "Measure async work",
+    "scenario": "Find how long an asynchronous task takes by marking before and after an await."
    },
    {
-    "title": "Trace lifecycle phases",
-    "scenario": "Mark phases such as initialization, request handling, and shutdown."
+    "title": "Filter recorded entries",
+    "scenario": "Inspect only measures with a known name or entry type."
    },
    {
-    "title": "Instrument runtime behavior",
-    "scenario": "Collect and inspect timing entries for diagnostics or instrumentation."
+    "title": "Observe performance data",
+    "scenario": "Send timing entries to monitoring code as they are created."
    }
   ],
   "related": [
-   "PerformanceEntry",
-   "PerformanceMark",
-   "PerformanceMeasure",
-   "PerformanceObserver",
+   "node:perf_hooks",
    "performance.mark()",
    "performance.measure()",
    "performance.now()",
-   "performance.getEntriesByName()"
+   "performance.getEntries()",
+   "PerformanceObserver",
+   "PerformanceEntry",
+   "performance.clearMarks()"
   ],
-  "since": "",
+  "since": "v8.5.0",
+  "interview": [
+   {
+    "question": "What does performance.now() return?",
+    "answer": "performance.now() returns a high-resolution time in milliseconds. Zero represents the start of the current Node.js process, so subtracting two readings gives elapsed process time.",
+    "followUp": "How would you measure a named operation? Record marks with performance.mark(), then call performance.measure() and read the resulting PerformanceEntry."
+   },
+   {
+    "question": "How do marks and measures differ?",
+    "answer": "performance.mark() creates a mark entry with entryType 'mark' and duration 0. performance.measure() creates a measure entry whose duration is the time between its start and end.",
+    "followUp": "What happens when the end mark is omitted? Node.js uses performance.now() as the end time."
+   },
+   {
+    "question": "How can performance entries be inspected?",
+    "answer": "Performance entries can be read with getEntries(), getEntriesByName(), or getEntriesByType(). A PerformanceObserver can receive entries such as measures asynchronously.",
+    "followUp": "How can timeline memory be controlled? Clear processed marks and measures with clearMarks() and clearMeasures()."
+   }
+  ],
   "keyPoints": [
-   "`performance` is the central object for collecting timing information from the running Node.js process.",
-   "Its programming model resembles the browser Performance API, making familiar marks, measures, and timeline queries available in Node.js.",
-   "`performance.now()` gives a high-resolution elapsed-time value in milliseconds relative to process start.",
-   "Use `performance.mark()` to record named points that can later define measurement boundaries.",
-   "Use `performance.measure()` to create a duration entry between marks or other supported timing points.",
-   "Timeline entries can be retrieved through the performance entry-query methods, including filtering by name or type."
+   "The performance object collects measurements from the current Node.js process.",
+   "performance.now() gives an elapsed timestamp in high-resolution milliseconds.",
+   "performance.mark(name) records a named point in the performance timeline.",
+   "performance.measure() records the elapsed milliseconds between its start and end.",
+   "getEntries() returns all entries ordered by their start time.",
+   "getEntriesByName() filters entries by name and can also filter by type."
   ],
   "gotchas": [
-   "Performance entries remain available until explicitly cleared; remove them after collecting results when long-running processes could accumulate measurements."
+   "In current Node.js versions, performance.mark() requires a name.",
+   "A measure fails when its named start mark is missing.",
+   "Clear marks and measures after processing them so the timeline does not keep old entries."
   ],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-11-03"
  },
  "pipeline": {
   "sourceUrl": "https://nodejs.org/docs/latest/api/stream.html",
@@ -4629,6 +5987,69 @@
    "Although process is globally available, ordinary top-level variables in a Node.js module are not automatically global."
   ],
   "checkedAt": "2026-10-15"
+ },
+ "process.argv": {
+  "sourceUrl": "https://nodejs.org/docs/latest/api/process.html",
+  "sourceTitle": "Process | Node.js v26.13.0 Documentation",
+  "summary": "`process.argv` is a string array of the values used to start a Node.js process. The first entries describe Node.js and the entry point; later entries are application arguments.",
+  "explanation": "Node.js stores launch arguments in the `process.argv` array. Index 0 is the Node.js executable, index 1 is the absolute entry-point path when one was provided, and later indexes contain arguments passed to the program.",
+  "syntax": "process.argv",
+  "parameters": [],
+  "returns": "A `string[]` array containing the command-line arguments passed when the Node.js process was launched.",
+  "example": {
+   "title": "Read extra command-line arguments",
+   "code": "import { argv } from 'node:process';\n\nconst userArguments = argv.slice(2);\nconsole.log(userArguments);",
+   "language": "javascript",
+   "explanation": "Run this file with extra command-line values, such as `node app.js one two`. It prints only the values after the executable and entry point."
+  },
+  "useCases": [
+   {
+    "title": "Read command-line input",
+    "scenario": "A command-line tool needs values supplied after its script name."
+   },
+   {
+    "title": "Inspect process startup arguments",
+    "scenario": "A script needs to inspect or print the full launch command."
+   },
+   {
+    "title": "Prepare arguments for parsing",
+    "scenario": "A program needs to pass selected arguments to its own parser."
+   }
+  ],
+  "related": [
+   "process.argv0",
+   "process.execPath",
+   "process.execArgv"
+  ],
+  "since": "v0.1.27",
+  "interview": [
+   {
+    "question": "What does `process.argv` contain?",
+    "answer": "`process.argv` is a read-only reference to an array of strings containing the arguments used to launch the Node.js process. Its first item is the executable path, and later items contain the entry point and extra command-line values.",
+    "followUp": "How would you get only application arguments? Use `process.argv.slice(2)` for a normal script launch, because indexes 0 and 1 are reserved for the executable and entry point."
+   },
+   {
+    "question": "What are the meanings of the first array elements?",
+    "answer": "The array has type `string[]`. Index 0 contains `process.execPath`; if an entry point exists, index 1 contains its absolute path; remaining items are additional arguments.",
+    "followUp": "What changes when the process has no program entry point? The entry-point item is not present, so code should avoid assuming a script path always exists."
+   },
+   {
+    "question": "How are user arguments represented?",
+    "answer": "For `node process-args.js one two=three four`, the later values are `one`, `two=three`, and `four`. The values remain strings; Node.js does not convert them into numbers or objects.",
+    "followUp": "How should an application interpret values such as `--port=3000`? Parse and validate the string with an argument-parsing approach appropriate for the application."
+   }
+  ],
+  "keyPoints": [
+   "Use `process.argv` to read the command-line values supplied when Node.js starts.",
+   "When a program entry point exists, index 1 contains its absolute path.",
+   "Arguments after the initial process information are the values passed to the application.",
+   "A launch command can pass separate values, including a value containing an equals sign."
+  ],
+  "gotchas": [
+   "Do not treat index 0 as a user argument. It contains the path to the Node.js executable.",
+   "Use `process.argv0` when you need the original `argv[0]` value instead of the resolved executable path."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "process.cwd": {
   "sourceUrl": "https://beta.docs.nodejs.org/process/cwd",
@@ -4834,6 +6255,67 @@
    "Prefer queueMicrotask() when nextTick-specific behavior, such as callback arguments, is unnecessary."
   ],
   "checkedAt": "2026-10-15"
+ },
+ "process.pid": {
+  "sourceUrl": "https://nodejs.org/docs/latest/api/process.html",
+  "sourceTitle": "Process | Node.js v26.13.0 Documentation",
+  "summary": "`process.pid` returns the ID of the current Node.js process. The value is an integer.",
+  "explanation": "The `process.pid` property gives the numeric ID assigned to the current Node.js process. You can use it when logging, monitoring, or sending signals to this process.",
+  "syntax": "process.pid",
+  "parameters": [],
+  "returns": "An integer containing the process ID.",
+  "example": {
+   "title": "Read the current process ID",
+   "code": "import process from 'node:process';\n\nconsole.log(`This process has PID ${process.pid}`);",
+   "language": "javascript",
+   "explanation": "This prints the process ID of the running Node.js program."
+  },
+  "useCases": [
+   {
+    "title": "Identify a running process",
+    "scenario": "Add the process ID to logs so operators can match messages to a running process."
+   },
+   {
+    "title": "Work with process signals",
+    "scenario": "Pass the current process ID to signal-related code when coordinating shutdown or reload behavior."
+   },
+   {
+    "title": "Support monitoring",
+    "scenario": "Expose the process ID in diagnostics or monitoring output."
+   }
+  ],
+  "related": [
+   "process.ppid",
+   "process.kill(pid[, signal])",
+   "node:process"
+  ],
+  "since": "v0.1.15",
+  "interview": [
+   {
+    "question": "What does `process.pid` return?",
+    "answer": "`process.pid` returns the operating-system process ID for the current Node.js process. It is an integer.",
+    "followUp": "How do you get the parent process ID? Use `process.ppid`, which returns the parent process ID."
+   },
+   {
+    "question": "When might an application use `process.pid`?",
+    "answer": "It is useful when logs or monitoring tools need to identify a specific running process. Read it directly as a property; it does not require a function call.",
+    "followUp": "How could a program use the ID with signals? It could pass the value to `process.kill(pid, signal)`, which sends a signal to the process identified by that ID."
+   },
+   {
+    "question": "Where is `pid` found in Node.js?",
+    "answer": "The property belongs to the `process` object, which is available in Node.js applications. It returns the ID for the process that is executing the code.",
+    "followUp": "How can code identify the process that started this process? Read `process.ppid` for the parent process ID."
+   }
+  ],
+  "keyPoints": [
+   "Read `process.pid` to get the current Node.js process ID.",
+   "You can import `pid` from the `node:process` module.",
+   "The documentation shows printing the value with a template string."
+  ],
+  "gotchas": [
+   "The value is an integer. It identifies the current process, not its parent process."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "process.platform": {
   "sourceUrl": "https://beta.docs.nodejs.org/process/platform",
@@ -5099,6 +6581,98 @@
   ],
   "checkedAt": "2026-10-15"
  },
+ "Readable": {
+  "sourceUrl": "https://nodejs.org/api//stream.html",
+  "sourceTitle": "Stream | Node.js v26.13.0 Documentation",
+  "summary": "A Readable stream is a source of data that Node.js delivers in chunks. You can consume it with events, read(), pipe(), or async iteration.",
+  "explanation": "A Readable stream is a source from which data is consumed. Node.js can deliver chunks through events, manual reads, piping, or async iteration. The stream buffers data and uses highWaterMark to control how much it asks the source to provide.",
+  "syntax": "new stream.Readable([options])\nreadable.read([size])\nreadable.pipe(destination[, options])",
+  "parameters": [
+   {
+    "name": "size",
+    "type": "number",
+    "description": "Optional number of bytes or items to request from the internal buffer."
+   },
+   {
+    "name": "iterable",
+    "type": "Iterable or AsyncIterable",
+    "description": "A source iterable used by Readable.from(); each value becomes stream input."
+   },
+   {
+    "name": "options",
+    "type": "object",
+    "description": "Stream construction settings, such as objectMode and highWaterMark."
+   }
+  ],
+  "returns": "A Readable instance. read(size) returns a chunk or null when no data is currently available.",
+  "example": {
+   "title": "Read chunks from a Readable",
+   "code": "const { Readable } = require('node:stream');\n\nasync function main() {\n  const readable = Readable.from(['first\\n', 'second\\n']);\n  for await (const chunk of readable) {\n    process.stdout.write(chunk);\n  }\n}\n\nmain().catch(console.error);",
+   "language": "javascript",
+   "explanation": "This creates a readable stream from an iterable and consumes its chunks with an async iterator."
+  },
+  "useCases": [
+   {
+    "title": "Read files incrementally",
+    "scenario": "Process a large file without loading the whole file into memory."
+   },
+   {
+    "title": "Handle network data",
+    "scenario": "Consume request bodies or response data as chunks arrive."
+   },
+   {
+    "title": "Pipe between streams",
+    "scenario": "Connect a data source to a writable destination while controlling flow."
+   },
+   {
+    "title": "Consume asynchronous input",
+    "scenario": "Read values produced by an async generator."
+   }
+  ],
+  "related": [
+   "stream.Readable.from(iterable[, options])",
+   "readable.read([size])",
+   "readable.pipe(destination[, options])",
+   "readable.pause()",
+   "readable.resume()",
+   "readable.setEncoding(encoding)",
+   "readable[Symbol.asyncIterator]()",
+   "stream.Transform"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is a Readable stream?",
+    "answer": "A Readable is a source of data. Consumers can use data events, readable plus read(), pipe(), or async iteration.",
+    "followUp": "What happens if the consumer is slower? The stream buffers data up to its configured threshold and can stop requesting more from the underlying source."
+   },
+   {
+    "question": "How are flowing and paused reading different?",
+    "answer": "A stream can enter flowing mode when data listeners are added, when resume() is called, or when it is piped. In that mode, chunks are emitted as they arrive.",
+    "followUp": "How can code pull data instead? Listen for readable and call read() until it returns null."
+   },
+   {
+    "question": "How does backpressure work in a Readable?",
+    "answer": "Readable streams buffer data internally. highWaterMark sets the buffering threshold; once reached, the stream temporarily stops asking its source for more data.",
+    "followUp": "Is highWaterMark a hard memory cap? No. It is a threshold, and implementations may use additional memory."
+   }
+  ],
+  "keyPoints": [
+   "Readable represents a data source that provides data over time instead of all at once.",
+   "Readable is the input side of the stream model. Duplex and Transform streams also expose readable behavior.",
+   "A Readable can emit events such as data, readable, end, close, and error.",
+   "Adding a data listener normally makes chunks flow automatically to the listener.",
+   "The readable event lets code decide when to pull buffered data with read().",
+   "The end event marks completion after all readable data has been consumed.",
+   "pipe() connects a Readable to a Writable and manages flow between different speeds."
+  ],
+  "gotchas": [
+   "Do not wait for end while leaving data unread. Consume the stream, or call resume() when you only need completion.",
+   "Set objectMode when creating the stream. Do not try to change an already-created stream.",
+   "highWaterMark helps control buffering, but it is not a strict memory limit."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "readFile": {
   "sourceUrl": "https://nodejs.org/dist/latest/docs/api/fs.html",
   "sourceTitle": "File system",
@@ -5335,6 +6909,77 @@
   ],
   "checkedAt": "2026-10-15"
  },
+ "require": {
+  "sourceUrl": "https://beta.docs.nodejs.org/module/createRequire",
+  "sourceTitle": "module.createRequire | Node.js 26.13.0 Documentation",
+  "summary": "module.createRequire creates a require function from a file location. It is mainly used in an ES module that needs to load CommonJS code.",
+  "explanation": "createRequire builds a require function from a file location. In an ES module, pass import.meta.url so the new function resolves relative to that module. The function can then load CommonJS modules and other values supported by require.",
+  "syntax": "module.createRequire(filename): require",
+  "parameters": [
+   {
+    "name": "filename",
+    "type": "string | URL",
+    "description": "A file URL object, file URL string, or absolute path string used to construct the require function."
+   }
+  ],
+  "returns": "A require function.",
+  "example": {
+   "title": "Load CommonJS from an ES module",
+   "code": "import { createRequire } from 'node:module';\n\nconst require = createRequire(import.meta.url);\nconst siblingModule = require('./sibling-module.cjs');\n\nconsole.log(siblingModule);",
+   "language": "javascript",
+   "explanation": "This creates a CommonJS-style require function inside an ES module and uses it to load a nearby CommonJS file."
+  },
+  "useCases": [
+   {
+    "title": "Bridge ES modules and CommonJS",
+    "scenario": "An ES module needs to load a nearby CommonJS file."
+   },
+   {
+    "title": "Use CommonJS resolution",
+    "scenario": "Code needs require-style resolution from an ES module location."
+   },
+   {
+    "title": "Support gradual migration",
+    "scenario": "An application is migrating from CommonJS to ES modules and still has CommonJS dependencies."
+   }
+  ],
+  "related": [
+   "node:module",
+   "import.meta.url",
+   "CommonJS modules",
+   "ECMAScript modules"
+  ],
+  "since": "v12.2.0",
+  "interview": [
+   {
+    "question": "What does module.createRequire do?",
+    "answer": "createRequire is a function from node:module that returns a require function. It lets an ES module use CommonJS loading behavior.",
+    "followUp": "Why pass import.meta.url? It gives the created function the current module's location, so relative requests resolve from that file."
+   },
+   {
+    "question": "What can the filename argument contain?",
+    "answer": "The argument identifies the location used to construct the require function. It must be a file URL object, a file URL string, or an absolute path string.",
+    "followUp": "What happens with a relative path? It does not meet the documented argument requirements, so use an absolute path or file URL instead."
+   },
+   {
+    "question": "When is createRequire useful?",
+    "answer": "Use createRequire when an ES module must load a CommonJS module or use require-based loading. The function is created once and then called like normal require.",
+    "followUp": "Can it load every ES module? No. require supports only synchronous ES modules, so modules with top-level await are not supported."
+   }
+  ],
+  "keyPoints": [
+   "Import createRequire from node:module.",
+   "The function takes one filename argument and returns a require function.",
+   "The filename supplies the location used to build the new require function.",
+   "In an ES module, import.meta.url is the usual location to pass.",
+   "The returned function can load a nearby CommonJS module."
+  ],
+  "gotchas": [
+   "The filename must be a file URL or an absolute path. A relative path is not valid.",
+   "The created require function cannot load an ES module that uses top-level await."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "require.resolve": {
   "sourceUrl": "https://nodejs.org/docs/latest/api/modules.html",
   "sourceTitle": "Modules: CommonJS modules",
@@ -5414,6 +7059,175 @@
    "Custom search paths do not exclude the documented global folders; those remain part of resolution."
   ],
   "checkedAt": "2026-10-15"
+ },
+ "Server": {
+  "sourceUrl": "https://nodejs.org/learn/getting-started/introduction-to-nodejs",
+  "sourceTitle": "Introduction to Node.js | Node.js Learn",
+  "summary": "Node.js can create an HTTP server with the built-in node:http module. The server handles requests and sends responses without blocking the main thread.",
+  "explanation": "An HTTP server receives requests and sends responses. The request object contains incoming details, while the response object sets the status, headers, and body before ending the response.",
+  "syntax": "createServer(requestListener); server.listen(port, host, callback);",
+  "parameters": [
+   {
+    "name": "port",
+    "type": "number",
+    "description": "The port on which the TCP server accepts connections."
+   },
+   {
+    "name": "host",
+    "type": "string",
+    "description": "The host address on which the server listens."
+   },
+   {
+    "name": "callback",
+    "type": "Function",
+    "description": "A function called when the server is ready."
+   }
+  ],
+  "returns": "An http.Server returned by createServer().",
+  "example": {
+   "title": "Start a small HTTP server",
+   "code": "const { createServer } = require('node:http');\n\nconst server = createServer((req, res) => {\n  res.statusCode = 200;\n  res.setHeader('Content-Type', 'text/plain');\n  res.end('Hello World');\n});\n\nserver.listen(3000, '127.0.0.1', () => {\n  console.log('Server is running');\n});",
+   "language": "javascript",
+   "explanation": "This starts an HTTP server on 127.0.0.1:3000 and returns plain text for each request."
+  },
+  "useCases": [
+   {
+    "title": "Serve HTTP responses",
+    "scenario": "Build a small web server that returns text or HTML."
+   },
+   {
+    "title": "Test a client",
+    "scenario": "Create a simple endpoint for testing a client."
+   },
+   {
+    "title": "Practice server basics",
+    "scenario": "Learn request and response handling in Node.js."
+   }
+  ],
+  "related": [
+   "node:http",
+   "http.createServer",
+   "http.IncomingMessage",
+   "http.ServerResponse",
+   "server.listen",
+   "server.close"
+  ],
+  "since": "v0.1.90",
+  "interview": [
+   {
+    "question": "What does the request callback receive?",
+    "answer": "createServer() creates the HTTP server. Its callback receives a request object and a response object. The response sets a status and header, then ends with the body.",
+    "followUp": "How would you serve HTTPS instead? Use the HTTPS module and its server creation method, which starts an encrypted server and follows the HTTP server API."
+   },
+   {
+    "question": "How does a server start listening?",
+    "answer": "listen() starts accepting connections on the given host and port. It works asynchronously, and the callback runs when the server is ready to accept connections.",
+    "followUp": "What happens if port is zero? The operating system chooses an unused port, which can be read from address() after listening."
+   },
+   {
+    "question": "What does server.close() do?",
+    "answer": "close() stops new connections but allows current connections to finish. The close event and optional callback happen after the server has fully closed.",
+    "followUp": "How can shutdown be awaited? The asyncDispose method calls close() and returns a promise that fulfills after closure."
+   }
+  ],
+  "keyPoints": [
+   "The built-in HTTP module provides networking support without an external package.",
+   "A request handler receives request data and a response object.",
+   "Set statusCode to 200 to report a successful response.",
+   "Use setHeader() to tell the client that the response contains plain text.",
+   "Call end() to finish the response and optionally send its final body."
+  ],
+  "gotchas": [
+   "Do not read the bound address before the server emits listening, or after it has been closed.",
+   "A requested port can already be in use. Handle EADDRINUSE or choose another port."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "ServerResponse": {
+  "sourceUrl": "https://beta.docs.nodejs.org/http/ServerResponse",
+  "sourceTitle": "HTTP | Node.js 26.13.0 Documentation",
+  "summary": "Node.js's HTTP module provides low-level client and server APIs. It parses message structure and supports streaming request and response bodies.",
+  "explanation": "The HTTP module provides low-level client and server APIs. A server receives an IncomingMessage and writes a ServerResponse. Request and response bodies use streams, so applications can handle large messages without storing the whole message first.",
+  "syntax": "const http = require('node:http');\nhttp.createServer([requestListener]);\nhttp.request(options[, callback]);\nhttp.get(options[, callback]);",
+  "parameters": [
+   {
+    "name": "options",
+    "type": "Object",
+    "description": "HTTP request options or URL details used to create the client request."
+   },
+   {
+    "name": "callback",
+    "type": "Function",
+    "description": "Optional callback called with the incoming response."
+   }
+  ],
+  "returns": "http.createServer() returns an HTTP server. http.request() returns a ClientRequest. http.get() returns a ClientRequest and calls request.end() automatically.",
+  "example": {
+   "title": "Create a small HTTP server",
+   "code": "const http = require('node:http');\n\nconst server = http.createServer((req, res) => {\n  res.statusCode = 200;\n  res.setHeader('Content-Type', 'text/plain');\n  res.end('Hello\\n');\n});\n\nserver.listen(3000, '127.0.0.1', () => {\n  console.log('Listening on port 3000');\n});",
+   "language": "javascript",
+   "explanation": "This creates an HTTP server, sends a status and header, then ends each response."
+  },
+  "useCases": [
+   {
+    "title": "Build a small HTTP server",
+    "scenario": "Serve HTTP requests directly from a Node.js process."
+   },
+   {
+    "title": "Send an HTTP client request",
+    "scenario": "Call an HTTP service from Node.js."
+   },
+   {
+    "title": "Stream message data",
+    "scenario": "Process large request or response bodies incrementally."
+   },
+   {
+    "title": "Control HTTP behavior",
+    "scenario": "Handle protocol details such as headers, keep-alive connections, or upgrades."
+   }
+  ],
+  "related": [
+   "http.Agent",
+   "http.ClientRequest",
+   "http.Server",
+   "http.ServerResponse",
+   "http.IncomingMessage",
+   "http.request",
+   "http.get",
+   "http.createServer"
+  ],
+  "since": "v0.1.90",
+  "interview": [
+   {
+    "question": "What does the server's request event provide?",
+    "answer": "The request event runs when the server receives a request. Its callback receives an IncomingMessage and a ServerResponse. One connection can carry multiple requests when keep-alive is used.",
+    "followUp": "What happens for an Expect: 100-continue request? The server can handle the checkContinue event and call response.writeContinue(), or send another response; the normal request event is not emitted when that event is handled."
+   },
+   {
+    "question": "How do response.setHeader() and response.writeHead() differ?",
+    "answer": "Use response.setHeader() to queue or replace a header before it is sent. Use response.writeHead() to send the status code and headers. Headers set by writeHead() take precedence when both methods provide the same header.",
+    "followUp": "Why prefer setHeader() when headers may change? It keeps headers available for later inspection and modification through response.getHeader()."
+   },
+   {
+    "question": "What level of HTTP processing does Node's HTTP API provide?",
+    "answer": "The HTTP API parses the message structure into headers and body but does not interpret the header values or body format. Header names are lowercased, while their values are not modified. Body data is handled through streams.",
+    "followUp": "Why is streaming useful? It lets an application process large or chunked messages without buffering the complete request or response."
+   }
+  ],
+  "keyPoints": [
+   "The module supports HTTP server and client work at a low level.",
+   "Requests and responses can be streamed instead of buffered in full.",
+   "Parsed header names are lowercase, but header values keep their received form.",
+   "A keep-alive connection may produce several request events.",
+   "ServerResponse behaves like a writable stream without inheriting from that stream class.",
+   "server.timeout controls how long an inactive socket can remain before timeout handling applies."
+  ],
+  "gotchas": [
+   "Always call response.end() for every response. Otherwise, the response is not completed.",
+   "Call response.writeHead() at most once and before ending the response.",
+   "The response 'finish' event means data was handed to the operating system, not that the client received it."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "setImmediate": {
   "sourceUrl": "https://nodejs.org/api/timers.html",
@@ -5723,6 +7537,73 @@
   ],
   "checkedAt": "2026-10-15"
  },
+ "structuredClone": {
+  "sourceUrl": "https://nodejs.org/docs/latest/api/globals.html",
+  "sourceTitle": "Global objects | Node.js v26.13.0 Documentation",
+  "summary": "structuredClone is a global Node.js function that makes a structured clone of a value. It accepts the value and an optional options object.",
+  "explanation": "structuredClone is a global function that creates a structured clone of a value. The returned value is separate from the input, and the optional options argument can control supported cloning behavior such as transferring transferable objects.",
+  "syntax": "structuredClone(value[, options])",
+  "parameters": [
+   {
+    "name": "value",
+    "type": "any",
+    "description": "The value to clone."
+   },
+   {
+    "name": "options",
+    "type": "object",
+    "description": "Optional settings for the clone operation."
+   }
+  ],
+  "returns": "A structured clone of value.",
+  "example": {
+   "title": "Clone an object",
+   "code": "const original = { name: 'Ada', nested: { count: 1 } };\nconst copy = structuredClone(original);\ncopy.nested.count = 2;\n\nconsole.log(original.nested.count); // 1\nconsole.log(copy.nested.count); // 2",
+   "language": "javascript",
+   "explanation": "This creates a separate clone, so changing the nested object in the clone does not change the original."
+  },
+  "useCases": [
+   {
+    "title": "Copy data without shared object references",
+    "scenario": "You need an independent copy of nested data before editing it."
+   },
+   {
+    "title": "Prepare structured data for communication",
+    "scenario": "You need to pass cloneable data between parts of an application."
+   }
+  ],
+  "related": [
+   "global objects",
+   "Worker",
+   "MessageChannel"
+  ],
+  "since": "v17.0.0",
+  "interview": [
+   {
+    "question": "What does structuredClone do?",
+    "answer": "structuredClone is a global WHATWG method available in Node.js. It creates a structured clone of the supplied value rather than returning the same object reference.",
+    "followUp": "How can an object be checked for being the same reference after cloning? Use strict equality: structuredClone(value) === value is false for cloned objects."
+   },
+   {
+    "question": "What are the parameters of structuredClone?",
+    "answer": "The signature is structuredClone(value[, options]). value is the data to clone, and options is an optional configuration object defined by the structured clone API.",
+    "followUp": "What should be checked when using options? Confirm that the option and the value support the structured clone behavior required by the application."
+   },
+   {
+    "question": "When was structuredClone added to Node.js?",
+    "answer": "Node.js added the global structuredClone function in v17.0.0. It is documented as the WHATWG structuredClone method.",
+    "followUp": "Where is it available? It is a global, so code can call structuredClone without importing it from a Node.js module."
+   }
+  ],
+  "keyPoints": [
+   "Node.js provides the WHATWG structuredClone method as a global function.",
+   "Its call accepts a value and an optional options argument.",
+   "The global function was added in Node.js v17.0.0.",
+   "The global can be used from all modules without importing it."
+  ],
+  "gotchas": [],
+  "checkedAt": "2026-11-03"
+ },
  "TextDecoder": {
   "sourceUrl": "https://beta.docs.nodejs.org/util/TextDecoder",
   "sourceTitle": "util.TextDecoder | Node.js 26.8.1 Documentation",
@@ -5815,6 +7696,86 @@
    "The ignoreBOM option applies only to UTF-8 and UTF-16 encodings."
   ],
   "checkedAt": "2026-10-15"
+ },
+ "TextEncoder": {
+  "sourceUrl": "https://nodejs.org/docs/latest/api/util.html",
+  "sourceTitle": "Util | Node.js v26.13.0 Documentation",
+  "summary": "TextEncoder converts JavaScript strings to UTF-8 bytes. Use encode() for a new Uint8Array or encodeInto() to write into an existing one.",
+  "explanation": "Create a TextEncoder to turn JavaScript strings into UTF-8 bytes. Use encode() when a new Uint8Array is suitable. Use encodeInto() when you already have a destination Uint8Array and need to track how many source code units were read and bytes were written.",
+  "syntax": "new TextEncoder();\ntextEncoder.encode([input]);\ntextEncoder.encodeInto(src, dest);\ntextEncoder.encoding",
+  "parameters": [
+   {
+    "name": "input",
+    "type": "string, optional",
+    "description": "The string to convert. encode() uses an empty string when this argument is omitted."
+   },
+   {
+    "name": "src",
+    "type": "string",
+    "description": "The source string to encode."
+   },
+   {
+    "name": "dest",
+    "type": "Uint8Array",
+    "description": "The Uint8Array that receives encoded bytes."
+   }
+  ],
+  "returns": "encode() returns a Uint8Array. encodeInto() returns an object with read and written number properties.",
+  "example": {
+   "title": "Encode text as UTF-8 bytes",
+   "code": "const encoder = new TextEncoder();\nconst text = 'Hello, 世界';\nconst bytes = encoder.encode(text);\n\nconsole.log(bytes);\nconsole.log(encoder.encoding); // 'utf-8'\n\nconst destination = new Uint8Array(8);\nconst result = encoder.encodeInto(text, destination);\nconsole.log(result);",
+   "language": "javascript",
+   "explanation": "This encodes text into a new byte array, then writes as much text as fits into a supplied byte array."
+  },
+  "useCases": [
+   {
+    "title": "Convert strings to bytes",
+    "scenario": "Prepare text for a network or file API that accepts bytes."
+   },
+   {
+    "title": "Write into existing storage",
+    "scenario": "Reuse a preallocated byte buffer."
+   },
+   {
+    "title": "Read encoding metadata",
+    "scenario": "Confirm the encoder's fixed character encoding."
+   }
+  ],
+  "related": [
+   "util.TextDecoder",
+   "util.toUSVString"
+  ],
+  "since": "v8.3.0",
+  "interview": [
+   {
+    "question": "What does TextEncoder do?",
+    "answer": "TextEncoder implements the WHATWG TextEncoder API and converts strings to UTF-8. Its methods return or fill Uint8Array byte data.",
+    "followUp": "How would you avoid allocating a new array? Use encodeInto() with a caller-provided Uint8Array and inspect its read and written counts."
+   },
+   {
+    "question": "How does encode() work?",
+    "answer": "encode() accepts an optional string and returns a Uint8Array containing its UTF-8 bytes. If the argument is omitted, it encodes an empty string.",
+    "followUp": "When is encodeInto() preferable? When storage is already available and avoiding a new result array is useful."
+   },
+   {
+    "question": "What does encodeInto() return?",
+    "answer": "encodeInto(src, dest) encodes src into the supplied Uint8Array dest. The returned object reports source Unicode code units read and UTF-8 bytes written.",
+    "followUp": "What should code do when the destination is too small? Process the remaining source text or provide a larger destination, using the returned counters."
+   }
+  ],
+  "keyPoints": [
+   "Node.js provides the standard TextEncoder interface.",
+   "You can use TextEncoder without importing it from node:util.",
+   "encode() creates and returns UTF-8 byte data in a Uint8Array.",
+   "encodeInto() writes its output into the Uint8Array you provide.",
+   "The read result counts JavaScript Unicode code units consumed from the source.",
+   "The encoding property reports the fixed encoding used by the instance."
+  ],
+  "gotchas": [
+   "TextEncoder cannot select another character encoding; its encoding is always UTF-8.",
+   "With encodeInto(), a destination that is too small may hold only part of the encoded input, so check written and read."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "Transform": {
   "sourceUrl": "https://nodejs.org/download/release/v24.15.0/docs/api/stream.html",
@@ -6057,60 +8018,172 @@
   "checkedAt": "2026-10-15"
  },
  "util": {
-  "sourceUrl": "https://nodejs.org/api/util.html",
-  "sourceTitle": "Util | Node.js v26.11.1 Documentation",
-  "summary": "The `node:util` module provides built-in helpers for Node.js internals and application code. It includes formatting, inspection, debugging, type checks, and other common utility APIs.",
-  "explanation": "The `node:util` module provides general-purpose helpers used by Node.js internals and application or module developers. Its APIs include debugging output, object inspection, formatting, type checks, deprecation wrappers, and promise-to-callback adaptation.",
-  "syntax": "import util from 'node:util';\nconst util = require('node:util');",
-  "parameters": [],
-  "returns": "A namespace containing Node.js utility APIs.",
+  "sourceUrl": "https://nodejs.org/docs/latest/api/util.html",
+  "sourceTitle": "Util | Node.js v26.13.0 Documentation",
+  "summary": "`util.callbackify()` adapts an async or promise-returning function to Node.js error-first callbacks. The callback receives an error or `null`, followed by the resolved value.",
+  "explanation": "The `node:util` module provides helper functions for Node.js programs. This card focuses on `util.callbackify()`: it wraps an async or promise-returning function and gives back a function that reports success or failure through a final `(error, value)` callback.",
+  "syntax": "util.callbackify(original)",
+  "parameters": [
+   {
+    "name": "original",
+    "type": "Function",
+    "description": "An async function or a function that returns a promise."
+   }
+  ],
+  "returns": "A callback-style function.",
   "example": {
-   "title": "Inspect an object",
-   "code": "import util from 'node:util';\n\nconst user = { id: 7, name: 'Ada' };\nconsole.log(util.inspect(user, { colors: false }));",
+   "title": "Convert a promise function",
+   "code": "import { callbackify } from 'node:util';\n\nasync function getMessage() {\n  return 'hello';\n}\n\nconst oldStyle = callbackify(getMessage);\noldStyle((error, value) => {\n  if (error) throw error;\n  console.log(value);\n});",
    "language": "javascript",
-   "explanation": "Loads the built-in module and produces a readable debugging representation of an object."
+   "explanation": "This converts a promise-returning function into one that receives an error-first callback."
   },
   "useCases": [
    {
-    "title": "Debug object state",
-    "scenario": "Create readable representations of objects while debugging backend code."
+    "title": "Bridge promise code to callback code",
+    "scenario": "A legacy API requires a final `(error, value)` callback."
    },
    {
-    "title": "Format diagnostic output",
-    "scenario": "Format values for diagnostic messages and logs."
+    "title": "Migrate APIs in stages",
+    "scenario": "A codebase is being migrated gradually from callbacks to promises."
    },
    {
-    "title": "Validate built-in types",
-    "scenario": "Check whether values are instances of built-in Node.js types."
-   },
-   {
-    "title": "Bridge async API styles",
-    "scenario": "Adapt callback-based and promise-based APIs at integration boundaries."
+    "title": "Share one implementation",
+    "scenario": "Several older callers must use one async implementation."
    }
   ],
   "related": [
-   "util.types",
-   "util.format()",
-   "util.inspect()",
-   "util.debuglog()",
-   "util.deprecate()",
-   "util.promisify()",
-   "util.callbackify()",
-   "util.parseArgs()"
+   "util.promisify",
+   "node:util"
   ],
-  "since": "",
+  "since": "v8.2.0",
+  "interview": [
+   {
+    "question": "What does `util.callbackify()` do?",
+    "answer": "`callbackify()` accepts an async function or another function that returns a promise. It returns a function that expects an error-first callback as its last argument.",
+    "followUp": "What does the callback receive after success? It receives `null` as the error and the promise's resolved value as the second argument."
+   },
+   {
+    "question": "How are success and failure represented?",
+    "answer": "The callback receives the rejection reason as its first argument and `null` when the promise resolves. On success, the resolved value is the second argument.",
+    "followUp": "Why is a rejected `null` special? Because `null` means success in the callback convention, Node wraps that falsy reason in an `Error` and stores it in `reason`."
+   },
+   {
+    "question": "What should you know about callback execution?",
+    "answer": "The returned callback-style function runs the callback asynchronously. If the callback throws and nothing handles the resulting `uncaughtException`, the process exits.",
+    "followUp": "How can a caller avoid this failure mode? Handle the error inside the callback instead of throwing from the callback, or install suitable process-level error handling."
+   }
+  ],
   "keyPoints": [
-   "`node:util` is a built-in module whose utilities are also useful to application and module developers.",
-   "The module is appropriate for reusable backend and application code, not only Node.js implementation internals.",
-   "ES module code can import the module using the `node:`-prefixed specifier.",
-   "CommonJS code can load the module with `require('node:util')`.",
-   "The `types` export supplies checks for categories of built-in objects."
+   "Use it to adapt an async or promise-returning function to Node's error-first callback style.",
+   "The adapted function expects its callback as the last argument.",
+   "The callback's first argument is the rejection reason, or `null` after success.",
+   "The second callback argument contains the promise's resolved value.",
+   "The result is a new callback-style function."
   ],
   "gotchas": [
-   "The module is broad and is not a single-purpose utility; choose the specific exported API that matches the task.",
-   "Type-checking helpers are exposed through the `types` namespace or its dedicated subpath, not only through the top-level module."
+   "The callback runs asynchronously, and its stack trace is limited.",
+   "A falsy rejection reason is wrapped in an `Error`; the original value is available as `error.reason`.",
+   "An exception thrown inside the callback can become an `uncaughtException`."
   ],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-11-03"
+ },
+ "Worker": {
+  "sourceUrl": "https://beta.docs.nodejs.org/worker_threads/Worker",
+  "sourceTitle": "Worker | Node.js 26.13.0 Documentation",
+  "summary": "Worker runs JavaScript in an independent thread. A parent thread can send messages to it and receive results.",
+  "explanation": "A Worker runs JavaScript in its own thread. The parent and worker communicate with messages, and constructor options control the script, startup data, environment, memory limits, and resource handling.",
+  "syntax": "new Worker(filename, options?) : Worker",
+  "parameters": [
+   {
+    "name": "filename",
+    "type": "string | URL",
+    "description": "Worker script path or module URL. It may be an absolute path, a relative path beginning with ./ or ../, or a file: or data: URL."
+   },
+   {
+    "name": "options",
+    "type": "Object",
+    "description": "Optional settings such as eval, workerData, env, transferList, resourceLimits, name, stdin, stdout, stderr, and execArgv."
+   },
+   {
+    "name": "options.env",
+    "type": "Object | SHARE_ENV",
+    "description": "Initial value of process.env in the worker. The default is the parent environment copy; SHARE_ENV shares access."
+   },
+   {
+    "name": "options.workerData",
+    "type": "any",
+    "description": "A cloneable value made available as workerData inside the worker."
+   },
+   {
+    "name": "options.eval",
+    "type": "boolean",
+    "description": "Whether to interpret a string filename as code executed by the worker."
+   }
+  ],
+  "returns": "A Worker instance.",
+  "example": {
+   "title": "Start a worker and exchange data",
+   "code": "const { Worker, isMainThread, parentPort, workerData } = require('node:worker_threads');\n\nif (isMainThread) {\n  const worker = new Worker(__filename, { workerData: 21 });\n  worker.once('message', (result) => console.log(result));\n  worker.once('error', console.error);\n} else {\n  parentPort.postMessage(workerData * 2);\n}",
+   "language": "javascript",
+   "explanation": "The main thread starts a worker and gives it cloned data. The worker reads that data and sends a result back."
+  },
+  "useCases": [
+   {
+    "title": "CPU-intensive work",
+    "scenario": "Run CPU-heavy JavaScript without blocking the main thread."
+   },
+   {
+    "title": "Worker pool",
+    "scenario": "Use several long-running workers to process many similar tasks."
+   },
+   {
+    "title": "Custom message channels",
+    "scenario": "Send separate communication paths between workers or between a parent and worker."
+   }
+  ],
+  "related": [
+   "worker_threads.isMainThread",
+   "worker_threads.parentPort",
+   "worker_threads.workerData",
+   "worker.postMessage",
+   "worker.terminate",
+   "MessageChannel",
+   "MessagePort",
+   "worker.resourceLimits"
+  ],
+  "since": "v10.5.0",
+  "interview": [
+   {
+    "question": "What is a Worker?",
+    "answer": "Worker creates an independent JavaScript execution thread. Most Node.js APIs are available there, but the worker has its own thread state and uses parentPort for communication with its parent.",
+    "followUp": "How would you pass a large buffer? Use a transfer list for an ArrayBuffer to move ownership, or use SharedArrayBuffer when both sides must access the same memory."
+   },
+   {
+    "question": "What does the Worker constructor accept?",
+    "answer": "The filename identifies the worker's script or module. It must be an absolute path, a relative path beginning with ./ or ../, or a file: or data: URL; eval can instead treat a string as worker code.",
+    "followUp": "What happens to workerData? It is cloned using the structured clone algorithm, so unsupported values such as functions cannot be passed."
+   },
+   {
+    "question": "How do a parent and worker communicate?",
+    "answer": "The parent sends data with worker.postMessage(), and the worker receives it through parentPort. The worker sends data with parentPort.postMessage(), and the parent receives it through the Worker's message event.",
+    "followUp": "Why use MessageChannel? It creates a separate pair of linked MessagePort objects, which can keep different communication paths separate."
+   }
+  ],
+  "keyPoints": [
+   "A Worker is a separate JavaScript execution thread.",
+   "Create one with new Worker(filename, options).",
+   "The online event shows that the worker has begun running JavaScript.",
+   "The exit event reports that the worker stopped and provides its exit code.",
+   "The parent receives worker messages through the Worker's message event.",
+   "messageerror signals that an incoming message could not be deserialized.",
+   "The error event reports an uncaught worker exception."
+  ],
+  "gotchas": [
+   "workerData is cloned, so functions and other values that cannot be cloned cannot be passed this way.",
+   "Terminating a worker can stop its execution at any time.",
+   "An uncaught exception emits error and ends the worker."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "worker_threads": {
   "sourceUrl": "https://nodejs.org/api/worker_threads.html",
@@ -6193,72 +8266,265 @@
   ],
   "checkedAt": "2026-10-15"
  },
+ "Writable": {
+  "sourceUrl": "https://nodejs.org/download/release/v24.15.0/docs/api/stream.html",
+  "sourceTitle": "Stream | Node.js v24.15.0 Documentation",
+  "summary": "A Writable stream is a destination for data. Use write() to send chunks and end() to finish; custom streams process chunks in _write().",
+  "explanation": "A Writable stream is a destination for data. Code sends data with write(), and the stream implementation processes each chunk in _write() or a constructor-provided write function. The callback reports success or failure. end() marks the final write, and finish is emitted after all data reaches the underlying destination.",
+  "syntax": "new stream.Writable([options]); writable.write(chunk[, encoding][, callback]); writable.end([chunk[, encoding]][, callback]);",
+  "parameters": [
+   {
+    "name": "chunk",
+    "type": "string | Buffer | TypedArray | DataView",
+    "description": "The data passed to the destination. It is normally a string, Buffer, TypedArray, or DataView."
+   },
+   {
+    "name": "encoding",
+    "type": "string",
+    "description": "The character encoding used when chunk is a string."
+   },
+   {
+    "name": "callback",
+    "type": "Function",
+    "description": "Called when the chunk has finished processing. Pass an error to report failure."
+   }
+  ],
+  "returns": "write() returns a Boolean. It returns false when data is buffered at or above the highWaterMark threshold; otherwise it returns true.",
+  "example": {
+   "title": "A simple writable stream",
+   "code": "const { Writable } = require('node:stream');\n\nconst output = new Writable({\n  write(chunk, encoding, callback) {\n    process.stdout.write(`received: ${chunk.toString()}`);\n    callback();\n  }\n});\n\noutput.write('hello\\n');\noutput.end('done\\n');\noutput.on('finish', () => console.log('stream finished'));",
+   "language": "javascript",
+   "explanation": "This writable stream handles each chunk in its write method. Calling end finishes the stream after the final chunk."
+  },
+  "useCases": [
+   {
+    "title": "Write output",
+    "scenario": "Send data to a file, socket, HTTP response, or another output destination."
+   },
+   {
+    "title": "Build a custom stream",
+    "scenario": "Create a custom destination backed by a database, device, or other resource."
+   },
+   {
+    "title": "Handle backpressure",
+    "scenario": "Control memory use when a producer is faster than its destination."
+   }
+  ],
+  "related": [
+   "stream.Readable",
+   "stream.Duplex",
+   "stream.Transform",
+   "writable.write()",
+   "writable.end()",
+   "writable.cork()",
+   "writable.uncork()",
+   "Event: 'drain'"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is a Writable stream?",
+    "answer": "A Writable stream represents a destination. Its write() method accepts data and returns a Boolean that indicates whether more data should be written immediately. A custom implementation processes data in _write() or in the write option.",
+    "followUp": "How should a producer handle backpressure? When write() returns false, stop writing and wait for the drain event before continuing."
+   },
+   {
+    "question": "What is the purpose of the _write callback?",
+    "answer": "The callback tells Node.js that a chunk finished processing. Call it with no argument for success, or with an Error for failure. Data written while the callback is pending is buffered.",
+    "followUp": "What happens if the callback is never called? The pending write does not complete, so later writes can remain buffered and the stream cannot progress normally."
+   },
+   {
+    "question": "How does a Writable stream finish?",
+    "answer": "end() signals that no more data will be written. It may receive a final chunk, and the finish event is emitted after that data has been flushed.",
+    "followUp": "Can write() be used after end()? No. The documentation says that writing after end() raises an error."
+   }
+  ],
+  "keyPoints": [
+   "Writable streams represent destinations such as files, sockets, HTTP responses, or standard output.",
+   "Use write(chunk, encoding, callback) to send one chunk and learn when processing completes.",
+   "A true result means the stream can accept more data for now; false signals backpressure.",
+   "When write() returns false, wait for drain instead of continuously adding more data.",
+   "The finish event means the stream has ended and all queued writes have been flushed.",
+   "A custom Writable must implement _write(), or use _writev() when it can process batches of chunks."
+  ],
+  "gotchas": [
+   "Always call the write callback when processing finishes. Pass an error to it when the write fails.",
+   "Do not call _write() directly. Use write() and let Node.js invoke the internal method.",
+   "Call end only after all writes are complete. Do not write more data afterward."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "writeFile": {
-  "sourceUrl": "https://nodejs.org/dist/latest/docs/api/fs.html",
-  "sourceTitle": "File System",
-  "summary": "Asynchronously writes data to a file, replacing existing contents by default. It accepts strings, Buffers, and iterable data, with options for encoding, permissions, and opening behavior.",
-  "explanation": "The promise-based writeFile function asynchronously writes supplied data to a path or file handle. By default it uses UTF-8 for string data and replaces an existing file; options can select an encoding, mode, or flag, and the promise resolves after the write completes.",
-  "syntax": "fs.writeFile(file, data[, options], callback)\nfsPromises.writeFile(file, data[, options])",
+  "sourceUrl": "https://nodejs.org/learn/manipulating-files/writing-files-with-nodejs",
+  "sourceTitle": "Writing files with Node.js | Node.js Learn",
+  "summary": "Node.js can write files with callback, synchronous, or promise-based APIs. The promise-based writeFile replaces existing contents by default and supports options such as encoding, flags, and cancellation.",
+  "explanation": "Node.js provides callback, synchronous, and promise-based ways to write files. The promise-based method writes asynchronously and replaces an existing file by default. You can pass options such as encoding, mode, flag, flush, or an AbortSignal.",
+  "syntax": "fsPromises.writeFile(file, data[, options])",
   "parameters": [
    {
     "name": "file",
-    "type": "string | Buffer | URL | number | FileHandle",
-    "description": "Path, file descriptor, or file handle identifying the target file."
+    "type": "string | Buffer | URL | FileHandle",
+    "description": "The target filename, path, URL, or writable FileHandle."
    },
    {
     "name": "data",
-    "type": "string | Buffer | Uint8Array | AsyncIterable | Iterable",
-    "description": "Content to write."
+    "type": "string | Buffer | TypedArray | DataView | AsyncIterable | Iterable",
+    "description": "The content to write, such as a string, Buffer, TypedArray, DataView, AsyncIterable, or Iterable."
    },
    {
     "name": "options",
     "type": "Object | string",
-    "description": "Optional encoding, mode, and file-opening flag settings."
+    "description": "Options such as encoding, mode, flag, flush, and signal."
+   }
+  ],
+  "returns": "fsPromises.writeFile() returns a Promise that fulfills with undefined after success. The callback API calls its callback with an error or no error value. The synchronous API returns undefined on success and throws on failure.",
+  "example": {
+   "title": "Write a text file",
+   "code": "import { writeFile } from 'node:fs/promises';\n\nawait writeFile('message.txt', 'Hello, Node.js!', { encoding: 'utf8' });\nconsole.log('File written');",
+   "language": "javascript",
+   "explanation": "This writes text to message.txt and waits until the operation finishes."
+  },
+  "useCases": [
+   {
+    "title": "Create or replace a file",
+    "scenario": "Save text or binary data to a file in a simple asynchronous operation."
+   },
+   {
+    "title": "Use an awaitable write",
+    "scenario": "Write configuration, generated output, or cached data without blocking the event loop."
+   },
+   {
+    "title": "Append data with a file flag",
+    "scenario": "Add content instead of replacing existing content."
+   }
+  ],
+  "related": [
+   "fs.writeFile()",
+   "fs.writeFileSync()",
+   "fsPromises.appendFile()",
+   "fs.createWriteStream()",
+   "filehandle.writeFile()"
+  ],
+  "since": "v10.0.0",
+  "interview": [
+   {
+    "question": "What are the main ways to write a file in Node.js?",
+    "answer": "fs.writeFile() uses a callback and reports an error through that callback. fs.writeFileSync() blocks until the operation completes and throws errors. fsPromises.writeFile() returns a promise and can be used with await.",
+    "followUp": "When should a stream be preferred? Use fs.createWriteStream() or filehandle.createWriteStream() for performance-sensitive code or repeated writes."
+   },
+   {
+    "question": "What happens if the target file already exists?",
+    "answer": "fsPromises.writeFile() replaces the file when it already exists. Its default encoding is utf8, and its default flag is w. The mode setting affects only a newly created file.",
+    "followUp": "How can data be appended instead? Pass a flag such as a+ in the options, or use an append API."
+   },
+   {
+    "question": "What data can fsPromises.writeFile() accept, and what does it return?",
+    "answer": "The promise-based API accepts a string, Buffer, TypedArray, DataView, AsyncIterable, or Iterable as data. It fulfills with undefined when writing succeeds and rejects when an error occurs.",
+    "followUp": "Can an in-progress write be cancelled? Yes, pass an AbortSignal, but cancellation is best effort and does not stop each operating-system request."
+   }
+  ],
+  "keyPoints": [
+   "Use fs.writeFile() for a simple callback-based file write.",
+   "Use fs.writeFileSync() when blocking the event loop is acceptable.",
+   "Import writeFile from node:fs/promises for an awaitable write.",
+   "The promise API writes asynchronously and replaces existing contents by default.",
+   "The data input can be a string, binary value, iterable, or stream."
+  ],
+  "gotchas": [
+   "For performance-sensitive writing, use a write stream instead of repeatedly calling writeFile.",
+   "AbortSignal cancellation is best effort. Some file work may continue after cancellation."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "zlib": {
+  "sourceUrl": "https://nodejs.org/api/zlib.html",
+  "sourceTitle": "Zlib | Node.js v26.13.0 Documentation",
+  "summary": "The node:zlib module compresses and decompresses data with Gzip, Deflate, Brotli, and Zstd. Use transform streams for flowing data or convenience functions for one complete input.",
+  "explanation": "The module offers stream-based and single-step compression. A zlib transform receives data, compresses or decompresses it, and passes the result to another stream. Single-step functions process a buffer or string and return the result through a callback or synchronous call.",
+  "syntax": "import zlib from 'node:zlib';\nconst zlib = require('node:zlib');",
+  "parameters": [
+   {
+    "name": "buffer",
+    "type": "string | Buffer | TypedArray | DataView | ArrayBuffer",
+    "description": "The input data, such as a string or Buffer, for single-step compression or decompression functions."
+   },
+   {
+    "name": "options",
+    "type": "object",
+    "description": "Optional settings for the selected compression or decompression operation."
    },
    {
     "name": "callback",
     "type": "function",
-    "description": "Callback receiving an error, or omitted for the promise API."
+    "description": "A callback receiving an error and the resulting Buffer for asynchronous convenience methods."
    }
   ],
-  "returns": "The callback API invokes its callback after completion; the promise API resolves when writing finishes and rejects if an error occurs.",
+  "returns": "Stream factory functions return zlib Transform streams. Asynchronous convenience methods call their callback with an error and a Buffer. Synchronous convenience methods return a Buffer.",
   "example": {
-   "title": "Write a text file asynchronously",
-   "code": "import { writeFile } from 'node:fs/promises';\n\nawait writeFile('message.txt', 'Hello, Node.js!');\nconsole.log('File saved');",
+   "title": "Compress a file with Gzip",
+   "code": "import { createReadStream, createWriteStream } from 'node:fs';\nimport { createGzip } from 'node:zlib';\nimport { pipeline } from 'node:stream/promises';\n\nawait pipeline(\n  createReadStream('input.txt'),\n  createGzip(),\n  createWriteStream('input.txt.gz'),\n);",
    "language": "javascript",
-   "explanation": "Writes UTF-8 text asynchronously and replaces the file if it already exists."
+   "explanation": "This reads input.txt, compresses its data with Gzip, and writes the result to input.txt.gz."
   },
   "useCases": [
    {
-    "title": "Save application output",
-    "scenario": "Persist generated text or serialized data to a file."
+    "title": "Process streaming data",
+    "scenario": "Compress or decompress a file or network stream without collecting all data first."
    },
    {
-    "title": "Append logs or events",
-    "scenario": "Use an append flag to add records to an existing file."
+    "title": "Process one complete value",
+    "scenario": "Compress a string or Buffer that is already in memory."
    },
    {
-    "title": "Persist binary data",
-    "scenario": "Write binary content supplied as a Buffer or typed array."
+    "title": "Handle HTTP content encoding",
+    "scenario": "Serve or read HTTP messages that use gzip, deflate, br, or zstd."
+   },
+   {
+    "title": "Send output sooner",
+    "scenario": "Release buffered compressed output while a stream is still active."
    }
   ],
   "related": [
-   "fs.writeFileSync",
-   "fsPromises.writeFile",
-   "filehandle.writeFile",
-   "fs.createWriteStream"
+   "node:stream",
+   "node:stream/promises",
+   "createGzip()",
+   "createGunzip()",
+   "createDeflate()",
+   "createInflate()",
+   "createBrotliCompress()",
+   "createBrotliDecompress()"
   ],
-  "since": "v0.1.29",
+  "since": "v0.10.0",
+  "interview": [
+   {
+    "question": "What does the Node.js zlib module provide?",
+    "answer": "The node:zlib module provides compression and decompression for Gzip, Deflate, Brotli, and Zstd. It supports both transform streams and single-step functions.",
+    "followUp": "Which approach fits a large file? Use a transform stream with pipeline so data is processed incrementally instead of loading the whole file into memory."
+   },
+   {
+    "question": "How do you compress a file with zlib?",
+    "answer": "A zlib transform stream can be placed between a readable source and a writable destination. pipeline connects them and reports errors while data moves through the transform.",
+    "followUp": "How would you handle a promise-based pipeline? Import pipeline from node:stream/promises and await it inside an async function."
+   },
+   {
+    "question": "How is zlib used with HTTP content encoding?",
+    "answer": "The client sends accepted encodings in Accept-Encoding. The server identifies the selected encoding with Content-Encoding and should vary the response by Accept-Encoding.",
+    "followUp": "Why cache compressed responses? Compression can be expensive, so reusing a cached compressed buffer avoids repeating the same work."
+   }
+  ],
   "keyPoints": [
-   "Writes asynchronously and replaces existing contents by default.",
-   "The data input supports strings, Buffers, async iterables, and iterables.",
-   "The file argument can identify a path, file descriptor, or file handle.",
-   "The mode controls permissions when a new file is created, not an existing file."
+   "Use node:zlib when an application needs Gzip, Deflate, Brotli, or Zstd compression.",
+   "Streams are the main model for processing files and other flowing data.",
+   "Use functions such as deflate or unzip when the complete input is already available.",
+   "Read Accept-Encoding to choose a format the client can decode.",
+   "Set Content-Encoding to tell the client which compression format was used.",
+   "Flush a stream when buffered compressed data must become available sooner, accepting that compression quality may decrease."
   ],
   "gotchas": [
-   "Do not start concurrent writes to the same file without awaiting each operation; overlapping writes are unsafe.",
-   "Setting an encoding has no effect when the input data is a Buffer."
+   "Most asynchronous zlib operations use Node.js's internal threadpool. Creating many operations at once can affect performance and memory.",
+   "Do not create thousands of zlib operations concurrently. Limit concurrency when processing many inputs.",
+   "For HTTP responses, cache compressed data when the content is reused instead of compressing it for every request.",
+   "Changing the final flush option can inspect incomplete input, but the result must be checked because early end and missing integrity checks cannot be distinguished."
   ],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-11-03"
  }
 }

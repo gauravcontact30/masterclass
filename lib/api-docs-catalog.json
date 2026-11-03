@@ -2033,7 +2033,7 @@
         {
           "name": "connection",
           "kind": "F",
-          "status": "x"
+          "status": "s"
         },
         {
           "name": "draftMode",
@@ -2173,27 +2173,27 @@
         {
           "name": "cacheLife",
           "kind": "F",
-          "status": "p"
+          "status": "s"
         },
         {
           "name": "cacheTag",
           "kind": "F",
-          "status": "p"
+          "status": "s"
         },
         {
           "name": "unstable_after",
           "kind": "F",
-          "status": "x"
+          "status": "d"
         },
         {
           "name": "unstable_cacheLife",
           "kind": "F",
-          "status": "x"
+          "status": "d"
         },
         {
           "name": "unstable_cacheTag",
           "kind": "F",
-          "status": "x"
+          "status": "d"
         },
         {
           "name": "NextFetchEvent",
@@ -2208,7 +2208,7 @@
         {
           "name": "MiddlewareConfig",
           "kind": "I",
-          "status": "s"
+          "status": "d"
         },
         {
           "name": "RouteHandlerContext",
@@ -2228,7 +2228,7 @@
         {
           "name": "NextMiddleware",
           "kind": "T",
-          "status": "s"
+          "status": "d"
         },
         {
           "name": "ResolvingMetadata",
@@ -2323,7 +2323,7 @@
         {
           "name": "middleware",
           "kind": "D",
-          "status": "s"
+          "status": "d"
         },
         {
           "name": "instrumentation",
@@ -2413,7 +2413,7 @@
         {
           "name": "use cache",
           "kind": "D",
-          "status": "p"
+          "status": "s"
         },
         {
           "name": "next/link",
@@ -2523,6 +2523,101 @@
         {
           "name": "preconnect",
           "kind": "F",
+          "status": "s"
+        },
+        {
+          "name": "updateTag",
+          "kind": "F",
+          "status": "s"
+        },
+        {
+          "name": "refresh",
+          "kind": "F",
+          "status": "s"
+        },
+        {
+          "name": "catchError",
+          "kind": "F",
+          "status": "s"
+        },
+        {
+          "name": "fetch",
+          "kind": "F",
+          "status": "s"
+        },
+        {
+          "name": "proxy",
+          "kind": "D",
+          "status": "s"
+        },
+        {
+          "name": "instrumentation-client",
+          "kind": "D",
+          "status": "s"
+        },
+        {
+          "name": "mdx-components",
+          "kind": "D",
+          "status": "s"
+        },
+        {
+          "name": "next/root-params",
+          "kind": "M",
+          "status": "s"
+        },
+        {
+          "name": "Parallel routes",
+          "kind": "CON",
+          "status": "s"
+        },
+        {
+          "name": "Intercepting routes",
+          "kind": "CON",
+          "status": "s"
+        },
+        {
+          "name": "Route groups",
+          "kind": "CON",
+          "status": "s"
+        },
+        {
+          "name": "Dynamic routes",
+          "kind": "CON",
+          "status": "s"
+        },
+        {
+          "name": "cacheComponents",
+          "kind": "OPT",
+          "status": "s"
+        },
+        {
+          "name": "reactCompiler",
+          "kind": "OPT",
+          "status": "s"
+        },
+        {
+          "name": "typedRoutes",
+          "kind": "OPT",
+          "status": "s"
+        },
+        {
+          "name": "output",
+          "kind": "OPT",
+          "status": "s"
+        },
+        {
+          "name": "rewrites",
+          "kind": "OPT",
+          "status": "s"
+        },
+        {
+          "name": "images",
+          "kind": "OPT",
+          "status": "s"
+        },
+        {
+          "name": "next typegen",
+          "kind": "CLI",
           "status": "s"
         }
       ]
@@ -2808,12 +2903,12 @@
         {
           "name": "ViewTransition",
           "kind": "Co",
-          "status": "x"
+          "status": "s"
         },
         {
           "name": "Activity",
           "kind": "Co",
-          "status": "x"
+          "status": "s"
         },
         {
           "name": "Component",
@@ -3048,6 +3143,81 @@
         {
           "name": "use server",
           "kind": "D",
+          "status": "s"
+        },
+        {
+          "name": "useEffectEvent",
+          "kind": "H",
+          "status": "s"
+        },
+        {
+          "name": "cacheSignal",
+          "kind": "F",
+          "status": "s"
+        },
+        {
+          "name": "captureOwnerStack",
+          "kind": "F",
+          "status": "s"
+        },
+        {
+          "name": "addTransitionType",
+          "kind": "F",
+          "status": "s"
+        },
+        {
+          "name": "preloadModule",
+          "kind": "F",
+          "status": "s"
+        },
+        {
+          "name": "preinitModule",
+          "kind": "F",
+          "status": "s"
+        },
+        {
+          "name": "resume",
+          "kind": "F",
+          "status": "s"
+        },
+        {
+          "name": "resumeToPipeableStream",
+          "kind": "F",
+          "status": "s"
+        },
+        {
+          "name": "resumeAndPrerender",
+          "kind": "F",
+          "status": "s"
+        },
+        {
+          "name": "resumeAndPrerenderToNodeStream",
+          "kind": "F",
+          "status": "s"
+        },
+        {
+          "name": "browser",
+          "kind": "F",
+          "status": "s"
+        },
+        {
+          "name": "FragmentInstance",
+          "kind": "I",
+          "status": "s"
+        },
+        {
+          "name": "Rules of Hooks",
+          "kind": "CON",
+          "status": "s"
+        },
+        {
+          "name": "React Compiler",
+          "kind": "M",
+          "status": "s"
+        },
+        {
+          "name": "eslint-plugin-react-hooks",
+          "kind": "M",
           "status": "s"
         }
       ]
@@ -7239,6 +7409,211 @@
           "name": "ndarray.imag",
           "kind": "P",
           "status": "s"
+        },
+        {
+          "name": "np.apply_along_axis",
+          "kind": "F",
+          "status": "s"
+        },
+        {
+          "name": "np.vectorize",
+          "kind": "F",
+          "status": "s"
+        },
+        {
+          "name": "np.isnan",
+          "kind": "F",
+          "status": "s"
+        },
+        {
+          "name": "np.isclose",
+          "kind": "F",
+          "status": "s"
+        },
+        {
+          "name": "np.allclose",
+          "kind": "F",
+          "status": "s"
+        },
+        {
+          "name": "np.percentile",
+          "kind": "F",
+          "status": "s"
+        },
+        {
+          "name": "np.quantile",
+          "kind": "F",
+          "status": "s"
+        },
+        {
+          "name": "np.nanmean",
+          "kind": "F",
+          "status": "s"
+        },
+        {
+          "name": "np.histogram",
+          "kind": "F",
+          "status": "s"
+        },
+        {
+          "name": "np.bincount",
+          "kind": "F",
+          "status": "s"
+        },
+        {
+          "name": "np.digitize",
+          "kind": "F",
+          "status": "s"
+        },
+        {
+          "name": "np.corrcoef",
+          "kind": "F",
+          "status": "s"
+        },
+        {
+          "name": "np.cov",
+          "kind": "F",
+          "status": "s"
+        },
+        {
+          "name": "np.block",
+          "kind": "F",
+          "status": "s"
+        },
+        {
+          "name": "np.atleast_2d",
+          "kind": "F",
+          "status": "s"
+        },
+        {
+          "name": "np.broadcast_to",
+          "kind": "F",
+          "status": "s"
+        },
+        {
+          "name": "np.take",
+          "kind": "F",
+          "status": "s"
+        },
+        {
+          "name": "np.put",
+          "kind": "F",
+          "status": "s"
+        },
+        {
+          "name": "np.load",
+          "kind": "F",
+          "status": "s"
+        },
+        {
+          "name": "np.savez",
+          "kind": "F",
+          "status": "s"
+        },
+        {
+          "name": "np.loadtxt",
+          "kind": "F",
+          "status": "s"
+        },
+        {
+          "name": "np.genfromtxt",
+          "kind": "F",
+          "status": "s"
+        },
+        {
+          "name": "np.savetxt",
+          "kind": "F",
+          "status": "s"
+        },
+        {
+          "name": "np.fft.fft",
+          "kind": "F",
+          "status": "s"
+        },
+        {
+          "name": "np.polyfit",
+          "kind": "F",
+          "status": "s"
+        },
+        {
+          "name": "np.interp",
+          "kind": "F",
+          "status": "s"
+        },
+        {
+          "name": "np.trapezoid",
+          "kind": "F",
+          "status": "s"
+        },
+        {
+          "name": "np.isin",
+          "kind": "F",
+          "status": "s"
+        },
+        {
+          "name": "np.intersect1d",
+          "kind": "F",
+          "status": "s"
+        },
+        {
+          "name": "np.union1d",
+          "kind": "F",
+          "status": "s"
+        },
+        {
+          "name": "np.setdiff1d",
+          "kind": "F",
+          "status": "s"
+        },
+        {
+          "name": "np.concat",
+          "kind": "F",
+          "status": "s"
+        },
+        {
+          "name": "np.nan",
+          "kind": "K",
+          "status": "s"
+        },
+        {
+          "name": "ndarray.astype",
+          "kind": "MTH",
+          "status": "s"
+        },
+        {
+          "name": "ndarray.reshape",
+          "kind": "MTH",
+          "status": "s"
+        },
+        {
+          "name": "ndarray.copy",
+          "kind": "MTH",
+          "status": "s"
+        },
+        {
+          "name": "ndarray.view",
+          "kind": "MTH",
+          "status": "s"
+        },
+        {
+          "name": "ndarray.flatten",
+          "kind": "MTH",
+          "status": "s"
+        },
+        {
+          "name": "np.random.Generator",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "Broadcasting",
+          "kind": "CON",
+          "status": "s"
+        },
+        {
+          "name": "Views and copies",
+          "kind": "CON",
+          "status": "s"
         }
       ]
     },
@@ -7523,7 +7898,7 @@
         {
           "name": "df.applymap",
           "kind": "MTH",
-          "status": "s"
+          "status": "d"
         },
         {
           "name": "df.assign",
@@ -7903,6 +8278,111 @@
         {
           "name": "pd.wide_to_long",
           "kind": "F",
+          "status": "s"
+        },
+        {
+          "name": "df.pipe",
+          "kind": "MTH",
+          "status": "s"
+        },
+        {
+          "name": "df.map",
+          "kind": "MTH",
+          "status": "s"
+        },
+        {
+          "name": "df.melt",
+          "kind": "MTH",
+          "status": "s"
+        },
+        {
+          "name": "df.convert_dtypes",
+          "kind": "MTH",
+          "status": "s"
+        },
+        {
+          "name": "df.select_dtypes",
+          "kind": "MTH",
+          "status": "s"
+        },
+        {
+          "name": "df.to_markdown",
+          "kind": "MTH",
+          "status": "s"
+        },
+        {
+          "name": "df.compare",
+          "kind": "MTH",
+          "status": "s"
+        },
+        {
+          "name": "df.between_time",
+          "kind": "MTH",
+          "status": "s"
+        },
+        {
+          "name": "df.at_time",
+          "kind": "MTH",
+          "status": "s"
+        },
+        {
+          "name": "df.isna",
+          "kind": "MTH",
+          "status": "s"
+        },
+        {
+          "name": "df.notna",
+          "kind": "MTH",
+          "status": "s"
+        },
+        {
+          "name": "df.plot",
+          "kind": "MTH",
+          "status": "s"
+        },
+        {
+          "name": "DataFrameGroupBy.agg",
+          "kind": "MTH",
+          "status": "s"
+        },
+        {
+          "name": "df.style",
+          "kind": "P",
+          "status": "s"
+        },
+        {
+          "name": "pd.Grouper",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "pd.NamedAgg",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "pd.IndexSlice",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "pd.DateOffset",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "pd.NA",
+          "kind": "K",
+          "status": "s"
+        },
+        {
+          "name": "pd.array",
+          "kind": "F",
+          "status": "s"
+        },
+        {
+          "name": "Copy-on-Write",
+          "kind": "CON",
           "status": "s"
         }
       ]
@@ -11704,6 +12184,166 @@
           "name": "OpenAPI docs",
           "kind": "CON",
           "status": "s"
+        },
+        {
+          "name": "Security",
+          "kind": "F",
+          "status": "s"
+        },
+        {
+          "name": "jsonable_encoder",
+          "kind": "F",
+          "status": "s"
+        },
+        {
+          "name": "WebSocket",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "HTTPConnection",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "HTMLResponse",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "RedirectResponse",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "PlainTextResponse",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "EventSourceResponse",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "ServerSentEvent",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "CORSMiddleware",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "GZipMiddleware",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "TrustedHostMiddleware",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "OAuth2PasswordRequestForm",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "OAuth2AuthorizationCodeBearer",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "APIKeyHeader",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "APIKeyQuery",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "APIKeyCookie",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "HTTPBasic",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "SecurityScopes",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "StaticFiles",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "Jinja2Templates",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "TestClient",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "WebSocketException",
+          "kind": "ERR",
+          "status": "s"
+        },
+        {
+          "name": "@app.patch",
+          "kind": "@",
+          "status": "s"
+        },
+        {
+          "name": "@app.websocket",
+          "kind": "@",
+          "status": "s"
+        },
+        {
+          "name": "@app.exception_handler",
+          "kind": "@",
+          "status": "s"
+        },
+        {
+          "name": "app.include_router",
+          "kind": "MTH",
+          "status": "s"
+        },
+        {
+          "name": "app.mount",
+          "kind": "MTH",
+          "status": "s"
+        },
+        {
+          "name": "app.dependency_overrides",
+          "kind": "P",
+          "status": "s"
+        },
+        {
+          "name": "lifespan",
+          "kind": "P",
+          "status": "s"
+        },
+        {
+          "name": "response_model",
+          "kind": "P",
+          "status": "s"
+        },
+        {
+          "name": "Query parameter models",
+          "kind": "CON",
+          "status": "s"
         }
       ]
     },
@@ -12822,7 +13462,7 @@
       "name": "Pydantic",
       "icon": "🧾",
       "description": "Pydantic data validation",
-      "docs": "https://docs.pydantic.dev/latest/api/base_model/",
+      "docs": "https://pydantic.dev/docs/validation/latest/",
       "accent": "#E92063",
       "topics": [
         "BaseModel",
@@ -12848,7 +13488,7 @@
         {
           "name": "validator",
           "kind": "@",
-          "status": "s"
+          "status": "d"
         },
         {
           "name": "field_validator",
@@ -13368,6 +14008,86 @@
         {
           "name": "model_dump(exclude_none)",
           "kind": "M",
+          "status": "s"
+        },
+        {
+          "name": "model_post_init",
+          "kind": "M",
+          "status": "s"
+        },
+        {
+          "name": "model_parametrized_name",
+          "kind": "M",
+          "status": "s"
+        },
+        {
+          "name": "model_computed_fields",
+          "kind": "M",
+          "status": "s"
+        },
+        {
+          "name": "model_extra",
+          "kind": "P",
+          "status": "s"
+        },
+        {
+          "name": "strict",
+          "kind": "P",
+          "status": "s"
+        },
+        {
+          "name": "create_model",
+          "kind": "F",
+          "status": "s"
+        },
+        {
+          "name": "PrivateAttr",
+          "kind": "F",
+          "status": "s"
+        },
+        {
+          "name": "ValidationInfo",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "SerializationInfo",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "ValidateAs",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "ValidatorFunctionWrapHandler",
+          "kind": "T",
+          "status": "s"
+        },
+        {
+          "name": "ModelWrapValidatorHandler",
+          "kind": "T",
+          "status": "s"
+        },
+        {
+          "name": "PydanticCustomError",
+          "kind": "ERR",
+          "status": "s"
+        },
+        {
+          "name": "PydanticUseDefault",
+          "kind": "ERR",
+          "status": "s"
+        },
+        {
+          "name": "with_config",
+          "kind": "@",
+          "status": "s"
+        },
+        {
+          "name": "dataclasses.dataclass",
+          "kind": "@",
           "status": "s"
         }
       ]
@@ -14544,6 +15264,161 @@
           "name": "getRouteApi",
           "kind": "F",
           "status": "s"
+        },
+        {
+          "name": "skipToken",
+          "kind": "K",
+          "status": "s"
+        },
+        {
+          "name": "QueryFunctionContext",
+          "kind": "T",
+          "status": "s"
+        },
+        {
+          "name": "queryClient.invalidateQueries",
+          "kind": "MTH",
+          "status": "s"
+        },
+        {
+          "name": "queryClient.setQueryData",
+          "kind": "MTH",
+          "status": "s"
+        },
+        {
+          "name": "queryClient.prefetchQuery",
+          "kind": "MTH",
+          "status": "s"
+        },
+        {
+          "name": "queryClient.fetchQuery",
+          "kind": "MTH",
+          "status": "s"
+        },
+        {
+          "name": "queryClient.ensureQueryData",
+          "kind": "MTH",
+          "status": "s"
+        },
+        {
+          "name": "queryClient.cancelQueries",
+          "kind": "MTH",
+          "status": "s"
+        },
+        {
+          "name": "queryClient.refetchQueries",
+          "kind": "MTH",
+          "status": "s"
+        },
+        {
+          "name": "queryClient.removeQueries",
+          "kind": "MTH",
+          "status": "s"
+        },
+        {
+          "name": "virtualizer.getVirtualItems",
+          "kind": "MTH",
+          "status": "s"
+        },
+        {
+          "name": "virtualizer.getTotalSize",
+          "kind": "MTH",
+          "status": "s"
+        },
+        {
+          "name": "virtualizer.measureElement",
+          "kind": "MTH",
+          "status": "s"
+        },
+        {
+          "name": "virtualizer.scrollToIndex",
+          "kind": "MTH",
+          "status": "s"
+        },
+        {
+          "name": "onMutate",
+          "kind": "P",
+          "status": "s"
+        },
+        {
+          "name": "beforeLoad",
+          "kind": "P",
+          "status": "s"
+        },
+        {
+          "name": "loader",
+          "kind": "P",
+          "status": "s"
+        },
+        {
+          "name": "loaderDeps",
+          "kind": "P",
+          "status": "s"
+        },
+        {
+          "name": "validateSearch",
+          "kind": "P",
+          "status": "s"
+        },
+        {
+          "name": "mutationOptions",
+          "kind": "F",
+          "status": "s"
+        },
+        {
+          "name": "createServerFn",
+          "kind": "F",
+          "status": "s"
+        },
+        {
+          "name": "createMiddleware",
+          "kind": "F",
+          "status": "s"
+        },
+        {
+          "name": "createFormHook",
+          "kind": "F",
+          "status": "s"
+        },
+        {
+          "name": "useLoaderDeps",
+          "kind": "H",
+          "status": "s"
+        },
+        {
+          "name": "useLocation",
+          "kind": "H",
+          "status": "s"
+        },
+        {
+          "name": "useCanGoBack",
+          "kind": "H",
+          "status": "s"
+        },
+        {
+          "name": "useAppForm",
+          "kind": "H",
+          "status": "s"
+        },
+        {
+          "name": "Navigate",
+          "kind": "Co",
+          "status": "s"
+        },
+        {
+          "name": "Await",
+          "kind": "Co",
+          "status": "s"
+        },
+        {
+          "name": "CatchBoundary",
+          "kind": "Co",
+          "status": "s"
+        },
+        {
+          "name": "ErrorComponent",
+          "kind": "Co",
+          "status": "s"
         }
       ]
     },
@@ -15103,6 +15978,56 @@
         {
           "name": "store typing",
           "kind": "CON",
+          "status": "s"
+        },
+        {
+          "name": "persist.rehydrate",
+          "kind": "MTH",
+          "status": "s"
+        },
+        {
+          "name": "persist.hasHydrated",
+          "kind": "MTH",
+          "status": "s"
+        },
+        {
+          "name": "persist.onFinishHydration",
+          "kind": "MTH",
+          "status": "s"
+        },
+        {
+          "name": "persist.clearStorage",
+          "kind": "MTH",
+          "status": "s"
+        },
+        {
+          "name": "persist.getOptions",
+          "kind": "MTH",
+          "status": "s"
+        },
+        {
+          "name": "persist.setOptions",
+          "kind": "MTH",
+          "status": "s"
+        },
+        {
+          "name": "Immutable state and merging",
+          "kind": "CON",
+          "status": "s"
+        },
+        {
+          "name": "Next.js setup",
+          "kind": "CON",
+          "status": "s"
+        },
+        {
+          "name": "Prevent rerenders with useShallow",
+          "kind": "CON",
+          "status": "s"
+        },
+        {
+          "name": "actionsDenylist",
+          "kind": "P",
           "status": "s"
         }
       ]
@@ -24858,7 +25783,7 @@
         {
           "name": "page.type",
           "kind": "MTH",
-          "status": "s"
+          "status": "d"
         },
         {
           "name": "page.press",
@@ -25223,6 +26148,221 @@
         {
           "name": "webkit",
           "kind": "F",
+          "status": "s"
+        },
+        {
+          "name": "locator.within",
+          "kind": "MTH",
+          "status": "s"
+        },
+        {
+          "name": "locator.visible",
+          "kind": "MTH",
+          "status": "s"
+        },
+        {
+          "name": "page.getByRef",
+          "kind": "MTH",
+          "status": "s"
+        },
+        {
+          "name": "route.fulfill",
+          "kind": "MTH",
+          "status": "s"
+        },
+        {
+          "name": "page.localStorage",
+          "kind": "MTH",
+          "status": "s"
+        },
+        {
+          "name": "expect.poll",
+          "kind": "F",
+          "status": "s"
+        },
+        {
+          "name": "expect.toPass",
+          "kind": "F",
+          "status": "s"
+        },
+        {
+          "name": "expect.configure",
+          "kind": "F",
+          "status": "s"
+        },
+        {
+          "name": "expect.extend",
+          "kind": "F",
+          "status": "s"
+        },
+        {
+          "name": "mergeExpects",
+          "kind": "F",
+          "status": "s"
+        },
+        {
+          "name": "toBeAttached",
+          "kind": "MAT",
+          "status": "s"
+        },
+        {
+          "name": "toBeEditable",
+          "kind": "MAT",
+          "status": "s"
+        },
+        {
+          "name": "toBeInViewport",
+          "kind": "MAT",
+          "status": "s"
+        },
+        {
+          "name": "toContainClass",
+          "kind": "MAT",
+          "status": "s"
+        },
+        {
+          "name": "toHaveAccessibleName",
+          "kind": "MAT",
+          "status": "s"
+        },
+        {
+          "name": "toHaveAccessibleDescription",
+          "kind": "MAT",
+          "status": "s"
+        },
+        {
+          "name": "toHaveCSS",
+          "kind": "MAT",
+          "status": "s"
+        },
+        {
+          "name": "toHaveId",
+          "kind": "MAT",
+          "status": "s"
+        },
+        {
+          "name": "toHaveJSProperty",
+          "kind": "MAT",
+          "status": "s"
+        },
+        {
+          "name": "toHaveRole",
+          "kind": "MAT",
+          "status": "s"
+        },
+        {
+          "name": "toHaveValues",
+          "kind": "MAT",
+          "status": "s"
+        },
+        {
+          "name": "toMatchAriaSnapshot",
+          "kind": "MAT",
+          "status": "s"
+        },
+        {
+          "name": "toBeOK",
+          "kind": "MAT",
+          "status": "s"
+        },
+        {
+          "name": "Clock",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "Tracing",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "Dialog",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "Download",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "FileChooser",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "FrameLocator",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "Keyboard",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "Mouse",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "WebSocketRoute",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "TestInfo",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "TestConfig",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "Reporter",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "Coverage",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "playwright codegen",
+          "kind": "CLI",
+          "status": "s"
+        },
+        {
+          "name": "playwright test --ui",
+          "kind": "CLI",
+          "status": "s"
+        },
+        {
+          "name": "playwright show-report",
+          "kind": "CLI",
+          "status": "s"
+        },
+        {
+          "name": "playwright test --trace on",
+          "kind": "CLI",
+          "status": "s"
+        },
+        {
+          "name": "Trace viewer",
+          "kind": "CON",
+          "status": "s"
+        },
+        {
+          "name": "UI Mode",
+          "kind": "CON",
+          "status": "s"
+        },
+        {
+          "name": "Setup project",
+          "kind": "CON",
           "status": "s"
         }
       ]
@@ -28924,6 +30064,91 @@
           "name": "Short-term memory",
           "kind": "M",
           "status": "s"
+        },
+        {
+          "name": "AIMessageChunk",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "RemoveMessage",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "ModelResponse",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "InMemoryVectorStore",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "MultiServerMCPClient",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "AnthropicPromptCachingMiddleware",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "LLMToolEmulator",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "create_retriever_tool",
+          "kind": "F",
+          "status": "s"
+        },
+        {
+          "name": "load_mcp_tools",
+          "kind": "F",
+          "status": "s"
+        },
+        {
+          "name": "count_tokens_approximately",
+          "kind": "F",
+          "status": "s"
+        },
+        {
+          "name": "convert_to_messages",
+          "kind": "F",
+          "status": "s"
+        },
+        {
+          "name": "ToolCall",
+          "kind": "T",
+          "status": "s"
+        },
+        {
+          "name": "UsageMetadata",
+          "kind": "T",
+          "status": "s"
+        },
+        {
+          "name": "ToolException",
+          "kind": "ERR",
+          "status": "s"
+        },
+        {
+          "name": "langchain-classic",
+          "kind": "M",
+          "status": "s"
+        },
+        {
+          "name": "response_format",
+          "kind": "OPT",
+          "status": "s"
+        },
+        {
+          "name": "context_schema",
+          "kind": "OPT",
+          "status": "s"
         }
       ]
     },
@@ -29268,6 +30493,86 @@
         {
           "name": "RemoteGraph",
           "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "add_node",
+          "kind": "F",
+          "status": "s"
+        },
+        {
+          "name": "add_edge",
+          "kind": "F",
+          "status": "s"
+        },
+        {
+          "name": "compile",
+          "kind": "F",
+          "status": "s"
+        },
+        {
+          "name": "stream",
+          "kind": "F",
+          "status": "s"
+        },
+        {
+          "name": "astream_events",
+          "kind": "F",
+          "status": "s"
+        },
+        {
+          "name": "Overwrite",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "Interrupt",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "InjectedState",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "InjectedStore",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "UntrackedValue",
+          "kind": "C",
+          "status": "s"
+        },
+        {
+          "name": "GraphRecursionError",
+          "kind": "ERR",
+          "status": "s"
+        },
+        {
+          "name": "InvalidUpdateError",
+          "kind": "ERR",
+          "status": "s"
+        },
+        {
+          "name": "GraphInterrupt",
+          "kind": "ERR",
+          "status": "s"
+        },
+        {
+          "name": "StreamWriter",
+          "kind": "T",
+          "status": "s"
+        },
+        {
+          "name": "entrypoint.final",
+          "kind": "M",
+          "status": "s"
+        },
+        {
+          "name": "previous",
+          "kind": "CON",
           "status": "s"
         }
       ]
@@ -29814,6 +31119,66 @@
           "name": "Vitest & Jest",
           "kind": "M",
           "status": "s"
+        },
+        {
+          "name": "wrap_gemini",
+          "kind": "F",
+          "status": "s"
+        },
+        {
+          "name": "trace",
+          "kind": "F",
+          "status": "s"
+        },
+        {
+          "name": "create_anonymizer",
+          "kind": "F",
+          "status": "s"
+        },
+        {
+          "name": "Client.create_examples",
+          "kind": "MTH",
+          "status": "s"
+        },
+        {
+          "name": "Client.list_runs",
+          "kind": "MTH",
+          "status": "s"
+        },
+        {
+          "name": "Client.read_run",
+          "kind": "MTH",
+          "status": "s"
+        },
+        {
+          "name": "Client.evaluate",
+          "kind": "MTH",
+          "status": "s"
+        },
+        {
+          "name": "LANGSMITH_AGENT_ID",
+          "kind": "ENV",
+          "status": "s"
+        },
+        {
+          "name": "Experiments",
+          "kind": "M",
+          "status": "s"
+        },
+        {
+          "name": "Online evaluators",
+          "kind": "M",
+          "status": "s"
+        },
+        {
+          "name": "Annotation queues",
+          "kind": "M",
+          "status": "s"
+        },
+        {
+          "name": "Engine",
+          "kind": "M",
+          "status": "s"
         }
       ]
     },
@@ -30349,6 +31714,21 @@
           "name": "Voice mode",
           "kind": "M",
           "status": "d"
+        },
+        {
+          "name": "GET /api/v1/version",
+          "kind": "SVC",
+          "status": "s"
+        },
+        {
+          "name": "POST /api/v1/custom_component",
+          "kind": "SVC",
+          "status": "s"
+        },
+        {
+          "name": "LANGFLOW_SUPERUSER_PASSWORD",
+          "kind": "ENV",
+          "status": "s"
         }
       ]
     },

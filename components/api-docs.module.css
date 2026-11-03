@@ -1543,3 +1543,5 @@
 .detail .pointCards li > span:last-child { min-width: 0; flex: 1; }
 
 .detail .pointCards .pointNumber { display: grid; place-items: center; min-width: 26px; height: 26px; padding: 0 6px; border-radius: 999px; font-size: 12.5px; font-weight: 700; line-height: 1; font-variant-numeric: tabular-nums; }
+.practice { margin-top: 24px; padding: 14px 16px; border: 1px solid #e3e1d8; border-radius: 12px; background: #fff; }
+.practice > summary { cursor: pointer; font-size: 15.5px; color: #262624; }

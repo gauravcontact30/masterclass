@@ -44,7 +44,9 @@
     ".next-cwv-baseline/types/**/*.ts",
     ".next-cwv-baseline/dev/types/**/*.ts",
     ".next-cwv-dev/types/**/*.ts",
-    ".next-cwv-dev/dev/types/**/*.ts"
+    ".next-cwv-dev/dev/types/**/*.ts",
+    ".next-trial2/types/**/*.ts",
+    ".next-trial2/dev/types/**/*.ts"
   ],
   "//": "__tests__ is excluded so a stale test file cannot break `next build`. Tests are checked by running them, and tsconfig.test.json type-checks them on demand.",
   "exclude": [

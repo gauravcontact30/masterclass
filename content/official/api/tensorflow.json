@@ -177,6 +177,227 @@
   ],
   "checkedAt": "2026-10-15"
  },
+ "callbacks.ModelCheckpoint": {
+  "sourceUrl": "https://www.tensorflow.org/api_docs/python/tf/keras/callbacks/ModelCheckpoint",
+  "sourceTitle": "tf.keras.callbacks.ModelCheckpoint | TensorFlow v2.21.0",
+  "summary": "ModelCheckpoint saves a Keras model or its weights during model.fit(). It can save every epoch or after a batch interval, and it can keep only the checkpoint with the best monitored value.",
+  "explanation": "ModelCheckpoint watches a training value and saves a model or its weights during model.fit(). You can save after each epoch or after a fixed number of batches, and you can keep every save or only the best one.",
+  "syntax": "tf.keras.callbacks.ModelCheckpoint(filepath, monitor='val_loss', verbose=0, save_best_only=False, save_weights_only=False, mode='auto', save_freq='epoch', initial_value_threshold=None)",
+  "parameters": [
+   {
+    "name": "filepath",
+    "type": "string or PathLike",
+    "description": "File path for the saved model or weights. Use .weights.h5 for weights only, or .keras/.h5 for a whole model."
+   },
+   {
+    "name": "monitor",
+    "type": "string",
+    "description": "Logged value to watch, such as val_loss."
+   },
+   {
+    "name": "verbose",
+    "type": "int",
+    "description": "Whether to print save messages."
+   },
+   {
+    "name": "save_best_only",
+    "type": "bool",
+    "description": "Save only when the monitored value improves."
+   },
+   {
+    "name": "save_weights_only",
+    "type": "bool",
+    "description": "Save only model weights instead of the complete model."
+   },
+   {
+    "name": "mode",
+    "type": "string",
+    "description": "Direction of improvement: min, max, or auto."
+   },
+   {
+    "name": "save_freq",
+    "type": "string or int",
+    "description": "Save after each epoch or after this many batches."
+   },
+   {
+    "name": "initial_value_threshold",
+    "type": "float or None",
+    "description": "Starting monitored value used with best-only saving."
+   }
+  ],
+  "returns": "A callback object used with model.fit().",
+  "example": {
+   "title": "Save the best model",
+   "code": "import tensorflow as tf\n\nmodel = make_model()\nmodel.compile(optimizer=\"adam\", loss=\"sparse_categorical_crossentropy\")\n\ncheckpoint = tf.keras.callbacks.ModelCheckpoint(\n    \"checkpoints/best.keras\",\n    monitor=\"val_loss\",\n    mode=\"min\",\n    save_best_only=True,\n)\nmodel.fit(\n    x_train,\n    y_train,\n    validation_data=(x_valid, y_valid),\n    epochs=10,\n    callbacks=[checkpoint],\n)",
+   "language": "python",
+   "explanation": "This saves the whole model after an epoch only when validation loss improves."
+  },
+  "useCases": [
+   {
+    "title": "Resume interrupted training",
+    "scenario": "A long training run may stop unexpectedly."
+   },
+   {
+    "title": "Keep the best model",
+    "scenario": "Validation performance changes across epochs."
+   },
+   {
+    "title": "Store weights only",
+    "scenario": "The architecture is defined separately from training output."
+   }
+  ],
+  "related": [
+   "tf.keras.callbacks.Callback",
+   "tf.keras.Model.fit",
+   "tf.keras.models.load_model",
+   "tf.keras.Model.load_weights",
+   "tf.keras.Model.save_weights"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does ModelCheckpoint do?",
+    "answer": "ModelCheckpoint saves a model or weights while model.fit() runs. It can save every epoch or after a chosen number of batches.",
+    "followUp": "How would you keep only the best checkpoint? Set save_best_only=True and choose monitor plus mode so the callback knows which value is better."
+   },
+   {
+    "question": "How do whole-model and weight-only saves differ?",
+    "answer": "Set save_weights_only=True to save only weights. The model architecture must then be recreated before calling load_weights().",
+    "followUp": "What is also preserved in a weight-only file? If the model was compiled when saved, the optimizer state is included too."
+   },
+   {
+    "question": "How does best-checkpoint selection work?",
+    "answer": "monitor selects a value from the training logs, such as val_loss or val_accuracy. mode='min' keeps lower values, while mode='max' keeps higher values.",
+    "followUp": "What if mode is auto? The callback chooses the direction from the monitored name, but explicit mode is clearer when using custom metrics."
+   }
+  ],
+  "keyPoints": [
+   "Use this callback to save the complete Keras model or only its weights.",
+   "save_best_only=True replaces the previous checkpoint only when the monitored value improves.",
+   "monitor names the logged value, and mode sets whether smaller or larger values are better.",
+   "The default saves at the end of each epoch. An integer save_freq saves after that many batches.",
+   "Add formatting fields such as {epoch} or {loss:.2f} to create informative checkpoint names.",
+   "A compiled model can store optimizer progress in a weight-only checkpoint, which helps resume scheduled training."
+  ],
+  "gotchas": [
+   "Use a .weights.h5 filename for weight-only saves. Whole-model saves must use .keras or .h5.",
+   "When resuming from weights, compile the new model before load_weights() so the optimizer state can be restored.",
+   "save_freq accepts epoch or a number of batches. It does not support arbitrary time-based intervals."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "callbacks.ReduceLROnPlateau": {
+  "sourceUrl": "https://www.tensorflow.org/api_docs/python/tf/keras/callbacks/ReduceLROnPlateau",
+  "sourceTitle": "tf.keras.callbacks.ReduceLROnPlateau | TensorFlow v2.21.0",
+  "summary": "ReduceLROnPlateau lowers the learning rate when a monitored metric stops improving. It waits for a set number of epochs, then applies a multiplier while respecting a minimum learning rate.",
+  "explanation": "During training, the callback watches one metric after each epoch. When the metric has not improved enough for the configured patience period, it lowers the optimizer's learning rate. It then waits through the cooldown period before checking normally again, and it stops lowering the rate once min_lr is reached.",
+  "syntax": "tf.keras.callbacks.ReduceLROnPlateau(monitor='val_loss', factor=0.1, patience=10, verbose=0, mode='auto', min_delta=0.0001, cooldown=0, min_lr=0.0, **kwargs)",
+  "parameters": [
+   {
+    "name": "monitor",
+    "type": "string",
+    "description": "Metric name to monitor."
+   },
+   {
+    "name": "factor",
+    "type": "float",
+    "description": "Multiplier applied to the current learning rate."
+   },
+   {
+    "name": "patience",
+    "type": "integer",
+    "description": "Number of epochs without improvement before reducing the rate."
+   },
+   {
+    "name": "verbose",
+    "type": "integer",
+    "description": "0 disables messages; 1 prints update messages."
+   },
+   {
+    "name": "mode",
+    "type": "string",
+    "description": "Improvement direction: auto, min, or max."
+   },
+   {
+    "name": "min_delta",
+    "type": "float",
+    "description": "Minimum change counted as an improvement."
+   },
+   {
+    "name": "cooldown",
+    "type": "integer",
+    "description": "Epochs to wait after reducing the rate."
+   },
+   {
+    "name": "min_lr",
+    "type": "float",
+    "description": "Minimum allowed learning rate."
+   }
+  ],
+  "returns": "A ReduceLROnPlateau callback object.",
+  "example": {
+   "title": "Reduce the learning rate when validation loss stalls",
+   "code": "from tensorflow import keras\n\nreduce_lr = keras.callbacks.ReduceLROnPlateau(\n    monitor=\"val_loss\",\n    factor=0.2,\n    patience=5,\n    min_lr=0.001,\n)\n\nmodel.fit(\n    x_train,\n    y_train,\n    validation_data=(x_valid, y_valid),\n    callbacks=[reduce_lr],\n)",
+   "language": "python",
+   "explanation": "This callback watches validation loss during training. If it does not improve for five epochs, the learning rate is multiplied by 0.2, but it will not go below 0.001."
+  },
+  "useCases": [
+   {
+    "title": "Lower the rate when validation loss stalls",
+    "scenario": "Validation loss stops decreasing during model.fit."
+   },
+   {
+    "title": "Monitor a metric in max mode",
+    "scenario": "A metric should increase, such as an accuracy measure."
+   },
+   {
+    "title": "Ignore insignificant improvements",
+    "scenario": "Small metric changes should not trigger a new best result."
+   },
+   {
+    "title": "Add a cooldown period",
+    "scenario": "A reduction needs time to affect training before another check."
+   }
+  ],
+  "related": [
+   "Callback",
+   "EarlyStopping",
+   "LearningRateScheduler",
+   "ModelCheckpoint",
+   "History"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does ReduceLROnPlateau do?",
+    "answer": "It monitors a chosen metric and lowers the learning rate after that metric shows no meaningful improvement for the configured patience number of epochs. The new rate is the old rate multiplied by factor.",
+    "followUp": "What prevents unlimited reductions? min_lr sets the lower bound, so the learning rate cannot be reduced below that value."
+   },
+   {
+    "question": "How does mode affect monitoring?",
+    "answer": "mode selects the improvement direction. min expects the monitored value to decrease, max expects it to increase, and auto infers the direction from the metric name.",
+    "followUp": "When should mode be set explicitly? Set it when the metric name might not let auto reliably determine whether lower or higher values are better."
+   },
+   {
+    "question": "How do patience, min_delta, and cooldown work together?",
+    "answer": "patience is the number of epochs without improvement before a reduction. min_delta defines how large a change must be to count as a new best value, and cooldown adds a waiting period after a reduction.",
+    "followUp": "Why use cooldown? It prevents immediate repeated reductions while the model adjusts to the new learning rate."
+   }
+  ],
+  "keyPoints": [
+   "Use this callback when training has stopped making progress on a monitored metric.",
+   "monitor names the metric that the callback checks.",
+   "patience controls how many unchanged epochs are allowed before the reduction.",
+   "min_delta ignores changes that are smaller than the chosen threshold.",
+   "cooldown delays normal monitoring after a learning-rate reduction.",
+   "min_lr sets the smallest learning rate this callback may use."
+  ],
+  "gotchas": [
+   "The automatic direction depends on the monitored quantity's name. Use min or max when the intended direction is not clear.",
+   "The factor multiplies the current learning rate. A factor of 0.2 makes it one fifth of its previous value."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "callbacks.TensorBoard": {
   "sourceUrl": "https://www.tensorflow.org/api_docs/python/tf/keras/callbacks/TensorBoard",
   "sourceTitle": "tf.keras.callbacks.TensorBoard | TensorFlow",
@@ -1117,6 +1338,112 @@
   ],
   "checkedAt": "2026-10-15"
  },
+ "GradientTape": {
+  "sourceUrl": "https://www.tensorflow.org/api_docs/python/tf/GradientTape",
+  "sourceTitle": "tf.GradientTape | TensorFlow v2.21.0",
+  "summary": "tf.GradientTape records TensorFlow operations and computes gradients automatically. It tracks trainable variables by default, while other tensors need watch().",
+  "explanation": "GradientTape records TensorFlow operations during its context. After the forward calculation, gradient() follows the recorded operations backward to compute derivatives for watched tensors or trainable variables. Use persistent=True for more than one gradient calculation, or watch() when the input is not a trainable variable.",
+  "syntax": "tf.GradientTape(persistent=False, watch_accessed_variables=True)",
+  "parameters": [
+   {
+    "name": "persistent",
+    "type": "bool",
+    "description": "Whether to keep tape resources for later gradient or Jacobian calls."
+   },
+   {
+    "name": "watch_accessed_variables",
+    "type": "bool",
+    "description": "Whether accessed trainable variables are watched automatically."
+   },
+   {
+    "name": "target",
+    "type": "Tensor, Variable, or nested structure",
+    "description": "The target tensor structure to differentiate."
+   },
+   {
+    "name": "sources",
+    "type": "Tensor, Variable, or nested structure",
+    "description": "The source tensor structure with respect to which gradients are requested."
+   },
+   {
+    "name": "output_gradients",
+    "type": "list or nested structure",
+    "description": "Optional upstream gradients for target elements."
+   },
+   {
+    "name": "unconnected_gradients",
+    "type": "tf.UnconnectedGradients",
+    "description": "How to represent gradients for unconnected targets and sources."
+   }
+  ],
+  "returns": "gradient() returns a structure matching sources, containing tensors, IndexedSlices, CompositeTensors, or None. jacobian() and batch_jacobian() return tensors containing Jacobian values.",
+  "example": {
+   "title": "Compute a gradient",
+   "code": "import tensorflow as tf\n\nx = tf.constant(3.0)\nwith tf.GradientTape() as tape:\n    tape.watch(x)\n    y = x * x\n\ngradient = tape.gradient(y, x)\nprint(gradient.numpy())  # 6.0",
+   "language": "python",
+   "explanation": "This watches a constant, records the multiplication, and computes the derivative of y with respect to x."
+  },
+  "useCases": [
+   {
+    "title": "Train a model",
+    "scenario": "Calculate derivatives for a loss and model variables in a custom training loop."
+   },
+   {
+    "title": "Watch an input tensor",
+    "scenario": "Differentiate a tensor that is not a trainable variable."
+   },
+   {
+    "title": "Higher-order derivatives",
+    "scenario": "Compute second or higher derivatives with nested tapes."
+   },
+   {
+    "title": "Batch Jacobians",
+    "scenario": "Get per-example derivatives for independent batch items."
+   }
+  ],
+  "related": [
+   "tf.autodiff.GradientTape",
+   "tf.UnconnectedGradients",
+   "GradientTape.gradient",
+   "GradientTape.jacobian",
+   "GradientTape.batch_jacobian",
+   "GradientTape.watch",
+   "GradientTape.reset",
+   "GradientTape.stop_recording"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does tf.GradientTape do?",
+    "answer": "It records relevant operations inside its context when at least one input is watched. gradient() then computes derivatives from the recorded operations.",
+    "followUp": "How do you differentiate a constant? Call tape.watch(constant) before using it in the recorded computation."
+   },
+   {
+    "question": "What values does the tape watch?",
+    "answer": "Trainable variables accessed inside the context are watched automatically. A tensor must be passed to watch() manually unless it is an automatically watched trainable variable.",
+    "followUp": "How can you limit tracking? Create the tape with watch_accessed_variables=False and explicitly call watch()."
+   },
+   {
+    "question": "When should persistent=True be used?",
+    "answer": "A normal tape releases its resources after gradient() and cannot compute another gradient. Set persistent=True to allow multiple calls; the resources are released when the tape is garbage collected.",
+    "followUp": "What is another way to get separate derivatives for vector outputs? Use jacobian() or batch_jacobian() when their documented independence conditions apply."
+   }
+  ],
+  "keyPoints": [
+   "Use the context manager to capture a forward computation for automatic differentiation.",
+   "Trainable variables are tracked automatically when accessed inside the tape.",
+   "Call watch() for tensors that are not automatically tracked.",
+   "Nested tapes can compute second-order and other higher-order derivatives.",
+   "For multiple or non-scalar targets, gradient() returns the gradient of their sum.",
+   "batch_jacobian() gives one Jacobian for each batch item when items are independent."
+  ],
+  "gotchas": [
+   "A non-persistent tape is normally usable for only one gradient or Jacobian calculation.",
+   "Integer and string tensors do not produce gradients.",
+   "With automatic watching disabled, watch model variables only after the layer has created them."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "keras.Input": {
   "sourceUrl": "https://www.tensorflow.org/api_docs/python/tf/keras/Input",
   "sourceTitle": "tf.keras.Input | TensorFlow v2.16.1",
@@ -1929,6 +2256,166 @@
   ],
   "checkedAt": "2026-10-15"
  },
+ "layers.Bidirectional": {
+  "sourceUrl": "https://www.tensorflow.org/api_docs/python/tf/keras/layers/Bidirectional",
+  "sourceTitle": "tf.keras.layers.Bidirectional | TensorFlow v2.21.0",
+  "summary": "tf.keras.layers.Bidirectional wraps an RNN layer and processes each sequence in both directions. It combines the two outputs by default with concatenation.",
+  "explanation": "The wrapper runs one sequence layer from the start and another from the end. By default, it joins their outputs along the feature dimension. You can choose another merge mode or return both outputs separately. If no backward layer is supplied, TensorFlow creates one from the forward layer with reversed processing.",
+  "syntax": "tf.keras.layers.Bidirectional(layer, merge_mode='concat', weights=None, backward_layer=None, **kwargs)",
+  "parameters": [
+   {
+    "name": "layer",
+    "type": "keras.layers.RNN or compatible Layer",
+    "description": "The forward sequence-processing RNN or compatible layer."
+   },
+   {
+    "name": "merge_mode",
+    "type": "string or None",
+    "description": "How the forward and backward outputs are combined. Default: concat."
+   },
+   {
+    "name": "backward_layer",
+    "type": "keras.layers.RNN or compatible Layer or None",
+    "description": "Optional backward sequence-processing layer."
+   },
+   {
+    "name": "**kwargs",
+    "type": "keyword arguments",
+    "description": "Additional layer arguments."
+   }
+  ],
+  "returns": "A Bidirectional layer that processes inputs with forward and backward sequence layers and combines their outputs according to merge_mode.",
+  "example": {
+   "title": "Bidirectional LSTM",
+   "code": "from tensorflow import keras\n\nmodel = keras.Sequential([\n    keras.Input(shape=(5, 10)),\n    keras.layers.Bidirectional(\n        keras.layers.LSTM(64, return_sequences=True)\n    ),\n    keras.layers.Dense(10)\n])\n\nmodel.summary()",
+   "language": "python",
+   "explanation": "This model runs an LSTM in both directions and concatenates the two outputs."
+  },
+  "useCases": [
+   {
+    "title": "Use context from both sides of a sequence",
+    "scenario": "Text classification"
+   },
+   {
+    "title": "Produce an output at every time step with return_sequences=True",
+    "scenario": "Sequence labeling"
+   },
+   {
+    "title": "Pair a forward layer with a separate backward layer",
+    "scenario": "Custom recurrent behavior"
+   }
+  ],
+  "related": [
+   "keras.layers.RNN",
+   "keras.layers.LSTM",
+   "keras.layers.GRU",
+   "return_sequences",
+   "return_state",
+   "go_backwards"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does Bidirectional do?",
+    "answer": "It is a wrapper around an RNN sequence layer, such as LSTM or GRU. It processes the input in forward and backward directions, then combines the results.",
+    "followUp": "How are the results combined? By default, the two outputs are concatenated. The merge_mode can instead be sum, product, average, None, or another documented choice."
+   },
+   {
+    "question": "What does merge_mode control?",
+    "answer": "The default merge_mode is concat, so the forward and backward feature outputs are joined. With None, the outputs are returned as a list instead of one combined output.",
+    "followUp": "When would None be useful? It lets later code handle the two directional outputs independently rather than forcing one merge operation."
+   },
+   {
+    "question": "When would you provide backward_layer?",
+    "answer": "A custom backward layer can be passed with backward_layer. It must match the forward layer's relevant properties, while using the opposite go_backwards setting.",
+    "followUp": "What happens if these requirements are not met? TensorFlow raises a ValueError during construction or validation."
+   }
+  ],
+  "keyPoints": [
+   "Bidirectional wraps a recurrent sequence-processing layer.",
+   "The merge mode can be sum, product, concatenation, average, or None.",
+   "Use None when you need the forward and backward outputs separately.",
+   "LSTM and GRU are examples of layers that can be wrapped.",
+   "A custom wrapped layer needs direction, sequence-output, and state attributes with RNN-like behavior.",
+   "Without a custom backward layer, TensorFlow derives the backward side from the supplied layer."
+  ],
+  "gotchas": [
+   "Wrapping an existing RNN does not keep that layer's weights. The wrapper creates fresh weights.",
+   "When supplying initial states, put the forward states first and the backward states second.",
+   "With sequence outputs, masked time steps become zero even if the wrapped layer uses another mask-output setting."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "layers.Concatenate": {
+  "sourceUrl": "https://www.tensorflow.org/api_docs/python/tf/keras/layers/Concatenate",
+  "sourceTitle": "tf.keras.layers.Concatenate | TensorFlow v2.21.0",
+  "summary": "Combines a list of tensors into one tensor along a selected axis. Input shapes must match except on that axis.",
+  "explanation": "Concatenate combines several tensors into one tensor along a chosen axis. Every dimension must match between inputs except the selected axis.",
+  "syntax": "tf.keras.layers.Concatenate(axis=-1, **kwargs)",
+  "parameters": [
+   {
+    "name": "axis",
+    "type": "int",
+    "description": "Dimension along which the input tensors are joined. The default is -1."
+   },
+   {
+    "name": "**kwargs",
+    "type": "keyword arguments",
+    "description": "Other standard keyword arguments accepted by the Keras layer."
+   }
+  ],
+  "returns": "A tensor formed by concatenating the inputs along axis.",
+  "example": {
+   "title": "Join tensors along one axis",
+   "code": "import numpy as np\nimport tensorflow as tf\n\nx = np.arange(20).reshape(2, 2, 5)\ny = np.arange(20, 30).reshape(2, 1, 5)\n\nresult = tf.keras.layers.Concatenate(axis=1)([x, y])\nprint(result.shape)  # (2, 3, 5)",
+   "language": "python",
+   "explanation": "This joins the inputs along axis 1. Their other dimensions match."
+  },
+  "useCases": [
+   {
+    "title": "Merge model branches",
+    "scenario": "Join feature tensors from separate Keras branches before later layers process them."
+   },
+   {
+    "title": "Extend a tensor along one dimension",
+    "scenario": "Append rows, time steps, or channels when the other dimensions already match."
+   }
+  ],
+  "related": [
+   "tf.keras.layers.Layer",
+   "tf.keras.layers.Add",
+   "tf.keras.layers.concatenate"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does Concatenate do?",
+    "answer": "It joins a list of tensors into one tensor along the selected axis. The input shapes must match on every other axis.",
+    "followUp": "What happens to the selected dimension? Its size becomes the sum of that dimension across all inputs."
+   },
+   {
+    "question": "What is the default axis?",
+    "answer": "The default axis is -1, which selects the last dimension. You can pass another axis when creating the layer.",
+    "followUp": "Why might axis 1 be useful for a three-dimensional tensor? It joins the second dimension while preserving the first and third dimensions."
+   },
+   {
+    "question": "How is this layer used?",
+    "answer": "Call the layer with a list of tensors, such as Concatenate(axis=1)([x, y]). The result is one tensor containing the inputs joined at that axis.",
+    "followUp": "What must be checked before the call? Verify that all non-concatenated dimensions are equal."
+   }
+  ],
+  "keyPoints": [
+   "The layer combines a list of input tensors into one output tensor.",
+   "Its signature uses the last dimension by default and accepts standard layer keyword arguments.",
+   "The axis argument chooses the dimension where inputs are joined.",
+   "The operation produces one tensor rather than a list of tensors.",
+   "The returned tensor contains the input values joined along the selected axis."
+  ],
+  "gotchas": [
+   "Inputs must have matching shapes everywhere except on the axis being joined."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "layers.Conv1D": {
   "sourceUrl": "https://www.tensorflow.org/api_docs/python/tf/keras/layers/Conv1D",
   "sourceTitle": "tf.keras.layers.Conv1D | TensorFlow v2.16.1",
@@ -2186,6 +2673,135 @@
   ],
   "checkedAt": "2026-10-15"
  },
+ "layers.Conv2DTranspose": {
+  "sourceUrl": "https://www.tensorflow.org/api_docs/python/tf/keras/layers/Conv2DTranspose",
+  "sourceTitle": "tf.keras.layers.Conv2DTranspose | TensorFlow v2.21.0",
+  "summary": "A 2D transposed convolution layer. It can turn a smaller feature map into a larger one while learning the connection pattern used for the transformation.",
+  "explanation": "A Conv2DTranspose layer performs a two-dimensional transposed convolution. It can change a smaller feature map into a larger one while using a learned connectivity pattern related to a normal convolution.",
+  "syntax": "tf.keras.layers.Conv2DTranspose(filters, kernel_size, strides=(1, 1), padding='valid', output_padding=None, data_format=None, dilation_rate=(1, 1), activation=None, use_bias=True, kernel_initializer='glorot_uniform', bias_initializer='zeros', kernel_regularizer=None, bias_regularizer=None, activity_regularizer=None, kernel_constraint=None, bias_constraint=None, **kwargs)",
+  "parameters": [
+   {
+    "name": "filters",
+    "type": "int",
+    "description": "Number of output filters, or channels."
+   },
+   {
+    "name": "kernel_size",
+    "type": "int or tuple/list of 1 integer",
+    "description": "Size of the transposed convolution window."
+   },
+   {
+    "name": "strides",
+    "type": "int or tuple/list of 1 integer",
+    "description": "Step size of the transposed convolution."
+   },
+   {
+    "name": "padding",
+    "type": "string",
+    "description": "Padding mode. The page documents valid and same."
+   },
+   {
+    "name": "output_padding",
+    "type": "int or tuple/list",
+    "description": "Optional size adjustment for the output."
+   },
+   {
+    "name": "data_format",
+    "type": "string or None",
+    "description": "Input data layout, such as channels_last or channels_first."
+   },
+   {
+    "name": "dilation_rate",
+    "type": "int or tuple/list of 1 integer",
+    "description": "Dilation rate of the transposed convolution."
+   },
+   {
+    "name": "activation",
+    "type": "string, callable, or None",
+    "description": "Activation function applied to the output."
+   },
+   {
+    "name": "use_bias",
+    "type": "bool",
+    "description": "Whether to use a bias."
+   },
+   {
+    "name": "kernel_initializer",
+    "type": "string or initializer",
+    "description": "Initializer for the kernel."
+   },
+   {
+    "name": "bias_initializer",
+    "type": "string or initializer",
+    "description": "Initializer for the bias."
+   },
+   {
+    "name": "kernel_regularizer",
+    "type": "regularizer or None",
+    "description": "Regularizer for the kernel."
+   }
+  ],
+  "returns": "A 4D tensor containing the activated transposed-convolution result, with an added bias when enabled.",
+  "example": {
+   "title": "Apply a transposed convolution",
+   "code": "import numpy as np\nfrom tensorflow import keras\n\nx = np.random.rand(4, 10, 8, 128).astype(\"float32\")\nlayer = keras.layers.Conv2DTranspose(32, 2, 2, activation=\"relu\")\ny = layer(x)\nprint(y.shape)  # (4, 20, 16, 32)",
+   "language": "python",
+   "explanation": "This layer doubles the height and width because the stride is 2, and it produces 32 output channels."
+  },
+  "useCases": [
+   {
+    "title": "Build the expanding part of an autoencoder.",
+    "scenario": "Decoder"
+   },
+   {
+    "title": "Increase feature-map size in a generative model.",
+    "scenario": "Image generation"
+   },
+   {
+    "title": "Create larger spatial outputs from encoded features.",
+    "scenario": "Image-to-image models"
+   }
+  ],
+  "related": [
+   "tf.keras.layers.Conv2D",
+   "tf.keras.layers.UpSampling2D",
+   "tf.keras.layers.Conv1DTranspose",
+   "tf.keras.layers.Conv3DTranspose",
+   "tf.keras.layers.Convolution2DTranspose"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does Conv2DTranspose do?",
+    "answer": "Conv2DTranspose is a two-dimensional transposed convolution layer. It is useful when a model must produce a larger spatial output from a smaller feature map.",
+    "followUp": "How can it help build an autoencoder? Use it in the decoder to reverse the spatial changes made by convolution layers, often together with upsampling."
+   },
+   {
+    "question": "What are the main shape-related arguments?",
+    "answer": "filters sets the number of output channels. kernel_size sets the size of the learned convolution window, and strides controls the step size and often the output size.",
+    "followUp": "What shape does channels-last output have? It is a four-dimensional tensor shaped as batch, new height, new width, and filters."
+   },
+   {
+    "question": "What output shape does it return?",
+    "answer": "The layer supports padding values such as valid and same. With channels-last data, its output has shape (batch_size, new_height, new_width, filters).",
+    "followUp": "What changes for channels-first data? The output order becomes (batch_size, filters, new_height, new_width)."
+   }
+  ],
+  "keyPoints": [
+   "Conv2DTranspose is a layer for two-dimensional transposed convolution.",
+   "filters chooses how many channels the output has.",
+   "kernel_size defines the height and width of the convolution window.",
+   "strides controls how far the window moves between positions.",
+   "padding can use valid or same.",
+   "With channels-last data, the result is a four-dimensional tensor ordered by batch, height, width, and channels.",
+   "With channels-first data, channels come before the two spatial dimensions."
+  ],
+  "gotchas": [
+   "Do not set both strides and dilation_rate above 1.",
+   "The layer raises ValueError for that incompatible combination."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "layers.Dense": {
   "sourceUrl": "https://www.tensorflow.org/api_docs/python/tf/keras/layers/Dense",
   "sourceTitle": "tf.keras.layers.Dense | TensorFlow v2.16.1",
@@ -2313,6 +2929,112 @@
   ],
   "checkedAt": "2026-10-15"
  },
+ "layers.DepthwiseConv2D": {
+  "sourceUrl": "https://www.tensorflow.org/api_docs/python/tf/keras/layers/DepthwiseConv2D",
+  "sourceTitle": "tf.keras.layers.DepthwiseConv2D | TensorFlow v2.21.0",
+  "summary": "A Keras layer for 2D depthwise convolution. It applies separate kernels to input channels and can create multiple output channels per input channel.",
+  "explanation": "The layer splits the input by channel. It applies a separate kernel to each channel, creates depth_multiplier outputs for each one, and joins those outputs along the channel axis. It does not combine information between input channels.",
+  "syntax": "tf.keras.layers.DepthwiseConv2D(kernel_size, strides=(1, 1), padding='valid', depth_multiplier=1, data_format=None, dilation_rate=(1, 1), activation=None, use_bias=True, depthwise_initializer='glorot_uniform', bias_initializer='zeros', depthwise_regularizer=None, bias_regularizer=None, activity_regularizer=None, depthwise_constraint=None, bias_constraint=None, **kwargs)",
+  "parameters": [
+   {
+    "name": "kernel_size",
+    "type": "int or tuple/list of 2 integers",
+    "description": "The height and width of the convolution window. Use one integer or two integers."
+   },
+   {
+    "name": "strides",
+    "type": "int or tuple/list of 2 integers",
+    "description": "The vertical and horizontal step sizes. Values above 1 cannot be combined with dilation_rate values above 1."
+   },
+   {
+    "name": "padding",
+    "type": "string",
+    "description": "The padding mode, such as valid or same."
+   },
+   {
+    "name": "depth_multiplier",
+    "type": "int",
+    "description": "The number of output channels made for each input channel."
+   },
+   {
+    "name": "data_format",
+    "type": "string or None",
+    "description": "The layout of the input data, such as channels_last or channels_first."
+   },
+   {
+    "name": "dilation_rate",
+    "type": "int or tuple/list of 2 integers",
+    "description": "The vertical and horizontal dilation factors."
+   },
+   {
+    "name": "activation",
+    "type": "activation function, string, or None",
+    "description": "The activation function applied to the result."
+   },
+   {
+    "name": "use_bias",
+    "type": "bool",
+    "description": "Whether to add a bias term."
+   }
+  ],
+  "returns": "A 4D tensor containing the depthwise convolution output after bias and activation.",
+  "example": {
+   "title": "Apply a depthwise convolution",
+   "code": "import numpy as np\nfrom tensorflow import keras\n\nx = np.random.rand(4, 10, 10, 12).astype(\"float32\")\nlayer = keras.layers.DepthwiseConv2D(kernel_size=3, activation=\"relu\")\ny = layer(x)\nprint(y.shape)  # (4, 8, 8, 12)",
+   "language": "python",
+   "explanation": "This creates a depthwise layer with a 3 by 3 window and applies it to four 10 by 10 images with 12 channels."
+  },
+  "useCases": [
+   {
+    "title": "Channel-wise image filtering",
+    "scenario": "Build image models that need spatial filtering without mixing channels in this layer."
+   },
+   {
+    "title": "Efficient convolution blocks",
+    "scenario": "Use depthwise convolution as the first stage of a depthwise separable convolution."
+   },
+   {
+    "title": "Control channel expansion",
+    "scenario": "Increase or reduce per-input-channel output capacity with depth_multiplier."
+   }
+  ],
+  "related": [
+   "tf.keras.layers.Layer",
+   "tf.nn.depthwise_conv2d",
+   "tfm.vision.layers.DepthwiseConv2D"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does DepthwiseConv2D do?",
+    "answer": "It applies a different convolution kernel to every input channel. The resulting channels are concatenated, so channels are not mixed with one another.",
+    "followUp": "How does depth_multiplier affect the result? It sets the number of output channels produced for each input channel."
+   },
+   {
+    "question": "What output shape does it produce?",
+    "answer": "The layer uses the kernel_size window as it moves over height and width. With channels_last, the output shape is batch, new height, new width, and input channels times depth_multiplier.",
+    "followUp": "What changes with channels_first? The channel dimension moves before the two spatial dimensions: batch, channels times depth_multiplier, new height, new width."
+   },
+   {
+    "question": "Which main arguments control the operation?",
+    "answer": "The layer accepts kernel_size, strides, padding, depth_multiplier, data_format, dilation_rate, activation, and bias-related options. Its default padding is valid, depth_multiplier is 1, and use_bias is true.",
+    "followUp": "Which stride and dilation combination is invalid? Any setting where both strides and dilation_rate are greater than 1."
+   }
+  ],
+  "keyPoints": [
+   "DepthwiseConv2D is a Keras layer for two-dimensional depthwise convolution.",
+   "The operation first treats each input channel separately.",
+   "Each channel receives its own kernel, and depth_multiplier controls outputs per channel.",
+   "The separate results are joined along the channel dimension.",
+   "Increasing depth_multiplier increases the number of generated channels for every input channel.",
+   "The returned tensor contains the convolution result, optional bias addition, and activation."
+  ],
+  "gotchas": [
+   "Do not set both strides and dilation_rate above 1. The layer raises ValueError.",
+   "The output channel count is the input channel count multiplied by depth_multiplier."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "layers.Dropout": {
   "sourceUrl": "https://www.tensorflow.org/api_docs/python/tf/keras/layers/Dropout",
   "sourceTitle": "tf.keras.layers.Dropout",
@@ -2404,6 +3126,121 @@
    "Choose rate within the documented interval; it represents the fraction of input units dropped."
   ],
   "checkedAt": "2026-10-15"
+ },
+ "layers.Embedding": {
+  "sourceUrl": "https://www.tensorflow.org/api_docs/python/tf/keras/layers/Embedding",
+  "sourceTitle": "tf.keras.layers.Embedding | TensorFlow v2.21.0",
+  "summary": "tf.keras.layers.Embedding maps nonnegative integer indexes to dense vectors. It is commonly used to turn token IDs into vector sequences before a sequence-processing layer.",
+  "explanation": "Embedding stores a trainable matrix with one vector for each integer index. For every input index, it returns the matching row. With a two-dimensional input, the result has one extra final dimension for the vector size. Set mask_zero=True when zero is padding and later sequence layers support masks.",
+  "syntax": "tf.keras.layers.Embedding(input_dim, output_dim, embeddings_initializer='uniform', embeddings_regularizer=None, embeddings_constraint=None, mask_zero=False, weights=None, lora_rank=None, lora_alpha=None, quantization_config=None, **kwargs)",
+  "parameters": [
+   {
+    "name": "input_dim",
+    "type": "integer",
+    "description": "Vocabulary size. Valid indexes run from 0 through input_dim - 1."
+   },
+   {
+    "name": "output_dim",
+    "type": "integer",
+    "description": "Length of each dense vector returned for an index."
+   },
+   {
+    "name": "embeddings_initializer",
+    "type": "initializer or string",
+    "description": "Initializer for the embedding matrix. The default is uniform initialization."
+   },
+   {
+    "name": "embeddings_regularizer",
+    "type": "regularizer",
+    "description": "Optional regularizer applied to the embedding matrix."
+   },
+   {
+    "name": "embeddings_constraint",
+    "type": "constraint",
+    "description": "Optional constraint applied to the embedding matrix."
+   },
+   {
+    "name": "mask_zero",
+    "type": "boolean",
+    "description": "Whether input value 0 is padding and should be masked."
+   },
+   {
+    "name": "weights",
+    "type": "floating-point matrix",
+    "description": "Optional initial floating-point matrix with shape (input_dim, output_dim)."
+   },
+   {
+    "name": "lora_rank",
+    "type": "integer",
+    "description": "Optional LoRA rank. Enables a low-rank trainable update when set."
+   },
+   {
+    "name": "lora_alpha",
+    "type": "integer",
+    "description": "Optional scale for the LoRA update. The scale is lora_alpha / lora_rank."
+   }
+  ],
+  "returns": "A 3D tensor with shape (batch_size, input_length, output_dim) for the documented 2D input.",
+  "example": {
+   "title": "Embed integer token sequences",
+   "code": "import numpy as np\nimport tensorflow as tf\nfrom tensorflow import keras\n\nmodel = keras.Sequential([\n    keras.layers.Embedding(input_dim=1000, output_dim=64),\n    keras.layers.LSTM(32),\n])\ninputs = np.random.randint(1000, size=(32, 10))\noutputs = model(inputs)\nprint(outputs.shape)  # (32, 32)",
+   "language": "python",
+   "explanation": "The layer maps each integer token to a vector. The LSTM then processes the vector sequence."
+  },
+  "useCases": [
+   {
+    "title": "Represent tokens",
+    "scenario": "A text pipeline produces integer token IDs and a model needs learned vector features."
+   },
+   {
+    "title": "Mask padded steps",
+    "scenario": "Sequences contain padding at the end and an RNN should skip those positions."
+   },
+   {
+    "title": "Fine-tune with LoRA",
+    "scenario": "A large embedding layer needs adaptation with fewer trainable parameters."
+   }
+  ],
+  "related": [
+   "keras.layers.Masking",
+   "keras.layers.TextVectorization",
+   "keras.layers.GRU",
+   "keras.layers.LSTM",
+   "enable_lora",
+   "compute_mask"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does an Embedding layer do?",
+    "answer": "Embedding converts integer indexes into dense vectors by looking up rows in its embedding matrix. The output keeps the input dimensions and adds output_dim as the last dimension.",
+    "followUp": "What output shape comes from input shape (batch_size, input_length)? It is (batch_size, input_length, output_dim)."
+   },
+   {
+    "question": "What do input_dim and output_dim mean?",
+    "answer": "input_dim is the vocabulary size, so the largest valid index is input_dim - 1. output_dim is the length of each returned vector.",
+    "followUp": "Why must input_dim be large enough? An out-of-range index cannot select a row from the embedding matrix."
+   },
+   {
+    "question": "How does padding support work?",
+    "answer": "mask_zero=True marks input value 0 as padding. It creates a boolean mask, and compatible later layers can ignore those time steps.",
+    "followUp": "What constraint does this add? Index 0 can no longer represent a normal vocabulary item, so reserve it for padding."
+   }
+  ],
+  "keyPoints": [
+   "Each integer index maps to one dense vector with a fixed length.",
+   "Set input_dim to the maximum possible index plus one.",
+   "Set output_dim to choose the number of values in each vector.",
+   "The documented input is a two-dimensional integer tensor containing batches of sequences.",
+   "The output adds the embedding dimension to each input position.",
+   "LoRA can reduce fine-tuning computation by training a low-rank update instead of the full embedding matrix."
+  ],
+  "gotchas": [
+   "Inputs must be nonnegative integers, and every index must fit the configured vocabulary range.",
+   "With mask_zero=True, reserve index 0 for padding. The vocabulary needs one additional index.",
+   "When masking is enabled, later layers must accept masks or the model can raise an exception."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "layers.Flatten": {
   "sourceUrl": "https://www.tensorflow.org/api_docs/python/tf/keras/layers/Flatten",
@@ -3472,6 +4309,130 @@
    "Set data_format consistently with the tensor layout; channels_last and channels_first expect different dimension orders."
   ],
   "checkedAt": "2026-10-15"
+ },
+ "layers.MultiHeadAttention": {
+  "sourceUrl": "https://www.tensorflow.org/api_docs/python/tf/keras/layers/MultiHeadAttention",
+  "sourceTitle": "tf.keras.layers.MultiHeadAttention | TensorFlow v2.21.0",
+  "summary": "MultiHeadAttention is a Keras layer that lets each query position use information from a key and value sequence. It supports self-attention when all three inputs are the same.",
+  "explanation": "The layer projects the query, key, and value inputs into multiple heads. It scales query-key dot products, turns them into probabilities, combines the value vectors, joins the heads, and applies a final output projection.",
+  "syntax": "tf.keras.layers.MultiHeadAttention(num_heads, key_dim, value_dim=None, dropout=0.0, use_bias=True, output_shape=None, attention_axes=None, sliding_window=None, flash_attention=None, kernel_initializer='glorot_uniform', bias_initializer='zeros', kernel_regularizer=None, bias_regularizer=None, activity_regularizer=None, kernel_constraint=None, bias_constraint=None, use_gate=False, seed=None, **kwargs)",
+  "parameters": [
+   {
+    "name": "num_heads",
+    "type": "int",
+    "description": "Number of attention heads."
+   },
+   {
+    "name": "key_dim",
+    "type": "int",
+    "description": "Dimension of each head's query and key vectors."
+   },
+   {
+    "name": "value_dim",
+    "type": "int or None",
+    "description": "Dimension of each head's value vectors. Defaults to key_dim."
+   },
+   {
+    "name": "dropout",
+    "type": "float",
+    "description": "Dropout rate applied to attention output."
+   },
+   {
+    "name": "use_bias",
+    "type": "bool",
+    "description": "Whether to use bias in the projection layers."
+   },
+   {
+    "name": "output_shape",
+    "type": "int, tuple, or None",
+    "description": "Size of the final output. If omitted, the query's last dimension is used."
+   },
+   {
+    "name": "attention_axes",
+    "type": "int, tuple, or None",
+    "description": "Axes over which attention is applied. If omitted, attention is applied to all axes except batch, heads, and features."
+   },
+   {
+    "name": "sliding_window",
+    "type": "int or None",
+    "description": "Window size for local attention."
+   },
+   {
+    "name": "flash_attention",
+    "type": "bool or None",
+    "description": "Whether to use flash attention when supported."
+   },
+   {
+    "name": "kernel_initializer",
+    "type": "initializer or string",
+    "description": "Initializer for projection kernels."
+   },
+   {
+    "name": "bias_initializer",
+    "type": "initializer or string",
+    "description": "Initializer for projection biases."
+   },
+   {
+    "name": "kernel_regularizer",
+    "type": "regularizer or None",
+    "description": "Regularizer for projection kernels."
+   }
+  ],
+  "returns": "A tensor containing one output vector for each query position. The final feature size is controlled by output_shape, or by the query feature size when output_shape is omitted.",
+  "example": {
+   "title": "Cross-attention",
+   "code": "import tensorflow as tf\n\nlayer = tf.keras.layers.MultiHeadAttention(\n    num_heads=2, key_dim=16)\nquery = tf.random.normal((1, 4, 32))\nvalue = tf.random.normal((1, 6, 32))\noutput = layer(query=query, value=value)\nprint(output.shape)  # (1, 4, 32)",
+   "language": "python",
+   "explanation": "This applies cross-attention from four query positions to six value positions."
+  },
+  "useCases": [
+   {
+    "title": "Self-attention",
+    "scenario": "Use the same sequence for query, key, and value."
+   },
+   {
+    "title": "Cross-attention",
+    "scenario": "Use one sequence as query and another as key and value."
+   },
+   {
+    "title": "Multi-axis attention",
+    "scenario": "Restrict attention to selected tensor axes."
+   }
+  ],
+  "related": [
+   "tf.keras.layers.Layer",
+   "tf.keras.layers.Attention"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How does MultiHeadAttention compute its output?",
+    "answer": "The layer splits projected inputs into multiple attention heads. Each head computes scaled query-key dot products, applies softmax, and combines value vectors before the heads are joined.",
+    "followUp": "What makes this self-attention? Pass the same tensor as query, key, and value."
+   },
+   {
+    "question": "What do num_heads, key_dim, and value_dim control?",
+    "answer": "num_heads sets the number of attention heads, and key_dim sets the size of each head's query and key vectors. value_dim controls each head's value-vector size when provided.",
+    "followUp": "What happens when value_dim is omitted? The layer uses the key dimension for the value dimension."
+   },
+   {
+    "question": "How does the query length affect the output?",
+    "answer": "An attention mask can restrict which key positions each query position may use. The layer returns one output vector for every query position.",
+    "followUp": "How can you inspect attention weights? Enable return_attention_scores when calling the layer to request the additional scores."
+   }
+  ],
+  "keyPoints": [
+   "Using identical query, key, and value inputs performs self-attention.",
+   "Softmax converts the scaled query-key scores into attention probabilities.",
+   "The probabilities weight the value vectors to produce each attended result.",
+   "Results from the separate heads are concatenated into one tensor.",
+   "Every query position attends across the key sequence."
+  ],
+  "gotchas": [
+   "Passing the same tensor for query, key, and value creates self-attention. Different inputs create cross-attention.",
+   "The query and key sequence lengths do not need to match, but the key and value sequence lengths must correspond."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "layers.Normalization": {
   "sourceUrl": "https://www.tensorflow.org/api_docs/python/tf/keras/layers/Normalization",
@@ -4789,6 +5750,100 @@
   ],
   "checkedAt": "2026-10-15"
  },
+ "losses.SparseCategoricalCrossentropy": {
+  "sourceUrl": "https://www.tensorflow.org/api_docs/python/tf/keras/losses/SparseCategoricalCrossentropy",
+  "sourceTitle": "tf.keras.losses.SparseCategoricalCrossentropy | TensorFlow v2.21.0",
+  "summary": "Computes crossentropy for classification labels stored as integer class IDs. Use it when predictions contain one value per class and labels are not one-hot encoded.",
+  "explanation": "For each example, the loss selects the score for the integer class label and measures its negative log probability. With from_logits=True, the class scores are treated as raw logits; otherwise, they are treated as probabilities. The default reduction returns one value averaged over the batch.",
+  "syntax": "tf.keras.losses.SparseCategoricalCrossentropy(from_logits=False, ignore_class=None, reduction=\"sum_over_batch_size\", axis=-1, name=\"sparse_categorical_crossentropy\", dtype=None)",
+  "parameters": [
+   {
+    "name": "from_logits",
+    "type": "bool",
+    "description": "Whether y_pred contains logits instead of a probability distribution. Defaults to False."
+   },
+   {
+    "name": "reduction",
+    "type": "str or None",
+    "description": "How to aggregate individual losses. The default is sum_over_batch_size."
+   },
+   {
+    "name": "ignore_class",
+    "type": "int or None",
+    "description": "Class index to ignore when computing the loss, or None."
+   },
+   {
+    "name": "axis",
+    "type": "int",
+    "description": "Axis containing the class values. Defaults to -1."
+   },
+   {
+    "name": "name",
+    "type": "str",
+    "description": "Optional name for the loss object."
+   },
+   {
+    "name": "dtype",
+    "type": "dtype or DTypePolicy or None",
+    "description": "Computation data type. None uses the Keras default floating-point type."
+   }
+  ],
+  "returns": "A scalar loss with the default reduction, a summed loss for reduction=\"sum\", or per-example losses when reduction=None.",
+  "example": {
+   "title": "Compute sparse categorical crossentropy",
+   "code": "import numpy as np\nimport tensorflow as tf\n\nloss_fn = tf.keras.losses.SparseCategoricalCrossentropy(\n    from_logits=True\n)\n\ny_true = np.array([1, 2])\nlogits = np.array([\n    [0.1, 2.0, 0.3],\n    [0.2, 0.1, 1.8]\n])\n\nloss = loss_fn(y_true, logits)\nprint(loss.numpy())",
+   "language": "python",
+   "explanation": "Use integer class IDs in y_true and one score for each class in y_pred. Set from_logits=True when the model returns raw scores."
+  },
+  "useCases": [
+   {
+    "title": "Train a classifier with integer image labels",
+    "scenario": "Multiclass image classification"
+   },
+   {
+    "title": "Compute loss when each token has one class ID",
+    "scenario": "Text or sequence classification"
+   },
+   {
+    "title": "Exclude a configured class from loss calculation",
+    "scenario": "Masked classification"
+   }
+  ],
+  "related": [
+   "tf.keras.losses.CategoricalCrossentropy",
+   "tf.keras.losses.Loss"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "When should you use SparseCategoricalCrossentropy?",
+    "answer": "Use SparseCategoricalCrossentropy when labels are integer class IDs and there are at least two classes. For one-hot labels, use CategoricalCrossentropy instead.",
+    "followUp": "What changes for raw model outputs? Set from_logits=True so the loss interprets y_pred as logits rather than probabilities."
+   },
+   {
+    "question": "What shapes does this loss expect?",
+    "answer": "The usual shapes are [batch_size] for y_true and [batch_size, num_classes] for y_pred. Each label supplies one class ID, while each prediction supplies one value per class.",
+    "followUp": "What label shape would fit CategoricalCrossentropy? Its labels and predictions use [batch_size, num_classes], with one-hot labels."
+   },
+   {
+    "question": "How does reduction affect the returned loss?",
+    "answer": "The default reduction is sum_over_batch_size, which combines the per-example losses and divides by the batch size. Setting reduction to sum returns their total, while None returns individual losses.",
+    "followUp": "How can sample weights affect the result? Pass sample_weight when calling the loss; the weights scale the examples before reduction."
+   }
+  ],
+  "keyPoints": [
+   "Use it for classification tasks with two or more classes.",
+   "Store each target as an integer class index, not a one-hot vector.",
+   "Provide one floating-point prediction value for every class.",
+   "For a batch, labels have shape [batch_size], and predictions have shape [batch_size, num_classes].",
+   "The default batch-size reduction is normally the suitable choice."
+  ],
+  "gotchas": [
+   "Do not pass one-hot labels. Use CategoricalCrossentropy for that label format.",
+   "Set from_logits=True when y_pred contains raw model scores instead of probabilities."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "metrics.Accuracy": {
   "sourceUrl": "https://www.tensorflow.org/api_docs/python/tf/keras/metrics/Accuracy",
   "sourceTitle": "tf.keras.metrics.Accuracy | TensorFlow v2.16.1",
@@ -5619,6 +6674,90 @@
    "Leave batch_size unset for dataset, generator, and PyDataset inputs because those inputs produce their own batches."
   ],
   "checkedAt": "2026-10-15"
+ },
+ "model.save": {
+  "sourceUrl": "https://www.tensorflow.org/js/guide/save_load",
+  "sourceTitle": "Save and load models | TensorFlow.js",
+  "summary": "TensorFlow.js can save Layers API models and load them later. Storage schemes select browser storage, downloads, HTTP, or the Node.js file system.",
+  "explanation": "`model.save()` writes a model's architecture and weights through a storage scheme such as `localstorage://`. `tf.loadLayersModel()` reads the saved model and returns a `tf.Model`. Both operations are asynchronous, and the same model can be loaded in a different environment.",
+  "syntax": "await model.save(pathOrIOHandler);\nawait tf.loadLayersModel(pathOrIOHandler);",
+  "parameters": [
+   {
+    "name": "pathOrIOHandler",
+    "type": "string | IOHandler",
+    "description": "A URL-like model destination or source, or an IOHandler object."
+   }
+  ],
+  "returns": "`model.save()` returns a promise for a save result containing information such as topology and weight byte sizes. `tf.loadLayersModel()` returns a promise for a `tf.Model`.",
+  "example": {
+   "title": "Save and load a browser model",
+   "code": "const saveResult = await model.save('localstorage://my-model');\nconst loadedModel = await tf.loadLayersModel('localstorage://my-model');",
+   "language": "javascript",
+   "explanation": "This saves a TensorFlow.js Layers model in browser local storage, then loads it by name."
+  },
+  "useCases": [
+   {
+    "title": "Browser persistence",
+    "scenario": "Keep a trained model in a browser between page refreshes."
+   },
+   {
+    "title": "Model download",
+    "scenario": "Let a user export a model from a web application."
+   },
+   {
+    "title": "HTTP transfer",
+    "scenario": "Store or retrieve model files on a server."
+   },
+   {
+    "title": "Node.js file storage",
+    "scenario": "Use model files directly from disk in Node.js."
+   }
+  ],
+  "related": [
+   "tf.Model.save",
+   "tf.Sequential",
+   "tf.loadLayersModel",
+   "tf.io.browserHTTPRequest",
+   "tf.io.browserFiles",
+   "IOHandler",
+   "ModelArtifacts",
+   "SaveResult"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does `model.save()` store, and how is the destination selected?",
+    "answer": "`model.save()` stores the model topology and weights. The destination is selected with a URL-like string whose scheme identifies the storage type, such as `indexeddb://` or `file://`. The call returns a promise with save information.",
+    "followUp": "How can a save request use custom HTTP settings? Pass `tf.io.browserHTTPRequest()` instead of a string and provide options such as the method or headers."
+   },
+   {
+    "question": "How do you load a saved TensorFlow.js Layers model?",
+    "answer": "Use `tf.loadLayersModel()` with the matching scheme and model path. For HTTP, give the URL of the JSON file; TensorFlow.js then requests the binary weight files referenced by that JSON.",
+    "followUp": "What must be true for HTTP loading to work in Node.js? A compatible global `fetch` method must be available, for example through a fetch library."
+   },
+   {
+    "question": "What is an IOHandler used for?",
+    "answer": "An IOHandler is an object with `save` and `load` methods. Its save method receives model artifacts and returns a promise for a save result; its load method returns a promise for model artifacts.",
+    "followUp": "Why use an IOHandler? It lets an application implement storage or transport behavior that the built-in URL schemes do not provide."
+   }
+  ],
+  "keyPoints": [
+   "Layers models and sequential models can save their architecture and weights with `model.save()`.",
+   "The save destination starts with a scheme, followed by a path that identifies the model.",
+   "Saving is asynchronous, so await the returned promise.",
+   "A model saved in Node.js can still be loaded in a browser.",
+   "The `indexeddb://` scheme stores models in browser IndexedDB, which usually permits larger objects than local storage.",
+   "The `downloads://` scheme creates a JSON topology file and a binary weights file.",
+   "Saving to an HTTP or HTTPS URL sends the model to the server as a multipart form request.",
+   "Loading with `tf.loadLayersModel()` returns a `tf.Model`."
+  ],
+  "gotchas": [
+   "Browser local storage persists across refreshes, but users or the browser can clear it.",
+   "For downloads and file storage, keep the JSON model file and its binary weights file together.",
+   "A browser may ask for permission before downloading both model files.",
+   "HTTP loading needs a `fetch` implementation; provide one in environments that do not include it."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "model.summary": {
   "sourceUrl": "https://www.tensorflow.org/api_docs/python/tf/summary",
@@ -7853,6 +8992,110 @@
   ],
   "checkedAt": "2026-10-15"
  },
+ "tf.nn": {
+  "sourceUrl": "https://www.tensorflow.org/api_docs/python/tf/nn/conv3d",
+  "sourceTitle": "tf.nn.conv3d | TensorFlow v2.21.0",
+  "summary": "tf.nn.conv3d applies 3-D cross-correlation to a 5-D input using 5-D filters. Strides, padding, layout, and dilation control how the filters move through the input.",
+  "explanation": "The operation slides each 3-D filter across the input volume and computes a dot product at each position. It uses the input and filter channel dimensions to connect data, while strides, padding, data format, and dilation control the scan.",
+  "syntax": "tf.nn.conv3d(input, filters, strides, padding, data_format='NDHWC', dilations=None, name=None)",
+  "parameters": [
+   {
+    "name": "input",
+    "type": "Tensor",
+    "description": "5-D input tensor. Supported types are half, bfloat16, float32, and float64."
+   },
+   {
+    "name": "filters",
+    "type": "Tensor",
+    "description": "5-D filter tensor with the same type as input."
+   },
+   {
+    "name": "strides",
+    "type": "list of ints",
+    "description": "Length-5 sliding-window strides. The first and last values must be 1."
+   },
+   {
+    "name": "padding",
+    "type": "string",
+    "description": "Padding mode: SAME or VALID."
+   },
+   {
+    "name": "data_format",
+    "type": "string",
+    "description": "Input and output layout: NDHWC or NCDHW. Defaults to NDHWC."
+   },
+   {
+    "name": "dilations",
+    "type": "list of ints",
+    "description": "Length-5 dilation factors. Defaults to [1, 1, 1, 1, 1]."
+   },
+   {
+    "name": "name",
+    "type": "string",
+    "description": "Optional operation name."
+   }
+  ],
+  "returns": "A tensor containing the 3-D convolution result.",
+  "example": {
+   "title": "Basic 3-D convolution",
+   "code": "import tensorflow as tf\n\nx = tf.random.normal([1, 8, 8, 8, 2])\nfilters = tf.random.normal([3, 3, 3, 2, 4])\ny = tf.nn.conv3d(x, filters, strides=[1, 1, 1, 1, 1], padding=\"SAME\")\nprint(y.shape)",
+   "language": "python",
+   "explanation": "This applies a 3-D convolution to one input volume with two channels and produces four output channels."
+  },
+  "useCases": [
+   {
+    "title": "Volume feature extraction",
+    "scenario": "Process volumetric data such as medical scans or 3-D simulations."
+   },
+   {
+    "title": "3-D neural-network layers",
+    "scenario": "Learn spatial features across depth, height, and width."
+   },
+   {
+    "title": "Custom receptive fields",
+    "scenario": "Control output size and filter spacing with padding and dilation."
+   }
+  ],
+  "related": [
+   "tf.nn.conv1d",
+   "tf.nn.conv2d",
+   "tf.nn.conv3d_transpose",
+   "tf.nn.convolution"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does tf.nn.conv3d do?",
+    "answer": "tf.nn.conv3d computes a 3-D cross-correlation, often called a convolution. It takes a 5-D input tensor and 5-D filters, then slides the filters through the volume.",
+    "followUp": "How do channels relate? The input and filter channel counts must match, while the filter's last dimension sets the number of output channels."
+   },
+   {
+    "question": "What input layouts does it support?",
+    "answer": "With NDHWC, input dimensions are batch, depth, height, width, and channels. With NCDHW, channels come directly after the batch dimension.",
+    "followUp": "Which format is the default? NDHWC is the default data format."
+   },
+   {
+    "question": "What do strides, padding, and dilations control?",
+    "answer": "strides controls the sliding-window step in every input dimension. The first and last stride entries must be 1, and padding must be SAME or VALID.",
+    "followUp": "What does dilation change? A dilation greater than 1 inserts skipped cells between filter elements along that dimension."
+   }
+  ],
+  "keyPoints": [
+   "The input and filters are both 5-D tensors.",
+   "The operation is implemented as cross-correlation rather than mathematical convolution with reversed filters.",
+   "For the default layout, input shape is batch, depth, height, width, channels.",
+   "Filters contain three spatial dimensions, input channels, and output channels.",
+   "Padding controls how the operation handles borders.",
+   "A dilation factor greater than one spaces filter elements apart."
+  ],
+  "gotchas": [
+   "The filters tensor must use the same data type as input.",
+   "The input channel count must equal the filter channel count.",
+   "The first and last stride values must be 1.",
+   "padding accepts only SAME or VALID."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "tf.nn.relu": {
   "sourceUrl": "https://www.tensorflow.org/api_docs/python/tf/nn/relu",
   "sourceTitle": "tf.nn.relu | TensorFlow v2.16.1",
@@ -8198,6 +9441,85 @@
    "Supplying layout changes the result to a DTensor using that layout."
   ],
   "checkedAt": "2026-10-15"
+ },
+ "tf.optimizers": {
+  "sourceUrl": "https://www.tensorflow.org/federated/api_docs/python/tff/learning/optimizers/Optimizer",
+  "sourceTitle": "tff.learning.optimizers.Optimizer | TensorFlow Federated",
+  "summary": "`tff.learning.optimizers.Optimizer` describes iterative optimizers for TensorFlow Federated. It uses tensor state to carry values between steps instead of creating variables inside traced methods.",
+  "explanation": "An Optimizer stores all information needed for repeated update steps in tensor state. `initialize` creates that state from weight specifications, and `next` uses the current state and gradients to produce updated weights and new state; hyperparameters are read and changed with the provided methods.",
+  "syntax": "class Optimizer:\n    initialize(specs: Any) -> State\n    get_hparams(state: State) -> Hparams\n    next(...) -> State",
+  "parameters": [
+   {
+    "name": "specs",
+    "type": "Any",
+    "description": "A possibly nested structure of `tf.TensorSpec` objects describing the weights to optimize."
+   },
+   {
+    "name": "state",
+    "type": "State",
+    "description": "The optimizer state whose hyperparameters should be returned. Its structure must match the result of `initialize`."
+   }
+  ],
+  "returns": "`initialize` returns the initial optimizer state. `get_hparams` returns an ordered dictionary containing hyperparameters from the supplied state.",
+  "example": {
+   "title": "Create an optimizer",
+   "code": "import tensorflow_federated as tff\n\noptimizer = tff.learning.optimizers.build_sgdm(learning_rate=0.1)\nspecs = [tf.TensorSpec([2], tf.float32)]\nstate = optimizer.initialize(specs)\nprint(optimizer.get_hparams(state))",
+   "language": "python",
+   "explanation": "This creates a federated SGD optimizer and reads its hyperparameters. Add `import tensorflow as tf` before running the snippet."
+  },
+  "useCases": [
+   {
+    "title": "Custom optimization algorithms",
+    "scenario": "Build a custom optimizer for federated training."
+   },
+   {
+    "title": "Tensor-based optimizer state",
+    "scenario": "Keep momentum or other changing values between update steps."
+   },
+   {
+    "title": "Hyperparameter management",
+    "scenario": "Inspect or modify learning-rate and other optimizer settings."
+   }
+  ],
+  "related": [
+   "tff.learning.optimizers.build_sgdm",
+   "tff.learning.optimizers.build_adam",
+   "tff.learning.optimizers.schedule_learning_rate",
+   "tff.learning.optimizers.LEARNING_RATE_KEY"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is `tff.learning.optimizers.Optimizer`?",
+    "answer": "It is an optimizer abstraction for TensorFlow Federated. Its `initialize` and `next` methods describe the algorithm, with `next` representing one optimization step.",
+    "followUp": "Why is state passed between steps? It carries changing values such as momentum without relying on variables created inside traced methods."
+   },
+   {
+    "question": "What does `initialize` do?",
+    "answer": "`initialize` accepts a possibly nested structure of `tf.TensorSpec` objects describing the weights. It returns the optimizer's initial state.",
+    "followUp": "What must the specifications describe? They must describe the weights that the optimizer will update."
+   },
+   {
+    "question": "How are optimizer hyperparameters accessed?",
+    "answer": "`get_hparams` returns an ordered dictionary containing hyperparameters from an optimizer state. Hyperparameters can be changed through `set_hparams`.",
+    "followUp": "Where should a learning rate be stored? Implementations should use the key `tff.learning.optimizers.LEARNING_RATE_KEY`."
+   }
+  ],
+  "keyPoints": [
+   "This class defines an optimizer that can be used by TensorFlow Federated learning code.",
+   "The algorithm is defined by the paired `initialize` and `next` methods.",
+   "Each call to `next` represents one optimization step.",
+   "Put values needed by later steps, such as momentum, into tensor state.",
+   "Momentum can start as an all-zero tensor created by `initialize`.",
+   "Use `get_hparams` and `set_hparams` to access or change optimizer hyperparameters.",
+   "Store a learning rate in state with the standard `LEARNING_RATE_KEY` key."
+  ],
+  "gotchas": [
+   "Do not create or use `tf.Variable` objects inside the optimizer methods. Keep information that changes between steps in the tensor state.",
+   "The `next` method must be suitable for implementation as a TensorFlow function.",
+   "Pass `get_hparams` a state with the same structure that `initialize` returns."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "tf.pad": {
   "sourceUrl": "https://www.tensorflow.org/api_docs/python/tf/pad",

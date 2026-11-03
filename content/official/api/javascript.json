@@ -1,4 +1,78 @@
 {
+ "AbortController": {
+  "sourceUrl": "https://developer.mozilla.org/en-US/docs/Web/API/AbortController",
+  "sourceTitle": "AbortController - Web APIs | MDN",
+  "summary": "AbortController lets you stop asynchronous operations, such as fetch requests. Pass its signal to an operation, then call abort() to cancel it.",
+  "explanation": "Create a controller and pass its signal to an asynchronous operation, such as fetch. Calling abort() stops the operation before it finishes. You can use one signal with multiple operations, so one controller can cancel them together.",
+  "syntax": "new AbortController(); controller.signal; controller.abort(reason);",
+  "parameters": [
+   {
+    "name": "reason",
+    "type": "any",
+    "description": "Optional reason for stopping the operation. It may be any JavaScript value. If omitted, the reason is an AbortError DOMException."
+   }
+  ],
+  "returns": "abort() returns undefined.",
+  "example": {
+   "title": "Stop a fetch request",
+   "code": "const controller = new AbortController();\n\nfetch(\"/data\", { signal: controller.signal })\n  .then((response) => response.json())\n  .then(console.log)\n  .catch((error) => {\n    if (error.name === \"AbortError\") console.log(\"Request stopped\");\n  });\n\ncontroller.abort();",
+   "language": "javascript",
+   "explanation": "The controller's signal is given to fetch. Calling abort() tells the request to stop."
+  },
+  "useCases": [
+   {
+    "title": "Cancel fetch requests",
+    "scenario": "Stop a network request when a user leaves a page or changes a search query."
+   },
+   {
+    "title": "Cancel response-body consumption",
+    "scenario": "Stop reading data that is no longer needed."
+   },
+   {
+    "title": "Cancel streams",
+    "scenario": "End stream processing before it finishes."
+   },
+   {
+    "title": "Group cancellation",
+    "scenario": "Cancel several requests that share one signal."
+   }
+  ],
+  "related": [
+   "AbortSignal",
+   "Fetch API",
+   "Web Workers"
+  ],
+  "since": "March 2019",
+  "interview": [
+   {
+    "question": "What is AbortController used for?",
+    "answer": "AbortController is a controller for stopping asynchronous work. Its signal communicates the cancellation request to an operation, such as fetch.",
+    "followUp": "What property do you pass to fetch? Pass the controller's signal property in the request options."
+   },
+   {
+    "question": "How do you cancel a fetch request?",
+    "answer": "Create it with new AbortController(), then pass controller.signal to the operation. Later, call controller.abort() to stop the operation.",
+    "followUp": "Can one controller stop more than one operation? Yes. The interface can abort one or more Web requests when they use its signal."
+   },
+   {
+    "question": "What does abort() return and what can it stop?",
+    "answer": "abort() returns undefined. It can stop fetch requests, response-body consumption, and streams before they finish.",
+    "followUp": "What can abort() receive? It can receive any JavaScript value as the reason; without one, the reason is an AbortError DOMException."
+   }
+  ],
+  "keyPoints": [
+   "An AbortController can cancel one or more Web requests.",
+   "The signal is the object that carries the cancellation communication to asynchronous work.",
+   "The AbortController() constructor creates a new controller instance.",
+   "The read-only signal property provides the AbortSignal used by an operation.",
+   "The abort() method stops asynchronous work before it completes."
+  ],
+  "gotchas": [
+   "Calling abort() without a reason uses an AbortError DOMException as the abort reason.",
+   "The interface can also be used inside Web Workers."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "Array": {
   "sourceUrl": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array",
   "sourceTitle": "Array - JavaScript | MDN",
@@ -781,65 +855,75 @@
  },
  "concat": {
   "sourceUrl": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/concat",
-  "sourceTitle": "Array.prototype.concat() - JavaScript - MDN Web Docs",
-  "summary": "Array.prototype.concat() returns a new array formed from the calling array and supplied arrays or values. It does not mutate the source arrays and spreads array arguments only one level.",
-  "explanation": "Call concat() on an array with zero or more arrays or values. It creates a new shallow array, spreading array arguments by one level and appending non-array values as individual elements.",
-  "syntax": "concat()\nconcat(value1)\nconcat(value1, value2)\nconcat(value1, value2, /* …, */ valueN)",
+  "sourceTitle": "Array.prototype.concat() - JavaScript | MDN",
+  "summary": "Array.prototype.concat() combines an array with other arrays or values and returns a new array. It does not change the input arrays.",
+  "explanation": "Call concat() on an array to create a new array containing its elements, followed by each argument. Array arguments are spread one level, while other values become single elements. Nested arrays are not recursively flattened, and the result is a shallow copy.",
+  "syntax": "array.concat(value1, value2, /* …, */ valueN)",
   "parameters": [
    {
-    "name": "value1, …, valueN",
-    "type": "any",
-    "description": "Arrays and/or values to concatenate into a new array. Array arguments are spread by one level unless their spreadability behavior prevents it."
+    "name": "value1 … valueN",
+    "type": "Array or any value",
+    "description": "Arrays and/or values to add to the new array. Arguments are processed in order."
    }
   ],
-  "returns": "A new Array instance containing the calling array's elements followed by the concatenated arguments.",
+  "returns": "A new Array instance containing the combined elements.",
   "example": {
-   "title": "Merge arrays without mutation",
-   "code": "const first = [1, 2];\nconst second = [3, 4];\nconst combined = first.concat(second, 5);\n\nconsole.log(combined); // [1, 2, 3, 4, 5]\nconsole.log(first);    // [1, 2]",
+   "title": "Merge arrays without changing them",
+   "code": "const letters = [\"a\", \"b\"];\nconst numbers = [1, 2];\n\nconst result = letters.concat(numbers, 3);\n\nconsole.log(result); // [\"a\", \"b\", 1, 2, 3]\nconsole.log(letters); // [\"a\", \"b\"]",
    "language": "javascript",
-   "explanation": "Creates a new array from both input arrays and an additional value while leaving the original arrays unchanged."
+   "explanation": "This creates a new array from two arrays and one value. The input arrays stay unchanged."
   },
   "useCases": [
    {
-    "title": "Merge arrays immutably",
-    "scenario": "Combine two or more lists into one without changing the originals."
+    "title": "Merge arrays",
+    "scenario": "Combine lists while keeping the original lists unchanged."
    },
    {
-    "title": "Append values",
-    "scenario": "Add one or more values while producing a separate result."
+    "title": "Append mixed values",
+    "scenario": "Add individual values and arrays in one operation."
    },
    {
-    "title": "Create a shallow copy",
-    "scenario": "Duplicate an array shallowly before making changes."
-   },
-   {
-    "title": "Control spreading",
-    "scenario": "Flatten one level of array-like input when Symbol.isConcatSpreadable is enabled."
+    "title": "Copy an array",
+    "scenario": "Create a shallow copy when no arguments are supplied."
    }
   ],
   "related": [
-   "Array.prototype.flat()",
    "Array.prototype.push()",
-   "Array.prototype.slice()",
-   "Symbol.isConcatSpreadable",
-   "Spread syntax (...)"
+   "Array.prototype.unshift()",
+   "Array.prototype.splice()",
+   "Symbol.isConcatSpreadable"
   ],
-  "since": "",
+  "since": "July 2015",
+  "interview": [
+   {
+    "question": "Does concat() mutate its input arrays?",
+    "answer": "concat() returns a new array and does not modify the array it is called on or array arguments. Array arguments are added element by element, while ordinary values are added as single elements.",
+    "followUp": "What happens with nested arrays? They are not recursively flattened, so an inner array remains one nested value."
+   },
+   {
+    "question": "How does concat() build its result?",
+    "answer": "The method starts with the elements of the calling array. It then processes each argument in order and spreads arrays into the result, producing a shallow copy.",
+    "followUp": "What does shallow mean here? Nested objects and arrays are still shared references, so changing one can be visible through the result."
+   },
+   {
+    "question": "How can an array-like object be spread by concat()?",
+    "answer": "concat() can spread an array-like object when that object has a truthy Symbol.isConcatSpreadable property. Without that property, the object is added as one element.",
+    "followUp": "What happens to a normal object? It is inserted directly as one element rather than being spread."
+   }
+  ],
   "keyPoints": [
-   "Use concat() to combine an array with other arrays.",
-   "The source arrays remain unchanged, so the operation is non-mutating.",
-   "Each argument may be an array or any value.",
-   "Calling concat() with no arguments makes a shallow copy.",
-   "Arrays are spread by default, and array-like objects can opt into spreading.",
-   "The result is a new array containing references to the original elements."
+   "The method always returns a separate array.",
+   "Calling concat() without arguments makes a shallow copy.",
+   "Primitive values and ordinary objects become single result elements.",
+   "concat() copies references for nested values instead of deeply cloning them.",
+   "It can be called with another object as its this value after that value is converted to an object."
   ],
   "gotchas": [
-   "Only one array level is spread; nested arrays remain nested.",
-   "Sparse-array holes remain holes in the resulting array.",
-   "concat() is non-mutating; use the returned array rather than expecting an input array to change.",
-   "Plain objects are appended as one element rather than being flattened."
+   "Nested arrays stay nested. concat() only combines one array level.",
+   "Empty slots in sparse arrays remain empty slots in the result.",
+   "An array-like object is spread only when Symbol.isConcatSpreadable is truthy."
   ],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-11-03"
  },
  "DataView": {
   "sourceUrl": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/DataView",
@@ -1638,59 +1722,77 @@
  },
  "flat": {
   "sourceUrl": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/flat",
-  "sourceTitle": "Array.prototype.flat() - JavaScript | MDN Web Docs",
-  "summary": "`Array.prototype.flat()` creates a new array by recursively concatenating nested arrays up to a chosen depth. Without an argument, it flattens one level.",
-  "explanation": "Calling `flat()` creates a new array by concatenating nested array elements up to the requested depth. The default depth is 1; non-array elements are copied directly, and the original array is not changed.",
+  "sourceTitle": "Array.prototype.flat() - JavaScript | MDN",
+  "summary": "Array.prototype.flat() returns a new array with nested array elements joined up to a chosen depth. It defaults to one level and does not change the source array.",
+  "explanation": "Call flat() on an array to get a new shallow-copy array. It moves elements from nested arrays into the result until it reaches the chosen depth. The default depth is 1. Use a larger depth for deeper nesting, or Infinity to flatten all nested arrays.",
   "syntax": "flat()\nflat(depth)",
   "parameters": [
    {
     "name": "depth",
-    "type": "number (optional)",
-    "description": "The depth level specifying how deeply nested arrays should be flattened. Defaults to 1."
+    "type": "number",
+    "description": "The maximum nesting depth to flatten. The default is 1."
    }
   ],
-  "returns": "A new array with sub-array elements concatenated into it.",
+  "returns": "A new array containing elements flattened to the requested depth.",
   "example": {
    "title": "Flatten nested arrays",
-   "code": "const nested = [1, [2, [3, 4]], 5];\n\nconsole.log(nested.flat());\nconsole.log(nested.flat(2));",
+   "code": "const values = [1, 2, [3, 4, [5]]];\n\nconsole.log(values.flat());\n// [1, 2, 3, 4, [5]]\n\nconsole.log(values.flat(2));\n// [1, 2, 3, 4, 5]",
    "language": "javascript",
-   "explanation": "The first call flattens one nesting level; the second flattens two levels."
+   "explanation": "The first call flattens one level. The second call flattens two levels."
   },
   "useCases": [
    {
     "title": "Flatten one level",
-    "scenario": "Turn arrays of arrays into a single-level array."
+    "scenario": "Convert a list with one nested level into a single-level list."
    },
    {
-    "title": "Flatten multiple levels",
-    "scenario": "Normalize data nested at a known depth."
+    "title": "Flatten selected levels",
+    "scenario": "Handle data with several known nesting levels."
    },
    {
-    "title": "Use the generic method",
-    "scenario": "Process array-like objects that expose length and integer-indexed properties."
+    "title": "Flatten all levels",
+    "scenario": "Remove nesting at every depth when the structure is known to be deeply nested."
    }
   ],
   "related": [
+   "Array",
    "Array.prototype.flatMap()",
-   "Array.prototype.map()",
    "Array.prototype.concat()",
-   "Array.isArray()"
+   "Array.prototype.map()",
+   "Array.prototype.reduce()"
   ],
-  "since": "ES2019",
+  "since": "January 2020",
+  "interview": [
+   {
+    "question": "What does Array.prototype.flat() do?",
+    "answer": "flat() returns a new array and flattens nested arrays up to the given depth. If no depth is passed, it uses depth 1.",
+    "followUp": "How would you flatten every nested level? Use flat(Infinity), while noting that very deep or large data can have practical cost."
+   },
+   {
+    "question": "Does flat() mutate the source array?",
+    "answer": "The original array is not mutated. The result is a shallow copy, so object values and nested arrays that were not flattened are still shared by reference.",
+    "followUp": "What does shallow copy mean here? Changing a shared object through either array can affect the same object seen by the other array."
+   },
+   {
+    "question": "How does flat() handle sparse arrays?",
+    "answer": "For a sparse array, flat() skips empty slots in the root array and in nested levels it flattens. Deeper nested arrays remain nested, so their empty slots can remain.",
+    "followUp": "What happens to an explicit undefined value? It remains in the result because it is a present element, not an empty slot."
+   }
+  ],
   "keyPoints": [
-   "`flat()` returns a new array containing nested elements concatenated through the specified depth.",
-   "The depth controls how many nested array levels are recursively flattened.",
-   "Omitting the depth argument flattens one level.",
-   "The return value is always a new array.",
-   "The original array remains unchanged, while object references in the result remain shallowly copied.",
-   "The method can operate on array-like values with a length and integer-indexed properties."
+   "flat() recursively joins nested array elements into a new result, limited by the depth argument.",
+   "Calling flat() without an argument flattens one nested level.",
+   "The return value is a new array containing the flattened elements.",
+   "flat() is a copying method, so the source array remains unchanged.",
+   "You can call flat() with another object if it has a length property and integer-keyed properties.",
+   "Non-array elements are copied directly into the result instead of being flattened."
   ],
   "gotchas": [
-   "Sparse arrays lose empty slots at the levels being flattened; deeper nested arrays retain their holes until those levels are flattened.",
-   "`flat()` does not mutate the source array; it returns a new shallow-copy array.",
-   "When called generically on array-like objects, only elements that are arrays are flattened."
+   "flat() does not change the original array. Nested objects and remaining nested arrays keep their references.",
+   "Empty slots are removed from the levels that flat() processes. An empty slot is not the same as an explicit undefined value.",
+   "Only actual arrays are flattened. Array-like objects inside the input stay as values."
   ],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-11-03"
  },
  "flatMap": {
   "sourceUrl": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/flatMap",
@@ -3385,114 +3487,147 @@
  },
  "Math.round": {
   "sourceUrl": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/round",
-  "sourceTitle": "Math.round () - JavaScript | MDN",
-  "summary": "Math.round() returns a number rounded to the nearest integer. Exact halves round toward positive infinity, so -3.5 becomes -3 and 3.5 becomes 4.",
-  "explanation": "Math.round() converts its argument to a number and returns the closest integral Number. When two integers are equally close, it chooses the one toward positive infinity, so positive and negative halves behave differently.",
+  "sourceTitle": "Math.round() - JavaScript | MDN",
+  "summary": "Math.round() returns the number closest to its input as an integer. Exact halves round toward positive infinity, so -3.5 becomes -3.",
+  "explanation": "Math.round first converts its argument to a number. It returns the closest integer. When a value is exactly halfway between two integers, it chooses the one closer to positive infinity. Values from -0.5 through values below 0 produce negative zero in the specified range.",
   "syntax": "Math.round(x)",
   "parameters": [
    {
     "name": "x",
     "type": "number",
-    "description": "The numeric value to round; it is converted to a Number before rounding."
+    "description": "The value to convert to the nearest integer."
    }
   ],
   "returns": "The value of x rounded to the nearest integer.",
   "example": {
-   "title": "Round values to integers",
-   "code": "const values = [3.49, 3.5, -3.5, -0.1];\nconst rounded = values.map(Math.round);\nconsole.log(rounded); // [3, 4, -3, -0]",
+   "title": "Round numbers",
+   "code": "console.log(Math.round(5.95)); // 6\nconsole.log(Math.round(5.5));  // 6\nconsole.log(Math.round(-5.5)); // -5\nconsole.log(Object.is(Math.round(-0.1), -0)); // true",
    "language": "javascript",
-   "explanation": "Maps Math.round over several values to show ordinary rounding, ties toward positive infinity, and preservation of negative zero."
+   "explanation": "This rounds positive and negative values and checks that a small negative result keeps the negative-zero sign."
   },
   "useCases": [
    {
-    "title": "Round numeric results",
-    "scenario": "Convert measured or calculated decimal values to whole-unit quantities."
+    "title": "Nearest whole number",
+    "scenario": "Convert measurements or calculated values to whole units when the nearest integer is needed."
    },
    {
-    "title": "Nearest-integer decisions",
-    "scenario": "Choose the nearest integer for display or threshold logic."
+    "title": "Whole-number display",
+    "scenario": "Turn a fractional index or count into a whole-number display value."
    },
    {
-    "title": "Signed numeric processing",
-    "scenario": "Handle signed values while preserving JavaScript's negative-zero behavior when relevant."
+    "title": "Signed values",
+    "scenario": "Handle positive and negative values with JavaScript's specified half-value rule."
    }
   ],
   "related": [
-   "Math.ceil()",
-   "Math.floor()",
-   "Math.trunc()",
-   "Object.is()"
+   "Math.floor",
+   "Math.ceil",
+   "Math.trunc",
+   "Number"
   ],
-  "since": "",
+  "since": "July 2015",
+  "interview": [
+   {
+    "question": "How does Math.round choose an integer?",
+    "answer": "Math.round(x) returns the integer closest to x. If two integers are equally close, it chooses the one closer to positive infinity.",
+    "followUp": "What does Math.round(-3.5) return? It returns -3 because the tie is resolved toward positive infinity."
+   },
+   {
+    "question": "What happens for integers and special numeric values?",
+    "answer": "It returns the input when the input is already an integer. It also returns non-finite values such as Infinity without changing them.",
+    "followUp": "What happens to NaN? The specification returns NaN because it is not finite."
+   },
+   {
+    "question": "What special behavior does Math.round have near zero?",
+    "answer": "For a negative value from -0.5 up to, but not including, 0, Math.round returns negative zero. This is different from Math.floor(x + 0.5), which returns positive zero in that case.",
+    "followUp": "How can code detect the sign of zero? Use Object.is(result, -0), because === treats both zero values as equal."
+   }
+  ],
   "keyPoints": [
-   "Returns the input rounded to the nearest integer.",
-   "Fractions above 0.5 round away from the current integer toward the next integer.",
-   "Exact halves resolve toward positive infinity.",
-   "Call it through Math.round(); it is not an instance method.",
-   "The return value is a Number containing the rounded result."
+   "Use Math.round() to convert a number to its nearest integer.",
+   "The function takes one argument, x.",
+   "The return value is the rounded integer value.",
+   "An integer input is returned unchanged.",
+   "Infinity, negative Infinity, and NaN are returned without becoming finite integers."
   ],
   "gotchas": [
-   "Halfway values round toward positive infinity: 3.5 becomes 4, while -3.5 becomes -3.",
-   "Do not replace Math.round(x) with Math.floor(x + 0.5), because results can differ, especially for negative zero.",
-   "Values from -0.5 through values below zero can produce negative zero; use Object.is(result, -0) when the sign matters."
+   "A half value rounds toward positive infinity, so Math.round(-3.5) returns -3, not -4.",
+   "Do not treat Math.floor(x + 0.5) as an exact replacement. Negative zero and precision can produce different results."
   ],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-11-03"
  },
  "Number.isInteger": {
   "sourceUrl": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/isInteger",
-  "sourceTitle": "Number.isInteger() - JavaScript - MDN Web Docs",
-  "summary": "Number.isInteger() tests whether a value is a Number representing an integer. It does not coerce non-number values and returns false for NaN and infinities.",
-  "explanation": "Call Number.isInteger(value) to test whether value is a Number representing an integer. It returns true for integral numeric values, including values such as 5.0, and false for non-numbers, non-integral numbers, NaN, and infinities; due to floating-point precision, some imprecise large values can still be classified as integers.",
+  "sourceTitle": "Number.isInteger() - JavaScript | MDN",
+  "summary": "Number.isInteger() tests whether a value is represented as an integer. It returns false for non-numbers, fractional numbers, NaN, and Infinity.",
+  "explanation": "Number.isInteger() checks a value without converting it. It returns true only when the value is a number represented as an integer. It returns false for fractional numbers, NaN, Infinity, and values of other types. Some large or very precise literals may already have lost precision before the method checks them.",
   "syntax": "Number.isInteger(value)",
   "parameters": [
    {
     "name": "value",
     "type": "any",
-    "description": "The value to be tested for being an integer."
+    "description": "The value to test for being an integer."
    }
   ],
-  "returns": "A boolean: true if the given value is an integer; otherwise false.",
+  "returns": "A boolean: true when the value is a number represented as an integer; otherwise false.",
   "example": {
-   "title": "Testing integer values",
-   "code": "const values = [5, 5.1, \"5\", NaN, 2 ** 53];\n\nfor (const value of values) {\n  console.log(value, Number.isInteger(value));\n}",
+   "title": "Check values",
+   "code": "const values = [0, 1, -3, 2.5, \"3\", NaN, Infinity];\n\nfor (const value of values) {\n  console.log(value, Number.isInteger(value));\n}",
    "language": "javascript",
-   "explanation": "Checks numbers without coercing strings or other non-number values."
+   "explanation": "This prints true only for numeric values that JavaScript represents as integers."
   },
   "useCases": [
    {
-    "title": "Input validation",
-    "scenario": "Validate numeric input before performing operations that require whole-number values."
+    "title": "Check a count",
+    "scenario": "Validate a count before using it as an array length or loop limit."
    },
    {
-    "title": "Runtime contracts",
-    "scenario": "Reject fractional, string, boolean, NaN, or infinite values in API parameters."
+    "title": "Check a calculation",
+    "scenario": "Confirm that a calculation produced a whole-number result."
    },
    {
-    "title": "Conversion guards",
-    "scenario": "Check whether a value can be treated as an integer before converting it to BigInt."
+    "title": "Validate input",
+    "scenario": "Reject values such as numeric strings when strict numeric input is required."
    }
   ],
   "related": [
    "Number.isSafeInteger()",
    "Number.isFinite()",
    "Number.isNaN()",
-   "Number.MAX_SAFE_INTEGER"
+   "Number.MAX_SAFE_INTEGER",
+   "Number.EPSILON"
   ],
-  "since": "",
+  "since": "September 2015",
+  "interview": [
+   {
+    "question": "What does Number.isInteger() return?",
+    "answer": "Number.isInteger(value) returns a boolean. It is true when value is a number represented as an integer; otherwise it is false, including for NaN and Infinity.",
+    "followUp": "How does it handle a numeric string? It returns false because the method does not coerce non-number values."
+   },
+   {
+    "question": "Does Number.isInteger() convert its argument?",
+    "answer": "It checks the value's type and integer representation directly. Number.isInteger(\"10\") is false, while Number.isInteger(10) is true.",
+    "followUp": "What about true? It also returns false because booleans are not numbers."
+   },
+   {
+    "question": "Why can a value that looks fractional return true?",
+    "answer": "JavaScript numbers use IEEE-754 double-precision floating-point representation. Some decimal literals are rounded to an integer representation before Number.isInteger() receives them.",
+    "followUp": "Can this affect large values? Yes. Values near Number.MAX_SAFE_INTEGER can lose precision and produce surprising results."
+   }
+  ],
   "keyPoints": [
-   "Number.isInteger is a static Number method for classifying a supplied value as an integer or not.",
-   "Its call accepts one value argument.",
-   "The value parameter is the item whose integer status is checked.",
-   "The result is true when the value is an integer.",
-   "A Number such as 5.0 passes because its represented numeric value is integral."
+   "Call it as a static method on Number to test one value.",
+   "The result is always a boolean: true for an integer and false otherwise.",
+   "Special numeric values such as NaN, Infinity, and -Infinity are not accepted as integers.",
+   "A floating-point value can return true when its stored representation is an integer, such as 5.0.",
+   "JavaScript can represent integer values exactly only within the safe integer range."
   ],
   "gotchas": [
-   "Numeric-looking strings, booleans, arrays, and other non-number values are rejected rather than converted.",
-   "NaN and positive or negative infinity are never accepted.",
-   "Floating-point representation can make a literal that appears fractional behave as an integer.",
-   "Do not use this test alone when exact representation of large integers matters; consider Number.isSafeInteger()."
+   "The method does not convert strings, booleans, or arrays into numbers. For example, Number.isInteger(\"10\") is false.",
+   "Floating-point precision can change the value before checking. A literal such as 5.0000000000000001 is represented like 5, so the method returns true.",
+   "Large values near Number.MAX_SAFE_INTEGER may not represent their written decimal value exactly. Number.isInteger can therefore return true for a value that looks fractional."
   ],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-11-03"
  },
  "Object": {
   "sourceUrl": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object",
@@ -4030,58 +4165,74 @@
  },
  "Object.getPrototypeOf": {
   "sourceUrl": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/getPrototypeOf",
-  "sourceTitle": "Object.getPrototypeOf () - JavaScript | MDN",
-  "summary": "Object.getPrototypeOf() returns the internal [[Prototype]] of a value. Its result is an object or null; modern JavaScript coerces primitive arguments to wrapper objects before retrieving the prototype.",
-  "explanation": "Object.getPrototypeOf(obj) retrieves obj's internal [[Prototype]] value. The result is either an object or null; in current JavaScript, a primitive argument is converted to its corresponding wrapper object before the prototype is read.",
+  "sourceTitle": "Object.getPrototypeOf() - JavaScript | MDN",
+  "summary": "Object.getPrototypeOf() returns an object's prototype. The result can be another object or null.",
+  "explanation": "Object.getPrototypeOf() reads the internal prototype of an object. It returns that prototype, or null when the object has no prototype. In current JavaScript, a primitive argument is converted to an object before its prototype is read.",
   "syntax": "Object.getPrototypeOf(obj)",
   "parameters": [
    {
     "name": "obj",
-    "type": "Object",
-    "description": "The value whose prototype is returned."
+    "type": "object",
+    "description": "The object whose prototype is to be returned."
    }
   ],
-  "returns": "The prototype of the supplied value, which may be null.",
+  "returns": "The prototype of the given object, which may be null.",
   "example": {
    "title": "Read an object's prototype",
-   "code": "const prototype = { greet() { return \"hello\"; } };\nconst object = Object.create(prototype);\n\nconsole.log(Object.getPrototypeOf(object) === prototype); // true\nconsole.log(Object.getPrototypeOf(Object.prototype)); // null",
+   "code": "const prototype = { kind: \"base\" };\nconst object = Object.create(prototype);\n\nconsole.log(Object.getPrototypeOf(object) === prototype); // true\nconsole.log(Object.getPrototypeOf(Object.prototype)); // null",
    "language": "javascript",
-   "explanation": "Creates an object with a chosen prototype, then retrieves that prototype and confirms the end of the standard object chain."
+   "explanation": "The first call returns the prototype used to create object. The second shows that Object.prototype is at the end of its prototype chain."
   },
   "useCases": [
    {
-    "title": "Inspect inheritance",
-    "scenario": "Check whether an object inherits from a particular prototype."
+    "title": "Inspect object inheritance",
+    "scenario": "Check whether an object uses a particular prototype."
    },
    {
-    "title": "Traverse the prototype chain",
-    "scenario": "Walk an object's prototype chain until the result is null."
+    "title": "Trace a prototype chain",
+    "scenario": "Walk through inherited properties and find the end of a chain."
    },
    {
-    "title": "Validate object construction",
-    "scenario": "Verify the prototype assigned by Object.create() or a constructor."
+    "title": "Check Object.create() results",
+    "scenario": "Verify the prototype assigned when creating an object."
    }
   ],
   "related": [
    "Object.create()",
+   "Object.prototype.isPrototypeOf()",
    "Object.setPrototypeOf()",
-   "Reflect.getPrototypeOf()",
-   "Object.prototype.__proto__"
+   "Reflect.getPrototypeOf()"
   ],
   "since": "",
+  "interview": [
+   {
+    "question": "What does Object.getPrototypeOf() return?",
+    "answer": "It returns the value of the object's internal [[Prototype]] property. The result can be another object or null.",
+    "followUp": "How can you find the end of a prototype chain? Repeatedly call Object.getPrototypeOf() until the returned value is null."
+   },
+   {
+    "question": "What is the function's syntax and parameter?",
+    "answer": "Its signature is Object.getPrototypeOf(obj). The obj parameter is the object whose prototype should be read.",
+    "followUp": "What happens with a string argument? In ES2015 and later, the string is converted to an object, so \"foo\" produces String.prototype."
+   },
+   {
+    "question": "Why is this method useful when learning inheritance?",
+    "answer": "A prototype chain is searched when a property is not found directly on an object. Object.getPrototypeOf() lets you inspect each link in that chain.",
+    "followUp": "What is the default prototype of an object literal? It is Object.prototype, whose own prototype is null."
+   }
+  ],
   "keyPoints": [
-   "It is a static Object method that returns the specified object's prototype.",
-   "The returned value corresponds to the object's internal [[Prototype]].",
-   "Its only parameter is the value whose prototype should be inspected.",
-   "The result can be an object or null.",
-   "Call the function with one argument: Object.getPrototypeOf(obj).",
-   "It can verify that an object was created with a particular prototype."
+   "It reads an object's internal [[Prototype]] value.",
+   "The returned value may be an object or null.",
+   "Use this method as the standard way to inspect a prototype.",
+   "A prototype chain ends at a prototype whose own prototype is null.",
+   "For an object created with Object.create(prototype), the method returns the prototype passed to Object.create()."
   ],
   "gotchas": [
-   "Primitive arguments are coerced to objects in ES2015+, so Object.getPrototypeOf(\"foo\") returns String.prototype rather than throwing.",
-   "Handle null as a valid result, especially when inspecting Object.prototype or objects created with a null prototype."
+   "The result can be null, so code that walks a prototype chain must handle that value.",
+   "Primitive arguments are converted to objects in ES2015 and later; for example, a string produces String.prototype."
   ],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-11-03"
  },
  "Object.groupBy": {
   "sourceUrl": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/groupBy",
@@ -4163,66 +4314,84 @@
  "Object.hasOwn": {
   "sourceUrl": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/hasOwn",
   "sourceTitle": "Object.hasOwn() - JavaScript | MDN",
-  "summary": "Object.hasOwn() returns whether an object contains a specified property as its own property. It excludes inherited properties and works with null-prototype objects.",
-  "explanation": "Call Object.hasOwn with an object and a property key. It converts the inputs as needed and reports whether that key is defined directly on the object, without searching its prototype chain; the key may be a string or a Symbol.",
+  "summary": "Object.hasOwn() tells you whether an object directly owns a property. It returns false for inherited or missing properties, even when the property can be read.",
+  "explanation": "Object.hasOwn() checks whether an object directly contains a property. It returns true even when the property value is null or undefined, and false when the property is inherited or missing. It is a concise choice for objects with null prototypes or objects that define their own hasOwnProperty method.",
   "syntax": "Object.hasOwn(obj, prop)",
   "parameters": [
    {
     "name": "obj",
     "type": "object",
-    "description": "The JavaScript object instance to test."
+    "description": "The object instance to test."
    },
    {
     "name": "prop",
-    "type": "string | symbol",
-    "description": "The String name or Symbol of the property to test."
+    "type": "String | Symbol",
+    "description": "The property name to test. It can be a String or Symbol."
    }
   ],
-  "returns": "true if the specified object has directly defined the specified property; otherwise false.",
+  "returns": "true when the object directly defines the property; otherwise false.",
   "example": {
-   "title": "Check direct object properties",
-   "code": "const record = Object.create(null);\nrecord.status = undefined;\n\nconsole.log(Object.hasOwn(record, \"status\")); // true\nconsole.log(Object.hasOwn(record, \"toString\")); // false\nconsole.log(Object.hasOwn({ value: null }, \"value\")); // true",
+   "title": "Check for a direct property",
+   "code": "const user = Object.create({ role: \"admin\" });\nuser.name = \"Ada\";\n\nconsole.log(Object.hasOwn(user, \"name\")); // true\nconsole.log(Object.hasOwn(user, \"role\")); // false\nconsole.log(Object.hasOwn(user, \"toString\")); // false",
    "language": "javascript",
-   "explanation": "This checks direct properties, including one whose value is undefined, while excluding inherited properties and working with a null-prototype object."
+   "explanation": "The method checks whether a property belongs directly to the object. It does not count properties found through the prototype chain."
   },
   "useCases": [
    {
-    "title": "Check field presence",
-    "scenario": "Validate that an input record explicitly contains a field, even when its value is undefined or null."
+    "title": "Validate object fields",
+    "scenario": "Check whether a key exists without confusing an undefined value with a missing key."
+   },
+   {
+    "title": "Iterate safely",
+    "scenario": "Filter inherited names during a for...in loop."
+   },
+   {
+    "title": "Check array indexes",
+    "scenario": "Test whether an array contains an element at a specific index."
    },
    {
     "title": "Handle null-prototype objects",
-    "scenario": "Safely inspect dictionaries created with Object.create(null)."
-   },
-   {
-    "title": "Exclude inherited properties",
-    "scenario": "Filter enumerable or prototype-chain traversals to direct properties only."
-   },
-   {
-    "title": "Test symbol properties",
-    "scenario": "Check keys that are represented by Symbols rather than strings."
+    "scenario": "Inspect objects created with Object.create(null)."
    }
   ],
   "related": [
    "Object.prototype.hasOwnProperty()",
-   "in operator",
+   "Object.keys()",
    "Object.getOwnPropertyNames()",
-   "Object.keys()"
+   "in operator",
+   "Object.create(null)"
   ],
-  "since": "2022",
+  "since": "March 2022",
+  "interview": [
+   {
+    "question": "What does Object.hasOwn() test?",
+    "answer": "Object.hasOwn(obj, prop) returns true when prop is defined directly on obj. It returns false for inherited or missing properties, unlike the in operator, which checks inherited properties too.",
+    "followUp": "How would you check an inherited property as well? Use prop in obj, because in searches the object and its prototype chain."
+   },
+   {
+    "question": "Why use Object.hasOwn() instead of hasOwnProperty()?",
+    "answer": "It is preferred because it works with null-prototype objects and is not affected when an object replaces its inherited hasOwnProperty method. It is also shorter than calling Object.prototype.hasOwnProperty.call().",
+    "followUp": "What can you use when Object.hasOwn() is unavailable? Call Object.prototype.hasOwnProperty.call(obj, prop) explicitly."
+   },
+   {
+    "question": "What happens when the property value is null or undefined?",
+    "answer": "The result depends on property ownership, not the value. An own property whose value is null or undefined still produces true.",
+    "followUp": "How can you distinguish a missing property from an own property whose value is undefined? First use Object.hasOwn(); then inspect the value separately if needed."
+   }
+  ],
   "keyPoints": [
-   "It tests whether a property belongs directly to the supplied object.",
-   "Inherited and absent properties are rejected.",
-   "The property key can be either a string or a Symbol.",
-   "The result is a boolean indicating direct ownership.",
-   "Ownership is independent of the property's stored value.",
-   "Prefer this static method for null-prototype objects and objects that may override hasOwnProperty."
+   "It is a static method called on Object, not a method called on the object being checked.",
+   "Missing properties and inherited properties both produce false.",
+   "Use it as the modern replacement for the older instance method when supported.",
+   "Use Object.keys() for normal iteration over an object's enumerable own properties.",
+   "Object.hasOwn() can test whether a particular array index exists."
   ],
   "gotchas": [
-   "Do not use it when inherited properties should count; use the `in` operator for that broader check.",
-   "A missing key and an inherited key both produce false."
+   "Do not use Object.hasOwn() when inherited properties should count. The in operator also checks the prototype chain.",
+   "A property available through a prototype is not an own property, so the result is false.",
+   "The second argument can be a string or a Symbol. Array indexes can also be passed as numbers."
   ],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-11-03"
  },
  "Object.keys": {
   "sourceUrl": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/keys",
@@ -4595,62 +4764,84 @@
  "parseInt": {
   "sourceUrl": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/parseInt",
   "sourceTitle": "parseInt() - JavaScript | MDN",
-  "summary": "parseInt() converts a value to a string and parses an integer in a specified radix. It returns the parsed integer or NaN when the radix is invalid or no initial numeric characters can be parsed.",
-  "explanation": "parseInt() converts its first argument to a string, ignores leading whitespace and an optional sign, then reads consecutive characters that are valid in the chosen radix. It stops at the first invalid character and returns the accumulated integer; if no valid integer can be read, or the radix is outside 2–36 after conversion, it returns NaN.",
-  "syntax": "parseInt(string)\nparseInt(string, radix)",
+  "summary": "parseInt() reads an integer from a string using a chosen number base. It returns NaN when the base is invalid or the input has no valid first digit.",
+  "explanation": "The function removes leading whitespace and an optional sign, then reads valid digits for the chosen radix. It stops at the first invalid character and returns the digits read so far. If no valid first digit exists, it returns NaN.",
+  "syntax": "parseInt(string, radix)",
   "parameters": [
    {
     "name": "string",
     "type": "string",
-    "description": "A value converted to a string and parsed from its beginning as an integer."
+    "description": "The value to parse. It is treated as a string, and leading whitespace is ignored."
    },
    {
     "name": "radix",
-    "type": "number, optional",
-    "description": "An integer base from 2 through 36. If omitted or zero, decimal is used except that a 0x or 0X prefix selects hexadecimal."
+    "type": "number",
+    "description": "Optional integer base from 2 through 36. If omitted or zero, the base is inferred; 0x and 0X use base 16, otherwise base 10."
    }
   ],
-  "returns": "An integer parsed from the string, or NaN if the radix is outside 2–36 after conversion or the first non-whitespace character cannot be converted to a number.",
+  "returns": "An integer parsed from the input, or NaN if the radix is outside 2 through 36 or the first non-whitespace character is invalid.",
   "example": {
-   "title": "Parse integers with explicit radices",
-   "code": "const whole = parseInt(\"42px\", 10);\nconst hexadecimal = parseInt(\"ff\", 16);\n\nconsole.log(whole); // 42\nconsole.log(hexadecimal); // 255",
+   "title": "Parse a string with an explicit radix",
+   "code": "const value = Number.parseInt(\"101\", 2);\nconsole.log(value); // 5",
    "language": "javascript",
-   "explanation": "Parses a decimal prefix and a hexadecimal string using explicit radices."
+   "explanation": "This parses the string as a base-2 number and returns 5."
   },
   "useCases": [
    {
-    "title": "Read integer text",
-    "scenario": "Convert a decimal string such as \"42\" or a decimal prefix such as \"42px\" into an integer."
+    "title": "Parse integer text",
+    "scenario": "Read an integer from user or file text when the input may include surrounding whitespace."
    },
    {
-    "title": "Parse non-decimal bases",
-    "scenario": "Interpret binary, octal, hexadecimal, or another base from 2 through 36."
+    "title": "Convert a value with a radix",
+    "scenario": "Convert a string containing binary, hexadecimal, or another supported base into a Number."
    },
    {
-    "title": "Change numeric bases",
-    "scenario": "Convert a number represented in one radix before formatting it with Number.prototype.toString()."
+    "title": "Read a numeric prefix",
+    "scenario": "Read a leading integer from text such as \"15px\" when stopping at later non-digit text is intended."
    }
   ],
   "related": [
-   "Number.parseInt()",
    "parseFloat()",
-   "Number()",
-   "Number.prototype.toString()"
+   "Number() constructor",
+   "Number.parseFloat()",
+   "Number.parseInt()",
+   "Number.isNaN()",
+   "Number.prototype.toString()",
+   "BigInt() constructor"
   ],
-  "since": "",
+  "since": "July 2015",
+  "interview": [
+   {
+    "question": "What does parseInt do?",
+    "answer": "parseInt reads an integer from a string using a radix from 2 through 36. It returns NaN if the radix is invalid or the first non-whitespace character is not a valid digit.",
+    "followUp": "What happens at a later invalid character? The function stops there and returns the value parsed before it."
+   },
+   {
+    "question": "How is the radix chosen?",
+    "answer": "Always provide the radix when the intended base matters, such as parseInt(\"101\", 2). If the radix is omitted or zero, 0x and 0X select base 16; other inputs use base 10.",
+    "followUp": "Does parseInt(\"0b11\") parse binary? No. Without a radix, 0b is not treated as a binary prefix."
+   },
+   {
+    "question": "When should BigInt be used instead?",
+    "answer": "parseInt returns a Number, so very large integer strings can lose precision. BigInt parses arbitrary-length integer strings accurately and returns a BigInt.",
+    "followUp": "What should be passed to BigInt for a string ending in n? Remove the trailing n before calling BigInt."
+   }
+  ],
   "keyPoints": [
-   "The function parses text as an integer in a chosen base, such as decimal base 10 or hexadecimal base 16.",
-   "The radix is numerically coerced before range validation.",
-   "Whitespace before the number does not affect the result.",
-   "A leading plus or minus sign is supported.",
-   "Successful parsing returns an integer represented by the initial valid portion of the input.",
-   "The result is either a parsed integer or NaN when parsing cannot produce a valid value."
+   "It converts a string to an integer in the selected number base.",
+   "Spaces and other leading whitespace are ignored before parsing.",
+   "Bases above 10 use letters as digits, and letter case does not matter.",
+   "The input may begin with + or - after leading whitespace.",
+   "A string with no valid first digit produces NaN.",
+   "A decimal point ends parsing, so the result is an integer rather than a fraction."
   ],
   "gotchas": [
-   "Parsing stops silently at the first character invalid for the radix, so trailing text can be accepted rather than rejected.",
-   "Always provide a radix between 2 and 36; an invalid coerced radix produces NaN."
+   "Pass a radix from 2 through 36. An invalid radix returns NaN.",
+   "Without a radix, only 0x and 0X select base 16. Other prefixes, such as 0b, do not.",
+   "The function stops at the first invalid character. For example, parseInt(\"15px\", 10) returns 15.",
+   "Use BigInt for integers that need more precision than the safe Number range."
   ],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-11-03"
  },
  "Promise": {
   "sourceUrl": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise",
@@ -5023,57 +5214,74 @@
  },
  "Promise.reject": {
   "sourceUrl": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/reject",
-  "sourceTitle": "Promise.reject()",
-  "summary": "Promise.reject() creates and returns a new promise that is already rejected with the supplied reason. It is useful for producing rejection branches or adapting a value into a rejected promise.",
-  "explanation": "Promise.reject(reason) creates an already-rejected promise whose rejection reason is the supplied value. It always creates a new Promise, can be used with Promise subclasses, and is equivalent in effect to constructing a promise whose executor calls reject(reason).",
+  "sourceTitle": "Promise.reject() - JavaScript | MDN",
+  "summary": "Promise.reject(reason) returns a new Promise that is rejected with reason. Use it to create a rejected promise, often with an Error object.",
+  "explanation": "Promise.reject(reason) creates a rejected promise. The promise keeps the supplied reason, which can be read by a rejection handler or thrown by await. The method creates a new promise even when the reason is already a promise.",
   "syntax": "Promise.reject(reason)",
   "parameters": [
    {
     "name": "reason",
     "type": "any",
-    "description": "Reason why this Promise rejected."
+    "description": "The value that explains why the promise is rejected."
    }
   ],
-  "returns": "A Promise that is rejected with the given reason.",
+  "returns": "A new Promise that is rejected with the given reason.",
   "example": {
-   "title": "Reject and handle a promise",
-   "code": "Promise.reject(new Error(\"Request failed\"))\n  .catch((error) => console.error(error.message));",
+   "title": "Reject a promise",
+   "code": "Promise.reject(new Error(\"fail\")).then(\n  () => console.log(\"not called\"),\n  (error) => console.error(error.message),\n);",
    "language": "javascript",
-   "explanation": "Creates an immediately rejected promise and handles its reason with catch()."
+   "explanation": "This creates a rejected promise and runs the second callback with the error."
   },
   "useCases": [
    {
-    "title": "Signal an asynchronous failure",
-    "scenario": "Return a rejected promise from a function when validation or preconditions fail."
+    "title": "Create a rejected result",
+    "scenario": "A function must report an asynchronous failure using the Promise API."
    },
    {
-    "title": "Test rejection handling",
-    "scenario": "Create predictable failure inputs for promise-chain or async-handler tests."
+    "title": "Test error paths",
+    "scenario": "Code needs to test rejection handling without starting asynchronous work."
    },
    {
-    "title": "Normalize an error path",
-    "scenario": "Convert a synchronous error value into a rejected promise for a uniform async API."
+    "title": "Reject a promise chain",
+    "scenario": "A Promise chain needs to stop and pass a failure to its rejection handler."
    }
   ],
   "related": [
    "Promise",
    "Promise.resolve()",
-   "Promise.prototype.catch()",
-   "Promise.prototype.then()"
+   "await",
+   "Error"
   ],
-  "since": "",
+  "since": "July 2015",
+  "interview": [
+   {
+    "question": "What does Promise.reject() return?",
+    "answer": "It returns a new Promise that is already rejected with the supplied reason. A rejection handler receives that reason.",
+    "followUp": "What happens if the reason is already a promise? A new promise is still created, and the original promise becomes the rejection reason."
+   },
+   {
+    "question": "How is Promise.reject() related to the Promise constructor?",
+    "answer": "It is a short form of creating a promise whose executor calls reject(reason). The returned promise is rejected immediately.",
+    "followUp": "Can subclasses use it? Yes. The subclass constructor must accept one executor function, like the Promise constructor."
+   },
+   {
+    "question": "Can Promise.reject() work with a non-Promise constructor?",
+    "answer": "Promise.reject() is generic, so it can be called with another constructor through that constructor's static method. The constructor must support the Promise-style executor signature.",
+    "followUp": "What if the constructor's callbacks are custom? Promise.reject() calls the executor with resolve and reject functions, but their behavior is defined by that constructor."
+   }
+  ],
   "keyPoints": [
-   "Use the static method to create a rejected promise carrying any chosen reason.",
-   "It provides a concise alternative to constructing a promise and calling its reject callback.",
-   "The method can be called with a compatible constructor, not only the built-in Promise constructor.",
-   "A custom constructor must accept an executor function with resolve and reject callbacks.",
-   "Calling it never returns the original promise supplied as the reason."
+   "It creates a rejected Promise and stores the given reason.",
+   "The method is a compact alternative to constructing a promise and calling its reject callback.",
+   "The result is always a fresh promise, including when reason is another promise.",
+   "A compatible Promise subclass can use this static method and receive an instance of that subclass.",
+   "The reason parameter may be any value that explains the rejection."
   ],
   "gotchas": [
-   "The supplied value is always wrapped in a new promise, even when it is already a promise.",
-   "Prefer an Error object as the reason when you want useful debugging information and selective error handling."
+   "Passing an existing promise as the reason does not return that same promise. The new promise rejects with the original promise as its reason.",
+   "Use an Error object when rejecting failures. It provides a useful error type and stack trace."
   ],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-11-03"
  },
  "Promise.resolve": {
   "sourceUrl": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/resolve",
@@ -5219,68 +5427,91 @@
   "checkedAt": "2026-10-15"
  },
  "Proxy": {
-  "sourceUrl": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy/Proxy",
-  "sourceTitle": "Proxy () constructor - JavaScript | MDN",
-  "summary": "The Proxy() constructor creates a proxy that wraps a target object and can intercept selected fundamental operations. A handler supplies trap functions for customizing those operations.",
-  "explanation": "A Proxy wraps a target object and uses handler trap functions to intercept selected fundamental operations, such as property reads and writes. Each trap can customize the operation or delegate to the corresponding Reflect method. The target may be an object, array, function, or another proxy.",
+  "sourceUrl": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy",
+  "sourceTitle": "Proxy - JavaScript | MDN",
+  "summary": "Proxy creates an object that stands in for another object. Its handler can intercept and redefine operations such as property reads, writes, and function calls.",
+  "explanation": "A Proxy places a handler between code and a target object. Handler functions, called traps, can intercept operations such as reading, writing, deleting, or defining properties, then change the result or forward the operation with Reflect.",
   "syntax": "new Proxy(target, handler)",
   "parameters": [
    {
     "name": "target",
     "type": "object",
-    "description": "The object to wrap. It may be an array, function, or another proxy."
+    "description": "The original object that the proxy virtualizes and commonly uses as its storage backend."
    },
    {
     "name": "handler",
     "type": "object",
-    "description": "An object whose function-valued properties define the proxy's custom behavior."
+    "description": "An object containing trap functions that define intercepted operations."
    }
   ],
-  "returns": "A new Proxy object that wraps target and applies the behavior defined by handler.",
+  "returns": "new Proxy(target, handler) returns a Proxy object that can be used in place of the target.",
   "example": {
-   "title": "Log property access",
-   "code": "const user = { name: \"Ada\" };\nconst observed = new Proxy(user, {\n  get(target, property, receiver) {\n    console.log(`Reading ${String(property)}`);\n    return Reflect.get(target, property, receiver);\n  },\n});\n\nconsole.log(observed.name);",
+   "title": "Change a property read",
+   "code": "const target = { name: \"Ada\" };\nconst proxy = new Proxy(target, {\n  get(target, property, receiver) {\n    if (property === \"name\") return target[property].toUpperCase();\n    return Reflect.get(target, property, receiver);\n  }\n});\n\nconsole.log(proxy.name); // ADA",
    "language": "javascript",
-   "explanation": "The proxy logs property reads, then delegates the actual lookup to Reflect.get."
+   "explanation": "The get trap changes the name result and forwards every other property read."
   },
   "useCases": [
    {
-    "title": "Observe operations",
-    "scenario": "Record reads or writes for debugging, auditing, or metrics."
+    "title": "Validation",
+    "scenario": "Check assigned values before storing them."
    },
    {
-    "title": "Validate data",
-    "scenario": "Reject invalid assignments or enforce object invariants at runtime."
+    "title": "Logging and transformation",
+    "scenario": "Record or change property access and updates."
    },
    {
-    "title": "Customize access",
-    "scenario": "Present computed, normalized, or virtual properties through an object-like interface."
+    "title": "Virtual properties and value correction",
+    "scenario": "Expose calculated properties or normalize input values."
    },
    {
-    "title": "Adapt an interface",
-    "scenario": "Hide or transform selected values while exposing a compatible object API."
+    "title": "DOM state management",
+    "scenario": "Connect object operations to browser element changes."
    }
   ],
   "related": [
-   "Proxy.revocable()",
    "Reflect",
-   "handler.get()",
-   "handler.set()"
+   "Proxy.revocable",
+   "get()",
+   "set()",
+   "defineProperty()",
+   "deleteProperty()",
+   "apply()",
+   "construct()"
   ],
-  "since": "",
+  "since": "September 2016",
+  "interview": [
+   {
+    "question": "What are the two arguments to the Proxy constructor?",
+    "answer": "A Proxy wraps a target object and a handler. The handler contains traps that intercept object operations, such as property reads and writes.",
+    "followUp": "What happens when a trap is missing? The operation uses the target's normal behavior, unless another proxy layer changes it."
+   },
+   {
+    "question": "How do get and set traps work?",
+    "answer": "The get trap handles property reads, while set handles assignments. A trap can return a custom value or perform the normal operation through Reflect.",
+    "followUp": "Why use Reflect in a trap? It provides the corresponding reflective operation and helps preserve normal target semantics, but it can recurse if it calls the same trap again."
+   },
+   {
+    "question": "Why can proxies fail with private fields or Map objects?",
+    "answer": "A proxy has a different identity from its target. Private fields and internal slots belong to the original object, so ordinary forwarding can fail when code receives the proxy as this.",
+    "followUp": "How can a method using private fields work through a proxy? The get trap can return a wrapper that calls the method with the target as this."
+   }
+  ],
   "keyPoints": [
-   "Use the Proxy constructor to create an object that stands in for another object.",
-   "Code can generally use the proxy where it would use the original target.",
-   "The target is the object being wrapped and can be an array, function, or another proxy.",
-   "The handler contains trap methods that define which operations are intercepted.",
-   "Define only the traps needed for behaviors such as logging, validation, or transformation.",
-   "Typical uses include observing access, validating assignments, and normalizing or sanitizing values."
+   "A proxy stands in for another object and can redefine its basic operations.",
+   "The constructor receives the target object first and the handler second.",
+   "Trap functions define how intercepted operations behave.",
+   "Reflect methods can forward an operation using standard object behavior.",
+   "Function proxies can intercept calls with apply and construction with construct.",
+   "Proxy.revocable creates a proxy that can later be disabled."
   ],
   "gotchas": [
-   "Always use new Proxy(...); calling Proxy(...) without new throws a TypeError.",
-   "An empty handler does not add custom behavior; it mostly mirrors the target."
+   "Traps must preserve the target's required invariants. Breaking them throws a TypeError.",
+   "Reflect does not remove a proxy. Calling it in a trap can trigger that trap again and cause infinite recursion.",
+   "A normal forwarding proxy cannot directly use private class fields. Methods may need their this value redirected to the target.",
+   "An empty forwarding handler is not enough for some native objects, including Map and DOM objects."
   ],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-11-03"
  },
  "queueMicrotask": {
   "sourceUrl": "https://developer.mozilla.org/en-US/docs/Web/API/Window/queueMicrotask",
@@ -5729,51 +5960,69 @@
  },
  "reverse": {
   "sourceUrl": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/reverse",
-  "sourceTitle": "Array.prototype.reverse() - JavaScript - MDN Web Docs",
-  "summary": "Array.prototype.reverse() reverses an array in place and returns the same array reference. Use toReversed() or copy the array first when the original must remain unchanged.",
-  "explanation": "Calling reverse() swaps elements from the ends toward the center, changes the original array, and returns that same array reference. It works with array-like objects that provide a length and integer-keyed properties, and it preserves sparse-array empty slots.",
+  "sourceTitle": "Array.prototype.reverse() - JavaScript | MDN",
+  "summary": "Reverses an array in place and returns the same array. Use toReversed(), spread syntax, or Array.from() when the original array must not change.",
+  "explanation": "reverse() swaps array elements in place and returns the same array object. It uses no arguments, changes the original array, and keeps empty slots as empty slots when the array is sparse.",
   "syntax": "reverse()",
   "parameters": [],
-  "returns": "A reference to the original array, with its elements reversed.",
+  "returns": "A reference to the original array, after its elements have been reversed in place.",
   "example": {
-   "title": "Reverse an array in place",
-   "code": "const items = [1, 2, 3];\nconst result = items.reverse();\n\nconsole.log(items);  // [3, 2, 1]\nconsole.log(result === items); // true",
+   "title": "Reverse an array",
+   "code": "const items = [1, 2, 3];\nconst result = items.reverse();\n\nconsole.log(result); // [3, 2, 1]\nconsole.log(items);  // [3, 2, 1]\n\nconst copy = [...items].reverse();\nconsole.log(copy);   // [1, 2, 3]\nconsole.log(items);  // [3, 2, 1]",
    "language": "javascript",
-   "explanation": "Reverses the array in place and confirms that the returned value is the same array object."
+   "explanation": "Call reverse() to change an array to the opposite order. Use a shallow copy first when the original array must stay unchanged."
   },
   "useCases": [
    {
     "title": "Reverse an array in place",
-    "scenario": "Mutate an existing array when reverse order is needed."
+    "scenario": "Change an existing array to the opposite order."
    },
    {
-    "title": "Preserve the original",
-    "scenario": "Create a reversed result without changing source data."
+    "title": "Create a non-mutating result",
+    "scenario": "Keep the source array unchanged while making a reversed shallow copy."
    },
    {
-    "title": "Handle array-like values",
-    "scenario": "Reverse array-like objects that expose length and integer-keyed properties."
+    "title": "Handle an array-like object",
+    "scenario": "Reverse an object with length and integer-keyed properties."
    }
   ],
   "related": [
    "Array.prototype.toReversed()",
-   "Array.from()",
-   "Spread syntax (...)"
+   "Array.prototype.sort()",
+   "Array.prototype.join()",
+   "TypedArray.prototype.reverse()"
   ],
-  "since": "",
+  "since": "July 2015",
+  "interview": [
+   {
+    "question": "Does reverse() create a new array?",
+    "answer": "reverse() changes the array in place and returns a reference to that same array. Therefore, both the original variable and the returned value refer to the reversed array.",
+    "followUp": "How can you reverse without changing the source? Use toReversed(), or make a shallow copy with spread syntax or Array.from() before calling reverse()."
+   },
+   {
+    "question": "What does Array.prototype.reverse() do?",
+    "answer": "The method takes no parameters. It swaps elements from opposite ends and returns the original array after the swaps.",
+    "followUp": "What happens to a sparse array? Its empty slots remain empty slots at their new positions."
+   },
+   {
+    "question": "Can reverse() work on non-array objects?",
+    "answer": "reverse() is generic for array-like objects. The object needs a length property and integer-keyed properties, and the method can be called with Array.prototype.reverse.call().",
+    "followUp": "Is it generic for typed arrays? No. TypedArray.prototype.reverse() is a separate method and can only be called on typed-array instances."
+   }
+  ],
   "keyPoints": [
-   "It reverses element order in place and returns the same array object.",
-   "The first and last elements exchange positions, continuing inward.",
-   "The return value is the original array after mutation.",
-   "Empty slots are preserved when an array is reversed.",
-   "The method can operate on array-like objects with a length and integer-keyed properties."
+   "The first element becomes the last, and the last element becomes the first. The operation changes the existing array.",
+   "Use toReversed() when you need a reversed result without changing the source array.",
+   "The method can operate on suitable array-like objects, not only actual arrays.",
+   "For array-like objects, length determines the indexed range that the method processes.",
+   "Reversing a sparse array moves its empty slots while preserving their empty nature."
   ],
   "gotchas": [
-   "reverse() mutates the original array rather than creating a new one.",
-   "The returned value aliases the original array; changes through either reference affect the same object.",
-   "Sparse arrays stay sparse, so reversing does not turn empty slots into explicit undefined values."
+   "Do not use reverse() directly when other code must keep the original order. Copy the array first, such as with spread syntax.",
+   "Sparse arrays stay sparse. Empty positions move to their matching positions instead of becoming values such as undefined.",
+   "Do not apply this method to strings. Strings cannot be changed in place."
   ],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-11-03"
  },
  "Set": {
   "sourceUrl": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Set",
@@ -6637,49 +6886,65 @@
  },
  "trim": {
   "sourceUrl": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/trim",
-  "sourceTitle": "String.prototype.trim () - JavaScript | MDN",
-  "summary": "trim() returns a new string with whitespace and line terminators removed from both ends of the string. It leaves the original string unchanged.",
-  "explanation": "Call trim() on a string to create a new string with whitespace and line terminators removed from its beginning and end. The method does not mutate the original string; if no trimming is needed, it still returns a new string.",
-  "syntax": "trim()",
+  "sourceTitle": "String.prototype.trim() - JavaScript | MDN",
+  "summary": "String.prototype.trim() returns a new string with whitespace removed from both ends. It leaves the original string unchanged.",
+  "explanation": "Call trim() on a string to get another string with whitespace removed from its beginning and end. Whitespace includes spaces and line terminators. The method does not change the original string.",
+  "syntax": "str.trim()",
   "parameters": [],
-  "returns": "A new string representing the input string with whitespace removed from its beginning and end.",
+  "returns": "A new string with whitespace removed from both the beginning and end of the original string.",
   "example": {
    "title": "Trim both ends of a string",
-   "code": "const raw = \"  hello, JavaScript!\\n\";\nconst clean = raw.trim();\n\nconsole.log(clean); // \"hello, JavaScript!\"\nconsole.log(raw);   // \"  hello, JavaScript!\\n\"",
+   "code": "const greeting = \" Hello world! \";\nconst cleanGreeting = greeting.trim();\n\nconsole.log(cleanGreeting); // \"Hello world!\"\nconsole.log(greeting);      // \" Hello world! \"",
    "language": "javascript",
-   "explanation": "This removes whitespace at both ends while leaving the original string unchanged."
+   "explanation": "This removes whitespace at the start and end of the value. The original string stays unchanged."
   },
   "useCases": [
    {
-    "title": "Normalize input",
-    "scenario": "Clean user-entered text before validation or storage."
+    "title": "Normalize input edges",
+    "scenario": "Clean user-entered text before validation or display."
    },
    {
-    "title": "Clean configuration values",
-    "scenario": "Remove accidental surrounding whitespace from configuration or environment values."
+    "title": "Clean imported text",
+    "scenario": "Remove surrounding spaces and line breaks from text read from another source."
    },
    {
-    "title": "Standardize text",
-    "scenario": "Prepare text for reliable comparisons or display."
+    "title": "Create a trimmed copy",
+    "scenario": "Keep a string unchanged while creating a cleaned value."
    }
   ],
   "related": [
    "String.prototype.trimStart()",
    "String.prototype.trimEnd()"
   ],
-  "since": "",
+  "since": "July 2015",
+  "interview": [
+   {
+    "question": "What does String.prototype.trim() do?",
+    "answer": "trim() removes whitespace from both ends of a string and returns the result. It does not change the original string.",
+    "followUp": "How do you trim only one side? Use trimStart() for the beginning or trimEnd() for the end."
+   },
+   {
+    "question": "Does trim() accept arguments?",
+    "answer": "The method takes no parameters. Its result is a new string with leading and trailing whitespace removed.",
+    "followUp": "What kinds of characters count as whitespace? The documentation includes white space characters and line terminators."
+   },
+   {
+    "question": "Does trim() modify the original string?",
+    "answer": "Because strings are not modified by this method, assign the returned value if the cleaned string is needed later. For example, use const cleaned = value.trim().",
+    "followUp": "What happens when the input has no surrounding whitespace? A new string is still returned, essentially a copy of the input."
+   }
+  ],
   "keyPoints": [
-   "trim() removes surrounding whitespace at both ends and produces a new string.",
-   "Calling trim() does not change the string value on which it was called.",
-   "Use trimStart() for the beginning only or trimEnd() for the end only.",
-   "Its trimming set includes whitespace characters and line terminators.",
-   "Even an already-trimmed string results in a separate returned string value."
+   "It removes whitespace from the beginning and the end.",
+   "Use trimStart() or trimEnd() when only one end should be cleaned.",
+   "The method also removes line terminators, not only ordinary spaces.",
+   "The returned value contains the same middle content after edge whitespace is removed.",
+   "The method has no parameters and returns a string."
   ],
   "gotchas": [
-   "The original string is not returned directly, even when it contains no surrounding whitespace.",
-   "The method removes both whitespace characters and line terminators, not merely ordinary spaces."
+   "The method returns a new string even when the input has no whitespace at either end."
   ],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-11-03"
  },
  "URL": {
   "sourceUrl": "https://developer.mozilla.org/en-US/docs/Web/API/URL",
@@ -6906,58 +7171,69 @@
  },
  "WeakRef": {
   "sourceUrl": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/WeakRef",
-  "sourceTitle": "WeakRef - JavaScript - MDN Web Docs",
-  "summary": "WeakRef provides a non-owning reference to an object or non-registered symbol, so the target may be garbage-collected. Use deref() to retrieve the target when it is still available; garbage-collection timing is nondeterministic.",
-  "explanation": "WeakRef holds a non-owning reference to an object or non-registered symbol. Calling deref() retrieves the target while it remains available, or returns undefined after garbage collection; collection timing is nondeterministic.",
+  "sourceTitle": "WeakRef - JavaScript | MDN",
+  "summary": "WeakRef holds a weak reference to an object or non-registered symbol. It lets you read the target with deref() without preventing garbage collection.",
+  "explanation": "WeakRef stores a weak link to an object or non-registered symbol. Use deref() to get the target while it still exists. If garbage collection has reclaimed the target, deref() returns undefined. The target may remain available for an unknown time, so program behavior must not depend on when collection happens.",
   "syntax": "new WeakRef(target)",
   "parameters": [
    {
     "name": "target",
-    "type": "object | symbol",
-    "description": "The value to reference; it must be an object or a non-registered symbol."
+    "type": "object | non-registered symbol",
+    "description": "The object or non-registered symbol to reference weakly."
    }
   ],
-  "returns": "A new WeakRef object referring to the supplied target; deref() returns the target or undefined if it has been reclaimed.",
+  "returns": "A WeakRef instance from the constructor; deref() returns the target object or symbol, or undefined if it was reclaimed.",
   "example": {
-   "title": "Safely dereference a target",
-   "code": "const target = {name: \"Ada\"};\nconst ref = new WeakRef(target);\n\nconst value = ref.deref();\nif (value) {\n  console.log(value.name);\n}",
+   "title": "Read a weakly referenced object",
+   "code": "const target = { name: \"Ada\" };\nconst ref = new WeakRef(target);\n\nconst value = ref.deref();\nif (value !== undefined) {\n  console.log(value.name);\n}",
    "language": "javascript",
-   "explanation": "Creates a weak reference and safely uses the target only when dereferencing still returns it."
+   "explanation": "The code keeps a weak reference to an object and reads the object only when deref() returns it."
   },
   "useCases": [
    {
-    "title": "Memory-sensitive caches",
-    "scenario": "Cache large objects without making the cache a strong owner of their memory."
+    "title": "Memory-sensitive cache",
+    "scenario": "Cache large computed values that can be rebuilt when they are no longer alive."
    },
    {
-    "title": "Non-owning object tracking",
-    "scenario": "Track optional objects such as DOM nodes without preventing their collection."
-   },
-   {
-    "title": "Ephemeral associations",
-    "scenario": "Access a resource only while its target remains alive, with a fallback when deref() returns undefined."
+    "title": "Non-owning object reference",
+    "scenario": "Keep an optional link to an object without making that object stay in memory."
    }
   ],
   "related": [
-   "WeakRef()",
-   "WeakRef.prototype.deref()",
    "FinalizationRegistry",
-   "WeakMap",
-   "WeakSet"
+   "WeakSet",
+   "WeakMap"
   ],
-  "since": "ES2021",
+  "since": "",
+  "interview": [
+   {
+    "question": "What does WeakRef do?",
+    "answer": "WeakRef holds a weak reference, so it does not stop its target from being garbage-collected. Calling deref() returns the target or undefined if the target was reclaimed.",
+    "followUp": "Can deref() return an object and then lose it during the same job? No. A target returned by deref() is kept from collection until the current execution of JavaScript code ends."
+   },
+   {
+    "question": "When does deref() return undefined?",
+    "answer": "Garbage collection is controlled by the JavaScript engine. A WeakRef can keep returning its target because the engine may choose not to reclaim it, even when no strong reference remains.",
+    "followUp": "Can code force a WeakRef to become empty? No. The target cannot be changed, and the timing of reclamation is not guaranteed."
+   },
+   {
+    "question": "What is a suitable use case?",
+    "answer": "Use WeakRef when a program can recompute or ignore an object if it disappears, such as a cache whose values are large objects. Store WeakRef values in a normal Map when the keys must remain available.",
+    "followUp": "Why is FinalizationRegistry not a replacement for deterministic cleanup? Its callback may run late or never, so try...finally is better for required resource release."
+   }
+  ],
   "keyPoints": [
-   "WeakRef observes a target without keeping it alive.",
-   "The target may be an object or a non-registered symbol.",
-   "The target can disappear when no strong references remain, but collection is optional.",
-   "deref() returns the target when available and undefined after reclamation.",
-   "The referenced value is called the target or referent."
+   "A WeakRef refers to an object without keeping that object alive.",
+   "Call deref() to read the target. The result is undefined after reclamation.",
+   "A non-registered symbol can also be a WeakRef target.",
+   "A WeakRef has one fixed target. It cannot be redirected to another value."
   ],
   "gotchas": [
-   "Do not use deref() as a deterministic signal that garbage collection has occurred.",
-   "A WeakRef cannot be retargeted after construction."
+   "Avoid WeakRef when possible. Garbage collection timing is not predictable, and it can differ between engines or versions.",
+   "Do not use WeakRef or FinalizationRegistry for required cleanup or other critical behavior.",
+   "A target observed through a WeakRef is kept available until the current JavaScript job finishes."
   ],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-11-03"
  },
  "WeakSet": {
   "sourceUrl": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/WeakSet",

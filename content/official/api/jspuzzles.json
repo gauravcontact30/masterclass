@@ -1,53 +1,79 @@
 {
  "arguments object": {
-  "sourceUrl": "https://javascript.info/rest-parameters-spread",
-  "sourceTitle": "Rest parameters and spread syntax",
-  "summary": "The arguments object is an array-like, iterable collection of every value supplied to a traditional function. It supports indexes and length, but not Array methods, and arrow functions inherit arguments from an enclosing normal function.",
-  "explanation": "Inside a traditional function, arguments exposes every value supplied at the call site through numeric indexes and length. It is iterable and array-like, but it is not an Array, so convert it before using array methods. Arrow functions do not create their own arguments object.",
+  "sourceUrl": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/arguments",
+  "sourceTitle": "The arguments object - JavaScript | MDN",
+  "summary": "The arguments object is an array-like value inside non-arrow functions. It contains the values passed to the current call, including calls with more arguments than the function declares.",
+  "explanation": "Inside a non-arrow function, arguments stores the values passed at call time. It has numeric indexes and length, and it can be iterated, but it is not an Array. Convert it with Array.from, spread syntax, or slice when Array methods are needed. Modern code should usually use rest parameters instead.",
   "syntax": "arguments",
-  "parameters": [],
-  "returns": "",
+  "parameters": [
+   {
+    "name": "arguments",
+    "type": "array-like object",
+    "description": "The values supplied in a function call are available by numeric index; the documentation does not define named parameters for the arguments object."
+   }
+  ],
+  "returns": "The object itself does not return a value; it exposes the arguments passed to the currently executing function.",
   "example": {
    "title": "Read all supplied arguments",
-   "code": "function total() {\n  return Array.from(arguments).reduce((sum, value) => sum + value, 0);\n}\n\nconsole.log(total(2, 3, 5)); // 10",
+   "code": "function longestString() {\n  if (arguments.length === 0) {\n    throw new TypeError(\"At least one string is required\");\n  }\n\n  let longest = \"\";\n  for (const value of arguments) {\n    if (value.length > longest.length) longest = value;\n  }\n  return longest;\n}\n\nconsole.log(longestString(\"cat\", \"elephant\", \"dog\")); // elephant",
    "language": "javascript",
-   "explanation": "Converts the array-like object to an array, then sums every supplied argument."
+   "explanation": "The function reads every supplied value through the iterable, array-like arguments object."
   },
   "useCases": [
    {
     "title": "Variadic functions",
-    "scenario": "Accepting a variable number of values in legacy or interop code."
+    "scenario": "A function accepts a variable number of values and needs to inspect arguments.length."
    },
    {
-    "title": "Argument counting",
-    "scenario": "Inspecting how many values a caller supplied."
+    "title": "Read call arguments",
+    "scenario": "Legacy or existing code needs to read call values by index."
    },
    {
-    "title": "Dynamic argument processing",
-    "scenario": "Iterating over caller-supplied values in a traditional function."
+    "title": "Pass array-like values",
+    "scenario": "A function needs to pass its collected values to an API that accepts array-like objects."
    }
   ],
   "related": [
+   "arguments.length",
+   "arguments.callee",
    "rest parameters",
-   "spread syntax",
+   "Function.prototype.apply()",
    "Array.from()",
-   "for...of"
+   "Array.prototype.slice()"
   ],
   "since": "",
+  "interview": [
+   {
+    "question": "What is the arguments object?",
+    "answer": "arguments is an array-like object available inside non-arrow functions. Its indexes start at zero, and arguments.length reports how many values the caller supplied.",
+    "followUp": "How would you get Array methods? Use Array.from(arguments), [...arguments], or Array.prototype.slice.call(arguments)."
+   },
+   {
+    "question": "When is arguments useful?",
+    "answer": "It is useful when a function can receive more values than its declared parameters. The function can inspect arguments.length and read each value by index or iteration.",
+    "followUp": "What is the modern alternative? Use a rest parameter, such as function join(...values), when collecting an arbitrary number of arguments."
+   },
+   {
+    "question": "Do parameters and arguments stay synchronized?",
+    "answer": "In non-strict functions with simple parameters, a parameter and its matching arguments entry stay linked. In strict mode, and with rest, default, or destructured parameters, they do not stay linked.",
+    "followUp": "What happens when a default parameter is unused? The corresponding arguments index is undefined, and arguments.length counts only values actually passed."
+   }
+  ],
   "keyPoints": [
-   "A traditional function can inspect every supplied argument through numeric indexes.",
-   "Use arguments.length to count how many values the caller supplied.",
-   "The object is iterable, so it can be traversed with for...of.",
-   "Treat arguments as array-like rather than as a true Array.",
-   "Convert arguments to an Array before calling Array methods.",
-   "It includes values even when the function declaration has fewer named parameters."
+   "Each supplied value is stored at a zero-based numeric index.",
+   "Use arguments.length to count values passed by the caller, not declared parameters.",
+   "You can iterate over arguments with for...of because it is iterable.",
+   "Convert it before using Array-only operations.",
+   "Prefer rest parameters for new functions that collect an arbitrary number of values.",
+   "It supports variadic functions whose call-time argument count is not fixed."
   ],
   "gotchas": [
-   "arguments has indexes and length, but it does not provide Array methods such as map or reduce.",
-   "Arrow functions do not have their own arguments object; an arguments reference resolves to an enclosing normal function.",
-   "Unlike rest parameters, arguments cannot capture only a selected portion of the supplied values."
+   "Arrow functions do not have their own arguments object.",
+   "Do not call Array methods such as map directly on arguments; convert it first.",
+   "In strict mode, changing a parameter does not change the matching arguments entry, and changing that entry does not change the parameter.",
+   "A function with these parameter forms cannot contain a function-body use strict directive."
   ],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-11-03"
  },
  "Array flattening": {
   "sourceUrl": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/flat",
@@ -548,57 +574,66 @@
   "checkedAt": "2026-10-15"
  },
  "Autoboxing": {
-  "sourceUrl": "https://javascript.info/primitives-methods",
-  "sourceTitle": "Methods of primitives",
-  "summary": "JavaScript primitives can use methods because the language temporarily wraps them in corresponding objects. The primitive remains unchanged; null and undefined are exceptions.",
-  "explanation": "When a property or method is accessed on a primitive, JavaScript can create a temporary wrapper object such as String, Number, or Boolean. The operation uses that wrapper, which is then discarded, so the original value remains a primitive. null and undefined are exceptions because they have no corresponding wrappers.",
-  "syntax": "primitive.method(...arguments)",
+  "sourceUrl": "https://developer.mozilla.org/zh-TW/docs/Web/JavaScript/Reference/Classes",
+  "sourceTitle": "Classes - JavaScript | MDN",
+  "summary": "In JavaScript classes, this depends on how a method is called. A method called through an object or class gets that receiver; a detached method gets undefined.",
+  "explanation": "Class methods run in strict mode. When a method is called through an object, this refers to the object. When the method is detached and called without an object, this is undefined. Static methods behave similarly: called through the class, this is the class; called alone, it is undefined.",
+  "syntax": "class Name { method() {} static method() {} }",
   "parameters": [],
-  "returns": "",
+  "returns": "The page describes the value of this for class instance and static methods; it does not define a single return value.",
   "example": {
-   "title": "Primitive method access",
-   "code": "const value = \"hello\";\nconsole.log(value.toUpperCase());\nconsole.log(typeof value);",
+   "title": "Instance method this",
+   "code": "class Animal {\n  speak() {\n    return this;\n  }\n}\n\nconst animal = new Animal();\nconst speak = animal.speak;\n\nconsole.log(animal.speak() === animal); // true\nconsole.log(speak() === undefined); // true",
    "language": "javascript",
-   "explanation": "The string remains a primitive even though JavaScript lets it use methods through a temporary wrapper."
+   "explanation": "A method called through an instance gets that instance as this. If the method is detached and called by itself, this is undefined."
   },
   "useCases": [
    {
-    "title": "String processing",
-    "scenario": "Call string methods such as toUpperCase() without manually converting a string to a String object."
+    "title": "Understand method receivers",
+    "scenario": "Designing class APIs"
    },
    {
-    "title": "Number formatting",
-    "scenario": "Use number methods such as toFixed() while retaining a numeric primitive."
+    "title": "Avoid losing this",
+    "scenario": "Passing methods as callbacks"
    },
    {
-    "title": "Debugging primitive properties",
-    "scenario": "Understand why primitive values do not retain custom properties assigned through temporary wrappers."
+    "title": "Reason about static this",
+    "scenario": "Writing static utilities"
    }
   ],
   "related": [
-   "String",
-   "Number",
-   "Boolean",
-   "Symbol",
-   "BigInt",
-   "String.prototype",
-   "Number.prototype",
-   "Boolean.prototype"
+   "Object",
+   "Object.prototype",
+   "Classes",
+   "static methods",
+   "prototype methods",
+   "this"
   ],
-  "since": "",
+  "since": "2016",
+  "interview": [
+   {
+    "question": "What is this in a detached class method?",
+    "answer": "Class methods use strict-mode behavior. A call such as obj.method() sets this to obj, but assigning the method to a variable and calling it alone makes this undefined.",
+    "followUp": "What does a detached static method receive as this? It also receives undefined when called without its class object."
+   },
+   {
+    "question": "How does the call form affect this?",
+    "answer": "A method called as obj.speak() receives obj as this. The same function called as speak() has no receiver, so this is undefined.",
+    "followUp": "How can the receiver be preserved? Call the method through the object or explicitly bind it, for example with method.bind(obj)."
+   },
+   {
+    "question": "How does this work in static methods?",
+    "answer": "Calling Animal.eat() gives the static method the Animal class as this. Calling a detached reference to that method gives it undefined.",
+    "followUp": "Does non-strict surrounding code change this for class methods? No. Class methods are defined with strict-mode behavior."
+   }
+  ],
   "keyPoints": [
-   "Primitive values can use methods such as toUpperCase() and toFixed(), even though they are not objects.",
-   "Method access is modeled as creating a temporary wrapper around the primitive and discarding it afterward.",
-   "String, Number, Boolean, Symbol, and BigInt primitives have corresponding wrapper types.",
-   "Using a string method does not change the string into an object; the value remains primitive.",
-   "Wrapper creation is a language model, and engines optimize it so ordinary primitive method calls are inexpensive.",
-   "Temporary-wrapper semantics explain primitive methods without implying a persistent object allocation."
+   "Calling an instance method through an instance makes this refer to that instance.",
+   "Calling a static method through its class makes this refer to the class.",
+   "A detached static method also has undefined as this when called without a receiver."
   ],
-  "gotchas": [
-   "Do not call methods or access properties on null or undefined; they have no wrapper objects and cause an error.",
-   "Avoid explicitly constructing wrapper objects with new String(), new Number(), or new Boolean(); use primitive values instead."
-  ],
-  "checkedAt": "2026-10-15"
+  "gotchas": [],
+  "checkedAt": "2026-11-03"
  },
  "BigInt arithmetic": {
   "sourceUrl": "https://javascript.info/bigint",
@@ -667,55 +702,80 @@
   "checkedAt": "2026-10-15"
  },
  "Bitwise Tricks": {
-  "sourceUrl": "https://javascript.info/operators",
-  "sourceTitle": "Basic operators, maths",
-  "summary": "JavaScript bitwise operators manipulate the binary representation of 32-bit integer operands. They include logical bit operations and left or right shifts, and are mainly useful for specialized low-level tasks.",
-  "explanation": "JavaScript bitwise operators convert numeric operands to 32-bit integers and apply the operation to their binary representations. AND, OR, XOR, and NOT manipulate corresponding bits, while shift operators move bits left or right; the result is an ordinary JavaScript number.",
-  "syntax": "a & b; a | b; a ^ b; ~a; a << b; a >> b; a >>> b",
-  "parameters": [],
-  "returns": "Each operator produces a JavaScript number resulting from its bitwise operation.",
+  "sourceUrl": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Bitwise_OR",
+  "sourceTitle": "Bitwise OR (|) - JavaScript | MDN",
+  "summary": "The bitwise OR (|) operator combines two numeric values bit by bit. Each result bit is 1 when the matching bit in either operand is 1.",
+  "explanation": "The bitwise OR operator combines the binary bits of two operands. For Number operands, JavaScript converts both values to 32-bit integers; for BigInt operands, it returns a BigInt. Mixing Number and BigInt operands throws a TypeError.",
+  "syntax": "x | y",
+  "parameters": [
+   {
+    "name": "x",
+    "type": "number or BigInt",
+    "description": "The left operand to combine with bitwise OR."
+   },
+   {
+    "name": "y",
+    "type": "number or BigInt",
+    "description": "The right operand to combine with bitwise OR."
+   }
+  ],
+  "returns": "A number for Number operands, or a BigInt for BigInt operands. The result has a 1 in each bit position where either operand has a 1.",
   "example": {
-   "title": "Basic bitwise operations",
-   "code": "const flags = 0b1010;\nconst read = 0b0010;\n\nconsole.log((flags & read) !== 0); // true\nconsole.log(flags ^ read);          // 8\nconsole.log(flags << 1);            // 20\n",
+   "title": "Combine bits with OR",
+   "code": "const a = 5;\nconst b = 3;\nconsole.log(a | b); // 7",
    "language": "javascript",
-   "explanation": "This runnable example checks a bit with AND, combines differences with XOR, and shifts bits left."
+   "explanation": "The result has a 1 in every bit position where either input has a 1."
   },
   "useCases": [
    {
-    "title": "Bit flags",
-    "scenario": "Testing whether a flag bit is set in a compact bit mask."
+    "title": "Enable options",
+    "scenario": "Set flags in a bit mask."
    },
    {
-    "title": "Packed options",
-    "scenario": "Combining or removing compact binary options."
+    "title": "Merge bit fields",
+    "scenario": "Combine permission or feature bits."
    },
    {
-    "title": "Low-level algorithms",
-    "scenario": "Implementing specialized low-level numeric or cryptographic algorithms."
+    "title": "Low-level integer operations",
+    "scenario": "Combine integer values at the bit level."
    }
   ],
   "related": [
-   "operators",
-   "numbers",
-   "binary representation",
-   "AND (&)",
-   "OR (|)",
-   "XOR (^)",
-   "NOT (~)",
-   "LEFT SHIFT (<<)"
+   "Bitwise AND (&)",
+   "Bitwise XOR (^)",
+   "Bitwise NOT (~)",
+   "BigInt",
+   "Number"
   ],
-  "since": "",
+  "since": "July 2015",
+  "interview": [
+   {
+    "question": "What does the bitwise OR operator do?",
+    "answer": "For numbers, | returns a 32-bit integer with a 1 wherever either operand has a 1 bit. For BigInts, it performs BigInt bitwise OR and returns a BigInt.",
+    "followUp": "What happens with 5n | 3? It throws a TypeError because the operands have different numeric types."
+   },
+   {
+    "question": "How does | choose between Number and BigInt behavior?",
+    "answer": "JavaScript first coerces both operands to numeric values. If both become BigInts, it uses BigInt OR; otherwise, it converts them to 32-bit integers and uses number OR.",
+    "followUp": "Why can a large Number lose information? Number bitwise operations keep only the converted 32-bit integer representation."
+   },
+   {
+    "question": "How are the result bits calculated?",
+    "answer": "The operator checks each matching bit in both operands. The output bit is 1 when at least one input bit is 1; it is 0 only when both input bits are 0.",
+    "followUp": "How can you test one flag? Use a mask and check whether (value | mask) changes the relevant bits, while remembering that OR sets bits rather than tests them alone."
+   }
+  ],
   "keyPoints": [
-   "Bitwise operators work on 32-bit integer representations rather than directly on decimal values.",
-   "The available operators are AND (&), OR (|), XOR (^), NOT (~), left shift (<<), right shift (>>), and zero-fill right shift (>>>).",
-   "The same family of bitwise operators is common across many programming languages.",
-   "Bitwise syntax and concepts are broadly shared, which can help when translating low-level algorithms between languages.",
-   "Bitwise operations can be appropriate in specialized areas such as cryptography."
+   "The result contains a 1 in each bit position where either operand contains a 1.",
+   "With Number values, the result is a signed 32-bit integer.",
+   "With BigInt values, the result stays a BigInt.",
+   "Both operands are converted to numeric values before JavaScript selects the operation.",
+   "Two BigInt operands use BigInt OR. Other numeric cases use 32-bit Number OR."
   ],
   "gotchas": [
-   "Operands are handled as 32-bit integers, so bitwise operations are unsuitable when preserving arbitrary-precision numeric values matters."
+   "Do not mix a Number and a BigInt in the same OR operation. Convert both operands to the same numeric type first."
   ],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-11-03"
  },
  "Block Scope": {
   "sourceUrl": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/const",
@@ -985,51 +1045,70 @@
   "checkedAt": "2026-10-15"
  },
  "Comma in arrays": {
-  "sourceUrl": "https://javascript.info/array",
-  "sourceTitle": "Arrays",
-  "summary": "A trailing comma after the last item in an array literal is allowed and ignored. It keeps multiline array edits consistent, but additional commas create sparse-array holes.",
-  "explanation": "A trailing comma may appear after the last item in a JavaScript array literal. It does not create another element, and it can make multiline edits easier because each item line has the same format.",
-  "syntax": "const array = [element1, element2,];",
+  "sourceUrl": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Trailing_commas",
+  "sourceTitle": "Trailing commas - JavaScript | MDN",
+  "summary": "A trailing comma is an extra comma after the last item in a JavaScript list. JavaScript allows it in arrays and several other comma-separated forms, but JSON does not allow it.",
+  "explanation": "A trailing comma is an extra comma after the last item in a comma-separated JavaScript list. It is allowed in array literals and several other places, such as objects, function parameters, calls, and imports or exports. JSON does not allow trailing commas.",
+  "syntax": "const items = [value1, value2,];",
   "parameters": [],
   "returns": "",
   "example": {
    "title": "Trailing comma in an array",
-   "code": "const fruits = [\n  \"Apple\",\n  \"Orange\",\n  \"Plum\",\n];\n\nconsole.log(fruits.length); // 3\nconsole.log(fruits[2]); // \"Plum\"",
+   "code": "const colors = [\n  \"red\",\n  \"green\",\n  \"blue\",\n];\n\nconsole.log(colors);",
    "language": "javascript",
-   "explanation": "The final comma is ignored, so the array contains three elements."
+   "explanation": "The comma after \"blue\" is a trailing comma. It does not create another array item."
   },
   "useCases": [
    {
-    "title": "Keep item lines uniform",
-    "scenario": "Formatting multiline arrays"
+    "title": "Adding array elements",
+    "scenario": "Keep a comma-separated list easy to extend."
    },
    {
-    "title": "Make additions produce smaller diffs",
-    "scenario": "Maintaining source code"
+    "title": "Editing object literals",
+    "scenario": "Add object properties on separate lines with smaller diffs."
    },
    {
-    "title": "Distinguish one trailing comma from extra commas",
-    "scenario": "Avoiding accidental sparse arrays"
+    "title": "Formatting parameters and calls",
+    "scenario": "Maintain consistent multiline function declarations or calls."
    }
   ],
   "related": [
    "Array literals",
-   "Sparse arrays",
-   "Array.prototype.forEach()",
-   "Array.prototype.map()"
+   "Object literals",
+   "Function parameters",
+   "Function calls",
+   "Named imports",
+   "Named exports"
   ],
-  "since": "",
+  "since": "July 2015",
+  "interview": [
+   {
+    "question": "What is a trailing comma in JavaScript?",
+    "answer": "A trailing comma is a comma placed after the last item in a JavaScript comma-separated list. JavaScript permits it in arrays, objects, function parameters, calls, and other listed forms.",
+    "followUp": "Can the same syntax be used in JSON? No. JSON disallows every trailing comma."
+   },
+   {
+    "question": "What does a trailing comma do in an array?",
+    "answer": "In an array literal, a comma after the final value is allowed. It does not add another value to the array.",
+    "followUp": "Why can trailing commas help during edits? Adding a new final line can avoid changing the previous line, which can make version-control diffs cleaner."
+   },
+   {
+    "question": "Why might a team use trailing commas?",
+    "answer": "Trailing commas can make adding new elements, parameters, or properties easier. They let a new line be added without changing the old final line when that line already has a trailing comma.",
+    "followUp": "Where else are they allowed? The documentation also lists object literals, parameter definitions, function calls, named imports, and named exports."
+   }
+  ],
   "keyPoints": [
-   "Array literals support a comma after their final element.",
-   "A single final comma does not increase the array's length or add an element.",
-   "In multiline arrays, trailing commas make adding or removing entries simpler and produce cleaner diffs.",
-   "Multiple final commas create missing array slots rather than additional ordinary elements."
+   "They can make later additions easier when you add array elements, parameters, or object properties.",
+   "Array literals have supported trailing commas from the start of JavaScript.",
+   "Modern JavaScript also permits them in objects, function parameters, named imports, named exports, and other supported lists.",
+   "They can reduce unnecessary changes in version-control diffs and make edits simpler.",
+   "The general rule applies where JavaScript accepts a comma-separated list that can contain more values."
   ],
   "gotchas": [
-   "Do not add multiple commas after the final item: the extra comma creates a sparse-array hole.",
-   "A hole is not the same as an explicit undefined value; common iteration methods skip it."
+   "Do not use trailing commas in JSON. JSON rejects them."
   ],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-11-03"
  },
  "Comma Operator": {
   "sourceUrl": "https://javascript.info/operators",
@@ -1167,56 +1246,81 @@
  "Currying": {
   "sourceUrl": "https://javascript.info/currying-partials",
   "sourceTitle": "Currying",
-  "summary": "Currying transforms a multi-argument function so it can be called through successive calls such as `f(a)(b)(c)`. The wrapper collects arguments and invokes the original function when enough have been supplied.",
-  "explanation": "Currying transforms a function that accepts several arguments together into one that can receive them through successive calls. A wrapper stores previously received arguments and invokes the original function once the required count is available.",
+  "summary": "Currying transforms a function such as f(a, b, c) so it can be called as f(a)(b)(c). It collects arguments in partial calls and runs the original function after enough arguments arrive.",
+  "explanation": "Currying transforms a function that takes several arguments into one that can receive them through separate calls. A partial call stores the arguments and returns another function; the original function runs only when enough arguments have been collected.",
   "syntax": "curry(func)",
   "parameters": [
    {
     "name": "func",
-    "type": "Function",
-    "description": "The function to transform into a curried callable."
+    "type": "function",
+    "description": "The function to transform. The advanced implementation uses its declared parameter count."
+   },
+   {
+    "name": "args",
+    "type": "any[]",
+    "description": "Arguments collected by the curried wrapper across one or more calls."
    }
   ],
-  "returns": "A wrapper function that accepts arguments incrementally and calls the original function after receiving enough arguments.",
+  "returns": "A wrapper function that either returns another partial wrapper or returns the original function's result when enough arguments have been collected.",
   "example": {
    "title": "Curry a function",
-   "code": "function curry(fn) {\n  return function curried(...args) {\n    if (args.length >= fn.length) return fn(...args);\n    return (...next) => curried(...args, ...next);\n  };\n}\n\nconst sum3 = (a, b, c) => a + b + c;\nconst curriedSum3 = curry(sum3);\n\nconsole.log(curriedSum3(1)(2)(3));\nconsole.log(curriedSum3(1, 2)(3));",
+   "code": "function curry(func) {\n  return function curried(...args) {\n    if (args.length >= func.length) return func.apply(this, args);\n    return (...more) => curried.apply(this, args.concat(more));\n  };\n}\n\nfunction sum(a, b, c) {\n  return a + b + c;\n}\n\nconst curriedSum = curry(sum);\nconsole.log(curriedSum(1)(2)(3));\nconsole.log(curriedSum(1, 2, 3));",
    "language": "javascript",
-   "explanation": "This implementation collects arguments until it has enough to invoke the original function, supporting both chained and mixed calls."
+   "explanation": "The wrapper collects arguments until it has enough for the original function. Then it calls that function."
   },
   "useCases": [
    {
-    "title": "Create reusable partial functions",
-    "scenario": "Build specialized functions by pre-supplying some arguments."
+    "title": "Reuse a fixed date",
+    "scenario": "Create a logger with the current date already supplied."
    },
    {
-    "title": "Chain function calls",
-    "scenario": "Compose data-processing or configuration pipelines."
+    "title": "Create specialized helpers",
+    "scenario": "Build a debug logger from a logger that already has a date."
    },
    {
-    "title": "Handle staged inputs",
-    "scenario": "Adapt APIs that provide values one at a time."
+    "title": "Support flexible calls",
+    "scenario": "Accept either all arguments at once or across several calls."
    }
   ],
   "related": [
-   "partial application",
-   "closures",
-   "lexical environment",
-   "_.curry"
+   "partial function",
+   "partial",
+   "func.length",
+   "Function.prototype.apply",
+   "Lexical Environment",
+   "rest parameters",
+   "lodash _.curry"
   ],
   "since": "",
+  "interview": [
+   {
+    "question": "What is currying?",
+    "answer": "Currying changes a call such as f(a, b, c) into a sequence such as f(a)(b)(c). It changes how the function can be called; it does not run the original function during the transformation.",
+    "followUp": "How does the wrapper know when to run the function? It compares the collected argument count with func.length, then calls the original function when enough arguments exist."
+   },
+   {
+    "question": "What is a partial function in this context?",
+    "answer": "A partial function is a function with some arguments already fixed. Calling a curried logger with a date can return a logger that needs only the importance and message.",
+    "followUp": "How can another partial be made? Call the first partial with another argument, such as the log level, to return a function needing only the message."
+   },
+   {
+    "question": "How does a multi-argument curry implementation work?",
+    "answer": "The advanced implementation gathers arguments across calls. If there are too few, it returns a wrapper that combines old and new arguments; otherwise it calls the original function with apply.",
+    "followUp": "Why use apply? It passes the collected arguments as a list and preserves the calling this value for the original call."
+   }
+  ],
   "keyPoints": [
-   "Currying changes a function's calling form rather than changing the operation it performs.",
-   "A multi-argument call can be represented as a sequence of one-argument calls.",
-   "The curry operation returns a transformed wrapper; the original function runs only after enough arguments arrive.",
-   "The helper returns a wrapper that begins collecting arguments for the original function.",
-   "Each partial call can retain earlier arguments through a closure."
+   "Currying changes a multi-argument call into a chain of calls.",
+   "Creating a curried function does not execute the original function.",
+   "A partial call keeps its earlier arguments in the surrounding function scope.",
+   "A useful curry helper can preserve the original multi-argument calling style.",
+   "Currying helps create reusable functions with selected values already fixed."
   ],
   "gotchas": [
-   "Creating a curried function changes how it can be called; it does not execute the original function immediately.",
-   "A practical JavaScript curry helper may support supplying all arguments at once as well as providing them in stages."
+   "This approach uses the original function's declared parameter count, so it does not work for functions whose argument count is open-ended.",
+   "Functions with rest parameters do not provide the fixed length needed by this implementation."
   ],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-11-03"
  },
  "Date parsing": {
   "sourceUrl": "https://javascript.info/date",
@@ -1493,6 +1597,75 @@
    "The initializer scope is distinct from and parent to the function-body scope, which explains why body declarations cannot be reached."
   ],
   "checkedAt": "2026-10-15"
+ },
+ "Destructuring Defaults": {
+  "sourceUrl": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Destructuring",
+  "sourceTitle": "Destructuring - JavaScript | MDN",
+  "summary": "Destructuring unpacks array values and object properties into separate variables. It supports defaults, skipped array positions, renaming, and rest patterns.",
+  "explanation": "Destructuring lets you assign parts of an object or array to separate variables. Object patterns use property names, while array patterns use positions. Defaults handle missing values, and rest patterns collect remaining data.",
+  "syntax": "const [a, b] = array;\nconst [a = aDefault, b] = array;\nconst [a, b, ...rest] = array;\nconst { a, b } = obj;\nconst { a: a1, b: b1 } = obj;\nconst { a: a1 = aDefault, b = bDefault } = obj;\nconst { a, b, ...rest } = obj;",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Unpack objects and arrays",
+   "code": "const user = { name: \"Ada\", age: 36 };\nconst { name, age } = user;\n\nconst [first, second, ...others] = [\"a\", \"b\", \"c\", \"d\"];\n\nconsole.log(name);   // Ada\nconsole.log(age);    // 36\nconsole.log(first);  // a\nconsole.log(others); // [\"c\", \"d\"]",
+   "language": "javascript",
+   "explanation": "Object destructuring reads named properties. Array destructuring reads values by position. The rest pattern collects remaining array values."
+  },
+  "useCases": [
+   {
+    "title": "Extract object properties",
+    "scenario": "Read selected fields from a returned object."
+   },
+   {
+    "title": "Split array values",
+    "scenario": "Assign values from an ordered collection to named variables."
+   },
+   {
+    "title": "Collect remaining values",
+    "scenario": "Keep only selected data and gather the remainder."
+   },
+   {
+    "title": "Set default values",
+    "scenario": "Use a fallback when a matched value is missing or undefined."
+   }
+  ],
+  "related": [
+   "Array initializer/literal syntax",
+   "Object initializer/literal syntax",
+   "Left-hand-side expressions",
+   "Property accessors"
+  ],
+  "since": "August 2016",
+  "interview": [
+   {
+    "question": "What is destructuring?",
+    "answer": "Destructuring assigns array elements or object properties to separate variables. Arrays match by position, while objects match property names.",
+    "followUp": "How can you rename an object property? Use a pattern such as { name: userName }, where name is the source property and userName is the new variable."
+   },
+   {
+    "question": "How do arrays and objects differ in destructuring?",
+    "answer": "Use commas to skip array elements, such as const [, second] = values. Use ...rest to collect remaining elements or properties.",
+    "followUp": "What happens if rest is not last? It is invalid syntax because the rest pattern must represent the remaining values."
+   },
+   {
+    "question": "When does a destructuring default apply?",
+    "answer": "A default value is used when the matched value is undefined or missing. A value such as null does not trigger the default.",
+    "followUp": "Can a destructuring pattern contain both renaming and a default? Yes: { count: total = 0 } renames count to total and defaults undefined to 0."
+   }
+  ],
+  "keyPoints": [
+   "Array patterns assign values according to their positions.",
+   "Object patterns assign properties to separate bindings.",
+   "Destructuring can appear where JavaScript receives values, including assignments and declarations that create bindings.",
+   "A rest pattern gathers all remaining array elements into a new array.",
+   "An object rest pattern gathers properties not selected by the pattern.",
+   "Object destructuring can rename source properties while creating differently named variables."
+  ],
+  "gotchas": [
+   "A default applies to a missing property or to a property whose value is undefined. It does not apply to other values such as null."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "Double negation": {
   "sourceUrl": "https://javascript.info/logical-operators",
@@ -1899,54 +2072,70 @@
   "checkedAt": "2026-10-15"
  },
  "Floating Point Precision": {
-  "sourceUrl": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/EPSILON",
-  "sourceTitle": "Number.EPSILON - JavaScript | MDN Web Docs",
-  "summary": "JavaScript numbers use IEEE 754 double-precision binary floating point, so decimal arithmetic can contain small representation errors. Compare results with a tolerance suited to their magnitude instead of relying on strict equality.",
-  "explanation": "JavaScript Number values use IEEE 754 double-precision binary floating point. Because many decimal fractions cannot be represented exactly in that format, arithmetic may introduce small errors; the suitable comparison tolerance depends on the values' magnitude.",
-  "syntax": "Number.EPSILON",
+  "sourceUrl": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Numbers_and_strings",
+  "sourceTitle": "Numbers and strings - JavaScript | MDN",
+  "summary": "JavaScript’s Number type stores integers and floating-point values in IEEE 754 double precision. It supports decimal, binary, octal, and hexadecimal literals, but only integers through ±2^53 − 1 are exact.",
+  "explanation": "JavaScript stores ordinary numbers as double-precision 64-bit floating-point values. This format can represent many values, but some decimal fractions are only approximations. JavaScript can represent integers exactly only through a limited range, so calculations outside that range can lose precision.",
+  "syntax": "const number = 123;",
   "parameters": [],
   "returns": "",
   "example": {
-   "title": "Compare floating-point values safely",
-   "code": "const value = 0.1 + 0.2;\nconsole.log(value); // 0.30000000000000004\n\nconst closeEnough = (a, b, tolerance = Number.EPSILON) =>\n  Math.abs(a - b) < tolerance;\n\nconsole.log(closeEnough(value, 0.3)); // true",
+   "title": "Adding decimal numbers",
+   "code": "const value = 0.1 + 0.2;\nconsole.log(value);",
    "language": "javascript",
-   "explanation": "Binary floating-point arithmetic can produce a result slightly different from the intended decimal value, so compare values using an appropriate tolerance rather than strict equality."
+   "explanation": "This adds two decimal numbers and prints the result. The output may not equal exactly 0.3 because numbers use binary floating-point representation."
   },
   "useCases": [
    {
-    "title": "Tolerance-based equality",
-    "scenario": "Comparing calculated decimal results"
+    "title": "General numeric values",
+    "scenario": "Representing counts and measurements in ordinary application code."
    },
    {
-    "title": "Using Number.EPSILON",
-    "scenario": "Checking whether a result is close to an expected value near 1"
+    "title": "Number literals",
+    "scenario": "Writing constants in different bases, such as binary flags or hexadecimal colors."
    },
    {
-    "title": "Choosing BigInt",
-    "scenario": "Handling integer identifiers beyond the safe range"
+    "title": "Precision decisions",
+    "scenario": "Choosing a type for very large integer calculations."
    }
   ],
   "related": [
    "Number",
-   "Number.EPSILON",
-   "Number.MAX_SAFE_INTEGER",
-   "Number.isSafeInteger",
-   "BigInt"
+   "BigInt",
+   "Infinity",
+   "-Infinity",
+   "NaN",
+   "number literals"
   ],
   "since": "",
+  "interview": [
+   {
+    "question": "How are JavaScript numbers represented?",
+    "answer": "JavaScript numbers use IEEE 754 double-precision 64-bit binary floating-point format. This supports both integer and fractional values, plus special values such as Infinity and NaN.",
+    "followUp": "What is the exact-integer limit? Integers through ±2^53 − 1 can be represented exactly; larger values may lose precision."
+   },
+   {
+    "question": "Which number literal forms does JavaScript support?",
+    "answer": "Most JavaScript numeric literals are written in decimal form. JavaScript also supports binary, octal, and hexadecimal number literals.",
+    "followUp": "Why can decimal calculations surprise you? Binary floating-point cannot represent every decimal fraction exactly, so a result such as 0.1 + 0.2 may be approximate."
+   },
+   {
+    "question": "When should BigInt be considered instead of Number?",
+    "answer": "Number is used for ordinary integer and floating-point values. BigInt is used for arbitrarily large integers, so it is the distinct type to consider when Number precision is insufficient.",
+    "followUp": "Can Number represent every integer exactly? No. Exact representation is limited to integers up to ±2^53 − 1."
+   }
+  ],
   "keyPoints": [
-   "JavaScript represents Number values with IEEE 754 double-precision binary floating point.",
-   "The representation provides 53 bits of precision for numeric values.",
-   "Number.EPSILON measures the spacing between 1 and the next representable Number.",
-   "The mantissa width limits how precisely decimal values can be represented.",
-   "Only integers through the safe-integer boundary are guaranteed exact representation."
+   "Its range is roughly ±10^-308 to ±10^308, with 53 bits of numeric precision.",
+   "Number literals can be decimal, binary, octal, or hexadecimal.",
+   "Number covers ordinary integer and floating-point values, but not arbitrarily large integers.",
+   "BigInt is the JavaScript type for integers that can exceed the usual Number range."
   ],
   "gotchas": [
-   "Strict equality is unreliable for floating-point results; use a tolerance instead.",
-   "Number.EPSILON is appropriate mainly around magnitude 1, not as a universal tolerance.",
-   "A fixed tolerance becomes less suitable as operand magnitude increases."
+   "Do not assume every large integer is exact with the Number type. Exact integer representation ends at ±2^53 − 1.",
+   "Number also has special values such as Infinity, -Infinity, and NaN. Check for these when calculations may produce unusual results."
   ],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-11-03"
  },
  "for-await-of": {
   "sourceUrl": "https://javascript.info/async-iterators-generators",
@@ -2029,52 +2218,75 @@
  "Function Scope": {
   "sourceUrl": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Functions",
   "sourceTitle": "Functions - JavaScript | MDN",
-  "summary": "Function scope limits a function's local declarations to that function. Nested functions can access enclosing scopes, creating a scope chain where nearer bindings shadow outer ones.",
-  "explanation": "A function creates its own scope. Names declared inside it are unavailable to outside code, while the function can read names from surrounding scopes. Nested functions can retain access to enclosing bindings, forming a scope chain.",
-  "syntax": "function functionName(parameters) { statements }",
-  "parameters": [],
-  "returns": "",
+  "summary": "A function creates a scope for its variables. A closure is code, usually a function, that keeps access to variables from an outer scope after that scope ends.",
+  "explanation": "A function creates a scope for its local variables. An inner function can still use variables from an outer function after that outer function has returned. This retained access is a closure. Code outside the function cannot directly access its local variables, which helps keep implementation details private.",
+  "syntax": "function name(parameter1, parameter2) {\n  statements\n}",
+  "parameters": [
+   {
+    "name": "function parameters",
+    "type": "values",
+    "description": "Values supplied to the function. The page explains that parameters are listed in parentheses and separated by commas."
+   }
+  ],
+  "returns": "A function can return a value; a closure can retain access to captured variables after the declaring scope exits.",
   "example": {
-   "title": "A closure retains function scope",
-   "code": "function makeCounter() {\n  let count = 0;\n  return () => ++count;\n}\n\nconst next = makeCounter();\nconsole.log(next()); // 1\nconsole.log(next()); // 2\n",
+   "title": "A closure keeps private state",
+   "code": "function makeCounter() {\n  let count = 0;\n  return function () {\n    count += 1;\n    return count;\n  };\n}\n\nconst nextCount = makeCounter();\nconsole.log(nextCount()); // 1\nconsole.log(nextCount()); // 2",
    "language": "javascript",
-   "explanation": "The returned function keeps access to the outer function's local binding."
+   "explanation": "The returned function keeps access to count after makeCounter finishes."
   },
   "useCases": [
    {
     "title": "Encapsulation",
-    "scenario": "Hide implementation details and temporary state inside a function."
+    "scenario": "Keep state private inside a function."
    },
    {
-    "title": "Closures",
-    "scenario": "Build callbacks that retain access to variables from their creation context."
+    "title": "Persistent state",
+    "scenario": "Create a function that remembers configuration or state."
    },
    {
-    "title": "Nested functions",
-    "scenario": "Resolve names across nested functions using lexical scope."
+    "title": "Callbacks",
+    "scenario": "Use a function as an argument to another function."
    }
   ],
   "related": [
-   "scope chain",
-   "closures",
-   "nested functions",
-   "function declarations",
-   "function expressions"
+   "Functions",
+   "Function expressions",
+   "Function declarations",
+   "Scope chain",
+   "IIFE",
+   "Methods"
   ],
   "since": "",
+  "interview": [
+   {
+    "question": "What is function scope in JavaScript?",
+    "answer": "A function scope limits access to variables declared inside the function. An inner function can read variables from its parent and other accessible outer scopes, but the parent cannot read the inner function's locals.",
+    "followUp": "What is a closure? It is code that refers to variables and retains access to them after the scope where those variables were declared has finished."
+   },
+   {
+    "question": "What is a closure?",
+    "answer": "A closure is source code, commonly a function, that refers to variables and remembers them after their declaring scope has exited. This lets a returned inner function keep using state from its parent function.",
+    "followUp": "Do only nested functions form closures? No. All JavaScript functions form closures, although some capture no variables."
+   },
+   {
+    "question": "How do you define and call a function?",
+    "answer": "A function declaration defines a named function with the function keyword, parameters in parentheses, and a body in braces. Defining it does not run it; calling it runs the function.",
+    "followUp": "How can a function be passed to another function? Use a function expression, such as an anonymous function supplied as an argument."
+   }
+  ],
   "keyPoints": [
-   "Each function creates a private variable scope; declarations inside it are not directly accessible from outside.",
-   "Code inside a function can access names available in its surrounding scopes.",
-   "Nested functions can use bindings from their parent function.",
-   "Scope access is one-way: outer code cannot see declarations that exist only in an inner function.",
-   "With multiple nested functions, lookup follows a chain of enclosing scopes.",
-   "If several scopes define the same name, the innermost declaration takes precedence."
+   "A function's local variables are not directly available outside that function.",
+   "A function can use names from scopes around it, including the global scope when appropriate.",
+   "An inner function can read variables from its parent function.",
+   "A closure is code that refers to variables from another scope.",
+   "A closure keeps access to captured variables after their original scope ends.",
+   "Every JavaScript function is technically a closure, even when it captures no variables."
   ],
   "gotchas": [
-   "An inner function can read variables from enclosing scopes, but an enclosing function cannot read variables declared only inside the inner function.",
-   "When names conflict, the nearest enclosing declaration wins because lookup proceeds from the innermost scope outward."
+   "Access works from an inner function to an outer scope, not from the outer scope into the inner function's local variables."
   ],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-11-03"
  },
  "Function.length": {
   "sourceUrl": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/length",
@@ -2142,52 +2354,70 @@
  "Garbage Collection": {
   "sourceUrl": "https://javascript.info/garbage-collection",
   "sourceTitle": "Garbage collection",
-  "summary": "JavaScript automatically reclaims objects that are no longer reachable from roots. The page explains reachability and the mark-and-sweep algorithm, including how cycles can be collected.",
-  "explanation": "JavaScript automatically reclaims objects that can no longer be reached from any root, such as global variables or currently executing functions. The usual mark-and-sweep process marks roots and everything reachable through them, then removes unmarked objects. Cycles are handled because reachability, not merely reference counting, determines whether objects remain.",
+  "summary": "JavaScript frees memory automatically through garbage collection. Objects remain while reachable from roots; unreachable objects can be removed.",
+  "explanation": "JavaScript uses automatic garbage collection. The collector starts at roots, such as global values and active function data, and follows references. It keeps marked objects and removes objects it cannot reach. A group of objects can be removed together when nothing reachable points to the group.",
   "syntax": "",
   "parameters": [],
   "returns": "",
   "example": {
-   "title": "Making an object unreachable",
-   "code": "let user = { name: \"Alice\" };\n\nuser = null; // The object is no longer reachable\n\n// The garbage collector can reclaim the object automatically.",
+   "title": "An unreachable object group",
+   "code": "const family = { parent: { child: {} } };\n\nfamily.parent = null;\n\n// The child can now be collected if no other root reaches it.",
    "language": "javascript",
-   "explanation": "After the only reference to the object is removed, the object becomes unreachable and may later be reclaimed automatically."
+   "explanation": "Removing the root reference can make the whole object group unreachable."
   },
   "useCases": [
    {
-    "title": "Managing object lifetime",
-    "scenario": "Release references to completed application data so it can become collectible."
+    "title": "Trace references from roots",
+    "scenario": "Find why an object remains in memory"
    },
    {
-    "title": "Investigating memory leaks",
-    "scenario": "Diagnose memory retention by tracing references from long-lived roots."
+    "title": "Remove unnecessary references",
+    "scenario": "Avoid keeping unused data alive"
    },
    {
-    "title": "Reasoning about cycles",
-    "scenario": "Understand why cyclic object references do not necessarily leak memory."
+    "title": "Learn collection strategies",
+    "scenario": "Understand memory pauses"
    }
   ],
   "related": [
    "Reachability",
-   "Mark-and-sweep",
-   "Roots",
-   "Memory management"
+   "roots",
+   "mark-and-sweep",
+   "generational collection",
+   "incremental collection",
+   "idle-time collection"
   ],
   "since": "",
+  "interview": [
+   {
+    "question": "How does JavaScript garbage collection work?",
+    "answer": "The mark-and-sweep algorithm begins with roots and marks every object reachable through references. It then removes objects that were not marked.",
+    "followUp": "Why does it handle cycles? A cycle with no path from a root is still unmarked, so the collector can remove it."
+   },
+   {
+    "question": "What does reachable mean?",
+    "answer": "Reachability means that a value can be reached from a root through one or more references. Reachable values stay in memory, while unreachable values may be collected.",
+    "followUp": "Can linked objects be collected together? Yes. If no root reaches the first object, the entire linked group is unreachable."
+   },
+   {
+    "question": "How do engines reduce garbage-collection pauses?",
+    "answer": "Modern engines split collection into techniques such as generational and incremental collection. These techniques reduce pauses by checking young objects more often or doing work in smaller parts.",
+    "followUp": "Why use incremental collection? Marking a large object set at once can cause a visible delay, while smaller steps create shorter pauses."
+   }
+  ],
   "keyPoints": [
-   "A garbage collector runs in the background and manages objects automatically.",
-   "Objects that cannot be reached through live references become eligible for reclamation.",
-   "The standard conceptual algorithm is mark-and-sweep.",
-   "Collection starts by marking roots, such as global state and active execution contexts.",
-   "The collector follows references outward from marked roots.",
-   "Tracking visited objects prevents repeated traversal."
+   "Reachable values are kept in memory because the program can access them.",
+   "Roots are starting points for reachability. They include global variables and data used by active calls.",
+   "Mark-and-sweep marks objects reached from roots, then removes every object that remains unmarked.",
+   "An object that the collector cannot reach from a root is eligible for removal.",
+   "Incremental collection divides marking into smaller parts to avoid one long pause."
   ],
   "gotchas": [
-   "Garbage collection runs automatically; JavaScript provides no general way to force it or disable it.",
-   "An object can still be referenced by another unreachable object, yet the whole group can be collected.",
-   "Only objects reachable from the roots are marked and retained; unmarked objects are eligible for removal."
+   "References between objects do not keep them alive if the whole group cannot be reached from a root.",
+   "Code cannot directly require or stop a normal garbage-collection run.",
+   "An object's outgoing links alone do not keep it in memory; a reachable object must point to it."
   ],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-11-03"
  },
  "Generator delegation": {
   "sourceUrl": "https://javascript.info/generators",
@@ -2402,52 +2632,76 @@
   "checkedAt": "2026-10-15"
  },
  "getter memoization": {
-  "sourceUrl": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/get",
-  "sourceTitle": "get",
-  "summary": "A memoized getter computes a property value on first access and caches it for subsequent reads. It combines lazy evaluation with property-level memoization.",
-  "explanation": "A memoized getter delays an expensive calculation until the property is first read, then replaces or stores the result so later reads reuse it. This is useful when the value is expensive, may never be needed, and remains stable after calculation.",
-  "syntax": "get propertyName() { /* ... */ }",
-  "parameters": [],
-  "returns": "The getter's returned value becomes the value observed through the property.",
+  "sourceUrl": "https://developer.mozilla.org/en-US/docs/Glossary/Memoization",
+  "sourceTitle": "Memoization - Glossary | MDN",
+  "summary": "Memoization stores a function result and reuses it for the same input. This avoids repeating a calculation, at the cost of extra memory.",
+  "explanation": "Memoization saves a function's result and reuses it when the function receives the same input again. It can make repeated work faster, but it uses extra memory and works best for functions with no side effects that return the same result for the same inputs.",
+  "syntax": "const cache = new Map(); function memoizedFunction(arg) { if (cache.has(arg)) return cache.get(arg); const result = functionToMemoize(arg); cache.set(arg, result); return result; }",
+  "parameters": [
+   {
+    "name": "arg",
+    "type": "Any value",
+    "description": "The input used as the cache key and passed to the underlying function."
+   }
+  ],
+  "returns": "The stored result for a repeated input, or a newly computed and cached result for a new input.",
   "example": {
-   "title": "A memoized getter",
-   "code": "const object = {\n  get expensiveValue() {\n    delete this.expensiveValue;\n    return (this.expensiveValue = calculateValue());\n  },\n};\n\nfunction calculateValue() {\n  console.log(\"calculated\");\n  return 42;\n}\n\nconsole.log(object.expensiveValue);\nconsole.log(object.expensiveValue);",
+   "title": "Memoizing a function",
+   "code": "const cache = new Map();\n\nfunction getUser(id) {\n  if (cache.has(id)) return cache.get(id);\n  const user = loadUser(id);\n  cache.set(id, user);\n  return user;\n}\n",
    "language": "javascript",
-   "explanation": "The first access computes and replaces the getter with a data property; later accesses read the cached value."
+   "explanation": "This caches each result so repeated calls with the same ID can avoid repeating the work."
   },
   "useCases": [
    {
-    "title": "Expensive calculations",
-    "scenario": "Compute a costly value only when code first needs it."
+    "title": "Avoid repeated calculations",
+    "scenario": "An expensive function is called repeatedly with the same input."
    },
    {
-    "title": "Deferred resources",
-    "scenario": "Avoid loading or retrieving data that may never be used."
+    "title": "Speed up recursion",
+    "scenario": "A recursive algorithm reaches the same argument many times."
    },
    {
-    "title": "Stable derived state",
-    "scenario": "Reuse an immutable derived value across repeated property reads."
+    "title": "Cache stable results",
+    "scenario": "A pure function has stable results for repeated inputs."
    }
   ],
   "related": [
-   "get",
-   "setter",
-   "Object.defineProperty()",
-   "Object.defineProperties()"
+   "Map",
+   "function calls",
+   "recursion",
+   "side effects"
   ],
   "since": "",
+  "interview": [
+   {
+    "question": "What is memoization?",
+    "answer": "Memoization stores a function result and returns the stored value when the function is called again with the same inputs. This avoids running the calculation again.",
+    "followUp": "What is the main trade-off? It uses extra memory in exchange for potentially faster repeated calls."
+   },
+   {
+    "question": "How can you implement memoization?",
+    "answer": "A map can associate each input with its result. The function first checks the map, returns an existing value when present, and otherwise computes, stores, and returns the new result.",
+    "followUp": "Why does the map need a key? The key identifies which stored result belongs to the current input."
+   },
+   {
+    "question": "When should memoization be used?",
+    "answer": "Memoization is useful when calls repeat with the same inputs, especially for expensive calculations. It is also common in recursion, where the same arguments may occur many times.",
+    "followUp": "Which functions are good candidates? Pure functions that return the same result for the same inputs and have no side effects."
+   }
+  ],
   "keyPoints": [
-   "A getter exposes property-like access while running a function when the property is read.",
-   "The calculation is deferred until the first property access.",
-   "The initial read performs the expensive calculation.",
-   "Memoization is suitable for costly CPU, memory, worker, or remote-data operations.",
-   "Lazy evaluation avoids doing work for a property that is never accessed."
+   "Memoization keeps a previous function result for later reuse.",
+   "A repeated call with the same input can return the saved result instead of recalculating.",
+   "The main purpose is to skip duplicate calculations.",
+   "A map is a common way to connect an input to its saved result.",
+   "The cache is checked before the expensive function runs.",
+   "Recursive code can benefit when different branches use the same argument."
   ],
   "gotchas": [
-   "Do not use this pattern for values that can change: the cached result will not be recalculated.",
-   "Declaring a getter alone does not cache anything; the caching behavior must be implemented explicitly."
+   "Memoization uses more memory. The speed benefit is not guaranteed.",
+   "Do not use this pattern when a function changes external state or can return different results for the same input."
   ],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-11-03"
  },
  "Hoisting": {
   "sourceUrl": "https://developer.mozilla.org/en-US/docs/Glossary/Hoisting",
@@ -2517,62 +2771,251 @@
   ],
   "checkedAt": "2026-10-15"
  },
- "Iterator protocol": {
-  "sourceUrl": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols",
-  "sourceTitle": "Iteration protocols",
-  "summary": "The iterator protocol standardizes objects that produce sequence values through next(). Each call returns an IteratorResult with value and done, while the iterable protocol lets language constructs obtain the iterator.",
-  "explanation": "An iterator is an object whose next() method produces a sequence one result at a time. Each result uses value for the current item and done to indicate completion; an iterable exposes [Symbol.iterator]() so iteration constructs can obtain that iterator.",
-  "syntax": "iterator.next(value?)",
+ "IIFE": {
+  "sourceUrl": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/function",
+  "sourceTitle": "function expression - JavaScript | MDN",
+  "summary": "A function expression defines a function as a value inside an expression. It can be anonymous, assigned to a variable, passed as a callback, or invoked immediately.",
+  "explanation": "A function expression creates a function value in an expression context. You can assign that value to a variable, pass it as a callback, or call it immediately. Its name is optional. Unlike a function declaration, the function definition is not available before execution reaches the expression.",
+  "syntax": "function (param0, param1, /* …, */ paramN) { statements }\nfunction name(param0, param1, /* …, */ paramN) { statements }",
   "parameters": [
    {
-    "name": "value",
+    "name": "name",
+    "type": "string",
+    "description": "Optional name for the function. If omitted, the function is anonymous."
+   },
+   {
+    "name": "param0 … paramN",
     "type": "any",
-    "description": "An optional value passed to next(); the protocol permits zero or one argument."
+    "description": "Formal parameters listed by the function."
+   },
+   {
+    "name": "statements",
+    "type": "code",
+    "description": "Statements that make up the function body."
    }
   ],
-  "returns": "next() returns an IteratorResult object containing value and done.",
+  "returns": "A function value. When called, it returns the value produced by its return statement, or undefined if no value is returned.",
   "example": {
-   "title": "A self-iterating counter",
-   "code": "const counter = {\n  current: 1,\n  next() {\n    return this.current <= 3\n      ? { value: this.current++, done: false }\n      : { value: undefined, done: true };\n  },\n  [Symbol.iterator]() {\n    return this;\n  }\n};\n\nfor (const value of counter) console.log(value);",
+   "title": "Named function expression",
+   "code": "const factorial = function factorial(n) {\n  return n <= 1 ? 1 : n * factorial(n - 1);\n};\n\nconsole.log(factorial(4)); // 24",
    "language": "javascript",
-   "explanation": "The object is both an iterator and an iterable: next() supplies IteratorResult objects, while [Symbol.iterator]() returns the iterator used by for...of."
+   "explanation": "The inner name lets the function call itself recursively."
   },
   "useCases": [
    {
-    "title": "Custom iteration",
-    "scenario": "Implement a custom object whose values can be consumed with for...of."
+    "title": "Pass a callback",
+    "scenario": "A function is needed only as an event handler or other argument."
    },
    {
-    "title": "Manual traversal",
-    "scenario": "Read a sequence manually when explicit control over advancement is needed."
+    "title": "Run an IIFE",
+    "scenario": "Initialization code should run once without adding temporary names to script scope."
    },
    {
-    "title": "Lazy sequences",
-    "scenario": "Represent lazy or potentially infinite data without creating all values up front."
+    "title": "Use a named expression",
+    "scenario": "A function needs to call itself recursively."
+   },
+   {
+    "title": "Compute one expression result",
+    "scenario": "A value needs conditional or try/catch logic while staying const."
+   }
+  ],
+  "related": [
+   "function declaration",
+   "arrow functions",
+   "IIFE",
+   "arguments.callee"
+  ],
+  "since": "July 2015",
+  "interview": [
+   {
+    "question": "What is a function expression?",
+    "answer": "A function expression creates a function as part of an expression, so the function can be stored in a variable or passed as a value. Its name may be omitted, which makes it anonymous.",
+    "followUp": "How does it differ from a declaration? A declaration is hoisted, but a function expression cannot be used before the expression runs."
+   },
+   {
+    "question": "Are function expressions hoisted?",
+    "answer": "No. The variable declaration may be hoisted when var is used, but the assignment of the function happens later. Calling it before that assignment can produce a TypeError because the value is undefined.",
+    "followUp": "What happens with let or const? Access before initialization causes a ReferenceError instead of exposing an undefined variable."
+   },
+   {
+    "question": "Why use a named function expression?",
+    "answer": "A named function expression gives the function a local name that its body can use for recursion. This avoids relying on the deprecated arguments.callee property.",
+    "followUp": "Why not use the outer variable for recursion? The local function name remains tied to the function itself and is read-only inside the function body."
+   }
+  ],
+  "keyPoints": [
+   "The function keyword creates a function value when it appears where an expression is required.",
+   "A function expression may omit its name, while a declaration requires one.",
+   "Wrapping an expression function lets you define and call it immediately.",
+   "A function expression can be supplied directly to APIs such as an event listener."
+  ],
+  "gotchas": [
+   "A line that starts with function is parsed as a declaration context, so use parentheses or another expression context for an anonymous function expression.",
+   "Do not call a function expression before its assignment. With var, the variable may exist as undefined, but it is not callable yet.",
+   "The name in a named function expression is available inside the function, not as a separate outer binding."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "Implicit globals": {
+  "sourceUrl": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/var",
+  "sourceTitle": "var - JavaScript | MDN",
+  "summary": "`var` declares variables with function, module, or global scope. It can also give each variable an initial value.",
+  "explanation": "A var declaration creates a variable whose scope is determined by the nearest function body or static initialization block. Without either, the scope is the current module or the global scope. A declaration may include an initial value; without one, the value is undefined.",
+  "syntax": "var name1;\nvar name1 = value1;\nvar name1 = value1, name2 = value2;",
+  "parameters": [
+   {
+    "name": "nameN",
+    "type": "identifier or binding pattern",
+    "description": "Variable name or destructuring binding pattern to declare."
+   },
+   {
+    "name": "valueN",
+    "type": "expression",
+    "description": "Optional expression used as the variable's initial value."
+   }
+  ],
+  "returns": "",
+  "example": {
+   "title": "Function-scoped var",
+   "code": "function update() {\n  var count = 1;\n  if (count === 1) {\n    var count = 2;\n    console.log(count); // 2\n  }\n  console.log(count); // 2\n}\n\nupdate();",
+   "language": "javascript",
+   "explanation": "The two declarations refer to the same function-scoped variable."
+  },
+  "useCases": [
+   {
+    "title": "Declare a function-scoped variable",
+    "scenario": "A legacy function uses declarations that are visible throughout the function."
+   },
+   {
+    "title": "Use destructuring",
+    "scenario": "A result contains several values that should be assigned to separate names."
+   },
+   {
+    "title": "Declare multiple variables",
+    "scenario": "Several variables need declaration in one statement, with some initialized and others left undefined."
+   }
+  ],
+  "related": [
+   "let",
+   "const",
+   "Assignment (=)",
+   "Destructuring"
+  ],
+  "since": "July 2015",
+  "interview": [
+   {
+    "question": "What scope does var use?",
+    "answer": "var declares a variable with function scope, or with module or global scope when no containing function applies. It can also initialize the variable.",
+    "followUp": "What happens when a var declaration is inside an if block? It still belongs to the surrounding function scope, rather than to the block."
+   },
+   {
+    "question": "What value does an uninitialized var have?",
+    "answer": "A declaration without an initializer gives the variable the value undefined. An initializer can be any legal expression.",
+    "followUp": "Can one statement declare several variables? Yes. Separate declarations with commas, and each may or may not have an initializer."
+   },
+   {
+    "question": "What does an assignment expression return?",
+    "answer": "The assignment expression evaluates to the value assigned. Assignment can therefore be chained, and an undeclared identifier assignment throws in strict mode.",
+    "followUp": "What is the difference between `var x = y = 1`? x is declared locally, but y is not declared; non-strict code may create y globally, while strict code throws."
+   }
+  ],
+  "keyPoints": [
+   "Use var to declare one or more variables, with optional initial values.",
+   "Each declared name must be a valid identifier or a destructuring binding pattern.",
+   "An initializer may use any legal expression. If it is omitted, the value is undefined.",
+   "Assignment expressions have a value, so assignments can be chained.",
+   "Destructuring lets one var statement create multiple variables from an iterable or object pattern."
+  ],
+  "gotchas": [
+   "var is not block-scoped. A declaration inside an if block can refer to the same variable outside that block when both are in one function.",
+   "Strict mode rejects assignment to the undeclared y instead of creating an implicit global."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "Iterator protocol": {
+  "sourceUrl": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Iteration_protocols",
+  "sourceTitle": "Iteration protocols - JavaScript | MDN",
+  "summary": "Iteration protocols define how objects produce values for JavaScript iteration. An iterable returns an iterator through [Symbol.iterator](), and the iterator produces results through next().",
+  "explanation": "An iterable provides [Symbol.iterator](), which returns an iterator. The iterator provides next(), returning objects with value and done. JavaScript calls these methods when syntax such as for...of, spread, destructuring, or yield* consumes the iterable. An iterator can also return itself from [Symbol.iterator](), making it an iterable iterator.",
+  "syntax": "iterable[Symbol.iterator]()\niterator.next(value?)",
+  "parameters": [
+   {
+    "name": "[Symbol.iterator]()",
+    "type": "function",
+    "description": "No arguments are required by [Symbol.iterator]()."
+   },
+   {
+    "name": "next(value?)",
+    "type": "function",
+    "description": "Accepts zero or one argument, according to the iterator protocol."
+   }
+  ],
+  "returns": "[Symbol.iterator]() returns an iterator. next() returns an IteratorResult object, normally containing value and done.",
+  "example": {
+   "title": "A custom iterable",
+   "code": "const iterable = {\n  values: [10, 20, 30],\n  [Symbol.iterator]() {\n    let index = 0;\n    return {\n      next: () => index < this.values.length\n        ? { value: this.values[index++], done: false }\n        : { value: undefined, done: true },\n      [Symbol.iterator]() { return this; },\n    };\n  },\n};\n\nfor (const value of iterable) {\n  console.log(value);\n}",
+   "language": "javascript",
+   "explanation": "The object is iterable because it defines [Symbol.iterator](). That method returns an iterable iterator with next(), so for...of can read its values."
+  },
+  "useCases": [
+   {
+    "title": "for...of iteration",
+    "scenario": "Read values from arrays, strings, maps, sets, or custom objects."
+   },
+   {
+    "title": "Spread syntax",
+    "scenario": "Turn iterable values into a new array or pass them as function arguments."
+   },
+   {
+    "title": "Array destructuring",
+    "scenario": "Assign iterable values to variables."
+   },
+   {
+    "title": "Lazy value production",
+    "scenario": "Build lazy sequences with generator functions or iterator helpers."
    }
   ],
   "related": [
    "Iterable protocol",
+   "Iterator protocol",
    "IteratorResult",
    "Symbol.iterator",
    "for...of",
-   "Generators"
+   "Iterator.prototype[Symbol.iterator]()",
+   "Generator object"
   ],
-  "since": "",
+  "since": "September 2016",
+  "interview": [
+   {
+    "question": "What is the difference between an iterable and an iterator?",
+    "answer": "An iterable has a [Symbol.iterator]() method. That method returns an iterator. An iterator has a next() method that returns an object containing value and done.",
+    "followUp": "How can an iterator also be iterable? Define [Symbol.iterator]() to return this. This creates an iterable iterator."
+   },
+   {
+    "question": "How does for...of consume an iterable?",
+    "answer": "for...of calls the iterable's [Symbol.iterator]() method, then repeatedly calls next(). It stops when the returned result has done: true.",
+    "followUp": "What happens when for...of stops early? If the iterator has return(), the syntax can call it to close the iterator."
+   },
+   {
+    "question": "What is a proper iterator?",
+    "answer": "The iterator protocol only requires next(). The Iterator class supplies the iterable method and helper methods, but extending Iterator does not supply next(), so a subclass must define it.",
+    "followUp": "How can an existing iterator-like object become a proper iterator? Pass it to Iterator.from(), or define a class that extends Iterator and implements next()."
+   }
+  ],
   "keyPoints": [
-   "The protocol supports both finite and unbounded sequences.",
-   "An iterator must provide next(), which advances the sequence.",
-   "next() accepts zero or one argument and returns an IteratorResult object.",
-   "done: false signals that the result contains another produced value.",
-   "done: true signals that iteration has completed.",
-   "value carries the current item, or can represent the iterator's final return value when completion is reported."
+   "The iterable protocol lets an object choose which values consumers receive.",
+   "An iterable's [Symbol.iterator]() method takes no arguments and returns an iterator.",
+   "An iterator must provide next(), which produces the next iterator result.",
+   "Each next() result is an object with iteration state, normally value and done.",
+   "The Iterator class adds helper methods, but it does not define next() for subclasses.",
+   "Built-in Iterator instances can be consumed by iterable-based syntax such as spread and for...of."
   ],
   "gotchas": [
-   "Calling next() advances and consumes a typical iterator; do not assume a second loop starts from the beginning.",
-   "Once finished, next() should keep reporting done: true rather than producing more values.",
-   "Implementing next() alone does not make an object usable by for...of; it also needs the iterable protocol when a construct expects an iterable."
+   "An iterator alone may not work with APIs and syntax that expect an iterable. Add [Symbol.iterator]() and return the iterator itself when appropriate.",
+   "Iterators are stateful. Sharing one iterator or an iterator helper shares its progress, so a second consumer does not start independently.",
+   "A loop that stops early can call return() on the iterator. Use return() when the iterator needs cleanup."
   ],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-11-03"
  },
  "JSON pitfalls": {
   "sourceUrl": "https://javascript.info/json",
@@ -2799,58 +3242,80 @@
   "checkedAt": "2026-10-15"
  },
  "Logical Assignment": {
-  "sourceUrl": "https://javascript.info/javascript-specials",
-  "sourceTitle": "JavaScript specials",
-  "summary": "Logical assignment operators conditionally assign values using `||=`, `&&=`, or `??=`. They short-circuit, so the right-hand expression runs only when assignment is needed.",
-  "explanation": "Logical assignment operators combine a logical test with assignment. `||=` assigns when the left side is falsy, `&&=` assigns when it is truthy, and `??=` assigns only when it is `null` or `undefined`; the right side is skipped when assignment is unnecessary.",
-  "syntax": "left ||= right\nleft &&= right\nleft ??= right",
+  "sourceUrl": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Logical_OR_assignment",
+  "sourceTitle": "Logical OR assignment (||=) - JavaScript | MDN",
+  "summary": "Logical OR assignment (`||=`) assigns the right-hand value only when the left-hand value is falsy. It short-circuits, so a truthy left-hand value prevents both assignment and evaluation of the right side.",
+  "explanation": "The `||=` operator checks the value on its left. If that value is falsy, JavaScript evaluates the right side and assigns its result to the left side. If the left value is truthy, JavaScript skips both the assignment and the right side. The left expression is evaluated only once.",
+  "syntax": "x ||= y",
   "parameters": [
    {
-    "name": "left",
-    "type": "assignable reference",
-    "description": "Left-hand variable, property, or other assignable reference tested by the operator."
+    "name": "x",
+    "type": "expression",
+    "description": "The value or reference checked for falsiness and possibly updated."
    },
    {
-    "name": "right",
+    "name": "y",
     "type": "expression",
-    "description": "Expression evaluated only when the operator's condition allows assignment."
+    "description": "The value evaluated and assigned when `x` is falsy."
    }
   ],
-  "returns": "The assignment expression evaluates to the resulting value of the left-hand reference.",
+  "returns": "The result of the logical OR operation: the original left value when it is truthy, otherwise the assigned right value.",
   "example": {
-   "title": "Conditional assignments",
-   "code": "let displayName = \"\";\ndisplayName ||= \"Guest\";\n\nlet retries;\nretries ??= 3;\n\nlet ready = true;\nready &&= false;\n\nconsole.log(displayName, retries, ready);",
+   "title": "Set default values",
+   "code": "const settings = { retries: 0, theme: \"\" };\nsettings.retries ||= 3;\nsettings.theme ||= \"light\";\nconsole.log(settings); // { retries: 3, theme: \"light\" }",
    "language": "javascript",
-   "explanation": "Each operator conditionally assigns a fallback or replacement value based on the left-hand operand."
+   "explanation": "Each missing or empty setting gets a default value. Existing truthy values stay unchanged."
   },
   "useCases": [
    {
-    "title": "Fallback defaults",
-    "scenario": "Provide defaults for empty strings, zero-like values, or other falsy configuration values."
+    "title": "Default configuration values",
+    "scenario": "Apply a fallback when a string is empty or another value is falsy."
    },
    {
-    "title": "Nullish initialization",
-    "scenario": "Initialize a value only when it is null or undefined without replacing valid falsy values."
+    "title": "Lazy initialization",
+    "scenario": "Initialize an optional property only when it has no usable value."
    },
    {
-    "title": "Conditional updates",
-    "scenario": "Update a value only when an existing value passes a truthiness check."
+    "title": "Skip unnecessary work",
+    "scenario": "Avoid running an expensive default-producing expression when a value already exists."
    }
   ],
   "related": [
-   "Logical operators",
-   "Assignments",
-   "Nullish coalescing operator",
-   "Short-circuit evaluation"
+   "Logical AND assignment (&&=)",
+   "Logical nullish assignment (??=)",
+   "Logical OR (||)",
+   "Assignment operators"
   ],
-  "since": "",
+  "since": "September 2020",
+  "interview": [
+   {
+    "question": "What does the logical OR assignment operator do?",
+    "answer": "`x ||= y` assigns `y` only when `x` is falsy. It is similar to `x || (x = y)`, but the left expression is evaluated only once.",
+    "followUp": "How does it differ from `??=`? `||=` replaces every falsy value, while `??=` replaces only `null` or `undefined`."
+   },
+   {
+    "question": "Which values cause `||=` to assign?",
+    "answer": "A falsy value includes values such as `0`, `\"\"`, `false`, `null`, and `undefined`. Therefore, `count ||= 1` changes a count of zero to one.",
+    "followUp": "When should zero remain valid? Use `??=` when only missing values should receive a default."
+   },
+   {
+    "question": "Does `||=` always perform an assignment?",
+    "answer": "If the left side is truthy, JavaScript skips the assignment and does not evaluate the right side. This short-circuiting also prevents a setter from being triggered in that case.",
+    "followUp": "What happens with `const x = 1; x ||= 2`? It does not throw because no assignment is performed."
+   }
+  ],
   "keyPoints": [
-   "Logical assignment extends ordinary assignment with a condition, avoiding a separate read-and-write expression.",
-   "The three logical assignment forms are `&&=`, `||=`, and `??=`.",
-   "Logical operators select operand values rather than necessarily producing Boolean results, so the assigned value can be any expression result."
+   "`||=` writes the right-hand value only when the left-hand value is falsy.",
+   "Its behavior is like `x || (x = y)`, with short-circuiting.",
+   "The left expression is evaluated once, which avoids repeating a property lookup or other expression.",
+   "An assignment expression produces the value assigned; logical assignments follow the logical operation's result.",
+   "For assignment operators other than plain `=`, the result uses the operands' original values."
   ],
-  "gotchas": [],
-  "checkedAt": "2026-10-15"
+  "gotchas": [
+   "A truthy left value is not assigned again. This also means a setter is not called when assignment is skipped.",
+   "The right side runs only when needed. Do not depend on it for effects when the left side already prevents assignment."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "Map vs Object": {
   "sourceUrl": "https://javascript.info/map-set",
@@ -3154,105 +3619,143 @@
   "checkedAt": "2026-10-15"
  },
  "NaN equality": {
-  "sourceUrl": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/NaN",
-  "sourceTitle": "NaN - JavaScript | MDN Web Docs",
-  "summary": "NaN is unequal to every value, including itself, under == and ===. Detect it with Number.isNaN() rather than an equality comparison.",
-  "explanation": "NaN is a numeric value produced by invalid or undefined numerical operations. Unlike ordinary values, it is unequal to every value, including itself, when tested with == or ===; use Number.isNaN() to check for it, while Object.is() considers NaN equal to itself.",
-  "syntax": "Number.isNaN(value)",
-  "parameters": [
-   {
-    "name": "value",
-    "type": "any",
-    "description": "The value to test for the numeric NaN value."
-   }
-  ],
-  "returns": "A Boolean indicating whether the supplied value is NaN.",
+  "sourceUrl": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Equality_comparisons_and_sameness",
+  "sourceTitle": "Equality comparisons and sameness - JavaScript | MDN",
+  "summary": "JavaScript offers ==, ===, and Object.is() for comparing values. They differ mainly in type conversion and how they handle NaN, -0, and +0.",
+  "explanation": "NaN is a special numeric value that means a number operation did not produce a valid number. Strict equality does not consider NaN equal to itself. Object.is() does, and it also treats -0 and +0 as different values.",
+  "syntax": "x == y\nx === y\nObject.is(x, y)",
+  "parameters": [],
+  "returns": "A Boolean result for ==, ===, and related equality checks. Object.is() also returns a Boolean.",
   "example": {
-   "title": "Detecting NaN safely",
-   "code": "const value = Number(\"not a number\");\n\nconsole.log(value === value); // false\nconsole.log(Number.isNaN(value)); // true\nconsole.log(Object.is(value, value)); // true",
+   "title": "Compare special number values",
+   "code": "console.log(NaN === NaN); // false\nconsole.log(Object.is(NaN, NaN)); // true\nconsole.log(-0 === +0); // true\nconsole.log(Object.is(-0, +0)); // false",
    "language": "javascript",
-   "explanation": "The snippet demonstrates that strict equality does not identify NaN, while Number.isNaN does and Object.is treats the two NaN values as the same."
+   "explanation": "Object.is distinguishes NaN from other values and also distinguishes negative zero from positive zero."
   },
   "useCases": [
    {
-    "title": "Input validation",
-    "scenario": "Validate parsed or calculated numeric input before further arithmetic."
+    "title": "Loose comparison",
+    "scenario": "Compare values when implicit conversion is acceptable and intentional."
    },
    {
-    "title": "Error detection",
-    "scenario": "Identify invalid numeric results produced by conversions or mathematical operations."
+    "title": "Strict comparison",
+    "scenario": "Compare values without converting their types."
    },
    {
-    "title": "Data cleaning",
-    "scenario": "Filter or classify numeric data containing invalid values."
+    "title": "Special numeric comparisons",
+    "scenario": "Detect NaN or distinguish negative zero from positive zero."
    }
   ],
   "related": [
-   "Number.isNaN()",
-   "isNaN()",
    "Object.is()",
-   "strict equality (===)",
-   "loose equality (==)",
-   "SameValueZero"
+   "NaN",
+   "Number.NaN",
+   "SameValueZero",
+   "IsLooselyEqual",
+   "IsStrictlyEqual"
   ],
-  "since": "",
+  "since": "July 2015",
+  "interview": [
+   {
+    "question": "What is the difference between == and ===?",
+    "answer": "The == operator may convert operands to a common type before comparing them. For example, \"1\" == 1 is true, while different types with === return false.",
+    "followUp": "What happens when both operands are objects? Equality checks whether they refer to the same object, not whether their contents match."
+   },
+   {
+    "question": "How does Object.is() differ from ===?",
+    "answer": "Object.is() does not convert types. It differs from === for special numbers: Object.is(NaN, NaN) is true, and Object.is(-0, +0) is false.",
+    "followUp": "Which comparison treats -0 and +0 as equal while also treating NaN as equal to itself? SameValueZero."
+   },
+   {
+    "question": "What is NaN, and how should it be tested?",
+    "answer": "NaN represents an invalid numeric result. It can come from failed number conversion, invalid mathematical results, or indeterminate forms.",
+    "followUp": "Why does NaN === NaN return false? Strict equality defines any comparison with NaN as false."
+   }
+  ],
   "keyPoints": [
-   "NaN is a Number value with special comparison behavior rather than a missing or undefined value.",
-   "Both loose and strict equality treat NaN as unequal to every value, including another NaN.",
-   "Use a NaN-detection function instead of comparing the value to NaN.",
-   "The strict equality operator preserves this special rule without coercing operands.",
-   "Same-value-zero comparisons, such as those used by some collection operations, can match NaN."
+   "JavaScript has three common comparison choices: ==, ===, and Object.is().",
+   "Use == only when its type-conversion behavior is intended.",
+   "=== compares without converting values; different types produce false.",
+   "Object.is() compares values without conversion and preserves distinctions between special numeric values.",
+   "NaN marks a failed or invalid numeric result.",
+   "Parsing invalid text as a number can produce NaN.",
+   "Some mathematical operations, such as taking the square root of a negative number, produce NaN."
   ],
   "gotchas": [
-   "Do not test NaN with == or ===; both comparisons return false even when both operands are NaN.",
-   "Relational operators also cannot establish ordering for NaN: every listed comparison evaluates to false."
+   "Using === or == cannot test whether a value is NaN, because NaN is not equal to itself. Use Number.isNaN() or Object.is(value, NaN) instead.",
+   "The equality operators treat negative zero and positive zero as equal. Object.is() distinguishes them."
   ],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-11-03"
  },
  "new.target": {
-  "sourceUrl": "https://javascript.info/constructor-new",
-  "sourceTitle": "Constructor, operator \"new\"",
-  "summary": "`new.target` reveals whether the current function was called with `new`. It is `undefined` for regular calls and refers to the function during construction.",
-  "explanation": "`new.target` is a special expression available inside function and class bodies. It is `undefined` for an ordinary call and identifies the constructor used for construction, allowing code to distinguish constructor mode from regular invocation.",
+  "sourceUrl": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/new.target",
+  "sourceTitle": "new.target - JavaScript | MDN",
+  "summary": "new.target tells code whether a function was called with new. It gives the active constructor during construction and undefined for a normal function call.",
+  "explanation": "new.target is a special expression available inside functions and class bodies. It is the constructor used for construction, or undefined for an ordinary function call. In a parent class constructor, it can identify the subclass that started construction.",
   "syntax": "new.target",
   "parameters": [],
-  "returns": "The expression evaluates to `undefined` for regular calls, or to the constructor function when called with `new`.",
+  "returns": "A constructable function value during construction, or undefined during a normal function call.",
   "example": {
-   "title": "Accept regular and constructor calls",
-   "code": "function User(name) {\n  if (!new.target) return new User(name);\n  this.name = name;\n}\n\nconsole.log(new User(\"Ada\").name);",
+   "title": "Require new when calling a function",
+   "code": "function Item() {\n  if (!new.target) {\n    throw new TypeError(\"Use new Item()\");\n  }\n  this.ready = true;\n}\n\nconst item = new Item();\nconsole.log(item.ready); // true",
    "language": "javascript",
-   "explanation": "The function creates an instance whether it is called directly or with `new`."
+   "explanation": "The check rejects a normal call and allows construction with new."
   },
   "useCases": [
    {
-    "title": "Constructor-mode detection",
-    "scenario": "Detect whether a function is being used as a constructor."
+    "title": "Enforce constructor usage",
+    "scenario": "A function should reject calls without new."
    },
    {
-    "title": "Call normalization",
-    "scenario": "Make a constructor function work with or without explicitly writing `new`."
+    "title": "Identify the constructed subclass",
+    "scenario": "A base class needs to know which derived class started construction."
    },
    {
-    "title": "Invocation validation",
-    "scenario": "Reject or handle accidental regular invocation of constructor-style functions."
+    "title": "Control construction behavior",
+    "scenario": "A constructor called through Reflect.construct() needs the selected new target."
    }
   ],
   "related": [
    "new",
-   "constructor"
+   "Reflect.construct()",
+   "constructor",
+   "super()",
+   "extends"
   ],
-  "since": "",
+  "since": "September 2017",
+  "interview": [
+   {
+    "question": "What does new.target contain?",
+    "answer": "new.target is undefined when a function is called normally. When the function is called with new, it refers to the constructor used for that construction.",
+    "followUp": "How can a function require new? Check if (!new.target) and throw a TypeError when the value is undefined."
+   },
+   {
+    "question": "What is new.target in a parent class constructor?",
+    "answer": "In a class constructor, new.target refers to the class that construction started with. Therefore, a parent constructor can see a subclass when the subclass is created with new.",
+    "followUp": "What does this mean for class A and class B extends A? Calling new B() makes new.target equal B inside A's constructor."
+   },
+   {
+    "question": "How does Reflect.construct affect new.target?",
+    "answer": "Reflect.construct() can set new.target to its newTarget argument. If that argument is omitted, the target function is used.",
+    "followUp": "Why can Base.call(this) differ? call invokes Base as a normal function, so new.target is undefined; Reflect.construct preserves construction semantics."
+   }
+  ],
   "keyPoints": [
-   "Use `new.target` to tell whether a function was invoked as a constructor.",
-   "A direct call produces `undefined`, while construction produces the called function.",
-   "This distinction supports constructor-call validation or compatibility behavior.",
-   "A function can redirect a regular call to a constructor call when needed."
+   "Use new.target to tell whether a call used the new operator.",
+   "During construction, its value is the constructor selected by new.",
+   "A normal function call gives new.target the value undefined.",
+   "For a directly constructed ordinary function, new.target is that function.",
+   "A class constructor can use new.target to find the class used by new.",
+   "Inside a base constructor, new.target may be a derived class.",
+   "Reflect.construct() can explicitly choose the new.target value."
   ],
   "gotchas": [
-   "Outside constructor calls, `new.target` is `undefined`; do not treat it as a normal object property.",
-   "Using `new.target` outside a function or class body causes a syntax error."
+   "Do not use new.target at top level or in another context outside a function or class.",
+   "An arrow function does not create its own new.target; it uses the surrounding one.",
+   "A static initialization block cannot use new.target to identify a constructed class.",
+   "When writing a derived class constructor, return only an object or undefined."
   ],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-11-03"
  },
  "Nullish Coalescing": {
   "sourceUrl": "https://javascript.info/nullish-coalescing-operator",
@@ -3746,56 +4249,72 @@
   "checkedAt": "2026-10-15"
  },
  "Operator precedence": {
-  "sourceUrl": "https://javascript.info/operators",
-  "sourceTitle": "Basic operators, maths",
-  "summary": "Operator precedence determines the default order for applying operators in a JavaScript expression. Higher precedence runs first, equal precedence proceeds left to right, and parentheses can override the order.",
-  "explanation": "JavaScript assigns each operator a precedence level that determines the default grouping of an expression. A higher number runs first; operators with equal precedence are processed from left to right, and parentheses can override the default order.",
+  "sourceUrl": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/Operator_precedence",
+  "sourceTitle": "Operator precedence - JavaScript | MDN",
+  "summary": "Operator precedence determines how JavaScript groups operators in an expression. Higher-precedence operators run before lower-precedence ones, while associativity handles operators at the same level.",
+  "explanation": "JavaScript uses operator precedence to group an expression. An operator with higher precedence is applied before one with lower precedence. Operators at the same precedence level use associativity. Parentheses create an explicit grouping and can change the result.",
   "syntax": "",
   "parameters": [],
   "returns": "",
   "example": {
    "title": "Precedence and parentheses",
-   "code": "const result = 1 + 2 * 3;\nconst grouped = (1 + 2) * 3;\nconsole.log(result);  // 7\nconsole.log(grouped); // 9",
+   "code": "const result = 3 + 4 * 5;\nconsole.log(result); // 23\n\nconst grouped = (3 + 4) * 5;\nconsole.log(grouped); // 35",
    "language": "javascript",
-   "explanation": "Multiplication runs before addition by default, while parentheses explicitly make addition run first."
+   "explanation": "Multiplication runs before addition. Parentheses change the grouping, so the addition runs first."
   },
   "useCases": [
    {
-    "title": "Read arithmetic expressions",
-    "scenario": "Predict the result of arithmetic expressions without running them."
+    "title": "Calculate values in the intended order",
+    "scenario": "Combine arithmetic operators in one expression."
    },
    {
-    "title": "Clarify evaluation order",
-    "scenario": "Make an expression’s intended grouping explicit."
+    "title": "Use parentheses for clarity",
+    "scenario": "Make an expression's order clear to readers."
    },
    {
-    "title": "Understand assignments",
-    "scenario": "Ensure calculations occur before storing a result."
+    "title": "Read right-associative operators",
+    "scenario": "Understand chained assignments and exponentiation."
    }
   ],
   "related": [
-   "Basic operators, maths",
-   "Assignment",
-   "Unary operators",
-   "Exponentiation",
-   "Multiplication",
-   "Division",
-   "Addition",
-   "Subtraction"
+   "associativity",
+   "parentheses",
+   "assignment operators",
+   "exponentiation operator",
+   "expressions"
   ],
   "since": "",
+  "interview": [
+   {
+    "question": "What is operator precedence?",
+    "answer": "Operator precedence decides which operators form groups first. Higher-precedence operators are grouped before lower-precedence operators; parentheses can override that grouping.",
+    "followUp": "What does `3 + 4 * 5` produce? It produces `23`, because multiplication is grouped before addition."
+   },
+   {
+    "question": "What is associativity?",
+    "answer": "Associativity decides how operators with the same precedence are grouped. Left-associative operators group from left to right, while right-associative operators group from right to left.",
+    "followUp": "How is `a = b = 5` grouped? It is `a = (b = 5)`, because assignment is right-associative."
+   },
+   {
+    "question": "How can code override operator precedence?",
+    "answer": "Parentheses create a grouped expression and can override the normal precedence rules. For example, `(3 + 4) * 5` evaluates addition before multiplication.",
+    "followUp": "Are operands evaluated according to precedence? No. Operands are evaluated from left to right; precedence controls operator grouping."
+   }
+  ],
   "keyPoints": [
-   "Precedence determines the default order in which multiple operators in one expression are applied.",
-   "Each operator has a numeric precedence level.",
-   "A larger precedence number means the operator is applied before one with a smaller number.",
-   "Multiplication has higher precedence than addition, so it is grouped first in an unparenthesized expression.",
-   "Unary plus has precedence 14 in the documented precedence table."
+   "A higher-precedence operator is grouped before a lower-precedence operator.",
+   "Associativity controls grouping when operators have equal precedence.",
+   "Left-associative operators group their left operation first.",
+   "Right-associative operators group their right operation first.",
+   "Parentheses let you choose the intended grouping explicitly.",
+   "JavaScript evaluates operands from left to right, even when operator precedence differs."
   ],
   "gotchas": [
-   "Parentheses override the default precedence, so use them when the intended grouping differs from JavaScript’s normal order.",
-   "Operators at the same precedence level are evaluated from left to right."
+   "Precedence does not change the left-to-right evaluation order of operands.",
+   "Assignments group from right to left, so `a = b = 5` means `a = (b = 5)`.",
+   "Exponentiation runs before multiplication, division, addition, and other lower-precedence operators."
   ],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-11-03"
  },
  "Optional Chaining": {
   "sourceUrl": "https://javascript.info/optional-chaining",
@@ -3864,62 +4383,77 @@
   "checkedAt": "2026-10-15"
  },
  "parseInt radix": {
-  "sourceUrl": "https://javascript.info/number",
-  "sourceTitle": "Numbers",
-  "summary": "parseInt(str, radix) reads an integer prefix using the specified base, from 2 through 36. It stops at the first character that is not valid in that base and returns the digits read so far.",
-  "explanation": "parseInt() converts its first argument to a string, reads an optional sign and leading whitespace, then consumes as many valid digits as possible in the chosen radix. It returns the resulting integer, or NaN if no valid digit can be read.",
-  "syntax": "parseInt(str, radix)",
+  "sourceUrl": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/parseInt",
+  "sourceTitle": "parseInt() - JavaScript | MDN",
+  "summary": "parseInt() reads an integer from a string using a chosen number base. Give the radix explicitly when the base is known, and check for NaN when parsing can fail.",
+  "explanation": "The function converts its input to a string, ignores leading whitespace, and reads an integer from the start. The radix selects the number system, from base 2 through base 36. Reading stops when a character is not valid for that radix; if no valid digits are found, the result is NaN.",
+  "syntax": "parseInt(string, radix)",
   "parameters": [
    {
-    "name": "str",
-    "type": "string or value convertible to string",
-    "description": "The value to convert; it is interpreted as a string."
+    "name": "string",
+    "type": "any value",
+    "description": "The value to parse; it is converted to a string, and leading whitespace is ignored."
    },
    {
     "name": "radix",
-    "type": "number",
-    "description": "The numeral-system base used for parsing, from 2 through 36."
+    "type": "integer",
+    "description": "An optional integer from 2 to 36 that selects the number base. If omitted or 0, the default is normally base 10, with 0x or 0X input using base 16."
    }
   ],
-  "returns": "An integer parsed from the string; the function returns NaN when no valid number can be read.",
+  "returns": "An integer parsed from the input. The result is NaN when the input does not start with a valid integer for the selected radix.",
   "example": {
-   "title": "Parsing integers with explicit radices",
-   "code": "const decimal = parseInt(\"101\", 2);\nconst hexadecimal = parseInt(\"ff\", 16);\nconst partial = parseInt(\"42px\", 10);\n\nconsole.log(decimal); // 5\nconsole.log(hexadecimal); // 255\nconsole.log(partial); // 42",
+   "title": "Parse integers with an explicit radix",
+   "code": "const decimal = parseInt(\"101\", 2);\nconst invalid = parseInt(\"hello\", 10);\n\nconsole.log(decimal); // 5\nconsole.log(invalid); // NaN",
    "language": "javascript",
-   "explanation": "The radix explicitly selects the numeral system, while parsing stops when a character is not valid in that radix."
+   "explanation": "The first call reads 101 as a base-2 number. The second call cannot find a valid integer."
   },
   "useCases": [
    {
-    "title": "Parse non-decimal numbers",
-    "scenario": "Convert binary, hexadecimal, or another-base text into a JavaScript integer."
+    "title": "Read an integer from text",
+    "scenario": "Convert text containing a whole-number prefix, such as a value read from an input field."
    },
    {
-    "title": "Read numeric prefixes",
-    "scenario": "Extract an integer prefix from text such as \"42px\"."
+    "title": "Convert another number base",
+    "scenario": "Decode values written in binary, hexadecimal, or another supported base."
    },
    {
-    "title": "Interpret numeric strings",
-    "scenario": "Convert user or file input into an integer after choosing the intended numeral system."
+    "title": "Discard a decimal fraction",
+    "scenario": "Extract the whole-number portion from a decimal string."
    }
   ],
   "related": [
-   "parseFloat",
-   "Number.toString"
+   "Number.parseInt()",
+   "Number.isNaN()"
   ],
-  "since": "",
+  "since": "July 2015",
+  "interview": [
+   {
+    "question": "What does parseInt() do?",
+    "answer": "parseInt() reads an integer from the start of a string and uses the supplied radix as its base. Leading whitespace is ignored, and the result is NaN when no valid integer can be read.",
+    "followUp": "What happens with parseInt(\"12px\", 10)? It returns 12 because parsing stops when it reaches the first invalid character."
+   },
+   {
+    "question": "Why should the radix usually be supplied?",
+    "answer": "The radix is an integer from 2 through 36. It tells parseInt() which digits are valid and how to calculate the result, so parseInt(\"101\", 2) returns 5.",
+    "followUp": "What should code do when the radix is not known? Validate it before calling parseInt(), because values outside the documented range are invalid."
+   },
+   {
+    "question": "How does parseInt() signal invalid input?",
+    "answer": "If no valid integer begins the input, the function returns NaN. Use Number.isNaN() to test that result when parsing may fail.",
+    "followUp": "Does parseInt(\"1.9\", 10) return 2? No. It returns 1 because the fractional part is discarded."
+   }
+  ],
   "keyPoints": [
-   "parseInt returns an integer, unlike parseFloat, which returns a floating-point value.",
-   "The second argument chooses the numeral system, allowing binary, hexadecimal, and other bases.",
-   "The supported radix range is 2 through 36, inclusive.",
-   "Parsing stops at the first character that cannot be interpreted in the selected radix."
+   "parseInt() returns an integer interpreted in the chosen number base.",
+   "Spaces before the number do not affect the parsed result.",
+   "The radix must be an integer from 2 to 36.",
+   "Base 16 accepts letters such as f and converts \"ff\" to 255.",
+   "A hexadecimal prefix works when the radix is 16."
   ],
   "gotchas": [
-   "Parsing is prefix-based: trailing characters such as \"px\" do not make an otherwise valid numeric prefix invalid.",
-   "Always provide the radix when the intended numeral system matters; omitting it invokes default handling rather than explicitly documenting the base.",
-   "A malformed suffix can be silently ignored, so parseInt(\"12.3\", 10) returns 12 rather than rejecting the input.",
-   "The radix must be between 2 and 36; values outside that range produce NaN."
+   "Pass the radix explicitly when the base matters, especially for binary, octal, or hexadecimal input."
   ],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-11-03"
  },
  "Pass by Reference": {
   "sourceUrl": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions",
@@ -4052,141 +4586,151 @@
   "checkedAt": "2026-10-15"
  },
  "Property descriptors": {
-  "sourceUrl": "https://javascript.info/property-descriptors",
-  "sourceTitle": "Property flags and descriptors - The Modern JavaScript Tutorial",
-  "summary": "Property descriptors describe an object's property value and its writable, enumerable, and configurable flags. JavaScript provides methods to inspect descriptors and create or update properties with precise behavior.",
-  "explanation": "A property descriptor records a property's value and control flags. Object.getOwnPropertyDescriptor() reads those details, while Object.defineProperty() creates or updates a property using a descriptor; omitted flags default to false when a new property is created.",
-  "syntax": "Object.getOwnPropertyDescriptor(obj, propertyName)\nObject.defineProperty(obj, propertyName, descriptor)\nObject.defineProperties(obj, descriptors)\nObject.getOwnPropertyDescriptors(obj)",
+  "sourceUrl": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/getOwnPropertyDescriptors",
+  "sourceTitle": "Object.getOwnPropertyDescriptors() - JavaScript | MDN",
+  "summary": "Object.getOwnPropertyDescriptors(obj) returns the descriptors for all own properties of an object. The descriptors show values, accessors, and property flags such as writable, enumerable, and configurable.",
+  "explanation": "Object.getOwnPropertyDescriptors(obj) returns an object containing descriptors for every own property of obj. Each descriptor can include value, writable, get, set, configurable, and enumerable, depending on whether the property is a data or accessor property.",
+  "syntax": "Object.getOwnPropertyDescriptors(obj)",
   "parameters": [
    {
     "name": "obj",
     "type": "object",
-    "description": "The object whose own property is inspected or modified."
-   },
-   {
-    "name": "propertyName",
-    "type": "string or symbol",
-    "description": "The property name passed to the descriptor operation."
-   },
-   {
-    "name": "descriptor",
-    "type": "property descriptor",
-    "description": "The descriptor object containing the value and applicable flags."
+    "description": "The object whose own property descriptors should be returned."
    }
   ],
-  "returns": "Object.getOwnPropertyDescriptor() returns a property descriptor object containing the property's value and all flags. Object.defineProperty() returns the object after defining or updating the property.",
+  "returns": "An object containing all own property descriptors of obj. It can be empty when obj has no properties.",
   "example": {
-   "title": "Inspect and restrict a property",
-   "code": "const user = { name: \"Ada\" };\n\nObject.defineProperty(user, \"name\", {\n  writable: false,\n  enumerable: true,\n  configurable: false,\n});\n\nconsole.log(Object.getOwnPropertyDescriptor(user, \"name\"));\nuser.name = \"Grace\"; // Ignored in non-strict mode\nconsole.log(user.name); // Ada",
+   "title": "Copy property descriptors",
+   "code": "const user = { name: \"John\", age: 30 };\n\nconst descriptors = Object.getOwnPropertyDescriptors(user);\nconst clone = Object.defineProperties({}, descriptors);\n\nconsole.log(descriptors.name.enumerable); // true\nconsole.log(clone.name); // John",
    "language": "javascript",
-   "explanation": "The descriptor makes name read-only while keeping it enumerable and non-configurable."
+   "explanation": "This copies the own property descriptors, so the clone keeps values and property flags."
   },
   "useCases": [
    {
-    "title": "Inspect property behavior",
-    "scenario": "Inspect whether a property is writable, enumerable, or configurable before modifying an object."
+    "title": "Inspect object properties",
+    "scenario": "You need to inspect property flags or accessor functions."
    },
    {
-    "title": "Control mutability and visibility",
-    "scenario": "Create read-only or non-enumerable object properties."
+    "title": "Clone with descriptors",
+    "scenario": "You need a shallow copy that preserves property descriptors."
    },
    {
-    "title": "Define multiple properties",
-    "scenario": "Apply several property definitions during object setup."
-   },
-   {
-    "title": "Preserve property semantics",
-    "scenario": "Copy object properties while preserving their descriptors."
+    "title": "Include hidden own properties",
+    "scenario": "You need to handle non-enumerable or Symbol-keyed own properties."
    }
   ],
   "related": [
-   "Object.getOwnPropertyDescriptor",
-   "Object.defineProperty",
-   "Object.defineProperties",
-   "Object.getOwnPropertyDescriptors",
-   "writable",
-   "enumerable",
-   "configurable",
-   "property accessors"
+   "Object.defineProperty()",
+   "Object.defineProperties()",
+   "Object.create()",
+   "Object.assign()"
   ],
-  "since": "",
+  "since": "April 2017",
+  "interview": [
+   {
+    "question": "What does Object.getOwnPropertyDescriptors() return?",
+    "answer": "It returns an object whose keys are the source object's own property keys and whose values are property descriptor objects. The descriptors describe data properties or accessor properties.",
+    "followUp": "How can it help clone an object? Use Object.defineProperties with the returned descriptors, and separately preserve the prototype if needed."
+   },
+   {
+    "question": "What fields can a property descriptor contain?",
+    "answer": "A data descriptor can contain value and writable. An accessor descriptor can contain get and set. Both kinds can contain configurable and enumerable.",
+    "followUp": "Can one descriptor contain both value and get? No. A property descriptor must describe either a data property or an accessor property."
+   },
+   {
+    "question": "Why is this method useful for cloning?",
+    "answer": "It examines all own properties, including non-enumerable and symbol-keyed properties. This gives more complete information than ordinary property-copying loops.",
+    "followUp": "Why does Object.assign() differ? It copies enumerable own properties by reading their values, so it does not preserve descriptors."
+   }
+  ],
   "keyPoints": [
-   "A data property can have writable, enumerable, and configurable flags in addition to its value.",
-   "writable controls whether assignment can change a property's value.",
-   "enumerable controls whether the property appears in enumeration such as for...in.",
-   "configurable controls deletion and later descriptor changes.",
-   "Use Object.getOwnPropertyDescriptor() to inspect one property's complete descriptor.",
-   "Object.defineProperty() creates a property or updates an existing property's descriptor.",
-   "Object.defineProperties() applies descriptors to multiple properties in one operation.",
-   "Object.getOwnPropertyDescriptors() retrieves descriptors for all own properties."
+   "It returns descriptors for every own property of the supplied object.",
+   "The return value is a new object that maps property keys to descriptor records.",
+   "Property keys can be strings or Symbols, and each property has a descriptor.",
+   "The value field appears for data properties.",
+   "Accessor descriptors can provide a getter function through get.",
+   "enumerable says whether the property appears during property enumeration."
   ],
   "gotchas": [
-   "When defining a new property, any omitted descriptor flag becomes false.",
-   "Setting configurable to false prevents deleting the property or changing its attributes later."
+   "Object.assign() does not preserve every property: it copies only enumerable own properties.",
+   "This method includes symbol-keyed and non-enumerable own properties, unlike a for...in loop."
   ],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-11-03"
  },
  "Prototype chain": {
   "sourceUrl": "https://developer.mozilla.org/en-US/docs/Learn_web_development/Extensions/Advanced_JavaScript_objects/Object_prototypes",
-  "sourceTitle": "Object prototypes",
-  "summary": "JavaScript resolves a missing property by searching the object's prototype, then that prototype's prototype, until it finds a match or reaches null. This linked lookup structure is the prototype chain.",
-  "explanation": "An object can delegate missing property lookups to its prototype, whose own prototype is checked next. This continues until a matching property is found or the chain reaches null; Object.getPrototypeOf and Object.setPrototypeOf inspect and change that internal link.",
-  "syntax": "Object.getPrototypeOf(obj)\nObject.create(proto)",
+  "sourceTitle": "Object prototypes - Learn web development | MDN",
+  "summary": "A JavaScript object can inherit properties from its prototype. JavaScript follows the prototype chain when a property is not found on the object itself.",
+  "explanation": "When JavaScript reads a missing property, it checks the object's prototype, then that prototype's prototype, and continues until null. A property on the object itself wins over a property with the same name higher in the chain; this is called shadowing. Object.create() sets a prototype when creating an object, while Object.getPrototypeOf() reads it.",
+  "syntax": "Object.create(prototype)",
   "parameters": [
    {
-    "name": "obj",
-    "type": "object",
-    "description": "The object whose prototype is inspected."
-   },
-   {
-    "name": "proto",
+    "name": "prototype",
     "type": "object or null",
-    "description": "The prototype object to use for the new object."
+    "description": "The object to use as the new object's prototype."
    }
   ],
-  "returns": "Object.getPrototypeOf() returns an object's prototype; Object.create() returns a new object using the supplied prototype.",
+  "returns": "Object.create() returns a new object whose prototype is the supplied object.",
   "example": {
-   "title": "Property lookup through a prototype chain",
-   "code": "const parent = { shared: true };\nconst child = Object.create(parent);\nchild.own = 1;\n\nconsole.log(child.own); // 1\nconsole.log(child.shared); // true\nconsole.log(Object.getPrototypeOf(child) === parent); // true\nconsole.log(child.missing); // undefined",
+   "title": "Create an object with a prototype",
+   "code": "const base = { greet() { return `Hello, ${this.name}`; } };\nconst user = Object.create(base);\nuser.name = \"Mina\";\n\nconsole.log(user.greet());\nconsole.log(Object.getPrototypeOf(user) === base);",
    "language": "javascript",
-   "explanation": "The child keeps its own property and finds shared through its prototype; an absent property remains undefined."
+   "explanation": "The user object gets greet from base through its prototype. The name property belongs directly to user."
   },
   "useCases": [
    {
-    "title": "Delegated behavior",
-    "scenario": "Share methods or default values across related objects without copying them into every object."
+    "title": "Share behavior",
+    "scenario": "Share methods between many related objects without copying each method."
    },
    {
-    "title": "Trace inheritance",
-    "scenario": "Inspect how an object inherits properties during debugging or puzzle solving."
+    "title": "Inspect inheritance",
+    "scenario": "Inspect where an inherited property or method comes from."
    },
    {
-    "title": "Control object inheritance",
-    "scenario": "Create an object with a deliberate prototype, including a null-prototype dictionary."
+    "title": "Create object links",
+    "scenario": "Build delegation-based object relationships."
    }
   ],
   "related": [
-   "Object.getPrototypeOf()",
    "Object.create()",
+   "Object.getPrototypeOf()",
+   "Object.setPrototypeOf()",
    "Object.prototype",
-   "__proto__",
+   "Constructor.prototype",
+   "property shadowing",
    "prototype chain"
   ],
   "since": "",
+  "interview": [
+   {
+    "question": "How does a prototype chain resolve a property?",
+    "answer": "JavaScript looks for a property on the object first. If it is absent, it checks each prototype in order until it finds the property or reaches null.",
+    "followUp": "What happens when a property exists both on an object and its prototype? The object's own property is used, so it shadows the inherited property."
+   },
+   {
+    "question": "How do you create and inspect a prototype relationship?",
+    "answer": "Object.create(proto) makes a new object whose prototype is proto. The new object can use properties and functions from proto without copying them.",
+    "followUp": "How can you inspect the link? Use Object.getPrototypeOf(object), which returns the object's prototype."
+   },
+   {
+    "question": "What is the role of a constructor's prototype?",
+    "answer": "A constructor's prototype becomes the prototype of objects created with new. Methods placed there can be shared by all those objects through the prototype chain.",
+    "followUp": "Why can long chains be costly? Missing-property lookups traverse the whole chain, and properties high in the chain may take longer to find."
+   }
+  ],
   "keyPoints": [
-   "Objects participate in inheritance through a prototype link.",
-   "Because prototypes are objects too, they can form a chain.",
-   "The terminal prototype is identified by having null as its prototype.",
-   "Property access first checks the receiver, then delegates to its prototype.",
-   "Use Object.getPrototypeOf to inspect an object's prototype without relying on the legacy accessor.",
-   "Object.create constructs an object with a chosen prototype."
+   "Each object has a prototype object that supplies inherited properties.",
+   "The prototype chain stops at null.",
+   "Use Object.getPrototypeOf() to inspect a prototype.",
+   "An own property takes priority over an inherited property with the same name.",
+   "Object.create() creates an object with a chosen prototype.",
+   "For constructor functions, instances use the constructor's prototype object."
   ],
   "gotchas": [
-   "An object's prototype link is distinct from its constructor's prototype property; do not confuse the two.",
-   "A missing property may be searched through multiple prototypes before the lookup ends.",
-   "If no prototype supplies the property, the lookup evaluates to undefined."
+   "Do not use __proto__ to change prototypes in new code. Prefer Object.setPrototypeOf().",
+   "Changing a prototype after object creation can hurt engine optimizations. Set it when creating the object when possible."
   ],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-11-03"
  },
  "Prototype Chain": {
   "sourceUrl": "https://developer.mozilla.org/en-US/docs/Learn_web_development/Extensions/Advanced_JavaScript_objects/Object_prototypes",
@@ -4629,60 +5173,83 @@
   "checkedAt": "2026-10-15"
  },
  "rest parameters": {
-  "sourceUrl": "https://javascript.info/rest-parameters-spread",
-  "sourceTitle": "Rest parameters and spread syntax",
-  "summary": "Rest parameters let a function accept any number of arguments by gathering the remaining arguments into an array. They are written with `...` before the final parameter name.",
-  "explanation": "A rest parameter is written as three dots before the final parameter name in a function declaration. When the function runs, any arguments not assigned to earlier named parameters are collected into that parameter as a real array, so array methods can be used directly.",
-  "syntax": "function name(...rest) { /* body */ }",
+  "sourceUrl": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/rest_parameters...",
+  "sourceTitle": "Rest parameters - JavaScript | MDN",
+  "summary": "Rest parameters let a function accept any number of arguments by collecting extras into an array. Spread syntax uses the same three dots to expand an iterable into separate arguments or values.",
+  "explanation": "A rest parameter starts with `...` in a function declaration and collects all remaining arguments into a real array. Spread syntax also uses `...`, but in a function call or similar expression it expands an iterable, such as an array, into separate values.",
+  "syntax": "function name(required, ...rest) { /* body */ }",
   "parameters": [
    {
-    "name": "args",
-    "type": "parameters",
-    "description": "Named parameters before the rest parameter receive their corresponding arguments."
+    "name": "named parameters",
+    "type": "any",
+    "description": "Named parameters before the rest parameter receive arguments by position."
    },
    {
     "name": "...rest",
-    "type": "array",
-    "description": "The final rest parameter receives all remaining arguments in an array."
+    "type": "Array",
+    "description": "The final rest parameter receives all remaining arguments in a new array."
    }
   ],
-  "returns": "The page does not specify a general return value; the function's own return statement determines its result.",
+  "returns": "A rest parameter itself does not define a return value; the containing function returns whatever its body returns.",
   "example": {
-   "title": "Collecting arguments with a rest parameter",
-   "code": "function sum(...numbers) {\n  return numbers.reduce((total, number) => total + number, 0);\n}\n\nconsole.log(sum(2, 4, 6)); // 12",
+   "title": "Gather and expand arguments",
+   "code": "function sum(first, ...rest) {\n  return first + rest.reduce((total, value) => total + value, 0);\n}\n\nconsole.log(sum(1, 2, 3)); // 6\nconsole.log(Math.max(...[3, 5, 1])); // 5",
    "language": "javascript",
-   "explanation": "The rest parameter gathers all arguments after the function's named parameters into an array."
+   "explanation": "The function keeps the first argument in `first` and gathers later arguments into the `rest` array. The spread syntax then expands an array into separate function arguments."
   },
   "useCases": [
    {
-    "title": "Variadic calculations",
-    "scenario": "A function must accept a variable number of numeric inputs."
+    "title": "Variable-argument functions",
+    "scenario": "A utility needs to accept any number of values."
    },
    {
-    "title": "Argument forwarding",
-    "scenario": "A wrapper forwards an arbitrary number of arguments to another function."
+    "title": "Array operations on arguments",
+    "scenario": "A function needs to process extra values with `map`, `reduce`, or `sort`."
    },
    {
-    "title": "Flexible collection processing",
-    "scenario": "A utility needs direct access to array methods while processing extra inputs."
+    "title": "Calling list-based APIs",
+    "scenario": "An array must be passed to a function that expects separate arguments."
    }
   ],
   "related": [
-   "spread syntax",
    "arguments",
-   "function parameters"
+   "Math.max",
+   "Object.assign",
+   "Array methods",
+   "object spread",
+   "array spread"
   ],
-  "since": "",
+  "since": "September 2016",
+  "interview": [
+   {
+    "question": "What does a rest parameter do?",
+    "answer": "A rest parameter collects the remaining arguments into an array. It must be the final parameter, so `function f(a, ...rest)` stores all arguments after `a` in `rest`.",
+    "followUp": "How does it differ from `arguments`? `arguments` is array-like and includes every argument, while the rest value is a normal array containing only the remaining arguments."
+   },
+   {
+    "question": "What is the difference between rest and spread syntax?",
+    "answer": "Spread syntax expands an iterable into separate values. For example, `Math.max(...numbers)` passes each array element as an individual argument instead of passing the array itself.",
+    "followUp": "Can spread be used with objects? Yes. Object spread creates a shallow copy or combines enumerable properties, but nested objects are still shared."
+   },
+   {
+    "question": "Why prefer rest parameters over `arguments`?",
+    "answer": "Rest parameters are real arrays, so array methods such as `sort`, `map`, and `reduce` can be called directly on them. The older `arguments` object does not support those array methods.",
+    "followUp": "What happens when no extra arguments are supplied? The rest parameter is an empty array, so its `length` is `0`."
+   }
+  ],
   "keyPoints": [
-   "Arguments are gathered into one array rather than being exposed as separate named parameters.",
-   "Functions can receive more arguments than their explicitly named parameters; a rest parameter captures the extras.",
-   "Use rest parameters when designing variadic functions whose input count is not fixed.",
-   "The meaning of `...` depends on its position: at the end of a function parameter list, it is rest syntax."
+   "In a function definition, `...name` gathers the arguments not matched by earlier named parameters into an array.",
+   "In a function call, `...value` expands an iterable into separate arguments.",
+   "The rest array is created from the extra arguments. Later changes to earlier named parameters do not change that array.",
+   "A rest parameter does not increase the function's `length` property.",
+   "The collected rest value can use destructuring patterns, which can skip selected positions."
   ],
   "gotchas": [
-   "A rest parameter must be the function's final parameter; placing another parameter after it is invalid."
+   "A function can have only one rest parameter, and it must be last. A trailing comma and a default value after `...rest` are not allowed.",
+   "`arguments` contains every argument, but it does not provide normal array methods such as `map()` or `sort()`. Rest parameters create a real array.",
+   "An arrow function has no own `arguments` object. If it uses `arguments`, the value comes from the surrounding normal function."
   ],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-11-03"
  },
  "Set uniqueness": {
   "sourceUrl": "https://javascript.info/map-set",
@@ -4759,64 +5326,84 @@
   "checkedAt": "2026-10-15"
  },
  "setTimeout 0": {
-  "sourceUrl": "https://javascript.info/settimeout-setinterval",
-  "sourceTitle": "Scheduling: setTimeout and setInterval",
-  "summary": "setTimeout(func, 0) schedules a callback as soon as possible, but only after the current script completes. It does not mean the callback runs immediately or exactly zero milliseconds later.",
-  "explanation": "Calling setTimeout with a zero delay queues its callback for the earliest possible time. The callback cannot run until the currently executing script completes; in browsers, repeated nested timers can also be subject to a minimum delay.",
-  "syntax": "setTimeout(func, delay)",
+  "sourceUrl": "https://developer.mozilla.org/en-US/docs/Web/API/Window/setTimeout",
+  "sourceTitle": "Window: setTimeout() method - Web APIs | MDN",
+  "summary": "setTimeout runs a function once after a delay. Related timer methods can repeat work or cancel scheduled timers.",
+  "explanation": "setTimeout schedules a function to run once after a delay. setInterval schedules repeated calls at the chosen delay. Both return an identifier that can be passed to the matching clear function to cancel future execution.",
+  "syntax": "setTimeout(func, delay, param1, param2, /* …, */ paramN)",
   "parameters": [
    {
     "name": "func",
-    "type": "function",
-    "description": "The function to schedule for later execution."
+    "type": "Function",
+    "description": "The function to run when the timer expires."
    },
    {
     "name": "delay",
     "type": "number",
-    "description": "Optional delay in milliseconds; use 0 for zero-delay scheduling."
+    "description": "The delay before the timer expires."
+   },
+   {
+    "name": "param1...paramN",
+    "type": "any",
+    "description": "Optional values passed to the function after the delay."
    }
   ],
-  "returns": "A timer identifier that can be used to cancel the scheduled timeout.",
+  "returns": "A timer identifier that can be used to cancel the scheduled timer.",
   "example": {
-   "title": "Run after the current script",
-   "code": "console.log(\"Hello\");\nsetTimeout(() => console.log(\"World\"), 0);",
+   "title": "Schedule and cancel timers",
+   "code": "const timerId = setTimeout(() => {\n  console.log(\"Runs once\");\n}, 1000);\n\nclearTimeout(timerId);\n\nlet count = 0;\nconst intervalId = setInterval(() => {\n  console.log(++count);\n  if (count === 3) clearInterval(intervalId);\n}, 1000);",
    "language": "javascript",
-   "explanation": "The callback is queued for the earliest possible time, but it runs only after the current script finishes, so the output is Hello followed by World."
+   "explanation": "The timeout is cancelled before it can run. The interval prints three values, then stops itself."
   },
   "useCases": [
    {
-    "title": "Postpone follow-up work",
-    "scenario": "Defer work until synchronous initialization has completed."
+    "title": "One-time delay",
+    "scenario": "Run delayed work once, such as showing a message after a pause."
    },
    {
-    "title": "Keep long work responsive",
-    "scenario": "Split a large calculation into smaller chunks so the browser can process other tasks between them."
+    "title": "Repeated work",
+    "scenario": "Repeat work on a schedule, such as polling for updates."
    },
    {
-    "title": "Defer event-handler effects",
-    "scenario": "Run an action after an event has finished bubbling."
+    "title": "Timer cancellation",
+    "scenario": "Stop work when it is no longer needed."
    }
   ],
   "related": [
-   "setTimeout",
    "setInterval",
-   "event loop",
-   "macrotask"
+   "clearTimeout",
+   "clearInterval",
+   "Window"
   ],
   "since": "",
+  "interview": [
+   {
+    "question": "What is the difference between setTimeout and setInterval?",
+    "answer": "setTimeout schedules a function for one later call after the delay expires. setInterval schedules repeated calls using the interval.",
+    "followUp": "How can a repeating timer be stopped? Pass the identifier returned by setInterval to clearInterval."
+   },
+   {
+    "question": "What arguments does setTimeout accept?",
+    "answer": "The function is the work to run, and the delay is the time in milliseconds before the timer expires. Extra arguments can be passed after the delay and are given to the function.",
+    "followUp": "What should be used instead of a string of code? Pass a function, not a string, to avoid dynamic code execution."
+   },
+   {
+    "question": "How do you cancel a timeout?",
+    "answer": "Store the returned timer identifier and pass it to clearTimeout. This prevents the scheduled timeout from running if it has not already executed.",
+    "followUp": "How is an interval cancelled? Use clearInterval with the identifier returned by setInterval."
+   }
+  ],
   "keyPoints": [
-   "The zero-delay form can be written with an explicit 0 or with the delay omitted.",
-   "The callback is scheduled for the earliest time the scheduler can run it.",
-   "Execution occurs after the current script, not in the middle of it.",
-   "The scheduler records the callback as ready after the nominal delay.",
-   "Synchronous code already in progress runs before the timeout callback."
+   "setTimeout runs a function one time after its timer expires.",
+   "setInterval starts after its delay and then keeps calling the function at that interval.",
+   "A timer can receive additional arguments after the delay; these arguments are passed to the callback.",
+   "The delay is optional in the documented setTimeout forms."
   ],
   "gotchas": [
-   "A zero delay does not interrupt the current script; the callback waits until that script finishes.",
-   "In browsers, repeated nested zero-delay timers may be forced to wait at least 4 ms.",
-   "The requested delay is not an exact execution-time guarantee."
+   "Avoid passing code as a string. Use a function instead, because string execution can create a cross-site scripting risk.",
+   "setTimeout runs only once. Use setInterval when the task must repeat."
   ],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-11-03"
  },
  "Short Circuit Evaluation": {
   "sourceUrl": "https://javascript.info/logical-operators",
@@ -4953,53 +5540,141 @@
   ],
   "checkedAt": "2026-10-15"
  },
+ "Stack vs Heap": {
+  "sourceUrl": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Execution_model",
+  "sourceTitle": "JavaScript execution model - JavaScript | MDN",
+  "summary": "JavaScript runs through an engine together with a host environment. The engine implements the language, while the host adds platform-specific features and access to the outside world.",
+  "explanation": "JavaScript uses an execution context to track the state needed while code runs. The engine manages a stack of active contexts, while objects and functions are stored in memory managed by the engine. The host environment supplies features outside the core language, such as timers or input and output. The exact runtime behavior depends on the host.",
+  "syntax": "",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "A function call creates an execution context",
+   "code": "const user = { name: \"Ada\" };\n\nfunction greet(person) {\n  return `Hello, ${person.name}`;\n}\n\nconsole.log(greet(user));",
+   "language": "javascript",
+   "explanation": "The object is stored in memory, and the function call creates an execution context for running its body."
+  },
+  "useCases": [
+   {
+    "title": "Separate language from platform APIs",
+    "scenario": "Explaining why browser APIs are not part of the JavaScript language itself."
+   },
+   {
+    "title": "Understand running code",
+    "scenario": "Reasoning about what happens when a function is called."
+   },
+   {
+    "title": "Compare host environments",
+    "scenario": "Comparing JavaScript behavior across browsers and runtimes."
+   }
+  ],
+  "related": [
+   "JavaScript engine",
+   "host environment",
+   "execution context",
+   "execution context stack",
+   "ECMAScript"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is an execution context?",
+    "answer": "An execution context contains the state needed to run JavaScript code. The execution context stack tracks which context is currently running and returns to the previous one when a call finishes.",
+    "followUp": "How does an asynchronous callback fit this model? The host schedules work, and the callback runs later in a new execution context when the host allows it to run."
+   },
+   {
+    "question": "What is the difference between the JavaScript engine and the host environment?",
+    "answer": "The JavaScript engine implements the ECMAScript language. The host environment adds mechanisms that let code interact with external resources and the surrounding platform.",
+    "followUp": "Why can the same JavaScript code behave differently in a browser and another runtime? The host-provided APIs and scheduling behavior can differ even when the language engine follows the same ECMAScript rules."
+   },
+   {
+    "question": "Does the execution model describe the engine's physical implementation?",
+    "answer": "The abstract model describes language semantics, but implementations can optimize it. Therefore, the conceptual stack and memory model should not be treated as a promise about physical machine structures.",
+    "followUp": "Can engine optimization change the language result? It may change internal representation and execution strategy, but it must preserve the specified observable behavior."
+   }
+  ],
+  "keyPoints": [
+   "The JavaScript engine parses JavaScript source code and executes it according to the language rules.",
+   "Running JavaScript involves both the language engine and the environment that embeds it.",
+   "The engine turns source text into an executable form and runs it.",
+   "Host mechanisms let JavaScript communicate with resources outside the language itself."
+  ],
+  "gotchas": [
+   "The execution model is a specification model, not a complete description of how every browser or runtime implements JavaScript.",
+   "Do not assume that the abstract model maps directly to physical memory or internal engine data structures.",
+   "JavaScript alone does not provide every external capability; the host environment supplies environment-specific mechanisms."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "Strict Mode": {
-  "sourceUrl": "https://javascript.info/strict-mode",
-  "sourceTitle": "The modern mode, \"use strict\"",
-  "summary": "Strict mode is enabled with the \"use strict\" directive at the top of a script or function. It changes JavaScript to a stricter execution mode; classes and modules enable it automatically.",
-  "explanation": "Strict mode is enabled by placing the exact directive \"use strict\" at the beginning of a script or function. A script-level directive affects the whole script, while a function-level directive affects only that function. Classes and modules enable strict mode automatically.",
+  "sourceUrl": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Strict_mode",
+  "sourceTitle": "Strict mode - JavaScript | MDN",
+  "summary": "Strict mode is a restricted form of JavaScript with different syntax and runtime behavior. Enable it with \"use strict\" at the start of a script or function; modules and classes enable it automatically.",
+  "explanation": "Strict mode is a restricted form of JavaScript that changes some syntax and runtime behavior. Add the exact directive at the start of a script or simple-parameter function; modules and class bodies use strict mode automatically.",
   "syntax": "\"use strict\";",
   "parameters": [],
   "returns": "",
   "example": {
-   "title": "Strict mode rejects accidental globals",
-   "code": "'use strict';\n\nfunction assignUndeclared() {\n  undeclared = 1;\n}\n\ntry {\n  assignUndeclared();\n} catch (error) {\n  console.log(error instanceof ReferenceError);\n}",
+   "title": "Enable strict mode",
+   "code": "\"use strict\";\n\nfunction showThis() {\n  return this;\n}\n\nconsole.log(showThis.call(null)); // null\nundeclared = 1; // ReferenceError",
    "language": "javascript",
-   "explanation": "The strict function throws instead of silently creating a global variable."
+   "explanation": "The directive enables strict mode for the script. The function keeps the exact this value, and the undeclared assignment throws an error."
   },
   "useCases": [
    {
-    "title": "Script-wide validation",
-    "scenario": "Enable stricter checks in a traditional script."
+    "title": "Check classic scripts",
+    "scenario": "Use it in a classic script to detect mistakes such as undeclared assignments early."
    },
    {
-    "title": "Function-scoped strict mode",
-    "scenario": "Constrain legacy code to a stricter function body."
+    "title": "Limit the scope",
+    "scenario": "Use it in one function when only that function should use strict semantics."
    },
    {
-    "title": "Automatic strict mode",
-    "scenario": "Use classes or modules without adding a directive."
+    "title": "Use modern code structures",
+    "scenario": "Use modules or classes when you want strict behavior without adding the directive."
    }
   ],
   "related": [
-   "classes",
+   "sloppy mode",
+   "eval",
+   "arguments",
    "modules",
-   "scripts",
-   "functions"
+   "classes",
+   "with"
   ],
-  "since": "",
+  "since": "ECMAScript 5 (ES5)",
+  "interview": [
+   {
+    "question": "How do you enable strict mode?",
+    "answer": "Use the exact statement \"use strict\"; before other statements in a script or function body. A script directive affects the script, while a function directive affects only that function.",
+    "followUp": "How do modules differ? Module contents are strict automatically, so no directive is needed."
+   },
+   {
+    "question": "What behavior changes in strict mode?",
+    "answer": "Strict mode turns several silent failures into errors. Examples include assigning to an undeclared variable, writing to a non-writable property, and deleting an undeletable property.",
+    "followUp": "What happens with a failed assignment to a non-extensible object? Strict mode throws a TypeError instead of ignoring the assignment."
+   },
+   {
+    "question": "How does strict mode affect this and arguments?",
+    "answer": "In strict mode, a function's this value is not replaced with the global object or boxed when called with null, undefined, or a primitive. The arguments object also does not stay synchronized with named parameters.",
+    "followUp": "What happens when a strict function changes a parameter? Its corresponding arguments entry keeps the original argument value."
+   }
+  ],
   "keyPoints": [
-   "Use the exact string directive to opt a script into strict mode.",
-   "At script level, the directive applies to the entire script.",
-   "Placing the directive at the beginning of a function limits strict mode to that function.",
-   "Classes and modules activate strict mode automatically, so an explicit directive is unnecessary there.",
-   "Strict mode is one-way for the current execution context."
+   "It is an opt-in language mode, not merely a smaller set of JavaScript features.",
+   "You can enable it gradually because strict and non-strict code may exist in the same program.",
+   "Use the directive at the beginning of a script to apply strict mode to that whole script.",
+   "The with statement is not allowed because it makes variable lookup unpredictable.",
+   "Variables declared by strict eval stay inside the evaluated code and do not leak outward.",
+   "A strict function cannot declare two parameters with the same name."
   ],
   "gotchas": [
-   "The directive must appear at the top of the script; code before it can prevent strict mode from being enabled.",
-   "Strict mode cannot be turned off once execution has entered it."
+   "Put the directive before other statements. Code before it means it will not enable strict mode for the whole script.",
+   "A function with default, rest, or destructured parameters cannot contain this directive; doing so is a syntax error.",
+   "Placing the directive inside an ordinary block does not enable strict mode for that block.",
+   "Modules do not need the directive, and class bodies are strict automatically as well."
   ],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-11-03"
  },
  "String coercion": {
   "sourceUrl": "https://javascript.info/type-conversions",
@@ -5277,6 +5952,92 @@
    "Returning an object from the hook is invalid and causes primitive conversion to fail with a TypeError."
   ],
   "checkedAt": "2026-10-15"
+ },
+ "Tagged Templates": {
+  "sourceUrl": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Template_literals",
+  "sourceTitle": "Template literals (Template strings) - JavaScript | MDN",
+  "summary": "Template literals use backticks for strings. They support multiline text, `${...}` interpolation, and tagged templates that let a function process the parts.",
+  "explanation": "A template literal uses backticks instead of single or double quotes. Text can span lines, and `${...}` inserts the value of an expression. A tag function can receive the text parts and expression values, then return a string or another value.",
+  "syntax": "`string text`\n`string text ${expression} string text`\ntagFunction`string text ${expression} string text`",
+  "parameters": [
+   {
+    "name": "string text",
+    "type": "text",
+    "description": "Literal text, including ordinary characters, line breaks, and whitespace."
+   },
+   {
+    "name": "expression",
+    "type": "expression",
+    "description": "An expression whose value is inserted into the text or passed to the tag."
+   },
+   {
+    "name": "tagFunction",
+    "type": "function",
+    "description": "A function that receives the template parts and expression values."
+   }
+  ],
+  "returns": "An interpolated string without a tag, or the value returned by the tag function.",
+  "example": {
+   "title": "Interpolation with expressions",
+   "code": "const name = \"Ada\";\nconst score = 42;\nconst message = `Hello, ${name}. Score: ${score}.`;\nconsole.log(message);",
+   "language": "javascript",
+   "explanation": "This creates one string from fixed text and two expression results."
+  },
+  "useCases": [
+   {
+    "title": "String interpolation",
+    "scenario": "Build text from fixed content and changing values."
+   },
+   {
+    "title": "Multiline strings",
+    "scenario": "Write text that contains line breaks directly."
+   },
+   {
+    "title": "Tagged templates",
+    "scenario": "Process literal parts and inserted values with custom logic."
+   },
+   {
+    "title": "Raw content",
+    "scenario": "Keep escape sequences in raw form for special text formats."
+   }
+  ],
+  "related": [
+   "Tagged templates",
+   "String.raw",
+   "escape sequences",
+   "placeholders"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you insert a value into a template literal?",
+    "answer": "Use backticks around the text. Put an expression inside `${...}`. Its value is converted to text and inserted at that position.",
+    "followUp": "Can the expression contain a conditional? Yes. Any expression can be placed inside the braces, including a conditional expression."
+   },
+   {
+    "question": "What is a tagged template?",
+    "answer": "A tag is placed directly before the backtick. The tag receives an array of string parts first, followed by the values produced by the embedded expressions. It can return a string or another value.",
+    "followUp": "What does the tag receive for `tag`a${b}c`? It receives the text parts and the evaluated value of `b` as separate arguments."
+   },
+   {
+    "question": "How do multiline text and escapes work?",
+    "answer": "A normal template literal can contain line breaks directly. It also supports escape sequences. An invalid escape sequence is a syntax error unless the literal is tagged.",
+    "followUp": "Why might a tag use raw text? The tag can access raw literal text, so it can support content with escape rules different from JavaScript's."
+   }
+  ],
+  "keyPoints": [
+   "Use backticks rather than single or double quotes.",
+   "Write `${expression}` to place an expression inside the text.",
+   "Template literals can contain line breaks and other whitespace without special string-concatenation code.",
+   "A tag controls the final result, which does not have to be a string.",
+   "The first tag argument is the array of literal text segments; expression results follow it."
+  ],
+  "gotchas": [
+   "Malformed escape sequences fail in an untagged template literal. Tagged templates handle them differently.",
+   "Do not chain two ordinary template literals. The first one is a string, not a callable function.",
+   "Optional chaining cannot be used before a tagged template literal."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "Tail Call": {
   "sourceUrl": "https://javascript.info/recursion",
@@ -5558,63 +6319,88 @@
   "checkedAt": "2026-10-15"
  },
  "this binding": {
-  "sourceUrl": "https://javascript.info/bind",
-  "sourceTitle": "Function Binding",
-  "summary": "JavaScript’s `this` for regular functions comes from the call form, not the definition. Use `bind` to create a callable function with a fixed `this` and optional initial arguments.",
-  "explanation": "For regular functions, `this` is selected when the function is called. Calling through `object.method()` makes the object the receiver; extracting the method removes that receiver, while `bind` creates a callable function with a fixed `this`. Arrow functions instead use the surrounding lexical `this`.",
-  "syntax": "let bound = func.bind(context, [arg1], [arg2], ...);",
+  "sourceUrl": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/this",
+  "sourceTitle": "this - JavaScript | MDN",
+  "summary": "In JavaScript, this is the value used as the current execution context. For regular functions, the call form chooses it; arrow functions inherit it from their surrounding scope.",
+  "explanation": "For a regular function, this is chosen when the function is called. A call such as object.method() uses object as this, while a detached call uses the global object in non-strict mode or undefined in strict mode. Arrow functions do not create their own this; they keep it from the surrounding scope. Constructors use the new object as this.",
+  "syntax": "this",
   "parameters": [
    {
-    "name": "context",
+    "name": "thisArg",
     "type": "any",
-    "description": "The object or value to use as `this` when the bound function is called."
+    "description": "The value passed as this to the target function when the bound function runs."
    },
    {
-    "name": "args",
-    "type": "any[]",
-    "description": "Optional leading arguments supplied to the original function before call-time arguments."
+    "name": "arg1, …, argN",
+    "type": "any",
+    "description": "Optional arguments stored by bind and placed before arguments supplied later."
    }
   ],
-  "returns": "A bound variant of the original function with the selected `this` value and any preset leading arguments.",
+  "returns": "A new bound function that calls the target function with the selected this value and any stored arguments.",
   "example": {
-   "title": "Method calls and bind",
-   "code": "const user = { name: \"Ada\", show() { return this.name; } };\nconst detached = user.show;\nconsole.log(detached());\nconsole.log(user.show());\n\nconst bound = user.show.bind(user);\nconsole.log(bound());",
+   "title": "Set this for a function call",
+   "code": "const user = {\n  name: \"Ada\",\n  greet() {\n    return `Hello, ${this.name}`;\n  },\n};\n\nconst greet = user.greet;\nconsole.log(greet.call(user));\nconst fixedGreet = greet.bind(user);\nconsole.log(fixedGreet());",
    "language": "javascript",
-   "explanation": "The method call supplies the object as `this`; detaching the function loses that receiver, while `bind` preserves it."
+   "explanation": "The method reads the name from its receiver. call() sets this for one call, while bind() creates a new function that keeps the chosen this value."
   },
   "useCases": [
    {
-    "title": "Preserve a method receiver",
-    "scenario": "Passing an object method as a timer or callback."
+    "title": "Object methods",
+    "scenario": "Read or update data through an object method."
    },
    {
-    "title": "Fix the calling context",
-    "scenario": "Reusing one function with a chosen object context."
+    "title": "Callbacks",
+    "scenario": "Keep a class instance available inside a callback."
    },
    {
-    "title": "Partially apply arguments",
-    "scenario": "Supplying arguments before a callback is invoked."
+    "title": "Constructors",
+    "scenario": "Create an object and initialize its properties."
+   },
+   {
+    "title": "Function control",
+    "scenario": "Choose a receiver for a single call or create a function with a fixed receiver."
    }
   ],
   "related": [
-   "bind()",
-   "arrow functions",
-   "object methods",
-   "setTimeout"
+   "Function.prototype.bind()",
+   "Function.prototype.call()",
+   "Function.prototype.apply()",
+   "globalThis",
+   "super"
   ],
-  "since": "",
+  "since": "July 2015",
+  "interview": [
+   {
+    "question": "How is this chosen for a regular function?",
+    "answer": "For a regular function, this depends on the call form. In obj.method(), it is obj; in a standalone call, it is the global object in non-strict mode and undefined in strict mode.",
+    "followUp": "What happens when the function is called with new? this is bound to the new object, unless the constructor returns a non-primitive object."
+   },
+   {
+    "question": "How does this differ in an arrow function?",
+    "answer": "An arrow function captures this from its surrounding lexical scope when it is created. It has no own this binding, so call(), apply(), and bind() cannot change it.",
+    "followUp": "Why can an arrow function be useful in a callback? It preserves the surrounding method or class instance context without requiring a separate bound function."
+   },
+   {
+    "question": "What does Function.prototype.bind() do?",
+    "answer": "bind() returns a new function with this fixed to the supplied value. It can also store arguments that are placed before arguments supplied during a later call.",
+    "followUp": "How does bind() differ from call()? call() invokes the target immediately, while bind() creates a function for later use."
+   }
+  ],
   "keyPoints": [
-   "For ordinary functions, invocation style determines `this`; the function's definition location does not.",
-   "`bind` returns another callable function-like value rather than changing the original function.",
-   "Calling the bound result behaves like calling the original function with the selected context.",
-   "`bind` can preset both the receiver and leading arguments.",
-   "Use `bind` when an object method must be handed to a callback without losing its receiver."
+   "A regular function gets its this value from the way it is called, not from where the function was written.",
+   "In the call object.method(), this is the object before the dot.",
+   "bind() creates another function that keeps the selected this value when called.",
+   "call() and apply() choose this for one invocation rather than permanently changing the original function.",
+   "An arrow function takes this from the surrounding scope instead of creating a new one.",
+   "With new, this starts as the object being constructed.",
+   "A getter or setter receives as this the object used to access the property."
   ],
   "gotchas": [
-   "Passing a method as a callback can lose its object receiver, so `this` may no longer refer to the original object.",
-   "A bound function keeps the chosen context and initial arguments from the moment `bind` is called."
+   "An arrow function cannot receive a new this value from call(), apply(), or bind(). It keeps the value from its enclosing scope.",
+   "A derived class constructor must call super() before it reads this or returns without returning an object.",
+   "If a constructor returns an object, that returned object becomes the result instead of the object initially assigned to this."
   ],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-11-03"
  },
  "Throttle": {
   "sourceUrl": "https://javascript.info/task/throttle",
@@ -5693,60 +6479,76 @@
   "checkedAt": "2026-10-15"
  },
  "Trailing commas": {
-  "sourceUrl": "https://javascript.info/array",
-  "sourceTitle": "Arrays",
-  "summary": "Trailing commas may follow the final item in many JavaScript comma-separated lists. They are optional, preserve semantics, and make multiline edits cleaner, but JSON and rest parameters have different rules.",
-  "explanation": "A trailing comma is an optional comma after the final item in a comma-separated JavaScript list. It does not change the meaning of supported arrays, objects, parameters, calls, imports, exports, or destructuring, and it makes multiline edits easier; JSON does not permit it.",
-  "syntax": "const array = [item,];\nconst object = { key: value, };\nfunction fn(parameter,) {}",
+  "sourceUrl": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Trailing_commas",
+  "sourceTitle": "Trailing commas - JavaScript | MDN",
+  "summary": "A trailing comma is an optional comma after the last item in a JavaScript list. It is allowed in many JavaScript constructs, but JSON does not allow it.",
+  "explanation": "A trailing comma is an optional comma after the last item in a JavaScript comma-separated list. JavaScript allows it in arrays, objects, function parameters and calls, imports, exports, and destructuring. It can make edits to multiline lists smaller, but JSON does not allow trailing commas.",
+  "syntax": "[item1, item2,]\n({ key1: value1, key2: value2, })\nfunction name(param1, param2,) {}\nname(arg1, arg2,)",
   "parameters": [],
   "returns": "",
   "example": {
-   "title": "Trailing commas in common JavaScript lists",
-   "code": "const fruits = [\n  \"Apple\",\n  \"Orange\",\n  \"Plum\",\n];\n\nconst user = {\n  name: \"John\",\n  age: 30,\n};\n\nfunction greet(name,) {\n  return `Hello, ${name}`;\n}\n\nconsole.log(greet(\"Ada\"));",
+   "title": "Trailing commas in arrays and parameters",
+   "code": "const values = [\n  1,\n  2,\n  3,\n];\n\nfunction add(a, b,) {\n  return a + b;\n}\n\nconsole.log(add(...values.slice(0, 2)));",
    "language": "javascript",
-   "explanation": "This runnable example uses optional trailing commas in an array, object, and function parameter list."
+   "explanation": "The commas after the last array item and parameter are optional. They do not add values or parameters."
   },
   "useCases": [
    {
-    "title": "Adding or removing array items",
-    "scenario": "Maintaining multiline arrays"
+    "title": "Maintain multiline lists",
+    "scenario": "Keep a multiline array or object easy to edit when adding, removing, or reordering items."
    },
    {
-    "title": "Editing object properties",
-    "scenario": "Maintaining multiline objects"
+    "title": "Create smaller diffs",
+    "scenario": "Make version-control diffs show the actual added or removed item instead of changing the previous last line."
    },
    {
-    "title": "Keeping parameter diffs focused",
-    "scenario": "Declaring functions with multiline parameters"
-   },
-   {
-    "title": "Using a uniform final-comma style",
-    "scenario": "Formatting JavaScript source consistently"
+    "title": "Format function interfaces",
+    "scenario": "Use the same list formatting for function parameters and calls."
    }
   ],
   "related": [
    "Array literals",
    "Object literals",
-   "Function parameter lists",
+   "Function parameters",
    "Function calls",
-   "Destructuring",
    "Named imports",
-   "Named exports"
+   "Named exports",
+   "Dynamic import",
+   "Array destructuring"
   ],
-  "since": "",
+  "since": "July 2015",
+  "interview": [
+   {
+    "question": "What is a trailing comma?",
+    "answer": "A trailing comma is a comma after the last item in a comma-separated JavaScript list. It is optional and does not change the program's meaning.",
+    "followUp": "Where can it be used? It is supported in arrays, objects, function parameters and calls, named imports and exports, dynamic imports, and destructuring."
+   },
+   {
+    "question": "What happens to a trailing comma in an array?",
+    "answer": "A final comma in an array literal does not create another array value, so `[1, 2,]` has length 2. More than one final comma creates an array hole.",
+    "followUp": "What happens to holes in `map()`? Array holes are skipped by `Array.prototype.map()`."
+   },
+   {
+    "question": "Where are trailing commas illegal?",
+    "answer": "A trailing comma is not valid after a rest parameter or rest element. Examples such as `function f(...items,) {}` and `const [first, ...rest,] = values` cause syntax errors.",
+    "followUp": "Is JSON different? Yes. JSON disallows all trailing commas, including in arrays and objects."
+   }
+  ],
   "keyPoints": [
-   "Arrays may end with an optional trailing comma.",
-   "Object literals may place a comma after their final property.",
-   "Trailing commas are supported in several comma-separated JavaScript constructs.",
-   "Removing or adding a supported trailing comma does not alter program behavior.",
-   "In multiline lists, this style simplifies adding, removing, and rearranging entries."
+   "Trailing commas can appear in many JavaScript lists, including arrays, objects, parameters, calls, imports, exports, and destructuring.",
+   "Adding or removing one final comma does not change what valid JavaScript does.",
+   "In multiline lists, a final comma can make adding, removing, or reordering items require fewer changed lines.",
+   "An array literal may end with one trailing comma, as in `[1, 2, 3,]`, without adding an element.",
+   "Object literals may also end each multiline property list with a final comma.",
+   "Function declarations, arrow functions, and class or object methods may use a final comma after their last parameter."
   ],
   "gotchas": [
-   "A rest parameter must be the final parameter, so a comma after it is a syntax error.",
-   "Do not use trailing commas in JSON, even though the corresponding JavaScript array or object may allow them.",
-   "An extra comma in an array can create a sparse-array hole rather than merely adding another harmless trailing comma."
+   "Using multiple commas at the end of an array creates an empty slot. Avoid this when you do not want a sparse array.",
+   "Do not put a comma after a rest parameter, such as `function f(...items,) {}`. This causes a syntax error.",
+   "A destructuring pattern cannot place a comma after its rest element, such as `const [first, ...rest,] = values`.",
+   "JSON rejects trailing commas. Remove the final comma before passing JSON text to `JSON.parse()`."
   ],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-11-03"
  },
  "Truthy and Falsy": {
   "sourceUrl": "https://javascript.info/logical-operators",
@@ -6230,64 +7032,81 @@
   "checkedAt": "2026-10-15"
  },
  "WeakMap GC": {
-  "sourceUrl": "https://javascript.info/weakmap-weakset",
-  "sourceTitle": "WeakMap and WeakSet",
-  "summary": "WeakMap associates values with object keys without preventing those keys from being garbage-collected. Its entries cannot be enumerated, and cleanup timing is controlled by the JavaScript engine.",
-  "explanation": "A WeakMap stores values under object keys without strongly retaining those keys. When a key has no other references, the engine may collect the key and its associated value; cleanup timing is implementation-dependent, and the collection cannot be enumerated.",
-  "syntax": "new WeakMap(); weakMap.set(key, value); weakMap.get(key); weakMap.has(key); weakMap.delete(key)",
+  "sourceUrl": "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/WeakMap",
+  "sourceTitle": "WeakMap - JavaScript | MDN",
+  "summary": "WeakMap stores values with object or non-registered symbol keys without keeping those keys alive. This makes it useful for metadata that should disappear when its key is garbage-collected.",
+  "explanation": "A WeakMap stores values under object or non-registered symbol keys. Its keys are held weakly, so using an object as a key does not stop garbage collection. When the key is collected, its entry can also be collected if nothing else keeps the value alive.",
+  "syntax": "new WeakMap();\nnew WeakMap(iterable);",
   "parameters": [
    {
     "name": "key",
-    "type": "object",
-    "description": "The object used as the weak key."
+    "type": "object | non-registered symbol",
+    "description": "The object or non-registered symbol used to identify the entry."
    },
    {
     "name": "value",
     "type": "any",
-    "description": "The value associated with the key; it may be any JavaScript value."
+    "description": "The JavaScript value stored for the key."
    }
   ],
-  "returns": "WeakMap methods return the associated value, a boolean for has/delete, or the WeakMap instance for set; the page specifically lists get, set, delete, and has.",
+  "returns": "The WeakMap constructor creates a weak key/value collection. Its get() method returns the value for a key, or undefined when no entry exists; has() returns a Boolean; delete() returns a Boolean.",
   "example": {
-   "title": "Associate metadata without preventing collection",
-   "code": "const metadata = new WeakMap();\n\nlet user = { name: \"John\" };\nmetadata.set(user, { lastLogin: new Date() });\n\nconsole.log(metadata.get(user));\nuser = null; // The object and associated metadata may be collected later.",
+   "title": "Store object metadata",
+   "code": "const metadata = new WeakMap();\n\nlet user = { name: \"Ada\" };\nmetadata.set(user, { lastLogin: \"today\" });\n\nconsole.log(metadata.get(user));\nconsole.log(metadata.has(user));\n\nuser = null; // The old key may now be garbage-collected.",
    "language": "javascript",
-   "explanation": "The metadata is associated with the object without keeping that object alive."
+   "explanation": "The map stores metadata for the object without keeping that object alive."
   },
   "useCases": [
    {
     "title": "Object metadata",
-    "scenario": "Attach cached or computed metadata to objects without extending their lifetime."
+    "scenario": "Attach private or temporary metadata to an object without adding a visible property."
    },
    {
-    "title": "Ephemeral associations",
-    "scenario": "Store auxiliary data for objects managed by another collection or subsystem."
+    "title": "Object-based caching",
+    "scenario": "Associate cached results with objects while allowing unused objects and their results to be collected."
    },
    {
-    "title": "Leak-resistant caching",
-    "scenario": "Avoid memory retention when associated objects become unreachable."
+    "title": "External object state",
+    "scenario": "Keep state for objects managed by another part of a program without extending their lifetime."
    }
   ],
   "related": [
    "Map",
    "WeakSet",
    "garbage collection",
-   "weak references"
+   "WeakMap.prototype.get()",
+   "WeakMap.prototype.set()",
+   "WeakMap.prototype.has()",
+   "WeakMap.prototype.delete()"
   ],
-  "since": "",
+  "since": "July 2015",
+  "interview": [
+   {
+    "question": "What is a WeakMap?",
+    "answer": "A WeakMap is a collection of key/value pairs. Its keys must be objects or non-registered symbols, and its weak references do not keep those keys from being garbage-collected.",
+    "followUp": "Why can a value still refer to its key? The WeakMap does not strongly retain the key, so the key can still be collected when no outside strong reference keeps it alive."
+   },
+   {
+    "question": "How do you work with WeakMap entries?",
+    "answer": "Use set(key, value) to add an entry, get(key) to read it, has(key) to test it, and delete(key) to remove it. The key must meet the WeakMap key rules.",
+    "followUp": "What happens when get() receives a key that is not present? It returns undefined."
+   },
+   {
+    "question": "Why is WeakMap not iterable?",
+    "answer": "WeakMap does not provide normal collection inspection such as listing every key. This prevents observing keys whose lifetime depends on garbage collection.",
+    "followUp": "When should Map be used instead? Use Map when you need iteration, collection size, or keys of any JavaScript type."
+   }
+  ],
   "keyPoints": [
-   "Unlike Map, WeakMap does not keep its object keys alive solely because they are keys.",
-   "A key can become collectible when no other strong reference reaches it.",
-   "When the key becomes unreachable elsewhere, its entry is eventually removed along with the key.",
-   "WeakMap is useful for attaching auxiliary data whose lifetime follows an object.",
-   "set(key, value) adds or replaces the value associated with an object key.",
-   "get(key) retrieves the value associated with the key."
+   "Each entry associates one permitted key with one value.",
+   "Values can be objects, functions, primitives, or other JavaScript values.",
+   "A symbol key is allowed only when it is non-registered.",
+   "This key restriction lets the garbage collector track the key safely.",
+   "The related value becomes eligible for collection too, unless another strong reference keeps it."
   ],
   "gotchas": [
-   "Do not rely on immediate cleanup: the JavaScript engine chooses when garbage collection occurs.",
-   "You cannot inspect all entries or use keys(), values(), or entries() to observe which keys remain.",
-   "Primitive values such as strings and numbers cannot be used as keys."
+   "A key can be garbage-collected after other strong references to it disappear. Do not use a WeakMap when you need predictable iteration or size."
   ],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-11-03"
  }
 }

@@ -264,6 +264,262 @@
   ],
   "checkedAt": "2026-10-15"
  },
+ "client.get": {
+  "sourceUrl": "https://www.python-httpx.org/async/",
+  "sourceTitle": "Async Support - HTTPX",
+  "summary": "`httpx.AsyncClient` sends HTTP requests with Python's async/await syntax. Await its request methods and manage the client with `async with` or `aclose()`.",
+  "explanation": "`client.get()` is an asynchronous method, so call it with `await`. Use `async with` to manage the client's lifetime. The client supports connection pooling and can be shared between tasks.",
+  "syntax": "async with httpx.AsyncClient() as client:\n    response = await client.get(url)",
+  "parameters": [
+   {
+    "name": "method",
+    "type": "str",
+    "description": "HTTP method for the request, such as GET or POST."
+   },
+   {
+    "name": "url",
+    "type": "URL or str",
+    "description": "The request URL."
+   },
+   {
+    "name": "**options",
+    "type": "varies",
+    "description": "Optional request body, query parameters, headers, cookies, authentication, timeout, redirect, transport, and client configuration arguments."
+   }
+  ],
+  "returns": "Response",
+  "example": {
+   "title": "Send an asynchronous GET request",
+   "code": "import httpx\n\nasync def fetch(url: str) -> httpx.Response:\n    async with httpx.AsyncClient() as client:\n        return await client.get(url)",
+   "language": "python",
+   "explanation": "Creates an asynchronous client, sends a GET request, and closes the client when the block ends."
+  },
+  "useCases": [
+   {
+    "title": "Make outgoing requests from async code",
+    "scenario": "An async web application needs to call another HTTP service without blocking its event loop."
+   },
+   {
+    "title": "Stream response data",
+    "scenario": "A large response should be processed as it arrives instead of loaded all at once."
+   },
+   {
+    "title": "Upload streamed data",
+    "scenario": "A request body is produced gradually by asynchronous code."
+   },
+   {
+    "title": "Share a pooled client",
+    "scenario": "A client needs to be reused across concurrent operations."
+   }
+  ],
+  "related": [
+   "AsyncClient.options",
+   "AsyncClient.head",
+   "AsyncClient.post",
+   "AsyncClient.put",
+   "AsyncClient.patch",
+   "AsyncClient.delete",
+   "AsyncClient.request",
+   "AsyncClient.send"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you make a GET request with HTTPX asynchronously?",
+    "answer": "`AsyncClient.get()` is asynchronous, so the call must be awaited. An `AsyncClient` can be used with `async with` to close it automatically.",
+    "followUp": "What happens if a client is created repeatedly in a hot loop? Connection pooling becomes less effective, so reuse one client instead."
+   },
+   {
+    "question": "How do you read a streaming response?",
+    "answer": "Use `async with client.stream(\"GET\", url) as response:` and iterate with an async method such as `response.aiter_bytes()`. The stream block closes the response when it exits.",
+    "followUp": "How would you stream manually? Build or create a request, call `await client.send(request, stream=True)`, and ensure `await response.aclose()` runs later."
+   },
+   {
+    "question": "How do you send a streaming request body?",
+    "answer": "An async request body should be an async bytes generator. Pass its result as the `content` argument, for example `content=upload_bytes()`.",
+    "followUp": "Which transport should be used when creating one directly? Use `httpx.AsyncHTTPTransport`, not the synchronous transport."
+   }
+  ],
+  "keyPoints": [
+   "Use `httpx.AsyncClient` for asynchronous HTTP requests.",
+   "Await request methods such as `get`, `post`, `request`, and `send`.",
+   "A context-managed client closes its resources when the `async with` block ends.",
+   "Use `AsyncClient.stream()` as an async context manager for response streaming.",
+   "Response streaming supports bytes, text, lines, raw bytes, and conditional reading.",
+   "An asynchronous client provides connection pooling and can be shared between tasks."
+  ],
+  "gotchas": [
+   "Do not create a new client for every request in a frequently repeated loop. Reuse one scoped or global client to benefit from connection pooling.",
+   "When using manual streaming with `send(..., stream=True)`, eventually call `response.aclose()`."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "client.post": {
+  "sourceUrl": "https://www.python-httpx.org/async/",
+  "sourceTitle": "Async Support - HTTPX",
+  "summary": "HTTPX AsyncClient sends HTTP requests with Python's async/await syntax. Await its request methods and manage the client with async with or aclose().",
+  "explanation": "AsyncClient provides HTTPX's asynchronous API. Request methods must be awaited, and the client can be managed with async with so it closes automatically. Use one suitably scoped client instead of creating clients repeatedly in a loop, so connection pooling can work.",
+  "syntax": "async with httpx.AsyncClient() as client:\n    response = await client.get(url)",
+  "parameters": [
+   {
+    "name": "method, url",
+    "type": "str",
+    "description": "HTTP method and target URL for a request; request methods also accept their documented request options."
+   },
+   {
+    "name": "transport",
+    "type": "httpx.AsyncHTTPTransport",
+    "description": "An asynchronous transport used when directly configuring the client."
+   },
+   {
+    "name": "content",
+    "type": "AsyncIterable[bytes]",
+    "description": "An async byte generator used as the request body for streaming uploads."
+   }
+  ],
+  "returns": "Request methods return an HTTPX Response after awaiting them. Streaming methods expose an asynchronous response context and asynchronous iterators.",
+  "example": {
+   "title": "Send an asynchronous request",
+   "code": "import httpx\n\nasync def fetch():\n    async with httpx.AsyncClient() as client:\n        response = await client.get(\"https://www.example.com/\")\n        return response",
+   "language": "python",
+   "explanation": "Creates an async client, sends a request, and closes the client when the block ends."
+  },
+  "useCases": [
+   {
+    "title": "Send outgoing requests from async code",
+    "scenario": "An async application needs to call an HTTP service without blocking its event loop."
+   },
+   {
+    "title": "Read response data incrementally",
+    "scenario": "A response is large or arrives over time."
+   },
+   {
+    "title": "Stream request content",
+    "scenario": "An upload body is produced piece by piece."
+   },
+   {
+    "title": "Configure an async transport",
+    "scenario": "The application uses a non-default HTTP transport."
+   }
+  ],
+  "related": [
+   "httpx.AsyncClient",
+   "AsyncClient.get",
+   "AsyncClient.options",
+   "AsyncClient.head",
+   "AsyncClient.post",
+   "AsyncClient.put",
+   "AsyncClient.patch",
+   "AsyncClient.delete"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you make an asynchronous HTTP request with HTTPX?",
+    "answer": "Use httpx.AsyncClient. Its request methods are asynchronous, so call them with await, for example await client.get(url).",
+    "followUp": "How should the client lifetime be managed? Use async with for automatic cleanup, or call await client.aclose() when managing it manually."
+   },
+   {
+    "question": "How do you stream an HTTP response asynchronously?",
+    "answer": "Use async with client.stream(method, url) as response. Read data with methods such as aiter_bytes(), aiter_text(), or aiter_lines(); the block closes the response.",
+    "followUp": "What changes outside a stream block? Send a Request with client.send(..., stream=True), then ensure response.aclose() is eventually called."
+   },
+   {
+    "question": "Which asynchronous environments does HTTPX support?",
+    "answer": "HTTPX supports asyncio and Trio and detects which environment supplies the socket and concurrency operations. AnyIO can run HTTPX over either backend, while Trio must be installed for the Trio backend.",
+    "followUp": "How do you select Trio through AnyIO? Call anyio.run(main, backend=\"trio\") and install Trio."
+   }
+  ],
+  "keyPoints": [
+   "Await all AsyncClient request methods, including get, post, request, and send.",
+   "Use an async context manager when the client should be closed automatically.",
+   "Async responses can be read as bytes, text, lines, or raw bytes through the corresponding aiter methods.",
+   "HTTPX supports asyncio and Trio as async environments and detects the backend automatically.",
+   "Pass AsyncHTTPTransport when directly configuring a transport for an asynchronous client."
+  ],
+  "gotchas": [
+   "Do not create a new AsyncClient inside a frequently repeated loop. Reuse a scoped client or close a separately managed client.",
+   "When using manual streaming with client.send(..., stream=True), call response.aclose() yourself.",
+   "For streaming request content, provide an async generator."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "client.stream": {
+  "sourceUrl": "https://www.python-httpx.org/async/",
+  "sourceTitle": "Async Support - HTTPX",
+  "summary": "`AsyncClient.stream()` lets an async program consume an HTTP response piece by piece. Use it with `async with`, then read chunks, text, lines, or raw bytes through async response methods.",
+  "explanation": "`client.stream()` opens an asynchronous streaming context. Inside it, use an async iterator such as `aiter_bytes()`, `aiter_text()`, or `aiter_lines()` to consume response data without reading the whole body first. Leaving the context closes the response automatically.",
+  "syntax": "async with client.stream(method, url, ...) as response:",
+  "parameters": [
+   {
+    "name": "method, url",
+    "type": "str, URL-like",
+    "description": "HTTP method and target URL for the request."
+   }
+  ],
+  "returns": "An asynchronous context manager yielding an HTTPX `Response`.",
+  "example": {
+   "title": "Send an asynchronous request",
+   "code": "import httpx\n\nasync def fetch(url: str) -> str:\n    async with httpx.AsyncClient() as client:\n        response = await client.get(url)\n        response.raise_for_status()\n        return response.text",
+   "language": "python",
+   "explanation": "Creates an asynchronous client, sends a request, and reads the response text."
+  },
+  "useCases": [
+   {
+    "title": "Large response bodies",
+    "scenario": "Process large downloads without loading the complete response into memory."
+   },
+   {
+    "title": "Streaming proxies",
+    "scenario": "Forward data from an upstream HTTP service to an async web response."
+   },
+   {
+    "title": "Live text data",
+    "scenario": "Read server output incrementally as text or lines."
+   }
+  ],
+  "related": [
+   "AsyncClient",
+   "Response.aread()",
+   "Response.aiter_bytes()",
+   "Response.aiter_text()",
+   "Response.aiter_lines()",
+   "Response.aiter_raw()",
+   "Response.aclose()",
+   "client.send(..., stream=True)"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you stream a response with HTTPX?",
+    "answer": "`AsyncClient.stream()` is an asynchronous context block. It lets the program consume response data incrementally with methods such as `aiter_bytes()` or `aiter_text()`, and it closes the response when the block ends.",
+    "followUp": "How would you forward a streamed response when a context block cannot be used? Build a request, call `await client.send(request, stream=True)`, pass an async iterator to the destination, and arrange for `response.aclose()` to run afterward."
+   },
+   {
+    "question": "How is an asynchronous request made?",
+    "answer": "Use `httpx.AsyncClient` and await request methods such as `client.get()`. An async client is suitable when the surrounding application uses an async framework.",
+    "followUp": "What should a long-lived application do with the client? Keep one appropriately scoped client and close it during application shutdown."
+   },
+   {
+    "question": "Which methods are available for async response streaming?",
+    "answer": "The response provides asynchronous methods: `aread()` for reading inside a stream block, `aiter_bytes()` for bytes, `aiter_text()` for decoded text, `aiter_lines()` for lines, and `aiter_raw()` for undecoded bytes.",
+    "followUp": "Which method avoids HTTP content decoding? Use `aiter_raw()`, which yields the raw response bytes."
+   }
+  ],
+  "keyPoints": [
+   "Use `AsyncClient.stream()` with `async with` when you want to process a response as a stream.",
+   "`Response.aread()` reads the response body asynchronously while still inside a stream block.",
+   "Use `Response.aiter_bytes()` when the consumer needs response data as byte chunks.",
+   "Use `Response.aiter_text()` to receive decoded response text incrementally.",
+   "Use `Response.aiter_lines()` when the response should be handled one text line at a time.",
+   "Use `Response.aiter_raw()` when you need bytes before HTTP content decoding is applied."
+  ],
+  "gotchas": [
+   "Do not create many clients in a frequently repeated loop. Reuse one scoped client, or close a client explicitly with `await client.aclose()`.",
+   "When using manual streaming with `client.send(..., stream=True)`, close the response yourself. Otherwise, connections can remain open and cause resource leaks."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "get": {
   "sourceUrl": "https://www.python-httpx.org/api/",
   "sourceTitle": "Developer Interface - HTTPX",
@@ -378,6 +634,86 @@
    "Use a context-managed client for automatic cleanup; otherwise close an explicitly created client with `await client.aclose()`."
   ],
   "checkedAt": "2026-10-15"
+ },
+ "HTTPStatusError": {
+  "sourceUrl": "https://www.python-httpx.org/exceptions/",
+  "sourceTitle": "Exceptions - HTTPX",
+  "summary": "HTTPStatusError is raised by response.raise_for_status() when an HTTP response has a 4xx or 5xx status. The exception includes the request and response objects.",
+  "explanation": "HTTPStatusError represents an HTTP response with a 4xx or 5xx status. HTTPX raises it when response.raise_for_status() is called. The exception provides both the request and the response, so code can inspect the URL and status code.",
+  "syntax": "class httpx.HTTPStatusError(message, *, request, response)",
+  "parameters": [
+   {
+    "name": "message",
+    "type": "string",
+    "description": "Text describing the failure."
+   },
+   {
+    "name": "request",
+    "type": "httpx.Request",
+    "description": "The HTTPX request that produced the response."
+   },
+   {
+    "name": "response",
+    "type": "httpx.Response",
+    "description": "The HTTPX response with the unsuccessful status."
+   }
+  ],
+  "returns": "response.raise_for_status() returns the Response instance for a successful 2xx response; otherwise it raises HTTPStatusError.",
+  "example": {
+   "title": "Handle HTTPX request errors",
+   "code": "import httpx\n\ntry:\n    response = httpx.get(\"https://example.com\")\n    response.raise_for_status()\n    print(response.json())\nexcept httpx.RequestError as exc:\n    print(f\"Request failed: {exc.request.url!r}\")\nexcept httpx.HTTPStatusError as exc:\n    print(f\"HTTP error {exc.response.status_code}: {exc.request.url!r}\")",
+   "language": "python",
+   "explanation": "This sends a request, raises an exception for a 4xx or 5xx response, and handles request and status errors separately."
+  },
+  "useCases": [
+   {
+    "title": "Validate response status",
+    "scenario": "An API call must fail fast when the server returns a client or server error."
+   },
+   {
+    "title": "Log failed responses",
+    "scenario": "An error handler needs the URL and returned status code for logging."
+   },
+   {
+    "title": "Separate error types",
+    "scenario": "A program should handle transport failures and HTTP error responses with separate behavior."
+   }
+  ],
+  "related": [
+   "HTTPError",
+   "RequestError",
+   "Response.raise_for_status",
+   "httpx.get"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "When does HTTPX raise HTTPStatusError?",
+    "answer": "HTTPStatusError is raised by response.raise_for_status() when the response status is outside the 2xx range. It contains both request and response attributes.",
+    "followUp": "How would you handle connection failures too? Catch HTTPError, because it is the base class for RequestError and HTTPStatusError."
+   },
+   {
+    "question": "How should application code check for an unsuccessful HTTP response?",
+    "answer": "Call response.raise_for_status() after receiving a response. A successful response returns the same Response object instead of raising, so the call can be chained.",
+    "followUp": "Can the call be used before parsing JSON? Yes. For example, call raise_for_status() and then json() on the returned response."
+   },
+   {
+    "question": "What is the difference between RequestError and HTTPStatusError?",
+    "answer": "RequestError covers exceptions that happen while HTTPX is issuing the request. HTTPStatusError covers an error HTTP status returned by the server after the request was made.",
+    "followUp": "Which class covers both? HTTPError is the common base class for these two categories."
+   }
+  ],
+  "keyPoints": [
+   "HTTPStatusError requires a message, request, and response when represented as an exception.",
+   "The exception describes server or client error responses with status codes from 400 through 599.",
+   "Use the exception's request attribute for request details and response for status or body details.",
+   "A successful response lets raise_for_status() return the response object."
+  ],
+  "gotchas": [
+   "A 4xx or 5xx response does not raise this exception automatically. Call raise_for_status() first.",
+   "Catch HTTPError when one handler should cover both request failures and HTTP status failures."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "httpx.get": {
   "sourceUrl": "https://www.python-httpx.org/api/",
@@ -631,6 +967,236 @@
   ],
   "checkedAt": "2026-10-15"
  },
+ "httpx.stream": {
+  "sourceUrl": "https://www.python-httpx.org/async/",
+  "sourceTitle": "Async Support - HTTPX",
+  "summary": "HTTPX AsyncClient sends HTTP requests with awaitable methods. Reuse one client for connection pooling, and close it with an async context manager or aclose().",
+  "explanation": "AsyncClient provides awaitable HTTP methods and can be shared between tasks. Use it as an async context manager so its connection pool closes automatically; keep one appropriately scoped client instead of creating clients repeatedly in a loop.",
+  "syntax": "async with httpx.AsyncClient() as client:\n    response = await client.get(url)",
+  "parameters": [
+   {
+    "name": "AsyncClient(...)",
+    "type": "auth, params, headers, cookies, verify, cert, http1, http2, proxy, mounts, timeout, follow_redirects, limits, max_redirects, event_hooks, base_url, transport, trust_env, default_encoding",
+    "description": "HTTP method and request URL, plus optional request data and client settings."
+   },
+   {
+    "name": "AsyncClient.get(url, ...)",
+    "type": "url, params, headers, cookies, auth, follow_redirects, timeout, extensions",
+    "description": "The URL to request and optional request-specific settings."
+   },
+   {
+    "name": "AsyncClient.send(request, ...)",
+    "type": "request, stream, auth, follow_redirects",
+    "description": "The request to send and whether to leave its response streamed."
+   }
+  ],
+  "returns": "Async request methods return a Response. AsyncClient.aclose() returns None.",
+  "example": {
+   "title": "Make an asynchronous request",
+   "code": "import httpx\n\nasync def fetch():\n    async with httpx.AsyncClient() as client:\n        response = await client.get(\"https://example.org\")\n        return response.status_code",
+   "language": "python",
+   "explanation": "Creates one asynchronous client, sends a request, and closes the client when the block ends."
+  },
+  "useCases": [
+   {
+    "title": "Async application requests",
+    "scenario": "Send outgoing HTTP requests from an async web framework."
+   },
+   {
+    "title": "Stream response data",
+    "scenario": "Read a large response without loading it all at once."
+   },
+   {
+    "title": "Proxy a response stream",
+    "scenario": "Forward streamed content to another async web endpoint."
+   }
+  ],
+  "related": [
+   "AsyncClient.stream",
+   "AsyncClient.send",
+   "AsyncClient.aclose",
+   "Response.aread",
+   "Response.aiter_bytes",
+   "Response.aiter_text",
+   "Response.aiter_lines",
+   "Response.aiter_raw"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you make an asynchronous HTTP request with HTTPX?",
+    "answer": "Use AsyncClient when the surrounding code is asynchronous. Create it with async with, then await methods such as get; the client supports connection pooling and can be shared between tasks.",
+    "followUp": "How would you close a client without async with? Call await client.aclose() after the work is complete."
+   },
+   {
+    "question": "How do you stream an asynchronous response?",
+    "answer": "Use async with client.stream(...) as response. Then consume the response with an async iterator such as response.aiter_bytes(), aiter_text(), or aiter_lines().",
+    "followUp": "What happens when the stream block ends? The block closes the response automatically."
+   },
+   {
+    "question": "What is the default redirect behavior?",
+    "answer": "HTTPX does not follow redirects by default. Enable this per request with follow_redirects=True or set it on the client.",
+    "followUp": "Why might explicit redirect handling be preferred? The documentation says automatic redirects can hide unnecessary network calls."
+   }
+  ],
+  "keyPoints": [
+   "Use AsyncClient instead of the synchronous Client when your application uses async code.",
+   "The async context manager gives you a client that is closed automatically after the block.",
+   "A single AsyncClient may be shared by multiple asynchronous tasks.",
+   "Use aiter_bytes() to consume streamed content as byte chunks.",
+   "Use aiter_text() when streamed content should be read as text.",
+   "Response.aclose() closes a streamed response when you manage its lifetime manually."
+  ],
+  "gotchas": [
+   "Do not create a new AsyncClient for every request or inside a frequently repeated loop. Reuse a scoped client so connection pooling can work.",
+   "If you use manual streaming with send(..., stream=True), close the response yourself with aclose(), or the connection may remain open."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "Limits": {
+  "sourceUrl": "https://www.python-httpx.org/advanced/resource-limits/",
+  "sourceTitle": "Resource Limits - HTTPX",
+  "summary": "`httpx.Limits` controls the size and idle lifetime of an HTTPX connection pool. Pass it to a client with the `limits` argument.",
+  "explanation": "Create an `httpx.Limits` object and pass it to a `Client` or `AsyncClient` with the `limits` argument. The object controls the maximum total connections, the maximum idle keep-alive connections, and how long idle connections remain available.",
+  "syntax": "httpx.Limits(max_keepalive_connections=20, max_connections=100, keepalive_expiry=5)",
+  "parameters": [
+   {
+    "name": "max_keepalive_connections",
+    "type": "int | None",
+    "description": "Maximum number of idle keep-alive connections. `None` means no limit. Default: 20."
+   },
+   {
+    "name": "max_connections",
+    "type": "int | None",
+    "description": "Maximum number of connections. `None` means no limit. Default: 100."
+   },
+   {
+    "name": "keepalive_expiry",
+    "type": "float | None",
+    "description": "Maximum idle time for keep-alive connections, in seconds. `None` means no limit. Default: 5."
+   }
+  ],
+  "returns": "An `httpx.Limits` configuration object for controlling a client's connection pool.",
+  "example": {
+   "title": "Limit a client's connection pool",
+   "code": "import httpx\n\nlimits = httpx.Limits(\n    max_keepalive_connections=5,\n    max_connections=10,\n)\n\nwith httpx.Client(limits=limits) as client:\n    response = client.get(\"https://example.org\")\n    print(response.status_code)",
+   "language": "python",
+   "explanation": "This client allows up to 10 total connections and keeps up to 5 idle connections for reuse."
+  },
+  "useCases": [
+   {
+    "title": "Limit total connections",
+    "scenario": "A service makes many requests and must cap total open connections."
+   },
+   {
+    "title": "Reduce keep-alive connections",
+    "scenario": "A client should keep fewer idle sockets for reuse."
+   },
+   {
+    "title": "Set idle connection expiry",
+    "scenario": "Idle connections should be removed sooner or retained longer."
+   }
+  ],
+  "related": [
+   "httpx.Client",
+   "httpx.AsyncClient"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does `httpx.Limits` configure?",
+    "answer": "`httpx.Limits` configures the connection pool. `max_connections` limits all connections, while `max_keepalive_connections` limits idle connections kept for reuse.",
+    "followUp": "What does `keepalive_expiry` control? It sets how long an idle keep-alive connection may remain in the pool."
+   },
+   {
+    "question": "What are the default resource limits?",
+    "answer": "The documented defaults are 100 maximum connections, 20 maximum keep-alive connections, and a 5-second keep-alive expiry. These limits are used when no custom limits object is supplied.",
+    "followUp": "How would you reduce pool usage? Pass smaller values, such as `httpx.Limits(max_keepalive_connections=5, max_connections=10)`."
+   },
+   {
+    "question": "How do you apply custom limits?",
+    "answer": "Pass an `httpx.Limits` instance to the client's `limits` keyword argument. The same pattern is documented for configuring a client connection pool.",
+    "followUp": "Can the limits be removed? Yes. The documentation says `None` means no limit for each applicable setting."
+   }
+  ],
+  "keyPoints": [
+   "Pass a `Limits` object to a client's `limits` argument to control the connection pool size.",
+   "`max_keepalive_connections` sets how many idle keep-alive connections the pool may retain. Its default is 20.",
+   "`max_connections` sets the maximum number of connections in the pool. Its default is 100.",
+   "`keepalive_expiry` sets the idle keep-alive period in seconds. Its default is 5 seconds."
+  ],
+  "gotchas": [
+   "A `None` value removes the maximum for that limit. Use this carefully because an unlimited pool can create many connections.",
+   "`keepalive_expiry` applies to idle keep-alive connections, not to the lifetime of an active request."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "MockTransport": {
+  "sourceUrl": "https://www.python-httpx.org/advanced/transports/",
+  "sourceTitle": "Transports - HTTPX",
+  "summary": "HTTPX MockTransport replaces real network calls with responses returned by a handler. It is useful for predictable tests.",
+  "explanation": "MockTransport sends each request to a handler function instead of the network. The handler creates and returns an HTTPX Response, which makes tests predictable and fast.",
+  "syntax": "httpx.MockTransport(handler)",
+  "parameters": [
+   {
+    "name": "handler",
+    "type": "Callable",
+    "description": "A function that receives a request and returns a predetermined HTTPX response."
+   }
+  ],
+  "returns": "A transport that uses the handler's HTTPX Response for requests.",
+  "example": {
+   "title": "Return a fixed response with MockTransport",
+   "code": "import httpx\n\n\ndef handler(request):\n    return httpx.Response(200, json={\"text\": \"Hello, world!\"})\n\ntransport = httpx.MockTransport(handler)\nwith httpx.Client(transport=transport) as client:\n    response = client.get(\"https://example.org/\")\n    print(response.json())",
+   "language": "python",
+   "explanation": "The handler receives each request and returns a fixed response, so the client makes no real network request."
+  },
+  "useCases": [
+   {
+    "title": "Avoid real network calls",
+    "scenario": "Unit tests"
+   },
+   {
+    "title": "Return controlled responses",
+    "scenario": "Request behavior tests"
+   }
+  ],
+  "related": [
+   "HTTPTransport",
+   "BaseTransport",
+   "Client",
+   "Mock transports"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How does MockTransport work?",
+    "answer": "MockTransport takes a handler function. HTTPX calls that handler for a request, and the handler returns the Response used by the client.",
+    "followUp": "How would you make only test runs use it? Choose MockTransport when a testing environment variable is enabled, and use HTTPTransport otherwise."
+   },
+   {
+    "question": "How do you install a mock transport on a client?",
+    "answer": "Pass the transport to httpx.Client with the transport argument. The client then uses that transport for its requests.",
+    "followUp": "How can production and test behavior differ? Select the transport conditionally, such as from a TESTING environment variable."
+   },
+   {
+    "question": "Why use MockTransport in tests?",
+    "answer": "A handler can inspect the request and return different responses based on its contents. This lets a test model success, errors, or other fixed outcomes without network access.",
+    "followUp": "What should be used for broader third-party mocking features? The page names RESPX and pytest-httpx as options."
+   }
+  ],
+  "keyPoints": [
+   "Create MockTransport with a handler function.",
+   "The handler maps incoming requests to chosen responses.",
+   "You can select the mock transport only when a testing flag is enabled.",
+   "Pass the handler to the MockTransport constructor."
+  ],
+  "gotchas": [
+   "MockTransport is for tests; it does not contact the target server.",
+   "For more complex mocking needs, the page points to RESPX and pytest-httpx."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "Request": {
   "sourceUrl": "https://www.python-httpx.org/api/",
   "sourceTitle": "Developer Interface - HTTPX",
@@ -750,6 +1316,87 @@
   ],
   "checkedAt": "2026-10-15"
  },
+ "RequestError": {
+  "sourceUrl": "https://www.python-httpx.org/exceptions/",
+  "sourceTitle": "Exceptions - HTTPX",
+  "summary": "HTTPX exceptions describe failures while sending requests, using the transport, or handling responses. Catch HTTPError for a broad handler, or use specific subclasses for precise handling.",
+  "explanation": "RequestError covers failures while sending a request. HTTPStatusError covers unsuccessful HTTP responses raised by raise_for_status(). HTTPError is the shared base class for both, so it can catch either kind.",
+  "syntax": "class httpx.HTTPError(message)\nclass httpx.RequestError(message, *, request=None)\nclass httpx.TimeoutException(message, *, request=None)",
+  "parameters": [
+   {
+    "name": "message",
+    "type": "str",
+    "description": "Text describing the error."
+   },
+   {
+    "name": "request",
+    "type": "Request | None",
+    "description": "The related request, when available."
+   }
+  ],
+  "returns": "",
+  "example": {
+   "title": "Catch an HTTPX error",
+   "code": "try:\n    response = httpx.get(\"https://example.com\")\n    response.raise_for_status()\nexcept httpx.HTTPError as exc:\n    print(f\"HTTP error for {exc.request.url}: {exc}\")",
+   "language": "python",
+   "explanation": "Catches both request failures and status errors raised by raise_for_status()."
+  },
+  "useCases": [
+   {
+    "title": "Network failure handling",
+    "scenario": "Handle connection, transport, or timeout failures without crashing the application."
+   },
+   {
+    "title": "Selective retries",
+    "scenario": "Retry only operations that failed because of a connection or timeout."
+   },
+   {
+    "title": "Request diagnostics",
+    "scenario": "Log the request associated with a failed operation."
+   }
+  ],
+  "related": [
+   "HTTPError",
+   "RequestError",
+   "TransportError",
+   "TimeoutException",
+   "ConnectTimeout",
+   "ReadTimeout",
+   "WriteTimeout",
+   "PoolTimeout"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is HTTPError used for?",
+    "answer": "HTTPError is the common base class for RequestError and HTTPStatusError. Catch it when the same handling should apply to transport failures and status errors from raise_for_status().",
+    "followUp": "How can code distinguish the two cases? Catch RequestError and HTTPStatusError in separate handlers, or test the exception type after catching HTTPError."
+   },
+   {
+    "question": "What does RequestError represent?",
+    "answer": "RequestError is the base class for exceptions that can occur during request processing. Its optional request attribute can identify the request involved.",
+    "followUp": "Which narrower base class covers transport-layer failures? TransportError, which is below RequestError in the hierarchy."
+   },
+   {
+    "question": "How are HTTPX timeout errors organized?",
+    "answer": "TimeoutException is the base class for timeout errors. Its specific subclasses identify whether the timeout happened while connecting, reading, writing, or waiting for a pool connection.",
+    "followUp": "Which exception means that acquiring a pooled connection took too long? PoolTimeout."
+   }
+  ],
+  "keyPoints": [
+   "HTTPError is the shared parent for request failures and HTTP status failures.",
+   "TimeoutException groups all timeout-related exceptions.",
+   "ConnectTimeout means the connection attempt did not finish in time.",
+   "ReadTimeout means receiving the response data exceeded the timeout.",
+   "WriteTimeout means sending request data exceeded the timeout.",
+   "PoolTimeout means no pooled connection became available before the timeout."
+  ],
+  "gotchas": [
+   "Use HTTPError when one handler should cover both request failures and errors from raise_for_status().",
+   "RequestError is for failures that happen while HTTPX is issuing the request."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "Response": {
   "sourceUrl": "https://www.python-httpx.org/api/",
   "sourceTitle": "Developer Interface - HTTPX",
@@ -817,6 +1464,71 @@
    "A streamed response must be consumed through its streaming methods; accessing content or text before reading raises an error."
   ],
   "checkedAt": "2026-10-15"
+ },
+ "response.raise_for_status": {
+  "sourceUrl": "https://www.python-httpx.org/quickstart/",
+  "sourceTitle": "QuickStart - HTTPX",
+  "summary": "Response.raise_for_status() checks an HTTP response status. It returns the response for 2xx results and raises httpx.HTTPStatusError for 4xx or 5xx results.",
+  "explanation": "Call raise_for_status() on a Response after a request. It returns the same response for successful 2xx statuses. For 4xx and 5xx statuses, it raises httpx.HTTPStatusError, which includes the request and response.",
+  "syntax": "response.raise_for_status()",
+  "parameters": [],
+  "returns": "The Response instance for a successful 2xx status; otherwise it raises httpx.HTTPStatusError.",
+  "example": {
+   "title": "Check an HTTP response",
+   "code": "import httpx\n\nresponse = httpx.get(\"https://example.com\")\nresponse.raise_for_status()\nprint(response.status_code)",
+   "language": "python",
+   "explanation": "The request returns a response, and raise_for_status() raises HTTPStatusError when the response has a 4xx or 5xx status."
+  },
+  "useCases": [
+   {
+    "title": "Fail on HTTP errors",
+    "scenario": "Validate an API response before reading its data."
+   },
+   {
+    "title": "Chain response processing",
+    "scenario": "Build a short request pipeline that checks status before decoding JSON."
+   },
+   {
+    "title": "Inspect failed responses",
+    "scenario": "Log the request URL and status when an HTTP error occurs."
+   }
+  ],
+  "related": [
+   "httpx.HTTPStatusError",
+   "httpx.HTTPError",
+   "httpx.RequestError",
+   "Response.status_code",
+   "Response.json"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does Response.raise_for_status() do?",
+    "answer": "raise_for_status() checks the response status. It returns the Response for a 2xx status and raises HTTPStatusError for a 4xx or 5xx status.",
+    "followUp": "How can you handle both request failures and HTTP error responses? Catch httpx.HTTPError, the base class for RequestError and HTTPStatusError."
+   },
+   {
+    "question": "What information is available from HTTPStatusError?",
+    "answer": "HTTPStatusError contains both request and response information. This lets code inspect the URL and the returned status code.",
+    "followUp": "Which exception represents a failure while sending the request? RequestError is the base class for exceptions that occur while issuing a request."
+   },
+   {
+    "question": "Can raise_for_status() be used inline?",
+    "answer": "The method returns the response instance after a successful check. This allows chaining, such as httpx.get(url).raise_for_status().json().",
+    "followUp": "What happens if the request itself fails before a response exists? HTTPX raises a RequestError, so there is no HTTP response to validate."
+   }
+  ],
+  "keyPoints": [
+   "Use raise_for_status() when an unsuccessful HTTP status should stop normal processing.",
+   "A successful 2xx check returns the original Response object.",
+   "You can chain the method with another Response operation.",
+   "The exception type for a 4xx or 5xx response is httpx.HTTPStatusError.",
+   "HTTPStatusError exposes both the request that was sent and the error response."
+  ],
+  "gotchas": [
+   "This method does not raise for non-error responses outside the 2xx range unless the documentation classifies them as 4xx or 5xx."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "stream": {
   "sourceUrl": "https://www.python-httpx.org/api/",
@@ -1043,5 +1755,206 @@
    "Passing `None` disables timeouts for an individual request, but this is a request-level setting rather than a Timeout object's configuration."
   ],
   "checkedAt": "2026-10-15"
+ },
+ "TimeoutException": {
+  "sourceUrl": "https://www.python-httpx.org/advanced/timeouts/",
+  "sourceTitle": "Timeouts - HTTPX",
+  "summary": "HTTPX limits network inactivity by default and raises a timeout error after five seconds. Set a timeout per request or client, disable it with None, or tune connect, read, write, and pool timeouts separately.",
+  "explanation": "HTTPX applies timeout limits to network operations. You can set one timeout for a request or client, disable timeouts with None, or configure connect, read, write, and pool limits separately. Different timeout exceptions identify which operation exceeded its limit.",
+  "syntax": "httpx.request(method, url, *, timeout=Timeout(timeout=5.0), ...)\nhttpx.Client(timeout=10.0)\nhttpx.get(url, timeout=10.0)",
+  "parameters": [
+   {
+    "name": "method",
+    "type": "str",
+    "description": "HTTP method for the new Request object, such as GET, POST, PUT, PATCH, or DELETE."
+   },
+   {
+    "name": "url",
+    "type": "URL or string",
+    "description": "URL for the request."
+   },
+   {
+    "name": "timeout",
+    "type": "float, None, or Timeout",
+    "description": "Timeout setting. The documented default is Timeout(timeout=5.0)."
+   }
+  ],
+  "returns": "Sends an HTTP request and returns an HTTP response.",
+  "example": {
+   "title": "Set a request timeout",
+   "code": "import httpx\n\ntry:\n    response = httpx.get(\"https://example.com\", timeout=2.0)\n    response.raise_for_status()\nexcept httpx.ReadTimeout:\n    print(\"The server did not send data in time.\")\nexcept httpx.HTTPError as exc:\n    print(f\"HTTPX error: {exc}\")",
+   "language": "python",
+   "explanation": "This request allows two seconds for each timeout operation and handles a timeout while receiving response data."
+  },
+  "useCases": [
+   {
+    "title": "Limit one request",
+    "scenario": "A request needs a stricter limit than the client default."
+   },
+   {
+    "title": "Set a client default",
+    "scenario": "A service makes many requests with the same policy."
+   },
+   {
+    "title": "Tune timeout types",
+    "scenario": "Different network stages need different limits."
+   },
+   {
+    "title": "Handle timeout exceptions",
+    "scenario": "The program must classify failures by operation."
+   }
+  ],
+  "related": [
+   "TimeoutException",
+   "ConnectTimeout",
+   "ReadTimeout",
+   "WriteTimeout",
+   "PoolTimeout",
+   "Client",
+   "HTTPError"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is HTTPX's default timeout behavior?",
+    "answer": "HTTPX uses a default timeout of five seconds when there is no network activity. A timeout can be changed for one request or set as the default on a Client.",
+    "followUp": "How can all default timeouts be disabled? Set the Client timeout to None, or pass timeout=None for an individual request."
+   },
+   {
+    "question": "What timeout types does HTTPX support?",
+    "answer": "The four timeout types are connect, read, write, and pool. They cover connecting to the host, receiving data, sending data, and waiting for a pooled connection.",
+    "followUp": "Which exception indicates that receiving response data took too long? ReadTimeout."
+   },
+   {
+    "question": "How are timeout exceptions organized?",
+    "answer": "TimeoutException is the base class for timeout errors. ConnectTimeout, ReadTimeout, WriteTimeout, and PoolTimeout identify the operation that timed out.",
+    "followUp": "How can code handle all timeout kinds with one handler? Catch httpx.TimeoutException."
+   }
+  ],
+  "keyPoints": [
+   "Pass a numeric timeout to a request when one operation needs a different limit.",
+   "A Client timeout becomes the default for requests made through that client.",
+   "Use timeout=None on one request when that request should not have a timeout.",
+   "HTTPX separates timeout control into connect, read, write, and pool operations.",
+   "ConnectTimeout means the socket connection was not established within the connect limit.",
+   "ReadTimeout occurs when the next response-data chunk does not arrive soon enough.",
+   "WriteTimeout occurs when sending the next request-data chunk takes too long.",
+   "Catch TimeoutException when the program should treat every timeout type in the same way."
+  ],
+  "gotchas": [
+   "The default timeout is based on network inactivity, not necessarily the total time for the whole request.",
+   "For repeated requests, prefer a Client instead of the top-level helper functions."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "URL": {
+  "sourceUrl": "https://www.python-httpx.org/api/",
+  "sourceTitle": "Developer Interface - HTTPX",
+  "summary": "HTTPX Client sends HTTP requests with reusable settings and connection pooling. Use Client for repeated synchronous requests, or AsyncClient with await in asynchronous code.",
+  "explanation": "An HTTPX Client sends HTTP requests while keeping shared settings such as headers, cookies, authentication, timeouts, and a base URL. It also keeps connections available for reuse. Use AsyncClient with await when your program uses asynchronous code.",
+  "syntax": "httpx.Client(...)\nhttpx.AsyncClient(...)\nclient.request(method, url, ...)\nclient.stream(method, url, ...)",
+  "parameters": [
+   {
+    "name": "method",
+    "type": "str",
+    "description": "The HTTP method, such as GET or POST."
+   },
+   {
+    "name": "url",
+    "type": "str",
+    "description": "The target URL."
+   },
+   {
+    "name": "params",
+    "type": "Mapping or sequence of tuples",
+    "description": "Query parameters for the request URL."
+   },
+   {
+    "name": "headers",
+    "type": "Mapping",
+    "description": "Request headers."
+   },
+   {
+    "name": "cookies",
+    "type": "Mapping",
+    "description": "Cookies sent with requests."
+   },
+   {
+    "name": "content/data/files/json",
+    "type": "various",
+    "description": "Request body as content, form data, files, or JSON."
+   },
+   {
+    "name": "timeout",
+    "type": "Timeout or compatible value",
+    "description": "Request timeout settings."
+   },
+   {
+    "name": "follow_redirects",
+    "type": "bool",
+    "description": "Whether to follow redirects."
+   }
+  ],
+  "returns": "Client request methods return a Response. build_request() returns a Request. stream() provides a streamed Response context block.",
+  "example": {
+   "title": "Send a request with a client",
+   "code": "import httpx\n\nwith httpx.Client() as client:\n    response = client.get(\"https://example.org\")\n    print(response.status_code)",
+   "language": "python",
+   "explanation": "This creates a client, sends a GET request, prints the status code, and closes the client when the block ends."
+  },
+  "useCases": [
+   {
+    "title": "Repeated synchronous requests",
+    "scenario": "Send several requests to the same service while reusing connections and shared settings."
+   },
+   {
+    "title": "Asynchronous requests",
+    "scenario": "Call external HTTP services from an async web application."
+   },
+   {
+    "title": "Streaming responses",
+    "scenario": "Process a large response incrementally instead of keeping the full body in memory."
+   }
+  ],
+  "related": [
+   "httpx.request",
+   "httpx.stream",
+   "httpx.AsyncClient",
+   "Client.build_request",
+   "Client.send",
+   "Response.aclose",
+   "Response.aiter_bytes"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "Why use httpx.Client instead of httpx.get() for many requests?",
+    "answer": "A Client stores reusable request configuration and uses connection pooling. It can also keep cookies and follow redirects. This is more suitable than helper functions for repeated requests.",
+    "followUp": "How can a client build a request without sending it? Use build_request(), then pass the returned Request to send()."
+   },
+   {
+    "question": "How do you send a request with AsyncClient?",
+    "answer": "AsyncClient provides asynchronous request methods. Call them with await, and use async with to close the client automatically.",
+    "followUp": "Which async environments are supported? HTTPX supports asyncio and Trio, and detects the backend for socket operations and concurrency primitives."
+   },
+   {
+    "question": "How does HTTPX stream a response?",
+    "answer": "Client.stream() returns a context block that lets the response body be consumed in pieces instead of loading it all at once. Async streaming uses methods such as aiter_bytes() and aiter_lines().",
+    "followUp": "What must be done in manual streaming mode? Call Response.aclose() eventually, or the connection can remain open and cause resource leaks."
+   }
+  ],
+  "keyPoints": [
+   "Client provides reusable HTTP features, including connection pooling, redirects, and cookie persistence.",
+   "A synchronous Client may be shared between threads.",
+   "build_request() combines the request URL with the client's base_url.",
+   "Request-level query parameters, headers, and cookies are combined with client-level values.",
+   "stream() reads the response body incrementally instead of loading it into memory at once.",
+   "HTTP/2 is enabled with the http2 client option, which defaults to false."
+  ],
+  "gotchas": [
+   "Do not create many AsyncClient objects in a frequently repeated loop. Reuse one scoped client so connection pooling can work.",
+   "When manually streaming an asynchronous response with send(..., stream=True), close the response yourself."
+  ],
+  "checkedAt": "2026-11-03"
  }
 }

@@ -1,0 +1,3054 @@
+{
+ "aevaluate": {
+  "sourceUrl": "https://docs.langchain.com/langsmith/evaluate-llm-application",
+  "sourceTitle": "How to evaluate agents - Docs by LangChain",
+  "summary": "Use LangSmith evaluate() to run an application on a dataset and score its outputs with evaluators. Use aevaluate() for larger Python jobs and set concurrency to parallelize work.",
+  "explanation": "Use evaluate() to run an application against a dataset and apply evaluators to its outputs. For large Python jobs, use aevaluate(), which has the same interface. Set max_concurrency to run evaluations in parallel. In JavaScript and TypeScript, evaluate() is already asynchronous.",
+  "syntax": "evaluate(target, data=..., evaluators=[...], metadata=..., max_concurrency=...)\naevaluate(target, data=..., evaluators=[...], metadata=..., max_concurrency=...)",
+  "parameters": [
+   {
+    "name": "target",
+    "type": "callable or runnable",
+    "description": "Application function, runnable, or supported target that receives example inputs and returns outputs."
+   },
+   {
+    "name": "data",
+    "type": "string, UUID, or iterable",
+    "description": "Dataset name, dataset UUID, or iterator of examples."
+   },
+   {
+    "name": "evaluators",
+    "type": "sequence",
+    "description": "Functions that score target outputs."
+   },
+   {
+    "name": "metadata",
+    "type": "dict",
+    "description": "Optional experiment metadata. models, prompts, and tools can populate table columns."
+   },
+   {
+    "name": "max_concurrency",
+    "type": "int",
+    "description": "Maximum number of concurrent evaluations."
+   }
+  ],
+  "returns": "An evaluation result for the experiment; the aevaluate reference documents an AsyncExperimentResults return type.",
+  "example": {
+   "title": "Evaluate an application",
+   "code": "from langsmith import Client\n\nclient = Client()\n\n\ndef correct(inputs, outputs, reference_outputs):\n    return {\n        \"key\": \"correct\",\n        \"score\": outputs[\"class\"] == reference_outputs[\"class\"],\n    }\n\nresults = client.evaluate(\n    toxicity_classifier,\n    data=\"my-dataset\",\n    evaluators=[correct],\n    experiment_prefix=\"baseline\",\n    max_concurrency=4,\n)",
+   "language": "python",
+   "explanation": "This runs the target application on a LangSmith dataset and scores its outputs with the correct evaluator."
+  },
+  "useCases": [
+   {
+    "title": "Run a dataset evaluation",
+    "scenario": "You have a dataset of inputs and want to measure an agent or application against each example."
+   },
+   {
+    "title": "Record experiment metadata",
+    "scenario": "You need to compare application behavior across model, prompt, or tool configurations."
+   },
+   {
+    "title": "Scale an evaluation job",
+    "scenario": "A Python evaluation has many examples and should use parallel execution."
+   }
+  ],
+  "related": [
+   "evaluate()",
+   "aevaluate()",
+   "max_concurrency",
+   "maxConcurrency",
+   "evaluators",
+   "metadata"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does evaluate() do?",
+    "answer": "evaluate() runs a target function on each example in a dataset and sends the results to the listed evaluators. The target receives the example.inputs value and returns an output dictionary.",
+    "followUp": "How should a large Python evaluation be run? Use aevaluate() and configure max_concurrency to parallelize the evaluation."
+   },
+   {
+    "question": "What are the main inputs to evaluate()?",
+    "answer": "The data argument can be a LangSmith dataset name, a dataset UUID, or an iterator of examples. The evaluators argument is a list of functions that score the target outputs.",
+    "followUp": "What else can trigger evaluation scores? Dataset evaluators configured in the LangSmith UI are also triggered automatically."
+   },
+   {
+    "question": "Why use the metadata argument?",
+    "answer": "metadata attaches information to the experiment. The models, prompts, and tools keys can populate the matching columns in the experiment table.",
+    "followUp": "How does the JavaScript API differ for asynchronous work? JavaScript and TypeScript evaluate() is already asynchronous, so no separate aevaluate() method is needed."
+   }
+  ],
+  "keyPoints": [
+   "The target function accepts an input dictionary and returns an output dictionary.",
+   "Each dataset example supplies its inputs to the target function.",
+   "data accepts a dataset name, dataset UUID, or iterator of examples.",
+   "evaluators contains the functions that score application outputs.",
+   "metadata adds optional information to the experiment.",
+   "Use models, prompts, and tools metadata keys to fill related experiment table columns."
+  ],
+  "gotchas": [
+   "Use aevaluate() for larger Python evaluation jobs.",
+   "Set max_concurrency or maxConcurrency for large jobs so the work can run in parallel.",
+   "UI dataset evaluators run automatically, so they may add scores in addition to the evaluators passed in code."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "Annotation queues": {
+  "sourceUrl": "https://docs.langchain.com/langsmith/annotation-queues",
+  "sourceTitle": "Use annotation queues",
+  "summary": "Annotation queues collect runs or full threads for human review. Reviewers use configured instructions and feedback rubrics, while pairwise queues compare runs from two experiments side by side.",
+  "explanation": "Annotation queues collect runs or full threads for human review. Reviewers use configured instructions and feedback rubrics, while pairwise queues compare runs from two experiments side by side.",
+  "syntax": "GET /api/v1/annotation-queues",
+  "parameters": [
+   {
+    "name": "ids",
+    "type": "string<uuid>[] | null",
+    "description": "Optional queue UUID filters."
+   },
+   {
+    "name": "name",
+    "type": "string | null",
+    "description": "Optional exact queue name filter."
+   },
+   {
+    "name": "name_contains",
+    "type": "string | null",
+    "description": "Optional substring filter for queue names."
+   },
+   {
+    "name": "offset",
+    "type": "integer",
+    "description": "Number of records to skip. Default is 0."
+   },
+   {
+    "name": "limit",
+    "type": "integer",
+    "description": "Maximum number of records to return. Default is 100; maximum is 100."
+   }
+  ],
+  "returns": "The API returns an array of annotation queue objects. Each object includes its name, ID, tenant ID, queue type, total run count, reviewer settings, retention rule IDs, default dataset, metadata, and assigned reviewers.",
+  "example": {
+   "title": "List annotation queues",
+   "code": "from langsmith import Client\n\nclient = Client()\nqueues = client.list_annotation_queues(name_contains=\"support\")\nfor queue in queues:\n    print(queue.name, queue.queue_type, queue.total_runs)",
+   "language": "python",
+   "explanation": "This lists annotation queues whose names contain \"support\" and prints basic fields."
+  },
+  "useCases": [
+   {
+    "title": "Review individual runs",
+    "scenario": "A team needs people to score traces with the same rubric."
+   },
+   {
+    "title": "Review threads",
+    "scenario": "A team needs to judge a complete multi-turn conversation."
+   },
+   {
+    "title": "Compare experiment outputs",
+    "scenario": "A team compares a baseline experiment with a candidate experiment."
+   },
+   {
+    "title": "Route matching items",
+    "scenario": "A team wants repeated error cases sent to reviewers automatically."
+   }
+  ],
+  "related": [
+   "Manage feedback & annotation queues programmatically",
+   "Assertions",
+   "Build custom views for annotation queues",
+   "Attach user feedback",
+   "Get annotation queues"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is a single-run annotation queue?",
+    "answer": "Single-run queues show one run or thread at a time and accept configured rubric feedback. Run items also support notes, assertions, and adding the run to a dataset.",
+    "followUp": "Can one single-run queue contain both kinds of items? Yes. It can mix run items and thread items, but thread items do not support notes or assertions."
+   },
+   {
+    "question": "How does a pairwise annotation queue differ from a single-run queue?",
+    "answer": "A pairwise annotation queue shows two runs side by side. Reviewers choose whether Run A, Run B, or both are better for each rubric item.",
+    "followUp": "How are the runs selected? The queue is created from exactly two experiments, and LangSmith pairs their runs automatically."
+   },
+   {
+    "question": "How does review progress work?",
+    "answer": "Reviewers open a queue from Annotation Queues, inspect the current item, score feedback criteria, and mark it reviewed. Queue settings can assign reviewers, require multiple reviews, and use reservations.",
+    "followUp": "Why might reviewers see different item counts? Assignment and completion rules can make each reviewer's visible set differ from the total queue size."
+   }
+  ],
+  "keyPoints": [
+   "Queues group review items, define the rubric, and show progress.",
+   "A thread item covers the complete multi-turn conversation, not just one run.",
+   "Automation rules can place matching runs or threads into a queue.",
+   "Pairwise review records one of three choices for each rubric item."
+  ],
+  "gotchas": [
+   "You cannot add a thread item unless the run has thread_id or session_id metadata.",
+   "A pairwise queue requires exactly two experiments when you create or add comparisons.",
+   "Review feedback does not extend a trace's retention by itself."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "ApiKeyAuth": {
+  "sourceUrl": "https://docs.langchain.com/langsmith/openapi-security",
+  "sourceTitle": "Document API authentication in OpenAPI - Docs by LangChain",
+  "summary": "Customize the OpenAPI security schema for a LangSmith API. The settings document authentication but do not implement it.",
+  "explanation": "Add an openapi object inside auth in langgraph.json. Define securitySchemes and reference one in security. This changes the generated API documentation only. Your auth function must separately check the credentials. Deploy the application, open /docs, and test an endpoint with valid credentials.",
+  "syntax": "{\"auth\":{\"path\":\"./auth.py:my_auth\",\"openapi\":{\"securitySchemes\":{},\"security\":[]}}}",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Document an API key",
+   "code": "{\n  \"auth\": {\n    \"path\": \"./auth.py:my_auth\",\n    \"openapi\": {\n      \"securitySchemes\": {\n        \"apiKeyAuth\": {\n          \"type\": \"apiKey\",\n          \"in\": \"header\",\n          \"name\": \"X-API-Key\"\n        }\n      },\n      \"security\": [\n        {\"apiKeyAuth\": []}\n      ]\n    }\n  }\n}",
+   "language": "json",
+   "explanation": "This configuration documents an API key in the X-API-Key header. The auth function must still enforce the key."
+  },
+  "useCases": [
+   {
+    "title": "Document API-key authentication",
+    "scenario": "You want generated API docs to show that clients must send an API key in a header."
+   },
+   {
+    "title": "Document OAuth2 access",
+    "scenario": "Your API uses an external identity provider and needs documented OAuth2 scopes."
+   },
+   {
+    "title": "Document self-hosted authentication",
+    "scenario": "You run a self-hosted deployment and need its API docs to describe your custom credential format."
+   }
+  ],
+  "related": [
+   "langgraph.json",
+   "auth configuration",
+   "securitySchemes",
+   "security",
+   "OAuth2",
+   "apiKey",
+   "/docs"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What security scheme does LangSmith document by default?",
+    "answer": "The default LangSmith scheme is an API key named x-api-key and sent in a request header. The OpenAPI security requirement references that scheme without scopes.",
+    "followUp": "How would you document a different header? Define an apiKey security scheme, set in to header, provide its name, and reference its key in security."
+   },
+   {
+    "question": "How do you customize the OpenAPI security schema?",
+    "answer": "Put openapi inside the auth configuration in langgraph.json. Add securitySchemes to describe the credential and security to state which scheme endpoints require.",
+    "followUp": "Does this configuration protect endpoints? No. It only changes the generated documentation; the auth function must perform the checks."
+   },
+   {
+    "question": "How is OAuth2 represented in the documented schema?",
+    "answer": "An OAuth2 scheme can use an implicit flow with an authorization URL and named scopes. The security entry lists the scopes required by the API.",
+    "followUp": "Who supplies the OAuth credentials? The client application must authenticate with the external auth server because LangSmith does not provide authentication endpoints."
+   }
+  ],
+  "keyPoints": [
+   "LangSmith uses a LangSmith API key in the x-api-key request header by default.",
+   "Self-hosted deployments do not define a default security scheme.",
+   "Customize the schema by adding an openapi field under auth in langgraph.json.",
+   "After deployment, view /docs to check the generated security documentation."
+  ],
+  "gotchas": [
+   "The OpenAPI settings do not enforce authentication. Implement the matching authentication logic separately.",
+   "Your client application must obtain credentials from its authentication provider and send them to the LangGraph API.",
+   "A self-hosted deployment has no default security scheme. Protect its network or configure authentication."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "as_run_evaluator": {
+  "sourceUrl": "https://reference.langchain.com/python/langsmith/evaluation/evaluator/DynamicRunEvaluator",
+  "sourceTitle": "DynamicRunEvaluator | langsmith | LangChain Reference",
+  "summary": "DynamicRunEvaluator wraps a function as a LangSmith run evaluator. The function receives a Run and an optional Example, with optional support for a separate async function.",
+  "explanation": "DynamicRunEvaluator wraps a synchronous function that evaluates a Run and may also receive an optional Example. It can also accept a separate asynchronous function through afunc. The wrapped function must return a supported evaluator output.",
+  "syntax": "DynamicRunEvaluator(self, func: Callable[[Run, Optional[Example]], Union[_RUNNABLE_OUTPUT, Awaitable[_RUNNABLE_OUTPUT]]], afunc: Optional[Callable[[Run, Optional[Example]], Awaitable[_RUNNABLE_OUTPUT]]] = None)",
+  "parameters": [
+   {
+    "name": "func",
+    "type": "Callable[[Run, Optional[Example]], Union[_RUNNABLE_OUTPUT, Awaitable[_RUNNABLE_OUTPUT]]]",
+    "description": "A function that takes a Run and an optional Example and returns a supported evaluator output or an awaitable of one."
+   },
+   {
+    "name": "afunc",
+    "type": "Optional[Callable[[Run, Optional[Example]], Awaitable[_RUNNABLE_OUTPUT]]]",
+    "description": "An optional asynchronous function that takes a Run and an optional Example and returns an awaitable evaluator output."
+   }
+  ],
+  "returns": "",
+  "example": {
+   "title": "Create a dynamic run evaluator",
+   "code": "from langsmith.evaluation import DynamicRunEvaluator\n\n\ndef check_run(run, example=None):\n    return {\"key\": \"value\"}\n\n\nevaluator = DynamicRunEvaluator(check_run)\nprint(evaluator)",
+   "language": "python",
+   "explanation": "This creates a dynamic evaluator from a function that receives a run and an optional example."
+  },
+  "useCases": [
+   {
+    "title": "Wrap a synchronous check",
+    "scenario": "You have a synchronous Python check that needs access to a traced run."
+   },
+   {
+    "title": "Provide an async evaluator function",
+    "scenario": "Your evaluator performs asynchronous work."
+   },
+   {
+    "title": "Use the optional example",
+    "scenario": "Your check needs reference data from a dataset example."
+   }
+  ],
+  "related": [
+   "Run",
+   "Example",
+   "RunEvaluator",
+   "DynamicComparisonRunEvaluator",
+   "EvaluationResult"
+  ],
+  "since": "v0.5",
+  "interview": [
+   {
+    "question": "What does DynamicRunEvaluator represent?",
+    "answer": "DynamicRunEvaluator is a class that turns a function into a run evaluator. The function receives a Run and an optional Example, and it can return a normal or asynchronous evaluator result.",
+    "followUp": "How can asynchronous evaluation be supported? Pass an async function with the afunc parameter while supplying the main function through func."
+   },
+   {
+    "question": "What is the purpose of func?",
+    "answer": "func is the required callable. Its documented input is a Run plus an optional Example, and its result can be a supported evaluator output or an awaitable of that output.",
+    "followUp": "What should be checked when a callable cannot be wrapped? Compare its arguments and return type with the documented callable signature."
+   },
+   {
+    "question": "When would you use afunc?",
+    "answer": "afunc is optional and accepts an asynchronous callable with the same Run and optional Example inputs. It is useful when evaluation work must be awaited.",
+    "followUp": "Can the asynchronous callable omit the optional example parameter? The documented signature includes both inputs, so it should follow that shape."
+   }
+  ],
+  "keyPoints": [
+   "The class has been documented since version 0.5.",
+   "Create the evaluator by passing a callable to the constructor.",
+   "The constructor can receive an optional asynchronous callable.",
+   "The main callable receives a Run and an optional Example."
+  ],
+  "gotchas": [
+   "The function must accept a Run and an optional Example. A function with a different parameter shape does not match the documented constructor."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "AsyncClient": {
+  "sourceUrl": "https://reference.langchain.com/python/langsmith/async_client/AsyncClient",
+  "sourceTitle": "AsyncClient | langsmith | LangChain Reference",
+  "summary": "AsyncClient is the asynchronous LangSmith API client. Configure its endpoint, credentials, timeouts, retries, headers, workspace, cache, and profile settings when you create it.",
+  "explanation": "AsyncClient provides asynchronous access to the LangSmith API. You can configure the API endpoint, credentials, request behavior, headers, workspace, prompt caching, and CLI profile authentication when creating it.",
+  "syntax": "AsyncClient(self, api_url: Optional[str] = None, api_key: Optional[str] = None, timeout_ms: Optional[Union[int, tuple[Optional[int], Optional[int], Optional[int], Optional[int]]]] = None, retry_config: Optional[Mapping[str, Any]] = None, web_url: Optional[str] = None, headers: Optional[dict[str, str]] = None, workspace_id: Optional[str] = None, disable_prompt_cache: bool = False, cache: Optional[Union[bool, AsyncPromptCache]] = None, *, profile: Optional[str] = None, profile_config_path: Optional[str] = None, prefer_profile_auth: bool = False)",
+  "parameters": [
+   {
+    "name": "api_url",
+    "type": "Optional[str]",
+    "description": "LangSmith API URL. Default: None."
+   },
+   {
+    "name": "api_key",
+    "type": "Optional[str]",
+    "description": "LangSmith API key. Default: None."
+   },
+   {
+    "name": "timeout_ms",
+    "type": "Optional[int | tuple[Optional[int], Optional[int], Optional[int], Optional[int]]]",
+    "description": "Request timeout in milliseconds. Default: None."
+   },
+   {
+    "name": "retry_config",
+    "type": "Optional[Mapping[str, Any]]",
+    "description": "Retry configuration. Default: None."
+   },
+   {
+    "name": "web_url",
+    "type": "Optional[str]",
+    "description": "LangSmith web application URL. Default: None."
+   },
+   {
+    "name": "headers",
+    "type": "Optional[dict[str, str]]",
+    "description": "Extra headers merged with the default request headers."
+   },
+   {
+    "name": "workspace_id",
+    "type": "Optional[str]",
+    "description": "Workspace ID. Required for organization-scoped API keys."
+   },
+   {
+    "name": "disable_prompt_cache",
+    "type": "bool",
+    "description": "Disables prompt caching for this client."
+   },
+   {
+    "name": "cache",
+    "type": "Optional[bool | AsyncPromptCache]",
+    "description": "Prompt cache setting. Deprecated."
+   },
+   {
+    "name": "profile",
+    "type": "Optional[str]",
+    "description": "CLI login profile."
+   },
+   {
+    "name": "profile_config_path",
+    "type": "Optional[str]",
+    "description": "CLI configuration file path."
+   },
+   {
+    "name": "prefer_profile_auth",
+    "type": "bool",
+    "description": "Prefers profile credentials and settings over environment values when available."
+   }
+  ],
+  "returns": "An initialized AsyncClient instance.",
+  "example": {
+   "title": "List agents asynchronously",
+   "code": "import asyncio\nfrom langsmith import AsyncClient\n\nasync def main():\n    client = AsyncClient()\n    agents = await client.list_agents()\n    print(agents)\n\nasyncio.run(main())",
+   "language": "python",
+   "explanation": "This creates an asynchronous LangSmith client and lists agents."
+  },
+  "useCases": [
+   {
+    "title": "Make asynchronous API calls",
+    "scenario": "A Python service needs to call LangSmith without blocking its event loop."
+   },
+   {
+    "title": "Target a workspace",
+    "scenario": "A deployment uses separate LangSmith workspaces."
+   },
+   {
+    "title": "Tune request handling",
+    "scenario": "A client needs custom request timing and retry behavior."
+   }
+  ],
+  "related": [
+   "AsyncPromptCache",
+   "Client",
+   "AsyncAPIClient",
+   "runs.retrieve",
+   "runs.query",
+   "runs.share.create"
+  ],
+  "since": "v0.5",
+  "interview": [
+   {
+    "question": "What is AsyncClient used for?",
+    "answer": "AsyncClient is the asynchronous client for interacting with the LangSmith API. It supports operations such as listing agents and skills.",
+    "followUp": "How would you configure organization access? Provide workspace_id when the API key is organization-scoped."
+   },
+   {
+    "question": "Which constructor settings control connection and authentication?",
+    "answer": "The constructor accepts api_url and api_key for the API connection. It also accepts timeout_ms, retry_config, headers, and workspace_id for request and organization settings.",
+    "followUp": "How can profile authentication be selected? Pass profile or profile_config_path, and use prefer_profile_auth when profile values should take precedence over environment values."
+   },
+   {
+    "question": "Which AsyncClient methods are deprecated?",
+    "answer": "Deprecated run methods include read_run, list_runs, share_run, and read_run_shared_link. The documentation points to runs.retrieve, runs.query, runs.share.create, and runs.retrieve with selects=[\"SHARE_URL\"] as replacements.",
+    "followUp": "Why should new code avoid these methods? They are legacy entry points with a documented removal date after January 31, 2027."
+   }
+  ],
+  "keyPoints": [
+   "AsyncClient is designed for non-blocking calls to LangSmith.",
+   "api_url sets the server endpoint used by the client.",
+   "headers adds extra headers to every request, while required default headers remain protected.",
+   "workspace_id selects the workspace for requests and is needed for organization-scoped keys.",
+   "profile selects a CLI login profile instead of the LANGSMITH_PROFILE environment setting."
+  ],
+  "gotchas": [
+   "Set workspace_id when using an organization-scoped API key.",
+   "The cache parameter is deprecated; use the newer global async prompt-cache configuration instead.",
+   "The older run methods are deprecated and scheduled for removal after January 31, 2027."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "Client.create_examples": {
+  "sourceUrl": "https://reference.langchain.com/python/langsmith/client/Client/create_examples",
+  "sourceTitle": "create_examples | langsmith | LangChain Reference",
+  "summary": "Adds multiple examples to a LangSmith dataset. Select the dataset by name or ID, then pass a list of complete example objects.",
+  "explanation": "The method adds multiple examples to one LangSmith dataset in a single call. Pass either the dataset name or its ID, and provide each example as one object containing its own fields. The current form uses the examples list; older split arguments are legacy options.",
+  "syntax": "create_examples(self, *, dataset_name: Optional[str] = None, dataset_id: Optional[ID_TYPE] = None, examples: Optional[Sequence[ls_schemas.ExampleCreate | dict]] = None, dangerously_allow_filesystem: bool = False, max_concurrency: int = 1, **kwargs: Any) -> ls_schemas.UpsertExamplesResponse | dict[str, Any]",
+  "parameters": [
+   {
+    "name": "dataset_name",
+    "type": "str | None",
+    "description": "The name of the dataset. Use exactly one of dataset_name or dataset_id."
+   },
+   {
+    "name": "dataset_id",
+    "type": "UUID | str | None",
+    "description": "The ID of the dataset. Use exactly one of dataset_name or dataset_id."
+   },
+   {
+    "name": "examples",
+    "type": "Sequence[ExampleCreate | dict]",
+    "description": "A sequence of complete example objects or dictionaries to create."
+   },
+   {
+    "name": "dangerously_allow_filesystem",
+    "type": "bool",
+    "description": "Whether to allow uploading files from the filesystem."
+   },
+   {
+    "name": "max_concurrency",
+    "type": "int",
+    "description": "Maximum concurrent work. The documented range is 1 through 3."
+   },
+   {
+    "name": "kwargs",
+    "type": "Any",
+    "description": "Additional keyword arguments. Legacy fields include inputs, reference_outputs, outputs, metadata, splits, source_run_ids, and ids."
+   }
+  ],
+  "returns": "ls_schemas.UpsertExamplesResponse | dict[str, Any]",
+  "example": {
+   "title": "Add an example to a dataset",
+   "code": "from langsmith import Client\n\nclient = Client()\ndataset = client.create_dataset(\"QA Dataset\")\nclient.create_examples(\n    dataset_id=dataset.id,\n    examples=[\n        {\n            \"inputs\": {\"question\": \"What is LangSmith?\"},\n            \"reference_outputs\": {\"answer\": \"An evaluation platform\"},\n            \"metadata\": {\"level\": \"beginner\"},\n        }\n    ],\n)",
+   "language": "python",
+   "explanation": "This creates a dataset, then adds one example with input, expected output, and metadata."
+  },
+  "useCases": [
+   {
+    "title": "Create evaluation data",
+    "scenario": "Build a test set from questions and expected answers."
+   },
+   {
+    "title": "Store example metadata",
+    "scenario": "Attach labels such as difficulty or data source to each record."
+   },
+   {
+    "title": "Organize dataset splits",
+    "scenario": "Divide records into train, test, or validation groups."
+   }
+  ],
+  "related": [
+   "Client.create_dataset",
+   "Client.create_example",
+   "Client.evaluate",
+   "ExampleCreate",
+   "UpsertExamplesResponse"
+  ],
+  "since": "v0.5",
+  "interview": [
+   {
+    "question": "What does create_examples do?",
+    "answer": "It creates several dataset examples in one request. Each item can contain inputs, reference outputs, metadata, and other supported fields.",
+    "followUp": "What identifies the destination dataset? Use exactly one of dataset_name or dataset_id."
+   },
+   {
+    "question": "How should examples be supplied?",
+    "answer": "The examples argument is a sequence of complete example objects. This keeps the fields for each example together instead of spreading them across separate lists.",
+    "followUp": "Why is this safer for mixed metadata? Each object carries its own metadata and optional fields, so values stay aligned with that example."
+   },
+   {
+    "question": "What does the method return?",
+    "answer": "The method returns an upsert response, or a dictionary, containing the created example IDs. The dataset must be selected by name or ID.",
+    "followUp": "What happens if neither selector is supplied? The call cannot identify where to create the examples and does not meet the documented method contract."
+   }
+  ],
+  "keyPoints": [
+   "Use the method to add multiple records to an existing dataset.",
+   "The current API expects one list of complete example objects.",
+   "Add arbitrary per-example metadata as a dictionary.",
+   "Use splits to label dataset divisions such as training, testing, or validation.",
+   "A source run ID can link an example to the run that produced it."
+  ],
+  "gotchas": [
+   "Pass exactly one dataset selector. Do not provide both dataset_name and dataset_id.",
+   "Do not combine the new examples argument with the legacy keyword arguments."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "Client.evaluate": {
+  "sourceUrl": "https://docs.langchain.com/langsmith/evaluate-llm-application",
+  "sourceTitle": "How to evaluate agents",
+  "summary": "Client.evaluate() runs an application over a LangSmith dataset and scores each output with evaluators. It creates an experiment whose results can be viewed in the UI or processed through the SDK.",
+  "explanation": "Client.evaluate() runs a target function on examples from a dataset and applies one or more evaluators to its outputs. It returns experiment results, which can be viewed in LangSmith or processed in code. Use max_concurrency to run larger jobs in parallel.",
+  "syntax": "Client.evaluate(target, *, data, evaluators=None, experiment_prefix=None, description=None, max_concurrency=None, metadata=None, blocking=True)",
+  "parameters": [
+   {
+    "name": "target",
+    "type": "callable",
+    "description": "Application function. It receives the input dictionary for one dataset example and returns an output dictionary."
+   },
+   {
+    "name": "data",
+    "type": "str | UUID | iterable",
+    "description": "Dataset name, dataset UUID, or iterator of examples."
+   },
+   {
+    "name": "evaluators",
+    "type": "list[callable]",
+    "description": "Evaluator functions used to score target outputs."
+   },
+   {
+    "name": "experiment_prefix",
+    "type": "str | None",
+    "description": "Optional experiment name prefix."
+   },
+   {
+    "name": "description",
+    "type": "str | None",
+    "description": "Optional experiment description."
+   },
+   {
+    "name": "max_concurrency",
+    "type": "int | None",
+    "description": "Maximum parallel evaluation work."
+   },
+   {
+    "name": "metadata",
+    "type": "dict | None",
+    "description": "Optional experiment metadata."
+   },
+   {
+    "name": "blocking",
+    "type": "bool",
+    "description": "Whether to wait for all results before returning. The default is true."
+   }
+  ],
+  "returns": "An ExperimentResults object that can be iterated to inspect runs, examples, and evaluation results.",
+  "example": {
+   "title": "Evaluate a target function",
+   "code": "from langsmith import Client\n\nclient = Client()\n\ndef target(inputs):\n    return {\"output\": inputs[\"text\"].upper()}\n\ndef evaluator(run, example):\n    score = run.outputs[\"output\"] == example.outputs[\"expected\"]\n    return {\"key\": \"correct\", \"score\": score}\n\nresults = client.evaluate(\n    target,\n    data=\"my_dataset\",\n    evaluators=[evaluator],\n    experiment_prefix=\"uppercase-test\",\n    max_concurrency=4,\n)",
+   "language": "python",
+   "explanation": "The target runs on each dataset example. The evaluator scores each result. The call creates an experiment that can be inspected in LangSmith."
+  },
+  "useCases": [
+   {
+    "title": "Run a dataset evaluation",
+    "scenario": "You want to measure an agent against labeled test examples."
+   },
+   {
+    "title": "Compare experiments",
+    "scenario": "You need to compare model, prompt, or tool changes."
+   },
+   {
+    "title": "Create a quality gate",
+    "scenario": "You need a CI check for application quality."
+   },
+   {
+    "title": "Process results as a stream",
+    "scenario": "You need to inspect scores while a job runs."
+   }
+  ],
+  "related": [
+   "aevaluate()",
+   "ExperimentResults",
+   "EvaluationResult",
+   "Run an evaluation asynchronously",
+   "How to read experiment results locally"
+  ],
+  "since": "langsmith >= 0.3.13",
+  "interview": [
+   {
+    "question": "What does Client.evaluate() do?",
+    "answer": "Client.evaluate() runs a target function over a LangSmith dataset and sends each result to the supplied evaluators. It creates an experiment containing the evaluation data and scores.",
+    "followUp": "How would you process results during execution? Use blocking=False to receive an iterator as results are produced."
+   },
+   {
+    "question": "How do the target and evaluator work together?",
+    "answer": "The target receives one example's inputs and must return an output dictionary. An evaluator then compares or judges that output, often using the example's reference outputs.",
+    "followUp": "What must be changed when dataset keys differ from the application's arguments? Add a wrapper target that maps input keys and returns the expected output key."
+   },
+   {
+    "question": "Which inputs control what gets evaluated?",
+    "answer": "The data argument accepts a dataset name, a dataset UUID, or an iterator of examples. The evaluators argument is a list of evaluator functions used to score target outputs.",
+    "followUp": "How can experiments be compared by configuration? Pass metadata with models, prompts, or tools keys, then group or filter experiments by those fields."
+   }
+  ],
+  "keyPoints": [
+   "Use data to select a dataset by name, dataset UUID, or an iterator of examples.",
+   "Pass evaluator functions in evaluators. Each evaluator produces a metric for the target output.",
+   "Use metadata to attach information to an experiment. Reserved models, prompts, and tools fields populate matching experiment columns.",
+   "Every call creates an experiment that can be opened in the UI or queried through the SDK.",
+   "The returned ExperimentResults object can be iterated to inspect individual evaluation results."
+  ],
+  "gotchas": [
+   "For large Python jobs, prefer aevaluate(). The synchronous method can wait for the full job.",
+   "Set max_concurrency in Python or maxConcurrency in TypeScript to control parallel work.",
+   "The target must accept the same input shape as the dataset examples."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "Client.list_runs": {
+  "sourceUrl": "https://docs.langchain.com/oss/python/deepagents/subagents",
+  "sourceTitle": "Subagents - Docs by LangChain",
+  "summary": "Deep agents can delegate tasks to custom subagents. Subagents isolate detailed tool work and can return structured results to the supervisor.",
+  "explanation": "Use the `subagents` configuration to give a deep agent specialized workers. Each worker receives a task and returns a result to the supervisor. The supervisor waits for synchronous workers. A worker can also return structured output, which the parent receives as JSON-serialized content.",
+  "syntax": "create_deep_agent(model=..., subagents=[...])",
+  "parameters": [
+   {
+    "name": "subagents",
+    "type": "list or configuration",
+    "description": "A list or configuration of custom workers available to the deep agent."
+   },
+   {
+    "name": "response_format",
+    "type": "schema or strategy",
+    "description": "The output schema or strategy used by a worker."
+   }
+  ],
+  "returns": "A subagent returns a result to its supervisor. With structured output, the result is JSON-serialized in the parent tool message.",
+  "example": {
+   "title": "List subagent runs",
+   "code": "from langsmith import Client\n\nclient = Client()\nruns = client.list_runs(\n    project_name=\"my-project\",\n    filter=\"has(metadata, 'lc_agent_name')\",\n)\n\nfor run in runs:\n    print(run.name, run.start_time, run.status)",
+   "language": "python",
+   "explanation": "This lists runs that contain the subagent metadata key."
+  },
+  "useCases": [
+   {
+    "title": "Keep context small",
+    "scenario": "A task produces many search, file, or database results."
+   },
+   {
+    "title": "Delegate specialized work",
+    "scenario": "A task needs special instructions or tools."
+   },
+   {
+    "title": "Return structured output",
+    "scenario": "The parent needs predictable machine-readable data."
+   }
+  ],
+  "related": [
+   "create_deep_agent",
+   "Async subagents",
+   "Structured output",
+   "LangSmith filter query language",
+   "Client.list_runs"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "Why use subagents?",
+    "answer": "Subagents isolate detailed tool work from the main agent. The supervisor receives the worker's final result instead of every intermediate tool call.",
+    "followUp": "When should asynchronous subagents be preferred? Use them for long tasks, parallel work, or work that needs steering or cancellation during execution."
+   },
+   {
+    "question": "How do you configure a custom subagent?",
+    "answer": "Define a subagent in the `subagents` configuration with a name, description, system prompt, and optional tools. Pass that configuration to `create_deep_agent`.",
+    "followUp": "How can you inspect one worker's traces? Filter LangSmith runs by the `lc_agent_name` metadata key."
+   },
+   {
+    "question": "How does structured output work for subagents?",
+    "answer": "Set `response_format` on the subagent configuration. It can use a Pydantic model, a strategy object, or another schema accepted by `create_agent`.",
+    "followUp": "What does the parent receive? The structured response is serialized to JSON in the returned tool message."
+   }
+  ],
+  "keyPoints": [
+   "Subagents keep large intermediate results out of the supervisor's context.",
+   "Add custom workers through the `subagents` parameter.",
+   "The response schema can be a Pydantic model, a tool strategy, a provider strategy, or a raw schema.",
+   "LangSmith can filter traces for one named worker."
+  ],
+  "gotchas": [
+   "Synchronous subagents stop the supervisor until the worker finishes. Use asynchronous subagents for long-running work, parallel workstreams, or mid-flight control.",
+   "Structured output needs deepagents version 0.5.3 or newer.",
+   "The parent receives structured results as JSON text inside the tool message."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "Client.read_run": {
+  "sourceUrl": "https://docs.langchain.com/langsmith/smithdb-sdk-migration-runs",
+  "sourceTitle": "Migrate run retrieval to SmithDB",
+  "summary": "Client.runs.retrieve fetches one LangSmith run by ID. It requires the owning project UUID and returns only the ID unless you select more fields.",
+  "explanation": "The deprecated read_run method fetches a run by ID. The replacement is the asynchronous client.runs.retrieve method. It requires the UUID of the owning project and returns only the ID unless you provide uppercase field names in selects.",
+  "syntax": "await client.runs.retrieve(run_id=run_id, project_id=project_id, start_time=start_time, selects=[\"NAME\", \"STATUS\"])",
+  "parameters": [
+   {
+    "name": "run_id",
+    "type": "ID",
+    "description": "The ID of the run to retrieve."
+   },
+   {
+    "name": "project_id",
+    "type": "UUID",
+    "description": "The UUID of the project that owns the run."
+   },
+   {
+    "name": "start_time",
+    "type": "string/datetime",
+    "description": "The run start time in RFC3339 format. Optional, but it speeds up retrieval."
+   },
+   {
+    "name": "selects",
+    "type": "list of strings",
+    "description": "Uppercase field names to return. Defaults to the ID only."
+   }
+  ],
+  "returns": "A run object containing the selected fields. By default, only the run ID is returned.",
+  "example": {
+   "title": "Retrieve selected run fields",
+   "code": "import asyncio\nfrom langsmith import Client\n\nasync def main():\n    client = Client()\n    project = await client.aread_project(project_name=\"default\")\n    run = await client.runs.retrieve(\n        run_id=\"<run-id>\",\n        project_id=str(project.id),\n        selects=[\"NAME\", \"STATUS\"],\n    )\n    print(run.name, run.status)\n\nasyncio.run(main())",
+   "language": "python",
+   "explanation": "This fetches a run by ID and asks for two fields."
+  },
+  "useCases": [
+   {
+    "title": "Read one run",
+    "scenario": "You have a run ID and need selected run data for a debugging or reporting task."
+   },
+   {
+    "title": "Handle a missing run",
+    "scenario": "You need to handle missing run IDs without stopping the application."
+   },
+   {
+    "title": "List trace runs and filter ancestors",
+    "scenario": "You need child runs from a trace."
+   }
+  ],
+  "related": [
+   "Client.aread_project",
+   "Client.traces.list_runs",
+   "Client.runs.get_url",
+   "NotFoundError"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you retrieve one run with the new Python SDK?",
+    "answer": "Use client.runs.retrieve with the run ID and the owning project's UUID. In Python, await the call because this method is asynchronous.",
+    "followUp": "What if the project UUID is unknown? Resolve it first with await client.aread_project(project_name=...)."
+   },
+   {
+    "question": "What changed about returned fields?",
+    "answer": "The method returns only the ID by default. Pass uppercase field names, such as NAME, STATUS, or TOTAL_TOKENS, in selects to request more data.",
+    "followUp": "Why might field selection be useful? It limits the response to the data the caller needs."
+   },
+   {
+    "question": "What rate limit applies to the new method?",
+    "answer": "The replacement uses a higher Cloud rate limit of 300 requests per 10 seconds per API key. A request over the limit returns HTTP 429.",
+    "followUp": "How should a client react? It should handle 429 responses and retry according to its rate-limit policy."
+   }
+  ],
+  "keyPoints": [
+   "Use this method when you already know the run ID and need to read one run.",
+   "The project_id value must be the UUID of the project containing the run.",
+   "You can provide the run start time in RFC3339 format to make retrieval faster.",
+   "Use uppercase names in selects, such as NAME and STATUS.",
+   "Child runs are no longer loaded through this retrieval method; list the trace runs and filter their ancestor IDs instead.",
+   "Catch langsmith.NotFoundError when the requested run does not exist."
+  ],
+  "gotchas": [
+   "read_run is deprecated and is scheduled for removal after January 31, 2027.",
+   "runs.retrieve does not return the full run unless you request more fields with selects.",
+   "Pass the UUID of the project that owns the run.",
+   "Handle rate-limit responses when requests exceed the documented limit."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "create_anonymizer": {
+  "sourceUrl": "https://reference.langchain.com/python/langsmith/anonymizer/create_anonymizer",
+  "sourceTitle": "create_anonymizer | langsmith | LangChain Reference",
+  "summary": "Creates a callable that anonymizes sensitive text in nested data. It accepts replacement rules or a custom string replacer and can limit recursion depth.",
+  "explanation": "create_anonymizer builds a callable that walks data and replaces matching text. You can give it replacement rules or a callable replacer. The walk supports nested data and has a configurable maximum depth.",
+  "syntax": "create_anonymizer(replacer: ReplacerType, *, max_depth: Optional[int] = None) -> Callable",
+  "parameters": [
+   {
+    "name": "replacer",
+    "type": "ReplacerType",
+    "description": "A rule list or callable used to replace sensitive string content."
+   },
+   {
+    "name": "max_depth",
+    "type": "Optional[int]",
+    "description": "Optional maximum nesting depth for recursive processing."
+   }
+  ],
+  "returns": "A callable anonymizer function.",
+  "example": {
+   "title": "Mask an email address",
+   "code": "from langsmith.anonymizer import create_anonymizer\n\nanonymizer = create_anonymizer([\n    {\"pattern\": r\"[\\w.+-]+@[\\w.-]+\\.[A-Za-z]{2,}\", \"replace\": \"<email>\"}\n])\n\nprint(anonymizer({\"message\": \"Contact a@example.com\"}))",
+   "language": "python",
+   "explanation": "This creates a rule-based anonymizer and applies it to a nested value."
+  },
+  "useCases": [
+   {
+    "title": "Remove sensitive text from LangSmith inputs and outputs",
+    "scenario": "Trace privacy"
+   },
+   {
+    "title": "Apply application-specific transformations with a callable replacer",
+    "scenario": "Custom masking"
+   },
+   {
+    "title": "Mask values inside structured data",
+    "scenario": "Nested payloads"
+   }
+  ],
+  "related": [
+   "StringNodeProcessor",
+   "RuleNodeProcessor",
+   "CallableNodeProcessor",
+   "Client",
+   "hide_inputs",
+   "hide_outputs"
+  ],
+  "since": "v0.5",
+  "interview": [
+   {
+    "question": "What does create_anonymizer do?",
+    "answer": "It creates a function that recursively processes data and replaces sensitive text. The replacer can be a list of pattern-and-replacement rules or a callable.",
+    "followUp": "How would you handle data nested more than 10 levels deep? Set the max_depth argument to a suitable larger value."
+   },
+   {
+    "question": "What are its main inputs?",
+    "answer": "The function accepts a replacer as its first argument. max_depth is optional and defaults to None in the signature; the documentation describes a default traversal limit of 10 levels.",
+    "followUp": "What should the replacer return? For callable-based use, it should return the transformed string value."
+   },
+   {
+    "question": "How is the anonymizer used with LangSmith tracing?",
+    "answer": "It is used with a LangSmith Client to mask sensitive input and output data before traces are sent. Environment variables can independently hide inputs or outputs.",
+    "followUp": "What happens if LANGSMITH_HIDE_OUTPUTS is true? The anonymizer is skipped for outputs."
+   }
+  ],
+  "keyPoints": [
+   "The function returns an anonymizer callable.",
+   "A list of regular-expression rules can define what text to replace.",
+   "A custom callable can transform each string value.",
+   "The recursive walk normally checks up to 10 nested levels.",
+   "Use max_depth to change the traversal limit.",
+   "Provide the resulting callable through the LangSmith Client anonymizer option."
+  ],
+  "gotchas": [
+   "The default traversal limit is 10 nested levels. Set max_depth when sensitive data may be deeper.",
+   "Input hiding through LANGSMITH_HIDE_INPUTS can prevent the anonymizer from running on inputs.",
+   "When both are configured, anonymizer processing takes priority over hide_inputs and hide_outputs functions."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "create_presigned_url": {
+  "sourceUrl": "https://docs.langchain.com/langsmith/presigned-feedback-tokens",
+  "sourceTitle": "Collect feedback with presigned URLs - Docs by LangChain Documentation Index",
+  "summary": "Create a presigned URL for one LangSmith run and feedback key. A browser, mobile app, or external channel can submit feedback through it without exposing the LangSmith API key.",
+  "explanation": "The server creates a token for one LangSmith run and one feedback key. It returns a URL that a browser, mobile app, email, or another client can call directly, so the client does not need LangSmith authentication.",
+  "syntax": "client.create_presigned_feedback_token(run_id=\"run-id\", feedback_key=\"feedback-key\")",
+  "parameters": [
+   {
+    "name": "run_id",
+    "type": "string",
+    "description": "The identifier of the LangSmith run that will receive feedback."
+   },
+   {
+    "name": "feedback_key",
+    "type": "string",
+    "description": "The feedback key that identifies the feedback field."
+   }
+  ],
+  "returns": "An object containing a url that clients can call to submit feedback.",
+  "example": {
+   "title": "Create a presigned feedback URL",
+   "code": "from langsmith import Client\n\nclient = Client()\nresult = client.create_presigned_feedback_token(\n    run_id=\"run-id\",\n    feedback_key=\"user-feedback\",\n)\nprint(result[\"url\"])\n",
+   "language": "python",
+   "explanation": "This creates a URL for feedback about one run and one feedback key. A client can call the returned URL without receiving the LangSmith API key."
+  },
+  "useCases": [
+   {
+    "title": "Client-side ratings",
+    "scenario": "A web or mobile UI asks users to rate an LLM response."
+   },
+   {
+    "title": "External feedback links",
+    "scenario": "A team sends feedback links through email or Slack."
+   },
+   {
+    "title": "Backend-independent collection",
+    "scenario": "A system needs to collect feedback without adding LangSmith credentials to the client."
+   },
+   {
+    "title": "Automatic Agent Server URLs",
+    "scenario": "An Agent Server run request includes feedback_keys."
+   }
+  ],
+  "related": [
+   "createPresignedFeedbackToken",
+   "Agent Server",
+   "feedback_keys"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do presigned feedback URLs work?",
+    "answer": "The server calls create_presigned_feedback_token with a run ID and feedback key. The returned URL is sent to the client, which can submit feedback without authentication.",
+    "followUp": "Why should the server create the token? Because the server must protect the LangSmith API key used to create it."
+   },
+   {
+    "question": "What is the scope of a presigned feedback token?",
+    "answer": "A token is created for one run and one feedback key. The resulting URL lets an external client send feedback directly to LangSmith.",
+    "followUp": "What limits the URL's scope? The run ID and feedback key supplied during token creation."
+   },
+   {
+    "question": "When should an application use presigned feedback URLs?",
+    "answer": "They are useful for browser and mobile interfaces, and for links placed in email or Slack. They also separate feedback collection from the backend that creates the token.",
+    "followUp": "What other workflow is documented for Agent Server? Agent Server can generate these URLs automatically when feedback_keys are included in the run request."
+   }
+  ],
+  "keyPoints": [
+   "Use tokens when a browser or mobile app must collect feedback.",
+   "The generated URL identifies both the trace run and the feedback category.",
+   "The client sends feedback to the URL instead of using the LangSmith client API.",
+   "They support common user ratings such as thumbs up, thumbs down, and stars.",
+   "The URL can be placed in messages outside the application.",
+   "Agent Server can create these URLs automatically when its run request includes feedback keys."
+  ],
+  "gotchas": [
+   "Create the token on a trusted server. Do not generate it in frontend code that can expose server credentials.",
+   "Each URL is limited to the run and feedback key used when the token was created."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "Dataset": {
+  "sourceUrl": "https://reference.langchain.com/python/langsmith/schemas/Dataset",
+  "sourceTitle": "Dataset | langsmith | LangChain Reference",
+  "summary": "Dataset is LangSmith’s ORM model for a dataset. It has a name, optional description, and optional data type.",
+  "explanation": "Dataset is the LangSmith ORM model for a dataset. It includes inherited fields such as a name, description, and optional data type, plus model methods for dictionary and JSON output.",
+  "syntax": "Dataset(_host_url: Optional[str] = None, _tenant_id: Optional[UUID] = None, _public_path: Optional[str] = None, kwargs: Any = {})",
+  "parameters": [
+   {
+    "name": "_host_url",
+    "type": "Optional[str]",
+    "description": "Optional host URL used by the model constructor."
+   },
+   {
+    "name": "_tenant_id",
+    "type": "Optional[UUID]",
+    "description": "Optional tenant identifier."
+   },
+   {
+    "name": "_public_path",
+    "type": "Optional[str]",
+    "description": "Optional public path."
+   },
+   {
+    "name": "kwargs",
+    "type": "Any",
+    "description": "Additional constructor keyword arguments."
+   }
+  ],
+  "returns": "A Dataset model instance.",
+  "example": {
+   "title": "Create a dataset model",
+   "code": "from langsmith.schemas import Dataset\n\nitem = Dataset(name=\"support-questions\")\nprint(item.name)",
+   "language": "python",
+   "explanation": "This creates a Dataset model with a name and reads that name."
+  },
+  "useCases": [
+   {
+    "title": "Model a dataset",
+    "scenario": "Represent dataset metadata in Python code."
+   },
+   {
+    "title": "Serialize dataset data",
+    "scenario": "Convert a dataset model into data for storage or transport."
+   },
+   {
+    "title": "Read dataset attributes",
+    "scenario": "Inspect dataset fields while working with LangSmith schemas."
+   }
+  ],
+  "related": [
+   "DatasetBase",
+   "DataType",
+   "DatasetTransformation"
+  ],
+  "since": "v0.5",
+  "interview": [
+   {
+    "question": "What is Dataset in LangSmith?",
+    "answer": "Dataset is a LangSmith ORM model. Its documented fields include name, description, and data_type.",
+    "followUp": "How can you serialize it? Use to_dict for a recursive dictionary or to_json for an API-style JSON string."
+   },
+   {
+    "question": "Which fields does Dataset expose?",
+    "answer": "The name field is a string. The description field is optional, and data_type is also optional.",
+    "followUp": "What other fields exist? The page lists an id attribute and inherited Pydantic model attributes."
+   },
+   {
+    "question": "How do you create and serialize a Dataset?",
+    "answer": "Construct Dataset with its constructor, then use model methods such as model_dump or model_dump_json when Pydantic serialization is needed.",
+    "followUp": "When might to_dict be useful? It recursively creates a dictionary and supports include or exclude options."
+   }
+  ],
+  "keyPoints": [
+   "Dataset represents a dataset as a LangSmith ORM model.",
+   "The name field is required and has type str.",
+   "The description field can be omitted because it is optional.",
+   "The data_type field is optional and uses the DataType type.",
+   "to_dict creates a recursive dictionary representation of the model.",
+   "to_json produces a JSON string for the model."
+  ],
+  "gotchas": [],
+  "checkedAt": "2026-11-03"
+ },
+ "DynamicRunEvaluator": {
+  "sourceUrl": "https://reference.langchain.com/python/langsmith/evaluation/evaluator/DynamicRunEvaluator",
+  "sourceTitle": "DynamicRunEvaluator",
+  "summary": "DynamicRunEvaluator wraps a function that evaluates a LangSmith run. It supports optional examples and asynchronous evaluator functions.",
+  "explanation": "DynamicRunEvaluator wraps a function that evaluates a run. The function can also receive an optional example. The class supports synchronous and asynchronous evaluator functions and can infer feedback keys from the function source when possible.",
+  "syntax": "DynamicRunEvaluator(self, func: Callable[[Run, Optional[Example]], Union[_RUNNABLE_OUTPUT, Awaitable[_RUNNABLE_OUTPUT]]], afunc: Optional[Callable[[Run, Optional[Example]], Awaitable[_RUNNABLE_OUTPUT]]] = None)",
+  "parameters": [
+   {
+    "name": "func",
+    "type": "Callable[[Run, Optional[Example]], Union[_RUNNABLE_OUTPUT, Awaitable[_RUNNABLE_OUTPUT]]]",
+    "description": "The evaluator function. It receives a Run and an optional Example and may return evaluator output or an awaitable result."
+   },
+   {
+    "name": "afunc",
+    "type": "Optional[Callable[[Run, Optional[Example]], Awaitable[_RUNNABLE_OUTPUT]]]",
+    "description": "An optional asynchronous evaluator function. It receives a Run and an optional Example and returns an awaitable evaluator result."
+   }
+  ],
+  "returns": "The wrapped evaluator's output when evaluate_run is called.",
+  "example": {
+   "title": "Create a dynamic run evaluator",
+   "code": "from langsmith.evaluation import DynamicRunEvaluator\n\n\ndef check_run(run, example=None):\n    return {\"key\": \"quality\", \"score\": 1.0}\n\nevaluator = DynamicRunEvaluator(check_run)\nresult = evaluator.evaluate_run(run)\nprint(result)",
+   "language": "python",
+   "explanation": "Create the evaluator with a function that receives a run and an optional example. Then call evaluate_run to run that function."
+  },
+  "useCases": [
+   {
+    "title": "Evaluate a run",
+    "scenario": "A test needs to score one traced run."
+   },
+   {
+    "title": "Use an example",
+    "scenario": "The evaluator needs expected input or output data."
+   },
+   {
+    "title": "Run async evaluation",
+    "scenario": "The evaluator performs asynchronous work."
+   }
+  ],
+  "related": [
+   "Run",
+   "Example",
+   "evaluate_run",
+   "is_async",
+   "feedback_keys"
+  ],
+  "since": "v0.5",
+  "interview": [
+   {
+    "question": "What does DynamicRunEvaluator do?",
+    "answer": "DynamicRunEvaluator is a wrapper around an evaluator function. The function receives a Run and an optional Example, and evaluate_run invokes it.",
+    "followUp": "What can the wrapped function return? It can return the supported runnable evaluator output directly, or an awaitable result when the evaluator is asynchronous."
+   },
+   {
+    "question": "How do you construct one?",
+    "answer": "Pass the synchronous function as func. If asynchronous evaluation needs separate handling, pass an async function through afunc.",
+    "followUp": "How can you inspect whether the evaluator is asynchronous? Check the is_async attribute."
+   },
+   {
+    "question": "What is feedback_keys used for?",
+    "answer": "feedback_keys lists feedback keys inferred from the evaluator source. The inference is best effort, so it may not identify keys that are dynamic or unavailable from source inspection.",
+    "followUp": "What should code do when feedback_keys is empty? It should not assume that no feedback will be produced; the key may only be known when the function runs."
+   }
+  ],
+  "keyPoints": [
+   "The evaluator function receives one run and may also receive an example.",
+   "Use is_async to determine whether the evaluator function is asynchronous.",
+   "feedback_keys reports feedback names inferred from the evaluator source.",
+   "evaluate_run evaluates a run by calling the wrapped evaluator function."
+  ],
+  "gotchas": [
+   "The feedback_keys list can be empty when a key is computed dynamically or the function source cannot be inspected."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "Engine": {
+  "sourceUrl": "https://docs.langchain.com/langsmith/engine-setup",
+  "sourceTitle": "Set up LangSmith Engine - Docs by LangChain",
+  "summary": "LangSmith Engine setup has two stages: an organization admin enables it, then an authorized project user turns it on for a tracing project or agent environment. You can add source code, preferences, trace filters, and an analysis level.",
+  "explanation": "An organization administrator enables Engine first. A user who can update tracing projects then enables it for a project or agent environment. Engine analyzes traces, creates an agent overview, and later finds recurring issues.",
+  "syntax": "",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Set up Engine",
+   "code": "# Engine setup is performed in the LangSmith console.\n# No SDK call or command is documented on this page.",
+   "language": "text",
+   "explanation": "The documentation describes a console setup flow, not a runnable code example."
+  },
+  "useCases": [
+   {
+    "title": "Organization setup",
+    "scenario": "Enable Engine for a team"
+   },
+   {
+    "title": "Trace filtering",
+    "scenario": "Limit analysis to one workload"
+   },
+   {
+    "title": "Repository connection",
+    "scenario": "Give diagnoses source-code context"
+   },
+   {
+    "title": "Analysis levels",
+    "scenario": "Control scan coverage and cost"
+   }
+  ],
+  "related": [
+   "LangSmith Engine",
+   "Find and fix issues",
+   "Connect Engine to your repository",
+   "Engine notifications",
+   "Validate fixes automatically",
+   "Engine on self-hosted and BYOC"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "Who can enable Engine?",
+    "answer": "An Organization Admin enables Engine for the organization. Then a user with permission to update tracing projects turns it on for each project or agent environment.",
+    "followUp": "What happens on self-hosted LangSmith? An operator must enable Engine in the Helm chart before users can enable it in the console."
+   },
+   {
+    "question": "Why connect a code repository?",
+    "answer": "The repository connection is optional. It lets Engine inspect source code, find the code path for a failing trace, and propose a change in a pull request.",
+    "followUp": "Why record a revision ID? It lets Engine match a trace with the commit that produced it and reason about the correct source version."
+   },
+   {
+    "question": "What does the analysis level control?",
+    "answer": "The analysis level controls how many traces Engine analyzes. Reduced uses fewer traces, Standard is the default, and Expanded provides the widest coverage when the project has enough tracing volume.",
+    "followUp": "How can analysis cost be controlled? Use a lower analysis level, add trace-scope conditions, or set an organization or project spend limit."
+   }
+  ],
+  "keyPoints": [
+   "Setup has two stages: enable Engine for the organization, then enable it for each project or environment.",
+   "A repository is not required, but source access helps Engine produce more useful diagnoses and fixes.",
+   "Review the generated agent overview because Engine uses it during later analysis.",
+   "Choose Reduced for lower coverage and cost, Standard for the default level, or Expanded for broader coverage.",
+   "You can limit analysis with up to one run-name condition and one metadata condition.",
+   "Preference changes and later trace-scope changes do not trigger an immediate scan."
+  ],
+  "gotchas": [
+   "Read-only project roles cannot turn on Engine.",
+   "The first analysis can take up to 20 minutes.",
+   "Deleting all issues also deletes the Engine settings and cannot be reversed."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "EvaluationResult": {
+  "sourceUrl": "https://reference.langchain.com/python/langsmith/evaluation/evaluator/EvaluationResult",
+  "sourceTitle": "EvaluationResult | langsmith | LangChain Reference",
+  "summary": "EvaluationResult is a Pydantic model for one evaluation outcome. It records a metric key, score or value, evaluator details, and optional run links or feedback settings.",
+  "explanation": "EvaluationResult is a Pydantic model for one evaluation outcome. It stores the metric key, score or value, evaluator details, optional feedback settings, comments, corrections, and links to source or target runs.",
+  "syntax": "EvaluationResult(key: str, score: SCORE_TYPE, value: VALUE_TYPE, evaluator_info: dict, metadata: Optional[dict] = None, comment: Optional[str] = None, correction: Optional[dict] = None, feedback_config: Optional[Union[FeedbackConfig, dict]] = None, source_run_id: Optional[Union[uuid.UUID, str]] = None, target_run_id: Optional[Union[uuid.UUID, str]] = None, extra: Optional[dict] = None)",
+  "parameters": [
+   {
+    "name": "key",
+    "type": "str",
+    "description": "Name of the evaluation metric."
+   },
+   {
+    "name": "score",
+    "type": "SCORE_TYPE",
+    "description": "Evaluation score."
+   },
+   {
+    "name": "value",
+    "type": "VALUE_TYPE",
+    "description": "Evaluation result value."
+   },
+   {
+    "name": "metadata",
+    "type": "Optional[dict]",
+    "description": "Optional metadata about the evaluation."
+   },
+   {
+    "name": "comment",
+    "type": "Optional[str]",
+    "description": "Optional comment."
+   },
+   {
+    "name": "correction",
+    "type": "Optional[dict]",
+    "description": "Optional correction record."
+   },
+   {
+    "name": "evaluator_info",
+    "type": "dict",
+    "description": "Information about the evaluator."
+   },
+   {
+    "name": "feedback_config",
+    "type": "Optional[Union[FeedbackConfig, dict]]",
+    "description": "Optional feedback interpretation settings."
+   },
+   {
+    "name": "source_run_id",
+    "type": "Optional[Union[uuid.UUID, str]]",
+    "description": "Optional source run identifier."
+   },
+   {
+    "name": "target_run_id",
+    "type": "Optional[Union[uuid.UUID, str]]",
+    "description": "Optional target run identifier."
+   },
+   {
+    "name": "extra",
+    "type": "Optional[dict]",
+    "description": "Additional optional data."
+   }
+  ],
+  "returns": "An EvaluationResult object.",
+  "example": {
+   "title": "Create an evaluation result",
+   "code": "from langsmith.schemas import EvaluationResult\n\nresult = EvaluationResult(\n    key=\"accuracy\",\n    score=0.9,\n    value=\"correct\",\n    evaluator_info={\"name\": \"accuracy_checker\"},\n)\n\nprint(result.model_dump())",
+   "language": "python",
+   "explanation": "This creates one evaluation result with a key, score, value, and evaluator information."
+  },
+  "useCases": [
+   {
+    "title": "Record an evaluation",
+    "scenario": "Store the output of a custom evaluator."
+   },
+   {
+    "title": "Describe evaluation origin",
+    "scenario": "Attach evaluator details to a metric."
+   },
+   {
+    "title": "Link evaluated runs",
+    "scenario": "Connect feedback to LangSmith runs."
+   },
+   {
+    "title": "Export evaluation data",
+    "scenario": "Serialize the result for API use."
+   }
+  ],
+  "related": [
+   "EvaluationResults",
+   "FeedbackConfig",
+   "BaseModel"
+  ],
+  "since": "v0.5",
+  "interview": [
+   {
+    "question": "What is EvaluationResult?",
+    "answer": "EvaluationResult represents one evaluation result. Its required core fields are key, score, value, and evaluator_info.",
+    "followUp": "How can one evaluator return several metrics? Use EvaluationResults, whose results field is a list of EvaluationResult objects."
+   },
+   {
+    "question": "What is the difference between score and value?",
+    "answer": "score holds the evaluation score, while value holds the evaluation value. Their exact types are SCORE_TYPE and VALUE_TYPE.",
+    "followUp": "Which fields can describe how the score should be interpreted? feedback_config can contain a FeedbackConfig or a dictionary."
+   },
+   {
+    "question": "What do source_run_id and target_run_id identify?",
+    "answer": "source_run_id identifies the run that produced the evaluation, and target_run_id identifies the run being evaluated. Both can be UUIDs or strings and are optional.",
+    "followUp": "What happens when target_run_id is missing? The root of the trace is used as the target."
+   }
+  ],
+  "keyPoints": [
+   "Use this model to represent one evaluation outcome.",
+   "key names the metric or feedback item.",
+   "score stores the numeric or typed evaluation score.",
+   "value stores the evaluation's result value.",
+   "evaluator_info stores details about the evaluator."
+  ],
+  "gotchas": [
+   "When target_run_id is omitted, LangSmith uses the trace root as the target run.",
+   "Set source_run_id when the evaluation came from another run and you want a UI link to it."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "expect": {
+  "sourceUrl": "https://reference.langchain.com/python/langsmith/_expect",
+  "sourceTitle": "_expect | langsmith | LangChain Reference",
+  "summary": "LangSmith's `expect` API makes approximate checks on pytest test results. It can compare predictions with references, check values directly, and record expectation feedback.",
+  "explanation": "The `expect` API creates approximate checks for values or test-result scores. Use it inside a LangSmith-marked pytest test. A matcher can compare a prediction with a reference, and an assertion records the expectation as feedback in LangSmith.",
+  "syntax": "expect.edit_distance(prediction=..., reference=...).to_be_less_than(...)\nexpect.value(value).to_contain(...)\nexpect.value(value).against(check)",
+  "parameters": [
+   {
+    "name": "prediction",
+    "type": "Any",
+    "description": "The generated result being checked."
+   },
+   {
+    "name": "reference",
+    "type": "Any",
+    "description": "The expected result used for comparison."
+   }
+  ],
+  "returns": "Expectation matchers and value-check objects that can record scores or assertions for a LangSmith test case.",
+  "example": {
+   "title": "Check a test result",
+   "code": "import pytest\nfrom langsmith import expect\n\n@pytest.mark.langsmith\ndef test_answer():\n    answer = \"Hello!\"\n    expect.value(answer).to_contain(\"Hello!\")\n    expect.edit_distance(\n        prediction=answer,\n        reference=\"Hello!\",\n    ).to_be_less_than(1)",
+   "language": "python",
+   "explanation": "This test checks a returned value directly and records an edit-distance expectation for the test result."
+  },
+  "useCases": [
+   {
+    "title": "Text similarity checks",
+    "scenario": "Compare generated text with an expected answer using edit distance."
+   },
+   {
+    "title": "Direct value validation",
+    "scenario": "Check that a returned value includes required content."
+   },
+   {
+    "title": "Evaluation feedback",
+    "scenario": "Record approximate test scores and assertions in LangSmith."
+   }
+  ],
+  "related": [
+   "expect.embedding_distance",
+   "expect.edit_distance",
+   "expect.value",
+   "to_be_less_than",
+   "to_contain",
+   "against"
+  ],
+  "since": "v0.5",
+  "interview": [
+   {
+    "question": "What is the purpose of the LangSmith `expect` API?",
+    "answer": "`expect` provides approximate assertions for test results. It can calculate checks such as embedding distance or edit distance, then apply an assertion that is logged as expectation feedback.",
+    "followUp": "How can you check a value without comparing it with a reference? Use `expect.value(value)` and call a value check such as `to_contain` or `against`."
+   },
+   {
+    "question": "How do you assert an edit-distance result?",
+    "answer": "`expect.edit_distance` compares a prediction with a reference. Calling `to_be_less_than(1)` asserts that the calculated distance is below one and logs the expectation.",
+    "followUp": "What other distance-based matcher is shown? `expect.embedding_distance` compares the prediction and reference using embedding distance."
+   },
+   {
+    "question": "How do direct value assertions differ from matchers?",
+    "answer": "Use `expect.value(response_txt)` for direct value checks. The documented examples use `to_contain` for a substring check and `against` for a custom function.",
+    "followUp": "What does a custom check receive? The example passes the checked value to a lambda, which returns the check result."
+   }
+  ],
+  "keyPoints": [
+   "The API records approximate checks as expectations on test results.",
+   "Matchers can log scores for a test case.",
+   "Applying an assertion can send expectation feedback to LangSmith.",
+   "Embedding distance accepts a prediction and a reference.",
+   "Edit distance also compares a prediction with a reference.",
+   "Direct value checks can test whether a value contains specified text."
+  ],
+  "gotchas": [
+   "Use the API inside a suitably decorated pytest test case."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "Experiments": {
+  "sourceUrl": "https://docs.langchain.com/langsmith/analyze-an-experiment",
+  "sourceTitle": "Analyze an experiment - Docs by LangChain",
+  "summary": "LangSmith's experiment view helps you inspect evaluation results. You can customize views, group and filter data, compare experiments, set a baseline, and download results.",
+  "explanation": "Open an experiment from a dataset to inspect its results. You can adjust columns, inspect traces and evaluator runs, group results, compare experiments, set a baseline, filter metadata, and export all results as CSV.",
+  "syntax": "client.evaluate(target, data=\"my-dataset\", evaluators=[...], metadata={\"models\": ..., \"prompts\": ..., \"tools\": ...})",
+  "parameters": [
+   {
+    "name": "target",
+    "type": "callable or application",
+    "description": "The application or callable evaluated on the dataset."
+   },
+   {
+    "name": "data",
+    "type": "dataset name or identifier",
+    "description": "The dataset used for the evaluation."
+   },
+   {
+    "name": "evaluators",
+    "type": "list",
+    "description": "Evaluation functions used to score results."
+   },
+   {
+    "name": "metadata",
+    "type": "object",
+    "description": "Experiment metadata, including models, prompts, and tools."
+   }
+  ],
+  "returns": "An evaluation result object containing experiment results.",
+  "example": {
+   "title": "Run an evaluation with experiment metadata",
+   "code": "from langsmith import Client\n\nclient = Client()\nresults = client.evaluate(\n    target,\n    data=\"my-dataset\",\n    evaluators=[...],\n    metadata={\n        \"models\": \"openai:gpt-5.4-mini\",\n        \"prompts\": [\"my-org/my-prompt:abc12345\"],\n        \"tools\": [{\"name\": \"web_search\", \"description\": \"Search the web for information\"}],\n    },\n)",
+   "language": "python",
+   "explanation": "This starts an evaluation and records model, prompt, and tool metadata for the experiment."
+  },
+  "useCases": [
+   {
+    "title": "Analyze experiment results",
+    "scenario": "Review one evaluation run and inspect its outputs, scores, metrics, and traces."
+   },
+   {
+    "title": "Track progress against a baseline",
+    "scenario": "Compare new experiments with a fixed reference to find improvements or regressions."
+   },
+   {
+    "title": "Group results by metadata",
+    "scenario": "Study performance by subject area or other example categories."
+   },
+   {
+    "title": "Export results as CSV",
+    "scenario": "Share or analyze experiment data outside LangSmith."
+   }
+  ],
+  "related": [
+   "experiment",
+   "dataset",
+   "Experiments tab",
+   "baseline",
+   "repetitions",
+   "LLM-as-a-judge evaluators",
+   "compare experiment results",
+   "evaluate()"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you open and inspect an experiment?",
+    "answer": "Open the dataset, go to the Experiments tab, and select an experiment row. The view shows example data, feedback, and experiment metrics, and it supports detailed run inspection.",
+    "followUp": "How can you inspect the underlying execution? Click the View project icon to open the experiment traces."
+   },
+   {
+    "question": "What does an experiment baseline do?",
+    "answer": "Set a baseline from an experiment row in the Experiments tab. LangSmith pins it at the top, labels it, and shows score differences against it for other experiments.",
+    "followUp": "What happens during comparison selection? The baseline becomes the default source experiment."
+   },
+   {
+    "question": "How do SDK experiments expose model and prompt information?",
+    "answer": "Add models, prompts, and tools in the evaluate metadata object when using the SDK. LangSmith then exposes populated columns and lets you filter or group by these values.",
+    "followUp": "What other metadata can be used? The table also supports model providers, prompt commits, tools, and other experiment metadata."
+   }
+  ],
+  "keyPoints": [
+   "The default table includes each example's input, output, reference output, feedback scores, and metrics such as cost, tokens, latency, and status.",
+   "The Columns control lets you split fields into separate columns, hide columns, reorder them, and change feedback-score precision.",
+   "Grouping by example metadata summarizes feedback, latency, token use, and cost for every selected group.",
+   "Repeated experiments provide an aggregate score that links to each individual repetition.",
+   "The experiment view can compare the current experiment with another selected experiment.",
+   "Use the download icon to export experiment results as a CSV file for analysis or sharing."
+  ],
+  "gotchas": [
+   "CSV downloads include every column, even when the table view hides, reorders, sorts, or filters columns.",
+   "Models, Prompts, and Tools columns appear only after at least one experiment supplies those fields.",
+   "SDK progress tracking needs Python langsmith 0.8.16 or newer, or TypeScript langsmith 0.7.8 or newer.",
+   "Example-metadata grouping is limited for older experiments; older data must have metadata on the experiment traces."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "FeedbackCategory": {
+  "sourceUrl": "https://reference.langchain.com/python/langsmith/schemas/FeedbackCategory",
+  "sourceTitle": "FeedbackCategory | langsmith | LangChain Reference",
+  "summary": "FeedbackCategory defines one feedback option as a numeric value with an optional label. It is used to describe individual categories in LangSmith feedback configuration.",
+  "explanation": "FeedbackCategory is a typed dictionary for one allowed feedback option. It stores a required numeric value and may also store a label that explains what the value means.",
+  "syntax": "class FeedbackCategory(TypedDict):\n    value: float\n    label: NotRequired[str]",
+  "parameters": [
+   {
+    "name": "value",
+    "type": "float",
+    "description": "The numeric value associated with this feedback category."
+   },
+   {
+    "name": "label",
+    "type": "Optional[str]",
+    "description": "An optional label to interpret the value for this feedback category."
+   }
+  ],
+  "returns": "A FeedbackCategory TypedDict containing a float value and an optional string label.",
+  "example": {
+   "title": "Create a feedback category",
+   "code": "from langsmith.schemas import FeedbackCategory\n\ncategory: FeedbackCategory = {\n    \"value\": 1.0,\n    \"label\": \"pass\",\n}\n\nprint(category[\"value\"], category[\"label\"])",
+   "language": "python",
+   "explanation": "This creates a category with a numeric value and an optional label."
+  },
+  "useCases": [
+   {
+    "title": "Score evaluation outcomes",
+    "scenario": "Define a pass or fail evaluation result with numeric scores."
+   },
+   {
+    "title": "Label discrete values",
+    "scenario": "Give readable names to numeric category values."
+   },
+   {
+    "title": "Configure accepted categories",
+    "scenario": "Build the category list for categorical feedback."
+   }
+  ],
+  "related": [
+   "FeedbackConfig",
+   "FeedbackConfig.categories"
+  ],
+  "since": "v0.5",
+  "interview": [
+   {
+    "question": "What is FeedbackCategory?",
+    "answer": "FeedbackCategory is a TypedDict that pairs a required float value with an optional string label. The value represents the category numerically, while the label gives that number a readable meaning.",
+    "followUp": "How would you use several categories? Put several FeedbackCategory objects in the categories field of a FeedbackConfig whose type is categorical."
+   },
+   {
+    "question": "What fields does FeedbackCategory contain?",
+    "answer": "The value field is required and has type float. It is the numeric value assigned to the category.",
+    "followUp": "Can the category omit its numeric value? No. The documented shape requires value; only label is optional."
+   },
+   {
+    "question": "What is the purpose of label?",
+    "answer": "label is optional and has type str when present. It helps people interpret the numeric value, such as mapping 1.0 to a passing result.",
+    "followUp": "Is label used for continuous feedback? No. FeedbackCategory is for specific value-and-label pairs, and categories apply to categorical feedback."
+   }
+  ],
+  "keyPoints": [
+   "Each object represents one feedback option with a numeric value and, optionally, a readable label.",
+   "value is required and must be a float.",
+   "label may be omitted when the number is already clear."
+  ],
+  "gotchas": [
+   "Use categories only when the feedback type is categorical. These entries describe the values accepted by the server."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "FeedbackSource": {
+  "sourceUrl": "https://docs.langchain.com/langsmith/smith-api/feedback/read-feedback",
+  "sourceTitle": "Read feedback - Docs by LangChain",
+  "summary": "Read one LangSmith feedback record by its ID. The response includes the feedback value and links to related runs, sessions, traces, and experiments.",
+  "explanation": "Send a GET request to the feedback endpoint with the feedback ID in the path. The response contains the feedback key, score or value, comment, related run and session IDs, timestamps, source details, and other metadata.",
+  "syntax": "GET /api/v1/feedback/{feedback_id}",
+  "parameters": [
+   {
+    "name": "feedback_id",
+    "type": "string<uuid>",
+    "description": "The UUID of the feedback record to retrieve."
+   }
+  ],
+  "returns": "A feedback object with identifiers, score or value, comment, correction, relationships, timestamps, root status, source information, extra data, and an optional thread ID.",
+  "example": {
+   "title": "Read one feedback record",
+   "code": "const feedbackId = \"3c90c3cc-0d44-4b50-8888-8dd25736052a\";\nconst response = await fetch(`/api/v1/feedback/${feedbackId}`);\nconst feedback = await response.json();\nconsole.log(feedback.key, feedback.score, feedback.comment);",
+   "language": "javascript",
+   "explanation": "This request gets one feedback record by its ID and prints selected fields."
+  },
+  "useCases": [
+   {
+    "title": "Review feedback",
+    "scenario": "Inspect a user or evaluator rating for one run."
+   },
+   {
+    "title": "Follow related execution data",
+    "scenario": "Connect a feedback record to its trace or session."
+   },
+   {
+    "title": "Inspect feedback details",
+    "scenario": "Read comments, corrections, or source metadata."
+   }
+  ],
+  "related": [
+   "FeedbackSource",
+   "FeedbackSchemaFeedbackSource",
+   "Update feedback"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you read one feedback record?",
+    "answer": "Use a GET request to `/api/v1/feedback/{feedback_id}`. Replace `{feedback_id}` with the feedback record's UUID.",
+    "followUp": "What can the response identify? It can link feedback to a run, session, trace, feedback group, or comparative experiment."
+   },
+   {
+    "question": "What data does the response contain?",
+    "answer": "The record includes `key`, `score`, `value`, `comment`, and `correction`. It also includes creation and modification timestamps.",
+    "followUp": "Which fields can be absent? Several relationship and detail fields are nullable, including `comment`, `run_id`, `session_id`, and `feedback_source`."
+   },
+   {
+    "question": "What is feedback_source?",
+    "answer": "`feedback_source` describes where the feedback came from. Its documented child fields include `type`, `metadata`, `user_id`, `ls_user_id`, and `user_name`.",
+    "followUp": "How can the source metadata be handled safely? Treat the source object and its child values as optional because the schema permits null values."
+   }
+  ],
+  "keyPoints": [
+   "Use the GET feedback endpoint and provide the feedback ID as the path parameter.",
+   "The response can include a feedback_source object loaded from the database.",
+   "A feedback record may belong to a feedback group, but the group ID can be null.",
+   "The record can reference a comparative experiment, and that reference is optional.",
+   "The is_root field is a boolean and defaults to false.",
+   "A feedback record may include a thread ID, but this field is optional."
+  ],
+  "gotchas": [
+   "The documentation page cannot create an example request until a valid request URL is supplied."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "get_current_run_tree": {
+  "sourceUrl": "https://docs.langchain.com/langsmith/access-current-span",
+  "sourceTitle": "Access the current run (span) within a traced function",
+  "summary": "Get the active LangSmith run inside a traced function. Use it to read IDs, tags, and other run data.",
+  "explanation": "Call `get_current_run_tree()` inside a function decorated with `traceable`. The returned `RunTree` gives access to information such as the run ID, trace ID, and parent run. You can use these values for logging or other trace-related work.",
+  "syntax": "get_current_run_tree() -> Optional[run_trees.RunTree]",
+  "parameters": [],
+  "returns": "An optional `RunTree` representing the current run; it may be `None` if the object was garbage collected.",
+  "example": {
+   "title": "Read the active run",
+   "code": "from langsmith import traceable\nfrom langsmith.run_helpers import get_current_run_tree\n\n@traceable\ndef greet(name: str):\n    run = get_current_run_tree()\n    print(run.id)\n    print(run.trace_id)\n    return f\"Hello, {name}\"\n\ngreet(\"Ada\")",
+   "language": "python",
+   "explanation": "Decorate the function with `traceable`, then call `get_current_run_tree()` inside it to read the active run."
+  },
+  "useCases": [
+   {
+    "title": "Log trace identifiers",
+    "scenario": "You need to print or store the current run ID while a traced function runs."
+   },
+   {
+    "title": "Inspect the active span",
+    "scenario": "You need information about the current span for trace-aware application code."
+   },
+   {
+    "title": "Read parent and trace IDs",
+    "scenario": "You need to understand where a function call sits in a trace."
+   }
+  ],
+  "related": [
+   "traceable",
+   "getCurrentRunTree",
+   "RunTree",
+   "run_helpers"
+  ],
+  "since": "0.5",
+  "interview": [
+   {
+    "question": "How do you access the current traced run in Python?",
+    "answer": "Use `get_current_run_tree()` inside a function marked with `@traceable`. It returns the active `RunTree`, whose properties include identifiers such as `id` and `trace_id`.",
+    "followUp": "What happens if the run tree is no longer available? The function may return `None`, so code that reads its properties should check the result first."
+   },
+   {
+    "question": "What information can you read from the returned run tree?",
+    "answer": "The run ID identifies the current run. The trace ID identifies the larger trace that contains the run. A parent run ID can show the current run's place in the trace hierarchy.",
+    "followUp": "How could you inspect the caller of a traced function? Read the parent run from the current `RunTree`, then inspect its ID when that parent exists."
+   },
+   {
+    "question": "What are the Python and TypeScript function names?",
+    "answer": "In Python, import `get_current_run_tree` from `langsmith.run_helpers`. In TypeScript, use `getCurrentRunTree` from `langsmith/traceable`. The function names follow each SDK's naming style.",
+    "followUp": "Which reference should you use for all available fields? Consult the `RunTree` reference documentation rather than assuming every field is present."
+   }
+  ],
+  "keyPoints": [
+   "In Python, call `get_current_run_tree()` to get the active traced run.",
+   "The TypeScript SDK uses the corresponding `getCurrentRunTree()` function.",
+   "The current run can provide identifiers, tags, and other trace data for application logic or logging.",
+   "Use the `RunTree` reference to find the complete set of supported properties."
+  ],
+  "gotchas": [
+   "The function can return `None` if the run tree was garbage collected, so handle that possibility when needed."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "LANGSMITH_AGENT_ID": {
+  "sourceUrl": "https://docs.langchain.com/langsmith/create-an-agent",
+  "sourceTitle": "Create an agent - Docs by LangChain",
+  "summary": "LANGSMITH_AGENT_ID selects the LangSmith agent that receives traces. Set it with LANGSMITH_AGENT_ENVIRONMENT to choose the target environment.",
+  "explanation": "The variable stores the immutable identifier of the LangSmith agent that should receive traces. Pair it with LANGSMITH_AGENT_ENVIRONMENT to select an environment. Use the identifier, not the agent's display name. Remove older destination variables when using agent addressing.",
+  "syntax": "export LANGSMITH_AGENT_ID=\"<your-agent-id>\"\nexport LANGSMITH_AGENT_ENVIRONMENT=\"local\"",
+  "parameters": [
+   {
+    "name": "LANGSMITH_AGENT_ID",
+    "type": "environment variable",
+    "description": "Immutable identifier of the LangSmith agent that receives traces."
+   },
+   {
+    "name": "LANGSMITH_AGENT_ENVIRONMENT",
+    "type": "environment variable",
+    "description": "Target agent environment, such as local, development, staging, or production."
+   }
+  ],
+  "returns": "",
+  "example": {
+   "title": "Select a trace destination",
+   "code": "export LANGSMITH_AGENT_ID=\"support-agent\"\nexport LANGSMITH_AGENT_ENVIRONMENT=\"local\"",
+   "language": "bash",
+   "explanation": "These variables select the LangSmith agent and environment that receive traces."
+  },
+  "useCases": [
+   {
+    "title": "Agent tracing",
+    "scenario": "Route LangChain or LangGraph traces to a specific LangSmith agent environment."
+   },
+   {
+    "title": "Integration setup",
+    "scenario": "Configure an integration that supports LangSmith agent addressing."
+   },
+   {
+    "title": "Stable destination",
+    "scenario": "Keep a stable tracing destination while changing the agent's display name."
+   }
+  ],
+  "related": [
+   "LANGSMITH_TRACING",
+   "LANGSMITH_API_KEY",
+   "tracer_session_name",
+   "LANGSMITH_PROJECT",
+   "LANGCHAIN_PROJECT",
+   "LANGCHAIN_SESSION",
+   "Log traces to an agent"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does LANGSMITH_AGENT_ID select?",
+    "answer": "LANGSMITH_AGENT_ID is the immutable identifier of the LangSmith agent that receives traces. It selects the agent record, while LANGSMITH_AGENT_ENVIRONMENT selects the environment.",
+    "followUp": "What should you do if the display name changes? Keep using the immutable identifier, because the display name is not the tracing destination."
+   },
+   {
+    "question": "How do you configure tracing for an agent?",
+    "answer": "Set LANGSMITH_AGENT_ID to the identifier returned when the agent is created. Set LANGSMITH_AGENT_ENVIRONMENT to an environment such as local, development, staging, or production.",
+    "followUp": "What if tracing reports a missing agent? Create the agent first, then retry with its exact identifier and environment."
+   },
+   {
+    "question": "What should integrations that require a project name use?",
+    "answer": "Some integrations still require a project name. For those integrations, use the selected environment's tracer_session_name as the compatibility project value.",
+    "followUp": "Should you derive that value from the agent ID? No. Retrieve it from LangSmith and use the returned value."
+   }
+  ],
+  "keyPoints": [
+   "Create the agent record before sending traces. The record organizes traces from code that can run outside LangSmith.",
+   "Use the immutable id for LANGSMITH_AGENT_ID. The display name can change and is not a tracing destination.",
+   "Set LANGSMITH_AGENT_ID and LANGSMITH_AGENT_ENVIRONMENT to route traces to one agent environment.",
+   "Valid environment values include local, development, staging, and production.",
+   "Use tracer_session_name only when an integration needs a project name. Do not create another project for it."
+  ],
+  "gotchas": [
+   "Set the agent ID to the immutable identifier returned when the agent is created. Do not use its display name.",
+   "Do not set LANGSMITH_AGENT_ID and LANGSMITH_AGENT_ENVIRONMENT together with legacy project or session destination variables."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "Online evaluators": {
+  "sourceUrl": "https://docs.langchain.com/langsmith/online-evaluations-code",
+  "sourceTitle": "Set up online code evaluators",
+  "summary": "Online code evaluators run checks on selected production traces and add feedback. You configure them in LangSmith, filter the runs, and write the check in Python or JavaScript.",
+  "explanation": "An online code evaluator runs on selected production runs and adds feedback. You create it in a project’s Evaluators tab, give it a name, choose a filter, and write code that checks each matching run.",
+  "syntax": "def evaluate(run):\n    return {\"key\": \"feedback_key\", \"score\": value}",
+  "parameters": [
+   {
+    "name": "run",
+    "type": "Run",
+    "description": "The production run selected by the evaluator filter."
+   }
+  ],
+  "returns": "A feedback result containing an evaluator key and a score, such as a Boolean or numeric value.",
+  "example": {
+   "title": "Check for run output",
+   "code": "def evaluate(run):\n    return {\"key\": \"has_output\", \"score\": bool(run.get(\"outputs\"))}",
+   "language": "python",
+   "explanation": "This evaluator returns a Boolean score that shows whether the run has output."
+  },
+  "useCases": [
+   {
+    "title": "Validate output structure",
+    "scenario": "You need to check whether production outputs follow a required schema."
+   },
+   {
+    "title": "Measure data statistics",
+    "scenario": "You want to measure a simple property across live data, such as length or a count."
+   },
+   {
+    "title": "Chain evaluator results",
+    "scenario": "You want a second check to use the score from an earlier evaluator."
+   }
+  ],
+  "related": [
+   "Online evaluations",
+   "Code evaluators",
+   "Filter traces (ClickHouse)",
+   "Chain evaluators",
+   "Adding metadata to your traces"
+  ],
+  "since": "v0.14",
+  "interview": [
+   {
+    "question": "How do you create an online code evaluator?",
+    "answer": "Create the evaluator from the Tracing page. Choose a project, open Evaluators, select + Evaluator, and choose Code Evaluator. Then name it, add a filter, write the evaluation function, test it, and save it.",
+    "followUp": "How can an evaluator process another evaluator’s result?"
+   },
+   {
+    "question": "Why use a filter?",
+    "answer": "A filter limits which runs trigger the evaluator. It can match user feedback, tool calls, or metadata such as a plan type. This avoids evaluating every production run.",
+    "followUp": "What should you use when the same feedback key can come from different sources?"
+   },
+   {
+    "question": "How do you chain online evaluators?",
+    "answer": "Use a feedback-key filter to run after an earlier evaluator. The evaluator can read the earlier score from run[\"feedback\"]. With extended statistics enabled, it can read from run[\"feedback_stats\"].",
+    "followUp": "What retention effect can this have?"
+   }
+  ],
+  "keyPoints": [
+   "Online evaluators give feedback while production traces are being collected. They help monitor application quality continuously.",
+   "A code evaluator can be written in Python or JavaScript inside LangSmith. It is useful for structure checks and data statistics.",
+   "To find evaluators, open Tracing and choose a tracing project or agent environment. Then open the Evaluators tab.",
+   "The evaluator needs a name. LangSmith also uses this name when creating the evaluator’s feedback.",
+   "Build filters with the filter builder. It uses the same fields and operators as ClickHouse trace filters."
+  ],
+  "gotchas": [
+   "When chaining evaluators, filtering uses the feedback key. It does not identify the evaluator that created that feedback.",
+   "Running an evaluator can change the retention level of the whole trace. Matching traces are kept for longer investigation."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "pytest-plugin": {
+  "sourceUrl": "https://reference.langchain.com/python/langsmith/pytest-plugin",
+  "sourceTitle": "pytest-plugin | langsmith | LangChain Reference",
+  "summary": "The LangSmith pytest plugin runs evaluations inside pytest and formats results with Rich. Mark selected tests with `@pytest.mark.langsmith` to enable LangSmith tracking.",
+  "explanation": "The plugin adds LangSmith-related pytest behavior. It registers the `langsmith` marker, tracks tests that use the marker, and can replace short pytest status characters with Rich-based result output. It also provides hooks for enabling LangSmith output and handling pytest command-line setup.",
+  "syntax": "@pytest.mark.langsmith\ndef test_name():\n    ...",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Mark a test for LangSmith",
+   "code": "import pytest\n\n@pytest.mark.langsmith\n@pytest.mark.parametrize(\"text\", [\"hello\", \"goodbye\"])\ndef test_text(text):\n    assert text\n",
+   "language": "python",
+   "explanation": "Mark a pytest test with `langsmith` so the plugin can track it."
+  },
+  "useCases": [
+   {
+    "title": "Add LangSmith evaluations to pytest",
+    "scenario": "Run evaluation tests"
+   },
+   {
+    "title": "Trace marked pytest tests",
+    "scenario": "Track selected tests"
+   },
+   {
+    "title": "Render results with Rich",
+    "scenario": "Improve test output"
+   }
+  ],
+  "related": [
+   "LangSmithPlugin",
+   "pytest_addoption",
+   "pytest_configure",
+   "pytest_runtest_call",
+   "pytest_report_teststatus"
+  ],
+  "since": "v0.5",
+  "interview": [
+   {
+    "question": "What is the LangSmith pytest plugin for?",
+    "answer": "It is a pytest plugin for running evaluations in a test suite and showing results with Rich-based output. It also adds LangSmith tracking for tests marked with `@pytest.mark.langsmith`.",
+    "followUp": "How does a test opt into tracking? Add the `langsmith` pytest marker to the test, for example with `@pytest.mark.langsmith`."
+   },
+   {
+    "question": "How are tests selected for LangSmith tracking?",
+    "answer": "The plugin registers the `langsmith` marker during pytest configuration. Its runtime hook applies LangSmith tracking to tests that use this marker.",
+    "followUp": "Why use a marker instead of tracking every test? The documented behavior limits tracking to explicitly selected tests."
+   },
+   {
+    "question": "What pytest integration details should you know?",
+    "answer": "The plugin has command-line setup hooks for LangSmith output. It avoids redefining `--langsmith-output` if that option already exists, and it supports pytest command-line initialization for different pytest versions.",
+    "followUp": "What output behavior does it change? It removes pytest's short test-status characters and provides Rich-based result rendering."
+   }
+  ],
+  "keyPoints": [
+   "Use the plugin to run LangSmith evaluations as part of pytest tests.",
+   "Test results can be rendered with Rich-based output.",
+   "The plugin registers a pytest marker named `langsmith`.",
+   "A test opts into LangSmith tracking by using the `langsmith` marker.",
+   "The plugin can add a Boolean command-line flag that controls LangSmith output.",
+   "For pytest 7, one hook handles setup immediately after command-line parsing."
+  ],
+  "gotchas": [
+   "The option hook does not redefine `--langsmith-output` when another plugin or configuration already defines it.",
+   "Only tests marked with `@pytest.mark.langsmith` receive the documented LangSmith tracking behavior.",
+   "The plugin removes pytest's short status characters, so normal `.` and `F` progress output may not appear."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "Run": {
+  "sourceUrl": "https://reference.langchain.com/javascript/langsmith/schemas/RunType",
+  "sourceTitle": "RunType | langsmith | LangChain Reference",
+  "summary": "RunType is a string type for identifying the operation represented by a LangSmith span. Its values cover model calls, chains, tools, retrieval, embeddings, prompts, and parsers.",
+  "explanation": "RunType is a string type that identifies what a LangSmith span represents. It lets LangSmith show the run with the suitable trace view and apply features for that operation.",
+  "syntax": "type RunType = \"llm\" | \"chain\" | \"tool\" | \"retriever\" | \"embedding\" | \"prompt\" | \"parser\"",
+  "parameters": [],
+  "returns": "A RunType value: \"llm\", \"chain\", \"tool\", \"retriever\", \"embedding\", \"prompt\", or \"parser\".",
+  "example": {
+   "title": "Declare a tool run type",
+   "code": "const runType = \"tool\";",
+   "language": "typescript",
+   "explanation": "This declares a run type for a tool operation."
+  },
+  "useCases": [
+   {
+    "title": "Mark language-model calls",
+    "scenario": "Tracing a model request"
+   },
+   {
+    "title": "Mark tool calls",
+    "scenario": "Tracing an agent action"
+   },
+   {
+    "title": "Mark retriever operations",
+    "scenario": "Tracing context retrieval"
+   }
+  ],
+  "related": [
+   "Run",
+   "dotted_order",
+   "trace_id",
+   "traceable",
+   "RunTree"
+  ],
+  "since": "v0.1",
+  "interview": [
+   {
+    "question": "What is RunType?",
+    "answer": "RunType identifies the operation represented by a span. Supported values are llm, chain, tool, retriever, embedding, prompt, and parser.",
+    "followUp": "Which type describes a document lookup? Use retriever, because it represents a lookup that fetches relevant documents or context."
+   },
+   {
+    "question": "How do you choose a run type?",
+    "answer": "Use chain for a sequence or composition of steps. Use llm for a language-model call and tool for a function or external action invoked by the model.",
+    "followUp": "How would you label an output transformation? Use parser when the operation transforms raw model output into a structured format."
+   },
+   {
+    "question": "What does dotted_order represent?",
+    "answer": "dotted_order is a sortable key that describes a run's place in the trace hierarchy. Each segment contains the run start time followed by Z and the run ID.",
+    "followUp": "How can you find the trace ID from it? Take the UUID in the first segment after splitting the dotted order on dots and then Z."
+   }
+  ],
+  "keyPoints": [
+   "RunType allows seven string values: llm, chain, tool, retriever, embedding, prompt, and parser.",
+   "The run_type field records what kind of operation a span represents.",
+   "chain describes a sequence or composition of steps.",
+   "llm describes a call to a language model.",
+   "tool describes a function or external action invoked by the model.",
+   "retriever describes a lookup that fetches relevant documents or context."
+  ],
+  "gotchas": [
+   "The UI gives some run types special trace views, so choose the type that matches the operation.",
+   "first_token_time is only relevant to streamed language-model runs."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "run_on_dataset": {
+  "sourceUrl": "https://reference.langchain.com/python/langchain-classic/smith/evaluation/runner_utils/arun_on_dataset",
+  "sourceTitle": "arun_on_dataset | langchain_classic | LangChain Reference",
+  "summary": "Runs a language model or chain on every example in a dataset. It can evaluate outputs, run tasks concurrently, and store traces in a named project.",
+  "explanation": "The function runs a language model or chain for every example in a dataset. It can evaluate the results, limit concurrent tasks, select a dataset version, and save traces under a project name.",
+  "syntax": "async arun_on_dataset(client: Client | None, dataset_name: str, llm_or_chain_factory: MODEL_OR_CHAIN_FACTORY, *, evaluation: smith_eval.RunEvalConfig | None = None, dataset_version: datetime | str | None = None, concurrency_level: int = 5, project_name: str | None = None, project_metadata: dict[str, Any] | None = None, verbose: bool = False, revision_id: str | None = None, kwargs: Any = {}) -> dict[str, Any]",
+  "parameters": [
+   {
+    "name": "client",
+    "type": "Client | None",
+    "description": "LangSmith client used to access the dataset and store traces."
+   },
+   {
+    "name": "dataset_name",
+    "type": "str",
+    "description": "Name of the dataset to process."
+   },
+   {
+    "name": "llm_or_chain_factory",
+    "type": "MODEL_OR_CHAIN_FACTORY",
+    "description": "Model, chain, runnable, or factory used for each example."
+   },
+   {
+    "name": "evaluation",
+    "type": "smith_eval.RunEvalConfig | None",
+    "description": "Optional evaluator configuration."
+   },
+   {
+    "name": "dataset_version",
+    "type": "datetime | str | None",
+    "description": "Optional dataset version."
+   },
+   {
+    "name": "concurrency_level",
+    "type": "int",
+    "description": "Maximum number of concurrent asynchronous tasks. Default: 5."
+   },
+   {
+    "name": "project_name",
+    "type": "str | None",
+    "description": "Optional trace project name."
+   },
+   {
+    "name": "project_metadata",
+    "type": "dict[str, Any] | None",
+    "description": "Optional metadata for the project."
+   },
+   {
+    "name": "verbose",
+    "type": "bool",
+    "description": "Whether to show verbose output. Default: False."
+   },
+   {
+    "name": "revision_id",
+    "type": "str | None",
+    "description": "Optional revision identifier."
+   },
+   {
+    "name": "kwargs",
+    "type": "Any",
+    "description": "Additional keyword arguments."
+   }
+  ],
+  "returns": "dict[str, Any]",
+  "example": {
+   "title": "Run a model on a dataset",
+   "code": "from langsmith import Client\nfrom langchain_openai import ChatOpenAI\nfrom langchain_classic.smith import arun_on_dataset\n\nclient = Client()\n\nasync def build_chain():\n    return ChatOpenAI(temperature=0)\n\nresult = await arun_on_dataset(\n    client,\n    dataset_name=\"my_dataset\",\n    llm_or_chain_factory=build_chain,\n    concurrency_level=5,\n)\nprint(result)",
+   "language": "python",
+   "explanation": "This runs the language model asynchronously on the named dataset and stores the traces."
+  },
+  "useCases": [
+   {
+    "title": "Dataset evaluation",
+    "scenario": "You want to test a model against many stored examples."
+   },
+   {
+    "title": "Trace collection",
+    "scenario": "You need trace data for debugging or comparison."
+   },
+   {
+    "title": "State isolation",
+    "scenario": "Your chain has memory and must be isolated per example."
+   },
+   {
+    "title": "Concurrent execution",
+    "scenario": "You need asynchronous throughput with a controlled task limit."
+   }
+  ],
+  "related": [
+   "run_on_dataset",
+   "RunEvalConfig",
+   "StringRunEvaluatorChain",
+   "load_evaluator",
+   "EvaluatorType"
+  ],
+  "since": "v1.4",
+  "interview": [
+   {
+    "question": "What does arun_on_dataset do?",
+    "answer": "arun_on_dataset asynchronously runs a language model or chain over a dataset and stores traces in a project. It returns a dictionary with the run information.",
+    "followUp": "How can each example receive an independent chain? Pass a callable constructor instead of one shared stateful chain."
+   },
+   {
+    "question": "What can llm_or_chain_factory contain?",
+    "answer": "The llm_or_chain_factory argument accepts a model, chain, runnable, or callable that creates a chain or runnable. A constructor is useful for stateful chains.",
+    "followUp": "Why avoid sharing a stateful chain? Shared memory can carry data between examples and contaminate evaluation results."
+   },
+   {
+    "question": "How are results evaluated?",
+    "answer": "RunEvalConfig supplies evaluators for the model or chain results. The function also supports custom evaluators through the custom_evaluators configuration.",
+    "followUp": "How would you reduce load on a service? Lower concurrency_level from its default value of 5."
+   }
+  ],
+  "keyPoints": [
+   "Use the function to run a chain or language model across dataset examples and save tracing data.",
+   "Use evaluation to configure evaluators for the generated results.",
+   "Use dataset_version to choose a specific dataset version.",
+   "Use project_name to choose where trace data is stored.",
+   "If project_name is omitted, the function creates a project name from the dataset, chain class, and current time.",
+   "The function is the asynchronous variant intended for faster execution than the synchronous runner."
+  ],
+  "gotchas": [
+   "Pass a constructor when the chain has memory or other state. This helps keep one dataset example from affecting another.",
+   "Set concurrency_level carefully. It controls how many asynchronous dataset tasks run at the same time."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "RunEvaluator": {
+  "sourceUrl": "https://reference.langchain.com/python/langsmith/evaluation/evaluator/DynamicRunEvaluator",
+  "sourceTitle": "DynamicRunEvaluator | langsmith | LangChain Reference",
+  "summary": "DynamicRunEvaluator turns a function into a LangSmith run evaluator. The function receives a run and optional example, and it can support synchronous or asynchronous evaluation.",
+  "explanation": "DynamicRunEvaluator wraps a synchronous or asynchronous function as a run evaluator. The function receives a Run and an optional Example and returns an evaluator result; an optional async function can handle asynchronous evaluation.",
+  "syntax": "DynamicRunEvaluator(func, afunc=None)",
+  "parameters": [
+   {
+    "name": "func",
+    "type": "Callable[[Run, Optional[Example]], Union[_RUNNABLE_OUTPUT, Awaitable[_RUNNABLE_OUTPUT]]",
+    "description": "The evaluator function. It receives a Run and an optional Example."
+   },
+   {
+    "name": "afunc",
+    "type": "Optional[Callable[[Run, Optional[Example]], Awaitable[_RUNNABLE_OUTPUT]]]",
+    "description": "An optional asynchronous evaluator function."
+   }
+  ],
+  "returns": "The page excerpt does not specify a separate return type for evaluate_run.",
+  "example": {
+   "title": "Create a function-based evaluator",
+   "code": "from langsmith.evaluation import DynamicRunEvaluator\n\n\ndef check_run(run, example=None):\n    return {\"key\": \"quality\", \"score\": 1.0, \"comment\": \"Pass\"}\n\nevaluator = DynamicRunEvaluator(check_run)\nresult = evaluator.evaluate_run(run, example)",
+   "language": "python",
+   "explanation": "Wrap a function that receives a run and optional example, then evaluate the run with the wrapper."
+  },
+  "useCases": [
+   {
+    "title": "Wrap custom scoring logic",
+    "scenario": "You already have a Python scoring function and want to use it as a run evaluator."
+   },
+   {
+    "title": "Run async evaluation",
+    "scenario": "Your evaluator performs asynchronous model or service calls."
+   },
+   {
+    "title": "Compare a run with an example",
+    "scenario": "You need evaluation code that can inspect both the run and its reference example."
+   }
+  ],
+  "related": [
+   "RunEvaluator",
+   "LLMEvaluator",
+   "Client.evaluate_run"
+  ],
+  "since": "v0.5",
+  "interview": [
+   {
+    "question": "What does DynamicRunEvaluator do?",
+    "answer": "DynamicRunEvaluator is a wrapper around an evaluator function. The function takes a Run and an optional Example and returns a supported evaluator result.",
+    "followUp": "How can asynchronous evaluation be supported? Pass an async function through the afunc parameter, or provide an awaitable function as func."
+   },
+   {
+    "question": "What are the constructor parameters?",
+    "answer": "func is the required callable. afunc is optional and provides a separate asynchronous implementation.",
+    "followUp": "What happens if no asynchronous function is supplied? The evaluator can still use the wrapped function according to its supported callable behavior."
+   },
+   {
+    "question": "How does evaluation happen?",
+    "answer": "The evaluate_run method evaluates a run by invoking the wrapped function with the run and optional example. The wrapper also exposes whether the evaluator is asynchronous.",
+    "followUp": "How are feedback keys determined? They are inferred from the evaluator function's source when possible, but inference is not guaranteed."
+   }
+  ],
+  "keyPoints": [
+   "The wrapped function receives a Run and may also receive an Example.",
+   "The function can return a supported runnable evaluator output, or an awaitable output.",
+   "Use afunc to provide a separate asynchronous evaluator function.",
+   "The is_async attribute reports whether the evaluator is asynchronous."
+  ],
+  "gotchas": [
+   "Feedback keys are inferred on a best-effort basis. The list can be empty when the key is dynamic or source code is unavailable."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "RunTree": {
+  "sourceUrl": "https://reference.langchain.com/python/langsmith/run_trees/RunTree",
+  "sourceTitle": "RunTree | langsmith | LangChain Reference",
+  "summary": "RunTree lets you create and update LangSmith traces with explicit control. It supports root runs, child spans, events, inputs, outputs, tags, metadata, and trace headers.",
+  "explanation": "RunTree is a Python model for building LangSmith traces. A run can be a root trace or a child span. You create a run, post it, optionally add child runs or events, then end and patch it with outputs. It gives explicit control, but you must manage the trace structure yourself.",
+  "syntax": "RunTree(name: str, run_type: str, inputs: dict, parent_run: Optional[RunTree] = None)",
+  "parameters": [
+   {
+    "name": "name",
+    "type": "str",
+    "description": "The run name."
+   },
+   {
+    "name": "run_type",
+    "type": "str",
+    "description": "The run type, such as a chain or LLM run."
+   },
+   {
+    "name": "inputs",
+    "type": "dict",
+    "description": "Input values used by the run."
+   },
+   {
+    "name": "parent_run",
+    "type": "Optional[RunTree]",
+    "description": "An optional parent run for a child span."
+   }
+  ],
+  "returns": "A RunTree instance representing the run.",
+  "example": {
+   "title": "Create and finish a run",
+   "code": "from langsmith import RunTree\n\nrun = RunTree(\n    name=\"Chat Pipeline\",\n    run_type=\"chain\",\n    inputs={\"question\":\"What is tracing?\"},\n)\nrun.post()\nrun.end(outputs={\"answer\":\"Tracing records application work.\"})\nrun.patch()",
+   "language": "python",
+   "explanation": "This creates a top-level chain run, sends it to LangSmith, adds the result, and updates the run."
+  },
+  "useCases": [
+   {
+    "title": "Instrument custom code",
+    "scenario": "You need to trace custom application code that has no built-in integration."
+   },
+   {
+    "title": "Build a trace hierarchy",
+    "scenario": "You need nested spans for pipeline steps or external service calls."
+   },
+   {
+    "title": "Propagate trace context",
+    "scenario": "You need to continue a trace across service boundaries."
+   },
+   {
+    "title": "Add tags and metadata",
+    "scenario": "You need to attach labels or diagnostic data to runs."
+   }
+  ],
+  "related": [
+   "RunBase",
+   "create_child",
+   "from_headers",
+   "to_headers",
+   "add_event",
+   "add_tags",
+   "add_metadata",
+   "patch"
+  ],
+  "since": "v0.5",
+  "interview": [
+   {
+    "question": "What does RunTree represent?",
+    "answer": "RunTree represents a run in a trace. The root run is the main trace, while child runs represent nested spans. You can create children with create_child and attach them to the parent.",
+    "followUp": "How would you pass trace context between services? Use the run's headers with to_headers, then create a parent span from those headers with from_headers."
+   },
+   {
+    "question": "How do you submit a completed run?",
+    "answer": "Call post() to send the initial run. After setting the end time and outputs, call patch() to update the run in LangSmith.",
+    "followUp": "What happens if the process exits before updates are sent? Ensure the application waits for pending trace submissions before exiting."
+   },
+   {
+    "question": "What setup does the RunTree API need?",
+    "answer": "RunTree gives low-level control over run creation and hierarchy. It requires LANGSMITH_API_KEY, but LANGSMITH_TRACING is not required when using this API.",
+    "followUp": "When should a different approach be preferred? Use the traceable decorator for most cases because it propagates context automatically."
+   }
+  ],
+  "keyPoints": [
+   "RunTree stores a run and links it to its parent and children so the trace hierarchy can be posted.",
+   "Use add_event to record an event on the run.",
+   "Use add_tags when you need searchable labels on a run.",
+   "Use add_metadata to attach extra key-value information.",
+   "Use add_outputs to merge result values into the run.",
+   "Use from_headers to continue a trace when another service sends the trace headers."
+  ],
+  "gotchas": [
+   "RunTree requires manual context management, so it can be easier to make tracing errors than with the recommended tracing decorator.",
+   "Inputs added after the first post are normally excluded from a later patch unless you explicitly allow them."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "RunType": {
+  "sourceUrl": "https://reference.langchain.com/python/langsmith/schemas/RunTypeEnum",
+  "sourceTitle": "RunTypeEnum | langsmith | LangChain Reference",
+  "summary": "RunTypeEnum is a string enum for common LangSmith run types. It is deprecated; new code should use the corresponding string directly.",
+  "explanation": "RunTypeEnum is a string enum that names common LangSmith run types. It provides values for tools, chains, language models, retrievers, embeddings, prompts, and parsers.",
+  "syntax": "class RunTypeEnum(str, Enum)",
+  "parameters": [],
+  "returns": "Enum members are strings representing run types.",
+  "example": {
+   "title": "Read a run type",
+   "code": "from langsmith.schemas import RunTypeEnum\n\nrun_type = RunTypeEnum.llm\nprint(run_type.value)",
+   "language": "python",
+   "explanation": "This creates the deprecated enum and reads the string value for the LLM run type."
+  },
+  "useCases": [
+   {
+    "title": "Read legacy run-type values",
+    "scenario": "You are reading older LangSmith Python code that still exposes run types as enum members."
+   },
+   {
+    "title": "Classify traced runs",
+    "scenario": "You need to map a run category to a known LangSmith type while maintaining older API compatibility."
+   }
+  ],
+  "related": [
+   "RunTypeEnum.tool",
+   "RunTypeEnum.chain",
+   "RunTypeEnum.llm",
+   "RunTypeEnum.retriever",
+   "RunTypeEnum.embedding",
+   "RunTypeEnum.prompt",
+   "RunTypeEnum.parser"
+  ],
+  "since": "v0.5",
+  "interview": [
+   {
+    "question": "What is RunTypeEnum?",
+    "answer": "RunTypeEnum is a Python enum whose members are strings. Its documented members identify tool, chain, LLM, retriever, embedding, prompt, and parser runs.",
+    "followUp": "What should new code use instead? Use the corresponding string directly, because the documentation marks RunTypeEnum as deprecated."
+   },
+   {
+    "question": "Which run types does it define?",
+    "answer": "The enum includes members for tool, chain, LLM, retriever, embedding, prompt, and parser run types. Each member is exposed as an attribute on the enum.",
+    "followUp": "How would you represent an LLM run without the enum? Use the string value for that run type directly."
+   },
+   {
+    "question": "What are the base types of RunTypeEnum?",
+    "answer": "It is based on both str and Enum. This means its members behave as enum values and carry string values.",
+    "followUp": "Should an application add new enum members? No. The page recommends using strings directly rather than extending or relying on this deprecated enum."
+   }
+  ],
+  "keyPoints": [
+   "It groups the supported labels used to classify LangSmith runs.",
+   "The tool member represents a tool run and has a string type.",
+   "The chain member represents a chain run and has a string type.",
+   "The llm member represents a language-model run and has a string type.",
+   "The retriever member represents a retriever run and has a string type.",
+   "The embedding member represents an embedding run and has a string type.",
+   "The prompt member represents a prompt run and has a string type.",
+   "The parser member represents a parser run and has a string type."
+  ],
+  "gotchas": [],
+  "checkedAt": "2026-11-03"
+ },
+ "ScoreType": {
+  "sourceUrl": "https://reference.langchain.com/python/langsmith/evaluation",
+  "sourceTitle": "evaluation | langsmith | LangChain Reference",
+  "summary": "LangSmith evaluation tests functions and models on dataset examples. Evaluators and scoring utilities measure the resulting outputs and produce experiment results.",
+  "explanation": "LangSmith evaluation runs a target function or model on dataset examples and applies evaluators to measure the results. The evaluation tools also provide result containers, scoring helpers, and dataset-related operations.",
+  "syntax": "evaluate(target, data, evaluators=...)",
+  "parameters": [
+   {
+    "name": "target",
+    "type": "callable or model",
+    "description": "A target function or model evaluated on dataset examples."
+   },
+   {
+    "name": "data",
+    "type": "dataset or examples",
+    "description": "Dataset examples supplied to the evaluation."
+   },
+   {
+    "name": "evaluators",
+    "type": "iterable of evaluators",
+    "description": "Evaluators that score the target outputs."
+   }
+  ],
+  "returns": "Evaluation results, including experiment data, statistics, examples, and evaluator feedback.",
+  "example": {
+   "title": "Evaluate a function",
+   "code": "from langsmith import evaluate\n\n\ndef target(inputs):\n    return {\"answer\": inputs[\"text\"].upper()}\n\n\ndef evaluator(inputs, outputs):\n    return {\"key\": \"is_upper\", \"score\": outputs[\"answer\"].isupper()}\n\nresults = evaluate(\n    target,\n    data=[{\"text\": \"hello\"}],\n    evaluators=[evaluator],\n)\nprint(results)",
+   "language": "python",
+   "explanation": "This runs a target function on dataset inputs and applies an evaluator to its outputs."
+  },
+  "useCases": [
+   {
+    "title": "Test model quality",
+    "scenario": "You need to measure a model against a fixed set of test examples."
+   },
+   {
+    "title": "Compare experiments",
+    "scenario": "You need to compare two versions of a chain or model."
+   },
+   {
+    "title": "Score outputs",
+    "scenario": "You need structured scores for generated outputs."
+   }
+  ],
+  "related": [
+   "ExperimentResults",
+   "ExperimentResultRow",
+   "ComparativeExperimentResults",
+   "evaluate_comparative"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is LangSmith evaluation used for?",
+    "answer": "The evaluation tools test a function or model against dataset examples. Evaluators then produce scores or feedback for the resulting runs.",
+    "followUp": "How should result statistics be read after the 0.4.32 change? Use feedback_stats and run_stats because stats was split into those two fields."
+   },
+   {
+    "question": "What does ExperimentResults contain?",
+    "answer": "ExperimentResults stores experiment data, statistics, and examples. It represents the results of an evaluation experiment.",
+    "followUp": "What changed in the result container? In v0.4.32, the stats field was replaced by feedback_stats and run_stats."
+   },
+   {
+    "question": "What parts make up the evaluation tools?",
+    "answer": "Evaluation includes evaluators and scoring utilities for measuring outputs on dataset examples. The page also lists tools for dataset management.",
+    "followUp": "What kind of input can be evaluated? A target function or model can be run against dataset examples, then evaluated."
+   }
+  ],
+  "keyPoints": [
+   "Evaluation runs functions or models against dataset examples.",
+   "The tools include evaluators, scoring helpers, and dataset management features.",
+   "ExperimentResults holds experiment data, statistics, and examples.",
+   "ComparativeExperimentResults represents results from a comparative evaluation call."
+  ],
+  "gotchas": [
+   "In version 0.4.32 and later, read feedback_stats and run_stats instead of the older stats field."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "StringEvaluator": {
+  "sourceUrl": "https://reference.langchain.com/python/langchain-classic/evaluation/schema/StringEvaluator",
+  "sourceTitle": "StringEvaluator | langchain_classic | LangChain Reference",
+  "summary": "StringEvaluator defines a common interface for evaluating text produced by chains or language models. It can use the input and an optional reference label to grade or tag predictions.",
+  "explanation": "A StringEvaluator is an interface for checking a model or chain result. A subclass can grade, tag, or otherwise assess a prediction using its input and, when needed, a reference label. Use evaluate_strings for synchronous work and aevaluate_strings for asynchronous work.",
+  "syntax": "class StringEvaluator(_EvalArgsMixin, ABC)",
+  "parameters": [
+   {
+    "name": "prediction",
+    "type": "str",
+    "description": "The predicted string produced by the chain or language model."
+   },
+   {
+    "name": "reference",
+    "type": "Optional[str]",
+    "description": "Optional reference label used for comparison."
+   },
+   {
+    "name": "input",
+    "type": "Optional[str]",
+    "description": "Optional input given to the chain or language model."
+   }
+  ],
+  "returns": "The evaluator result produced by the selected evaluation method.",
+  "example": {
+   "title": "A simple string evaluator",
+   "code": "from langchain_classic.evaluation.schema import StringEvaluator\n\nclass LengthEvaluator(StringEvaluator):\n    evaluation_name = \"length\"\n    requires_reference = False\n\n    def _evaluate_strings(self, prediction, reference=None, input=None, **kwargs):\n        return {\"score\": len(prediction) < 100}\n\nevaluator = LengthEvaluator()\nresult = evaluator.evaluate_strings(\n    prediction=\"A short answer.\",\n    input=\"Give a short answer.\"\n)\nprint(result)",
+   "language": "python",
+   "explanation": "This example defines an evaluator that checks prediction length and evaluates one prediction."
+  },
+  "useCases": [
+   {
+    "title": "Rule-based checks",
+    "scenario": "Check whether generated text meets a rule, such as a length or format requirement."
+   },
+   {
+    "title": "Reference-based grading",
+    "scenario": "Compare a model answer with a supplied expected answer."
+   },
+   {
+    "title": "Asynchronous evaluation",
+    "scenario": "Run evaluation without blocking the caller."
+   }
+  ],
+  "related": [
+   "_EvalArgsMixin",
+   "ABC",
+   "evaluate_strings",
+   "aevaluate_strings"
+  ],
+  "since": "v1.4",
+  "interview": [
+   {
+    "question": "What is StringEvaluator used for?",
+    "answer": "StringEvaluator is the interface for evaluating text predictions against their input and optional reference labels. It supports grading, tagging, and other evaluation tasks.",
+    "followUp": "How can asynchronous evaluation be performed? Call aevaluate_strings instead of evaluate_strings when the evaluation should run asynchronously."
+   },
+   {
+    "question": "Which method performs a synchronous evaluation?",
+    "answer": "The synchronous method is evaluate_strings. It evaluates chain or language-model output and can receive the input and a reference label.",
+    "followUp": "What controls whether a reference is required? The requires_reference attribute states whether the evaluator requires a reference label."
+   },
+   {
+    "question": "What are the main attributes?",
+    "answer": "The class has an evaluation_name attribute that stores the evaluator's name. It also has requires_reference, which indicates whether a reference label is needed.",
+    "followUp": "What should a subclass provide to perform its own grading? It should implement the evaluator-specific evaluation behavior while using the interface's string-evaluation methods."
+   }
+  ],
+  "keyPoints": [
+   "evaluation_name identifies the evaluation.",
+   "requires_reference indicates if a reference label is needed.",
+   "evaluate_strings checks chain or language-model output using optional input and a label.",
+   "aevaluate_strings provides the asynchronous form of string evaluation.",
+   "The interface supports grading or tagging predictions against inputs and reference labels."
+  ],
+  "gotchas": [
+   "Set requires_reference to show whether the evaluator needs a reference label. Do not assume every evaluator can run without one."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "trace": {
+  "sourceUrl": "https://docs.langchain.com/langsmith/observability-quickstart",
+  "sourceTitle": "Tracing quickstart - Docs by LangChain Documentation",
+  "summary": "LangSmith tracing records each step of an AI application request. Use a provider wrapper for model calls and traceable for the complete application flow.",
+  "explanation": "Tracing records a complete request and its steps in LangSmith. Wrap the model client to capture model calls, and wrap your main function with traceable to capture the full pipeline.",
+  "syntax": "@traceable\ndef function(...): ...\n\nclient = wrap_openai(OpenAI())\n\nexport LANGSMITH_TRACING=true\nexport LANGSMITH_API_KEY=\"<your-langsmith-api-key>\"\nexport LANGSMITH_AGENT_ID=\"<your-agent-id>\"\nexport LANGSMITH_AGENT_ENVIRONMENT=\"local\"",
+  "parameters": [
+   {
+    "name": "LANGSMITH_AGENT_ID",
+    "type": "environment variable",
+    "description": "The LangSmith agent identifier."
+   },
+   {
+    "name": "LANGSMITH_AGENT_ENVIRONMENT",
+    "type": "environment variable",
+    "description": "The target environment, such as local, development, staging, or production."
+   },
+   {
+    "name": "question",
+    "type": "string",
+    "description": "The function input passed to the traced application."
+   }
+  ],
+  "returns": "The wrapped function returns its normal application result; LangSmith also receives the trace.",
+  "example": {
+   "title": "Trace a function and an OpenAI call",
+   "code": "from langsmith import traceable\nfrom langsmith.wrappers import wrap_openai\nfrom openai import OpenAI\n\nclient = wrap_openai(OpenAI())\n\n@traceable\ndef assistant(question: str) -> str:\n    response = client.chat.completions.create(\n        model=\"gpt-5.4-mini\",\n        messages=[{\"role\": \"user\", \"content\": question}],\n    )\n    return response.choices[0].message.content\n\nprint(assistant(\"What is tracing?\"))",
+   "language": "python",
+   "explanation": "The decorator records the assistant function. The wrapped client records the nested model call."
+  },
+  "useCases": [
+   {
+    "title": "Debug an AI request",
+    "scenario": "You need to inspect prompts, model outputs, and nested calls for one request."
+   },
+   {
+    "title": "Trace an agent pipeline",
+    "scenario": "You want to see retrieval, tools, and model calls as one hierarchy."
+   },
+   {
+    "title": "Add metadata for filtering",
+    "scenario": "You need to compare runs by model or other attributes."
+   },
+   {
+    "title": "Trace selectively",
+    "scenario": "You want to record only selected LangChain invocations."
+   }
+  ],
+  "related": [
+   "traceable",
+   "wrap_openai",
+   "wrapOpenAI",
+   "LangChainTracer",
+   "tracing_context",
+   "LANGSMITH_TRACING",
+   "LANGSMITH_API_KEY",
+   "LANGSMITH_PROJECT"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you enable LangSmith tracing?",
+    "answer": "Set LANGSMITH_TRACING to true and provide LANGSMITH_API_KEY. In an agent-based workspace, also set LANGSMITH_AGENT_ID and LANGSMITH_AGENT_ENVIRONMENT.",
+    "followUp": "How would you route traces to a project instead? Set LANGSMITH_PROJECT and use project-based configuration instead of the agent variables."
+   },
+   {
+    "question": "What is the difference between a provider wrapper and traceable?",
+    "answer": "wrap_openai records each OpenAI call as a nested span. traceable records the surrounding function, including nested work, as one trace.",
+    "followUp": "How can you trace only selected LangChain calls? Use a LangChainTracer callback or Python's tracing_context with enabled set to true."
+   },
+   {
+    "question": "How do you prevent traces from being lost when a process exits?",
+    "answer": "LangChain sends tracing work in a background thread in Python. Call wait_for_all_tracers before the process exits, or disable background callbacks with LANGCHAIN_CALLBACKS_BACKGROUND=false.",
+    "followUp": "What is the TypeScript equivalent? Call awaitAllCallbacks in a finally block before exiting."
+   }
+  ],
+  "keyPoints": [
+   "A trace is the full record of one request, including its inputs, steps, and final output.",
+   "Provider wrappers automatically record supported model calls.",
+   "Use traceable on your main function to group the pipeline into one trace.",
+   "These variables choose where the trace is sent in an agent-based workspace.",
+   "LangChain supports selective tracing with a tracer callback or tracing_context.",
+   "run_name changes the selected runnable's display name, not the names of nested model runs."
+  ],
+  "gotchas": [
+   "Create the agent once before sending traces. Do not create it for each request.",
+   "Do not mix old project settings with agent addressing.",
+   "A short-lived process may exit before background trace uploads finish. Wait for callbacks before exiting."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "Trace": {
+  "sourceUrl": "https://reference.langchain.com/python/langsmith/run_helpers/trace",
+  "sourceTitle": "trace | langsmith | LangChain Reference",
+  "summary": "trace manages a LangSmith run around a block of code. It works with synchronous and asynchronous context managers and supports run details such as inputs, tags, metadata, and parent runs.",
+  "explanation": "Use trace as a synchronous or asynchronous context manager. Give the run a name, then optionally set its type, inputs, project, parent, tags, metadata, client, and other run settings. The context manages the run while the enclosed code executes. An exception can be handled when its type is included in exceptions_to_handle.",
+  "syntax": "trace(self, name: str, run_type: ls_client.RUN_TYPE_T = 'chain', *, inputs: Optional[dict] = None, extra: Optional[dict] = None, project_name: Optional[str] = None, address: Optional[AgentAddress] = None, parent: Optional[Union[run_trees.RunTree, str, Mapping, Literal['ignore']] ] = None, tags: Optional[list[str]] = None, metadata: Optional[Mapping[str, Any]] = None, client: Optional[ls_client.Client] = None, run_id: Optional[ls_client.ID_TYPE] = None, reference_example_id: Optional[ls_client.ID_TYPE] = None, exceptions_to_handle: Optional[tuple[type[BaseException], ...]] = None, attachments: Optional[schemas.Attachments] = None, kwargs: Any = {})",
+  "parameters": [
+   {
+    "name": "name",
+    "type": "str",
+    "description": "Required run name."
+   },
+   {
+    "name": "run_type",
+    "type": "ls_client.RUN_TYPE_T",
+    "description": "Run type. Defaults to chain."
+   },
+   {
+    "name": "inputs",
+    "type": "Optional[dict]",
+    "description": "Input data for the run."
+   },
+   {
+    "name": "extra",
+    "type": "Optional[dict]",
+    "description": "Extra run data."
+   },
+   {
+    "name": "project_name",
+    "type": "Optional[str]",
+    "description": "Tracing project name."
+   },
+   {
+    "name": "address",
+    "type": "Optional[AgentAddress]",
+    "description": "Agent address."
+   },
+   {
+    "name": "parent",
+    "type": "Optional[Union[RunTree, str, Mapping, Literal['ignore']]]",
+    "description": "Parent run or ignore marker."
+   },
+   {
+    "name": "tags",
+    "type": "Optional[list[str]]",
+    "description": "Run labels."
+   },
+   {
+    "name": "metadata",
+    "type": "Optional[Mapping[str, Any]]",
+    "description": "Additional run metadata."
+   },
+   {
+    "name": "client",
+    "type": "Optional[ls_client.Client]",
+    "description": "LangSmith client."
+   },
+   {
+    "name": "run_id",
+    "type": "Optional[ls_client.ID_TYPE]",
+    "description": "Run identifier."
+   },
+   {
+    "name": "reference_example_id",
+    "type": "Optional[ls_client.ID_TYPE]",
+    "description": "Reference example identifier."
+   }
+  ],
+  "returns": "A context manager that manages a LangSmith run.",
+  "example": {
+   "title": "Create a traced block",
+   "code": "import langsmith as ls\n\nwith ls.trace(\n    \"process_order\",\n    run_type=\"chain\",\n    inputs={\"order_id\": \"A-123\"},\n    tags=[\"orders\"],\n    metadata={\"environment\": \"test\"},\n):\n    print(\"processing order\")",
+   "language": "python",
+   "explanation": "The context creates a chain run and records the code inside it."
+  },
+  "useCases": [
+   {
+    "title": "Trace a workflow",
+    "scenario": "Wrap a function or workflow so its execution is represented as one LangSmith run."
+   },
+   {
+    "title": "Add run context",
+    "scenario": "Attach input data, labels, and environment details to a run for later inspection."
+   },
+   {
+    "title": "Create nested tracing",
+    "scenario": "Place an operation inside an existing run hierarchy."
+   },
+   {
+    "title": "Trace async code",
+    "scenario": "Use the same tracing pattern around asynchronous work."
+   }
+  ],
+  "related": [
+   "LangSmith",
+   "Client",
+   "RunTree",
+   "tracing_context",
+   "observability"
+  ],
+  "since": "v0.5",
+  "interview": [
+   {
+    "question": "What does langsmith.trace do?",
+    "answer": "trace manages a LangSmith run around a block of code. It accepts a required run name and defaults run_type to chain.",
+    "followUp": "How can you add context to the run? Pass inputs, tags, metadata, project_name, or a parent when creating the trace."
+   },
+   {
+    "question": "Can trace be used with asynchronous code?",
+    "answer": "Yes. The documentation says the class works as both a synchronous and asynchronous context manager. This lets it wrap synchronous or asynchronous work.",
+    "followUp": "What should determine the context-manager form? Use the form that matches the code being traced and its execution model."
+   },
+   {
+    "question": "How can a trace be attached to another run?",
+    "answer": "The parent parameter can connect the run to an existing run tree, run identifier, mapping, or the literal value ignore. This allows the trace to fit into an existing run hierarchy.",
+    "followUp": "Why would a parent be useful? It preserves relationships between nested operations so the run structure reflects the larger execution."
+   }
+  ],
+  "keyPoints": [
+   "trace manages one LangSmith run for the code inside its context.",
+   "name is required and identifies the run.",
+   "run_type defaults to chain, but you can choose another supported run type.",
+   "Use tags to label the run with a list of strings.",
+   "metadata stores additional key-value information about the run."
+  ],
+  "gotchas": [
+   "Use the matching context-manager form for synchronous or asynchronous code.",
+   "Only exception types listed in exceptions_to_handle are configured for exception handling."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "tracing_context": {
+  "sourceUrl": "https://reference.langchain.com/python/langsmith/run_helpers/tracing_context",
+  "sourceTitle": "tracing_context | langsmith | LangChain Reference",
+  "summary": "A Python context manager that changes LangSmith tracing for one block of code. It can enable or disable tracing and add request-specific routing, tags, and metadata.",
+  "explanation": "Use tracing_context as a scoped override for LangSmith tracing. It can enable or disable tracing and can add metadata, tags, or a destination for code that runs inside the block. Nested contexts use the innermost settings.",
+  "syntax": "tracing_context(*, project_name: Optional[str] = None, address: Optional[AgentAddress] = None, tags: Optional[list[str]] = None, metadata: Optional[dict[str, Any]] = None, parent: Optional[Union[run_trees.RunTree, Mapping, str, Literal[False]]] = None, enabled: Optional[Union[bool, Literal['local']]] = None, client: Optional[ls_client.Client] = None, replicas: Optional[Sequence[Union[WriteReplica, str]]] = None, distributed_parent_id: Optional[str] = None, **kwargs: Any) -> Generator[None, None, None]",
+  "parameters": [
+   {
+    "name": "project_name",
+    "type": "Optional[str]",
+    "description": "Name of the project to log the run to."
+   },
+   {
+    "name": "address",
+    "type": "Optional[AgentAddress]",
+    "description": "An AgentAddress, such as ls.agent_address(id, environment), to log the run to instead of a project."
+   },
+   {
+    "name": "tags",
+    "type": "Optional[list[str]]",
+    "description": "Tags to attach to the traces."
+   },
+   {
+    "name": "metadata",
+    "type": "Optional[dict[str, Any]]",
+    "description": "Metadata to attach to the traces."
+   },
+   {
+    "name": "parent",
+    "type": "Optional[Union[RunTree, Mapping, str, Literal[False]]]",
+    "description": "Parent run information, a run tree, mapping, run ID, or False."
+   },
+   {
+    "name": "enabled",
+    "type": "Optional[Union[bool, Literal['local']]]",
+    "description": "Whether tracing is enabled, disabled, or local."
+   },
+   {
+    "name": "client",
+    "type": "Optional[Client]",
+    "description": "LangSmith client to use."
+   },
+   {
+    "name": "replicas",
+    "type": "Optional[Sequence[Union[WriteReplica, str]]]",
+    "description": "Destinations used for replica writes."
+   },
+   {
+    "name": "distributed_parent_id",
+    "type": "Optional[str]",
+    "description": "Distributed parent run ID."
+   },
+   {
+    "name": "kwargs",
+    "type": "Any",
+    "description": "Additional keyword arguments."
+   }
+  ],
+  "returns": "Generator[None, None, None]",
+  "example": {
+   "title": "Apply tracing to one block",
+   "code": "import langsmith as ls\nfrom langsmith import traceable\n\n@traceable\ndef load_data(value: str) -> str:\n    return value.upper()\n\nwith ls.tracing_context(\n    enabled=True,\n    tags=[\"debug\"],\n    metadata={\"source\": \"manual\"},\n):\n    result = load_data(\"hello\")\n\nprint(result)",
+   "language": "python",
+   "explanation": "This traces the decorated function only inside the context and adds tags and metadata."
+  },
+  "useCases": [
+   {
+    "title": "Skip traces for private data",
+    "scenario": "Sensitive requests"
+   },
+   {
+    "title": "Route each customer to an agent",
+    "scenario": "Multi-tenant systems"
+   },
+   {
+    "title": "Add tags and metadata to selected traces",
+    "scenario": "Request diagnostics"
+   },
+   {
+    "title": "Control tracing per execution",
+    "scenario": "Deployed agents"
+   }
+  ],
+  "related": [
+   "traceable",
+   "agent_address",
+   "Client",
+   "ls.configure",
+   "replicas"
+  ],
+  "since": "v0.5",
+  "interview": [
+   {
+    "question": "What is tracing_context?",
+    "answer": "It is a Python context manager that changes tracing settings for code executed inside its block. It can override global settings without changing environment variables or restructuring the code.",
+    "followUp": "How do nested contexts behave? The innermost tracing_context controls the code at that point."
+   },
+   {
+    "question": "How can you disable tracing for one request?",
+    "answer": "Use enabled=False inside the context to skip tracing for one operation. This is useful for sensitive data while global tracing remains enabled.",
+    "followUp": "How would you choose this per customer? Compute the policy first, then pass enabled=not should_disable to the context."
+   },
+   {
+    "question": "How can one request change its trace destination and metadata?",
+    "answer": "Pass tags and metadata for request-specific information. Use address to route traces to a registered agent environment; the documented agent-address form is ls.agent_address(agent_id, environment).",
+    "followUp": "What must be prepared before dynamic routing? The agent must be registered, and replica destinations need their tracer_session_name values."
+   }
+  ],
+  "keyPoints": [
+   "Settings apply only to code inside the context and override global tracing configuration.",
+   "The context manager has higher priority than global configuration and environment variables.",
+   "Use enabled=False to omit a selected operation from tracing.",
+   "A request can choose a trace destination and attach tags or metadata at runtime.",
+   "It works with automatic tracing, so globally enabled tracing can still be changed for one block."
+  ],
+  "gotchas": [
+   "Do not use address together with project_name in one context.",
+   "When contexts are nested, the inner settings override the outer settings.",
+   "For per-request redaction with replicas, set project_name on the replica."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "wrap_gemini": {
+  "sourceUrl": "https://reference.langchain.com/python/langsmith/wrappers/_gemini/wrap_gemini",
+  "sourceTitle": "wrap_gemini | langsmith | LangChain Reference",
+  "summary": "wrap_gemini patches a Google Gen AI client so supported Gemini calls are traced in LangSmith. It keeps the client's normal interface and supports streaming, async calls, multimodal input, tools, and token tracking.",
+  "explanation": "wrap_gemini returns the Google Gen AI client with tracing added. Calls to supported content generation methods are recorded in LangSmith while the normal client interface stays available. Use tracing_extra to attach tags, metadata, or a custom LangSmith client to all requests made through the wrapped client.",
+  "syntax": "wrap_gemini(client: C, *, tracing_extra: Optional[TracingExtra] = None, chat_name: str = 'ChatGoogleGenerativeAI') -> C",
+  "parameters": [
+   {
+    "name": "client",
+    "type": "C",
+    "description": "The Google Gen AI client to patch."
+   },
+   {
+    "name": "tracing_extra",
+    "type": "Optional[TracingExtra]",
+    "description": "Extra tracing information, such as tags, metadata, or a custom client."
+   },
+   {
+    "name": "chat_name",
+    "type": "str",
+    "description": "Name used for the chat trace."
+   }
+  ],
+  "returns": "The patched Google Gen AI client, with type C.",
+  "example": {
+   "title": "Trace a Gemini request",
+   "code": "from google import genai\nfrom langsmith import wrappers\n\nclient = wrappers.wrap_gemini(genai.Client())\nresponse = client.models.generate_content(\n    model=\"gemini-2.5-flash\",\n    contents=\"Why is the sky blue?\",\n)\nprint(response.text)",
+   "language": "python",
+   "explanation": "This wraps a Google Gen AI client and traces a content generation call."
+  },
+  "useCases": [
+   {
+    "title": "Trace content generation",
+    "scenario": "You want LangSmith traces for regular Gemini text generation."
+   },
+   {
+    "title": "Trace streaming responses",
+    "scenario": "You need to inspect streamed Gemini output while keeping the Google client API."
+   },
+   {
+    "title": "Trace multimodal and tool requests",
+    "scenario": "Your Gemini request includes images or tool calls."
+   }
+  ],
+  "related": [
+   "generate_content",
+   "generate_content_stream",
+   "tracing_extra",
+   "wrap_gemini_live"
+  ],
+  "since": "v0.5",
+  "interview": [
+   {
+    "question": "How do you add tracing to a Google Gen AI client?",
+    "answer": "Call wrappers.wrap_gemini with a Google Gen AI client. The returned client keeps the normal client interface and adds LangSmith traces to supported content generation calls.",
+    "followUp": "How can traces carry shared context? Pass tracing_extra when wrapping the client, with tags or metadata applied to later requests."
+   },
+   {
+    "question": "What does tracing_extra configure?",
+    "answer": "Use the tracing_extra argument. It can include tags, metadata, and an optional custom LangSmith client. These settings apply to requests made through that wrapped client.",
+    "followUp": "Why use tags and metadata? They help filter and organize traces, such as separating production requests from experiments."
+   },
+   {
+    "question": "What operations and client types does wrap_gemini support?",
+    "answer": "The wrapper supports generate_content and generate_content_stream. It also supports synchronous and asynchronous clients, streaming and non-streaming results, tool calling, multimodal inputs, image generation with inline data, and token usage tracking.",
+    "followUp": "Which wrapper should be used for a Gemini Live WebSocket session? Use the separate wrap_gemini_live integration, not this content-generation wrapper."
+   }
+  ],
+  "keyPoints": [
+   "Pass a Google Gen AI client to wrap_gemini to add tracing.",
+   "The wrapper supports both normal and streaming content generation.",
+   "It works with synchronous and asynchronous Google Gen AI clients.",
+   "Tool and function calls are traced with UI rendering support.",
+   "Requests can contain text and images.",
+   "Traces can include token usage, including reasoning tokens."
+  ],
+  "gotchas": [
+   "The wrapper is in beta, so its API may change."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "wrap_openai": {
+  "sourceUrl": "https://reference.langchain.com/python/langsmith/wrappers/_openai/wrap_openai",
+  "sourceTitle": "wrap_openai | langsmith | LangChain Reference",
+  "summary": "Wrap an OpenAI client to trace calls to OpenAI-compatible providers in LangSmith. Set the provider base URL, then use the wrapped client for API requests.",
+  "explanation": "Create an OpenAI client with the provider's base URL and API key. Pass that client to wrap_openai or wrapOpenAI. Calls made through the wrapped client are traced automatically when LangSmith tracing is enabled. Use traceable when you also need to trace surrounding agent logic or attach metadata for a function call.",
+  "syntax": "wrap_openai(client: C, *, tracing_extra: Optional[TracingExtra] = None, chat_name: str = 'ChatOpenAI', completions_name: str = 'OpenAI') -> C",
+  "parameters": [
+   {
+    "name": "client",
+    "type": "C",
+    "description": "The OpenAI-compatible client to patch."
+   },
+   {
+    "name": "tracing_extra",
+    "type": "Optional[TracingExtra]",
+    "description": "Additional tracing information, including an optional agent address."
+   },
+   {
+    "name": "chat_name",
+    "type": "str",
+    "description": "Name used for chat traces."
+   },
+   {
+    "name": "completions_name",
+    "type": "str",
+    "description": "Name used for completion traces."
+   }
+  ],
+  "returns": "The patched client, with type C.",
+  "example": {
+   "title": "Trace a compatible provider call",
+   "code": "import os\nimport openai\nfrom langsmith.wrappers import wrap_openai\n\nclient = wrap_openai(\n    openai.OpenAI(\n        base_url=\"https://provider.example/v1\",\n        api_key=os.environ[\"PROVIDER_API_KEY\"],\n    )\n)\n\nresult = client.chat.completions.create(\n    model=\"provider-model\",\n    messages=[{\"role\": \"user\", \"content\": \"Hello!\"}],\n)\nprint(result.choices[0].message.content)",
+   "language": "python",
+   "explanation": "This creates an OpenAI client for a compatible provider, wraps it, and sends a chat request that LangSmith can trace."
+  },
+  "useCases": [
+   {
+    "title": "Trace provider calls",
+    "scenario": "You call an LLM provider through an OpenAI-compatible API and want the calls in LangSmith."
+   },
+   {
+    "title": "Render rich message content",
+    "scenario": "You need to inspect tool calls or multimodal messages in a trace."
+   },
+   {
+    "title": "Trace agent logic",
+    "scenario": "You are building an agent and need the surrounding steps traced as well as the model call."
+   }
+  ],
+  "related": [
+   "wrapOpenAI",
+   "traceable",
+   "@traceable",
+   "LANGSMITH_TRACING",
+   "LANGSMITH_API_KEY",
+   "AgentAddress",
+   "agent_address"
+  ],
+  "since": "v0.5",
+  "interview": [
+   {
+    "question": "How do you trace an OpenAI-compatible provider?",
+    "answer": "Use the OpenAI SDK client with the compatible provider's base URL, then pass the client to wrap_openai or wrapOpenAI. Calls through the wrapped client are logged as traces.",
+    "followUp": "How can you trace logic around the API call? Use traceable or @traceable on the surrounding function, while keeping the OpenAI client wrapped."
+   },
+   {
+    "question": "What does the client wrapper provide?",
+    "answer": "The wrapper traces the API call and automatically tracks tokens. It also gives LangSmith structured rendering for messages, tool calls, and multimodal content.",
+    "followUp": "What is the alternative for tracing the surrounding function? Use traceable, but set run_type=\"llm\" if the function itself should be treated as an LLM run for token tracking."
+   },
+   {
+    "question": "Which environment settings are required?",
+    "answer": "Set LANGSMITH_TRACING to true and LANGSMITH_API_KEY to the LangSmith key. For an agent environment, also set the agent identifier and environment variables.",
+    "followUp": "What if the key belongs to several workspaces? Set LANGSMITH_WORKSPACE_ID to select the workspace."
+   }
+  ],
+  "keyPoints": [
+   "Point the OpenAI client at the provider's base URL and wrap that client.",
+   "Use the wrapper for direct API calls.",
+   "Use traceable for agent logic around the API call.",
+   "The wrapper tracks token usage automatically.",
+   "Wrapped API calls use the LLM run type automatically.",
+   "Python supports client-level metadata. TypeScript supports client-level and per-call metadata."
+  ],
+  "gotchas": [
+   "Tracing is disabled unless LANGSMITH_TRACING is set to true.",
+   "Create the agent before sending traces in an agent-based workspace.",
+   "Use the selected environment's tracer_session_name when an integration requires project_name."
+  ],
+  "checkedAt": "2026-11-03"
+ }
+}

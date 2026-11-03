@@ -9,7 +9,7 @@ import styles from "@/components/public-learning/library.module.css";
 export const metadata = learningMetadata({
   path: "/api-reference",
   title: "API reference for 60 technologies",
-  description: "Hooks, classes, functions and CLI commands from React, Next.js, LangGraph, Prisma, Zod, Redis, pandas and PyTorch, each with syntax, parameters and examples.",
+  description: "Hooks, classes, functions and CLI commands from React, Next.js, LangGraph, Prisma, Zod, Redis, pandas and PyTorch, each with a short description and its syntax.",
   keywords: [
     "API reference for developers", "React hooks reference", "Next.js API reference", "LangGraph API documentation",
     "LangChain API reference", "Redis commands reference", "pandas functions", "Prisma client API",

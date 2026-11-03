@@ -21,6 +21,15 @@
 .search input::placeholder { color: var(--tb-faint); opacity: 1; }
 .search input::-webkit-search-cancel-button { cursor: pointer; }
 .searchClose, .searchOpen { display: none; }
+.results { position: absolute; top: calc(100% + 6px); left: 0; z-index: 30; width: max(100%, min(460px, calc(100vw - 20px))); max-height: min(70vh, 460px); overflow-y: auto; border: 1px solid var(--tb-line, #e3e1d8); border-radius: 12px; background: var(--tb-sheet, #fff); box-shadow: 0 18px 40px -18px rgba(20, 20, 19, .35); }
+.results ul { margin: 0; padding: 6px; list-style: none; }
+.results li button { display: grid; gap: 2px; width: 100%; padding: 9px 10px; border: 0; border-radius: 8px; background: transparent; color: var(--tb-ink); font: inherit; text-align: left; cursor: pointer; }
+.results li button:hover, .results li[aria-selected="true"] button { background: var(--tb-wash, #f5f4ed); }
+.results li b { font-size: 14px; font-weight: 500; line-height: 1.35; }
+.results li small { font-size: 12.5px; color: var(--tb-muted); }
+.results .resultsAll { margin-top: 4px; padding-top: 4px; border-top: 1px solid var(--tb-line, #e3e1d8); }
+.results .resultsAll button { display: flex; align-items: center; justify-content: space-between; gap: 8px; color: var(--tb-accent); font-size: 13.5px; }
+.resultsNote { margin: 0; padding: 14px 16px; font-size: 14px; line-height: 1.45; color: var(--tb-muted); text-align: left; }
 .srOnly { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 
 .actions { display: flex; flex: none; align-items: center; gap: 6px; margin-left: auto; font-size: 14px; }
@@ -54,6 +63,7 @@
   .signIn, .saved { display: none; }
   .search { display: none; }
   .searchOpen { display: inline-grid; }
+  .search input::-webkit-search-cancel-button { display: none; }
   .header[data-search] .search { position: absolute; inset: 7px 10px; z-index: 2; display: flex; margin: 0; border-color: var(--tb-accent); background: var(--tb-sheet); }
   .header[data-search] .searchClose { display: inline-grid; flex: none; place-items: center; width: 28px; height: 28px; padding: 0; border: 0; background: transparent; color: var(--tb-muted); cursor: pointer; }
 }

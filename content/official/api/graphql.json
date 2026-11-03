@@ -363,6 +363,136 @@
   ],
   "checkedAt": "2026-10-15"
  },
+ "assertValidSchema": {
+  "sourceUrl": "https://graphql.org/learn/schema/",
+  "sourceTitle": "Schemas and Types | GraphQL",
+  "summary": "A GraphQL schema describes the data an API exposes and the relationships between that data. Its type system helps clients write valid queries with predictable results.",
+  "explanation": "The GraphQL schema describes every kind of data that an API can return and how those data types are related. It uses named types such as object, scalar, and enum types, plus list and non-null modifiers, so clients can form queries with predictable results.",
+  "syntax": "",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "A small GraphQL schema",
+   "code": "type Query {\n  user: User\n}\n\ntype User {\n  id: ID!\n  name: String\n}",
+   "language": "text",
+   "explanation": "This schema defines a query field named `user`. The field returns a `User` object with a required ID and an optional name."
+  },
+  "useCases": [
+   {
+    "title": "Describe available data",
+    "scenario": "Designing an API contract"
+   },
+   {
+    "title": "Discover queryable fields",
+    "scenario": "Building a client"
+   },
+   {
+    "title": "Catch invalid queries early",
+    "scenario": "Checking operations before execution"
+   }
+  ],
+  "related": [
+   "GraphQL type system",
+   "Queries",
+   "Validation",
+   "Execution",
+   "Introspection",
+   "Schema Design"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is a GraphQL schema?",
+    "answer": "A schema is the contract that describes the data an API exposes and the relationships between that data. Clients use it to create queries whose result shape can be predicted.",
+    "followUp": "How does a server check a query before running it? It parses the document first, then validates it against the schema’s type system."
+   },
+   {
+    "question": "Which kinds of types can a GraphQL schema define?",
+    "answer": "Named types describe the API’s data model. GraphQL supports object, scalar, enum, input object, interface, and union type definitions.",
+    "followUp": "What do list and non-null types do? They wrap another type: a list describes multiple values, while non-null says a value cannot be null."
+   },
+   {
+    "question": "Why is schema validation useful?",
+    "answer": "Validation checks an operation against the schema before execution. This lets the server report invalid queries early instead of discovering those problems during runtime checks.",
+    "followUp": "What happens after validation succeeds? The server can execute the operation and return its result."
+   }
+  ],
+  "keyPoints": [
+   "The type system defines which data clients may query.",
+   "A schema is the complete set of capabilities exposed by a GraphQL service.",
+   "The six named definitions are object, scalar, enum, input object, interface, and union types.",
+   "Clients use the schema to shape queries and anticipate the returned data.",
+   "A server parses an operation before checking it against the schema."
+  ],
+  "gotchas": [
+   "A query can have valid GraphQL syntax but still fail validation if it does not match the schema."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "buildASTSchema": {
+  "sourceUrl": "https://graphql.org/learn/schema/",
+  "sourceTitle": "Schemas and Types | GraphQL",
+  "summary": "buildASTSchema builds a GraphQL schema from a parsed schema definition document. The schema describes the data and operations that clients can query.",
+  "explanation": "buildASTSchema creates a GraphQLSchema object from a parsed GraphQL schema definition language document. The resulting object describes the API types and fields, so GraphQL tools can inspect and use the schema.",
+  "syntax": "buildASTSchema(ast)",
+  "parameters": [
+   {
+    "name": "ast",
+    "type": "DocumentNode",
+    "description": "A parsed GraphQL schema definition language document containing the type definitions used to build the schema."
+   }
+  ],
+  "returns": "A GraphQLSchema object built from the schema definition document.",
+  "example": {
+   "title": "Build a schema from GraphQL syntax",
+   "code": "import { buildASTSchema, parse } from \"graphql\";\n\nconst schema = buildASTSchema(parse(`\ntype Query {\n  greeting: String!\n}\n`));\n\nconsole.log(schema.getQueryType()?.getFields().greeting.type.toString());",
+   "language": "typescript",
+   "explanation": "This builds a GraphQL schema from a parsed schema definition and reads the type of the greeting field."
+  },
+  "useCases": [
+   {
+    "title": "Build a schema",
+    "scenario": "Create a GraphQLSchema object from schema definition language during application startup."
+   },
+   {
+    "title": "Read API capabilities",
+    "scenario": "Inspect available types and fields for tooling or validation."
+   }
+  ],
+  "related": [
+   "GraphQL type system",
+   "schema",
+   "named type definitions",
+   "Queries",
+   "Introspection"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does buildASTSchema do?",
+    "answer": "buildASTSchema converts a parsed GraphQL schema definition into a GraphQLSchema object. The input must be an AST, such as the result of parsing GraphQL schema language.",
+    "followUp": "What happens if the document contains invalid schema definitions? The schema-building step reports validation or construction errors instead of producing a usable schema."
+   },
+   {
+    "question": "Why does a GraphQL API need a schema?",
+    "answer": "A GraphQL schema defines the data that clients can query. It names types, fields, and relationships, and the schema lets clients form queries with predictable result shapes.",
+    "followUp": "Why is this different from a query document? A query asks for data, while the schema describes which data and operations the API supports."
+   },
+   {
+    "question": "What kinds of definitions can a schema contain?",
+    "answer": "The function works with the GraphQL type system, including object types such as Query and scalar field types such as String. A non-null marker, written with !, requires a field value to be present.",
+    "followUp": "How can a client learn the available types and fields? GraphQL provides introspection, which exposes schema information through queries."
+   }
+  ],
+  "keyPoints": [
+   "A schema describes the data that an API allows clients to query.",
+   "The schema is the complete set of query capabilities offered by the service.",
+   "Clients use the schema to write queries with known result shapes.",
+   "GraphQL has six named type-definition categories in its type system."
+  ],
+  "gotchas": [],
+  "checkedAt": "2026-11-03"
+ },
  "buildSchema": {
   "sourceUrl": "https://graphql.org/learn/schema/",
   "sourceTitle": "Schemas and Types",
@@ -439,6 +569,73 @@
   ],
   "checkedAt": "2026-10-15"
  },
+ "concatAST": {
+  "sourceUrl": "https://spec.graphql.org/September2025/",
+  "sourceTitle": "GraphQL September 2025 Specification",
+  "summary": "GraphQL is a query language for client applications. Clients describe the data they need, and a service returns data through a shared type system and interface.",
+  "explanation": "The GraphQL specification presents a query language for describing the data a client needs. A service exposes its capabilities through GraphQL's common type system, while the service decides how to implement storage and execution.",
+  "syntax": "query Name($variable: Type) { field(argument: $variable) { nestedField } }",
+  "parameters": [],
+  "returns": "The service returns data shaped by the fields selected in the request.",
+  "example": {
+   "title": "Request a user's name",
+   "code": "query GetUser($id: ID!) {\n  user(id: $id) {\n    name\n  }\n}",
+   "language": "text",
+   "explanation": "This query asks for one user's name and supplies the user ID as a variable."
+  },
+  "useCases": [
+   {
+    "title": "Request specific data",
+    "scenario": "A client needs only selected fields from a service response."
+   },
+   {
+    "title": "Share one service interface",
+    "scenario": "Several clients use services with different internal implementations."
+   },
+   {
+    "title": "Build GraphQL tools",
+    "scenario": "Development teams need tools built around a described API."
+   }
+  ],
+  "related": [
+   "query",
+   "type system",
+   "application services",
+   "data requirements",
+   "GraphQL schema"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is GraphQL used for?",
+    "answer": "GraphQL lets a client describe the data it needs in a structured request. The service maps its own capabilities to GraphQL's shared language and type system.",
+    "followUp": "Does GraphQL require a specific database? No. The specification leaves the storage system to the service implementation."
+   },
+   {
+    "question": "Is GraphQL a general-purpose programming language?",
+    "answer": "No. GraphQL is a language for making requests to application services. It does not provide arbitrary computation like a general-purpose programming language.",
+    "followUp": "What does the service do instead? It executes requests using capabilities defined by its GraphQL schema."
+   },
+   {
+    "question": "Does GraphQL prescribe an implementation technology?",
+    "answer": "No. GraphQL does not require one implementation language or storage system. Each service chooses how to implement its capabilities behind the GraphQL interface.",
+    "followUp": "Why is this useful? Clients can use a consistent request language even when services use different internal technologies."
+   }
+  ],
+  "keyPoints": [
+   "GraphQL is intended for client applications that need to describe their data requirements.",
+   "Its syntax and system are designed to express data requirements in a flexible way.",
+   "Clients send requests to services whose capabilities are described by the GraphQL specification.",
+   "A service maps its own capabilities into GraphQL's common language and type system.",
+   "The shared interface helps product development work with different application services.",
+   "The GraphQL model also supports tools that inspect and work with the service interface."
+  ],
+  "gotchas": [
+   "GraphQL describes requests to a service; it is not intended for general-purpose computation.",
+   "An implementation can use different programming languages and storage technologies."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "context": {
   "sourceUrl": "https://graphql.org/learn/serving-over-http/",
   "sourceTitle": "Serving over HTTP - GraphQL",
@@ -510,6 +707,73 @@
    "A JSON POST request needs the corresponding Content-Type header."
   ],
   "checkedAt": "2026-10-15"
+ },
+ "createSchema": {
+  "sourceUrl": "https://graphql.org/learn/schema/",
+  "sourceTitle": "Schemas and Types | GraphQL",
+  "summary": "A GraphQL schema defines what data an API exposes and how that data is shaped. Its type system lets clients send valid queries with predictable results.",
+  "explanation": "A GraphQL schema defines the data and operations that an API allows clients to query. Types describe values, fields describe available data, and relationships between types describe how clients can move through the graph.",
+  "syntax": "type Query { fieldName: ReturnType }",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Create and query a small schema",
+   "code": "import { buildSchema, graphql } from \"graphql\";\n\nconst schema = buildSchema(`\n  type Query {\n    greeting: String!\n  }\n`);\n\nconst rootValue = { greeting: () => \"Hello\" };\n\nconst result = await graphql({\n  schema,\n  source: \"{ greeting }\",\n  rootValue,\n});\n\nconsole.log(result.data?.greeting);",
+   "language": "javascript",
+   "explanation": "This creates a schema with one required field and runs a query against it."
+  },
+  "useCases": [
+   {
+    "title": "Describe an API contract",
+    "scenario": "Define the fields and operations available in an API."
+   },
+   {
+    "title": "Represent data relationships",
+    "scenario": "Model connected data such as users, posts, and comments."
+   },
+   {
+    "title": "Enable schema-aware clients",
+    "scenario": "Support client tools that need to understand available fields and types."
+   }
+  ],
+  "related": [
+   "Queries",
+   "Mutations",
+   "Subscriptions",
+   "Validation",
+   "Execution",
+   "Introspection"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is a GraphQL schema?",
+    "answer": "A schema is the contract for a GraphQL service. It describes the fields clients may query and the types of values those fields return.",
+    "followUp": "How does a client discover this contract? GraphQL supports introspection, which lets tools and clients inspect the schema."
+   },
+   {
+    "question": "What is the role of a field type?",
+    "answer": "A field belongs to an object type and describes one piece of data that can be selected. Its type tells the client what shape the returned value has.",
+    "followUp": "Why are field types useful? They let clients validate queries and make result shapes predictable before a request runs."
+   },
+   {
+    "question": "Why is GraphQL's type system separate from the backend?",
+    "answer": "GraphQL types describe the data exposed by an API and the relationships between pieces of data. Because GraphQL can work with different backends and languages, the type system is separate from the implementation.",
+    "followUp": "Does the schema require a particular database? No. The schema describes the API contract, while resolver or backend code supplies the data."
+   }
+  ],
+  "keyPoints": [
+   "The type system defines which data a client may request.",
+   "A schema is the complete set of capabilities exposed by a service.",
+   "Clients use the schema to form valid queries and expect stable result shapes.",
+   "GraphQL has six named type-definition categories that describe API data.",
+   "Types can model both data and links between related data.",
+   "The schema is independent of the backend framework or programming language."
+  ],
+  "gotchas": [
+   "A client can query only fields defined by the schema. Unsupported fields fail validation before execution."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "DataLoader": {
   "sourceUrl": "https://graphql.org/blog/2016-05-02-rest-api-graphql-wrapper/",
@@ -856,6 +1120,78 @@
   "gotchas": [],
   "checkedAt": "2026-10-15"
  },
+ "extendSchema": {
+  "sourceUrl": "https://spec.graphql.org/September2025/",
+  "sourceTitle": "GraphQL September 2025 Specification",
+  "summary": "GraphQL is a query language for client applications. Clients describe the fields they need, and an application service returns data in that requested shape.",
+  "explanation": "A GraphQL client sends a query that describes the fields it needs. The application service maps its own data and capabilities to GraphQL's common language and type system, then returns data that follows the requested field shape. GraphQL does not require a specific programming language or storage system.",
+  "syntax": "query GetUser($id: ID!) { user(id: $id) { name } }",
+  "parameters": [
+   {
+    "name": "id",
+    "type": "ID!",
+    "description": "The user identifier supplied to the query."
+   }
+  ],
+  "returns": "An object containing the requested user name.",
+  "example": {
+   "title": "Fetch a user's name",
+   "code": "query GetUser($id: ID!) {\n  user(id: $id) {\n    name\n  }\n}",
+   "language": "text",
+   "explanation": "This query asks for the name of one user. The variable supplies the user ID at runtime."
+  },
+  "useCases": [
+   {
+    "title": "Request view data",
+    "scenario": "A screen needs a user's name and other profile fields."
+   },
+   {
+    "title": "Unify application data",
+    "scenario": "A team needs one API interface over different data stores."
+   },
+   {
+    "title": "Build developer tools",
+    "scenario": "Tools need to inspect available fields and types."
+   }
+  ],
+  "related": [
+   "GraphQL query",
+   "schema",
+   "type system",
+   "application service",
+   "fields"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is GraphQL?",
+    "answer": "GraphQL is a query language for describing data requirements and interactions. A client requests fields, and the service returns data in the requested structure.",
+    "followUp": "Does GraphQL require a specific database? No. The specification does not require a particular programming language or storage system."
+   },
+   {
+    "question": "How does a GraphQL request work?",
+    "answer": "A GraphQL operation names the fields the client needs, such as a user's name. The service maps those fields to its own underlying data sources and returns the matching result.",
+    "followUp": "What controls the available fields? The service exposes capabilities through its GraphQL schema and type system."
+   },
+   {
+    "question": "Why use a GraphQL interface?",
+    "answer": "GraphQL gives clients a uniform language and type system while leaving implementation choices to the application service. This makes the interface consistent even when the underlying systems differ.",
+    "followUp": "What does GraphQL not define? It does not define a required programming language, storage system, or arbitrary-computation model."
+   }
+  ],
+  "keyPoints": [
+   "GraphQL lets client applications describe the data they need with a query language.",
+   "Its syntax describes data requirements and interactions in a structured way.",
+   "A service maps its own capabilities into GraphQL's uniform language.",
+   "GraphQL also provides a shared type system and set of design ideas.",
+   "Implementations may choose their programming language and storage system.",
+   "The result is one interface that client and product teams can use consistently."
+  ],
+  "gotchas": [
+   "GraphQL cannot perform arbitrary computations like a general-purpose programming language. It is used to request data from an application service."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "federation": {
   "sourceUrl": "https://graphql.org/learn/federation/",
   "sourceTitle": "GraphQL federation",
@@ -1019,6 +1355,148 @@
   ],
   "checkedAt": "2026-10-15"
  },
+ "findBreakingChanges": {
+  "sourceUrl": "https://graphql.org/learn/governance-versioning/",
+  "sourceTitle": "Schema Change Management",
+  "summary": "findBreakingChanges compares a current GraphQL schema with a proposed schema. Use it in CI to detect breaking changes before a pull request is merged.",
+  "explanation": "The function compares two GraphQLSchema objects and returns detected breaking changes. A CI job can run it for every pull request and stop the build when the result is not empty. The schemas must be built first; raw SDL text is not accepted directly.",
+  "syntax": "findBreakingChanges(currentSchema, proposedSchema)",
+  "parameters": [
+   {
+    "name": "currentSchema",
+    "type": "GraphQLSchema",
+    "description": "The current GraphQLSchema object."
+   },
+   {
+    "name": "proposedSchema",
+    "type": "GraphQLSchema",
+    "description": "The proposed GraphQLSchema object."
+   }
+  ],
+  "returns": "An array of detected breaking changes. An empty array means no breaking changes were detected.",
+  "example": {
+   "title": "Check schema changes",
+   "code": "import { buildSchema, findBreakingChanges } from \"graphql\";\n\nconst current = buildSchema(`type Query { user: User } type User { id: ID! }`);\nconst proposed = buildSchema(`type Query { user: User } type User { id: ID! name: String }`);\n\nconst changes = findBreakingChanges(current, proposed);\nif (changes.length) {\n  for (const change of changes) console.error(change.type, change.description);\n  process.exit(1);\n}\nconsole.log(\"No breaking changes detected\");",
+   "language": "typescript",
+   "explanation": "Build two schemas, compare them, and fail the process when breaking changes are found."
+  },
+  "useCases": [
+   {
+    "title": "Block breaking changes in CI",
+    "scenario": "A pull request changes the schema."
+   },
+   {
+    "title": "List changes for approval",
+    "scenario": "A team needs to review an API change."
+   },
+   {
+    "title": "Check safe evolution",
+    "scenario": "A schema is released incrementally."
+   }
+  ],
+  "related": [
+   "buildSchema",
+   "GraphQLSchema",
+   "GraphQL Inspector",
+   "schema review",
+   "production traffic"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does findBreakingChanges do?",
+    "answer": "findBreakingChanges compares a current schema with a proposed schema and reports breaking changes. A CI check can fail the build when the returned list has items.",
+    "followUp": "Why is comparing schemas alone incomplete? A schema diff shows possible impact, but production query logs show whether clients actually use the changed field."
+   },
+   {
+    "question": "What input does the function require?",
+    "answer": "Both inputs must be GraphQLSchema objects. The example creates them with buildSchema before calling the function.",
+    "followUp": "What should happen when the function finds changes? Print each change, fail CI, and require an explicit review before merging."
+   },
+   {
+    "question": "How should this check be used in CI?",
+    "answer": "Run the check on every pull request. Store the schema in version control and compare the proposed schema with the current one.",
+    "followUp": "How can teams improve impact analysis? Combine schema comparison with real client-query usage and performance data."
+   }
+  ],
+  "keyPoints": [
+   "Automated checks find breaking schema changes before deployment.",
+   "Run the comparison for every pull request.",
+   "Fail the build when breaking changes are detected.",
+   "Keep schema files under version control so proposed and current versions can be compared.",
+   "Record why an approved breaking change is needed in the commit message.",
+   "A broader schema-diff tool can also detect dangerous changes and connect with CI."
+  ],
+  "gotchas": [
+   "Pass schema objects created with buildSchema(), not SDL strings.",
+   "Schema differences alone do not show whether real clients use the changed fields. Check query traffic too.",
+   "Breaking-change pull requests should need explicit approval before merging."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "formatError": {
+  "sourceUrl": "https://www.graphql.org/learn/error-handling/",
+  "sourceTitle": "Error Handling",
+  "summary": "GraphQL uses a top-level errors array for exceptional failures. Expected domain failures should be modeled as fields in the schema so clients can discover them.",
+  "explanation": "GraphQL reports exceptional failures in a top-level errors array. For expected domain failures, define errors as fields in the schema so clients can discover and handle them as data.",
+  "syntax": "",
+  "parameters": [],
+  "returns": "A GraphQL response can report exceptional failures in errors, or expected domain failures in data fields.",
+  "example": {
+   "title": "Top-level GraphQL error",
+   "code": "{\n  \"data\": null,\n  \"errors\": [\n    {\n      \"message\": \"Database connection failed\",\n      \"extensions\": {\n        \"code\": \"INTERNAL_SERVER_ERROR\"\n      }\n    }\n  ]\n}",
+   "language": "json",
+   "explanation": "Return exceptional failures in the top-level errors array. The response can also include an error code in extensions."
+  },
+  "useCases": [
+   {
+    "title": "Report infrastructure failures",
+    "scenario": "A database or service failure prevents normal execution."
+   },
+   {
+    "title": "Return domain errors as data",
+    "scenario": "A mutation is rejected because of a known business rule."
+   },
+   {
+    "title": "Make errors discoverable",
+    "scenario": "A client needs to handle known failure states without guessing response formats."
+   }
+  ],
+  "related": [
+   "Common GraphQL over HTTP Errors",
+   "Response",
+   "Schemas and Types"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "When should GraphQL use the top-level errors array?",
+    "answer": "Use the top-level errors array for infrastructure and system failures, such as a database connection failure. Use errors-as-data for expected, domain-specific failures.",
+    "followUp": "How should a client discover domain failures? The schema should expose them as fields, allowing clients to query and handle them explicitly."
+   },
+   {
+    "question": "What does errors-as-data mean?",
+    "answer": "Errors-as-data puts expected failure information in the response data through fields defined by the schema. This makes those states discoverable to clients before they send a request.",
+    "followUp": "Why is schema discoverability useful? Clients can inspect the fields and choose how to render or recover from known domain outcomes."
+   },
+   {
+    "question": "What information can a top-level GraphQL error contain?",
+    "answer": "A response for an exceptional failure can contain null data and an errors array. Each error can include a message and an extensions object with an application error code.",
+    "followUp": "What should an implementation do with the code? It should use a consistent code value, such as INTERNAL_SERVER_ERROR, so clients can classify the failure."
+   }
+  ],
+  "keyPoints": [
+   "GraphQL supports both top-level errors and errors-as-data.",
+   "Use the top-level errors array for system or infrastructure failures.",
+   "Represent expected business failures as fields in the schema.",
+   "Choosing the matching error style makes client behavior easier to understand.",
+   "Schema fields let clients discover expected error states."
+  ],
+  "gotchas": [
+   "Do not use the top-level errors array for expected business outcomes. Model those outcomes as fields in the schema."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "fragment": {
   "sourceUrl": "https://graphql.org/learn/queries/",
   "sourceTitle": "Queries",
@@ -1150,6 +1628,74 @@
    "The generated document is intended for schema discovery, not ordinary application data fetching."
   ],
   "checkedAt": "2026-10-15"
+ },
+ "gql": {
+  "sourceUrl": "https://graphql.org/learn/introduction/",
+  "sourceTitle": "Introduction to GraphQL",
+  "summary": "GraphQL is an API query language and a server runtime. A schema defines the available data and types, and the server validates and executes client requests.",
+  "explanation": "GraphQL uses a schema to describe available data and operations. A client sends a query, and the server validates it against that schema before resolvers execute it and return the requested fields.",
+  "syntax": "type Query { field: Type }",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "A small GraphQL schema",
+   "code": "type Query {\n  user(id: ID!): User\n}\n\ntype User {\n  id: ID!\n  name: String!\n}",
+   "language": "text",
+   "explanation": "This schema declares the data shape that clients can request."
+  },
+  "useCases": [
+   {
+    "title": "Request selected fields",
+    "scenario": "A client needs different fields on different screens."
+   },
+   {
+    "title": "Use existing data sources",
+    "scenario": "An API combines data from application services and storage systems."
+   },
+   {
+    "title": "Validate API operations",
+    "scenario": "A team wants requests checked against a defined contract."
+   }
+  ],
+  "related": [
+   "Schemas and Types",
+   "Queries",
+   "Mutations",
+   "Subscriptions",
+   "Validation",
+   "Execution",
+   "Response",
+   "Introspection"
+  ],
+  "since": "2015",
+  "interview": [
+   {
+    "question": "What is GraphQL?",
+    "answer": "GraphQL is a query language for APIs and a server-side runtime. It uses a type system defined by the API author, and it can work with existing code and data.",
+    "followUp": "Does GraphQL require a specific database? No. It is independent of the storage engine; resolvers connect fields to the data sources."
+   },
+   {
+    "question": "Why is the schema important?",
+    "answer": "The schema defines the shape of the data that clients can request. It also provides the types used to check whether a query is valid before execution.",
+    "followUp": "What happens after validation? The server executes the request, using resolvers to produce the fields in the response."
+   },
+   {
+    "question": "Does GraphQL replace a database?",
+    "answer": "GraphQL is not tied to a database or storage engine. A GraphQL service can use existing application code and data sources behind its schema.",
+    "followUp": "What does the server runtime do? It validates incoming operations and executes them against the schema to create a response."
+   }
+  ],
+  "keyPoints": [
+   "Clients use GraphQL to describe the data they want from an API.",
+   "The server runs operations using the schema's type system.",
+   "GraphQL has an open specification that multiple programming languages implement.",
+   "Resolvers can connect GraphQL fields to application code and current data sources."
+  ],
+  "gotchas": [
+   "GraphQL does not require a particular database. The server connects the schema to existing code and data.",
+   "GraphQL is more than a query format. A server runtime executes requests using the types defined by the schema."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "graphql": {
   "sourceUrl": "https://graphql.org/learn/introduction/",
@@ -1290,6 +1836,72 @@
   ],
   "checkedAt": "2026-10-15"
  },
+ "GraphQLBoolean": {
+  "sourceUrl": "https://graphql.org/learn/queries/",
+  "sourceTitle": "Queries | GraphQL",
+  "summary": "GraphQL queries read data by selecting specific fields. The response follows the query's shape and contains the requested values.",
+  "explanation": "A GraphQL query names the fields it wants from the server. The response follows the same field structure, so the client receives only the requested data. Queries can also use arguments, aliases, fragments, variables, and directives to make field selection more flexible.",
+  "syntax": "query OperationName { field { subfield } }",
+  "parameters": [],
+  "returns": "A response containing the requested fields in the same structure as the query.",
+  "example": {
+   "title": "Select fields from an object",
+   "code": "query GetHero {\n  hero {\n    name\n    appearsIn\n  }\n}",
+   "language": "text",
+   "explanation": "This query asks for two fields from the hero object."
+  },
+  "useCases": [
+   {
+    "title": "Fetch selected fields",
+    "scenario": "Read a resource and selected properties from a GraphQL API."
+   },
+   {
+    "title": "Fetch nested objects",
+    "scenario": "Read nested related data in one request."
+   },
+   {
+    "title": "Read server data",
+    "scenario": "Build a read-only client operation."
+   }
+  ],
+  "related": [
+   "Mutations",
+   "Subscriptions",
+   "Schemas and Types",
+   "Validation",
+   "Execution",
+   "Response"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is a GraphQL query?",
+    "answer": "A query reads data from a GraphQL server. It contains selections that tell the server which fields to return, and the response mirrors those selections.",
+    "followUp": "How can a client avoid requesting fields it does not need? It should select only the required fields in the query."
+   },
+   {
+    "question": "How does field selection work?",
+    "answer": "A field selection identifies the data to fetch from an object. Nested selections let the client request fields on related objects in the same operation.",
+    "followUp": "Why does the response structure matter? Matching the query structure makes the result predictable for the client."
+   },
+   {
+    "question": "How does a query differ from other GraphQL operations?",
+    "answer": "GraphQL has three operation types: queries, mutations, and subscriptions. Queries read data, while the other operation types support changes and ongoing updates.",
+    "followUp": "Which operation should read-only client code use? It should use a query because it does not change server data."
+   }
+  ],
+  "keyPoints": [
+   "A query declares the fields that the client wants.",
+   "Root fields such as hero are defined on the schema's Query type.",
+   "The server returns a result shaped by the requested selection.",
+   "Queries are one of the three operation types supported by GraphQL."
+  ],
+  "gotchas": [
+   "Use a query to read data. Mutations change data, and subscriptions receive updates.",
+   "A response does not automatically include every field on an object. Select each field that you need."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "GraphQLDirective": {
   "sourceUrl": "https://graphql.org/learn/schema/",
   "sourceTitle": "Schemas and Types",
@@ -1358,6 +1970,136 @@
    "Directive arguments may have defaults, so callers may omit an argument when the declaration supplies one."
   ],
   "checkedAt": "2026-10-15"
+ },
+ "GraphQLEnumType": {
+  "sourceUrl": "https://graphql.org/learn/execution/",
+  "sourceTitle": "Execution",
+  "summary": "GraphQL execution runs a validated operation and resolves the fields the client requested. The result follows the query's shape.",
+  "explanation": "GraphQL executes a validated operation by reading or writing data for the fields requested by the client. Field resolvers provide the data, and the result keeps the structure selected in the operation.",
+  "syntax": "query OperationName { field { subfield } }",
+  "parameters": [],
+  "returns": "A result whose shape mirrors the requested query.",
+  "example": {
+   "title": "Select fields in a query",
+   "code": "type Query {\n  hero: Character\n}\n\nquery GetHero {\n  hero {\n    name\n  }\n}",
+   "language": "text",
+   "explanation": "The operation asks for the hero field and only its name. The response follows the same requested shape."
+  },
+  "useCases": [
+   {
+    "title": "Fetch only requested fields",
+    "scenario": "Reading selected data"
+   },
+   {
+    "title": "Change data through requested fields",
+    "scenario": "Writing through a mutation"
+   },
+   {
+    "title": "Resolve values from existing sources",
+    "scenario": "Connecting schema fields to data"
+   }
+  ],
+  "related": [
+   "Queries",
+   "Mutations",
+   "Subscriptions",
+   "Validation",
+   "Schemas and Types",
+   "Response"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What happens during GraphQL execution?",
+    "answer": "GraphQL execution runs a parsed and validated operation. It resolves each requested field and returns data with the shape selected by the client.",
+    "followUp": "What determines whether a field can be requested? The schema's type system and validation rules determine which fields and selections are allowed."
+   },
+   {
+    "question": "What is a field resolver used for?",
+    "answer": "A resolver supplies the value for a field. The server uses the field selections to build the returned result.",
+    "followUp": "Why does the response have a predictable shape? The client declares the fields and nested selections, so execution mirrors that selection structure."
+   },
+   {
+    "question": "How do queries and mutations differ?",
+    "answer": "A query reads data, while a mutation writes data. Both are GraphQL operation types and are executed against the schema's available fields.",
+    "followUp": "How does a subscription differ? It represents an operation type for receiving updates, rather than a one-time read or write."
+   }
+  ],
+  "keyPoints": [
+   "The result uses the same field and nesting shape as the query.",
+   "Execution can read from a source or write to one, depending on the requested fields.",
+   "The schema's type system is required before GraphQL can execute an operation.",
+   "Requested fields determine which existing data source is read or changed."
+  ],
+  "gotchas": [
+   "Execution happens after the document has been parsed and validated."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "GraphQLEnumValue": {
+  "sourceUrl": "https://graphql.org/learn/introspection/",
+  "sourceTitle": "Introspection",
+  "summary": "GraphQL introspection lets clients query an API’s schema. It can reveal supported types, fields, descriptions, and other schema features.",
+  "explanation": "GraphQL introspection lets a client ask the API about its schema. Special fields such as __type and __schema expose information about types, fields, and other schema features.",
+  "syntax": "__schema\n__type(name: String!)",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Inspect a type",
+   "code": "query {\n  __type(name: \"Character\") {\n    name\n    fields {\n      name\n      type {\n        name\n        kind\n      }\n    }\n  }\n}",
+   "language": "text",
+   "explanation": "This asks the schema for the Character type and lists each field with its type information."
+  },
+  "useCases": [
+   {
+    "title": "Explore an API schema",
+    "scenario": "A client needs to discover available types and fields before sending application queries."
+   },
+   {
+    "title": "Power development tools",
+    "scenario": "An editor or other development tool needs schema information for assistance."
+   },
+   {
+    "title": "Check type details",
+    "scenario": "A developer needs to inspect a named type and its fields."
+   }
+  ],
+  "related": [
+   "Queries",
+   "Schemas and Types",
+   "Validation",
+   "Robust Applications"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is GraphQL introspection?",
+    "answer": "Introspection is a GraphQL system for querying an API's schema. It can reveal supported types, fields, and descriptions.",
+    "followUp": "Why are introspection queries useful to tools? They let tools discover schema details instead of relying only on separately maintained API descriptions."
+   },
+   {
+    "question": "How does a client inspect a particular type?",
+    "answer": "A client sends a normal GraphQL request that uses special introspection fields. For example, __type can request information about a named type.",
+    "followUp": "How would you inspect the whole schema? Use the schema-level introspection field, __schema, and select the details needed by the client."
+   },
+   {
+    "question": "What information can introspection provide?",
+    "answer": "Introspection can show what fields and types an API supports. This helps a client understand the schema before constructing application queries.",
+    "followUp": "What should a client inspect when building a query? It should check the relevant type, its fields, and the field type information needed for a valid selection."
+   }
+  ],
+  "keyPoints": [
+   "The introspection system lets clients ask a GraphQL server about its schema.",
+   "Schema inspection can cover types, fields, and their descriptions.",
+   "A client can inspect a type by providing its name.",
+   "Development tools use introspection to understand the API's available schema features.",
+   "Introspection can reveal which schema features the API supports."
+  ],
+  "gotchas": [
+   "Introspection is about the schema, not the data returned by ordinary application fields.",
+   "Tools can use introspection to discover the API and provide features such as schema-aware editing."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "GraphQLError": {
   "sourceUrl": "https://graphql.org/learn/response/",
@@ -1713,6 +2455,76 @@
   ],
   "checkedAt": "2026-10-15"
  },
+ "GraphQLInt": {
+  "sourceUrl": "https://graphql.org/learn/queries/",
+  "sourceTitle": "Queries | GraphQL",
+  "summary": "GraphQL queries read data by selecting fields from a server’s schema. The response follows the query’s requested shape, so clients ask for the data they need.",
+  "explanation": "A query describes the data to read from a GraphQL server. It selects fields on objects, can give an operation name, and can use arguments, aliases, fragments, variables, and directives. The server returns only the selected fields in a matching response shape.",
+  "syntax": "query OperationName($variable: Type) {\n  field(argument: $variable) {\n    nestedField\n  }\n}",
+  "parameters": [],
+  "returns": "The server returns data shaped like the query's selections, together with any reported errors.",
+  "example": {
+   "title": "Select fields from an object",
+   "code": "query GetHero {\n  hero {\n    name\n    appearsIn\n  }\n}",
+   "language": "text",
+   "explanation": "This query asks the server for the hero's name and appearances."
+  },
+  "useCases": [
+   {
+    "title": "Fetch selected fields",
+    "scenario": "Read a resource and only the fields needed by a screen."
+   },
+   {
+    "title": "Fetch connected data",
+    "scenario": "Request nested related objects in one operation."
+   },
+   {
+    "title": "Use variables",
+    "scenario": "Reuse input values across field arguments."
+   },
+   {
+    "title": "Use aliases",
+    "scenario": "Request the same field with different arguments."
+   }
+  ],
+  "related": [
+   "Mutations",
+   "Subscriptions",
+   "Schemas and Types",
+   "Validation",
+   "Execution",
+   "Response",
+   "Naming Conventions and Design Standards"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is a GraphQL query?",
+    "answer": "A GraphQL query selects the fields it needs from objects exposed by the schema. The response follows the same nested shape as the selection.",
+    "followUp": "How can a client request different fields for different object types? Use inline fragments or named fragments, provided the schema supports those types."
+   },
+   {
+    "question": "Why use aliases?",
+    "answer": "An alias gives a selected field a different response key. This lets one operation request the same field more than once with different arguments without a response-name conflict.",
+    "followUp": "What happens if two selections have the same response name but incompatible arguments? Validation rejects the query before execution."
+   },
+   {
+    "question": "Why use variables in queries?",
+    "answer": "Variables keep input values separate from the query text. The operation declares each variable's type, and field arguments can use that variable.",
+    "followUp": "When should a variable be non-null? Declare it with an exclamation mark when the operation requires a value and the schema input type permits that requirement."
+   }
+  ],
+  "keyPoints": [
+   "A selection set lists the exact fields the client wants.",
+   "A query operation is the normal way to read data from a GraphQL server.",
+   "Fields available at the root depend on the schema's Query type."
+  ],
+  "gotchas": [
+   "A query reads data. Do not use it for operations that change data; GraphQL defines mutations for that purpose.",
+   "Naming rules in the related guide are recommendations, not language requirements. Follow the API's documented conventions."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "GraphQLInterfaceType": {
   "sourceUrl": "https://graphql.org/learn/schema/",
   "sourceTitle": "Schemas and Types - GraphQL",
@@ -1986,6 +2798,70 @@
   ],
   "checkedAt": "2026-10-15"
  },
+ "GraphQLScalarType": {
+  "sourceUrl": "https://graphql.org/learn/schema/",
+  "sourceTitle": "Schemas and Types",
+  "summary": "A GraphQL schema describes the data and operations an API exposes. Its type system defines named types, fields, relationships, lists, and required values so clients can form predictable queries.",
+  "explanation": "A GraphQL schema defines the data that an API can provide and the relationships between that data. Named types include scalars, object types, interfaces, unions, enums, and input objects; type modifiers can make values required or represent lists.",
+  "syntax": "type TypeName { fieldName: FieldType }",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "A small GraphQL schema",
+   "code": "type Query {\n  hero: Character\n}\n\ntype Character {\n  name: String!\n  appearsIn: [Episode!]!\n}\n\nenum Episode {\n  NEWHOPE\n  EMPIRE\n  JEDI\n}",
+   "language": "text",
+   "explanation": "This schema defines a query field, an object type, a required string, a required list, and an enum."
+  },
+  "useCases": [
+   {
+    "title": "Describe API data",
+    "scenario": "Define the fields and relationships that clients may request."
+   },
+   {
+    "title": "Set query shape",
+    "scenario": "Make client queries predictable by declaring field types."
+   },
+   {
+    "title": "Represent domain values",
+    "scenario": "Model fixed choices with enum types and reusable structures with object types."
+   }
+  ],
+  "related": [
+   "Queries",
+   "Mutations",
+   "Subscriptions",
+   "Introspection",
+   "GraphQLScalarType"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is a GraphQL schema?",
+    "answer": "A schema describes the data and operations available through a GraphQL API. It lets clients know which fields and types they can request.",
+    "followUp": "How do clients discover the available schema? They can use GraphQL introspection when the server enables it."
+   },
+   {
+    "question": "What is an object type?",
+    "answer": "An object type groups fields that describe an entity. Each field has a type, and object fields can point to other object types to model relationships.",
+    "followUp": "Why are relationships useful? They let a query request related data in one operation while following the schema's declared structure."
+   },
+   {
+    "question": "How do scalars, enums, and lists differ?",
+    "answer": "A scalar represents a primitive value, such as text or a number. An enum restricts a value to one of a fixed set of named options.",
+    "followUp": "How does a list differ from a scalar? A list contains multiple values, and its item type can itself be nullable or non-null."
+   }
+  ],
+  "keyPoints": [
+   "The type system states which data clients can request.",
+   "The schema is the complete set of capabilities exposed by a GraphQL service.",
+   "Named definitions include scalars, object types, interfaces, unions, enums, and input object types.",
+   "Types and fields can model both data and links between related data."
+  ],
+  "gotchas": [
+   "Clients can query only fields described by the schema. A field must also be selected at the correct level in the response."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "GraphQLSchema": {
   "sourceUrl": "https://graphql.org/learn/schema/",
   "sourceTitle": "Schemas and Types",
@@ -2054,6 +2930,70 @@
    "Operations are validated against the schema before execution, so fields or types absent from it cannot be requested successfully."
   ],
   "checkedAt": "2026-10-15"
+ },
+ "GraphQLString": {
+  "sourceUrl": "https://spec.graphql.org/June2018/",
+  "sourceTitle": "GraphQL 1 Overview",
+  "summary": "GraphQLString is the GraphQL scalar type for text values. Use it for fields or arguments that contain strings.",
+  "explanation": "GraphQLString is the built-in scalar type for text values in a GraphQL schema. A field can use it directly, and an argument can use it to require or accept string input. The value is serialized as a string when the server returns it.",
+  "syntax": "GraphQLString",
+  "parameters": [],
+  "returns": "A GraphQL string value.",
+  "example": {
+   "title": "Request selected fields",
+   "code": "const query = `\n  query GetUser($id: ID!) {\n    user(id: $id) { name }\n  }\n`;\n\nconst variables = { id: \"4\" };\n\nfetch(\"/graphql\", {\n  method: \"POST\",\n  headers: { \"content-type\": \"application/json\" },\n  body: JSON.stringify({ query, variables })\n});",
+   "language": "javascript",
+   "explanation": "Send a GraphQL document and its variable values to the server. The selected fields shape the response."
+  },
+  "useCases": [
+   {
+    "title": "Declare text fields",
+    "scenario": "A field returns a person's name, email address, or username."
+   },
+   {
+    "title": "Type string arguments",
+    "scenario": "A query accepts a text filter or identifier."
+   },
+   {
+    "title": "Describe API data",
+    "scenario": "Schema tools need to validate and inspect text data."
+   }
+  ],
+  "related": [
+   "GraphQLString",
+   "GraphQLNonNull",
+   "GraphQLScalarType",
+   "GraphQLSchema"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is GraphQLString?",
+    "answer": "GraphQLString is a GraphQL scalar type for string values. It can be used as the type of a field or an argument.",
+    "followUp": "How would you make a string required? Use GraphQLNonNull around GraphQLString, such as GraphQLNonNull(GraphQLString)."
+   },
+   {
+    "question": "How does GraphQLString affect a response?",
+    "answer": "A field typed as GraphQLString returns text selected by the client. The server schema defines that field's type, while the client chooses whether to request it.",
+    "followUp": "What happens if the client omits the field? That field is normally absent from the response selection, so the server does not return it as part of that selection."
+   },
+   {
+    "question": "Where can GraphQLString be used?",
+    "answer": "GraphQLString can also type an argument, such as an identifier or filter value. The resolver receives the argument after GraphQL validates it against the schema.",
+    "followUp": "How can an argument be mandatory? Wrap the type in a non-null type, for example GraphQLNonNull(GraphQLString)."
+   }
+  ],
+  "keyPoints": [
+   "GraphQLString is one part of a typed schema that describes the data a client can request.",
+   "The scalar gives different server implementations a shared name and meaning for string data.",
+   "Using a declared scalar type lets tools inspect and validate fields and arguments consistently.",
+   "The schema type is independent of the backend language and storage system."
+  ],
+  "gotchas": [
+   "GraphQLString describes text in the schema, but it does not select a database or programming language.",
+   "Do not treat GraphQLString as a general programming-language string operation; GraphQL describes data requirements."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "GraphQLUnionType": {
   "sourceUrl": "https://graphql.org/learn/schema/",
@@ -2318,6 +3258,433 @@
   ],
   "checkedAt": "2026-10-15"
  },
+ "isCompositeType": {
+  "sourceUrl": "https://graphql.org/learn/schema/",
+  "sourceTitle": "Schemas and Types",
+  "summary": "`isCompositeType` checks whether a GraphQL type is an object, interface, or union. These types contain selectable fields or possible object types, unlike scalar and enum leaf types.",
+  "explanation": "In GraphQL, a composite type is a type whose values contain fields that can be selected in a query. Object types, interfaces, and unions are composite types. Scalar and enum types are not, because they represent single leaf values.",
+  "syntax": "isCompositeType(type)",
+  "parameters": [],
+  "returns": "true when the supplied GraphQL type is an object, interface, or union type; otherwise false.",
+  "example": {
+   "title": "A small GraphQL schema",
+   "code": "type Query {\n  user: User\n}\n\ntype User {\n  id: ID!\n  name: String!\n}",
+   "language": "text",
+   "explanation": "This schema defines an object type named User and makes it available through the user field on Query."
+  },
+  "useCases": [
+   {
+    "title": "Check whether a type needs a selection set",
+    "scenario": "Schema utilities"
+   },
+   {
+    "title": "Handle object, interface, and union types differently from leaf types",
+    "scenario": "Validation logic"
+   }
+  ],
+  "related": [
+   "isObjectType",
+   "isInterfaceType",
+   "isUnionType",
+   "Object types",
+   "Interfaces",
+   "Unions",
+   "Schemas and Types"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "Which GraphQL types are composite?",
+    "answer": "An object type is composite because it exposes named fields. An interface is composite because it describes fields shared by possible object types. A union is composite because it represents one of several object types.",
+    "followUp": "How do you tell whether a type is composite? Check whether it is an object, interface, or union type; wrapping a scalar in a list or non-null modifier does not make it composite."
+   },
+   {
+    "question": "How are composite types used in queries?",
+    "answer": "Composite types can appear where a selection set is needed. For example, a field returning User needs a nested selection such as name or id. A scalar field returns a value directly and must not have a selection set.",
+    "followUp": "What happens if a query omits the selection set for an object field? Validation fails because the client has not specified which subfields to return."
+   },
+   {
+    "question": "What role do composite types play in a schema?",
+    "answer": "The GraphQL schema defines the types and fields that clients may query. A field can return a composite type, allowing the client to choose the nested fields it needs.",
+    "followUp": "Why does GraphQL require clients to choose nested fields? The selection tells the server the exact response shape and prevents an unspecified object result."
+   }
+  ],
+  "keyPoints": [
+   "The named composite type categories are object, interface, and union.",
+   "A field returning a composite type lets the client request a controlled set of nested fields.",
+   "The schema determines which composite types and fields are available to clients."
+  ],
+  "gotchas": [
+   "A composite type is not a scalar or enum type. A query must select fields from a composite value before it can reach a leaf value."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "isInputType": {
+  "sourceUrl": "https://spec.graphql.org/draft/",
+  "sourceTitle": "GraphQL Specification",
+  "summary": "GraphQL divides types into input types and output types. Scalars and enums can be used for both, while input objects are input-only and object, interface, and union types are output-only.",
+  "explanation": "GraphQL separates types used for input from types used for output. Scalars, enums, and input objects can provide input values. Scalars and enums can also appear as output values, while objects, interfaces, and unions are output-only. Lists and non-null wrappers follow the same rule as the type they wrap.",
+  "syntax": "IsInputType(type)\nIsOutputType(type)",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "A query with a variable",
+   "code": "const query = `\n  query GetUser($id: ID!) {\n    user(id: $id) {\n      name\n    }\n  }\n`;",
+   "language": "javascript",
+   "explanation": "This query asks for one user's name. The variable type is an input type, and the selected field returns an output value."
+  },
+  "useCases": [
+   {
+    "title": "Choose valid argument and field types",
+    "scenario": "Designing a schema"
+   },
+   {
+    "title": "Declare variables with input types",
+    "scenario": "Writing an operation"
+   },
+   {
+    "title": "Use input objects for arguments",
+    "scenario": "Modeling structured client data"
+   }
+  ],
+  "related": [
+   "IsInputType",
+   "IsOutputType",
+   "Scalar",
+   "Enum",
+   "Input Object",
+   "Object",
+   "Interface",
+   "Union"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is the difference between GraphQL input and output types?",
+    "answer": "Input types describe values supplied to fields, such as variables and arguments. Output types describe values returned by fields. Scalars and enums work in both roles, but input objects are input-only and objects, interfaces, and unions are output-only.",
+    "followUp": "Can a list of input objects be a variable type? Yes. A list and a non-null wrapper are allowed when the wrapped type is an input type."
+   },
+   {
+    "question": "How does GraphQL decide whether a wrapped type is valid?",
+    "answer": "The input-type check unwraps list and non-null wrappers, then accepts scalars, enums, and input objects. The output-type check also unwraps those wrappers, then accepts scalars, objects, interfaces, unions, and enums.",
+    "followUp": "Why are wrappers checked recursively? This lets types such as [Int!]! inherit their input or output status from Int."
+   },
+   {
+    "question": "Why can variables not use object, interface, or union types?",
+    "answer": "Variables must use input types because clients send their values into an operation. A field argument also accepts only an input type, while a field result must use an output type.",
+    "followUp": "What type should model structured client input? Define an input object, not an object type, and use it as the argument or variable type."
+   }
+  ],
+  "keyPoints": [
+   "GraphQL classifies types by whether they supply values to fields or produce values from fields.",
+   "Scalars and enums are valid on both sides of a GraphQL operation.",
+   "Use an input object for structured values sent by a client.",
+   "Use object, interface, and union types to describe values returned by fields.",
+   "A list or non-null wrapper does not change the basic category of its wrapped type.",
+   "Every operation variable must have a type accepted by IsInputType."
+  ],
+  "gotchas": [
+   "Do not declare an object, union, or interface as a variable type. Use a scalar, enum, input object, list, or non-null wrapper instead.",
+   "A field cannot return an input object type. Its result type must be an output type."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "isOutputType": {
+  "sourceUrl": "https://spec.graphql.org/September2025/",
+  "sourceTitle": "GraphQL Specification, September 2025",
+  "summary": "`isOutputType` tells whether a GraphQL type can be used as a field's return type. It accepts output named types and recursively accepts list or non-null wrappers around them.",
+  "explanation": "`isOutputType` checks whether a GraphQL type can be returned by a field. List and non-null wrappers are checked by examining the type inside them. Scalars, objects, interfaces, unions, and enums are output types; input objects are not.",
+  "syntax": "IsOutputType(type)",
+  "parameters": [
+   {
+    "name": "type",
+    "type": "Type",
+    "description": "The GraphQL type to test."
+   }
+  ],
+  "returns": "true when the type is a scalar, object, interface, union, enum, list, or non-null type whose wrapped type is an output type; otherwise false.",
+  "example": {
+   "title": "A small GraphQL schema",
+   "code": "type Query {\n  user(id: ID!): User\n}\n\ntype User {\n  id: ID!\n  name: String!\n}\n",
+   "language": "text",
+   "explanation": "This schema defines output object types and uses an input type for the field argument."
+  },
+  "useCases": [
+   {
+    "title": "Check field return types",
+    "scenario": "Schema validation"
+   },
+   {
+    "title": "Reject input-only types in output positions",
+    "scenario": "Schema validation"
+   },
+   {
+    "title": "Classify wrapped GraphQL types",
+    "scenario": "Type-system tooling"
+   }
+  ],
+  "related": [
+   "IsInputType",
+   "IsSubType",
+   "ListType",
+   "NonNullType",
+   "ScalarTypeDefinition",
+   "ObjectTypeDefinition",
+   "InterfaceTypeDefinition",
+   "UnionTypeDefinition"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "Which GraphQL types are output types?",
+    "answer": "`isOutputType` returns true for a scalar, object, interface, union, or enum. It also returns true for a list or non-null type when the wrapped type is an output type.",
+    "followUp": "Can an input object be returned through a list? No. Unwrapping the list still reaches an input object, so the result is false."
+   },
+   {
+    "question": "Where is `isOutputType` used?",
+    "answer": "A field's return type must pass the output-type check. This prevents arguments-only types, such as input objects, from appearing in response fields.",
+    "followUp": "What about an argument type? It must pass the separate input-type check, so an object type is invalid there."
+   },
+   {
+    "question": "How are list and non-null wrappers handled?",
+    "answer": "A non-null wrapper does not change the underlying kind of type. The check removes the wrapper and tests the wrapped type, so `String!` is an output type because `String` is one.",
+    "followUp": "What is the result for `[InputData!]`? False, because the recursive check eventually reaches the input object `InputData`."
+   }
+  ],
+  "keyPoints": [
+   "Objects, interfaces, and unions are valid as field return types, but not as input values.",
+   "Scalars and enums are output types. The specification's input-type rule also lists input objects, but that does not make input objects output types.",
+   "The function recursively checks the type inside a list or non-null wrapper.",
+   "A wrapper is accepted only when its unwrapped type is itself an output type.",
+   "The complete set of named output types is scalar, object, interface, union, and enum."
+  ],
+  "gotchas": [
+   "An input object cannot be used as a field's return type.",
+   "An object type cannot be used for a field argument or another input position.",
+   "A list or non-null type is valid only when its wrapped type is valid in the same position."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "Kind": {
+  "sourceUrl": "https://graphql.org/learn/schema/",
+  "sourceTitle": "Schemas and Types | GraphQL",
+  "summary": "A GraphQL schema describes all data that an API can return. It uses named types, input types, and modifiers to define valid queries and predictable results.",
+  "explanation": "A GraphQL schema defines every type and field that an API can return. Fields have output types, while arguments use input types. Types can be combined with list and non-null modifiers to describe allowed values precisely.",
+  "syntax": "type Character { name: String! }\ninput ReviewInput { stars: Int!, commentary: String }",
+  "parameters": [
+   {
+    "name": "schema",
+    "type": "GraphQL schema",
+    "description": "The GraphQL schema defines the available types, fields, arguments, and relationships for a service."
+   },
+   {
+    "name": "argument",
+    "type": "Input type",
+    "description": "A field argument uses an input type, such as a scalar, enum, or input object."
+   }
+  ],
+  "returns": "A validated GraphQL response whose available shape is defined by the schema.",
+  "example": {
+   "title": "Input object in a mutation",
+   "code": "type ReviewInput {\n  stars: Int!\n  commentary: String\n}\n\ntype Mutation {\n  createReview(episode: Episode, review: ReviewInput!): Review\n}",
+   "language": "text",
+   "explanation": "This schema accepts a required structured review input in a mutation."
+  },
+  "useCases": [
+   {
+    "title": "Describe available data",
+    "scenario": "Designing an API contract"
+   },
+   {
+    "title": "Model input objects",
+    "scenario": "Accepting structured mutation input"
+   },
+   {
+    "title": "Use enums",
+    "scenario": "Restricting values to known choices"
+   },
+   {
+    "title": "Apply type modifiers",
+    "scenario": "Marking required or repeated values"
+   }
+  ],
+  "related": [
+   "Queries",
+   "Mutations",
+   "Validation",
+   "Execution",
+   "Introspection",
+   "Schema Design"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is a GraphQL schema?",
+    "answer": "A GraphQL schema describes all data that a service can expose. Requests are checked against the schema before execution, so clients can know which fields and values are valid.",
+    "followUp": "How can a schema be defined? It can be written with SDL or built from code, depending on the implementation library."
+   },
+   {
+    "question": "What is the difference between object fields and field arguments?",
+    "answer": "Object types describe returned data and contain fields. Each field declares an output type and may define arguments whose types are inputs.",
+    "followUp": "Why are arguments separate from field results? Arguments provide input to resolve a field, while the field type describes the value returned."
+   },
+   {
+    "question": "Which scalar types does GraphQL provide?",
+    "answer": "The built-in scalar types are Int, Float, String, Boolean, and ID. Custom scalars can also be defined, but the implementation must handle their serialization, deserialization, and validation.",
+    "followUp": "How does an enum differ from a scalar? An enum is a leaf value restricted to a fixed set of named values."
+   }
+  ],
+  "keyPoints": [
+   "The schema is the complete description of data that clients may request from a GraphQL service.",
+   "The named types are Object, Scalar, Enum, Interface, Union, and Input Object.",
+   "Object fields describe returned values and may also declare arguments.",
+   "GraphQL includes five built-in scalar types: Int, Float, String, Boolean, and ID.",
+   "Use [] for lists and ! for non-null values; they can be combined.",
+   "Interfaces and unions let one field return different concrete object types.",
+   "Schema directives annotate types, fields, or arguments to change validation or execution behavior."
+  ],
+  "gotchas": [
+   "Input object fields may use other input objects, but they cannot use output object types.",
+   "A field is nullable and singular unless its type uses modifiers such as ! or [].",
+   "Do not use an output type as an input type or an input type as an output type."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "Lexer": {
+  "sourceUrl": "https://graphql.org/learn/introduction/",
+  "sourceTitle": "Introduction to GraphQL",
+  "summary": "GraphQL is a typed query language for APIs and a server runtime for executing queries. It works with existing application code and data sources.",
+  "explanation": "GraphQL uses a schema to describe data and operations. A client sends a query, and the server validates and executes it against existing code or data.",
+  "syntax": "query { field }",
+  "parameters": [],
+  "returns": "A GraphQL response containing requested data or errors.",
+  "example": {
+   "title": "A minimal GraphQL field",
+   "code": "type Query {\n  hello: String\n}\n\nconst schema = buildSchema(`\n  type Query {\n    hello: String\n  }\n`);\n\nconst rootValue = {\n  hello: () => \"Hello world!\"\n};\n\ngraphql({ schema, source: \"{ hello }\", rootValue })\n  .then((result) => console.log(result.data));",
+   "language": "javascript",
+   "explanation": "A schema declares the available field, and a resolver supplies its value when the client asks for it."
+  },
+  "useCases": [
+   {
+    "title": "Request selected fields",
+    "scenario": "A client needs different fields on different screens."
+   },
+   {
+    "title": "Use existing data sources",
+    "scenario": "An API combines data from several existing services."
+   },
+   {
+    "title": "Validate typed operations",
+    "scenario": "A team wants the API shape checked before requests run."
+   }
+  ],
+  "related": [
+   "Schemas and Types",
+   "Queries",
+   "Validation",
+   "Execution",
+   "Response",
+   "Serving over HTTP"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is GraphQL?",
+    "answer": "GraphQL is a query language for APIs and a server runtime that executes queries using a type system defined for the data. The schema describes the API, while application code provides the data.",
+    "followUp": "Does GraphQL require a specific database? No. It can work with existing code and any storage system."
+   },
+   {
+    "question": "How does a GraphQL request work?",
+    "answer": "A client asks for fields in a query. The server checks the query against the schema, runs the needed resolvers, and returns the requested result.",
+    "followUp": "What happens when the query is invalid? Validation detects the problem before normal execution and reports an error."
+   },
+   {
+    "question": "What does GraphQL depend on?",
+    "answer": "GraphQL is not tied to a database, storage engine, or one programming language. The specification has implementations in many programming languages, so the server can connect to existing systems.",
+    "followUp": "Why is a type system useful? It defines the shape of the API and lets the server check whether a requested operation is valid."
+   }
+  ],
+  "keyPoints": [
+   "GraphQL lets clients describe the data they need through queries.",
+   "A GraphQL server runs the requested operation and produces the response.",
+   "The schema's types define what data and operations the API exposes.",
+   "The GraphQL specification became open source in 2015.",
+   "GraphQL has implementations across many programming languages."
+  ],
+  "gotchas": [
+   "GraphQL does not require a particular database. It can use existing application code and data sources.",
+   "GraphQL does not force one transport protocol, although HTTP is commonly used."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "lexicographicSortSchema": {
+  "sourceUrl": "https://graphql.org/learn/schema/",
+  "sourceTitle": "Schemas and Types | GraphQL",
+  "summary": "A GraphQL schema describes the data and operations an API exposes. It uses named types and type wrappers to define fields, relationships, accepted inputs, and nullability.",
+  "explanation": "A GraphQL schema describes the data an API can return and the relationships between that data. It uses named types such as scalars, objects, interfaces, unions, enums, and input objects, plus list and non-null wrappers. Fields can take arguments, and the schema defines root operation types for queries, mutations, and subscriptions.",
+  "syntax": "type TypeName {\n  fieldName: ReturnType\n}",
+  "parameters": [],
+  "returns": "A schema definition describing the types and operations that a GraphQL service exposes.",
+  "example": {
+   "title": "A small GraphQL schema",
+   "code": "type Query {\n  user(id: ID!): User\n}\n\ntype User {\n  id: ID!\n  name: String!\n  posts: [Post!]!\n}\n\ntype Post {\n  id: ID!\n  title: String!\n}",
+   "language": "text",
+   "explanation": "This schema defines object types and the relationships between them. A client can request a user's id, name, and posts."
+  },
+  "useCases": [
+   {
+    "title": "Plan available data",
+    "scenario": "Design an API contract before implementing resolvers."
+   },
+   {
+    "title": "Shape responses",
+    "scenario": "Let clients request only the fields they need."
+   },
+   {
+    "title": "Support tooling",
+    "scenario": "Generate documentation and development tools from the API definition."
+   },
+   {
+    "title": "Reject invalid queries",
+    "scenario": "Validate requests before resolver execution."
+   }
+  ],
+  "related": [
+   "Scalar types",
+   "Object types",
+   "Interfaces",
+   "Union types",
+   "Enum types",
+   "Input Object types",
+   "Lists and Non-Null",
+   "Arguments"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is a GraphQL schema?",
+    "answer": "A schema is the contract for a GraphQL service. It lists the types, fields, arguments, and operations that clients can use. The schema lets clients form requests with predictable result shapes.",
+    "followUp": "How can a client discover the contract? Through introspection, which exposes the schema's types, fields, arguments, and relationships."
+   },
+   {
+    "question": "What are the main GraphQL type categories?",
+    "answer": "A scalar represents a single value, such as `String`, `Int`, `Float`, `Boolean`, or `ID`. An object type contains fields, and each field has a return type that can be another named type or a list or non-null wrapper.",
+    "followUp": "What is the difference between `[User]` and `[User!]!`? The first allows a null list and null elements; the second requires both the list and every element to be non-null."
+   },
+   {
+    "question": "How do fields accept input?",
+    "answer": "Arguments let a field receive input from a client. Input object types group related input fields and can be used as argument values, but output object types cannot be used as input types.",
+    "followUp": "Why separate input and output object types? Input fields describe values accepted by the server, while output fields describe values the server can return, so their requirements differ."
+   }
+  ],
+  "keyPoints": [
+   "The type system states which data clients may query.",
+   "A schema is the complete set of capabilities exposed by the service.",
+   "The named type definitions are scalars, objects, interfaces, unions, enums, and input objects."
+  ],
+  "gotchas": [],
+  "checkedAt": "2026-11-03"
+ },
  "makeExecutableSchema": {
   "sourceUrl": "https://graphql.org/community/tools-and-libraries/?tags=javascript",
   "sourceTitle": "Tools and Libraries",
@@ -2391,6 +3758,215 @@
    "The type definitions and resolvers must be supplied together in the options object so the schema has both its structure and behavior."
   ],
   "checkedAt": "2026-10-15"
+ },
+ "makeVar": {
+  "sourceUrl": "https://graphql.org/learn/queries/",
+  "sourceTitle": "Queries",
+  "summary": "GraphQL queries read data by naming the fields the client needs. The response follows the query’s shape and can use inputs such as variables and field arguments.",
+  "explanation": "A GraphQL query describes the fields a client wants to read. The server returns matching data in a similar nested shape. Queries can use variables for input and fragments to reuse field selections.",
+  "syntax": "query OperationName($variable: Type) { field(argument: $variable) { selectedField } }",
+  "parameters": [
+   {
+    "name": "arguments and variables",
+    "type": "schema-defined values",
+    "description": "Values supplied to fields or operation variables, such as an object identifier."
+   }
+  ],
+  "returns": "A response containing the requested fields in a matching nested structure.",
+  "example": {
+   "title": "Fetch selected fields",
+   "code": "query GetUser($id: ID!) {\n  user(id: $id) {\n    name\n  }\n}",
+   "language": "text",
+   "explanation": "This query asks the server for the name of one user. The variable supplies the user ID."
+  },
+  "useCases": [
+   {
+    "title": "Request selected data",
+    "scenario": "A screen needs only a few properties from an object."
+   },
+   {
+    "title": "Pass dynamic input",
+    "scenario": "The same query runs for different object identifiers."
+   },
+   {
+    "title": "Reuse selections with fragments",
+    "scenario": "Several parts of a client share field selections."
+   }
+  ],
+  "related": [
+   "fields",
+   "variables",
+   "fragments",
+   "mutations",
+   "subscriptions",
+   "schemas and types"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does a GraphQL query do?",
+    "answer": "A GraphQL query selects fields from objects exposed by the schema. The response follows the structure of the selection.",
+    "followUp": "How can a client avoid hard-coding input values? Use variables and declare their types in the operation."
+   },
+   {
+    "question": "Why are fields central to GraphQL queries?",
+    "answer": "A query can request only the fields the client needs. This lets the response match the requested shape instead of returning a fixed server-defined record.",
+    "followUp": "What must determine which fields are available? The schema defines the fields and their types."
+   },
+   {
+    "question": "How do queries differ from mutations and subscriptions?",
+    "answer": "GraphQL has three operation types: queries read data, mutations change data, and subscriptions support ongoing updates. The operation type should match the requested behavior.",
+    "followUp": "Can a query itself perform arbitrary computation? No. GraphQL describes requests against capabilities provided by an application service."
+   }
+  ],
+  "keyPoints": [
+   "Use the query operation to read data; mutations change data, and subscriptions support real-time updates.",
+   "A selection set lists the exact fields the client wants from each object.",
+   "Basic queries can be extended with features such as variables and fragments.",
+   "Arguments let a field receive input, such as an identifier used to select one object."
+  ],
+  "gotchas": [
+   "A query describes data requirements, but it cannot perform arbitrary computations.",
+   "Do not use a query operation when the intended operation is a mutation or subscription."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "mergeResolvers": {
+  "sourceUrl": "https://spec.graphql.org/September2025/",
+  "sourceTitle": "GraphQL Specification",
+  "summary": "GraphQL is a query language for requesting data from application services. Clients select fields, and the service returns data in the requested shape.",
+  "explanation": "A GraphQL request names the fields it needs. The service checks those fields against its schema, then returns data in a matching shape. GraphQL describes the API contract, but the service chooses the programming language and storage system behind it.",
+  "syntax": "query Name($variable: Type) { field(argument: $variable) { subfield } }",
+  "parameters": [
+   {
+    "name": "request",
+    "type": "GraphQL document",
+    "description": "The fields and arguments requested by the client, according to the service schema."
+   }
+  ],
+  "returns": "A response containing the requested data in a matching structure.",
+  "example": {
+   "title": "Fetch a user's name",
+   "code": "query GetUser($id: ID!) {\n  user(id: $id) {\n    name\n  }\n}",
+   "language": "text",
+   "explanation": "This request asks for one user's name by ID."
+  },
+  "useCases": [
+   {
+    "title": "Request precise data",
+    "scenario": "A client needs only selected fields from an API response."
+   },
+   {
+    "title": "Define typed capabilities",
+    "scenario": "An API needs a shared contract between clients and services."
+   },
+   {
+    "title": "Support API tools",
+    "scenario": "A product team needs tooling around a consistent API interface."
+   }
+  ],
+  "related": [
+   "schema",
+   "type system",
+   "application service",
+   "GraphQL request",
+   "GraphQL response"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is GraphQL?",
+    "answer": "GraphQL is a query language for making requests to application services. The service defines the available capabilities through a schema, and the client selects the fields it needs.",
+    "followUp": "Does GraphQL require a specific database? No. The specification does not require a particular storage system, so resolvers can use existing data sources."
+   },
+   {
+    "question": "How does a GraphQL request relate to its response?",
+    "answer": "A client request describes the requested fields, such as a user's name. The response follows the requested structure, which lets clients avoid receiving unrelated fields.",
+    "followUp": "Why is the response shape useful? It makes the data returned by a request predictable and aligns it with the fields used by the client."
+   },
+   {
+    "question": "What does GraphQL standardize?",
+    "answer": "GraphQL maps application capabilities to a uniform language and type system. This gives clients and tools a common way to describe and inspect API data.",
+    "followUp": "What remains outside GraphQL's definition? The specification does not choose the implementation language, storage system, or internal application design."
+   }
+  ],
+  "keyPoints": [
+   "GraphQL lets client applications describe the data they need.",
+   "Its syntax represents data requirements and interactions in a structured way.",
+   "A GraphQL service exposes capabilities defined by its schema and the specification.",
+   "Services map their own capabilities into a shared GraphQL language.",
+   "GraphQL provides a common type system and set of design rules."
+  ],
+  "gotchas": [
+   "GraphQL is for requesting data from an application service. It cannot perform arbitrary computation like a general-purpose programming language.",
+   "An implementation does not need a specific programming language or database. The service maps its existing systems to the GraphQL type system."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "mergeTypeDefs": {
+  "sourceUrl": "https://spec.graphql.org/October2021/",
+  "sourceTitle": "GraphQL",
+  "summary": "GraphQL is a query language for client applications. Clients request specific data fields, and a GraphQL service returns the result as JSON.",
+  "explanation": "GraphQL lets a client describe the data it needs with a typed query language. An application service maps its own capabilities and storage to GraphQL, but GraphQL does not require a specific programming language or storage system.",
+  "syntax": "query { user(id: 4) { name } }",
+  "parameters": [],
+  "returns": "The requested data in JSON.",
+  "example": {
+   "title": "Request one field",
+   "code": "const query = `query { user(id: 4) { name } }`;\n\nconst response = await fetch(\"/graphql\", {\n  method: \"POST\",\n  headers: { \"content-type\": \"application/json\" },\n  body: JSON.stringify({ query })\n});\n\nconst result = await response.json();\nconsole.log(result);",
+   "language": "javascript",
+   "explanation": "This sends a GraphQL query that asks for one user's name. The response contains the requested field in JSON."
+  },
+  "useCases": [
+   {
+    "title": "Request only the fields a view needs",
+    "scenario": "A screen needs data from an application service."
+   },
+   {
+    "title": "Support flexible client queries",
+    "scenario": "Different clients need different subsets of the same data."
+   },
+   {
+    "title": "Expose a uniform API",
+    "scenario": "A team wants one interface over application capabilities."
+   }
+  ],
+  "related": [
+   "query",
+   "type system",
+   "application services",
+   "JSON"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is GraphQL?",
+    "answer": "GraphQL is a query language for requesting data from application services. A client selects the fields it needs, and the service returns data that follows the GraphQL type system.",
+    "followUp": "Does GraphQL replace a database? No. A service maps GraphQL operations to its chosen data sources, which may use any storage system."
+   },
+   {
+    "question": "How does a GraphQL request work?",
+    "answer": "A client writes a selection such as a user identifier and the name field. The service processes that request and returns the selected data as JSON.",
+    "followUp": "Why select fields explicitly? The selection describes the client's data needs and avoids asking for unrelated fields."
+   },
+   {
+    "question": "What does GraphQL standardize?",
+    "answer": "GraphQL defines a uniform language and type system for application services. It does not require a specific implementation language or storage technology.",
+    "followUp": "What stays application-specific? The service decides how GraphQL fields are implemented and where their data comes from."
+   }
+  ],
+  "keyPoints": [
+   "GraphQL is a query language for building client applications.",
+   "Clients describe their data requirements and interactions in the request.",
+   "A query can request a user's name by providing the user's identifier.",
+   "The service returns the requested result as JSON data.",
+   "Services map their capabilities into GraphQL's common language and type system."
+  ],
+  "gotchas": [
+   "GraphQL cannot perform arbitrary computation. It is a request language for services that implement the capabilities defined by the specification.",
+   "A GraphQL service can use different programming languages and storage systems. The specification does not choose them."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "Mutation": {
   "sourceUrl": "https://graphql.org/learn/mutations/",
@@ -2535,6 +4111,77 @@
   ],
   "checkedAt": "2026-10-15"
  },
+ "parse": {
+  "sourceUrl": "https://graphql.org/learn/schema/",
+  "sourceTitle": "Schemas and Types | GraphQL",
+  "summary": "A GraphQL schema describes the data an API can expose. Clients use its typed fields and arguments to send queries with predictable results.",
+  "explanation": "GraphQL defines an API schema with types, fields, and arguments. A client sends a query that selects fields, and the server validates that query against the schema before execution. The response contains the requested fields and follows the selected structure.",
+  "syntax": "type Product {\n  name: String\n  price: Float\n}",
+  "parameters": [],
+  "returns": "A query returns data whose shape follows the fields selected by the client.",
+  "example": {
+   "title": "Select fields from a product",
+   "code": "query ProductDetails {\n  product(id: \"p1\") {\n    name\n    price\n  }\n}",
+   "language": "text",
+   "explanation": "This query asks the server for only the product name and price."
+  },
+  "useCases": [
+   {
+    "title": "Describe an API",
+    "scenario": "Define the data available through an API."
+   },
+   {
+    "title": "Shape responses",
+    "scenario": "Let clients request only the fields they need."
+   },
+   {
+    "title": "Model connected data",
+    "scenario": "Represent relationships between data types."
+   },
+   {
+    "title": "Document the schema",
+    "scenario": "Document fields and arguments for tools and clients."
+   }
+  ],
+  "related": [
+   "Queries",
+   "Mutations",
+   "Subscriptions",
+   "Validation",
+   "Execution",
+   "Introspection"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is a GraphQL schema?",
+    "answer": "A GraphQL schema describes the data that an API can expose. It defines types, fields, relationships, and arguments, so clients can form valid queries.",
+    "followUp": "Why can a client discover the schema? GraphQL provides built-in introspection, which lets clients inspect the available types and fields."
+   },
+   {
+    "question": "How does a GraphQL query control the response?",
+    "answer": "A query names the fields it wants. The response contains those selected fields, which lets the client control the response shape.",
+    "followUp": "How can a client avoid requesting unnecessary data? It can select only the fields needed for the current operation."
+   },
+   {
+    "question": "When are GraphQL query errors detected?",
+    "answer": "GraphQL validation checks a query against the schema before execution. This catches invalid fields and other query errors early.",
+    "followUp": "What does validation use to detect errors? It uses the schema's type and field definitions, including argument definitions."
+   }
+  ],
+  "keyPoints": [
+   "The type system defines the data that clients can request.",
+   "Clients use the schema to build queries with predictable result shapes.",
+   "Schema definitions describe data and relationships with types.",
+   "Input object types group complex values for field or directive arguments.",
+   "Directives can change how schema elements are validated or executed.",
+   "Descriptions provide documentation directly on schema elements."
+  ],
+  "gotchas": [
+   "Descriptions can document types, fields, and arguments, but comments are ignored by the parser."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "persisted queries": {
   "sourceUrl": "https://graphql.org/learn/performance/",
   "sourceTitle": "Performance",
@@ -2601,6 +4248,80 @@
    "Trusted documents are unsuitable for public APIs when arbitrary third-party clients can submit operations that were not previously approved."
   ],
   "checkedAt": "2026-10-15"
+ },
+ "print": {
+  "sourceUrl": "https://graphql.org/learn/governance-tooling/",
+  "sourceTitle": "Tooling and Automation for Governance | GraphQL",
+  "summary": "Use a schema registry, automated CI checks, generated documentation, and usage monitoring to govern GraphQL schemas. These tools help detect breaking changes early and guide safe deprecation.",
+  "explanation": "A schema registry stores schema versions and lets teams compare a proposed schema with the production schema. Publish schemas during deployment, run change checks on pull requests, generate documentation from descriptions, and collect field-use data to guide deprecation and removal decisions.",
+  "syntax": "findSchemaChanges(currentSchema, proposedSchema)",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Check schema changes in CI",
+   "code": "import { findSchemaChanges } from \"graphql\";\n\nconst currentSchema = await fetchFromRegistry(\"production\");\nconst proposedSchema = await loadLocal(\"./schema.graphql\");\nconst changes = findSchemaChanges(currentSchema, proposedSchema);\n\nconst breaking = changes.filter(change => change.type === \"BREAKING\");\nif (breaking.length > 0) {\n  throw new Error(\"Breaking schema changes found\");\n}",
+   "language": "typescript",
+   "explanation": "This checks a proposed schema against the production schema and stops the process when breaking changes exist."
+  },
+  "useCases": [
+   {
+    "title": "Check changes before merge",
+    "scenario": "A team proposes a schema edit."
+   },
+   {
+    "title": "Keep the registry current",
+    "scenario": "A service deploys a new schema."
+   },
+   {
+    "title": "Measure client usage",
+    "scenario": "A team plans to remove a deprecated field."
+   },
+   {
+    "title": "Generate documentation",
+    "scenario": "Developers need current API reference material."
+   }
+  ],
+  "related": [
+   "Schema Governance",
+   "Schema Review",
+   "Schema Change Management",
+   "Schema Design",
+   "Validation"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "Why use a schema registry?",
+    "answer": "A registry stores and versions schemas. It allows a proposed schema to be compared with the production schema before a change is merged.",
+    "followUp": "What should happen if registry publication fails? The deployment should fail, because the registry must remain synchronized with deployed code."
+   },
+   {
+    "question": "How should schema validation run in CI?",
+    "answer": "Run validation for every pull request that changes schema files. Compare the proposed schema with production, block breaking changes, and review dangerous changes.",
+    "followUp": "Why compare with production rather than only the local previous schema? Production represents the schema currently used by deployed clients."
+   },
+   {
+    "question": "What data supports safe deprecation?",
+    "answer": "Usage tracking records resolved field paths, client identifiers, timestamps, and operation names. This data shows whether deprecated fields are still used and helps plan migrations.",
+    "followUp": "How can high-traffic services reduce tracking cost? Sample requests, while keeping enough data to identify usage trends."
+   }
+  ],
+  "keyPoints": [
+   "Keep schema versions in a registry so proposed changes can be checked before merge.",
+   "Publish the schema automatically as part of deployment rather than relying on manual updates.",
+   "Make schema validation a required pull-request check for schema changes.",
+   "Use a schema-diff tool or CI integration to automate change detection.",
+   "Record field paths to learn which parts of the schema clients actually resolve.",
+   "Store the client identifier so usage can be connected to a specific application.",
+   "Capture operation names to find the queries that still use deprecated fields."
+  ],
+  "gotchas": [
+   "Treat breaking changes as merge blockers because existing client queries can stop working.",
+   "Dangerous changes need review, but they do not always require blocking a merge.",
+   "Generated documentation is only useful when types, fields, arguments, constraints, and deprecations have clear descriptions.",
+   "Do not remove deprecated fields without usage data that shows which clients still depend on them."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "printSchema": {
   "sourceUrl": "https://graphql.org/learn/governance-tooling/",
@@ -3204,6 +4925,76 @@
   ],
   "checkedAt": "2026-10-15"
  },
+ "Source": {
+  "sourceUrl": "https://graphql.org/learn/introduction/",
+  "sourceTitle": "Introduction to GraphQL",
+  "summary": "GraphQL is a typed language for querying APIs and a server runtime that executes those queries. A schema defines the available fields, and resolvers provide their values.",
+  "explanation": "A GraphQL service defines types and fields for its data. Each field has a resolver that gets its value. A client sends a query, and the service checks that the requested fields exist before running the resolvers and returning the result.",
+  "syntax": "type Query { field: Type }\\n\\nquery { field }",
+  "parameters": [],
+  "returns": "A JSON result containing the requested fields, typically under a data property.",
+  "example": {
+   "title": "A small GraphQL schema and query",
+   "code": "type Query {\\n  me: User\\n}\\n\\ntype User {\\n  name: String\\n}\\n\\nquery {\\n  me {\\n    name\\n  }\\n}",
+   "language": "text",
+   "explanation": "The schema defines available data. The query asks for the current user's name."
+  },
+  "useCases": [
+   {
+    "title": "Fetch selected data",
+    "scenario": "A client needs data from several related objects in one API request."
+   },
+   {
+    "title": "Limit response shape",
+    "scenario": "An API team wants clients to request only the fields they use."
+   },
+   {
+    "title": "Use existing data sources",
+    "scenario": "A service combines data from existing databases or other services."
+   },
+   {
+    "title": "Evolve an API",
+    "scenario": "A schema needs new fields without changing existing client queries."
+   }
+  ],
+  "related": [
+   "Schemas and Types",
+   "Queries",
+   "Resolvers",
+   "Authorization",
+   "Versioning"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is GraphQL?",
+    "answer": "GraphQL is both a query language for an API and a server runtime. The runtime executes queries using a type system defined by the service.",
+    "followUp": "Does GraphQL require a particular database? No. It can use existing code and any storage system."
+   },
+   {
+    "question": "How does a GraphQL service provide data?",
+    "answer": "A schema declares types and their fields. A resolver is the function that supplies the value for a field, often by using request context or a database.",
+    "followUp": "Can two fields use different data sources? Yes. Each field can have its own resolver and data-fetching logic."
+   },
+   {
+    "question": "How does a GraphQL request work?",
+    "answer": "The client selects the fields it needs in the query. The server validates that selection against the schema, runs the relevant resolvers, and returns the result.",
+    "followUp": "Why is this useful when adding fields? Existing queries can continue to request only their original fields while new fields are added to the schema."
+   }
+  ],
+  "keyPoints": [
+   "GraphQL has two parts: a language clients use to ask for data and a server runtime that executes those requests.",
+   "The schema describes the API's available data with types and fields.",
+   "Resolvers provide values for fields. They can read request context, databases, or other services.",
+   "The response contains the selected fields, so clients can request the shape of data they need.",
+   "GraphQL commonly evolves by extending the schema instead of creating versions for every change."
+  ],
+  "gotchas": [
+   "GraphQL does not choose your database. The service uses your existing code and data sources.",
+   "A query must use fields and types declared in the schema. Invalid requests are rejected before execution."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "subscribe": {
   "sourceUrl": "https://graphql.org/learn/subscriptions/",
   "sourceTitle": "Subscriptions - GraphQL",
@@ -3411,6 +5202,86 @@
   ],
   "checkedAt": "2026-10-15"
  },
+ "Token": {
+  "sourceUrl": "https://graphql.org/learn/serving-over-http/",
+  "sourceTitle": "Serving over HTTP | GraphQL",
+  "summary": "GraphQL requests can use HTTP, although the specification does not require HTTP. The documented HTTP guidance covers stateless queries and mutations, while subscriptions use transport protocols suited to real-time communication.",
+  "explanation": "A GraphQL server receives an HTTP request containing a query document. It checks the query against the schema, runs the selected operations, and returns the result as JSON. Query and mutation operations can use HTTP, while subscriptions commonly need another transport.",
+  "syntax": "POST /graphql\nContent-Type: application/json\n\n{\"query\":\"{ field }\"}",
+  "parameters": [
+   {
+    "name": "query",
+    "type": "string",
+    "description": "The GraphQL operation sent in the HTTP request body."
+   },
+   {
+    "name": "variables",
+    "type": "object",
+    "description": "Optional values used by variables in the operation."
+   },
+   {
+    "name": "operationName",
+    "type": "string",
+    "description": "Optional operation name when the request contains multiple operations."
+   }
+  ],
+  "returns": "A JSON GraphQL response from the HTTP server.",
+  "example": {
+   "title": "Send a GraphQL query over HTTP",
+   "code": "fetch('/graphql', {\n  method: 'POST',\n  headers: {'content-type': 'application/json'},\n  body: JSON.stringify({\n    query: '{ user { id name } }'\n  })\n}).then(r => r.json()).then(console.log);",
+   "language": "javascript",
+   "explanation": "This sends a GraphQL query to an HTTP endpoint and prints the JSON response."
+  },
+  "useCases": [
+   {
+    "title": "Request data",
+    "scenario": "A web or mobile client needs data from a GraphQL API."
+   },
+   {
+    "title": "Change data",
+    "scenario": "A client must create, update, or delete data through a GraphQL API."
+   },
+   {
+    "title": "Serve GraphQL over HTTP",
+    "scenario": "A server exposes GraphQL through a standard network endpoint."
+   }
+  ],
+  "related": [
+   "Introduction",
+   "Queries",
+   "Mutations",
+   "Subscriptions",
+   "Validation",
+   "Execution",
+   "Response"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "Does GraphQL require HTTP?",
+    "answer": "HTTP is commonly used because it is widely available, but GraphQL itself does not require a specific client-server protocol. The server still needs to define how requests and responses are transported.",
+    "followUp": "Which operations do these HTTP recommendations cover? They cover stateless queries and mutations, not subscriptions."
+   },
+   {
+    "question": "What happens when a GraphQL request reaches an HTTP server?",
+    "answer": "A client sends a GraphQL request to an HTTP server. The server processes the operation against its schema and returns the result as JSON.",
+    "followUp": "Why does the schema matter before execution? It lets the server check whether the requested operation and fields are valid."
+   },
+   {
+    "question": "Why is HTTP commonly used with GraphQL?",
+    "answer": "HTTP is a common choice for GraphQL because it is broadly supported. The transport is separate from the GraphQL language and runtime.",
+    "followUp": "What should be used for real-time subscription requests? A transport that supports subscriptions, rather than relying on the stateless query and mutation guidance."
+   }
+  ],
+  "keyPoints": [
+   "HTTP is widely used for GraphQL requests because it is available across many clients and servers.",
+   "GraphQL does not force one client-server transport protocol.",
+   "An HTTP GraphQL server should follow the documented request and response guidelines.",
+   "The page's HTTP recommendations apply to stateless queries and mutations."
+  ],
+  "gotchas": [],
+  "checkedAt": "2026-11-03"
+ },
  "type": {
   "sourceUrl": "https://graphql.org/learn/global-object-identification/",
   "sourceTitle": "Global Object Identification",
@@ -3545,6 +5416,427 @@
   ],
   "checkedAt": "2026-10-15"
  },
+ "useBackgroundQuery": {
+  "sourceUrl": "https://graphql.org/learn/queries/",
+  "sourceTitle": "Queries | GraphQL",
+  "summary": "GraphQL queries read data by selecting fields from objects. The server returns data shaped like those selections.",
+  "explanation": "A GraphQL query names the fields it needs. The server returns those fields in a response whose shape matches the query. Query operations are used to read data, and they can use fields, variables, and fragments.",
+  "syntax": "query OperationName($variable: Type) { field { nestedField } }",
+  "parameters": [],
+  "returns": "A JSON response containing the fields selected by the query.",
+  "example": {
+   "title": "Fetch selected fields",
+   "code": "query GetHero {\n  hero {\n    name\n    appearsIn\n  }\n}",
+   "language": "graphql",
+   "explanation": "This query asks the server for two fields from the hero object."
+  },
+  "useCases": [
+   {
+    "title": "Fetch object fields",
+    "scenario": "Read a resource"
+   },
+   {
+    "title": "Select nested objects",
+    "scenario": "Fetch related data"
+   },
+   {
+    "title": "Request only needed fields",
+    "scenario": "Limit the response"
+   }
+  ],
+  "related": [
+   "Fields",
+   "Variables",
+   "Fragments",
+   "Mutations",
+   "Subscriptions",
+   "Query type"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is a GraphQL query?",
+    "answer": "A query reads data from a GraphQL server. It selects fields, and the response follows the same structure as the selection.",
+    "followUp": "How can a client request different values without building a new query string? Use variables defined by the operation and supplied separately."
+   },
+   {
+    "question": "How do field selections work?",
+    "answer": "A field is selected inside an operation. The server resolves the requested field and returns its value under the matching response key.",
+    "followUp": "What if a field returns an object? Add a nested selection set to choose fields from that object."
+   },
+   {
+    "question": "What are the main GraphQL operation types?",
+    "answer": "GraphQL supports queries, mutations, and subscriptions. A query reads data; mutations change data; subscriptions support ongoing updates.",
+    "followUp": "Which operation should represent a write? Use a mutation rather than a query."
+   }
+  ],
+  "keyPoints": [
+   "GraphQL has three main operation kinds: queries, mutations, and subscriptions.",
+   "A query declares the exact object fields that the client wants.",
+   "Use query operations to read data from a server.",
+   "A schema can define fields such as hero on the root Query type.",
+   "The server returns the selected data in a JSON response."
+  ],
+  "gotchas": [
+   "Request only the fields the client needs. The response does not automatically include other fields."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "useMutation": {
+  "sourceUrl": "https://graphql.org/learn/mutations/",
+  "sourceTitle": "Mutations | GraphQL",
+  "summary": "GraphQL mutations let a client request changes to server-side data. In a compliant schema, only top-level mutation fields may cause side effects.",
+  "explanation": "A mutation is a GraphQL operation for changing server data. Mutation fields are the only fields allowed to cause these changes; other fields must not have side effects and must be idempotent.",
+  "syntax": "mutation Name($variable: Type!) { field(argument: $variable) { selectedField } }",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "A mutation operation",
+   "code": "mutation AddReview($episode: Episode!, $review: ReviewInput!) {\n  createReview(episode: $episode, review: $review) {\n    stars\n    commentary\n  }\n}",
+   "language": "text",
+   "explanation": "This operation sends input values to a mutation field and asks for the fields to return."
+  },
+  "useCases": [
+   {
+    "title": "Add a new object",
+    "scenario": "Create data"
+   },
+   {
+    "title": "Update existing data",
+    "scenario": "Change data"
+   },
+   {
+    "title": "Delete server-side data",
+    "scenario": "Remove data"
+   }
+  ],
+  "related": [
+   "Schemas and Types",
+   "Queries",
+   "Subscriptions"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is a GraphQL mutation?",
+    "answer": "GraphQL has mutation operations for changing server-side data. A schema exposes these through top-level fields on its Mutation type.",
+    "followUp": "Can any resolver write data? Technically it can, but a spec-compliant schema must keep writes in top-level mutation fields."
+   },
+   {
+    "question": "How are mutations different from queries?",
+    "answer": "A mutation is similar to a data-changing request in REST. GraphQL separates this operation type so clients can distinguish reads from writes.",
+    "followUp": "Why not use a query field for a write? It would violate the rule that non-mutation fields are side-effect-free and idempotent."
+   },
+   {
+    "question": "How does a client request mutation results?",
+    "answer": "A mutation operation can send arguments to a mutation field and select the fields it wants returned. The response shape is therefore described in the operation itself.",
+    "followUp": "What should a client select after a mutation? Select the changed data or relevant result fields needed to update the client state."
+   }
+  ],
+  "keyPoints": [
+   "GraphQL also provides mutations because a complete data platform must change server-side data.",
+   "Use the mutation operation type when the request needs to modify data on the server.",
+   "REST does not inherently prevent any request from causing a server-side effect.",
+   "REST commonly avoids using GET for data changes, even though this is a convention.",
+   "GraphQL implementations could technically put a write in any field resolver.",
+   "The side-effect rule applies to schemas that follow the GraphQL specification."
+  ],
+  "gotchas": [
+   "Do not use query fields for writes. Only top-level mutation fields should change server data."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "useQuery": {
+  "sourceUrl": "https://graphql.org/community/tools-and-libraries/",
+  "sourceTitle": "Tools and Libraries | GraphQL",
+  "summary": "useQuery runs a GraphQL query in a component. It returns loading, error, and data values for rendering the request state.",
+  "explanation": "useQuery is a hook from the graphql-hooks client library. It runs a GraphQL query, accepts variables, and provides loading, error, and result data for rendering.",
+  "syntax": "useQuery(query, { variables })",
+  "parameters": [
+   {
+    "name": "query",
+    "type": "GraphQL query string",
+    "description": "The GraphQL query document to execute."
+   },
+   {
+    "name": "options.variables",
+    "type": "object",
+    "description": "Optional values used by variables declared in the query."
+   }
+  ],
+  "returns": "An object containing loading, error, and data.",
+  "example": {
+   "title": "Run a query with useQuery",
+   "code": "import { useQuery } from \"graphql-hooks\";\n\nconst QUERY = `query HomePage($limit: Int) {\n  users(limit: $limit) { id name }\n}`;\n\nfunction Users() {\n  const { loading, error, data } = useQuery(QUERY, {\n    variables: { limit: 10 },\n  });\n  if (loading) return \"Loading...\";\n  if (error) return \"Something went wrong\";\n  return <ul>{data.users.map(user => <li key={user.id}>{user.name}</li>)}</ul>;\n}",
+   "language": "tsx",
+   "explanation": "The hook runs a GraphQL query with variables and exposes loading, error, and data states."
+  },
+  "useCases": [
+   {
+    "title": "Fetch data",
+    "scenario": "Load a list of users in a component."
+   },
+   {
+    "title": "Handle loading",
+    "scenario": "Show a progress message while a request runs."
+   },
+   {
+    "title": "Handle errors",
+    "scenario": "Show an error message when a request fails."
+   }
+  ],
+  "related": [
+   "GraphQLClient",
+   "ClientContext.Provider",
+   "GraphQL"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does useQuery provide?",
+    "answer": "useQuery sends a GraphQL query through the configured client and returns loading, error, and data values. The query can receive variables through the options object.",
+    "followUp": "How would you avoid rendering incomplete data? Check loading and error first, then read data only after the query succeeds."
+   },
+   {
+    "question": "How do you pass variables to useQuery?",
+    "answer": "The query string can declare variables, such as $limit: Int. Pass matching values in the variables option when calling the hook.",
+    "followUp": "What must match between the query and variables? The variable name and its GraphQL input type must match the declaration."
+   },
+   {
+    "question": "How does useQuery know which GraphQL endpoint to use?",
+    "answer": "The component must be inside ClientContext.Provider, whose value is the configured GraphQLClient. The client supplies the endpoint used by the hook.",
+    "followUp": "What does the client configuration need? It needs a GraphQL URL, such as /graphql, before child components call the hook."
+   }
+  ],
+  "keyPoints": [
+   "The hook returns loading, error, and data values that a component can use.",
+   "Pass the query first and provide variables in the options object.",
+   "Configure a GraphQLClient with the server URL before using the hook.",
+   "Provide the client through ClientContext.Provider so child components can access it."
+  ],
+  "gotchas": [
+   "Handle the loading state before reading data.",
+   "Handle errors before using the returned result."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "useReadQuery": {
+  "sourceUrl": "https://graphql.org/learn/queries/",
+  "sourceTitle": "Queries",
+  "summary": "GraphQL queries read data by naming the fields the client needs. They can include nested selections and other query features to shape the response.",
+  "explanation": "A GraphQL query names the fields the client wants from the server. It can use arguments, variables, aliases, fragments, and directives to shape the request while keeping the response structure aligned with the query.",
+  "syntax": "query OperationName($variable: Type) { field(argument: $variable) { nestedField } }",
+  "parameters": [],
+  "returns": "The selected data in a response whose structure follows the query's field selections.",
+  "example": {
+   "title": "Fetch selected fields with a variable",
+   "code": "query GetHero($episode: Episode) {\n  hero(episode: $episode) {\n    name\n    friends {\n      name\n    }\n  }\n}",
+   "language": "text",
+   "explanation": "This query asks for a hero and the names of the hero's friends. The variable lets the client choose an episode at run time."
+  },
+  "useCases": [
+   {
+    "title": "Fetch selected data",
+    "scenario": "Read a resource with only the fields needed by a screen."
+   },
+   {
+    "title": "Request nested data",
+    "scenario": "Load related objects in one request."
+   },
+   {
+    "title": "Use variables",
+    "scenario": "Reuse one operation with different input values."
+   }
+  ],
+  "related": [
+   "Fields",
+   "Variables",
+   "Fragments",
+   "Aliases",
+   "Directives",
+   "Mutations",
+   "Subscriptions"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is a GraphQL query?",
+    "answer": "A query reads data from a GraphQL server. The client selects fields, and the returned data follows that selection's structure.",
+    "followUp": "How can a client avoid repeating a selection set? Use a fragment and include it where the same fields are needed."
+   },
+   {
+    "question": "How do you request nested data?",
+    "answer": "Fields are selected inside braces. Nested fields let the client request data from related objects, while arguments provide input for a field.",
+    "followUp": "What happens if a requested field is not valid for its parent type? Validation rejects the document before execution."
+   },
+   {
+    "question": "Why use variables in queries?",
+    "answer": "Variables keep changing values separate from the query document. They are declared in the operation and passed to fields as arguments.",
+    "followUp": "Why prefer variables over building query strings? They make the operation reusable and avoid putting changing values directly into the document."
+   }
+  ],
+  "keyPoints": [
+   "Field selection controls which values the server returns.",
+   "Queries are one of the three operation types defined by GraphQL.",
+   "Basic queries are the starting point for learning how to read server data."
+  ],
+  "gotchas": [
+   "Use a query to read data. Mutations change data, and subscriptions support ongoing updates.",
+   "A response contains only the fields requested by the operation, so the client must list every value it needs."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "useSubscription": {
+  "sourceUrl": "https://graphql.org/learn/subscriptions/",
+  "sourceTitle": "Subscriptions | GraphQL",
+  "summary": "GraphQL subscriptions are long-lived operations for receiving real-time updates from server events. Clients declare an event field and select the data they want to receive.",
+  "explanation": "A subscription is a long-lived GraphQL operation for receiving updates about server events. Its fields are declared like query and mutation fields, and the client selects which fields to receive when an event occurs.",
+  "syntax": "subscription OperationName { eventField { selectedField } }",
+  "parameters": [
+   {
+    "name": "subscription document",
+    "type": "GraphQL document",
+    "description": "The GraphQL document containing the subscription operation and its selection set."
+   }
+  ],
+  "returns": "A stream of event results delivered while the subscription remains active.",
+  "example": {
+   "title": "Subscribe to new messages",
+   "code": "subscription NewMessage {\n  messageAdded {\n    id\n    text\n  }\n}",
+   "language": "graphql",
+   "explanation": "This operation asks the server to send selected fields whenever the messageAdded event occurs."
+  },
+  "useCases": [
+   {
+    "title": "Live chat",
+    "scenario": "A chat client receives new messages as they are posted."
+   },
+   {
+    "title": "Live monitoring",
+    "scenario": "A dashboard refreshes when monitored values change."
+   },
+   {
+    "title": "Event notifications",
+    "scenario": "A client receives notifications when a server-side event occurs."
+   }
+  ],
+  "related": [
+   "Queries",
+   "Mutations",
+   "Schemas and Types",
+   "Execution",
+   "Response"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is a GraphQL subscription?",
+    "answer": "Subscriptions are GraphQL operations used to receive real-time updates through long-lived requests. The client declares the event field and selects the data it wants.",
+    "followUp": "How do subscriptions differ from queries? A query reads data through a request, while a subscription stays active to receive later event updates."
+   },
+   {
+    "question": "How are subscription fields defined?",
+    "answer": "Subscription fields are defined in the schema in the same way as query and mutation fields. The schema therefore describes which events and fields clients can request.",
+    "followUp": "What must a client do to receive only needed data? It must write a selection set containing the fields it wants from the subscription result."
+   },
+   {
+    "question": "Why are subscriptions useful?",
+    "answer": "A subscription uses a long-lived request instead of the stateless behavior associated with ordinary query and mutation operations. It lets a client receive updates for events on the server.",
+    "followUp": "Which documentation should you review first? The Queries page, because many operation features also apply to subscriptions."
+   }
+  ],
+  "keyPoints": [
+   "Subscriptions let clients receive updates over a request that remains active.",
+   "A client subscribes to particular server events and chooses the event data it needs.",
+   "The schema declares subscription fields using the same field-definition approach as queries and mutations.",
+   "Subscriptions are one of GraphQL’s three operation types."
+  ],
+  "gotchas": [
+   "A subscription is an operation type, not a special query field.",
+   "Query rules still matter for subscription selection sets and operation syntax."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "useSuspenseQuery": {
+  "sourceUrl": "https://spec.graphql.org/September2025/",
+  "sourceTitle": "GraphQL",
+  "summary": "GraphQL is a query language and service model for APIs. Clients request specific fields, while a strongly typed schema defines the available data and relationships.",
+  "explanation": "A GraphQL client sends an operation that describes the fields it needs. The server checks that operation against its schema, resolves the requested fields, and returns a result with a matching data shape. GraphQL does not require a specific programming language, database, or storage system, so an implementation maps its existing services and data to the GraphQL type system.",
+  "syntax": "query OperationName($variable: Type) { field(argument: $variable) { subfield } }",
+  "parameters": [
+   {
+    "name": "query",
+    "type": "GraphQL document",
+    "description": "The GraphQL operation and selected fields to send to the service."
+   },
+   {
+    "name": "variables",
+    "type": "JSON object",
+    "description": "Values supplied for variables used by the operation."
+   }
+  ],
+  "returns": "A result containing the requested data, commonly under a data field, with a shape based on the operation's selections.",
+  "example": {
+   "title": "Query one user field",
+   "code": "const query = `\n  query GetUser($id: ID!) {\n    user(id: $id) { name }\n  }\n`;\n\nfetch(\"/graphql\", {\n  method: \"POST\",\n  headers: { \"content-type\": \"application/json\" },\n  body: JSON.stringify({ query, variables: { id: \"4\" } })\n})\n  .then(response => response.json())\n  .then(result => console.log(result.data.user.name));",
+   "language": "javascript",
+   "explanation": "This request asks for one field from a user selected by an ID variable."
+  },
+  "useCases": [
+   {
+    "title": "Shape data for a view",
+    "scenario": "A user interface needs only selected fields from several related resources."
+   },
+   {
+    "title": "Unify application data",
+    "scenario": "A team needs one interface over services backed by different systems."
+   },
+   {
+    "title": "Support API tooling",
+    "scenario": "Developers want tools to inspect and work with typed API capabilities."
+   }
+  ],
+  "related": [
+   "schema",
+   "type system",
+   "query",
+   "operation",
+   "field",
+   "selection set",
+   "GraphQL service",
+   "mutation"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is GraphQL?",
+    "answer": "GraphQL is a query language for APIs and a system for describing data requirements and interactions. A client selects the fields it needs, and the service returns data in that requested structure.",
+    "followUp": "How does GraphQL avoid depending on one database? The application service maps its existing code and data to a uniform GraphQL type system, so storage remains an implementation detail."
+   },
+   {
+    "question": "What role does the schema play?",
+    "answer": "A GraphQL schema defines the types and relationships that an application service exposes. The server validates a request against that schema before resolving the requested fields.",
+    "followUp": "Why are schemas useful for tools? A defined type system gives tools a uniform description of service capabilities that they can inspect and use."
+   },
+   {
+    "question": "How does a GraphQL request shape its response?",
+    "answer": "A client can request related fields in one operation, such as a user and selected fields about that user. The response follows the selection made by the client rather than a fixed response shape.",
+    "followUp": "Does GraphQL require a particular programming language or storage engine? No. The specification leaves both choices to the application service."
+   }
+  ],
+  "keyPoints": [
+   "GraphQL lets clients describe the data they need for an application view.",
+   "Its request syntax expresses data requirements and interactions in a flexible form.",
+   "GraphQL gives different application capabilities one uniform interface.",
+   "The uniform type system also supports tools that work with GraphQL services.",
+   "GraphQL is designed around the needs of user interfaces and their developers."
+  ],
+  "gotchas": [
+   "GraphQL describes requests to capabilities exposed by an application service. It cannot perform arbitrary computation.",
+   "An implementation is not tied to a specific programming language or database. It must map available capabilities to GraphQL instead."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "validate": {
   "sourceUrl": "https://graphql.org/learn/validation/",
   "sourceTitle": "Validation",
@@ -3628,5 +5920,84 @@
    "Object-, interface-, and union-valued fields require a selection set."
   ],
   "checkedAt": "2026-10-15"
+ },
+ "visit": {
+  "sourceUrl": "https://graphql.org/learn/serving-over-http/",
+  "sourceTitle": "Serving over HTTP | GraphQL",
+  "summary": "Serve GraphQL queries and mutations through one HTTP endpoint, commonly `/graphql`. Authenticate first, then enforce field-level authorization during execution through resolver business logic.",
+  "explanation": "A GraphQL service commonly uses one HTTP endpoint, such as `/graphql`, for query and mutation requests. Authentication middleware should run before GraphQL, while authorization belongs in business logic used by resolvers during execution so the server can return partial data when some fields are denied.",
+  "syntax": "POST /graphql\nContent-Type: application/json\n\n{\"query\":\"...\",\"variables\":{}}",
+  "parameters": [
+   {
+    "name": "HTTP request",
+    "type": "JSON request body",
+    "description": "The GraphQL operation and variables sent in the HTTP request."
+   },
+   {
+    "name": "authentication context",
+    "type": "HTTP middleware context",
+    "description": "The authenticated session or user context established by earlier middleware."
+   }
+  ],
+  "returns": "A GraphQL response containing requested data and possible errors; authorization failures may still allow partial data.",
+  "example": {
+   "title": "A GraphQL HTTP endpoint",
+   "code": "app.post('/graphql', express.json(), async (req, res) => {\n  const result = await execute(schema, req.body.query, {\n    user: req.user\n  });\n  res.json(result);\n});",
+   "language": "javascript",
+   "explanation": "This example sends GraphQL requests to one HTTP endpoint and passes authenticated user data into execution."
+  },
+  "useCases": [
+   {
+    "title": "Fetch graph-shaped data",
+    "scenario": "A web or mobile client needs data from several connected entities in one request."
+   },
+   {
+    "title": "Add one GraphQL endpoint",
+    "scenario": "A service exposes GraphQL beside existing HTTP handlers."
+   },
+   {
+    "title": "Authorize fields during execution",
+    "scenario": "Different fields require different permissions."
+   }
+  ],
+  "related": [
+   "Queries",
+   "Mutations",
+   "Subscriptions",
+   "Execution",
+   "Error Handling",
+   "Authorization"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How is a GraphQL HTTP endpoint commonly organized?",
+    "answer": "GraphQL usually uses one URL for a service, often `/graphql`. Queries and mutations for that service are sent to this endpoint instead of using one URL per entity.",
+    "followUp": "Why does GraphQL use one endpoint? Its model is an entity graph rather than a collection of URL-identified REST resources, so the query describes the requested graph."
+   },
+   {
+    "question": "Where should authentication and authorization happen?",
+    "answer": "Authentication middleware should run before GraphQL. This lets GraphQL use the same session and user information as other HTTP handlers.",
+    "followUp": "Where should authorization run? Field-level authorization should run in business logic called by resolvers during execution, not as an early whole-request decision."
+   },
+   {
+    "question": "What data format should GraphQL HTTP implementations support?",
+    "answer": "The page says clients and servers should support JSON serialization. It also notes that other serialization formats may be supported.",
+    "followUp": "Does the page require HTTP as GraphQL's only transport? No. The GraphQL specification does not require a particular client-server protocol, although HTTP is the common choice for stateless queries and mutations."
+   }
+  ],
+  "keyPoints": [
+   "GraphQL models connected data as a graph, so requests describe the fields and relationships that the client needs.",
+   "A service normally sends its GraphQL requests to one endpoint, commonly named `/graphql`.",
+   "HTTP middleware can inspect, change, stop, or answer a request as it moves through the server pipeline.",
+   "Run GraphQL after authentication middleware so resolvers can access the established user and session context.",
+   "Field authorization errors can produce partial results instead of rejecting every field in the operation."
+  ],
+  "gotchas": [
+   "The HTTP guidance follows a draft GraphQL-over-HTTP specification, so implementations should treat it as an interoperability target rather than a mandatory language-specification rule.",
+   "Do not authorize the whole request before execution. Field-level checks should happen while resolvers call business logic.",
+   "Putting authorization in resolver-related business logic allows authorized fields to succeed while unauthorized fields produce errors."
+  ],
+  "checkedAt": "2026-11-03"
  }
 }

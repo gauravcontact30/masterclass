@@ -1,0 +1,2417 @@
+{
+ "BedrockEmbeddings": {
+  "sourceUrl": "https://reference.langchain.com/javascript/langchain-aws/BedrockEmbeddings",
+  "sourceTitle": "BedrockEmbeddings | @langchain/aws | LangChain Reference",
+  "summary": "BedrockEmbeddings is a LangChain class that creates text embeddings with Amazon Bedrock. It supports single queries, document batches, model options, and AWS client settings.",
+  "explanation": "BedrockEmbeddings extends LangChain's Embeddings class and sends text to Amazon Bedrock. It can embed one query or a list of documents. Document requests are batched, and the class applies retry handling for Bedrock requests.",
+  "syntax": "new BedrockEmbeddings({ region, credentials, model, dimensions, modelParameters, clientOptions })",
+  "parameters": [
+   {
+    "name": "region",
+    "type": "string",
+    "description": "AWS region used by the Bedrock client."
+   },
+   {
+    "name": "credentials",
+    "type": "object",
+    "description": "AWS credentials containing accessKeyId and secretAccessKey."
+   },
+   {
+    "name": "model",
+    "type": "string",
+    "description": "Bedrock embedding model identifier."
+   },
+   {
+    "name": "dimensions",
+    "type": "number",
+    "description": "Requested embedding vector size."
+   },
+   {
+    "name": "modelParameters",
+    "type": "Record<string, unknown>",
+    "description": "Additional model request options."
+   },
+   {
+    "name": "clientOptions",
+    "type": "BedrockRuntimeClientConfig",
+    "description": "Options for the Bedrock runtime client, such as a custom request handler."
+   }
+  ],
+  "returns": "embed_query returns a Promise<number[]> for one text. Document embedding returns embeddings for an array of texts.",
+  "example": {
+   "title": "Create a query embedding",
+   "code": "import { BedrockEmbeddings } from \"@langchain/aws\";\n\nconst embeddings = new BedrockEmbeddings({\n  region: \"us-east-1\",\n  credentials: {\n    accessKeyId: process.env.AWS_ACCESS_KEY_ID!,\n    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,\n  },\n  model: \"amazon.titan-embed-text-v2:0\",\n  dimensions: 512,\n  modelParameters: { normalize: true },\n});\n\nconst vector = await embeddings.embedQuery(\"A colorful sock company\");\nconsole.log(vector);",
+   "language": "typescript",
+   "explanation": "Create the embedding model with AWS settings, then convert one query into a vector."
+  },
+  "useCases": [
+   {
+    "title": "Query embedding",
+    "scenario": "Convert a user question into a vector for similarity search."
+   },
+   {
+    "title": "Document indexing",
+    "scenario": "Convert many text chunks into vectors for a vector store."
+   },
+   {
+    "title": "Model configuration",
+    "scenario": "Tune vector size or model behavior for a Bedrock embedding model."
+   }
+  ],
+  "related": [
+   "Embeddings",
+   "embed_documents",
+   "embed_query",
+   "aembed_documents",
+   "aembed_query",
+   "BedrockRuntimeClient",
+   "AWS integrations"
+  ],
+  "since": "v1.1",
+  "interview": [
+   {
+    "question": "What is BedrockEmbeddings used for?",
+    "answer": "It is a LangChain embedding class for Amazon Bedrock. It provides methods for embedding a query and for embedding multiple documents.",
+    "followUp": "How are document inputs handled? The class sends them through its internal text-embedding method, which batches the inputs and includes retry handling."
+   },
+   {
+    "question": "How do you create one query vector?",
+    "answer": "embed_query takes one document or query string and returns a promise containing its numeric embedding. The example uses it for a question about a company name.",
+    "followUp": "How would you embed a collection? Use embed_documents with an array of strings; the class processes the array in batches."
+   },
+   {
+    "question": "Which settings can configure the embedding model?",
+    "answer": "The JavaScript constructor accepts AWS region and credentials, a Bedrock model name, optional dimensions, model parameters, and optional Bedrock client options. The documented example uses Amazon Titan Text Embeddings V2 with 512 dimensions and normalization enabled.",
+    "followUp": "What can clientOptions control? It accepts BedrockRuntimeClientConfig values, such as a custom request handler."
+   }
+  ],
+  "keyPoints": [
+   "The class generates vector embeddings through the Amazon Bedrock API.",
+   "Use the document method when you have multiple text strings.",
+   "Embedding a single query is asynchronous and returns a numeric vector.",
+   "The page's example selects Amazon Titan Text Embeddings V2 as the Bedrock model.",
+   "Model-specific options can be passed through modelParameters; the example enables normalization."
+  ],
+  "gotchas": [
+   "Document embedding uses batching. The request is not necessarily sent as one call for every input document."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "ChatAnthropic": {
+  "sourceUrl": "https://reference.langchain.com/javascript/langchain-anthropic/ChatAnthropic",
+  "sourceTitle": "ChatAnthropic | @langchain/anthropic",
+  "summary": "ChatAnthropic connects LangChain JavaScript to Anthropic chat models. It supports normal calls, streaming, tools, and structured output.",
+  "explanation": "ChatAnthropic is LangChain’s JavaScript wrapper for Anthropic chat models. Create it with model settings, then call methods such as invoke or stream; use ChatPromptTemplate when building reusable prompts.",
+  "syntax": "new ChatAnthropic({ model, temperature, maxTokens, maxRetries, apiKey, baseUrl })",
+  "parameters": [
+   {
+    "name": "model",
+    "type": "string",
+    "description": "Anthropic model name, such as claude-sonnet-4-5-20250929."
+   },
+   {
+    "name": "temperature",
+    "type": "number",
+    "description": "Controls response randomness."
+   },
+   {
+    "name": "maxTokens",
+    "type": "number | undefined",
+    "description": "Maximum number of output tokens. The reference example leaves this undefined."
+   },
+   {
+    "name": "maxRetries",
+    "type": "number",
+    "description": "Number of automatic retries for failed requests."
+   },
+   {
+    "name": "apiKey",
+    "type": "string",
+    "description": "Anthropic API key. It may also be supplied through the environment."
+   },
+   {
+    "name": "baseUrl",
+    "type": "string",
+    "description": "Alternative API endpoint."
+   }
+  ],
+  "returns": "invoke returns an AIMessage. stream returns an asynchronous iterable of AIMessageChunk values.",
+  "example": {
+   "title": "Create and call a chat model",
+   "code": "import { ChatAnthropic } from \"@langchain/anthropic\";\n\nconst model = new ChatAnthropic({\n  model: \"claude-sonnet-4-5-20250929\",\n  temperature: 0,\n});\n\nconst response = await model.invoke(\"Translate 'Hello' into French.\");\nconsole.log(response.content);",
+   "language": "typescript",
+   "explanation": "This creates a ChatAnthropic model and sends one text request."
+  },
+  "useCases": [
+   {
+    "title": "Chat requests",
+    "scenario": "Send a single request to Claude and read the resulting AI message."
+   },
+   {
+    "title": "Streaming output",
+    "scenario": "Show generated text progressively in a user interface."
+   },
+   {
+    "title": "Tool use",
+    "scenario": "Let Claude call application-defined functions."
+   },
+   {
+    "title": "Structured output",
+    "scenario": "Return data that matches a defined schema."
+   }
+  ],
+  "related": [
+   "ChatPromptTemplate",
+   "bindTools",
+   "withStructuredOutput",
+   "AIMessage",
+   "AIMessageChunk"
+  ],
+  "since": "v1.1",
+  "interview": [
+   {
+    "question": "What is ChatAnthropic?",
+    "answer": "ChatAnthropic is a LangChain ChatModel wrapper for Anthropic models. It accepts text, message lists, and formatted prompts, and returns LangChain message objects.",
+    "followUp": "How would you build a reusable prompt? Use ChatPromptTemplate, then connect it to the model with pipe."
+   },
+   {
+    "question": "How do invoke and stream differ?",
+    "answer": "Call invoke for one result. Call stream to receive AIMessageChunk values while the response is produced.",
+    "followUp": "How can you combine streamed output? Collect the chunks and concatenate them with LangChain’s message chunk utilities."
+   },
+   {
+    "question": "How do you add tools?",
+    "answer": "Use bindTools to attach tools to the model. The model can then return tool calls, including their names and arguments.",
+    "followUp": "How can tools be loaded only when needed? Use Anthropic tool-search tools and mark deferred tools with defer_loading."
+   }
+  ],
+  "keyPoints": [
+   "It follows the LangChain chat-model interface.",
+   "Use ChatPromptTemplate for prompts with reusable variables.",
+   "Install the Anthropic integration and LangChain core package.",
+   "Use invoke to send one request and receive one AI message.",
+   "Use stream to read response chunks as they arrive.",
+   "Attach tool definitions with bindTools before invoking the model."
+  ],
+  "gotchas": [
+   "Put every system message before human and assistant messages."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "ChatBedrock": {
+  "sourceUrl": "https://reference.langchain.com/python/langchain-aws/chat_models/bedrock/ChatBedrock",
+  "sourceTitle": "ChatBedrock | langchain_aws | LangChain Reference",
+  "summary": "ChatBedrock is a LangChain chat model for Amazon Bedrock. It supports standard chat operations such as invocation, streaming, tool binding, and structured output.",
+  "explanation": "ChatBedrock is a LangChain chat model that calls models hosted by Amazon Bedrock. It follows the BaseChatModel interface, so you can invoke it, stream output, bind tools, and request structured output.",
+  "syntax": "ChatBedrock(model: str, ...)",
+  "parameters": [
+   {
+    "name": "model",
+    "type": "str",
+    "description": "The Bedrock model identifier."
+   },
+   {
+    "name": "beta_use_converse_api",
+    "type": "bool",
+    "description": "Whether to use the Bedrock Converse API."
+   },
+   {
+    "name": "stop_sequences",
+    "type": "Optional[List[str]]",
+    "description": "Sequences that stop generation."
+   }
+  ],
+  "returns": "A chat model response when invoked, with standard LangChain runnable methods and metadata.",
+  "example": {
+   "title": "Create and call ChatBedrock",
+   "code": "from langchain_aws import ChatBedrock\n\nmodel = ChatBedrock(model=\"us.anthropic.claude-sonnet-4-6\")\nresponse = model.invoke(\"Explain dependency injection in one sentence.\")\nprint(response.content)",
+   "language": "python",
+   "explanation": "This creates a ChatBedrock model and sends one input message. The response content is printed."
+  },
+  "useCases": [
+   {
+    "title": "Generate chat responses",
+    "scenario": "Call an Amazon Bedrock foundation model from a LangChain application."
+   },
+   {
+    "title": "Use tool calling",
+    "scenario": "Connect model output to LangChain tools."
+   },
+   {
+    "title": "Return structured data",
+    "scenario": "Require responses that match a defined schema."
+   }
+  ],
+  "related": [
+   "ChatBedrockConverse",
+   "ChatAnthropicBedrock",
+   "BedrockBase",
+   "BaseChatModel",
+   "bind_tools",
+   "with_structured_output"
+  ],
+  "since": "v0.1",
+  "interview": [
+   {
+    "question": "What is ChatBedrock?",
+    "answer": "ChatBedrock is a chat model class from the langchain-aws package. It connects LangChain to Amazon Bedrock and supports the BaseChatModel operations.",
+    "followUp": "How can you use a standardized Bedrock interface? Use the Converse API through ChatBedrockConverse, which the docs recommend when custom models are not required."
+   },
+   {
+    "question": "How do you call a Bedrock model?",
+    "answer": "Create an instance with a Bedrock model identifier, then call invoke with a message or message list. AWS credentials and Bedrock model access must be configured first.",
+    "followUp": "What else can the model do? It can stream responses, bind tools, and wrap output to match a structured schema."
+   },
+   {
+    "question": "What does beta_use_converse_api do?",
+    "answer": "The class exposes beta_use_converse_api to select Bedrock's Converse API. The API provides a standardized interface across supported Bedrock models.",
+    "followUp": "What is a limitation of this choice? The documentation says the Converse API does not support custom models."
+   }
+  ],
+  "keyPoints": [
+   "ChatBedrock sends chat requests to Amazon Bedrock models.",
+   "The beta_use_converse_api option selects Bedrock's standardized Converse API.",
+   "stop_sequences can tell the Converse API to stop when it reaches specified character sequences.",
+   "bind_tools attaches tool definitions to the chat model for models with tool-calling support.",
+   "with_structured_output wraps the model so results follow a supplied schema.",
+   "The model provides a method for counting tokens in input text."
+  ],
+  "gotchas": [
+   "The Converse API option is still beta. Use the separate ChatBedrockConverse documentation when you need that API.",
+   "AWS credentials alone are not enough. Model access must also be enabled for the AWS account."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "ChatCohere": {
+  "sourceUrl": "https://docs.langchain.com/oss/python/integrations/chat/cohere",
+  "sourceTitle": "ChatCohere integration",
+  "summary": "ChatCohere connects LangChain Python to Cohere chat models. Install langchain-cohere, provide a Cohere API key, and send LangChain messages to the model.",
+  "explanation": "ChatCohere connects LangChain's chat model interface to Cohere's Chat API. Create the model after installing the integration package and providing a Cohere API key, then pass message objects to invoke or its async and streaming methods.",
+  "syntax": "ChatCohere(cohere_api_key=...); chat.invoke(messages)",
+  "parameters": [
+   {
+    "name": "cohere_api_key",
+    "type": "optional string",
+    "description": "Cohere API key. The page says it can be passed to the constructor."
+   },
+   {
+    "name": "messages",
+    "type": "list of messages",
+    "description": "A list of LangChain message objects sent to the chat model."
+   }
+  ],
+  "returns": "invoke returns an AIMessage containing the model response and response metadata.",
+  "example": {
+   "title": "Send a message with ChatCohere",
+   "code": "import os\nfrom langchain_cohere import ChatCohere\nfrom langchain_core.messages import HumanMessage\n\nchat = ChatCohere()\nmessage = [HumanMessage(content=\"Hello, can you introduce yourself?\")]\nresponse = chat.invoke(message)\nprint(response.content)",
+   "language": "python",
+   "explanation": "This creates a ChatCohere client, sends one human message, and prints the returned text."
+  },
+  "useCases": [
+   {
+    "title": "Generate chat responses",
+    "scenario": "You need to call a Cohere chat model from a LangChain Python application."
+   },
+   {
+    "title": "Process message history",
+    "scenario": "Your application already represents conversation turns as LangChain messages."
+   },
+   {
+    "title": "Use a ChatModel interface",
+    "scenario": "You need standard LangChain chat operations with Cohere."
+   }
+  ],
+  "related": [
+   "HumanMessage",
+   "ChatModel",
+   "invoke",
+   "ainvoke",
+   "langchain-cohere",
+   "COHERE_API_KEY"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you make a basic ChatCohere call?",
+    "answer": "Install the langchain-cohere package, provide a Cohere API key, create ChatCohere, and call invoke with a list of message objects. The result is an AI message, whose content contains the generated text.",
+    "followUp": "How can the call be made asynchronously? Use await chat.ainvoke(messages), which is the async form of invoke."
+   },
+   {
+    "question": "What input does ChatCohere use?",
+    "answer": "ChatCohere accepts standard LangChain chat messages, such as HumanMessage. It supports the normal ChatModel operations, including synchronous, asynchronous, and streaming methods.",
+    "followUp": "Why use message objects instead of only a string? They preserve chat roles and let the model receive structured conversation history."
+   },
+   {
+    "question": "How is ChatCohere installed and authenticated?",
+    "answer": "The integration is provided by the separate langchain-cohere package. Authentication can come from the COHERE_API_KEY environment variable or the cohere_api_key constructor argument.",
+    "followUp": "How would you avoid putting a key directly in source code? Store it in the environment and let ChatCohere read COHERE_API_KEY."
+   }
+  ],
+  "keyPoints": [
+   "Install the langchain-cohere package before importing ChatCohere.",
+   "Authentication can use the COHERE_API_KEY environment variable.",
+   "ChatCohere follows LangChain's ChatModel interface.",
+   "Import the model class from langchain_cohere.",
+   "Use LangChain message classes, such as HumanMessage, to build input.",
+   "Call invoke with a list of messages to get a response."
+  ],
+  "gotchas": [
+   "A Cohere API key is required. Set COHERE_API_KEY or pass cohere_api_key to ChatCohere.",
+   "ChatCohere uses Cohere's Chat API, so its behavior and supported options come from that API."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "ChatFireworks": {
+  "sourceUrl": "https://reference.langchain.com/python/langchain-fireworks/chat_models/ChatFireworks",
+  "sourceTitle": "ChatFireworks | langchain_fireworks | LangChain Reference",
+  "summary": "ChatFireworks is a LangChain chat model for the Fireworks API. It supports invocation, streaming, tool calls, structured output, custom headers, and prompt-cache keys.",
+  "explanation": "ChatFireworks connects LangChain to Fireworks chat models. It reads the FIREWORKS_API_KEY environment variable, accepts Fireworks request parameters, and supports normal calls, streaming, tool binding, and structured output.",
+  "syntax": "ChatFireworks(model_name=\"accounts/fireworks/models/gpt-oss-120b\")",
+  "parameters": [
+   {
+    "name": "model_name",
+    "type": "string",
+    "description": "The Fireworks model identifier used for requests."
+   },
+   {
+    "name": "temperature",
+    "type": "number",
+    "description": "A value used to control response randomness."
+   },
+   {
+    "name": "extra_headers",
+    "type": "object",
+    "description": "Extra request headers sent to Fireworks."
+   },
+   {
+    "name": "prompt_cache_key",
+    "type": "string",
+    "description": "A typed key used for prompt-cache sessions."
+   }
+  ],
+  "returns": "invoke() returns a chat message. Streaming methods return message chunks. Structured output returns data matching the supplied schema.",
+  "example": {
+   "title": "Create and invoke a ChatFireworks model",
+   "code": "from langchain_fireworks.chat_models import ChatFireworks\n\nmodel = ChatFireworks(model_name=\"accounts/fireworks/models/gpt-oss-120b\")\nresponse = model.invoke(\"Explain recursion in one sentence.\")\nprint(response.content)",
+   "language": "python",
+   "explanation": "This creates a ChatFireworks model and sends one text message. The response content contains the model's answer."
+  },
+  "useCases": [
+   {
+    "title": "Chat completion",
+    "scenario": "Send one request and receive a complete chat response."
+   },
+   {
+    "title": "Streaming output",
+    "scenario": "Show generated text as it arrives."
+   },
+   {
+    "title": "Tool calling",
+    "scenario": "Let a compatible model select application tools."
+   },
+   {
+    "title": "Structured results",
+    "scenario": "Return fields that match a defined schema."
+   }
+  ],
+  "related": [
+   "BaseChatModel",
+   "bind_tools",
+   "with_structured_output",
+   "invoke",
+   "stream",
+   "astream",
+   "extra_headers",
+   "prompt_cache_key"
+  ],
+  "since": "v1.6",
+  "interview": [
+   {
+    "question": "How do you call a Fireworks chat model?",
+    "answer": "ChatFireworks is a LangChain chat model for the Fireworks API. Create it with a model name, then call invoke() with text or chat messages.",
+    "followUp": "How would you process partial output? Use stream() or astream() and handle each returned chunk as it arrives."
+   },
+   {
+    "question": "How does ChatFireworks support tools?",
+    "answer": "Use bind_tools() with tool-like objects that describe a name, description, and input schema. The model can then return tool calls for the application to execute.",
+    "followUp": "What must the selected model support? It must be compatible with the Fireworks tool-calling API."
+   },
+   {
+    "question": "How can output be made structured?",
+    "answer": "with_structured_output() wraps the model with a schema. The returned result follows that schema instead of being an unstructured text response.",
+    "followUp": "Why use a schema? It gives application code predictable fields and types for the model result."
+   }
+  ],
+  "keyPoints": [
+   "The class provides a LangChain interface for Fireworks chat models.",
+   "Fireworks request parameters can be supplied even when the class does not list them explicitly.",
+   "Use extra_headers when a request needs custom Fireworks headers.",
+   "prompt_cache_key is an alternative way to identify a prompt-cache session.",
+   "bind_tools() attaches tools that the model may call.",
+   "with_structured_output() returns model results shaped by a supplied schema."
+  ],
+  "gotchas": [
+   "Set FIREWORKS_API_KEY before creating or using the model.",
+   "Do not use synchronous calls after close(); use the asynchronous interface instead.",
+   "Call aclose() for short-lived asynchronous instances so their HTTP connector is released."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "ChatGoogleGenerativeAI": {
+  "sourceUrl": "https://docs.langchain.com/oss/python/integrations/chat/google_generative_ai",
+  "sourceTitle": "ChatGoogleGenerativeAI integration - Docs by LangChain Documentation",
+  "summary": "ChatGoogleGenerativeAI connects LangChain Python applications to Google Gemini chat models. It supports two Google backends, multimodal input, tools, structured output, streaming, async calls, and token usage.",
+  "explanation": "ChatGoogleGenerativeAI is a LangChain chat model for Google Gemini models. It can use the Gemini Developer API or Gemini Enterprise Agent Platform and supports text, media input, tools, structured output, streaming, async calls, and token usage.",
+  "syntax": "ChatGoogleGenerativeAI(model=\"gemini-3.7-flash\", temperature=1.0, max_retries=2)",
+  "parameters": [
+   {
+    "name": "model",
+    "type": "string",
+    "description": "Google Gemini model identifier, such as gemini-3.7-flash."
+   },
+   {
+    "name": "temperature",
+    "type": "number",
+    "description": "Controls response randomness. For Gemini 3.0 or newer, the documented automatic value is 1.0 when omitted."
+   },
+   {
+    "name": "max_retries",
+    "type": "number",
+    "description": "Number of retry attempts for failed calls."
+   },
+   {
+    "name": "project",
+    "type": "string",
+    "description": "Optional Google Cloud project identifier for the enterprise backend."
+   },
+   {
+    "name": "api_key",
+    "type": "string",
+    "description": "Optional API key used to authenticate requests."
+   }
+  ],
+  "returns": "A LangChain AI message containing the model response and, when available, response metadata and token usage.",
+  "example": {
+   "title": "Create and call a Gemini chat model",
+   "code": "from langchain_google_genai import ChatGoogleGenerativeAI\n\nmodel = ChatGoogleGenerativeAI(\n    model=\"gemini-3.7-flash\",\n    temperature=1.0,\n    max_retries=2,\n)\nresponse = model.invoke(\"Explain dependency injection in one sentence.\")\nprint(response.content)",
+   "language": "python",
+   "explanation": "This creates a Gemini chat model and sends one text request."
+  },
+  "useCases": [
+   {
+    "title": "Chat with Gemini",
+    "scenario": "A Python application needs text responses from a Gemini model."
+   },
+   {
+    "title": "Analyze media",
+    "scenario": "An application must ask questions about images, PDFs, audio, or video."
+   },
+   {
+    "title": "Use tool calling",
+    "scenario": "An agent needs Gemini to call application-defined tools."
+   },
+   {
+    "title": "Use enterprise credentials",
+    "scenario": "A service needs Google Cloud authentication and project-based access."
+   }
+  ],
+  "related": [
+   "ChatGoogleGenerativeAI API reference",
+   "Gemini Developer API",
+   "Gemini Enterprise Agent Platform",
+   "HumanMessage",
+   "google.genai.types.HttpOptions",
+   "langchain-google-genai"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is ChatGoogleGenerativeAI?",
+    "answer": "It is a LangChain chat model that sends requests to Google Gemini models. It supports both the Gemini Developer API and Gemini Enterprise Agent Platform.",
+    "followUp": "How can the backend be selected? Providing project selects the enterprise backend; vertexai=False can explicitly select the other backend."
+   },
+   {
+    "question": "How are credentials configured?",
+    "answer": "Set GOOGLE_API_KEY for the main API-key path. GEMINI_API_KEY is accepted as a fallback. Enterprise access can also use ADC or service-account credentials.",
+    "followUp": "What extra settings are needed for enterprise ADC? Set GOOGLE_CLOUD_PROJECT and optionally GOOGLE_CLOUD_LOCATION; the default region is us-central1."
+   },
+   {
+    "question": "How does multimodal input work?",
+    "answer": "Use a HumanMessage whose content is a list containing text and media blocks. Media can be supplied as a URL, base64 data, a Google Cloud Storage URI, or an uploaded file reference.",
+    "followUp": "What is a useful alternative for repeated large inputs? Context caching lets later requests refer to cached input tokens, with a minimum input size of 32,768 tokens."
+   }
+  ],
+  "keyPoints": [
+   "Use the Gemini Developer API with an API key for a simple individual setup.",
+   "Use Gemini Enterprise Agent Platform when Google Cloud integration and enterprise features are needed.",
+   "The integration supports two Google backends.",
+   "Install the Python package with pip before importing the model.",
+   "The model supports tools, structured output, media input, streaming, async calls, token usage, and log probabilities.",
+   "HTTP options can be set per request as a dictionary or HttpOptions object."
+  ],
+  "gotchas": [
+   "The API key lookup uses GOOGLE_API_KEY before GEMINI_API_KEY.",
+   "Passing a project selects the enterprise backend unless vertexai=False is set.",
+   "For Gemini 3.0 and newer, an omitted temperature becomes 1.0.",
+   "Tool schemas must define object properties explicitly; unknown object properties are rejected."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "ChatOllama": {
+  "sourceUrl": "https://reference.langchain.com/javascript/langchain-ollama/ChatOllama",
+  "sourceTitle": "ChatOllama | @langchain/ollama",
+  "summary": "ChatOllama connects LangChain JavaScript chat models to Ollama. Create it with an Ollama model name, then call invoke for one result or stream for incremental chunks.",
+  "explanation": "ChatOllama is a LangChain chat model that connects JavaScript applications to Ollama. Create it with a model name, then use methods such as invoke for one response or stream for response chunks.",
+  "syntax": "new ChatOllama({ model: string, temperature?: number, ...options })",
+  "parameters": [
+   {
+    "name": "model",
+    "type": "string",
+    "description": "Ollama model identifier, such as llama-3.1:8b."
+   },
+   {
+    "name": "temperature",
+    "type": "number",
+    "description": "Controls the model's sampling temperature."
+   },
+   {
+    "name": "baseUrl",
+    "type": "string",
+    "description": "Base URL used to connect to the Ollama service."
+   },
+   {
+    "name": "disableStreaming",
+    "type": "boolean",
+    "description": "Controls whether streaming is disabled."
+   },
+   {
+    "name": "keepAlive",
+    "type": "string | number",
+    "description": "Keeps the model loaded for a time or duration."
+   },
+   {
+    "name": "stop",
+    "type": "string[]",
+    "description": "Stops generation when one of these sequences is reached."
+   }
+  ],
+  "returns": "invoke returns a Promise of AIMessageChunk. stream returns a Promise of an async iterable of AIMessageChunk values.",
+  "example": {
+   "title": "Create and call a ChatOllama model",
+   "code": "import { ChatOllama } from \"@langchain/ollama\";\n\nconst llm = new ChatOllama({\n  model: \"llama-3.1:8b\",\n  temperature: 0,\n});\n\nconst result = await llm.invoke('Translate \"I love programming\" into French.');\nconsole.log(result.content);",
+   "language": "typescript",
+   "explanation": "This creates a ChatOllama model and sends one text request with invoke."
+  },
+  "useCases": [
+   {
+    "title": "Single-response chat",
+    "scenario": "Send one prompt and wait for the completed AI message."
+   },
+   {
+    "title": "Streaming output",
+    "scenario": "Show generated text progressively in a user interface."
+   },
+   {
+    "title": "Tool-enabled workflows",
+    "scenario": "Connect model responses to LangChain tools."
+   },
+   {
+    "title": "Message-based prompts",
+    "scenario": "Pass chat history or structured prompt input to the model."
+   }
+  ],
+  "related": [
+   "BaseChatModel",
+   "ChatOllamaCallOptions",
+   "AIMessageChunk",
+   "bindTools",
+   "invoke",
+   "stream",
+   "withConfig"
+  ],
+  "since": "v1.0",
+  "interview": [
+   {
+    "question": "What is ChatOllama and how do you call it?",
+    "answer": "ChatOllama is the LangChain Ollama chat-model integration. Instantiate it with a model name, then call invoke with text, messages, or a formatted prompt.",
+    "followUp": "How would you process output as it is generated? Use stream and iterate over the returned chunks asynchronously."
+   },
+   {
+    "question": "What does invoke return?",
+    "answer": "invoke returns one AI message. The returned message can include content, response metadata, tool calls, invalid tool calls, and usage metadata.",
+    "followUp": "What is a useful difference between invoke and stream? invoke waits for the complete message, while stream yields AIMessageChunk values during generation."
+   },
+   {
+    "question": "How does streaming work?",
+    "answer": "stream returns an async iterable of AIMessageChunk objects. Iterate with for await and read each chunk's content as it arrives.",
+    "followUp": "How can call options be supplied when using bindTools? Pass them as the second argument to bindTools after the tools array."
+   }
+  ],
+  "keyPoints": [
+   "The class extends LangChain's BaseChatModel and uses Ollama for chat generation.",
+   "Pass the Ollama model name in the model constructor option.",
+   "Use invoke for a single request and completed response.",
+   "Input can be plain text, chat messages, or a formatted prompt.",
+   "Use stream with asynchronous iteration to receive generated chunks.",
+   "bindTools creates a runnable that connects the chat model with tools."
+  ],
+  "gotchas": [
+   "When using withConfig, put call options such as stop in the first argument.",
+   "When using bindTools, put call options in the second argument after the tools list."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "ChatTogether": {
+  "sourceUrl": "https://docs.langchain.com/oss/python/integrations/chat/together",
+  "sourceTitle": "ChatTogether integration",
+  "summary": "ChatTogether is LangChain's Python integration for Together AI chat models. Install langchain-together, set a Together API key, choose a model, and call the model with chat messages.",
+  "explanation": "ChatTogether connects LangChain Python to Together AI chat models. Install the integration, provide a Together API key, choose a model, and call methods such as invoke or streaming methods to receive responses.",
+  "syntax": "ChatTogether(model=\"model-id\", temperature=0, max_tokens=None, timeout=None, max_retries=2)",
+  "parameters": [
+   {
+    "name": "model",
+    "type": "string",
+    "description": "Together AI model identifier, such as meta-llama/Llama-3-70b-chat-hf."
+   },
+   {
+    "name": "temperature",
+    "type": "number",
+    "description": "Sampling temperature used when creating the model in the example."
+   },
+   {
+    "name": "max_tokens",
+    "type": "integer or None",
+    "description": "Optional maximum number of output tokens; the example uses None."
+   },
+   {
+    "name": "timeout",
+    "type": "number or None",
+    "description": "Optional request timeout; the example uses None."
+   },
+   {
+    "name": "max_retries",
+    "type": "integer",
+    "description": "Maximum retry count; the example sets it to 2."
+   }
+  ],
+  "returns": "A chat message from invoke, with generated text available through its content field. Streaming methods yield response events or text as output arrives.",
+  "example": {
+   "title": "Call a Together AI chat model",
+   "code": "import os\nfrom langchain_together import ChatTogether\n\n# Set TOGETHER_API_KEY before running this program.\nchat = ChatTogether(\n    model=\"meta-llama/Llama-3-70b-chat-hf\",\n    temperature=0,\n)\n\nanswer = chat.invoke(\"Name one benefit of unit tests.\")\nprint(answer.content)",
+   "language": "python",
+   "explanation": "This creates a ChatTogether model and sends one chat request. The response text is read from the returned message."
+  },
+  "useCases": [
+   {
+    "title": "Chat model calls",
+    "scenario": "Use ChatTogether when an application needs to send chat messages to a Together AI hosted model through LangChain."
+   },
+   {
+    "title": "Stream generated text",
+    "scenario": "Use the streaming interface when output should be handled as text arrives."
+   },
+   {
+    "title": "Structured model workflows",
+    "scenario": "Use a model with supported tool calling or structured output features for structured application workflows."
+   }
+  ],
+  "related": [
+   "Together",
+   "langchain-together",
+   "TOGETHER_API_KEY",
+   "together_api_key",
+   "stream_events",
+   "invoke"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is ChatTogether?",
+    "answer": "ChatTogether is the LangChain integration class for Together AI chat models. It is imported from langchain_together and configured with a model name.",
+    "followUp": "How would you select a model? Use a Together AI model identifier supported by the service, such as the model shown in the documentation."
+   },
+   {
+    "question": "How do you configure authentication?",
+    "answer": "Install the langchain-together package and set TOGETHER_API_KEY, or pass the key through the together_api_key initialization parameter. Then create ChatTogether with a model name.",
+    "followUp": "How can the key be kept out of source code? Set TOGETHER_API_KEY in the environment instead of writing the key in the constructor."
+   },
+   {
+    "question": "How do you call a model and stream its output?",
+    "answer": "Call invoke for one response. For streamed output, use the documented streaming interface, such as stream_events with version v3, and process emitted text.",
+    "followUp": "Why might streaming be useful? It lets an application display generated text as it arrives instead of waiting for the complete response."
+   }
+  ],
+  "keyPoints": [
+   "Install the Python integration with pip before importing ChatTogether.",
+   "Authentication can be provided through the TOGETHER_API_KEY environment variable.",
+   "The API key can also be supplied as the together_api_key constructor parameter.",
+   "Import ChatTogether from the langchain_together package.",
+   "The documented model feature table lists tool calling, structured output, and image input support.",
+   "The feature table includes token streaming, native async, token usage, and logprobs."
+  ],
+  "gotchas": [
+   "Use ChatTogether for models that use chat completions. The documentation separates these from text completion models.",
+   "Use the API reference for complete configuration details. The integration page only shows the basic setup and use."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "ChatVertexAI": {
+  "sourceUrl": "https://docs.langchain.com/oss/javascript/integrations/chat/google_vertex_ai",
+  "sourceTitle": "ChatVertexAI integration",
+  "summary": "ChatVertexAI connects LangChain.js to Gemini Enterprise Agent Platform chat models through Google Cloud. It supports chat calls, streaming, tools, structured output, and multimodal input, but new code should use ChatGoogle.",
+  "explanation": "ChatVertexAI is LangChain's JavaScript chat model integration for Gemini Enterprise Agent Platform models in Google Cloud. Create the model with configuration such as a model name and temperature, then call invoke with text or chat messages. The documentation marks this integration for replacement by ChatGoogle.",
+  "syntax": "new ChatVertexAI({ model, temperature, maxRetries, authOptions })\nawait model.invoke(input)",
+  "parameters": [
+   {
+    "name": "model",
+    "type": "string",
+    "description": "The Gemini model identifier to use."
+   },
+   {
+    "name": "temperature",
+    "type": "number",
+    "description": "Controls response randomness. The example sets it to 0."
+   },
+   {
+    "name": "maxRetries",
+    "type": "number",
+    "description": "The maximum number of retry attempts in the example."
+   },
+   {
+    "name": "authOptions",
+    "type": "object",
+    "description": "Authentication options for web use, including credentials."
+   }
+  ],
+  "returns": "invoke returns an AI message or AI message chunk containing generated content. Usage metadata can include input, output, and total token counts.",
+  "example": {
+   "title": "Create and call a model",
+   "code": "import { ChatVertexAI } from \"@langchain/google-vertexai\";\n\nconst model = new ChatVertexAI({\n  model: \"gemini-3.8-flash\",\n  temperature: 0,\n  maxRetries: 2,\n});\n\nconst response = await model.invoke(\"Explain closures in JavaScript.\");\nconsole.log(response.content);",
+   "language": "typescript",
+   "explanation": "This creates a ChatVertexAI model and sends one text request."
+  },
+  "useCases": [
+   {
+    "title": "Chat completion",
+    "scenario": "Build a chat application that sends system and user messages to a Gemini model."
+   },
+   {
+    "title": "Grounded answers",
+    "scenario": "Answer questions with current information from Google Search."
+   },
+   {
+    "title": "Context caching",
+    "scenario": "Reuse long, repeated prompt content across requests."
+   },
+   {
+    "title": "Multimodal input",
+    "scenario": "Process image, audio, or video content with a supported model."
+   }
+  ],
+  "related": [
+   "ChatGoogle",
+   "@langchain/google-vertexai-web",
+   "@langchain/core",
+   "Google Search retrieval",
+   "Vertex AI Search data store",
+   "Context caching"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is ChatVertexAI?",
+    "answer": "ChatVertexAI is a LangChain chat model class for Google Cloud's Gemini Enterprise Agent Platform. In Node.js, install @langchain/google-vertexai and configure Google credentials before creating the model.",
+    "followUp": "How would you prepare credentials? Set GOOGLE_APPLICATION_CREDENTIALS to the service account JSON path, or use the local Google Cloud authentication command described in the documentation."
+   },
+   {
+    "question": "How do you send a request?",
+    "answer": "Call invoke with a string or an array of system and human messages. The result is an AI message containing generated content and usage metadata.",
+    "followUp": "How can output arrive incrementally? Use stream and iterate over the returned message chunks."
+   },
+   {
+    "question": "How does tool calling work?",
+    "answer": "Bind a supported tool with bindTools, then invoke the configured model. The page shows Google Search grounding and retrieval with a Vertex AI Search data store.",
+    "followUp": "Why use Google Search grounding? It lets the model use current search results to ground its response and reduce hallucinations."
+   }
+  ],
+  "keyPoints": [
+   "The package supports separate authentication approaches for Node.js and web environments.",
+   "Install @langchain/google-vertexai with @langchain/core for Node.js applications.",
+   "Use invoke to generate a response from text or chat messages.",
+   "You can bind Google Search retrieval to ground model responses with real-world information.",
+   "Context caching stores reusable long message content across requests, which can reduce repeated input costs.",
+   "The integration documents tool calling, structured output, multimodal input, streaming, token usage, and logprobs."
+  ],
+  "gotchas": [
+   "New JavaScript implementations should use ChatGoogle instead. Existing applications should consider migrating.",
+   "You need a Google Cloud setup, credentials, and the integration package before using the model.",
+   "Log probabilities exist, but Gemini limits how they can be used."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "Chroma": {
+  "sourceUrl": "https://reference.langchain.com/javascript/langchain-community/vectorstores/chroma/Chroma",
+  "sourceTitle": "Chroma | @langchain/community | LangChain Reference",
+  "summary": "Chroma is a JavaScript LangChain vector store. It embeds documents, saves them in a Chroma collection, and finds documents similar to a text query.",
+  "explanation": "Chroma is a LangChain vector store for JavaScript. It uses an embeddings object to turn document text and queries into vectors, stores those vectors in a Chroma collection, and returns nearby documents. It can connect to a Chroma server and can also create stores from documents or texts.",
+  "syntax": "new Chroma(embeddings, config)\nawait vectorStore.addDocuments(documents, options?)\nawait vectorStore.similaritySearch(query, k, filter?)\nawait vectorStore.delete(options)",
+  "parameters": [
+   {
+    "name": "embeddings",
+    "type": "EmbeddingsInterface",
+    "description": "Embeddings used to create vectors for documents and queries."
+   },
+   {
+    "name": "config",
+    "type": "object",
+    "description": "Options such as collectionName, host, and connection settings."
+   },
+   {
+    "name": "query",
+    "type": "string",
+    "description": "Text query used for similarity search."
+   },
+   {
+    "name": "k",
+    "type": "number",
+    "description": "Maximum number of documents to return."
+   },
+   {
+    "name": "delete options",
+    "type": "object",
+    "description": "Document IDs or a filter specifying what to delete."
+   }
+  ],
+  "returns": "The search methods return documents, or document-score pairs for score variants. Factory methods return a Promise<Chroma>.",
+  "example": {
+   "title": "Create and search a Chroma store",
+   "code": "import { Chroma } from \"@langchain/community/vectorstores/chroma\";\nimport { OpenAIEmbeddings } from \"@langchain/openai\";\n\nconst store = new Chroma(new OpenAIEmbeddings({\n  model: \"text-embedding-3-small\",\n}), { collectionName: \"notes\", host: \"localhost\" });\n\nawait store.addDocuments([\n  { pageContent: \"Chroma stores vectors.\", metadata: { topic: \"db\" } },\n]);\n\nconst docs = await store.similaritySearch(\"Where are vectors stored?\", 1);\nconsole.log(docs[0].pageContent);",
+   "language": "typescript",
+   "explanation": "This creates a Chroma store, adds one document, and retrieves the closest document for a text query."
+  },
+  "useCases": [
+   {
+    "title": "Retrieve relevant documents",
+    "scenario": "A retrieval-augmented generation application needs relevant text before calling a language model."
+   },
+   {
+    "title": "Store embedded documents",
+    "scenario": "An application needs to keep embeddings in a named Chroma collection."
+   },
+   {
+    "title": "Use diverse retrieval with MMR",
+    "scenario": "A search result should contain both relevance and diversity."
+   }
+  ],
+  "related": [
+   "VectorStore",
+   "DocumentInterface",
+   "EmbeddingsInterface",
+   "ChromaClient",
+   "VectorStoreRetriever",
+   "similaritySearch",
+   "similaritySearchWithScore",
+   "maxMarginalRelevanceSearch"
+  ],
+  "since": "v1.0",
+  "interview": [
+   {
+    "question": "How does Chroma support similarity search?",
+    "answer": "Chroma stores documents together with vector embeddings. The embeddings object creates vectors for added documents and for text queries, and similarity search compares the query vector with stored vectors.",
+    "followUp": "How would you reduce redundant results? Use maximal marginal relevance, which balances query similarity with diversity."
+   },
+   {
+    "question": "How do you add and search documents?",
+    "answer": "Create a Chroma instance with an embeddings object and connection options such as collectionName and host. Then call addDocuments or add_texts, followed by similaritySearch for a text query.",
+    "followUp": "How can you build the store during setup? Use the fromDocuments or fromTexts factory methods, which add the supplied data to a new Chroma instance."
+   },
+   {
+    "question": "What packages and connection options are shown?",
+    "answer": "The JavaScript integration is installed with @langchain/community and chromadb. A Chroma instance can connect to a Chroma service by providing its host, as shown in the documentation.",
+    "followUp": "What does a retriever add? asRetriever creates a VectorStoreRetriever that can invoke searches using configurable options such as search type and k."
+   }
+  ],
+  "keyPoints": [
+   "Install the community integration and the Chroma client package before using this class.",
+   "addDocuments embeds documents and adds them to the selected Chroma collection.",
+   "delete removes documents by IDs or with a filter object.",
+   "similaritySearch embeds a text query and returns documents close to its vector.",
+   "maxMarginalRelevanceSearch selects documents using maximal marginal relevance.",
+   "asRetriever turns the vector store into a retriever with configurable search settings."
+  ],
+  "gotchas": [
+   "Documents need an embeddings instance because Chroma converts them to vectors before storing them.",
+   "MMR does not only choose the most similar documents. It also seeks diversity among the selected results.",
+   "Search results can be restricted with a filter passed to the search or set on the store."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "CohereEmbeddings": {
+  "sourceUrl": "https://reference.langchain.com/python/langchain-cohere/embeddings/CohereEmbeddings",
+  "sourceTitle": "CohereEmbeddings | langchain_cohere | LangChain Reference",
+  "summary": "CohereEmbeddings connects LangChain Python to Cohere embedding models. It turns query and document text into vectors for indexing and retrieval.",
+  "explanation": "CohereEmbeddings connects LangChain Python to Cohere embedding models. It converts query text and document text into vectors, which can support indexing and retrieval in a RAG flow.",
+  "syntax": "CohereEmbeddings(model: Optional[str] = ..., cohere_api_key: Optional[str] = ...)",
+  "parameters": [
+   {
+    "name": "model",
+    "type": "Optional[str]",
+    "description": "The Cohere embedding model to use. The model name is required."
+   },
+   {
+    "name": "cohere_api_key",
+    "type": "Optional[str]",
+    "description": "The Cohere API key. It can be provided directly or through COHERE_API_KEY."
+   }
+  ],
+  "returns": "embed_query returns one embedding vector for a query. embed_documents returns one embedding vector for each input document.",
+  "example": {
+   "title": "Create and use Cohere embeddings",
+   "code": "import os\nfrom langchain_cohere import CohereEmbeddings\n\n# Set COHERE_API_KEY before running.\nembeddings = CohereEmbeddings(model=\"embed-english-v3.0\")\n\ntext = \"LangChain helps build applications with language models.\"\nquery_vector = embeddings.embed_query(text)\ndocument_vectors = embeddings.embed_documents([text])\n\nprint(len(query_vector))\nprint(len(document_vectors))",
+   "language": "python",
+   "explanation": "This creates a Cohere embedding model, embeds one query, and embeds one document."
+  },
+  "useCases": [
+   {
+    "title": "Index documents",
+    "scenario": "You need searchable document vectors for a retrieval system."
+   },
+   {
+    "title": "Embed a query",
+    "scenario": "You need to compare a user question with indexed content."
+   },
+   {
+    "title": "Support RAG",
+    "scenario": "You are building a retrieval-augmented generation flow."
+   }
+  ],
+  "related": [
+   "InMemoryVectorStore",
+   "RAG tutorials",
+   "Cohere reranker integration",
+   "Vector store integrations"
+  ],
+  "since": "v0.1",
+  "interview": [
+   {
+    "question": "How do you set up CohereEmbeddings?",
+    "answer": "Install the langchain-cohere package, set COHERE_API_KEY, import CohereEmbeddings, and provide a model name. The object can then create vectors for queries and documents.",
+    "followUp": "Why are both query and document methods useful? A retrieval system embeds stored documents for indexing and embeds a user query to find similar documents."
+   },
+   {
+    "question": "How do you embed several documents?",
+    "answer": "Use embed_documents with a list of texts. It returns one embedding vector for each input document.",
+    "followUp": "How would you use those vectors? Store them in a vector store so they can be searched during retrieval."
+   },
+   {
+    "question": "What is the difference between embedding a query and embedding documents?",
+    "answer": "Use embed_query with one text value to create a vector for a search query. Use embed_documents for the texts that will be indexed.",
+    "followUp": "What larger pattern uses these methods? A RAG system indexes document vectors and later retrieves relevant documents using a query vector."
+   }
+  ],
+  "keyPoints": [
+   "Install the separate langchain-cohere package to use this integration.",
+   "The integration reads the Cohere API key from the COHERE_API_KEY environment variable.",
+   "Import the class from the langchain_cohere package.",
+   "The embeddings can be used in retrieval-augmented generation workflows.",
+   "Use the embedding object when indexing and retrieving data."
+  ],
+  "gotchas": [
+   "You must provide the model name when creating CohereEmbeddings.",
+   "Set COHERE_API_KEY or pass an API key through the class configuration before using the model."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "CohereRerank": {
+  "sourceUrl": "https://docs.langchain.com/oss/javascript/integrations/document_compressors/cohere_rerank",
+  "sourceTitle": "Cohere rerank integration - Docs by LangChain",
+  "summary": "CohereRerank uses Cohere's rerank API to order documents for a query. It can also return only the highest-ranked documents as LangChain Document objects.",
+  "explanation": "CohereRerank uses Cohere's rerank API to score documents against a query. It can return ranked index and score pairs or a smaller set of documents with relevance scores in their metadata.",
+  "syntax": "new CohereRerank({ apiKey, model, topN })\nawait cohereRerank.rerank(docs, query, { topN })\nawait cohereRerank.compressDocuments(docs, query)",
+  "parameters": [
+   {
+    "name": "apiKey",
+    "type": "string",
+    "description": "Cohere API key, or a CohereClient supplied to the constructor."
+   },
+   {
+    "name": "topN",
+    "type": "number",
+    "description": "Maximum number of documents to return."
+   },
+   {
+    "name": "query",
+    "type": "string",
+    "description": "Text used to compare and rank the documents."
+   },
+   {
+    "name": "docs",
+    "type": "Document[]",
+    "description": "Documents to score and order."
+   },
+   {
+    "name": "model",
+    "type": "string",
+    "description": "Cohere reranking model name."
+   }
+  ],
+  "returns": "rerank returns ordered results containing an index and relevanceScore. compressDocuments returns the selected Document objects, with relevanceScore in each document's metadata.",
+  "example": {
+   "title": "Rerank documents",
+   "code": "import { CohereRerank } from \"@langchain/cohere\";\nimport { Document } from \"@langchain/core/documents\";\n\nconst reranker = new CohereRerank({\n  apiKey: process.env.COHERE_API_KEY,\n  topN: 2,\n});\n\nconst documents = [\n  new Document({ pageContent: \"Paris is the capital of France.\" }),\n  new Document({ pageContent: \"Berlin is the capital of Germany.\" }),\n];\n\nconst results = await reranker.compressDocuments(\n  documents,\n  \"What is the capital of France?\"\n);\n\nconsole.log(results);",
+   "language": "typescript",
+   "explanation": "This creates a Cohere reranker and keeps the two documents most relevant to the query. Each returned document includes a relevance score in its metadata."
+  },
+  "useCases": [
+   {
+    "title": "Improve retrieved context",
+    "scenario": "A RAG pipeline retrieves many candidate documents and needs better ordering before generation."
+   },
+   {
+    "title": "Reduce context size",
+    "scenario": "A system has a context limit and must keep only the most relevant documents."
+   },
+   {
+    "title": "Use a custom Cohere endpoint",
+    "scenario": "An application uses Cohere through Azure, AWS Bedrock, or a standalone deployment."
+   }
+  ],
+  "related": [
+   "CohereClient",
+   "Document",
+   "BaseDocumentCompressor",
+   "compressDocuments",
+   "rerank",
+   "relevanceScore"
+  ],
+  "since": "v0.1",
+  "interview": [
+   {
+    "question": "What does CohereRerank do?",
+    "answer": "CohereRerank is a document compressor that calls Cohere's rerank API. It orders documents by how relevant they are to a query.",
+    "followUp": "How can you reduce the amount of context sent to a model? Use topN or call compressDocuments so only the highest-ranked documents are returned."
+   },
+   {
+    "question": "What does rerank return?",
+    "answer": "rerank accepts documents, a query, and options such as topN. Its result contains document indexes and relevance scores, ordered by relevance.",
+    "followUp": "How would you map a result back to the original text? Use each returned index to access the corresponding item in the input document array."
+   },
+   {
+    "question": "How does compressDocuments differ from rerank?",
+    "answer": "compressDocuments takes documents and a query and returns the selected Document objects. The relevance score is placed in each returned document's metadata.",
+    "followUp": "When would this be useful in retrieval? Use it after initial retrieval to select a smaller, more relevant context set for a RAG application."
+   }
+  ],
+  "keyPoints": [
+   "Use reranking after retrieval to improve the order of candidate documents in a RAG system.",
+   "The service evaluates each document against the query and changes their order.",
+   "Call rerank with the document list, query, and a topN option.",
+   "Call compressDocuments when you want returned Document objects rather than ranked result indexes.",
+   "Results include a relevanceScore that indicates how well each document matches the query.",
+   "The documented default model is rerank-english-v2.0."
+  ],
+  "gotchas": [
+   "The API key must be passed to the class or provided through COHERE_API_KEY.",
+   "topN limits how many documents the compressor returns.",
+   "When a CohereClient is supplied, the client is used instead of the apiKey option."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "FAISS": {
+  "sourceUrl": "https://reference.langchain.com/javascript/langchain-community/vectorstores/faiss/FaissStore",
+  "sourceTitle": "FaissStore | @langchain/community",
+  "summary": "FaissStore wraps FAISS for dense-vector similarity search. It can create, search, update, save, load, and merge vector stores tied to documents.",
+  "explanation": "FaissStore keeps document vectors in a FAISS index and connects each vector to a document through an in-memory document store and mapping. It can build a store from texts or documents, add vectors, search by text or vector, return scores, retrieve results, save or load the store, and merge another FaissStore.",
+  "syntax": "class FaissStore extends SaveableVectorStore",
+  "parameters": [
+   {
+    "name": "texts",
+    "type": "string[]",
+    "description": "Text strings used to create document entries."
+   },
+   {
+    "name": "metadatas",
+    "type": "Record<string, any>[]",
+    "description": "Metadata associated with the text entries."
+   },
+   {
+    "name": "embeddings",
+    "type": "Embeddings",
+    "description": "Embedding implementation used to create and query vectors."
+   },
+   {
+    "name": "documents",
+    "type": "Document[]",
+    "description": "Document objects added to the store."
+   },
+   {
+    "name": "k",
+    "type": "number",
+    "description": "Number of results requested by similarity search."
+   },
+   {
+    "name": "queryVector",
+    "type": "number[]",
+    "description": "Vector used for direct similarity search."
+   }
+  ],
+  "returns": "FaissStore factory methods return a FaissStore. Add methods return document identifiers, searches return documents or document-score pairs, `save` returns void, and `load` returns a FaissStore.",
+  "example": {
+   "title": "Create and search a FaissStore",
+   "code": "import { FaissStore } from \"@langchain/community/vectorstores/faiss\";\nimport { MemoryVectorStore } from \"langchain/vectorstores/memory\";\n\nconst store = await FaissStore.fromTexts(\n  [\"LangChain stores vectors for similarity search.\"],\n  [{ topic: \"vectors\" }],\n  embeddings,\n);\n\nconst results = await store.similaritySearch(\"How are vectors searched?\", 1);\nconsole.log(results[0].pageContent);",
+   "language": "typescript",
+   "explanation": "This creates a store from text and metadata, then returns the closest document for a text query."
+  },
+  "useCases": [
+   {
+    "title": "Local semantic search",
+    "scenario": "Create a local vector index from application text and metadata, then retrieve the closest documents for a query."
+   },
+   {
+    "title": "Scored retrieval",
+    "scenario": "Return both matching documents and their similarity scores for ranking or inspection."
+   },
+   {
+    "title": "Index merging",
+    "scenario": "Combine separately built FAISS stores into one searchable store."
+   },
+   {
+    "title": "Save and reload",
+    "scenario": "Persist an index and restore it later from a directory."
+   }
+  ],
+  "related": [
+   "SaveableVectorStore",
+   "VectorStore",
+   "EmbeddingsInterface",
+   "SynchronousInMemoryDocstore",
+   "VectorStoreRetriever",
+   "addDocuments",
+   "addVectors",
+   "asRetriever"
+  ],
+  "since": "v1.0",
+  "interview": [
+   {
+    "question": "What does FaissStore store?",
+    "answer": "FaissStore is a vector store that wraps FAISS for dense-vector similarity search. It stores an index, a document store, and a mapping from index entries to document identifiers.",
+    "followUp": "How can a query return documents? The text query is embedded, the index finds nearby vectors, and the mapping retrieves the related documents."
+   },
+   {
+    "question": "How do you create a FaissStore?",
+    "answer": "Use `fromTexts` for text strings and metadata, or `fromDocuments` for Document objects. Both create a store using an embeddings object.",
+    "followUp": "When would `fromDocuments` be preferable? Use it when content and metadata are already represented as Document objects."
+   },
+   {
+    "question": "Which search methods are available?",
+    "answer": "`similaritySearch` searches from text and returns documents. `similaritySearchVectorWithScore` searches with a vector and returns document-score pairs.",
+    "followUp": "How can results be made more diverse? Use `maxMarginalRelevanceSearch`, which considers both query similarity and diversity among selected documents."
+   }
+  ],
+  "keyPoints": [
+   "`fromDocuments` builds a store from Document objects and an embeddings implementation.",
+   "`fromTexts` accepts text values, matching metadata, and embeddings.",
+   "`similaritySearchWithScore` embeds a text query and returns documents with scores.",
+   "`similaritySearchVectorWithScore` searches directly with a vector and returns the top results with scores.",
+   "`maxMarginalRelevanceSearch` selects documents using maximal marginal relevance.",
+   "`mergeFrom` combines this store with another FaissStore.",
+   "`save` persists the current FaissStore.",
+   "`load` restores a FaissStore from a directory."
+  ],
+  "gotchas": [
+   "Loading needs a directory that contains a previously saved FaissStore.",
+   "Loading or rebuilding from an existing index still requires an embeddings object."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "GoogleGenerativeAIEmbeddings": {
+  "sourceUrl": "https://reference.langchain.com/python/langchain-google-genai/embeddings/GoogleGenerativeAIEmbeddings",
+  "sourceTitle": "GoogleGenerativeAIEmbeddings | langchain_google_genai | LangChain Reference",
+  "summary": "GoogleGenerativeAIEmbeddings converts text into vectors with Gemini embedding models. It supports the Gemini Developer API and Vertex AI backends.",
+  "explanation": "GoogleGenerativeAIEmbeddings turns text into numeric vectors with a Gemini embedding model. It can use the Gemini Developer API or Vertex AI, and it provides synchronous and asynchronous methods for queries and documents.",
+  "syntax": "GoogleGenerativeAIEmbeddings(model: str, task_type: str | None = None, project: str | None = None, vertexai: bool | None = None, google_api_key: str | None = None)",
+  "parameters": [
+   {
+    "name": "model",
+    "type": "str",
+    "description": "Embedding model name."
+   },
+   {
+    "name": "task_type",
+    "type": "str | None",
+    "description": "Embedding task type, such as RETRIEVAL_QUERY or RETRIEVAL_DOCUMENT."
+   },
+   {
+    "name": "project",
+    "type": "str | None",
+    "description": "Google Cloud project used with Vertex AI."
+   },
+   {
+    "name": "vertexai",
+    "type": "bool | None",
+    "description": "Whether to use Vertex AI."
+   },
+   {
+    "name": "google_api_key",
+    "type": "str | None",
+    "description": "API key for the Gemini Developer API."
+   }
+  ],
+  "returns": "embed_query and aembed_query return one embedding vector for a text string. embed_documents and aembed_documents return a list of embedding vectors.",
+  "example": {
+   "title": "Create text embeddings",
+   "code": "from langchain_google_genai import GoogleGenerativeAIEmbeddings\n\nembeddings = GoogleGenerativeAIEmbeddings(\n    model=\"gemini-embedding-2-preview\"\n)\n\nquery_vector = embeddings.embed_query(\"What is our Q1 revenue?\")\ndocument_vectors = embeddings.embed_documents([\n    \"Q1 revenue increased.\",\n    \"Q2 revenue was unchanged.\"\n])\nprint(len(query_vector), len(document_vectors))",
+   "language": "python",
+   "explanation": "Create the embedding object, then encode one query and a list of documents."
+  },
+  "useCases": [
+   {
+    "title": "Encode queries and documents for vector search.",
+    "scenario": "Semantic search"
+   },
+   {
+    "title": "Use retrieval-specific task types for search workflows.",
+    "scenario": "Document retrieval"
+   },
+   {
+    "title": "Create vectors for comparing the meaning of text.",
+    "scenario": "Text similarity"
+   }
+  ],
+  "related": [
+   "Embeddings",
+   "embed_query",
+   "embed_documents",
+   "aembed_query",
+   "aembed_documents",
+   "Google GenAI SDK",
+   "VertexAIEmbeddings"
+  ],
+  "since": "2.0",
+  "interview": [
+   {
+    "question": "What does GoogleGenerativeAIEmbeddings do?",
+    "answer": "It is a LangChain embedding class for Gemini models. It converts text into vectors through embed_query or embed_documents.",
+    "followUp": "How would you encode several documents? Call embed_documents with a list of strings; it returns one vector per document."
+   },
+   {
+    "question": "How can the backend be selected?",
+    "answer": "The class supports the Gemini Developer API and Vertex AI. Vertex AI can be selected with vertexai=True and a project; automatic selection also considers environment settings, credentials, and project.",
+    "followUp": "What is the simplest setup? Set GOOGLE_API_KEY and create the class with a model name."
+   },
+   {
+    "question": "Can this class create image or audio embeddings?",
+    "answer": "The current LangChain embedding methods accept text only. Although gemini-embedding-2-preview supports multimodal inputs through the Google GenAI SDK, multimodal work must use that SDK directly.",
+    "followUp": "What inputs are supported by the LangChain interface? Text strings for queries and documents."
+   }
+  ],
+  "keyPoints": [
+   "The client attribute stores the Google GenAI client used by the embedding class.",
+   "The model attribute selects which embedding model generates vectors.",
+   "task_type controls the embedding goal, such as retrieval, similarity, classification, or clustering.",
+   "aembed_query asynchronously creates a vector for one query string.",
+   "Vertex AI support was added in langchain-google-genai 4.0.0.",
+   "For Vertex AI, enable vertexai and provide a Google Cloud project; location is optional."
+  ],
+  "gotchas": [
+   "The LangChain interface accepts text only. Use the Google GenAI SDK directly for multimodal inputs.",
+   "Providing credentials makes automatic backend selection use Vertex AI.",
+   "If both API key environment variables are set, GOOGLE_API_KEY takes priority."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "HuggingFaceEmbeddings": {
+  "sourceUrl": "https://docs.langchain.com/oss/python/integrations/embeddings/sentence_transformers",
+  "sourceTitle": "HuggingFaceEmbeddings (Sentence Transformers) integration",
+  "summary": "HuggingFaceEmbeddings runs Sentence Transformers embedding models locally. It creates vectors for queries and documents without requiring an API key.",
+  "explanation": "HuggingFaceEmbeddings loads a Sentence Transformers model and runs it locally. Use embed_query for one search query and embed_documents for a list of documents. You can pass model settings and encoding options when creating the class.",
+  "syntax": "HuggingFaceEmbeddings(model_name, model_kwargs=None, encode_kwargs=None, query_encode_kwargs=None, multi_process=False, show_progress=False)",
+  "parameters": [
+   {
+    "name": "model_name",
+    "type": "string",
+    "description": "The Hugging Face or Sentence Transformers model identifier."
+   },
+   {
+    "name": "model_kwargs",
+    "type": "object",
+    "description": "Options passed when the model is created, such as device."
+   },
+   {
+    "name": "encode_kwargs",
+    "type": "object",
+    "description": "Options passed to document and query encoding, such as normalization or batch size."
+   },
+   {
+    "name": "query_encode_kwargs",
+    "type": "object",
+    "description": "Options passed only when encoding queries, such as a query prompt."
+   },
+   {
+    "name": "multi_process",
+    "type": "boolean",
+    "description": "Whether to run encoding across multiple GPUs."
+   },
+   {
+    "name": "show_progress",
+    "type": "boolean",
+    "description": "Whether to display an encoding progress bar."
+   }
+  ],
+  "returns": "embed_query returns one embedding vector. embed_documents returns embedding vectors for the supplied documents.",
+  "example": {
+   "title": "Create local embeddings",
+   "code": "from langchain_huggingface import HuggingFaceEmbeddings\n\nembeddings = HuggingFaceEmbeddings(\n    model_name=\"sentence-transformers/all-mpnet-base-v2\"\n)\n\nquery_vector = embeddings.embed_query(\"What is a sentence embedding?\")\ndocument_vectors = embeddings.embed_documents([\n    \"Sentence embeddings map text to dense vectors.\",\n    \"LangChain provides an Embeddings interface.\",\n])",
+   "language": "python",
+   "explanation": "This creates a local embedding model, then embeds one query and two documents."
+  },
+  "useCases": [
+   {
+    "title": "Document indexing",
+    "scenario": "Create vectors for documents before storing them in a vector database."
+   },
+   {
+    "title": "Semantic search",
+    "scenario": "Turn a user's search text into a vector for similarity search."
+   },
+   {
+    "title": "Local embedding",
+    "scenario": "Run open-source embedding models without sending text to a hosted API."
+   }
+  ],
+  "related": [
+   "ChatHuggingFace",
+   "HuggingFaceEndpoint",
+   "HuggingFacePipeline",
+   "HuggingFaceEndpointEmbeddings",
+   "Text Embeddings Inference (TEI)",
+   "Cross Encoder Reranker"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is HuggingFaceEmbeddings used for?",
+    "answer": "HuggingFaceEmbeddings is a LangChain embedding class for Sentence Transformers models. It runs open-source models locally, so the basic setup does not need an API key.",
+    "followUp": "How would you run it on a specific device? Pass model_kwargs with a device such as cpu or cuda:1."
+   },
+   {
+    "question": "What is the difference between embed_query and embed_documents?",
+    "answer": "embed_query creates a vector for one search query. embed_documents creates vectors for multiple document strings, which can then be stored for retrieval.",
+    "followUp": "What should be checked before indexing? Use the model's recommended query and document prompts when the model was trained with separate prompts."
+   },
+   {
+    "question": "How can encoding behavior and performance be configured?",
+    "answer": "Set encode_kwargs to control encoding behavior, such as batch_size or normalize_embeddings. Normalization is useful for models and retrieval systems that use cosine similarity.",
+    "followUp": "How can throughput be increased across GPUs? Enable multi_process=True to run encoding on multiple GPUs."
+   }
+  ],
+  "keyPoints": [
+   "The class provides local access to embedding models hosted on Hugging Face.",
+   "Install the langchain-huggingface package before using the integration.",
+   "The integration package installs Sentence Transformers and its transformer and PyTorch dependencies.",
+   "The model usually selects CUDA, MPS, or CPU automatically.",
+   "Set multi_process to use more than one GPU for encoding.",
+   "Use a TEI server instead of local embeddings when production serving needs scale."
+  ],
+  "gotchas": [
+   "The Sentence Transformers package must be available. Installing langchain-huggingface normally brings it in.",
+   "Some models need different prefixes for queries and documents. Check the model card and pass the prompts through encode_kwargs and query_encode_kwargs.",
+   "Install accelerate if model loading fails because this package is missing."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "Milvus": {
+  "sourceUrl": "https://reference.langchain.com/python/langchain-milvus/vectorstores/milvus/Milvus",
+  "sourceTitle": "Milvus | langchain_milvus | LangChain Reference",
+  "summary": "Milvus is a LangChain vector store integration for storing and searching document embeddings. It supports local Milvus Lite files, Milvus servers, collections, filters, retrievers, and hybrid dense-plus-BM25 search.",
+  "explanation": "Milvus is a vector store integration for LangChain Python. It converts documents into embeddings, saves them in a Milvus collection, and retrieves documents by vector similarity or other search methods.",
+  "syntax": "Milvus(embedding_function=None, collection_name='LangChainCollection', connection_args=None, index_params=None, search_params=None, drop_old=False, builtin_function=None)",
+  "parameters": [
+   {
+    "name": "embedding_function",
+    "type": "Optional[Union[EmbeddingType, List[EmbeddingType]]]",
+    "description": "Embedding function used to create or query vectors."
+   },
+   {
+    "name": "collection_name",
+    "type": "str",
+    "description": "Name of the Milvus collection."
+   },
+   {
+    "name": "connection_args",
+    "type": "Optional[dict]",
+    "description": "Milvus connection settings, such as a local URI or server URI."
+   },
+   {
+    "name": "index_params",
+    "type": "Optional[Union[dict, List[dict]]]",
+    "description": "Index configuration for the collection."
+   },
+   {
+    "name": "builtin_function",
+    "type": "Optional[Union[BaseMilvusBuiltInFunction, List[BaseMilvusBuiltInFunction]]]",
+    "description": "Built-in sparse search function, such as BM25BuiltInFunction."
+   }
+  ],
+  "returns": "Search methods return LangChain Document objects. similarity_search_with_score returns document-score pairs.",
+  "example": {
+   "title": "Create and search a Milvus vector store",
+   "code": "from langchain_milvus import Milvus\nfrom langchain_openai import OpenAIEmbeddings\nfrom langchain_core.documents import Document\n\nstore = Milvus(\n    embedding_function=OpenAIEmbeddings(),\n    connection_args={\"uri\": \"./milvus_example.db\"},\n)\nstore.add_documents([\n    Document(page_content=\"Milvus stores vectors.\"),\n])\nresults = store.similarity_search(\"Where are vectors stored?\", k=1)\nprint(results[0].page_content)",
+   "language": "python",
+   "explanation": "This creates a local Milvus Lite store, adds one document, and searches for a similar document."
+  },
+  "useCases": [
+   {
+    "title": "Prototype with Milvus Lite",
+    "scenario": "You need local vector search during development."
+   },
+   {
+    "title": "Store and retrieve many vectors",
+    "scenario": "You need to search a large embedding collection on a server."
+   },
+   {
+    "title": "Use hybrid dense and BM25 search",
+    "scenario": "You need both semantic matching and exact keyword matching."
+   },
+   {
+    "title": "Filter retrieval by user",
+    "scenario": "Several users must search only their own documents."
+   }
+  ],
+  "related": [
+   "BM25BuiltInFunction",
+   "Document",
+   "Milvus integrations",
+   "similarity_search",
+   "similarity_search_with_score",
+   "as_retriever",
+   "Retrieval docs",
+   "Reranking"
+  ],
+  "since": "v0.1",
+  "interview": [
+   {
+    "question": "How do you create a Milvus vector store?",
+    "answer": "Install the integration package, create an embedding function, and pass it with connection arguments to Milvus. Then add documents and call a search method.",
+    "followUp": "How can the store be used in a chain? Convert it with as_retriever, then invoke the retriever with a query."
+   },
+   {
+    "question": "How do you search the stored documents?",
+    "answer": "similarity_search returns documents ordered by similarity. similarity_search_with_score returns each document together with its score.",
+    "followUp": "How can retrieval be filtered? Pass a Milvus expression such as a source condition to the search call."
+   },
+   {
+    "question": "What is hybrid search in this integration?",
+    "answer": "Hybrid search combines dense semantic embeddings with sparse BM25 matching. Pass BM25BuiltInFunction as builtin_function when creating the store.",
+    "followUp": "Where can this feature run? The page states that it works with Milvus Standalone and Distributed, but not Milvus Lite."
+   }
+  ],
+  "keyPoints": [
+   "Install the separate langchain-milvus package before importing Milvus.",
+   "A local Milvus vector store does not need credentials.",
+   "Milvus Lite uses a file URI, such as ./milvus_example.db, for local storage.",
+   "Use collection_name to keep separate document groups apart in one Milvus instance.",
+   "Use add_documents to embed and insert LangChain Document objects.",
+   "Call as_retriever when a chain needs the vector store's retrieval interface.",
+   "Hybrid retrieval can combine dense and sparse candidates before sending results to an LLM."
+  ],
+  "gotchas": [
+   "Milvus Lite stores data in a local file, but it supports only the Flat index.",
+   "Use a Milvus server when you need partition keys for separating data between users.",
+   "BM25 full-text search does not work with Milvus Lite."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "MistralAIEmbeddings": {
+  "sourceUrl": "https://reference.langchain.com/python/langchain-mistralai/embeddings/MistralAIEmbeddings",
+  "sourceTitle": "MistralAIEmbeddings | langchain_mistralai | LangChain Reference",
+  "summary": "MistralAIEmbeddings converts text into vectors with the MistralAI API. LangChain provides synchronous and asynchronous methods for single queries and document batches.",
+  "explanation": "MistralAIEmbeddings calls the MistralAI API to convert text into numeric vectors. Use embed_query for one text and embed_documents for multiple texts, including indexing data for retrieval.",
+  "syntax": "MistralAIEmbeddings(model=\"mistral-embed\")",
+  "parameters": [
+   {
+    "name": "model",
+    "type": "string",
+    "description": "The Mistral embedding model to use. The page example uses mistral-embed."
+   },
+   {
+    "name": "api_key",
+    "type": "string",
+    "description": "The Mistral API key. The documentation says it can be supplied through MISTRAL_API_KEY."
+   },
+   {
+    "name": "max_concurrent_requests",
+    "type": "int",
+    "description": "Maximum number of concurrent requests to the Mistral API."
+   },
+   {
+    "name": "max_retries",
+    "type": "int | None",
+    "description": "Number of retries after a failed request."
+   },
+   {
+    "name": "timeout",
+    "type": "int",
+    "description": "Request timeout in seconds."
+   },
+   {
+    "name": "wait_time",
+    "type": "int | None",
+    "description": "Delay in seconds before retrying after a 429 response."
+   }
+  ],
+  "returns": "embed_query and aembed_query return one vector. embed_documents and aembed_documents return a list of vectors.",
+  "example": {
+   "title": "Embed text with MistralAI",
+   "code": "import os\nfrom langchain_mistralai import MistralAIEmbeddings\n\nos.environ[\"MISTRAL_API_KEY\"] = \"your-api-key\"\nembeddings = MistralAIEmbeddings(model=\"mistral-embed\")\n\nquery_vector = embeddings.embed_query(\"The meaning of life is 42\")\ndocument_vectors = embeddings.embed_documents([\n    \"Document 1...\",\n    \"Document 2...\",\n])\nprint(query_vector[:3])\nprint(len(document_vectors))",
+   "language": "python",
+   "explanation": "Create the embedding object, then turn one query or several documents into vectors."
+  },
+  "useCases": [
+   {
+    "title": "Query embedding",
+    "scenario": "Convert one user question into a vector for similarity search."
+   },
+   {
+    "title": "Document indexing",
+    "scenario": "Convert many text chunks into vectors before storing them."
+   },
+   {
+    "title": "RAG retrieval",
+    "scenario": "Embed indexed documents and later queries in a retrieval-augmented generation flow."
+   }
+  ],
+  "related": [
+   "Embeddings",
+   "InMemoryVectorStore",
+   "embed_documents",
+   "embed_query",
+   "aembed_documents",
+   "aembed_query",
+   "RAG tutorials"
+  ],
+  "since": "v0.1",
+  "interview": [
+   {
+    "question": "What does MistralAIEmbeddings do?",
+    "answer": "MistralAIEmbeddings is a LangChain embedding class backed by the MistralAI API. It converts text into vectors that can be stored and compared for semantic retrieval.",
+    "followUp": "How would you embed a batch of documents? Use embed_documents with a list of strings, then store the returned vectors in a vector store."
+   },
+   {
+    "question": "When do you use embed_query versus embed_documents?",
+    "answer": "Use embed_query for one input string. Use embed_documents when several document strings need vectors, such as during indexing.",
+    "followUp": "What is the asynchronous equivalent for one query? Call aembed_query and await its result."
+   },
+   {
+    "question": "How do you configure the integration?",
+    "answer": "Install the langchain-mistralai package, set MISTRAL_API_KEY, and construct MistralAIEmbeddings with the model name mistral-embed. The resulting object can produce query and document embeddings.",
+    "followUp": "How can these vectors support RAG? Embed documents during indexing and embed the user query later to find relevant stored documents."
+   }
+  ],
+  "keyPoints": [
+   "Install the integration from the langchain-mistralai package.",
+   "The class implements LangChain's Embeddings interface.",
+   "The documented model value is mistral-embed.",
+   "Embedding models can support retrieval-augmented generation workflows.",
+   "Use embeddings when indexing data and again when retrieving it.",
+   "The class provides synchronous and asynchronous methods for documents and queries."
+  ],
+  "gotchas": [
+   "Create a MistralAI account and API key before making embedding requests.",
+   "The API key must be available through MISTRAL_API_KEY unless supplied by supported configuration."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "OllamaEmbeddings": {
+  "sourceUrl": "https://reference.langchain.com/python/langchain-ollama/embeddings/OllamaEmbeddings",
+  "sourceTitle": "OllamaEmbeddings | langchain_ollama",
+  "summary": "OllamaEmbeddings uses an Ollama model to turn text into numeric vectors. It supports single texts, lists of documents, and asynchronous calls.",
+  "explanation": "OllamaEmbeddings connects LangChain to an Ollama embedding model. It can convert one query or several documents into numeric vectors, and it also provides asynchronous methods for these operations.",
+  "syntax": "OllamaEmbeddings(model: str, dimensions: int | None = None, validate_model_on_init: bool = False, ...)",
+  "parameters": [
+   {
+    "name": "model",
+    "type": "str",
+    "description": "Name of the Ollama model to use."
+   },
+   {
+    "name": "base_url",
+    "type": "str | None",
+    "description": "Address where the model is hosted."
+   },
+   {
+    "name": "dimensions",
+    "type": "int | None",
+    "description": "Number of dimensions in output vectors; the model default is used when omitted."
+   },
+   {
+    "name": "validate_model_on_init",
+    "type": "bool",
+    "description": "Whether to check that the model exists in Ollama during initialization."
+   }
+  ],
+  "returns": "embed_query and aembed_query return one numeric vector. embed_documents and aembed_documents return a list of numeric vectors.",
+  "example": {
+   "title": "Create text embeddings with Ollama",
+   "code": "from langchain_ollama import OllamaEmbeddings\n\nembed = OllamaEmbeddings(model=\"llama3\")\ntext = \"The meaning of life is 42\"\nvector = embed.embed_query(text)\nprint(vector[:3])\n\nvectors = embed.embed_documents([\"Document 1\", \"Document 2\"])\nprint(len(vectors))",
+   "language": "python",
+   "explanation": "This creates an embedding model, converts one text to a vector, then converts two documents to vectors."
+  },
+  "useCases": [
+   {
+    "title": "Embed a search query",
+    "scenario": "You need a vector for a user query before searching an embedding index."
+   },
+   {
+    "title": "Embed documents",
+    "scenario": "You need vectors for several source texts before storing them in a vector database."
+   },
+   {
+    "title": "Run embedding calls asynchronously",
+    "scenario": "Your application uses async code and must avoid blocking embedding calls."
+   }
+  ],
+  "related": [
+   "Embeddings",
+   "Ollama",
+   "embed_query",
+   "embed_documents",
+   "aembed_query",
+   "aembed_documents"
+  ],
+  "since": "v1.0",
+  "interview": [
+   {
+    "question": "How do you create embeddings with OllamaEmbeddings?",
+    "answer": "Use OllamaEmbeddings with the model name, then call embed_query for one text or embed_documents for a list. Each call returns numeric embedding vectors.",
+    "followUp": "How would you process multiple texts without blocking? Use the asynchronous aembed_documents method and await its result."
+   },
+   {
+    "question": "Which initialization settings identify the Ollama service and model?",
+    "answer": "The model parameter names the Ollama model to use. The base_url parameter can point to the location where the model is hosted.",
+    "followUp": "What should you check when a remote Ollama server cannot be reached? Verify that base_url points to the server's hosting address and that the server is available."
+   },
+   {
+    "question": "What controls the size of an embedding vector?",
+    "answer": "The dimensions parameter sets the output vector size when supplied. Without it, the embedding model's default dimensionality is used.",
+    "followUp": "Why does vector size matter in an indexed application? A vector store and its embeddings must use compatible dimensions for storage and search."
+   }
+  ],
+  "keyPoints": [
+   "OllamaEmbeddings is the LangChain integration for using Ollama as an embedding model.",
+   "The model field selects which Ollama model creates the embeddings.",
+   "Set model when constructing the class so it knows which Ollama model to call.",
+   "Use base_url to specify the address where the Ollama model service runs.",
+   "Call embed_query when you need one vector for a single input string.",
+   "Call embed_documents to create vectors for several input strings in one operation."
+  ],
+  "gotchas": [
+   "If dimensions is omitted, the selected model decides the vector size. Code that expects a fixed size should account for this.",
+   "Model validation is configurable. Make sure the required model is available in Ollama before embedding text."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "OpenAIEmbeddings": {
+  "sourceUrl": "https://docs.langchain.com/oss/python/integrations/embeddings/openai",
+  "sourceTitle": "OpenAIEmbeddings integration",
+  "summary": "OpenAIEmbeddings connects LangChain Python to OpenAI embedding models. It converts queries and documents into numeric vectors for indexing and retrieval.",
+  "explanation": "OpenAIEmbeddings turns text into numeric vectors with OpenAI embedding models. Use embed_query for one query, embed_documents for multiple texts, and the async versions in asynchronous code.",
+  "syntax": "OpenAIEmbeddings(model=\"text-embedding-3-large\", dimensions=None, base_url=None, api_key=None)",
+  "parameters": [
+   {
+    "name": "model",
+    "type": "str",
+    "description": "The OpenAI embedding model to use."
+   },
+   {
+    "name": "dimensions",
+    "type": "int | None",
+    "description": "The requested output vector size. Supported by text-embedding-3 and newer models."
+   },
+   {
+    "name": "base_url",
+    "type": "str | None",
+    "description": "The API base URL. It can point to a proxy or an Azure OpenAI v1 endpoint."
+   },
+   {
+    "name": "api_key",
+    "type": "str | callable",
+    "description": "The OpenAI API key, or a callable that supplies an Azure Entra ID token."
+   }
+  ],
+  "returns": "embed_query returns one embedding vector. embed_documents returns a list of vectors, one for each input text. The asynchronous methods return the corresponding results asynchronously.",
+  "example": {
+   "title": "Embed queries and documents",
+   "code": "from langchain_openai import OpenAIEmbeddings\n\nembeddings = OpenAIEmbeddings(model=\"text-embedding-3-large\")\n\nquery_vector = embeddings.embed_query(\"Hello world\")\ndocument_vectors = embeddings.embed_documents([\"Hello\", \"World\"])\n\nprint(len(query_vector))\nprint(len(document_vectors))",
+   "language": "python",
+   "explanation": "Create the embedding model, then embed one query and several documents."
+  },
+  "useCases": [
+   {
+    "title": "Index documents",
+    "scenario": "Create vectors for documents before storing them in a vector store."
+   },
+   {
+    "title": "Retrieve relevant text",
+    "scenario": "Create a vector for a user query and compare it with stored document vectors."
+   },
+   {
+    "title": "Use Azure OpenAI",
+    "scenario": "Use OpenAI embeddings through an Azure OpenAI v1 endpoint."
+   }
+  ],
+  "related": [
+   "AzureOpenAIEmbeddings",
+   "InMemoryVectorStore",
+   "embed_query",
+   "embed_documents",
+   "aembed_query",
+   "aembed_documents"
+  ],
+  "since": "1.0.1 for direct Azure OpenAI v1 API support",
+  "interview": [
+   {
+    "question": "What is OpenAIEmbeddings used for?",
+    "answer": "OpenAIEmbeddings creates vector representations of text. Use embed_query for one text and embed_documents for a list of texts.",
+    "followUp": "How would you process several documents? Use embed_documents, which returns one vector for each input text."
+   },
+   {
+    "question": "How do you configure authentication and installation?",
+    "answer": "Set OPENAI_API_KEY before creating the object, then install langchain-openai. The model can be selected with the model argument.",
+    "followUp": "How can requests use a proxy? Set base_url explicitly or use the documented environment variables."
+   },
+   {
+    "question": "How can you control vector size and async behavior?",
+    "answer": "Use the dimensions argument to choose the output size with text-embedding-3 models. The selected size changes the length of each returned vector.",
+    "followUp": "What happens with an asynchronous token provider? Use the async embedding methods because synchronous methods raise an error."
+   }
+  ],
+  "keyPoints": [
+   "Import OpenAIEmbeddings from the langchain_openai package.",
+   "Install the LangChain OpenAI integration with pip.",
+   "Provide the OpenAI key through the OPENAI_API_KEY environment variable.",
+   "Call embed_documents with a list when you need vectors for multiple texts.",
+   "Call embed_query to create one vector for a single query."
+  ],
+  "gotchas": [
+   "An asynchronous API-key provider requires aembed_query or aembed_documents. Sync methods raise an error.",
+   "The dimensions option works only with text-embedding-3 and newer models.",
+   "Install the integration package before importing OpenAIEmbeddings."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "PGVector": {
+  "sourceUrl": "https://reference.langchain.com/python/langchain-postgres/vectorstores/PGVector",
+  "sourceTitle": "PGVector | langchain_postgres | LangChain Reference",
+  "summary": "PGVector stores document embeddings in PostgreSQL with pgvector. It supports adding, deleting, filtering, and similarity-searching documents.",
+  "explanation": "PGVector stores document embeddings and metadata in PostgreSQL with the pgvector extension. It embeds text when needed, saves vectors, and retrieves documents by similarity; searches can also use metadata filters.",
+  "syntax": "PGVector(embeddings: Embeddings, *, connection: Union[None, DBConnection, Engine, AsyncEngine, str] = None, embedding_length: Optional[int] = None, collection_name: str = ...)",
+  "parameters": [
+   {
+    "name": "embeddings",
+    "type": "Embeddings",
+    "description": "Embedding implementation used to create vectors."
+   },
+   {
+    "name": "connection",
+    "type": "None, DBConnection, Engine, AsyncEngine, or str",
+    "description": "PostgreSQL connection string or database engine."
+   },
+   {
+    "name": "collection_name",
+    "type": "str",
+    "description": "Name used for the vector collection."
+   },
+   {
+    "name": "embedding_length",
+    "type": "Optional[int]",
+    "description": "Optional dimension of the embeddings."
+   }
+  ],
+  "returns": "A PGVector vector store instance; search methods return matching Document objects, and score methods return documents with scores.",
+  "example": {
+   "title": "Create and search a PGVector store",
+   "code": "from langchain_postgres.vectorstores import PGVector\nfrom langchain_openai import OpenAIEmbeddings\nfrom langchain_core.documents import Document\n\nstore = PGVector(\n    embeddings=OpenAIEmbeddings(model=\"text-embedding-3-large\"),\n    collection_name=\"my_docs\",\n    connection=\"postgresql+psycopg://langchain:langchain@localhost:6024/langchain\",\n    use_jsonb=True,\n)\nstore.add_documents([Document(page_content=\"thud\", metadata={\"kind\":\"test\"})], ids=[\"1\"])\nresults = store.similarity_search(\"thud\", k=1, filter={\"kind\":\"test\"})\nprint(results[0].page_content)",
+   "language": "python",
+   "explanation": "This creates a PGVector store, adds one document, and searches for a similar document with a metadata filter."
+  },
+  "useCases": [
+   {
+    "title": "Persistent vector storage",
+    "scenario": "Store text embeddings in a PostgreSQL database."
+   },
+   {
+    "title": "Semantic search",
+    "scenario": "Find documents related to a user query."
+   },
+   {
+    "title": "Filtered retrieval",
+    "scenario": "Restrict results by document metadata."
+   },
+   {
+    "title": "Diverse retrieval",
+    "scenario": "Select relevant results with less repetition."
+   }
+  ],
+  "related": [
+   "Embeddings",
+   "Document",
+   "similarity_search",
+   "similarity_search_with_score",
+   "max_marginal_relevance_search_with_score_by_vector",
+   "PGVectorTranslator"
+  ],
+  "since": "v0.0",
+  "interview": [
+   {
+    "question": "What is PGVector used for?",
+    "answer": "PGVector is a LangChain vector store backed by PostgreSQL and pgvector. It stores embeddings with documents and can return the most similar documents for a query.",
+    "followUp": "How can a search be narrowed? Pass a metadata filter to similarity_search, such as {\"bar\": \"baz\"}."
+   },
+   {
+    "question": "How does similarity search work?",
+    "answer": "add_documents embeds and stores documents, while similarity_search embeds the query and returns the nearest documents. The k argument limits how many results are returned.",
+    "followUp": "How can scores be returned? Use similarity_search_with_score to return documents together with their scores."
+   },
+   {
+    "question": "How are metadata filters used?",
+    "answer": "The store accepts a filter in similarity_search. The example filters metadata by matching a field value, so only documents that satisfy the filter are considered.",
+    "followUp": "What other documented operation can select diverse results? Maximal marginal relevance balances similarity to the query with diversity among selected documents."
+   }
+  ],
+  "keyPoints": [
+   "collection_name identifies the collection where the vector records are stored.",
+   "embeddings supplies the function that converts document text and queries into vectors.",
+   "add_embeddings stores already computed vectors, while add_texts first computes embeddings from text.",
+   "delete removes stored vectors using their supplied identifiers.",
+   "similarity_search returns documents ranked by similarity to the embedded query.",
+   "Maximal marginal relevance can choose results that are both relevant and less repetitive."
+  ],
+  "gotchas": [
+   "A connection string is required when creating a store or using the document and text factory methods.",
+   "The setup requires the pgvector package and a PostgreSQL instance with the extension enabled."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "PineconeVectorStore": {
+  "sourceUrl": "https://reference.langchain.com/python/langchain-pinecone/vectorstores/PineconeVectorStore",
+  "sourceTitle": "PineconeVectorStore | langchain_pinecone | LangChain Reference",
+  "summary": "PineconeVectorStore connects LangChain to Pinecone. It stores document embeddings and supports adding, deleting, filtering, searching, and retriever use.",
+  "explanation": "PineconeVectorStore connects LangChain to a Pinecone index through an embedding model. Add documents to create vectors, search by text or vector, filter by metadata, delete by ID, or convert the store into a retriever for chains.",
+  "syntax": "PineconeVectorStore(index: Optional[Any] = None, embedding: Optional[Embeddings] = None, text_key: Optional[str] = \"text\", ...)",
+  "parameters": [
+   {
+    "name": "index",
+    "type": "Optional[Any] / Index",
+    "description": "Pinecone index used for vector operations."
+   },
+   {
+    "name": "embedding",
+    "type": "Optional[Embeddings]",
+    "description": "Embedding function used to encode documents and queries."
+   },
+   {
+    "name": "text_key",
+    "type": "Optional[str] = \"text\"",
+    "description": "Metadata field containing document text; default is text."
+   }
+  ],
+  "returns": "A PineconeVectorStore instance; search methods return LangChain documents, and similarity_search_with_score returns document-score pairs.",
+  "example": {
+   "title": "Create and search a Pinecone vector store",
+   "code": "from pinecone import Pinecone, ServerlessSpec\nfrom langchain_openai import OpenAIEmbeddings\nfrom langchain_pinecone import PineconeVectorStore\n\npc = Pinecone(api_key=\"YOUR_PINECONE_API_KEY\")\nindex_name = \"langchain-test-index\"\nif not pc.has_index(index_name):\n    pc.create_index(name=index_name, dimension=1536, metric=\"cosine\",\n                    spec=ServerlessSpec(cloud=\"aws\", region=\"us-east-1\"))\nindex = pc.Index(index_name)\nstore = PineconeVectorStore(index=index, embedding=OpenAIEmbeddings())\nids = store.add_documents([Document(page_content=\"thud\", metadata={\"bar\":\"baz\"})])\nprint(store.similarity_search(\"thud\", k=1))",
+   "language": "python",
+   "explanation": "This creates or opens an index, connects it to LangChain embeddings, adds a document, and searches for a similar document."
+  },
+  "useCases": [
+   {
+    "title": "Semantic search",
+    "scenario": "Store document embeddings in Pinecone and find documents similar to a user query."
+   },
+   {
+    "title": "Filtered retrieval",
+    "scenario": "Attach metadata such as categories or sources and restrict matches with filters."
+   },
+   {
+    "title": "Chain retrieval",
+    "scenario": "Use the vector store as a retriever inside LangChain chains."
+   },
+   {
+    "title": "Document lifecycle management",
+    "scenario": "Remove records when source content is deleted or replaced."
+   }
+  ],
+  "related": [
+   "Pinecone",
+   "PineconeVectorStore",
+   "PineconeSparseVectorStore",
+   "OpenAIEmbeddings",
+   "ServerlessSpec",
+   "similarity_search",
+   "similarity_search_with_score",
+   "as_retriever"
+  ],
+  "since": "v0.2",
+  "interview": [
+   {
+    "question": "What does PineconeVectorStore connect?",
+    "answer": "PineconeVectorStore takes a Pinecone index and an embedding function. LangChain uses the embedding function to turn document text and queries into vectors, then uses Pinecone for storage and similarity search.",
+    "followUp": "How would you restrict results? Pass a metadata filter, such as {\"bar\": \"baz\"}, to similarity_search."
+   },
+   {
+    "question": "How do you add and remove documents?",
+    "answer": "Use add_documents with Document objects. You can provide IDs separately, and each document can include metadata.",
+    "followUp": "How can one document be removed? Call delete with its stored ID, for example delete(ids=[\"3\"])."
+   },
+   {
+    "question": "How do you search the store?",
+    "answer": "similarity_search returns matching documents. The search accepts a query and a result limit k, and it can also receive a metadata filter.",
+    "followUp": "What other search options exist? The documentation points to the API reference for methods such as maximal marginal relevance."
+   }
+  ],
+  "keyPoints": [
+   "Install langchain-pinecone with the other packages used by the integration.",
+   "Set the Pinecone API key in the PINECONE_API_KEY environment variable before creating the client.",
+   "Initialize the store with a Pinecone index and an embedding model.",
+   "Add LangChain Document objects with add_documents; IDs can be supplied separately.",
+   "Delete stored records by passing their IDs to delete.",
+   "Run similarity search with a text query and choose how many results to return with k.",
+   "Limit similarity results with a metadata filter.",
+   "Convert the vector store into a retriever for use in chains."
+  ],
+  "gotchas": [
+   "Older pinecone-client v2 installations can conflict with langchain-pinecone. Remove the old dependency if you are migrating.",
+   "The setup can create a missing index, but the index dimension must match the embedding model."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "SseServerTransport": {
+  "sourceUrl": "https://docs.langchain.com/oss/javascript/langchain/mcp-v1",
+  "sourceTitle": "Model Context Protocol (MCP) with @langchain/mcp-adapters 1.x",
+  "summary": "Use @langchain/mcp-adapters 1.x to let LangChain agents call tools from one or more MCP servers. MultiServerMCPClient supports transports such as stdio and HTTP and is stateless by default.",
+  "explanation": "MultiServerMCPClient connects LangChain to one or more MCP servers. It can use different transports, such as stdio and HTTP. By default, it is stateless: each tool call creates a new MCP client session, runs the tool, and then closes the session.",
+  "syntax": "new MultiServerMCPClient(serverConfigurations)",
+  "parameters": [
+   {
+    "name": "server configurations",
+    "type": "object",
+    "description": "A map of named MCP server configurations. Each configuration specifies how to connect to an MCP server."
+   }
+  ],
+  "returns": "A client that can load and invoke tools exposed by configured MCP servers.",
+  "example": {
+   "title": "Load tools from multiple MCP servers",
+   "code": "import { MultiServerMCPClient } from \"@langchain/mcp-adapters\";\n\nconst client = new MultiServerMCPClient({\n  math: { transport: \"stdio\", command: \"node\", args: [\"./math-server.js\"] },\n  docs: { transport: \"http\", url: \"https://docs.langchain.com/mcp\" },\n});\n\nconst tools = await client.getTools();\nconsole.log(tools.map((tool) => tool.name));",
+   "language": "typescript",
+   "explanation": "This creates a client for two MCP servers. One uses a local process, and the other uses HTTP. The client loads their tools for use by a LangChain agent."
+  },
+  "useCases": [
+   {
+    "title": "Local tools over stdio",
+    "scenario": "Connect an agent to tools in a local MCP server started as a child process."
+   },
+   {
+    "title": "Multiple tool sources",
+    "scenario": "Load tools from several MCP servers in one LangChain application."
+   },
+   {
+    "title": "Remote tools over HTTP",
+    "scenario": "Call tools exposed by a hosted MCP endpoint."
+   },
+   {
+    "title": "SSE-based communication",
+    "scenario": "Connect to a server that sends events through server-sent events."
+   }
+  ],
+  "related": [
+   "MultiServerMCPClient",
+   "ClientSession",
+   "stdio transport",
+   "HTTP transport",
+   "SSE transport",
+   "createAgent"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How does LangChain access MCP tools?",
+    "answer": "Use MultiServerMCPClient from @langchain/mcp-adapters. Configure each server with a transport and its connection settings, then load the tools and pass them to an agent.",
+    "followUp": "How can one client reach different server types? Configure each server entry separately. For example, one entry can use stdio while another uses HTTP."
+   },
+   {
+    "question": "Can one client use more than one MCP server?",
+    "answer": "The client supports multiple MCP servers in one configuration. Each server can have its own name and transport settings.",
+    "followUp": "What should you check when a server cannot be reached? Check its transport configuration, command or URL, and whether the server is running."
+   },
+   {
+    "question": "What happens during a tool invocation?",
+    "answer": "The default client mode is stateless. A fresh MCP ClientSession is created for each tool invocation, and the session is cleaned up afterward.",
+    "followUp": "What does this imply for server-side state? State should not be assumed to persist between calls unless the application configures and manages it separately."
+   }
+  ],
+  "keyPoints": [
+   "MCP gives applications a standard way to expose tools and context to language models.",
+   "LangChain agents can call tools that MCP servers provide.",
+   "Install the adapter package to connect LangChain agents to MCP tools.",
+   "A single client can collect tools from multiple MCP servers.",
+   "The HTTP transport communicates with an MCP server through HTTP requests.",
+   "Use a local server URL when the MCP server runs on your machine."
+  ],
+  "gotchas": [
+   "The default behavior does not keep an MCP session between tool calls.",
+   "Every invocation creates a new client session before running the tool.",
+   "The session is cleaned up after the tool finishes."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "StreamlitCallbackHandler": {
+  "sourceUrl": "https://reference.langchain.com/python/langchain-classic/callbacks/streamlit/StreamlitCallbackHandler",
+  "sourceTitle": "StreamlitCallbackHandler | langchain_classic | LangChain Reference",
+  "summary": "StreamlitCallbackHandler sends LangChain agent callback output to a Streamlit app. It shows model and tool-use thoughts in expanders and lets you control their visibility and labels.",
+  "explanation": "The handler sends LangChain agent activity to Streamlit. It shows model and tool-use thoughts in expanders, can limit visible completed thoughts, and can control expander state.",
+  "syntax": "StreamlitCallbackHandler(parent_container: DeltaGenerator, *, max_thought_containers: int = 4, expand_new_thoughts: bool = True, collapse_completed_thoughts: bool = True, thought_labeler: LLMThoughtLabeler | None = None) -> BaseCallbackHandler",
+  "parameters": [
+   {
+    "name": "parent_container",
+    "type": "DeltaGenerator",
+    "description": "The Streamlit container that holds all elements created by the handler."
+   },
+   {
+    "name": "max_thought_containers",
+    "type": "int",
+    "description": "Maximum number of completed LLM thought containers shown at one time. Default: 4."
+   },
+   {
+    "name": "expand_new_thoughts",
+    "type": "bool",
+    "description": "Whether new thought expanders start open. Default: True."
+   },
+   {
+    "name": "collapse_completed_thoughts",
+    "type": "bool",
+    "description": "Whether completed thought expanders are collapsed. Default: True."
+   },
+   {
+    "name": "thought_labeler",
+    "type": "LLMThoughtLabeler | None",
+    "description": "Optional custom thought labeler. Default: None."
+   }
+  ],
+  "returns": "A new StreamlitCallbackHandler instance.",
+  "example": {
+   "title": "Create a Streamlit callback handler",
+   "code": "import streamlit as st\nfrom langchain_classic.callbacks.streamlit import StreamlitCallbackHandler\n\ncontainer = st.container()\nhandler = StreamlitCallbackHandler(\n    container,\n    max_thought_containers=4,\n    expand_new_thoughts=True,\n    collapse_completed_thoughts=True,\n)\nst.write(handler)",
+   "language": "python",
+   "explanation": "This creates a handler that can place LangChain agent thought and tool-use displays inside a Streamlit container."
+  },
+  "useCases": [
+   {
+    "title": "Display agent activity",
+    "scenario": "Show an agent's model reasoning activity and tool-use events in a Streamlit interface."
+   },
+   {
+    "title": "Limit visible thought history",
+    "scenario": "Keep a Streamlit page readable while an agent creates many thoughts."
+   },
+   {
+    "title": "Customize thought labels",
+    "scenario": "Use consistent custom headings for thought expanders."
+   }
+  ],
+  "related": [
+   "BaseCallbackHandler",
+   "LLMThoughtLabeler",
+   "Streamlit",
+   "LangChain Agent"
+  ],
+  "since": "v1.4",
+  "interview": [
+   {
+    "question": "What does StreamlitCallbackHandler do?",
+    "answer": "It is a callback handler for Streamlit applications. It is designed for LangChain agents and displays model and tool-use thoughts in Streamlit expanders.",
+    "followUp": "What happens after the completed-thought limit is reached? A new thought causes the oldest visible thoughts to collapse into a History expander."
+   },
+   {
+    "question": "What is parent_container used for?",
+    "answer": "parent_container is the Streamlit container that receives the elements created by the handler. The handler uses it as the destination for its UI output.",
+    "followUp": "Which setting controls the number of visible completed thought containers? max_thought_containers controls that limit."
+   },
+   {
+    "question": "Which options control thought display?",
+    "answer": "expand_new_thoughts controls whether each new thought expander starts open. collapse_completed_thoughts controls whether a thought expander closes after completion.",
+    "followUp": "How can the labels be customized? Pass an LLMThoughtLabeler through thought_labeler; otherwise the default labeling logic is used."
+   }
+  ],
+  "keyPoints": [
+   "It writes callback output into a Streamlit app.",
+   "It is intended mainly for LangChain agents.",
+   "It shows the agent's model and tool-use activity in separate expanders.",
+   "max_thought_containers sets how many completed thought containers remain visible at once.",
+   "Each model thought receives its own Streamlit expander.",
+   "expand_new_thoughts sets the initial open state for new thought expanders.",
+   "collapse_completed_thoughts closes thought expanders after they finish when enabled.",
+   "thought_labeler accepts an optional custom labeler for thought headings."
+  ],
+  "gotchas": [
+   "When the visible completed-thought limit is reached, older thoughts move into a History expander.",
+   "The community implementation may use a newer handler from the installed Streamlit version."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "VectorStoreRetriever": {
+  "sourceUrl": "https://reference.langchain.com/javascript/langchain-core/vectorstores/VectorStoreRetriever",
+  "sourceTitle": "VectorStoreRetriever | @langchain/core | LangChain Reference",
+  "summary": "VectorStoreRetriever turns a vector store into a document retriever. It supports similarity search and maximal marginal relevance (MMR), with options for result count, filters, and MMR tuning.",
+  "explanation": "A VectorStoreRetriever wraps a vector store as a retriever. It searches for documents using vector similarity by default, or maximal marginal relevance (MMR) when selected. You can set the result count, apply a vector-store filter, and pass MMR options.",
+  "syntax": "constructor<V extends VectorStoreInterface = VectorStoreInterface>(fields: VectorStoreRetrieverInput<V>): VectorStoreRetriever",
+  "parameters": [
+   {
+    "name": "vectorStore",
+    "type": "VectorStoreInterface",
+    "description": "The vector store used to store and retrieve document embeddings. Required."
+   },
+   {
+    "name": "k",
+    "type": "number",
+    "description": "The number of documents returned for each query. Defaults to 4."
+   },
+   {
+    "name": "searchType",
+    "type": "string",
+    "description": "The search method: \"similarity\" by default or \"mmr\" for maximal marginal relevance."
+   },
+   {
+    "name": "filter",
+    "type": "V[\"FilterType\"]",
+    "description": "A vector-store-specific condition used to limit results."
+   },
+   {
+    "name": "searchKwargs",
+    "type": "VectorStoreRetrieverMMRSearchKwargs",
+    "description": "Extra MMR settings, including fetchK and lambda. Applies to MMR search."
+   }
+  ],
+  "returns": "A VectorStoreRetriever that can be invoked to retrieve relevant documents.",
+  "example": {
+   "title": "Create and use a retriever",
+   "code": "const retriever = vectorStore.asRetriever({\n  k: 3,\n  searchType: \"mmr\",\n  searchKwargs: { fetchK: 10, lambda: 0.5 },\n});\n\nconst documents = await retriever.invoke(\"How does caching work?\");\nconsole.log(documents);",
+   "language": "typescript",
+   "explanation": "This creates an MMR retriever that returns three documents. It first considers ten candidates and balances relevance with diversity."
+  },
+  "useCases": [
+   {
+    "title": "Similarity retrieval",
+    "scenario": "Find documents that are closest to a user query."
+   },
+   {
+    "title": "Diverse retrieval with MMR",
+    "scenario": "Return varied documents instead of near-duplicates."
+   },
+   {
+    "title": "Filtered retrieval",
+    "scenario": "Restrict search to documents matching a condition."
+   }
+  ],
+  "related": [
+   "BaseRetriever",
+   "VectorStoreInterface",
+   "VectorStoreRetrieverInput",
+   "VectorStoreRetrieverMMRSearchKwargs"
+  ],
+  "since": "v1.3",
+  "interview": [
+   {
+    "question": "What search strategies does VectorStoreRetriever support?",
+    "answer": "The retriever uses similarity search by default and can also use maximal marginal relevance. MMR combines relevance with diversity when selecting documents.",
+    "followUp": "When would MMR be useful? It is useful when repeated or very similar results are less helpful and varied content is wanted."
+   },
+   {
+    "question": "What does the k option control?",
+    "answer": "k controls how many documents the retriever returns for each query. If it is not supplied, its default value is 4.",
+    "followUp": "What should be checked when changing k? Check the vector store and application needs, because a larger result set can change the amount of context passed onward."
+   },
+   {
+    "question": "How does filtering work?",
+    "answer": "The filter option limits results using the filter type defined by the vector store. This lets a query target documents that meet specified conditions.",
+    "followUp": "Why is the filter type vector-store-specific? Different vector stores define different filter shapes and supported conditions."
+   }
+  ],
+  "keyPoints": [
+   "It retrieves documents from a vector store with either similarity search or MMR.",
+   "For MMR, fetchK sets how many candidates are examined before the final selection.",
+   "MMR lambda must be between 0 and 1. Lower values favor diversity; higher values favor relevance.",
+   "A vector-store-defined filter can narrow the returned documents.",
+   "The retriever provides document retrieval and supports operations on its underlying vector store."
+  ],
+  "gotchas": [
+   "Use searchKwargs for MMR settings only when searchType is \"mmr\".",
+   "If k is omitted, the retriever returns four documents by default."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "VertexAIEmbeddings": {
+  "sourceUrl": "https://docs.langchain.com/oss/javascript/integrations/embeddings/google_vertex_ai",
+  "sourceTitle": "VertexAIEmbeddings integration",
+  "summary": "VertexAIEmbeddings creates vectors from text with Google Vertex AI in LangChain.js. Use it for indexing documents and finding similar documents during retrieval.",
+  "explanation": "VertexAIEmbeddings connects LangChain.js to Google Vertex AI embedding models. It can create vectors for documents and search queries, which you can use with vector stores and retrievers.",
+  "syntax": "new VertexAIEmbeddings({ model: \"gemini-embedding-001\" })",
+  "parameters": [
+   {
+    "name": "model",
+    "type": "string",
+    "description": "The Vertex AI embedding model name. The page example uses gemini-embedding-001."
+   }
+  ],
+  "returns": "Embedding methods return numeric vectors. A retriever returns documents whose vectors are most similar to the query vector.",
+  "example": {
+   "title": "Embed a query",
+   "code": "import { VertexAIEmbeddings } from \"@langchain/google-vertexai\";\n\nconst embeddings = new VertexAIEmbeddings({\n  model: \"gemini-embedding-001\",\n});\n\nconst vector = await embeddings.embedQuery(\"What is LangChain?\");\nconsole.log(vector.slice(0, 5));",
+   "language": "typescript",
+   "explanation": "This creates the embedding model and converts one query into a numeric vector."
+  },
+  "useCases": [
+   {
+    "title": "Document indexing",
+    "scenario": "Convert documents to vectors before storing them for semantic search."
+   },
+   {
+    "title": "Similarity retrieval",
+    "scenario": "Convert a user's search text into a vector and find similar stored documents."
+   },
+   {
+    "title": "RAG retrieval",
+    "scenario": "Use embeddings in a retrieval-augmented generation workflow."
+   }
+  ],
+  "related": [
+   "MemoryVectorStore",
+   "embedDocument",
+   "embedQuery",
+   "@langchain/google-vertexai",
+   "@langchain/google-vertexai-web"
+  ],
+  "since": "v1.0",
+  "interview": [
+   {
+    "question": "What is VertexAIEmbeddings?",
+    "answer": "VertexAIEmbeddings is an embedding model integration for LangChain.js. It uses the @langchain/google-vertexai package and can call Vertex AI embedding models.",
+    "followUp": "How would you authenticate it in Node.js? Set GOOGLE_APPLICATION_CREDENTIALS to a credentials file, or use Google Application Default Credentials."
+   },
+   {
+    "question": "What are embedDocument and embedQuery used for?",
+    "answer": "Use embedDocument for document text and embedQuery for search queries. Each method returns vector data for the supplied text.",
+    "followUp": "How is this used in retrieval? Documents are embedded during indexing, and the query is embedded when the retriever searches for similar documents."
+   },
+   {
+    "question": "How do you use this integration in a retrieval flow?",
+    "answer": "Create a VertexAIEmbeddings instance with a model such as gemini-embedding-001. Pass that instance to MemoryVectorStore.fromDocuments, then call asRetriever and invoke.",
+    "followUp": "Why use a vector store? It stores document vectors and lets a retriever find documents that are most similar to a query."
+   }
+  ],
+  "keyPoints": [
+   "Create the class with a model name, such as gemini-embedding-001.",
+   "In Node.js, point GOOGLE_APPLICATION_CREDENTIALS to your Google credentials file.",
+   "You can also configure local authentication with Google Application Default Credentials.",
+   "Call embedQuery to turn one search query into a vector.",
+   "Vector stores use embedDocument for indexed text and embedQuery for retrieval queries."
+  ],
+  "gotchas": [
+   "In Node.js, install the Vertex AI package only; its authentication package is included.",
+   "Use the web package instead of the Node.js package in a web environment.",
+   "For web authentication, use GOOGLE_WEB_CREDENTIALS. The older variable is deprecated."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "WeaviateVectorStore": {
+  "sourceUrl": "https://reference.langchain.com/python/langchain-weaviate/vectorstores/WeaviateVectorStore",
+  "sourceTitle": "WeaviateVectorStore | langchain_weaviate | LangChain Reference",
+  "summary": "WeaviateVectorStore connects LangChain to a Weaviate index. Use it for semantic search or example selection.",
+  "explanation": "WeaviateVectorStore is a LangChain wrapper around a Weaviate index. It lets applications use Weaviate for semantic search or example selection through LangChain's vector store interface.",
+  "syntax": "WeaviateVectorStore(self, client: weaviate.WeaviateClient, index_name: Optional[str], text_key: str, embedding: Optional[Embeddings] = None, schema: Optional[dict] = None)",
+  "parameters": [
+   {
+    "name": "client",
+    "type": "weaviate.WeaviateClient",
+    "description": "A connected Weaviate client."
+   },
+   {
+    "name": "index_name",
+    "type": "Optional[str]",
+    "description": "The name of the Weaviate index."
+   },
+   {
+    "name": "text_key",
+    "type": "str",
+    "description": "The property containing document text."
+   },
+   {
+    "name": "embedding",
+    "type": "Optional[Embeddings]",
+    "description": "The embedding implementation used for vector operations."
+   },
+   {
+    "name": "schema",
+    "type": "Optional[dict]",
+    "description": "Optional schema configuration."
+   }
+  ],
+  "returns": "A WeaviateVectorStore instance that provides LangChain vector store operations.",
+  "example": {
+   "title": "Create a store and search",
+   "code": "from langchain_weaviate import WeaviateVectorStore\n\nstore = WeaviateVectorStore(\n    client=client,\n    index_name=\"Documents\",\n    text_key=\"text\",\n    embedding=embeddings,\n)\nresults = store.similarity_search(\"How do I connect?\", k=3)",
+   "language": "python",
+   "explanation": "Create the store with a Weaviate client, an index name, a text property, and an embedding model. Then search for documents similar to a query."
+  },
+  "useCases": [
+   {
+    "title": "Semantic document search",
+    "scenario": "Search stored documents by meaning instead of exact words."
+   },
+   {
+    "title": "Example selection",
+    "scenario": "Choose relevant examples for a prompt or agent."
+   },
+   {
+    "title": "Vector store integration",
+    "scenario": "Use Weaviate as the vector store behind a LangChain application."
+   }
+  ],
+  "related": [
+   "Weaviate",
+   "WeaviateStore",
+   "langchain-weaviate",
+   "@langchain/weaviate",
+   "weaviate-client",
+   "Embeddings"
+  ],
+  "since": "v0.0",
+  "interview": [
+   {
+    "question": "What is WeaviateVectorStore?",
+    "answer": "WeaviateVectorStore connects LangChain to a Weaviate index. It provides vector store operations for semantic search and example selection.",
+    "followUp": "What must the constructor receive? It needs a Weaviate client and index name, plus the text property name and, when used for embedding operations, an embeddings implementation."
+   },
+   {
+    "question": "How do you install and import the integration?",
+    "answer": "The Python integration is installed with the langchain-weaviate package. The class is imported from langchain_weaviate.",
+    "followUp": "How would you verify the package is available? Run the package installation command, then import WeaviateVectorStore in Python."
+   },
+   {
+    "question": "What does the integration use Weaviate for?",
+    "answer": "Weaviate stores JSON documents together with machine-learning vectors. LangChain uses the wrapper to expose that index as a vector store.",
+    "followUp": "What kinds of search can the underlying system support? The documentation describes vector search together with structured filtering."
+   }
+  ],
+  "keyPoints": [
+   "Weaviate provides the database used by the LangChain vector store.",
+   "The wrapper supports semantic search and selecting examples.",
+   "Python code imports the class from the langchain_weaviate package.",
+   "The JavaScript integration has a separate WeaviateStore class in @langchain/weaviate."
+  ],
+  "gotchas": [
+   "Install the separate langchain-weaviate package before importing the Python integration.",
+   "The text key must identify the property where document text is stored."
+  ],
+  "checkedAt": "2026-11-03"
+ }
+}

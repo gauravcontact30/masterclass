@@ -20,6 +20,7 @@
  *   npm run official:search -- --tabs zod,react-19 --limit 10  # the next 10 cards of two tabs
  *   npm run official:api -- --packages nextjs --only useRouter # one entry
  *   npm run official:api -- --model claude-sonnet-5-5          # a cheaper model
+ *   npm run official:api -- --provider grounded --packages react  # search, fetch the page here, draft from that text only
  *
  * Needs ANTHROPIC_API_KEY. --concurrency (default 4) caps cards in flight.
  */
@@ -44,8 +45,8 @@ const list = (name: string) => option(name)?.split(",").map(item => item.trim())
 const set = option("set");
 if (set !== "search" && set !== "api") throw new Error("--set search|api is required");
 const provider = option("provider") ?? "anthropic";
-if (provider !== "anthropic" && provider !== "perplexity") throw new Error("--provider anthropic|perplexity");
-const model = option("model") ?? (provider === "perplexity" ? "sonar-pro" : "claude-opus-5-5");
+if (provider !== "anthropic" && provider !== "perplexity" && provider !== "grounded") throw new Error("--provider anthropic|perplexity|grounded");
+const model = option("model") ?? (provider === "perplexity" ? "sonar-pro" : provider === "grounded" ? "sonar-pro" : "claude-opus-5-5");
 const effort = option("effort") ?? "medium";
 const concurrency = Number(option("concurrency") ?? 4);
 const limit = option("limit") ? Number(option("limit")) : Infinity;
@@ -95,13 +96,20 @@ const readJson = (path: string): Record<string, OfficialCard> => existsSync(path
 const fileLocks = new Map<string, Promise<void>>();
 function saveCard(file: string, key: string, card: OfficialCard) {
   const path = join(outDir, `${file}.json`);
-  const next = (fileLocks.get(path) ?? Promise.resolve()).then(() => {
+  // One failed save must not fail every later save to this file, so the queue carries on past a rejection.
+  const next = (fileLocks.get(path) ?? Promise.resolve()).catch(() => undefined).then(async () => {
     const cards = readJson(path);
     cards[key] = card;
     const sorted = Object.fromEntries(Object.entries(cards).sort(([a], [b]) => a.localeCompare(b)));
     mkdirSync(dirname(path), { recursive: true });
     writeFileSync(`${path}.tmp`, `${JSON.stringify(sorted, null, 1)}\n`);
-    renameSync(`${path}.tmp`, path);
+    // Windows refuses the rename while anything has the file open (a dev server reading it), so wait and try again.
+    for (let attempt = 0; ; attempt++) {
+      try { renameSync(`${path}.tmp`, path); return; } catch (failure) {
+        if (attempt === 5 || (failure as NodeJS.ErrnoException).code !== "EPERM") throw failure;
+        await new Promise(done => setTimeout(done, 500 * (attempt + 1)));
+      }
+    }
   });
   fileLocks.set(path, next);
   return next;
@@ -240,6 +248,62 @@ async function researchPerplexity(work: Work): Promise<Outcome> {
   return judge(text, pages, work, usage);
 }
 
+/** Keeps a long page affordable: the opening, then the passages that mention the identifier. */
+function excerpt(page: FetchedPage, name: string, limit = 14000) {
+  const text = page.text, spans: [number, number][] = [[0, 1200]];
+  const needles = [...new Set([name, name.replace(/\(\)$/, "").split(".").at(-1) ?? name])].map(item => item.toLowerCase()).filter(item => item.length > 1);
+  const lower = text.toLowerCase();
+  for (const needle of needles) for (let at = lower.indexOf(needle), found = 0; at >= 0 && found < 8; at = lower.indexOf(needle, at + 2400), found++) spans.push([Math.max(0, at - 500), at + 1900]);
+  const merged = spans.sort((a, b) => a[0] - b[0]).reduce<[number, number][]>((all, span) => { const last = all.at(-1); if (last && span[0] <= last[1]) last[1] = Math.max(last[1], span[1]); else all.push([...span]); return all; }, []);
+  return merged.map(([from, to]) => text.slice(from, to)).join(" [...] ").slice(0, limit);
+}
+
+/**
+ * Finds the official page with a cheap search, fetches it here, and gives the model that text and nothing else.
+ * The model can only quote what it was shown, so far fewer key points fail the evidence check than when it answers
+ * from search snippets, and each card costs a fraction of a Claude run with its own web tools.
+ */
+async function researchGrounded(work: Work): Promise<Outcome> {
+  const usage: Usage = { input: 0, output: 0, cacheRead: 0, cacheWrite: 0, searches: 1, cost: 0 };
+  const filter = "allowed" in work.policy ? work.policy.allowed.slice(0, 20) : work.policy.blocked.slice(0, 20).map(host => `-${host}`);
+  let citations: string[] = [];
+  for (let attempt = 0; attempt < 5; attempt++) {
+    const response = await fetch("https://api.perplexity.ai/chat/completions", {
+      method: "POST", headers: { Authorization: `Bearer ${process.env.PERPLEXITY_API_KEY}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ model: "sonar", messages: [{ role: "user", content: `Which official documentation page documents exactly this? Answer with its URL only.
+${work.brief}` }], search_domain_filter: filter, max_tokens: 60 }),
+    });
+    if (response.status === 429 || response.status >= 500) { await new Promise(done => setTimeout(done, 2000 * 2 ** attempt)); continue; }
+    if (!response.ok) throw new Error(`perplexity ${response.status}: ${(await response.text()).slice(0, 200)}`);
+    const body = await response.json() as { citations?: string[]; usage?: { cost?: { total_cost?: number } } };
+    citations = body.citations ?? [];
+    usage.cost += body.usage?.cost?.total_cost ?? 0.006;
+    break;
+  }
+  const urls = [...new Set(citations)].filter(url => isOfficialUrl(url, work.policy)).slice(0, 3);
+  const pages = (await Promise.all(urls.map(fetchPage))).filter((page): page is FetchedPage => Boolean(page) && page!.text.length > 400);
+  if (!pages.length) return { status: "rejected", reason: "not_found_on_official_site", usage };
+  const name = work.label.split(" › ").pop()!;
+  const sources = pages.map(page => `<page url="${page.url}">${excerpt(page, name)}</page>`).join(" ");
+  const prompt = instructions(work).replace(/^1\. .*$/m, "1. The only source is the official page text below. Choose the page that documents this best; if none does, return found: false.").replace(/^The tools only reach.*$/m, "");
+  const system = `${SYSTEM} Write in plain, simple English for someone new to this technology: short sentences, no marketing words, no text in any other language.`;
+  let reply: { choices?: { message?: { content?: string } }[]; usage?: { prompt_tokens?: number; completion_tokens?: number; cost?: { total_cost?: number } }; error?: { message?: string } } = {};
+  for (let attempt = 0; attempt < 5; attempt++) {
+    const response = await fetch("https://api.perplexity.ai/chat/completions", {
+      method: "POST", headers: { Authorization: `Bearer ${process.env.PERPLEXITY_API_KEY}`, "Content-Type": "application/json" },
+      // No search: the fetched text above is the model's only source.
+      body: JSON.stringify({ model, disable_search: true, messages: [{ role: "system", content: system }, { role: "user", content: `${sources} ${prompt}` }], max_tokens: 6000, response_format: { type: "json_schema", json_schema: { schema: DRAFT_JSON_SCHEMA } } }),
+    });
+    reply = await response.json().catch(() => ({}));
+    if (response.status === 429 || response.status >= 500) { await new Promise(done => setTimeout(done, 2000 * 2 ** attempt)); continue; }
+    if (!response.ok) throw new Error(`perplexity ${response.status}: ${reply.error?.message ?? JSON.stringify(reply).slice(0, 200)}`);
+    break;
+  }
+  usage.input = reply.usage?.prompt_tokens ?? 0; usage.output = reply.usage?.completion_tokens ?? 0;
+  usage.cost += reply.usage?.cost?.total_cost ?? (usage.input * priceIn + usage.output * priceOut) / 1e6;
+  return judge(reply.choices?.[0]?.message?.content ?? "", pages, work, usage);
+}
+
 /** The JSON object in a reply, ignoring any reasoning, fences or prose around it. */
 const jsonOf = (text: string) => { const cleaned = text.replace(/<think>[\s\S]*?<\/think>/g, ""); return cleaned.slice(cleaned.indexOf("{"), cleaned.lastIndexOf("}") + 1); };
 
@@ -249,6 +313,8 @@ function judge(text: string, pages: FetchedPage[], work: Work, usage: Usage): Ou
   const parsed = officialDraftSchema.safeParse(raw);
   if (!parsed.success) return { status: "rejected", reason: `schema: ${parsed.error.issues[0]?.path.join(".")} ${parsed.error.issues[0]?.message}`, usage };
   const draft = parsed.data;
+  // Search models sometimes slip a word of another language into a sentence; the prose is English only.
+  if (/[Ѐ-ӿ֐-ۿऀ-ॿ぀-ヿ一-鿿가-힯]/.test(JSON.stringify([draft.summary, draft.explanation, draft.keyPoints.map(point => point.text), draft.gotchas.map(point => point.text), draft.useCases]))) return { status: "rejected", reason: "not_english", usage };
   const verdict = verifyDraft(draft, pages, work.policy);
   const evidence = [...draft.keyPoints, ...draft.gotchas];
   if (!verdict.ok) return { status: "rejected", reason: verdict.reason, dropped: verdict.dropped, evidence, sourceUrl: draft.sourceUrl, usage };
@@ -345,7 +411,7 @@ async function main() {
       const work = queue[next++];
       const at = new Date().toISOString();
       try {
-        const run = provider === "perplexity" ? researchPerplexity : research;
+        const run = provider === "grounded" ? researchGrounded : provider === "perplexity" ? researchPerplexity : research;
         let outcome = await run(work);
         // A cut-off or malformed reply is intermittent: one more try usually parses.
         if (outcome.reason === "unparseable_reply") {
@@ -364,7 +430,7 @@ async function main() {
         appendFileSync(reportPath, `${JSON.stringify({ at, file: work.file, key: work.key, status: "error", reason: message.slice(0, 300) })}\n`);
         console.log(`! ${work.label}  ${message.slice(0, 160)}`);
         // Nothing after this can succeed; stop rather than burn through the queue.
-        if (/credit balance|authentication|invalid x-api-key|perplexity 40[123]|output_config|json_schema/i.test(message)) stop = true;
+        if (/credit balance|authentication|invalid x-api-key|perplexity 40[123]|output_config|json_schema|invalid_request/i.test(message)) stop = true;
       }
     }
   };

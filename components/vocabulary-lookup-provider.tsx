@@ -12,6 +12,7 @@ import {
 import dynamic from "next/dynamic";
 import { BookOpen, Loader2 } from "lucide-react";
 import type { WordLookup } from "@/lib/english-word";
+import { maybeSignedIn } from "@/lib/auth-listener";
 import styles from "./vocabulary-lookup-floating.module.css";
 
 // This provider wraps every page from the root layout. vocabulary-storage pulls
@@ -144,7 +145,8 @@ export function VocabularyLookupProvider({ children }: { children: ReactNode }) 
         raw.length <= 45 &&
         /^[a-zA-Z\s'-]+$/.test(raw);
 
-      if (isEnglishWordOrPhrase) {
+      // Lookup needs an account, so a guest gets no pill that could only end in an error.
+      if (isEnglishWordOrPhrase && maybeSignedIn()) {
         const range = selection.getRangeAt(0);
         const rect = range.getBoundingClientRect();
         if (rect && rect.width > 0 && rect.height > 0) {

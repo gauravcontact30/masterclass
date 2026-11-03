@@ -181,6 +181,82 @@
   ],
   "checkedAt": "2026-10-16"
  },
+ "backward": {
+  "sourceUrl": "https://docs.pytorch.org/docs/2.14/generated/torch.autograd.Function.backward.html",
+  "sourceTitle": "torch.autograd.Function.backward — PyTorch 2.14 documentation",
+  "summary": "Function.backward defines the reverse-mode gradient rule for a custom PyTorch operation. It receives output gradients and returns matching input gradients.",
+  "explanation": "A custom Function.backward method defines how gradients move from an operation's outputs back to its inputs. It receives one gradient for each forward output, can read tensors saved in the context, and must return one gradient for each forward input.",
+  "syntax": "static Function.backward(ctx, *grad_outputs)",
+  "parameters": [
+   {
+    "name": "ctx",
+    "type": "context",
+    "description": "The autograd context. It provides saved tensors and gradient requirements for inputs."
+   },
+   {
+    "name": "grad_outputs",
+    "type": "Tensor or None, one per forward output",
+    "description": "Gradients with respect to the values returned by forward. There is one argument per forward output."
+   }
+  ],
+  "returns": "One gradient for each input to forward; use None for inputs that are not tensors or do not require gradients.",
+  "example": {
+   "title": "Custom backward function",
+   "code": "class Square(torch.autograd.Function):\n    @staticmethod\n    def forward(ctx, x):\n        ctx.save_for_backward(x)\n        return x * x\n\n    @staticmethod\n    def backward(ctx, grad_output):\n        (x,) = ctx.saved_tensors\n        return 2 * x * grad_output\n\nx = torch.tensor(3.0, requires_grad=True)\ny = Square.apply(x)\ny.backward()\nprint(x.grad)  # tensor(6.)",
+   "language": "python",
+   "explanation": "This custom operation squares its input and uses the saved input to compute the input gradient."
+  },
+  "useCases": [
+   {
+    "title": "Custom operations",
+    "scenario": "Implement a custom differentiable operation whose derivative is not covered by built-in PyTorch operations."
+   },
+   {
+    "title": "Saved forward values",
+    "scenario": "Read values saved during forward to calculate derivatives during backpropagation."
+   },
+   {
+    "title": "Conditional gradient computation",
+    "scenario": "Skip gradient work for inputs that do not require gradients."
+   }
+  ],
+  "related": [
+   "torch.autograd.Function",
+   "torch.autograd.function.BackwardCFunction",
+   "ctx.needs_input_grad",
+   "ctx.saved_tensors"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is the role of Function.backward?",
+    "answer": "Override backward(ctx, *grad_outputs) in the custom Function class. It receives output gradients and returns input gradients in the same positional order.",
+    "followUp": "What should it return for a non-differentiable input? Return None for that input."
+   },
+   {
+    "question": "How do backward inputs and outputs match forward values?",
+    "answer": "The number of gradient arguments matches the number of values returned by forward. The number of returned gradients matches the number of forward inputs.",
+    "followUp": "What happens for a non-tensor forward output? Its backward argument is None."
+   },
+   {
+    "question": "How can backward use information from forward?",
+    "answer": "Use the context to access tensors saved during forward. The context also provides needs_input_grad, which indicates which inputs require gradients.",
+    "followUp": "How can unnecessary work be avoided? Check the relevant needs_input_grad entry before computing that input's gradient."
+   }
+  ],
+  "keyPoints": [
+   "Override backward to describe the operation's reverse-mode derivative.",
+   "Map each output gradient to the gradient of the matching input.",
+   "Return one value for every forward input.",
+   "Use ctx.needs_input_grad to see which inputs need gradient computation."
+  ],
+  "gotchas": [
+   "The method must accept one gradient argument for every forward output, including None for non-tensor outputs.",
+   "Return None for inputs that are not tensors or do not require gradients.",
+   "Save tensors during forward and read them through the context when computing gradients."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "cuda": {
   "sourceUrl": "https://docs.pytorch.org/docs/stable/cuda.html",
   "sourceTitle": "torch.cuda — PyTorch 2.8 documentation",
@@ -834,6 +910,178 @@
   ],
   "checkedAt": "2026-10-16"
  },
+ "F.linear": {
+  "sourceUrl": "https://docs.pytorch.org/docs/2.14/generated/torch.nn.functional.linear.html",
+  "sourceTitle": "torch.nn.functional.linear — PyTorch 2.14 documentation",
+  "summary": "torch.nn.functional.linear computes a linear transformation from an input tensor, weight, and optional bias. It supports inputs with leading dimensions and can use either matrix or vector weights.",
+  "explanation": "The function multiplies the final input dimension by the transposed weight, then adds bias when provided. With a matrix weight, the final dimension changes from in_features to out_features. A one-dimensional weight produces an output without a separate output-feature dimension.",
+  "syntax": "torch.nn.functional.linear(input, weight, bias=None) → Tensor",
+  "parameters": [
+   {
+    "name": "input",
+    "type": "Tensor",
+    "description": "Input tensor with shape (*, in_features), where * represents zero or more leading dimensions."
+   },
+   {
+    "name": "weight",
+    "type": "Tensor",
+    "description": "Weight tensor with shape (out_features, in_features) or (in_features)."
+   },
+   {
+    "name": "bias",
+    "type": "Tensor or None",
+    "description": "Optional bias with shape (out_features) or a scalar shape ()."
+   }
+  ],
+  "returns": "A tensor shaped (*, out_features) for a two-dimensional weight, or (* ) for a one-dimensional weight.",
+  "example": {
+   "title": "Apply a linear transformation",
+   "code": "import torch\nimport torch.nn.functional as F\n\nx = torch.tensor([[1.0, 2.0]])\nweight = torch.tensor([[3.0, 4.0], [5.0, 6.0]])\nbias = torch.tensor([1.0, 2.0])\n\noutput = F.linear(x, weight, bias)\nprint(output)  # tensor([[12., 19.]])",
+   "language": "python",
+   "explanation": "This computes two output values from one input row. Each output uses one row of weight and its matching bias."
+  },
+  "useCases": [
+   {
+    "title": "Functional model layers",
+    "scenario": "Use it when a model needs a direct affine mapping without creating a module object."
+   },
+   {
+    "title": "Feature projection",
+    "scenario": "Use a weight matrix to convert each input feature vector into output features."
+   },
+   {
+    "title": "Single-output computation",
+    "scenario": "Use a vector weight when one output value is needed for each input item."
+   }
+  ],
+  "related": [
+   "torch.nn.functional",
+   "torch.nn.Linear"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does torch.nn.functional.linear compute?",
+    "answer": "It applies the formula y = x Aᵀ + b. The input's last dimension must match the weight's input-feature dimension, and the result uses the weight's output-feature dimension.",
+    "followUp": "What happens with a one-dimensional weight? It produces an output shaped like the input's leading dimensions, rather than adding an output-feature dimension."
+   },
+   {
+    "question": "What shapes can the arguments have?",
+    "answer": "The input has shape (*, in_features), where * can contain any number of leading dimensions. A matrix weight has shape (out_features, in_features), and bias normally has shape (out_features).",
+    "followUp": "Can the bias be scalar? Yes. The documentation also permits a zero-dimensional bias tensor."
+   },
+   {
+    "question": "How is the output shape determined?",
+    "answer": "The result normally has shape (*, out_features). If weight is one-dimensional, the result instead has shape (*), matching the documented weight-dependent behavior.",
+    "followUp": "What limitation applies to sparse weights? Sparse support is beta, and some layout, data type, or device combinations may lack support or automatic differentiation."
+   }
+  ],
+  "keyPoints": [
+   "The function computes a linear transformation using the input, weight, and optional bias.",
+   "A two-dimensional weight can use a sparse layout.",
+   "The input may have any number of leading dimensions, including no leading dimensions.",
+   "A normal bias has one value for each output feature.",
+   "With a matrix weight, the output keeps the input's leading dimensions and ends with out_features."
+  ],
+  "gotchas": [
+   "Sparse weights are still beta. Some combinations of layout, data type, and device may not work, and automatic differentiation may be unavailable.",
+   "The operation can use TensorFloat32 where the selected hardware and settings support it."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "F.mse_loss": {
+  "sourceUrl": "https://docs.pytorch.org/docs/2.15/generated/torch.nn.functional.mse_loss.html",
+  "sourceTitle": "torch.nn.functional.mse_loss — PyTorch 2.15 documentation",
+  "summary": "Computes squared error between predicted and ground-truth values. It can weight samples and return unreduced, averaged, or summed results.",
+  "explanation": "The function compares corresponding values in input and target by using squared differences. It then applies the selected reduction: keep all element losses, average them, or add them. An optional weight tensor can weight each sample.",
+  "syntax": "torch.nn.functional.mse_loss(input, target, size_average=None, reduce=None, reduction='mean', weight=None)",
+  "parameters": [
+   {
+    "name": "input",
+    "type": "Tensor",
+    "description": "Predicted values."
+   },
+   {
+    "name": "target",
+    "type": "Tensor",
+    "description": "Ground truth values."
+   },
+   {
+    "name": "size_average",
+    "type": "bool, optional",
+    "description": "Deprecated. Use reduction."
+   },
+   {
+    "name": "reduce",
+    "type": "bool, optional",
+    "description": "Deprecated. Use reduction."
+   },
+   {
+    "name": "reduction",
+    "type": "str, optional",
+    "description": "Output reduction: 'none', 'mean', or 'sum'. Default: 'mean'."
+   },
+   {
+    "name": "weight",
+    "type": "Tensor, optional",
+    "description": "Weights for each sample. Default: None."
+   }
+  ],
+  "returns": "A Tensor containing the mean squared error loss, optionally weighted.",
+  "example": {
+   "title": "Compute mean squared error",
+   "code": "import torch\nimport torch.nn.functional as F\n\ninput = torch.tensor([1.0, 2.0])\ntarget = torch.tensor([0.0, 1.0])\nloss = F.mse_loss(input, target)\nprint(loss)  # tensor(1.)",
+   "language": "python",
+   "explanation": "The function compares each prediction with its target and returns their average squared error."
+  },
+  "useCases": [
+   {
+    "title": "Average regression error",
+    "scenario": "Training a regression model with one scalar loss per batch."
+   },
+   {
+    "title": "Keep individual losses",
+    "scenario": "Inspecting the loss for each element or sample."
+   },
+   {
+    "title": "Weighted error",
+    "scenario": "Applying different importance to samples."
+   }
+  ],
+  "related": [
+   "MSELoss"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does mse_loss compute?",
+    "answer": "It computes squared differences between corresponding input and target values, then reduces them according to reduction. With the default mean setting, it returns the average loss.",
+    "followUp": "How would you return every individual loss? Set reduction='none', which disables reduction."
+   },
+   {
+    "question": "What values can reduction take?",
+    "answer": "reduction controls the result shape and aggregation. 'none' keeps losses, 'mean' averages them, and 'sum' adds them.",
+    "followUp": "Which setting gives one scalar equal to the total loss? Use reduction='sum'."
+   },
+   {
+    "question": "What are the main arguments?",
+    "answer": "input contains predicted values, while target contains the ground-truth values used for comparison. weight is optional and supplies weights for each sample.",
+    "followUp": "What should replace deprecated size_average and reduce? Use the reduction argument."
+   }
+  ],
+  "keyPoints": [
+   "The function computes squared error for corresponding elements and supports optional weighting.",
+   "The default reduction, 'mean', returns the average of the computed losses.",
+   "Use reduction='sum' when the losses should be added into one total.",
+   "Use reduction='none' to receive unreduced loss values.",
+   "The optional weight argument provides a weight for each sample; leaving it out uses no weights."
+  ],
+  "gotchas": [
+   "Do not use size_average for new code. Use reduction instead.",
+   "The reduce argument is deprecated. Set reduction to control the output."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "F.normalize": {
   "sourceUrl": "https://docs.pytorch.org/docs/2.14/generated/torch.nn.functional.normalize.html",
   "sourceTitle": "torch.nn.functional.normalize — PyTorch 2.14 documentation",
@@ -1008,6 +1256,73 @@
    "On CUDA, the backward computation may be nondeterministic and the documentation says this cannot always be controlled."
   ],
   "checkedAt": "2026-10-16"
+ },
+ "F.relu": {
+  "sourceUrl": "https://docs.pytorch.org/docs/2.14/generated/torch.nn.functional.relu.html",
+  "sourceTitle": "torch.nn.functional.relu — PyTorch 2.14 documentation",
+  "summary": "torch.nn.functional.relu applies the rectified linear unit element by element. It returns a Tensor and can optionally operate in place.",
+  "explanation": "ReLU processes each value independently. It keeps positive values and changes negative values to zero. The functional form does not store learnable parameters, and its optional inplace setting controls whether the input tensor may be changed.",
+  "syntax": "torch.nn.functional.relu(input, inplace=False) → Tensor",
+  "parameters": [
+   {
+    "name": "input",
+    "type": "Tensor",
+    "description": "The tensor whose elements are processed."
+   },
+   {
+    "name": "inplace",
+    "type": "bool, default False",
+    "description": "Whether to perform the operation in place."
+   }
+  ],
+  "returns": "A Tensor containing the element-wise ReLU result.",
+  "example": {
+   "title": "Apply ReLU to a tensor",
+   "code": "import torch\nimport torch.nn.functional as F\n\nx = torch.tensor([-2.0, 0.0, 3.0])\ny = F.relu(x)\nprint(y)  # tensor([0., 0., 3.])",
+   "language": "python",
+   "explanation": "This applies ReLU to each tensor element and returns a new tensor."
+  },
+  "useCases": [
+   {
+    "title": "Add an activation",
+    "scenario": "Use it for a stateless activation between neural-network layers."
+   },
+   {
+    "title": "Apply a parameter-free operation",
+    "scenario": "Use it when the input tensor should be transformed element by element without stored weights."
+   }
+  ],
+  "related": [
+   "ReLU",
+   "torch.nn.functional"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does torch.nn.functional.relu do?",
+    "answer": "It applies the rectified linear unit element by element. Negative inputs become zero, while positive inputs remain unchanged.",
+    "followUp": "What does the inplace argument control? It controls whether the operation may modify the input tensor instead of producing a separate result."
+   },
+   {
+    "question": "What are ReLU's arguments and return value?",
+    "answer": "It takes an input tensor and returns a tensor. The documented signature also accepts an optional inplace boolean, which defaults to False.",
+    "followUp": "What type does the function return? It returns a Tensor."
+   },
+   {
+    "question": "How does functional ReLU differ from a module?",
+    "answer": "The functional API provides a stateless operation. Unlike a parameterized module, this call does not hold learnable weights; it directly applies ReLU to the supplied input.",
+    "followUp": "When would a module be preferable? Use a module when you want parameters or module state managed as part of a model."
+   }
+  ],
+  "keyPoints": [
+   "ReLU acts separately on every element of the input tensor.",
+   "The page refers to the ReLU documentation for additional behavior details.",
+   "The result is a Tensor."
+  ],
+  "gotchas": [
+   "The default does not use in-place operation. Set inplace only when modifying the input is safe."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "F.softmax": {
   "sourceUrl": "https://docs.pytorch.org/docs/main/generated/torch.nn.functional.softmax.html",
@@ -1244,6 +1559,218 @@
   ],
   "checkedAt": "2026-10-16"
  },
+ "lr_scheduler.StepLR": {
+  "sourceUrl": "https://docs.pytorch.org/cppdocs/api/optim/schedulers.html",
+  "sourceTitle": "Learning Rate Schedulers — PyTorch main documentation",
+  "summary": "StepLR changes an optimizer's learning rate at fixed epoch intervals. It multiplies the rate by gamma every step_size epochs.",
+  "explanation": "StepLR changes an optimizer's learning rate at fixed intervals. After each step_size period, it multiplies the current rate by gamma, so the rate drops in stages during training.",
+  "syntax": "StepLR(torch::optim::Optimizer& optimizer, unsigned step_size, double gamma = 0.1)",
+  "parameters": [
+   {
+    "name": "optimizer",
+    "type": "torch::optim::Optimizer&",
+    "description": "The optimizer whose learning rate the scheduler changes."
+   },
+   {
+    "name": "step_size",
+    "type": "unsigned",
+    "description": "Number of epochs between scheduled reductions."
+   },
+   {
+    "name": "gamma",
+    "type": "double = 0.1",
+    "description": "Multiplicative reduction factor; it defaults to 0.1."
+   }
+  ],
+  "returns": "The page documents the constructor and step() method but does not state a return value.",
+  "example": {
+   "title": "StepLR in a training loop",
+   "code": "auto optimizer = torch::optim::SGD(model->parameters(), torch::optim::SGDOptions(0.1));\nauto scheduler = torch::optim::StepLR(optimizer, 30, 0.1);\nfor (int epoch = 0; epoch < 90; ++epoch) {\n  train_one_epoch(model, optimizer, data_loader);\n  scheduler.step();\n}",
+   "language": "text",
+   "explanation": "Create the scheduler with an optimizer, then call step after each training epoch. This multiplies the learning rate by 0.1 every 30 epochs."
+  },
+  "useCases": [
+   {
+    "title": "Scheduled reductions",
+    "scenario": "Training where the learning rate should drop on a fixed epoch schedule."
+   },
+   {
+    "title": "Basic decay",
+    "scenario": "A simple training loop that needs repeated multiplicative learning-rate drops."
+   }
+  ],
+  "related": [
+   "LRScheduler",
+   "ReduceLROnPlateauScheduler",
+   "ExponentialLR",
+   "torch::optim::Optimizer"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does StepLR do?",
+    "answer": "StepLR lowers the optimizer learning rate by multiplying it by gamma after each step_size-epoch period. It is a fixed schedule rather than one driven by a validation metric.",
+    "followUp": "When would a metric-based scheduler be better? ReduceLROnPlateauScheduler is intended when the validation metric stops improving, because its step method receives a metric."
+   },
+   {
+    "question": "What do step_size and gamma control?",
+    "answer": "step_size is the number of epochs between learning-rate reductions. gamma is the multiplicative factor used for each reduction; with gamma 0.1, the rate becomes one tenth at each reduction.",
+    "followUp": "What happens with a smaller gamma? Each scheduled reduction is stronger, so the learning rate reaches small values sooner."
+   },
+   {
+    "question": "How is StepLR used with an optimizer?",
+    "answer": "The scheduler is constructed with an Optimizer reference and exposes step() to advance the schedule. The documented example calls scheduler.step() once after each epoch.",
+    "followUp": "How can you inspect the current scheduled rate? The page's training example prints scheduler.get_last_lr()[0]."
+   }
+  ],
+  "keyPoints": [
+   "A scheduler changes the learning rate while training runs, instead of leaving the optimizer at one fixed value.",
+   "Step decay is a schedule that changes the rate at regular intervals.",
+   "StepLR applies the multiplicative factor gamma after each group of step_size epochs.",
+   "The documentation presents StepLR as a simple choice for regular learning-rate reductions."
+  ],
+  "gotchas": [
+   "The change follows completed scheduler periods, so call step at the intended epoch boundary, normally after the epoch's training work."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "model.eval": {
+  "sourceUrl": "https://docs.pytorch.org/vision/stable/models.html",
+  "sourceTitle": "Models and pre-trained weights — Torchvision stable documentation",
+  "summary": "model.eval() switches a TorchVision model to evaluation mode. Use it before inference so layers with different training and evaluation behavior use their inference behavior.",
+  "explanation": "Call eval() before inference to use evaluation behavior for layers such as batch normalization. This is separate from loading weights: first create the model, then select its evaluation mode. For input preparation, use the transforms attached to the selected weight set.",
+  "syntax": "model.eval()",
+  "parameters": [],
+  "returns": "The page does not state a return value for model.eval().",
+  "example": {
+   "title": "Load a pre-trained model",
+   "code": "import torch\nfrom torchvision.models import resnet50, ResNet50_Weights\n\nweights = ResNet50_Weights.DEFAULT\nmodel = resnet50(weights=weights)\nmodel.eval()",
+   "language": "python",
+   "explanation": "This creates a ResNet-50 model with the default pre-trained weights and switches it to evaluation mode."
+  },
+  "useCases": [
+   {
+    "title": "Inference",
+    "scenario": "Running predictions with a pre-trained image model."
+   },
+   {
+    "title": "Model evaluation",
+    "scenario": "Evaluating a trained model on validation data."
+   }
+  ],
+  "related": [
+   "model.train()",
+   "weights.transforms()",
+   "ResNet50_Weights",
+   "resnet50"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "Why should model.eval() be called before inference?",
+    "answer": "Call model.eval() when running inference. It changes layers with different training and evaluation behavior, such as batch normalization, to evaluation behavior.",
+    "followUp": "How should input preprocessing be chosen? Use the transforms provided by the selected weights through weights.transforms()."
+   },
+   {
+    "question": "What is the difference between loading weights and calling eval()?",
+    "answer": "A model can be created with weights, then switched to evaluation mode with model.eval(). The two operations have different roles: weights provide learned values, while eval selects inference behavior.",
+    "followUp": "What does weights.transforms() provide? It returns the preprocessing needed for inference with that weight set."
+   },
+   {
+    "question": "How do you prepare inputs for a pre-trained TorchVision model?",
+    "answer": "Use weights.transforms() to obtain the preprocessing pipeline associated with the selected pre-trained weights. This keeps input preparation matched to the model.",
+    "followUp": "Where can output class names be found? They are available in weights.meta[\"categories\"]."
+   }
+  ],
+  "keyPoints": [
+   "Use model.eval() for inference and model.train() for training.",
+   "Training and evaluation modes can change how some model modules work.",
+   "The method is called directly on the model: model.eval().",
+   "A selected weight set includes the preprocessing needed for inference."
+  ],
+  "gotchas": [
+   "Use eval() for inference because some layers behave differently during training.",
+   "Detection APIs may change because the detection module is marked as beta."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "model.load_state_dict": {
+  "sourceUrl": "https://docs.pytorch.org/tutorials/beginner/saving_loading_models.html",
+  "sourceTitle": "Saving and Loading Models — PyTorch Tutorials 2.15.0+cu132 documentation",
+  "summary": "model.load_state_dict restores a PyTorch module from a deserialized state dictionary. Create the model first, load the dictionary with torch.load(), then pass it to this method.",
+  "explanation": "The method restores parameters and registered buffers from a dictionary into an already created module. First deserialize the saved dictionary with torch.load(), then pass it to load_state_dict(). The model architecture must match the saved state unless strict=False is used for non-matching keys.",
+  "syntax": "model.load_state_dict(state_dict, strict=True)",
+  "parameters": [
+   {
+    "name": "state_dict",
+    "type": "dict",
+    "description": "A dictionary containing parameter and buffer names mapped to tensor values."
+   },
+   {
+    "name": "strict",
+    "type": "bool",
+    "description": "Whether all keys must match the module. Set to false to ignore non-matching keys."
+   }
+  ],
+  "returns": "A status result reporting matched, missing, or unexpected keys; the documentation shows “All keys matched successfully” for a complete match.",
+  "example": {
+   "title": "Save and load model weights",
+   "code": "import torch\n\nmodel = TheModelClass()\ntorch.save(model.state_dict(), \"model.pth\")\n\nrestored = TheModelClass()\nrestored.load_state_dict(\n    torch.load(\"model.pth\", weights_only=True)\n)\nrestored.eval()",
+   "language": "python",
+   "explanation": "Create the same model, save its parameter dictionary, then load that dictionary into a new instance before inference."
+  },
+  "useCases": [
+   {
+    "title": "Inference",
+    "scenario": "Restore saved weights for prediction."
+   },
+   {
+    "title": "Transfer learning",
+    "scenario": "Load only compatible parameters into a changed model."
+   },
+   {
+    "title": "Resume training",
+    "scenario": "Restore model parameters while rebuilding a training checkpoint."
+   }
+  ],
+  "related": [
+   "torch.save",
+   "torch.load",
+   "torch.nn.Module.state_dict",
+   "model.eval",
+   "model.train"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does model.load_state_dict do?",
+    "answer": "It loads a state dictionary into an existing module. The dictionary must first be read from disk with torch.load().",
+    "followUp": "What happens if keys differ? Use strict=False to ignore missing or extra keys, then check which parameters were not loaded."
+   },
+   {
+    "question": "What must happen before calling load_state_dict?",
+    "answer": "The model instance must be created before loading. The saved state dictionary contains parameter tensors and registered buffers, not the model class definition.",
+    "followUp": "Why save the state dictionary instead of the whole model? It avoids binding the file to the original class path and directory structure."
+   },
+   {
+    "question": "Why call eval after loading weights?",
+    "answer": "Call model.eval() before inference. This changes layers such as dropout and batch normalization to evaluation mode.",
+    "followUp": "What should be done when continuing training? Call model.train() so those layers return to training mode."
+   }
+  ],
+  "keyPoints": [
+   "The method restores a module from a state dictionary that has already been deserialized.",
+   "Use torch.load() first, then provide its returned dictionary to this method.",
+   "Set strict=False when partial loading should ignore keys that do not match.",
+   "Rename keys in the dictionary when transferring parameters between layers with different names."
+  ],
+  "gotchas": [
+   "Pass the loaded dictionary, not the file path, to this method.",
+   "Call eval() before inference so dropout and batch normalization use evaluation behavior.",
+   "Use strict=False only when intentionally loading a partial or differently named state dictionary."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "model.parameters": {
   "sourceUrl": "https://docs.pytorch.org/docs/2.14/generated/torch.nn.Module.html",
   "sourceTitle": "Module — PyTorch 2.14 documentation",
@@ -1442,6 +1969,72 @@
    "Explicitly select the correct mode when using layers whose behavior depends on training state."
   ],
   "checkedAt": "2026-10-16"
+ },
+ "model.zero_grad": {
+  "sourceUrl": "https://docs.pytorch.org/tutorials/recipes/recipes/zeroing_out_gradients.html",
+  "sourceTitle": "Zeroing out gradients in PyTorch",
+  "summary": "Clear gradients before each training step because PyTorch accumulates them when backward() runs. Use optimizer.zero_grad(), or model.zero_grad() when the optimizer contains all model parameters.",
+  "explanation": "PyTorch keeps gradients in each tensor’s .grad field and adds new results when backward() runs. Clear them before processing the next training item with optimizer.zero_grad(), or use model.zero_grad() when the optimizer contains all model parameters.",
+  "syntax": "optimizer.zero_grad()",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Clear gradients in a training loop",
+   "code": "for inputs, labels in trainloader:\n    optimizer.zero_grad()\n    outputs = net(inputs)\n    loss = criterion(outputs, labels)\n    loss.backward()\n    optimizer.step()",
+   "language": "python",
+   "explanation": "Clear old parameter gradients before each training step."
+  },
+  "useCases": [
+   {
+    "title": "Start each batch with fresh gradients",
+    "scenario": "Training a model with mini-batches."
+   },
+   {
+    "title": "Clear gradients through the model",
+    "scenario": "Using an optimizer that manages all model parameters."
+   },
+   {
+    "title": "Set gradients to None",
+    "scenario": "Reducing memory operations in a performance-sensitive loop."
+   }
+  ],
+  "related": [
+   "optimizer.zero_grad()",
+   "model.zero_grad()",
+   "param.grad",
+   "backward()",
+   "gradient descent"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "Why should gradients be cleared during training?",
+    "answer": "Gradients are cleared before the forward and backward work for the next batch. This prevents results from earlier batches from being added to the current gradients.",
+    "followUp": "What is another way to clear them? Set each parameter’s grad to None, or call zero_grad(set_to_none=True)."
+   },
+   {
+    "question": "How do optimizer.zero_grad() and model.zero_grad() compare?",
+    "answer": "optimizer.zero_grad() clears gradients for parameters managed by the optimizer. model.zero_grad() clears gradients for parameters in the model, so they behave the same when the optimizer contains all model parameters.",
+    "followUp": "What can make the two calls differ? Parameters that belong to the model but are missing from the optimizer are not covered by optimizer.zero_grad()."
+   },
+   {
+    "question": "Why can setting grad to None improve performance?",
+    "answer": "Assigning None avoids writing zeros into every parameter’s gradient memory. The next backward pass can assign the new gradient instead of adding to the old one, reducing memory operations.",
+    "followUp": "Is the behavior exactly the same as zeroing? No. Setting gradients to None has slightly different numerical behavior than setting them to zero."
+   }
+  ],
+  "keyPoints": [
+   "A backward pass accumulates gradient values instead of replacing the values already stored.",
+   "Clear gradients for every training item, usually once before its backward pass.",
+   "The usual training-loop operation is optimizer.zero_grad().",
+   "model.zero_grad() is another supported way to clear gradients.",
+   "For a performance-focused option, assign None to each parameter’s grad field."
+  ],
+  "gotchas": [
+   "model.zero_grad() is equivalent only when the optimizer includes every model parameter.",
+   "Calling backward() again without clearing gradients adds to the existing values."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "nn.AvgPool2d": {
   "sourceUrl": "https://docs.pytorch.org/docs/2.8/generated/torch.nn.AvgPool2d.html",
@@ -3004,6 +3597,99 @@
   ],
   "checkedAt": "2026-10-16"
  },
+ "nn.MaxPool2d": {
+  "sourceUrl": "https://docs.pytorch.org/docs/main/generated/torch.nn.modules.pooling.MaxPool2d.html",
+  "sourceTitle": "MaxPool2d — PyTorch main documentation",
+  "summary": "MaxPool2d applies 2D max pooling to each channel of an input. It keeps the largest value in each sliding window and can reduce height and width.",
+  "explanation": "For each channel, MaxPool2d moves a window across the height and width dimensions and keeps the largest value in each window. Padding uses negative infinity, while dilation spaces the sampled positions inside the window.",
+  "syntax": "torch.nn.MaxPool2d(kernel_size, stride=None, padding=0, dilation=1, return_indices=False, ceil_mode=False)",
+  "parameters": [
+   {
+    "name": "kernel_size",
+    "type": "int or tuple",
+    "description": "Size of the pooling window. Use an integer or a two-item tuple."
+   },
+   {
+    "name": "stride",
+    "type": "int or tuple",
+    "description": "Step between neighboring windows. Defaults to kernel_size when omitted."
+   },
+   {
+    "name": "padding",
+    "type": "int or tuple",
+    "description": "Implicit padding on both sides. Defaults to 0."
+   },
+   {
+    "name": "dilation",
+    "type": "int or tuple",
+    "description": "Spacing between kernel points. Defaults to 1."
+   },
+   {
+    "name": "return_indices",
+    "type": "bool",
+    "description": "If true, also return indices of the maximum values."
+   },
+   {
+    "name": "ceil_mode",
+    "type": "bool",
+    "description": "If true, use ceil-style output window handling."
+   }
+  ],
+  "returns": "The pooled output tensor. With return_indices=True, the forward result also includes indices of the maximum values.",
+  "example": {
+   "title": "Apply 2D max pooling",
+   "code": "import torch\nfrom torch import nn\n\npool = nn.MaxPool2d(kernel_size=3, stride=2)\nx = torch.randn(20, 16, 50, 32)\ny = pool(x)\nprint(y.shape)",
+   "language": "python",
+   "explanation": "This creates a 3 by 3 pooling window, moves it by two elements, and applies it to a batch of 20 tensors with 16 channels."
+  },
+  "useCases": [
+   {
+    "title": "Spatial downsampling",
+    "scenario": "Reduce feature-map height and width in a convolutional model."
+   },
+   {
+    "title": "Local maximum selection",
+    "scenario": "Keep the strongest activation in local regions."
+   },
+   {
+    "title": "Pooling with indices",
+    "scenario": "Save maximum locations for a later unpooling step."
+   }
+  ],
+  "related": [
+   "torch.nn.MaxUnpool2d"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does MaxPool2d do?",
+    "answer": "It applies a two-dimensional maximum operation independently to every channel. The input normally has shape (N, C, H, W), and the result has shape (N, C, H_out, W_out).",
+    "followUp": "How does it reduce spatial size? H_out and W_out are computed from input size, padding, dilation, kernel size, and stride, using floor division unless ceil_mode changes the window rule."
+   },
+   {
+    "question": "What are the main parameters?",
+    "answer": "kernel_size sets the window size. stride sets its movement; if stride is omitted, it defaults to kernel_size. Padding and dilation can each be one integer or a two-integer tuple.",
+    "followUp": "What does a tuple mean? Its first value applies to height and its second value applies to width."
+   },
+   {
+    "question": "What is return_indices used for?",
+    "answer": "The layer returns pooled values. If return_indices=True, it also returns the locations of the selected maximum values, which can be passed to MaxUnpool2d.",
+    "followUp": "Why is unpooling only partial? MaxPool2d discards non-maximum values, so MaxUnpool2d restores only the selected positions and fills the rest with zeros."
+   }
+  ],
+  "keyPoints": [
+   "The layer performs max pooling over two spatial dimensions.",
+   "Dilation increases the spacing between positions sampled by the pooling window.",
+   "An integer applies the same setting to height and width.",
+   "A two-item tuple lets height and width use different settings.",
+   "Calling the module with an input performs its forward computation."
+  ],
+  "gotchas": [
+   "With ceil_mode=True, a window may extend beyond the input when its start is valid, but windows starting in the right padding are skipped.",
+   "Padding does not add zero values; PyTorch uses negative infinity around the input for max pooling."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "nn.Module": {
   "sourceUrl": "https://docs.pytorch.org/docs/main/generated/torch.nn.Module.html",
   "sourceTitle": "Module — PyTorch main documentation",
@@ -3357,6 +4043,96 @@
    "The specialized inference path has strict conditions, so do not assume Nested Tensor acceleration applies to every evaluation call."
   ],
   "checkedAt": "2026-10-16"
+ },
+ "nn.NLLLoss": {
+  "sourceUrl": "https://docs.pytorch.org/docs/2.15/generated/torch.nn.NLLLoss.html",
+  "sourceTitle": "NLLLoss — PyTorch 2.15 documentation",
+  "summary": "NLLLoss computes negative log likelihood for class-index targets. It expects log-probabilities, usually produced by LogSoftmax, and supports class weights and ignored targets.",
+  "explanation": "NLLLoss compares a target class index with the log-probability assigned to that class. It can return one value per item or reduce the values to a scalar. Use LogSoftmax before it, or use CrossEntropyLoss to combine both operations.",
+  "syntax": "torch.nn.NLLLoss(weight=None, size_average=None, ignore_index=-100, reduce=None, reduction='mean')",
+  "parameters": [
+   {
+    "name": "weight",
+    "type": "Tensor or None",
+    "description": "Optional one-dimensional tensor containing one weight per class."
+   },
+   {
+    "name": "size_average",
+    "type": "bool or None",
+    "description": "Deprecated controls related to reduction behavior."
+   },
+   {
+    "name": "ignore_index",
+    "type": "int",
+    "description": "Target class value to skip when calculating the loss."
+   },
+   {
+    "name": "reduce",
+    "type": "bool or None",
+    "description": "Deprecated control related to reduction behavior."
+   },
+   {
+    "name": "reduction",
+    "type": "str",
+    "description": "How to combine loss values. The default is 'mean'."
+   }
+  ],
+  "returns": "A scalar when reduction is not 'none'; otherwise, a tensor shaped like the target.",
+  "example": {
+   "title": "Class-index classification loss",
+   "code": "import torch\nfrom torch import nn\n\nlog_probs = nn.LogSoftmax(dim=1)(torch.tensor([[1.0, 2.0, 3.0]]))\ntarget = torch.tensor([2])\nloss = nn.NLLLoss()(log_probs, target)\nprint(loss.item())",
+   "language": "python",
+   "explanation": "The model produces log-probabilities for three classes. The target selects class 2, and NLLLoss returns the loss for that example."
+  },
+  "useCases": [
+   {
+    "title": "Train a classifier with class indices",
+    "scenario": "Multi-class classification"
+   },
+   {
+    "title": "Give rare classes more weight",
+    "scenario": "Uneven class frequencies"
+   },
+   {
+    "title": "Compute loss at each image pixel",
+    "scenario": "Semantic segmentation"
+   }
+  ],
+  "related": [
+   "LogSoftmax",
+   "CrossEntropyLoss"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What input does NLLLoss expect?",
+    "answer": "NLLLoss is a classification loss for C classes. It expects log-probabilities as input and uses each target class index to select the value used for that example.",
+    "followUp": "How would you avoid adding a separate LogSoftmax layer? Use CrossEntropyLoss, which combines LogSoftmax and NLLLoss."
+   },
+   {
+    "question": "What shapes can NLLLoss handle?",
+    "answer": "For a batch, input has shape (N, C), where N is the batch size and C is the class count. For higher-dimensional tasks, it can use (N, C, d1, ..., dK), while targets omit the class dimension.",
+    "followUp": "What is a common higher-dimensional use? Per-pixel classification for images, with input shaped like (N, C, height, width)."
+   },
+   {
+    "question": "Why would you provide weight?",
+    "answer": "The weight argument is a one-dimensional tensor with one value for each class. It rescales class contributions and can help when the training data has unbalanced classes.",
+    "followUp": "What happens when reduction is set to none? The loss keeps its per-item or per-location shape instead of returning one scalar."
+   }
+  ],
+  "keyPoints": [
+   "Use NLLLoss for classification with multiple classes.",
+   "Set weight to give different importance to different classes.",
+   "Add LogSoftmax to the model output before calling NLLLoss.",
+   "With reduction='none', the result contains a separate loss for each target position.",
+   "Use the K-dimensional form for tasks such as per-pixel image classification."
+  ],
+  "gotchas": [
+   "Pass log-probabilities, not raw model scores. Apply LogSoftmax first.",
+   "Targets must be integer class indices from 0 through the number of classes minus one, unless the ignored index is used.",
+   "The ignored target value may be outside the normal class range and does not contribute to the loss."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "nn.Parameter": {
   "sourceUrl": "https://docs.pytorch.org/docs/main/generated/torch.nn.parameter.Parameter.html",
@@ -3913,6 +4689,64 @@
   ],
   "checkedAt": "2026-10-16"
  },
+ "nn.Tanh": {
+  "sourceUrl": "https://docs.pytorch.org/docs/2.14/generated/torch.nn.Tanh.html",
+  "sourceTitle": "Tanh — PyTorch 2.14 documentation",
+  "summary": "torch.nn.Tanh applies the hyperbolic tangent to each tensor element. It returns a tensor with the same shape as the input.",
+  "explanation": "The module applies the hyperbolic tangent to every input element. It computes the ratio of the difference and sum of the positive and negative exponentials. The result keeps the input shape.",
+  "syntax": "torch.nn.Tanh(*args, **kwargs)",
+  "parameters": [],
+  "returns": "Tensor",
+  "example": {
+   "title": "Apply Tanh to a tensor",
+   "code": "import torch\nfrom torch import nn\n\nm = nn.Tanh()\ninput = torch.tensor([-2.0, -0.5, 0.0, 0.5, 2.0])\noutput = m(input)\nprint(output)",
+   "language": "python",
+   "explanation": "This creates a Tanh module and applies it to each value in a tensor."
+  },
+  "useCases": [
+   {
+    "title": "Element-wise activation",
+    "scenario": "Use it when each value should be transformed independently by the hyperbolic tangent."
+   },
+   {
+    "title": "Flexible tensor shapes",
+    "scenario": "Use it with vectors, matrices, or tensors of other ranks because the input shape may have any number of dimensions."
+   }
+  ],
+  "related": [
+   "torch.nn.modules.activation.Tanh",
+   "forward"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does torch.nn.Tanh do?",
+    "answer": "Tanh applies the hyperbolic tangent element-wise. Each output value is computed from the positive and negative exponentials of the matching input value.",
+    "followUp": "What shape does the module return? It returns the same shape as its input."
+   },
+   {
+    "question": "What input and output shapes does Tanh support?",
+    "answer": "The input may have any number of dimensions. The module processes each element independently and returns a tensor with the same shape.",
+    "followUp": "Can it process a vector? Yes. A vector is a valid input because the documented shape allows any number of dimensions."
+   },
+   {
+    "question": "How do you use Tanh in PyTorch?",
+    "answer": "Create the module with nn.Tanh() and call it with a tensor, such as m(input). The forward pass returns a Tensor.",
+    "followUp": "What happens during the call? It runs the module's forward pass on the supplied input."
+   }
+  ],
+  "keyPoints": [
+   "Tanh transforms each tensor element separately.",
+   "The function uses the hyperbolic tangent formula based on exponentials of x and -x.",
+   "Inputs are not limited to a fixed rank.",
+   "Applying Tanh does not change the tensor shape.",
+   "Calling the module performs its computation through forward."
+  ],
+  "gotchas": [
+   "The output has the same shape as the input."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "nn.Transformer": {
   "sourceUrl": "https://docs.pytorch.org/docs/main/generated/torch.nn.modules.transformer.Transformer.html",
   "sourceTitle": "Transformer — PyTorch documentation",
@@ -4147,6 +4981,119 @@
   ],
   "checkedAt": "2026-10-16"
  },
+ "optim.Adagrad": {
+  "sourceUrl": "https://docs.pytorch.org/docs/2.15/generated/torch.optim.adagrad.Adagrad_class.html",
+  "sourceTitle": "Adagrad — PyTorch 2.15 documentation",
+  "summary": "Adagrad is a PyTorch optimizer that adapts each parameter update using accumulated squared gradients. It also supports learning-rate decay, weight decay, maximization, and alternate implementations.",
+  "explanation": "Adagrad updates parameters with gradients scaled by the square root of accumulated squared gradients. It can also apply weight decay and reduce the learning rate over time.",
+  "syntax": "class torch.optim.adagrad.Adagrad(params, lr=0.01, lr_decay=0, weight_decay=0, initial_accumulator_value=0, eps=1e-10, foreach=None, *, maximize=False, differentiable=False, fused=None)",
+  "parameters": [
+   {
+    "name": "params",
+    "type": "iterable",
+    "description": "Parameters to optimize."
+   },
+   {
+    "name": "lr",
+    "type": "float",
+    "description": "Base learning rate."
+   },
+   {
+    "name": "lr_decay",
+    "type": "float",
+    "description": "Learning-rate decay factor."
+   },
+   {
+    "name": "weight_decay",
+    "type": "float",
+    "description": "Weight-decay coefficient."
+   },
+   {
+    "name": "initial_accumulator_value",
+    "type": "float",
+    "description": "Initial value of each accumulated squared-gradient sum."
+   },
+   {
+    "name": "eps",
+    "type": "float",
+    "description": "Small value added for numerical stability."
+   },
+   {
+    "name": "foreach",
+    "type": "bool or None",
+    "description": "Whether to use the foreach implementation."
+   },
+   {
+    "name": "maximize",
+    "type": "bool",
+    "description": "Maximize the objective instead of minimizing it."
+   },
+   {
+    "name": "differentiable",
+    "type": "bool",
+    "description": "Build the optimizer step into an autograd graph."
+   },
+   {
+    "name": "fused",
+    "type": "bool or None",
+    "description": "Whether to use the fused implementation."
+   }
+  ],
+  "returns": "An Adagrad optimizer object that updates the supplied parameters.",
+  "example": {
+   "title": "Train with Adagrad",
+   "code": "import torch\n\nmodel = torch.nn.Linear(4, 2)\noptimizer = torch.optim.Adagrad(model.parameters(), lr=0.01)\n\nx = torch.randn(8, 4)\ny = torch.randn(8, 2)\n\noptimizer.zero_grad()\nloss = torch.nn.functional.mse_loss(model(x), y)\nloss.backward()\noptimizer.step()",
+   "language": "python",
+   "explanation": "This creates a model, computes a loss, and updates the model parameters with Adagrad."
+  },
+  "useCases": [
+   {
+    "title": "Adaptive parameter updates",
+    "scenario": "Use it when different parameters need different update sizes based on their gradient history."
+   },
+   {
+    "title": "Learning-rate reduction",
+    "scenario": "Use lr_decay when the base learning rate should decrease with optimizer steps."
+   },
+   {
+    "title": "Weight decay",
+    "scenario": "Use weight_decay when the optimization setup needs the documented gradient penalty term."
+   }
+  ],
+  "related": [
+   "torch.optim.adagrad.adagrad",
+   "torch.optim.Optimizer"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How does Adagrad scale updates?",
+    "answer": "Adagrad keeps a separate accumulated sum of squared gradients for each parameter. It divides each current gradient by the square root of that sum plus eps.",
+    "followUp": "Why can updates become smaller over time? The accumulated sum only grows when squared gradients are added, so the denominator generally increases."
+   },
+   {
+    "question": "What do lr_decay and weight_decay do?",
+    "answer": "lr_decay changes the effective learning rate using lr divided by one plus the step offset multiplied by lr_decay. A nonzero weight_decay adds a parameter-scaled term to the gradient.",
+    "followUp": "What happens when lr_decay is zero? The effective learning rate stays equal to lr, apart from gradient scaling by the accumulator."
+   },
+   {
+    "question": "What are initial_accumulator_value and eps for?",
+    "answer": "initial_accumulator_value sets the starting value of each state_sum. eps is added in the denominator to improve numerical stability.",
+    "followUp": "Why use a positive initial accumulator? It makes the first update smaller than it would be with a zero starting sum."
+   }
+  ],
+  "keyPoints": [
+   "Adagrad is an optimizer that changes each parameter using its gradient history.",
+   "The documented defaults are lr 0.01, lr_decay 0, and weight_decay 0.",
+   "The default accumulator starts at zero, and the default numerical-stability value is 1e-10.",
+   "Each accumulator starts from initial_accumulator_value.",
+   "The effective learning rate decreases according to lr_decay and the step number."
+  ],
+  "gotchas": [
+   "The options for foreach, maximize, differentiable, and fused are part of the constructor. Choose them only when their behavior fits your training code."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "optim.Adam": {
   "sourceUrl": "https://docs.pytorch.org/docs/main/generated/torch.optim.Adam.html",
   "sourceTitle": "Adam — PyTorch main documentation",
@@ -4276,6 +5223,132 @@
   ],
   "checkedAt": "2026-10-16"
  },
+ "optim.AdamW": {
+  "sourceUrl": "https://docs.pytorch.org/docs/2.13/generated/torch.optim.adamw.adamw_function.html",
+  "sourceTitle": "torch.optim.adamw.adamw — PyTorch 2.13 documentation",
+  "summary": "The functional AdamW API performs one AdamW update from parameter tensors, gradients, and optimizer state. It supports options such as AMSGrad, foreach, fused execution, graph capture, differentiation, and maximizing.",
+  "explanation": "AdamW keeps separate first- and second-moment estimates of gradients. At each step, it applies weight decay directly to the parameters, then uses bias-corrected estimates to update them. The maximize option reverses the gradient direction. AMSGrad can use the largest second-moment estimate seen so far.",
+  "syntax": "torch.optim.adamw.adamw(params, grads, exp_avgs, exp_avg_sqs, max_exp_avg_sqs, state_steps, foreach=None, capturable=False, differentiable=False, fused=None, grad_scale=None, found_inf=None, has_complex=False, *, amsgrad, beta1, beta2, lr, weight_decay, eps, maximize)",
+  "parameters": [
+   {
+    "name": "params",
+    "type": "iterable of Tensor",
+    "description": "Parameters to update."
+   },
+   {
+    "name": "grads",
+    "type": "list of Tensor",
+    "description": "Gradients for the parameters."
+   },
+   {
+    "name": "exp_avgs",
+    "type": "list of Tensor",
+    "description": "First-moment state tensors."
+   },
+   {
+    "name": "exp_avg_sqs",
+    "type": "list of Tensor",
+    "description": "Second-moment state tensors."
+   },
+   {
+    "name": "max_exp_avg_sqs",
+    "type": "list of Tensor",
+    "description": "Maximum second-moment state tensors used by AMSGrad."
+   },
+   {
+    "name": "state_steps",
+    "type": "list of Tensor",
+    "description": "Step counters for the parameter states."
+   },
+   {
+    "name": "foreach",
+    "type": "bool or None",
+    "description": "Whether to use the foreach implementation."
+   },
+   {
+    "name": "capturable",
+    "type": "bool",
+    "description": "Whether the operation must be graph-capturable."
+   },
+   {
+    "name": "differentiable",
+    "type": "bool",
+    "description": "Whether the operation participates in autograd."
+   },
+   {
+    "name": "fused",
+    "type": "bool or None",
+    "description": "Whether to use the fused implementation."
+   },
+   {
+    "name": "grad_scale",
+    "type": "Tensor or None",
+    "description": "Gradient scaling factor."
+   },
+   {
+    "name": "found_inf",
+    "type": "Tensor or None",
+    "description": "Indicator that an infinite or NaN gradient was found."
+   }
+  ],
+  "returns": "",
+  "example": {
+   "title": "Train with AdamW",
+   "code": "import torch\n\nmodel = torch.nn.Linear(4, 2)\noptimizer = torch.optim.AdamW(model.parameters(), lr=0.001)\n\nx = torch.randn(8, 4)\ny = torch.randn(8, 2)\n\noptimizer.zero_grad()\nloss = torch.nn.functional.mse_loss(model(x), y)\nloss.backward()\noptimizer.step()",
+   "language": "python",
+   "explanation": "This creates a linear model, computes a loss, and updates the model with AdamW."
+  },
+  "useCases": [
+   {
+    "title": "Functional optimizer step",
+    "scenario": "Implementing a custom optimizer loop with existing AdamW state tensors."
+   },
+   {
+    "title": "Foreach execution",
+    "scenario": "Running updates with CUDA tensor collections."
+   },
+   {
+    "title": "AMSGrad updates",
+    "scenario": "Using the AMSGrad variant of AdamW."
+   }
+  ],
+  "related": [
+   "torch.optim.adamw.AdamW",
+   "torch.optim.Optimizer.add_param_group",
+   "torch.optim.Optimizer.load_state_dict"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How does AdamW differ from Adam?",
+    "answer": "AdamW applies weight decay directly to the parameters before the moment-based gradient update. This keeps decay out of the momentum and variance estimates.",
+    "followUp": "What does AMSGrad change? It stores the maximum second-moment estimate seen so far and uses that value for the denominator."
+   },
+   {
+    "question": "What state does AdamW maintain?",
+    "answer": "The optimizer tracks a first moment and a second moment of the gradients. It corrects their initialization bias before calculating the parameter update.",
+    "followUp": "Why are the corrections needed? Both running estimates start at zero, so early values are biased toward zero."
+   },
+   {
+    "question": "How do implementation options affect AdamW?",
+    "answer": "The foreach and fused options choose alternative implementations. If both are unset, CUDA tensors can use foreach by default; fused must be requested explicitly.",
+    "followUp": "What limitation is documented for MPS? The prototype supports torch.float32 and torch.float16."
+   }
+  ],
+  "keyPoints": [
+   "AdamW separates weight decay from its momentum and variance estimates.",
+   "The first- and second-moment states start at zero.",
+   "With maximize enabled, the gradient direction is reversed.",
+   "AMSGrad keeps the elementwise maximum of the current and previous second-moment states.",
+   "The functional API exposes options for foreach execution, graph capture, differentiation, and fused execution."
+  ],
+  "gotchas": [
+   "On CUDA, leaving both foreach and fused unset can select the foreach implementation automatically.",
+   "The fused implementation is available, but the documentation does not make it the default.",
+   "The prototype MPS implementation supports only float32 and float16."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "optim.RMSprop": {
   "sourceUrl": "https://docs.pytorch.org/docs/2.13/generated/torch.optim.RMSprop.html",
   "sourceTitle": "RMSprop",
@@ -4404,6 +5477,128 @@
    "Optimizer steps are not tracked by autograd unless differentiable=True is used."
   ],
   "checkedAt": "2026-10-16"
+ },
+ "optim.SGD": {
+  "sourceUrl": "https://docs.pytorch.org/docs/2.15/generated/torch.optim.SGD.html",
+  "sourceTitle": "SGD — PyTorch 2.15 documentation",
+  "summary": "torch.optim.SGD updates parameters with stochastic gradient descent. It supports momentum, weight decay, Nesterov updates, objective maximization, and alternative implementations.",
+  "explanation": "SGD updates model parameters using their gradients. It can also add weight decay, keep a momentum buffer, use Nesterov momentum, maximize the objective, and select different implementation modes.",
+  "syntax": "torch.optim.SGD(params, lr=0.001, momentum=0, dampening=0, weight_decay=0, nesterov=False, *, maximize=False, foreach=None, differentiable=False, fused=None)",
+  "parameters": [
+   {
+    "name": "params",
+    "type": "iterable",
+    "description": "Parameters or parameter groups to optimize."
+   },
+   {
+    "name": "lr",
+    "type": "float",
+    "description": "Learning rate. Default: 0.001."
+   },
+   {
+    "name": "momentum",
+    "type": "float",
+    "description": "Momentum factor. Default: 0."
+   },
+   {
+    "name": "dampening",
+    "type": "float",
+    "description": "Dampening for momentum. Default: 0."
+   },
+   {
+    "name": "weight_decay",
+    "type": "float",
+    "description": "Weight-decay factor. Default: 0."
+   },
+   {
+    "name": "nesterov",
+    "type": "bool",
+    "description": "Use Nesterov momentum. Default: False."
+   },
+   {
+    "name": "maximize",
+    "type": "bool",
+    "description": "Maximize the objective instead of minimizing it. Default: False."
+   },
+   {
+    "name": "foreach",
+    "type": "bool or None",
+    "description": "Choose the foreach implementation. Default: None."
+   },
+   {
+    "name": "differentiable",
+    "type": "bool",
+    "description": "Record the optimizer operation for autograd. Default: False."
+   },
+   {
+    "name": "fused",
+    "type": "bool or None",
+    "description": "Choose the fused implementation. Default: None."
+   }
+  ],
+  "returns": "An SGD optimizer object that updates the supplied parameters.",
+  "example": {
+   "title": "Train one step with SGD",
+   "code": "import torch\n\nmodel = torch.nn.Linear(4, 2)\noptimizer = torch.optim.SGD(model.parameters(), lr=0.1, momentum=0.9)\n\nx = torch.randn(8, 4)\ny = torch.randn(8, 2)\nloss = torch.nn.functional.mse_loss(model(x), y)\noptimizer.zero_grad()\nloss.backward()\noptimizer.step()",
+   "language": "python",
+   "explanation": "Create the optimizer with model parameters, compute a loss, calculate gradients, and update the parameters."
+  },
+  "useCases": [
+   {
+    "title": "Basic model training",
+    "scenario": "Train a neural network with ordinary gradient descent."
+   },
+   {
+    "title": "Momentum optimization",
+    "scenario": "Reduce oscillation or speed learning in a consistent direction."
+   },
+   {
+    "title": "Objective maximization",
+    "scenario": "Train an objective that should increase rather than decrease."
+   },
+   {
+    "title": "Progressive fine-tuning",
+    "scenario": "Unfreeze layers during fine-tuning and start optimizing them."
+   }
+  ],
+  "related": [
+   "torch.optim.Optimizer",
+   "add_param_group",
+   "load_state_dict",
+   "torch.optim.sgd.sgd"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How does torch.optim.SGD update parameters?",
+    "answer": "SGD computes the gradient, optionally adds weight decay, optionally updates a momentum buffer, and then subtracts the learning-rate-scaled result from each parameter. With maximize enabled, it uses the negative gradient.",
+    "followUp": "How does the first momentum step differ? The first buffer equals the gradient, so dampening is not applied until later steps."
+   },
+   {
+    "question": "What do momentum and dampening do?",
+    "answer": "Momentum stores a running buffer. After the first step, the buffer combines the previous buffer, the momentum value, the current gradient, and dampening; PyTorch then uses that buffer for the update unless Nesterov mode is enabled.",
+    "followUp": "How does this compare with another framework? PyTorch scales the momentum-buffer result by the learning rate in the parameter update, while some frameworks scale the gradient before storing it."
+   },
+   {
+    "question": "Which options control SGD behavior?",
+    "answer": "The required input is a parameter iterable or parameter groups. The main options include lr, momentum, dampening, weight_decay, nesterov, maximize, foreach, differentiable, and fused.",
+    "followUp": "How can newly trainable parameters be added? Use add_param_group with a parameter-group dictionary while training progresses."
+   }
+  ],
+  "keyPoints": [
+   "SGD is a parameter optimizer that can use momentum in addition to the basic gradient update.",
+   "With maximize=True, SGD reverses the gradient so it increases the objective instead of minimizing it.",
+   "A nonzero weight_decay adds a term based on the current parameter value to the gradient.",
+   "Nesterov mode changes the gradient used for the update by adding a momentum-based term.",
+   "The fused option can request the fused implementation. Passing False to foreach or fused forces the loop implementation.",
+   "add_param_group lets training add parameters with group-specific optimization settings."
+  ],
+  "gotchas": [
+   "The first momentum buffer starts with the first gradient, not zeros. Dampening does not affect that first momentum value; it starts on the second step.",
+   "When both implementation flags are unset, CUDA tensors may use the foreach implementation by default. Set a flag explicitly when this choice matters.",
+   "PyTorch's momentum and Nesterov updates differ from some other frameworks. Do not assume their update equations are interchangeable."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "optimizer.step": {
   "sourceUrl": "https://docs.pytorch.org/docs/stable/optim.html",
@@ -4698,6 +5893,88 @@
    "Calling cpu() on a CPU tensor does not create a new object; code that requires an independent copy should use an explicit clone."
   ],
   "checkedAt": "2026-10-16"
+ },
+ "tensor.cuda": {
+  "sourceUrl": "https://docs.pytorch.org/docs/2.14/generated/torch.Tensor.cuda.html",
+  "sourceTitle": "torch.Tensor.cuda — PyTorch 2.14 documentation",
+  "summary": "Moves a tensor to CUDA memory. It can select a GPU, request a memory format, and optionally perform an asynchronous host-side copy from pinned memory.",
+  "explanation": "Calling `cuda()` returns a tensor stored in CUDA memory. You can choose the destination GPU with `device`. If the tensor is already on that device, PyTorch returns the same object without copying it. With pinned host memory, `non_blocking=True` can make the transfer asynchronous with respect to the host. The requested memory format can also be supplied.",
+  "syntax": "Tensor.cuda(device=None, non_blocking=False, memory_format=torch.preserve_format) → Tensor",
+  "parameters": [
+   {
+    "name": "device",
+    "type": "torch.device, optional",
+    "description": "Destination GPU device. Defaults to the current CUDA device."
+   },
+   {
+    "name": "non_blocking",
+    "type": "bool, optional",
+    "description": "If true and the source is in pinned memory, the copy can be asynchronous with respect to the host. Otherwise, it has no effect. Default: False."
+   },
+   {
+    "name": "memory_format",
+    "type": "torch.memory_format, optional",
+    "description": "Requested memory format for the returned tensor. Default: torch.preserve_format."
+   }
+  ],
+  "returns": "A tensor in CUDA memory. If the tensor is already on the requested CUDA device, the original tensor is returned.",
+  "example": {
+   "title": "Move a tensor to CUDA",
+   "code": "import torch\n\nx = torch.tensor([1, 2, 3])\n\nif torch.cuda.is_available():\n    y = x.cuda()\n    print(y.is_cuda)\nelse:\n    print(\"CUDA is not available\")",
+   "language": "python",
+   "explanation": "This moves the tensor to the current CUDA device when CUDA is available, then checks whether the result is stored on a GPU."
+  },
+  "useCases": [
+   {
+    "title": "Move data to a GPU",
+    "scenario": "A CPU tensor must be placed on a GPU before CUDA-based tensor operations."
+   },
+   {
+    "title": "Select a destination device",
+    "scenario": "A program needs to choose a particular GPU rather than the current CUDA device."
+   },
+   {
+    "title": "Request an asynchronous transfer",
+    "scenario": "Input data is in pinned host memory and transfer overlap is useful."
+   }
+  ],
+  "related": [
+   "torch.Tensor.is_cuda",
+   "torch.device",
+   "torch.memory_format",
+   "torch.preserve_format"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does `torch.Tensor.cuda()` do?",
+    "answer": "`cuda()` places a tensor in CUDA memory and returns the resulting tensor. By default, it uses the current CUDA device, but a destination device can be provided.",
+    "followUp": "When can it avoid copying? If the tensor is already in CUDA memory on the requested device, the original tensor is returned."
+   },
+   {
+    "question": "When is `non_blocking=True` useful?",
+    "answer": "`non_blocking=True` can make the transfer asynchronous with respect to the host when the source tensor is in pinned memory. Without pinned memory, this option has no effect.",
+    "followUp": "What happens for an ordinary pageable CPU tensor? The argument does not change the copy behavior."
+   },
+   {
+    "question": "How can you test whether a tensor is on a GPU?",
+    "answer": "`is_cuda` is a Boolean property. It is `True` when the tensor is stored on a GPU and `False` otherwise.",
+    "followUp": "How can you check the result after moving a tensor? Call `result.is_cuda` and inspect the Boolean value."
+   }
+  ],
+  "keyPoints": [
+   "The method returns a tensor in CUDA memory.",
+   "Use `device` to select the destination GPU.",
+   "Use `memory_format` to request the returned tensor's memory format.",
+   "For a source that is not pinned memory, `non_blocking` does not change the copy.",
+   "The `is_cuda` property reports whether the tensor is stored on a GPU."
+  ],
+  "gotchas": [
+   "`non_blocking=True` only enables an asynchronous host-side copy when the source tensor is in pinned memory.",
+   "Calling the method may return the original tensor instead of making a copy when it is already on the requested CUDA device.",
+   "Leaving `device` unset sends the tensor to the current CUDA device."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "tensor.detach": {
   "sourceUrl": "https://docs.pytorch.org/docs/main/generated/torch.Tensor.detach.html",
@@ -5071,6 +6348,79 @@
    "With asynchronous conversion on a non-default CUDA stream, the caller must handle cross-stream synchronization."
   ],
   "checkedAt": "2026-10-16"
+ },
+ "TensorDataset": {
+  "sourceUrl": "https://docs.pytorch.org/tutorials/beginner/nn_tutorial.html",
+  "sourceTitle": "What is torch.nn really? — PyTorch Tutorials 2.15.0+cu132 documentation",
+  "summary": "torch.nn is a set of neural-network building blocks. Together with optimizers, datasets, and data loaders, it helps define models, update their weights, and feed them batches.",
+  "explanation": "The tutorial presents torch.nn as part of a small set of building blocks for neural-network training. Modules hold model structure and parameters, functional operations provide stateless layers and functions, optimizers update parameters, and Dataset and DataLoader supply batches. The tutorial first shows these ideas with basic tensor operations, then refactors the code around these abstractions.",
+  "syntax": "class MyModel(nn.Module):\n    def __init__(self):\n        super().__init__()",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Create batches with TensorDataset",
+   "code": "from torch.utils.data import TensorDataset, DataLoader\n\nx = torch.randn(8, 4)\ny = torch.randint(0, 2, (8,))\ndataset = TensorDataset(x, y)\nloader = DataLoader(dataset, batch_size=2, shuffle=True)\n\nfor xb, yb in loader:\n    print(xb.shape, yb.shape)",
+   "language": "python",
+   "explanation": "This creates a dataset from two tensors and uses a data loader to return shuffled mini-batches."
+  },
+  "useCases": [
+   {
+    "title": "Define neural networks",
+    "scenario": "Build a model with layers and trainable weights."
+   },
+   {
+    "title": "Use functional operations",
+    "scenario": "Apply activations, losses, or stateless layer operations."
+   },
+   {
+    "title": "Load training data",
+    "scenario": "Feed tensor pairs to a training loop in mini-batches."
+   },
+   {
+    "title": "Optimize parameters",
+    "scenario": "Update model weights from computed gradients."
+   }
+  ],
+  "related": [
+   "torch.nn",
+   "torch.nn.Module",
+   "torch.nn.functional",
+   "torch.optim",
+   "Parameter",
+   "Dataset",
+   "TensorDataset",
+   "DataLoader"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What are Dataset and DataLoader used for?",
+    "answer": "A Dataset supplies indexed samples and has a length. A DataLoader takes a Dataset and yields batches, so the training loop does not need to calculate batch slices itself.",
+    "followUp": "Why use a larger validation batch? The tutorial says validation does not store gradients, so it uses less memory and can use a larger batch to compute loss faster."
+   },
+   {
+    "question": "What is the basic training loop?",
+    "answer": "The model computes predictions, the loss compares predictions with targets, backward computes gradients, and the optimizer updates parameters. Calling zero_grad clears gradients before the next update.",
+    "followUp": "What changes during validation? The model switches to evaluation mode, and validation runs under torch.no_grad() without optimizer updates."
+   },
+   {
+    "question": "What does torch.nn.functional provide?",
+    "answer": "The functional module contains activation and loss functions, plus stateless versions of layers such as convolutional and linear layers. It is commonly imported with the name F.",
+    "followUp": "When should a layer be represented as a module instead? Use a module when it needs registered state or parameters that should belong to the model."
+   }
+  ],
+  "keyPoints": [
+   "torch.nn provides modules and classes used to build and train neural networks.",
+   "torch.optim contains optimizers such as SGD. They update parameters during the optimization step.",
+   "A Dataset needs a length and an indexing method, so custom data sources can implement the same interface.",
+   "DataLoader turns a Dataset into an iterator that supplies mini-batches to the training loop."
+  ],
+  "gotchas": [
+   "Switch between training and evaluation mode. Layers such as BatchNorm2d and Dropout can behave differently in these phases.",
+   "Shuffle training data when useful, but do not shuffle validation data.",
+   "Do not pass an optimizer when calculating validation loss."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "torch.abs": {
   "sourceUrl": "https://docs.pytorch.org/docs/2.13/generated/torch.abs.html",
@@ -8157,6 +9507,138 @@
   ],
   "checkedAt": "2026-10-16"
  },
+ "torch.relu": {
+  "sourceUrl": "https://docs.pytorch.org/docs/2.14/generated/torch.relu_.html",
+  "sourceTitle": "torch.relu_ — PyTorch 2.14 documentation",
+  "summary": "torch.relu_ applies ReLU to a tensor in place. Negative values become zero, while nonnegative values stay unchanged.",
+  "explanation": "torch.relu_ replaces every negative element with zero directly in the input tensor. Nonnegative elements stay unchanged. It returns the changed tensor, and the trailing underscore marks the in-place operation.",
+  "syntax": "torch.relu_(input)",
+  "parameters": [
+   {
+    "name": "input",
+    "type": "Tensor",
+    "description": "The tensor whose elements are processed by ReLU."
+   }
+  ],
+  "returns": "A Tensor containing the element-wise ReLU result.",
+  "example": {
+   "title": "Apply ReLU in place",
+   "code": "import torch\n\nx = torch.tensor([-2.0, 0.0, 3.0])\ny = torch.relu_(x)\n\nprint(y)  # tensor([0., 0., 3.])\nprint(y is x)  # True",
+   "language": "python",
+   "explanation": "The function changes x directly and returns the same tensor."
+  },
+  "useCases": [
+   {
+    "title": "In-place activation",
+    "scenario": "Use it when a tensor can be safely modified and you want an in-place ReLU operation."
+   },
+   {
+    "title": "Element-wise thresholding",
+    "scenario": "Use it to apply ReLU directly to values in a tensor."
+   }
+  ],
+  "related": [
+   "torch.relu",
+   "torch.nn.ReLU"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does torch.relu_ do?",
+    "answer": "torch.relu_ applies the rectified linear unit element by element and performs the operation in place. Each value becomes the larger of zero and its original value.",
+    "followUp": "What happens to a negative value? It becomes zero; a zero or positive value is unchanged."
+   },
+   {
+    "question": "What does the underscore in relu_ mean?",
+    "answer": "The trailing underscore indicates the in-place form of relu. The input tensor is modified directly, and the function returns that tensor.",
+    "followUp": "How could you avoid modifying the input? Use torch.relu instead of torch.relu_."
+   },
+   {
+    "question": "What are the arguments and return type?",
+    "answer": "The documented function takes one argument: input. Its result is a Tensor containing the element-wise ReLU output.",
+    "followUp": "Does the documentation list an input shape restriction? No; this page does not specify a shape restriction for torch.relu_."
+   }
+  ],
+  "keyPoints": [
+   "It is the direct, in-place counterpart of the regular ReLU function.",
+   "The function accepts one input tensor and returns a Tensor.",
+   "Calling it can change values in the tensor that you pass to it."
+  ],
+  "gotchas": [
+   "The function changes the input tensor itself instead of creating a separate result tensor."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "torch.reshape": {
+  "sourceUrl": "https://docs.pytorch.org/docs/2.14/generated/torch.reshape.html",
+  "sourceTitle": "torch.reshape — PyTorch 2.14 documentation",
+  "summary": "torch.reshape changes a tensor to a requested shape while keeping its data and number of elements. It may return a view or a copy, so code should not depend on which one occurs.",
+  "explanation": "torch.reshape changes a tensor's dimensions without changing its values or element count. PyTorch may return a view that shares storage with the input or make a copy, depending on the tensor's memory layout.",
+  "syntax": "torch.reshape(input, shape) → Tensor",
+  "parameters": [
+   {
+    "name": "input",
+    "type": "Tensor",
+    "description": "The tensor to reshape."
+   },
+   {
+    "name": "shape",
+    "type": "tuple of int",
+    "description": "The desired shape, given as a tuple of integers."
+   }
+  ],
+  "returns": "A tensor with the same data and number of elements as input, using the requested shape.",
+  "example": {
+   "title": "Reshape and infer a dimension",
+   "code": "import torch\n\na = torch.arange(4.0)\nb = torch.reshape(a, (2, 2))\nc = torch.reshape(b, (-1,))\nprint(b)\nprint(c)",
+   "language": "python",
+   "explanation": "This creates a 2-by-2 tensor, then flattens it. The value -1 lets PyTorch infer the remaining dimension."
+  },
+  "useCases": [
+   {
+    "title": "Change dimensions",
+    "scenario": "Convert a flat tensor into rows and columns for later tensor operations."
+   },
+   {
+    "title": "Flatten with -1",
+    "scenario": "Flatten a tensor when the final size can be calculated from its element count."
+   }
+  ],
+  "related": [
+   "torch.Tensor.view()",
+   "torch.Tensor.reshape()"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does torch.reshape do?",
+    "answer": "torch.reshape returns a tensor with the same data and number of elements as the input, arranged in the requested shape. It can return a view when the layout allows this, or a copy otherwise.",
+    "followUp": "Can reshape always return a view? No. Contiguous inputs and inputs with compatible strides can often be reshaped without copying, but incompatible layouts may require a copy."
+   },
+   {
+    "question": "How does -1 work in the shape?",
+    "answer": "The shape may contain one -1. PyTorch computes that dimension from the input element count and the other dimensions.",
+    "followUp": "What if more than one dimension is -1? The shape does not provide enough information for a unique inference, so use only one inferred dimension."
+   },
+   {
+    "question": "What arguments does torch.reshape accept?",
+    "answer": "The input must be a Tensor, and shape is a tuple of integers describing the new dimensions. The total number of elements must remain unchanged.",
+    "followUp": "What happens if the requested shape has a different element count? The reshape cannot satisfy the request and raises an error."
+   }
+  ],
+  "keyPoints": [
+   "The values and total element count stay the same.",
+   "The shape argument gives the tensor's new dimensions.",
+   "PyTorch uses a view when the input layout permits it.",
+   "If a view is not possible, PyTorch creates a separate tensor.",
+   "One dimension can be written as -1 for automatic size calculation.",
+   "PyTorch calculates -1 from the other dimensions and the input element count."
+  ],
+  "gotchas": [
+   "Do not write code that depends on reshape returning either a view or a copy. The result depends on the input layout."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "torch.save": {
   "sourceUrl": "https://docs.pytorch.org/docs/2.8/generated/torch.save.html",
   "sourceTitle": "torch.save — PyTorch 2.8 documentation",
@@ -8247,6 +9729,79 @@
    "Use the private compatibility keyword only when an older serialization format is specifically required."
   ],
   "checkedAt": "2026-10-16"
+ },
+ "torch.sigmoid": {
+  "sourceUrl": "https://docs.pytorch.org/docs/2.14/generated/torch.sigmoid.html",
+  "sourceTitle": "torch.sigmoid — PyTorch 2.14 documentation",
+  "summary": "torch.sigmoid applies the sigmoid operation to an input tensor and returns a Tensor. It is an alias for torch.special.expit().",
+  "explanation": "The function applies the sigmoid operation to the input tensor and returns a tensor. It is an alias for the special-function implementation named expit.",
+  "syntax": "torch.sigmoid(input, *, out=None) → Tensor",
+  "parameters": [
+   {
+    "name": "input",
+    "type": "Tensor",
+    "description": "Tensor to which the sigmoid operation is applied."
+   },
+   {
+    "name": "out",
+    "type": "Tensor, optional",
+    "description": "Optional output tensor for the result."
+   }
+  ],
+  "returns": "torch.sigmoid returns a Tensor. torch.sigmoid_ also returns a Tensor.",
+  "example": {
+   "title": "Apply sigmoid to a tensor",
+   "code": "import torch\n\nx = torch.tensor([-2.0, 0.0, 2.0])\ny = torch.sigmoid(x)\nprint(y)",
+   "language": "python",
+   "explanation": "This creates a tensor and applies the sigmoid function to every element."
+  },
+  "useCases": [
+   {
+    "title": "Apply sigmoid to model values",
+    "scenario": "Convert tensor values with sigmoid"
+   },
+   {
+    "title": "Use the optional out argument",
+    "scenario": "Write results into a chosen output tensor"
+   },
+   {
+    "title": "Use the in-place form",
+    "scenario": "Update an existing tensor directly"
+   }
+  ],
+  "related": [
+   "torch.special.expit",
+   "torch.sigmoid_",
+   "torch.foreach.sigmoid_"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does torch.sigmoid do?",
+    "answer": "torch.sigmoid applies the sigmoid operation to its input and returns a Tensor. The documented signature is torch.sigmoid(input, *, out=None).",
+    "followUp": "What is the in-place form? torch.sigmoid_ applies the same operation in place and returns the resulting Tensor."
+   },
+   {
+    "question": "What are the arguments to torch.sigmoid?",
+    "answer": "The input argument is the tensor to transform. The optional out argument lets the operation write its result to a supplied output tensor.",
+    "followUp": "How can the input itself be modified? Use torch.sigmoid_(input), the documented in-place version."
+   },
+   {
+    "question": "When would you use torch.sigmoid_?",
+    "answer": "torch.sigmoid_ is the in-place version of torch.sigmoid(). It changes the supplied input tensor rather than leaving the original data unchanged.",
+    "followUp": "What related list operation is documented? torch.foreach.sigmoid_ applies sigmoid in place to each tensor in a non-empty tensor list."
+   }
+  ],
+  "keyPoints": [
+   "torch.sigmoid is another name for torch.special.expit.",
+   "The function takes one input tensor and has an optional keyword-only out argument.",
+   "The underscore form accepts an input tensor and returns a Tensor after the in-place operation.",
+   "The foreach form applies sigmoid separately to every tensor in a tensor list."
+  ],
+  "gotchas": [
+   "torch.sigmoid_ changes the input tensor directly instead of creating a separate result."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "torch.softmax": {
   "sourceUrl": "https://docs.pytorch.org/docs/2.14/generated/torch.softmax.html",

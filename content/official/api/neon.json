@@ -1,4 +1,92 @@
 {
+ "Allowed IPs": {
+  "sourceUrl": "https://neon.com/docs/reference/api/projects/create-project.md",
+  "sourceTitle": "Create project",
+  "summary": "Create a Neon project with the API using `POST /projects`. The request can choose its organization, region, and PostgreSQL version.",
+  "explanation": "A project is Neon’s main workspace. Creating one can also create its initial branch, read-write compute, and database. The request can choose the organization, region, and PostgreSQL version. A personal API key needs an organization ID; an organization API key gets its organization from the key.",
+  "syntax": "POST /projects",
+  "parameters": [
+   {
+    "name": "org_id",
+    "type": "string",
+    "description": "Organization that owns the project; required with a personal API key and inferred for an organization API key."
+   },
+   {
+    "name": "project",
+    "type": "object",
+    "description": "Project settings in the request body, including optional name, region, and PostgreSQL version."
+   },
+   {
+    "name": "project.region_id",
+    "type": "string",
+    "description": "AWS region identifier for the project."
+   },
+   {
+    "name": "project.pg_version",
+    "type": "integer",
+    "description": "PostgreSQL major version for the project."
+   }
+  ],
+  "returns": "A newly created Neon project and its initial resources.",
+  "example": {
+   "title": "Create a Neon project",
+   "code": "const response = await fetch(\"https://api.neon.tech/api/v2/projects\", {\n  method: \"POST\",\n  headers: {\n    Authorization: `Bearer ${process.env.NEON_API_KEY}`,\n    \"Content-Type\": \"application/json\"\n  },\n  body: JSON.stringify({\n    project: {\n      name: \"my-project\",\n      region_id: \"aws-us-east-1\",\n      pg_version: 16\n    }\n  })\n});\n\nif (!response.ok) throw new Error(await response.text());\nconsole.log(await response.json());",
+   "language": "javascript",
+   "explanation": "This creates a Neon project with a name, region, and PostgreSQL version."
+  },
+  "useCases": [
+   {
+    "title": "Create an application project",
+    "scenario": "A new application needs its own Neon workspace."
+   },
+   {
+    "title": "Select a project region",
+    "scenario": "A deployment must run in a chosen cloud region."
+   },
+   {
+    "title": "Choose a PostgreSQL version",
+    "scenario": "A team needs a fixed PostgreSQL major version."
+   }
+  ],
+  "related": [
+   "Manage branches",
+   "Manage computes",
+   "Neon API",
+   "Neon CLI",
+   "root branch",
+   "primary read-write compute"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you create a Neon project through the API?",
+    "answer": "The endpoint is `POST /projects`. It creates a project inside an organization. The request can include a region and PostgreSQL version.",
+    "followUp": "What determines the organization? A personal API key needs `org_id`; an organization API key supplies the organization automatically."
+   },
+   {
+    "question": "What resources does Neon create in a new project?",
+    "answer": "A new project gets a root branch, one primary read-write compute, and a PostgreSQL database by default. The root branch is called `production` in the Console and `main` through the API or CLI.",
+    "followUp": "Why is the branch name different? The Console and API/CLI use different names for the same default root branch."
+   },
+   {
+    "question": "Which PostgreSQL versions can a project request?",
+    "answer": "The request can set the PostgreSQL version. The documented supported range is PostgreSQL 14 through 18, with version 19 being introduced gradually for enabled regions or accounts.",
+    "followUp": "What should a client do when choosing a version? Send a supported version explicitly when reproducibility matters, and verify whether the requested version is enabled."
+   }
+  ],
+  "keyPoints": [
+   "A project is the top-level place where Neon resources and branches are managed.",
+   "Project creation starts with a root branch that acts as the default branch.",
+   "The default project includes one compute that can read and write data.",
+   "The create request lets you select where the project runs and which PostgreSQL version it uses.",
+   "The page documents PostgreSQL versions 14 to 18 as supported versions."
+  ],
+  "gotchas": [
+   "A personal API key requires `org_id` so Neon knows which organization owns the new project.",
+   "The account plan can limit whether another project may be created."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "Anonymized branch": {
   "sourceUrl": "https://neon.com/docs/reference/api/branches/create-project-branch-anonymized",
   "sourceTitle": "Create anonymized branch - Neon Docs",
@@ -292,6 +380,133 @@
   ],
   "checkedAt": "2026-10-16"
  },
+ "Autosuspend": {
+  "sourceUrl": "https://neon.com/docs/introduction/serverless",
+  "sourceTitle": "Serverless - Neon Docs",
+  "summary": "Neon autosuspend reduces compute to zero when a database is idle. When activity returns, compute can start and scale with demand, while storage stays separate.",
+  "explanation": "Autosuspend stops a branch's compute when it has no activity. When a new connection or query arrives, Neon starts the compute again. Storage remains separate from compute, so the database data is kept while compute is paused. This reduces idle resource use, but the first request after suspension can take longer.",
+  "syntax": "",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Run a query",
+   "code": "const { rows } = await sql`SELECT 1 AS value`;\nconsole.log(rows[0].value);",
+   "language": "javascript",
+   "explanation": "This query runs against a Neon Postgres database after the application has connected to it."
+  },
+  "useCases": [
+   {
+    "title": "Reduce idle development compute",
+    "scenario": "Development databases that are used only during work hours."
+   },
+   {
+    "title": "Manage short-lived databases",
+    "scenario": "Temporary databases for previews or tests."
+   },
+   {
+    "title": "Handle changing workloads",
+    "scenario": "Applications with uneven traffic."
+   }
+  ],
+  "related": [
+   "Autoscaling",
+   "Serverless Postgres",
+   "Lakebase Postgres",
+   "Branches"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is autosuspend in Neon?",
+    "answer": "Autosuspend means Neon can reduce a branch's compute to zero when it is idle. A later connection or query causes compute to start again.",
+    "followUp": "What happens to stored data while compute is stopped? Storage is separate from compute, so the data remains available when compute resumes."
+   },
+   {
+    "question": "Why use autosuspend?",
+    "answer": "Autosuspend helps avoid paying for active compute during idle periods. It is part of Neon’s serverless model, which adjusts compute based on workload.",
+    "followUp": "Why might autosuspend be useful for many temporary databases? It lets inactive databases stop using compute without manually managing servers."
+   },
+   {
+    "question": "How does autosuspend work with Neon’s architecture?",
+    "answer": "Neon separates storage and compute. This allows compute to stop when idle while the database storage remains separate and can be used when compute starts again.",
+    "followUp": "How does this differ from shutting down a complete database server? The compute can pause independently instead of requiring the whole database system to be recreated."
+   }
+  ],
+  "keyPoints": [
+   "When a database branch has no activity, its compute can scale down completely.",
+   "Neon can pause compute independently because storage and compute are separate parts.",
+   "Compute can grow again when workload increases.",
+   "Autosuspend supports usage-based operation by avoiding active compute during idle time."
+  ],
+  "gotchas": [
+   "The first request after an idle period may be slower because compute must start again."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "Autosuspend delay": {
+  "sourceUrl": "https://neon.com/docs/connect/connection-latency",
+  "sourceTitle": "Connection latency and timeouts",
+  "summary": "Autosuspend delay is the idle time before Neon scales a compute resource to zero. The default delay is five minutes, which can reduce costs but may add cold-start latency to the next request.",
+  "explanation": "The autosuspend delay is the idle period before Neon stops a compute resource. By default, Neon waits five minutes without activity, then scales the compute to zero. The next request must start the compute again, which creates a cold start and adds connection latency.",
+  "syntax": "",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Run one query",
+   "code": "const sql = neon(process.env.DATABASE_URL);\n\nconst result = await sql`SELECT 1 AS connected`;\nconsole.log(result);",
+   "language": "typescript",
+   "explanation": "This uses the Neon serverless driver over HTTP for a single query."
+  },
+  "useCases": [
+   {
+    "title": "Idle development databases",
+    "scenario": "Lower database costs during periods with little or no traffic."
+   },
+   {
+    "title": "Bursty workloads",
+    "scenario": "Run applications with traffic that comes in bursts."
+   },
+   {
+    "title": "Cold-start handling",
+    "scenario": "Plan connection behavior for serverless requests after inactivity."
+   }
+  ],
+  "related": [
+   "Scale to zero",
+   "cold start",
+   "connection latency",
+   "timeouts"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does the autosuspend delay control?",
+    "answer": "The autosuspend delay is the inactivity period before Neon scales a compute resource to zero. Neon uses five minutes by default, which reduces cost when the database is idle.",
+    "followUp": "What happens after the compute is suspended? A later request causes a cold start, so connection latency can increase by a few hundred milliseconds or more."
+   },
+   {
+    "question": "How does scale to zero affect a request?",
+    "answer": "Scale to zero lowers costs by stopping an inactive compute resource. When a request arrives later, Neon activates the compute so it can process the request.",
+    "followUp": "What other factors affect the total delay? Physical distance between the application and database, plus startup times of integrated services, can add latency."
+   },
+   {
+    "question": "What is a cold start in Neon?",
+    "answer": "A cold start occurs when an idle compute changes to an active state to handle a request. The activation commonly takes a few hundred milliseconds, not counting other connection factors.",
+    "followUp": "How can an application reduce the impact? Place the application near the database and account for startup delays in services used during connection setup."
+   }
+  ],
+  "keyPoints": [
+   "Scale to zero helps reduce spending by stopping compute resources that are not being used.",
+   "The delay is measured from the time the compute becomes inactive.",
+   "A new request wakes the suspended compute so it can run database work.",
+   "The reported startup time is only part of the full connection delay."
+  ],
+  "gotchas": [
+   "A compute normally stops after five minutes without activity. The next request may be slower because the compute needs to start again.",
+   "The cold start itself usually takes a few hundred milliseconds, before adding network distance or startup time from other services."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "Branch protection": {
   "sourceUrl": "https://neon.com/docs/guides/protected-branches",
   "sourceTitle": "Protected branches",
@@ -363,6 +578,149 @@
    "Automatic inactivity archiving does not apply to protected branches."
   ],
   "checkedAt": "2026-10-16"
+ },
+ "Branch reset": {
+  "sourceUrl": "https://neon.com/docs/guides/reset-from-parent",
+  "sourceTitle": "Reset from parent - Neon Docs",
+  "summary": "Reset from parent replaces a Neon branch with its parent's latest database schema and data. It also replaces Managed Better Auth state while keeping the branch connection string stable.",
+  "explanation": "Reset from parent replaces every database on a branch with the latest schema and data from its parent. The operation also replaces the branch's Managed Better Auth state and keeps the branch's connection string unchanged.",
+  "syntax": "neon branches reset <branch> --parent",
+  "parameters": [
+   {
+    "name": "branch",
+    "type": "string",
+    "description": "The branch to reset."
+   },
+   {
+    "name": "--parent",
+    "type": "flag",
+    "description": "Requests a reset from the branch's parent."
+   }
+  ],
+  "returns": "The selected branch is replaced with its parent's latest database schema, data, and Managed Better Auth state.",
+  "example": {
+   "title": "Reset branches from their parents",
+   "code": "neon branches reset dev-branch --parent\nneon branches reset staging --parent",
+   "language": "bash",
+   "explanation": "These commands replace each branch with the latest schema and data from its parent."
+  },
+  "useCases": [
+   {
+    "title": "Start feature development",
+    "scenario": "A development branch is outdated and has no changes that need preserving."
+   },
+   {
+    "title": "Refresh staging",
+    "scenario": "Staging needs a fresh copy of its parent for database testing."
+   },
+   {
+    "title": "Automate CI/CD resets",
+    "scenario": "A pipeline needs a repeatable database baseline."
+   }
+  ],
+  "related": [
+   "Database branching workflow primer",
+   "Instant restore",
+   "Branching workflows",
+   "Managed Better Auth"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does Reset from parent do?",
+    "answer": "It replaces all databases on a branch with the latest schema and data from the parent. It also replaces the branch's Managed Better Auth state.",
+    "followUp": "What happens to the branch connection string? It remains stable, so applications can continue using the same development connection string."
+   },
+   {
+    "question": "How do you reset a branch from the CLI?",
+    "answer": "Use `neon branches reset <branch> --parent`, such as `neon branches reset staging --parent`. This makes staging match the current state of its parent branch.",
+    "followUp": "Why is this useful in CI/CD? It gives staging a repeatable database baseline for testing."
+   },
+   {
+    "question": "What limitations should you check first?",
+    "answer": "A reset is blocked when the target branch has children. The child branches must be deleted before the reset can continue.",
+    "followUp": "Can a child be reset immediately after its parent is restored from a snapshot? No. The operation is unavailable for up to 24 hours; Instant restore is an alternative."
+   }
+  ],
+  "keyPoints": [
+   "The feature resets all databases on a branch to the parent's latest schema and data.",
+   "The reset replaces both the branch's Postgres database and its Managed Better Auth state.",
+   "The CLI command uses the branch name followed by the `--parent` option.",
+   "The reset keeps the development environment's connection string stable.",
+   "CI/CD workflows can reset branches when starting features or refreshing staging."
+  ],
+  "gotchas": [
+   "A branch cannot be reset while it has child branches. Delete those children first.",
+   "After a parent is restored from a snapshot, wait up to 24 hours before resetting a child from it."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "Branch restore": {
+  "sourceUrl": "https://neon.com/docs/postgres/backup-restore/branch-restore",
+  "sourceTitle": "Instant restore",
+  "summary": "Neon instant restore, also called point-in-time restore, returns an existing root branch to an earlier state. The source state can come from its own history or another root branch's history.",
+  "explanation": "Instant restore moves an existing root branch back to an earlier state recorded in that branch's history or another root branch's history. You can use Time Travel Assist first to inspect historical data and choose the restore time.",
+  "syntax": "neonctl branches restore <branch-id> --timestamp <ISO-8601-time>",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Restore a branch",
+   "code": "neonctl branches restore <branch-id> --timestamp <ISO-8601-time>",
+   "language": "bash",
+   "explanation": "Use the Neon CLI to restore a root branch to an earlier time covered by its history window. Replace the placeholders with your branch ID and timestamp."
+  },
+  "useCases": [
+   {
+    "title": "Recover lost data",
+    "scenario": "Recover data after accidental deletion or an unwanted change."
+   },
+   {
+    "title": "Find the right restore time",
+    "scenario": "Inspect historical records before selecting a recovery point."
+   },
+   {
+    "title": "Review schema differences",
+    "scenario": "Compare branch schemas before changing production state."
+   }
+  ],
+  "related": [
+   "Time Travel Assist",
+   "History window",
+   "Schema Diff",
+   "Snapshots",
+   "Root branches"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does Neon instant restore do?",
+    "answer": "Instant restore, also called point-in-time restore, returns a root branch to an earlier state from its own history or another root branch's history. It changes the existing branch rather than creating a separate branch.",
+    "followUp": "How would you find the exact recovery time? Use Time Travel Assist to connect to a historical point and run read-only queries before choosing the restore time."
+   },
+   {
+    "question": "Which branches can use instant restore?",
+    "answer": "Only root branches support point-in-time restore. A child branch cannot be restored with this feature, so recovery planning must account for the branch type.",
+    "followUp": "What related recovery option can provide a stable recovery point outside the history window? Use a snapshot, because snapshots preserve selected points in time beyond the history window."
+   },
+   {
+    "question": "What happens to logical replication slots during a restore?",
+    "answer": "Restoring a branch deletes all logical replication slots on that branch, and Neon does not recreate them during the restore. Replication configuration must therefore be checked and rebuilt after recovery.",
+    "followUp": "What other replication issue can affect cost? An active logical replication subscriber can keep the publishing compute running instead of allowing it to scale to zero."
+   }
+  ],
+  "keyPoints": [
+   "You can restore a root branch to an earlier state from its own history or another root branch's history.",
+   "Neon also refers to instant restore as point-in-time restore, or PITR.",
+   "Time Travel Assist lets you run read-only queries against historical data to find the correct recovery moment.",
+   "Schema Diff can compare branches visually before you restore one.",
+   "Snapshots provide stable recovery points that remain available outside the selected history window."
+  ],
+  "gotchas": [
+   "Only root branches can be restored with instant restore. Child branches cannot use this operation.",
+   "Restoring a branch removes its logical replication slots. Recreate them after the restore if needed.",
+   "The target time must remain inside the configured history window. Use Time Travel Assist to inspect that period before restoring."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "Branching": {
   "sourceUrl": "https://neon.com/docs/introduction/branching",
@@ -501,6 +859,76 @@
    "A Client maintains WebSocket-based session state, so it is not equivalent to an independent HTTP request for every query."
   ],
   "checkedAt": "2026-10-16"
+ },
+ "client.end": {
+  "sourceUrl": "https://neon.com/docs/serverless/serverless-driver",
+  "sourceTitle": "Neon serverless driver",
+  "summary": "`client.end()` closes a Neon serverless driver client after use. In edge runtimes, call it inside the same request that created and used the client.",
+  "explanation": "`client.end()` closes a WebSocket connection created by the Neon serverless driver’s Client. Use it after the client is no longer needed. In edge runtimes, connect, use, and close the client inside the same request handler.",
+  "syntax": "await client.end();",
+  "parameters": [
+   {
+    "name": "",
+    "type": "",
+    "description": "No parameters are listed for the `end()` method in the referenced documentation."
+   }
+  ],
+  "returns": "The referenced documentation does not specify a return value for `client.end()`.",
+  "example": {
+   "title": "Close a Neon pool",
+   "code": "import { Pool } from '@neondatabase/serverless';\n\nconst pool = new Pool({\n  connectionString: process.env.DATABASE_URL,\n});\n\ntry {\n  const result = await pool.query('SELECT 1');\n  console.log(result.rows);\n} finally {\n  await pool.end();\n}",
+   "language": "typescript",
+   "explanation": "This creates a pool, runs a query, and calls `pool.end()` to close it after use."
+  },
+  "useCases": [
+   {
+    "title": "Finish a request safely",
+    "scenario": "A request uses a WebSocket client for an interactive transaction and then finishes."
+   },
+   {
+    "title": "Clean up a script connection",
+    "scenario": "A short-lived script creates a client, runs queries, and exits."
+   },
+   {
+    "title": "Prevent connection leaks",
+    "scenario": "An edge function must release its connection before returning."
+   }
+  ],
+  "related": [
+   "Client",
+   "Pool",
+   "neonConfig.webSocketConstructor",
+   "Pool and Client"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does `client.end()` do?",
+    "answer": "Call `client.end()` after the client has finished its work. It closes the WebSocket connection and releases the connection resources.",
+    "followUp": "Can a Client be reused after `end()`? No. Create a new client if another connection is needed."
+   },
+   {
+    "question": "Where should you call `client.end()` in an edge runtime?",
+    "answer": "In edge runtimes, create the client inside the request handler, use it, and close it before the handler finishes. Edge WebSocket connections cannot continue beyond one request.",
+    "followUp": "Why not create it at module scope? The connection cannot be safely reused across requests in those runtimes."
+   },
+   {
+    "question": "When would you use Client instead of the neon query function?",
+    "answer": "Use `Pool` or `Client` when the application needs sessions, interactive transactions, or node-postgres compatibility. Close the connection or pool after use, especially in edge environments.",
+    "followUp": "What is the alternative for simple queries? Use the `neon()` function over HTTP, which does not require a persistent WebSocket client."
+   }
+  ],
+  "keyPoints": [
+   "The Neon driver can replace `pg` when code expects a node-postgres-compatible client.",
+   "Node.js 22 or newer normally needs no extra WebSocket package for `Client`.",
+   "Older Node.js versions need a WebSocket constructor, such as the one supplied by `ws`.",
+   "In edge runtimes, keep the full client lifecycle inside one request handler."
+  ],
+  "gotchas": [
+   "In edge runtimes, do not keep the client across requests. Create, use, and close it within one request.",
+   "Always call `end()` when finished, or unused connections can build up."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "Client.end": {
   "sourceUrl": "https://neon.com/docs/serverless/serverless-driver",
@@ -799,6 +1227,72 @@
    "Do not assume a separate Workers plan is required for Hyperdrive."
   ],
   "checkedAt": "2026-10-16"
+ },
+ "Compute endpoint": {
+  "sourceUrl": "https://neon.com/docs/manage/computes",
+  "sourceTitle": "Manage computes - Neon Docs",
+  "summary": "A Neon compute is the service that runs Postgres for a branch. Applications connect to the branch through its compute, which can scale down when idle and start again when needed.",
+  "explanation": "A Neon compute is the service that runs Postgres for a branch. Applications connect to the branch through its associated compute. Neon can stop a compute after inactivity and start it again when a request arrives, which reduces idle use but can add startup latency.",
+  "syntax": "",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Run a query through a compute",
+   "code": "const { rows } = await sql`SELECT now()`;\nconsole.log(rows[0]);",
+   "language": "javascript",
+   "explanation": "Use a Neon compute to run a Postgres query from an application."
+  },
+  "useCases": [
+   {
+    "title": "Application database access",
+    "scenario": "Run application queries against a Neon branch."
+   },
+   {
+    "title": "Read replicas",
+    "scenario": "Serve read-heavy traffic from additional compute resources."
+   },
+   {
+    "title": "Scale to zero",
+    "scenario": "Reduce idle resource use for workloads with quiet periods."
+   }
+  ],
+  "related": [
+   "Scale to zero",
+   "Autoscaling",
+   "Read replica",
+   "Connection latency and timeouts",
+   "Compute size"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is a Neon compute?",
+    "answer": "A compute is a virtualized service that runs Postgres for a Neon branch. Each branch can have one primary read-write compute and can also have read replica computes.",
+    "followUp": "How can idle cost and startup delay be balanced? Configure a suitable scale-to-zero timeout and use autoscaling with an appropriate minimum compute size."
+   },
+   {
+    "question": "How does an application connect to a Neon branch?",
+    "answer": "An application connects to a branch through a compute associated with that branch. The compute provides the service that runs the branch's Postgres database.",
+    "followUp": "What happens if the branch has no associated compute? The application cannot connect until a compute is created for that branch."
+   },
+   {
+    "question": "What is the effect of scale to zero?",
+    "answer": "Scale to zero stops a compute after inactivity, then starts it when work arrives. Neon uses a five-minute inactivity period by default, and the wake-up can add a few hundred milliseconds.",
+    "followUp": "How can connection latency be reduced? Keep the application and database in the same region and set a connection timeout long enough for startup."
+   }
+  ],
+  "keyPoints": [
+   "A project normally has a primary read-write compute for its default branch.",
+   "A branch supports one primary compute and multiple read replicas.",
+   "By default, an idle compute is suspended after five minutes.",
+   "Hosting the application near the database helps reduce connection latency."
+  ],
+  "gotchas": [
+   "A client cannot connect directly to a branch. It must use a compute associated with that branch.",
+   "Changing a fixed compute size briefly disconnects existing connections because the endpoint restarts.",
+   "The first request after scale-to-zero can be slower because the compute needs to become active."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "Compute hours": {
   "sourceUrl": "https://neon.com/docs/reference/glossary",
@@ -1607,6 +2101,112 @@
   "gotchas": [],
   "checkedAt": "2026-10-16"
  },
+ "drizzle": {
+  "sourceUrl": "https://neon.com/docs/guides/rls-drizzle",
+  "sourceTitle": "Simplify RLS with Drizzle",
+  "summary": "Use Drizzle ORM to declare Postgres Row-Level Security policies in TypeScript. Choose crudPolicy for common ownership rules and pgPolicy for operation-specific access logic.",
+  "explanation": "Define Postgres row-level security in the Drizzle schema instead of writing separate SQL policies. Use crudPolicy for common read and modify rules, or pgPolicy when each database operation needs different conditions. Generate and apply migrations so Postgres creates and enforces the policies.",
+  "syntax": "crudPolicy({ role, read, modify })\npgPolicy(name, { for, to, using, withCheck })",
+  "parameters": [
+   {
+    "name": "role",
+    "type": "crudPolicy option",
+    "description": "Postgres role that receives the policy"
+   },
+   {
+    "name": "read",
+    "type": "SQL condition or boolean",
+    "description": "Condition for reading rows"
+   },
+   {
+    "name": "modify",
+    "type": "SQL condition or boolean",
+    "description": "Condition for creating, updating, or deleting rows"
+   },
+   {
+    "name": "for",
+    "type": "pgPolicy option",
+    "description": "Database command targeted by a custom policy"
+   },
+   {
+    "name": "using",
+    "type": "SQL condition",
+    "description": "Condition for existing rows"
+   },
+   {
+    "name": "withCheck",
+    "type": "SQL condition",
+    "description": "Condition that new or changed rows must satisfy"
+   }
+  ],
+  "returns": "crudPolicy and pgPolicy declarations that Drizzle turns into PostgreSQL RLS policies through migrations.",
+  "example": {
+   "title": "Own rows with crudPolicy",
+   "code": "import { sql } from \"drizzle-orm\";\nimport { pgTable, text } from \"drizzle-orm/pg-core\";\nimport { crudPolicy, authenticatedRole, authUid } from \"drizzle-orm/neon\";\n\nexport const todos = pgTable(\"todos\", {\n  id: text(\"id\").primaryKey(),\n  userId: text(\"user_id\").notNull().default(sql`auth.user_id()`),\n  task: text(\"task\").notNull(),\n}, (table) => [\n  crudPolicy({\n    role: authenticatedRole,\n    read: authUid(table.userId),\n    modify: authUid(table.userId),\n  }),\n]);",
+   "language": "typescript",
+   "explanation": "This schema lets authenticated users read and change only rows whose user_id matches the current authenticated user."
+  },
+  "useCases": [
+   {
+    "title": "User-owned data",
+    "scenario": "Each user should see and manage only their own records."
+   },
+   {
+    "title": "Public and authenticated access",
+    "scenario": "Everyone can read published content, but only logged-in users can change their own content."
+   },
+   {
+    "title": "Related-table access",
+    "scenario": "Access depends on ownership, sharing, teams, or memberships in another table."
+   },
+   {
+    "title": "Fine-grained update rules",
+    "scenario": "An update is allowed only while a row is recent or meets another business condition."
+   }
+  ],
+  "related": [
+   "crudPolicy",
+   "pgPolicy",
+   "authenticatedRole",
+   "anonymousRole",
+   "authUid",
+   "auth.user_id()",
+   "Neon Data API",
+   "Drizzle ORM"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What problem does crudPolicy solve?",
+    "answer": "crudPolicy is a helper for common RLS rules. It can define a role, a read condition, and a modify condition with less repeated code.",
+    "followUp": "When would you replace it with pgPolicy? Use pgPolicy when commands need different rules, such as a stricter UPDATE check or a DELETE-only policy."
+   },
+   {
+    "question": "How does authUid protect user-owned rows?",
+    "answer": "authUid(column) creates a condition that compares the column with auth.user_id(). This limits rows to those owned by the current authenticated user.",
+    "followUp": "How does the user identity reach the policy? With Neon’s Data API, auth.user_id() reads the user identifier from the active JWT claims."
+   },
+   {
+    "question": "When should pgPolicy be used instead of crudPolicy?",
+    "answer": "Use pgPolicy when INSERT, SELECT, UPDATE, or DELETE needs separate logic. It supports options such as for, to, using, and withCheck.",
+    "followUp": "Why can UPDATE need both clauses? USING controls which existing rows can be targeted, while withCheck validates the changed row."
+   }
+  ],
+  "keyPoints": [
+   "RLS policies live beside table definitions in TypeScript, which reduces repeated hand-written SQL.",
+   "Policies become database rules only after migrations create them in Postgres.",
+   "authUid is useful for owner checks because it compares a table column with the current user ID.",
+   "pgPolicy gives separate control over database commands such as SELECT, INSERT, UPDATE, and DELETE.",
+   "A custom policy can combine ownership with time-based business rules.",
+   "Postgres views can also have row-level access rules."
+  ],
+  "gotchas": [
+   "Run RLS migrations with a direct, non-pooled connection. A pooled connection can cause migration errors.",
+   "Defining a policy in TypeScript does not change the database until you generate and run a migration.",
+   "If pgPolicy has no withCheck value, PostgreSQL reuses the USING condition for the check."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "Drizzle integration": {
   "sourceUrl": "https://neon.com/docs/guides/drizzle",
   "sourceTitle": "Connect from Drizzle to Neon - Neon Docs",
@@ -1744,6 +2344,154 @@
    "The migration command depends on drizzle.config.ts for its connection settings, so keep that file correctly configured before applying migrations."
   ],
   "checkedAt": "2026-10-16"
+ },
+ "fetchConnectionCache": {
+  "sourceUrl": "https://neon.com/blog/http-vs-websockets-for-postgres-queries-at-the-edge",
+  "sourceTitle": "HTTP vs. WebSockets: Which protocol for your Postgres queries at the Edge",
+  "summary": "fetchConnectionCache enables connection caching for Neon serverless driver HTTP queries. It can reduce connection lookup time and is useful for single-query serverless or Edge functions.",
+  "explanation": "The Neon serverless driver can use SQL-over-HTTP for single queries from Edge or serverless functions. Setting fetchConnectionCache to true lets Neon’s proxy reuse server-side connections, which can reduce the time needed to find the database compute node. The setting is applied through neonConfig before creating the SQL client.",
+  "syntax": "neonConfig.fetchConnectionCache = true;",
+  "parameters": [
+   {
+    "name": "neonConfig.fetchConnectionCache",
+    "type": "boolean",
+    "description": "Set to true to enable connection caching in the shown configuration."
+   }
+  ],
+  "returns": "",
+  "example": {
+   "title": "Run a cached HTTP query",
+   "code": "import { neon, neonConfig } from '@neondatabase/serverless';\n\nneonConfig.fetchConnectionCache = true;\n\nconst sql = neon(process.env.DATABASE_URL!);\nconst rows = await sql('SELECT * FROM atoms WHERE id = $1', [12]);\nconsole.log(rows);",
+   "language": "typescript",
+   "explanation": "This enables connection caching and runs a parameterized SQL query through the Neon serverless driver."
+  },
+  "useCases": [
+   {
+    "title": "Single-shot queries",
+    "scenario": "A serverless or Edge function sends one SQL query and returns a result."
+   },
+   {
+    "title": "Lower connection lookup latency",
+    "scenario": "An application wants to reduce repeated proxy lookup work for HTTP queries."
+   },
+   {
+    "title": "Multiple queries with Pool",
+    "scenario": "A function executes several queries through one database connection."
+   }
+  ],
+  "related": [
+   "neon",
+   "Pool",
+   "SQL-over-HTTP",
+   "WebSockets",
+   "@neondatabase/serverless"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does fetchConnectionCache do?",
+    "answer": "fetchConnectionCache enables connection caching for HTTP fetch queries made by the Neon serverless driver. The proxy can reuse server-side connection information instead of finding the compute node from scratch for every query.",
+    "followUp": "When should it be avoided? The page does not give a specific prohibition, but the setting was described as experimental and opt-in, so test it in the target runtime before relying on it."
+   },
+   {
+    "question": "When should you use neon instead of Pool?",
+    "answer": "The neon helper is intended for a single query from a serverless or Edge function. Pool is the recommended choice when the function executes multiple queries through one connection.",
+    "followUp": "Why can Pool help? It provides a connection object that can be used for multiple query calls in the same function."
+   },
+   {
+    "question": "How do HTTP and WebSockets compare?",
+    "answer": "HTTP is a good fit for single-shot queries because it avoids keeping a WebSocket connection open. WebSockets can be faster after connection setup when several queries use the same connection.",
+    "followUp": "What else affects latency? Runtime and geography matter: the user location, database location, and chosen execution region can change the result."
+   }
+  ],
+  "keyPoints": [
+   "The proxy can reuse server-side connection state, reducing repeated connection work for HTTP queries.",
+   "The changelog says the proxy later enabled this behavior by default for HTTP fetch queries.",
+   "Caching applies whether the database connection is pooled or unpooled.",
+   "The driver release reported single-digit millisecond latency for queries in the same region.",
+   "WebSockets may have lower per-query latency after their connection is already open."
+  ],
+  "gotchas": [
+   "In the documented release, this setting must be enabled explicitly. Newer documentation may change whether it is opt-in.",
+   "Use Pool rather than the single-query neon helper when one function needs several queries."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "fetchEndpoint": {
+  "sourceUrl": "https://neon.com/docs/serverless/serverless-driver",
+  "sourceTitle": "Neon serverless driver",
+  "summary": "The Neon serverless driver lets JavaScript and TypeScript code query Postgres from serverless and edge environments over HTTP or WebSockets. Use HTTP by default; use WebSockets for sessions, interactive transactions, or pg compatibility.",
+  "explanation": "The Neon serverless driver is a JavaScript and TypeScript Postgres driver for serverless and edge runtimes. Its HTTP mode sends each query as a fetch request, while WebSockets are available through Pool or Client when the application needs interactive transactions, sessions, or node-postgres compatibility.",
+  "syntax": "neon(connectionString)",
+  "parameters": [
+   {
+    "name": "connectionString",
+    "type": "string",
+    "description": "A Neon Postgres connection string used to create the query function."
+   }
+  ],
+  "returns": "The query function returns rows as an array of objects by default.",
+  "example": {
+   "title": "Run a query over HTTP",
+   "code": "import { neon } from '@neondatabase/serverless';\n\nconst sql = neon(process.env.DATABASE_URL!);\nconst posts = await sql`SELECT id, title FROM posts WHERE published = ${true}`;\nconsole.log(posts);",
+   "language": "typescript",
+   "explanation": "This creates a query function and runs one SQL statement over HTTP."
+  },
+  "useCases": [
+   {
+    "title": "Serverless queries",
+    "scenario": "Run SQL from a serverless function without maintaining a TCP connection."
+   },
+   {
+    "title": "Edge applications",
+    "scenario": "Query Postgres from an edge runtime using HTTP."
+   },
+   {
+    "title": "Session-based work",
+    "scenario": "Keep a session or run an interactive transaction."
+   },
+   {
+    "title": "pg compatibility",
+    "scenario": "Use APIs built for the node-postgres package."
+   }
+  ],
+  "related": [
+   "neon()",
+   "Pool",
+   "Client",
+   "Use the driver over HTTP",
+   "Use the driver over WebSockets"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What problem does the Neon serverless driver solve?",
+    "answer": "The driver lets JavaScript and TypeScript applications query Neon from serverless and edge environments without TCP. It supports HTTP and WebSockets.",
+    "followUp": "When should WebSockets be used? Use them for interactive transactions, sessions, or node-postgres compatibility."
+   },
+   {
+    "question": "How does the HTTP mode work?",
+    "answer": "The neon() function uses HTTP. Each query is sent as an HTTP fetch request, which is suited to single queries and multiple queries in one non-interactive transaction.",
+    "followUp": "Why is HTTP the default? It avoids maintaining a session and is optimized for individual serverless requests."
+   },
+   {
+    "question": "When should an application use WebSockets instead of HTTP?",
+    "answer": "Use the Pool or Client constructors for WebSockets. Choose this mode when the application needs interactive transactions, sessions, or compatibility with the pg package.",
+    "followUp": "Can neon() provide interactive transactions? No. Use the WebSocket Pool or Client API for that requirement."
+   }
+  ],
+  "keyPoints": [
+   "It is designed for JavaScript and TypeScript applications.",
+   "It works in serverless and edge runtimes through HTTP or WebSockets instead of TCP.",
+   "Message pipelining and other optimizations help reduce query latency.",
+   "The neon() function sends queries through HTTP fetch requests.",
+   "HTTP is optimized for one query or several queries in one non-interactive transaction."
+  ],
+  "gotchas": [
+   "Use HTTP unless the application needs interactive transactions, sessions, or node-postgres compatibility.",
+   "The simple neon() function is for HTTP queries; use Pool or Client for WebSocket connections."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "HTTP driver": {
   "sourceUrl": "https://neon.com/docs/serverless/serverless-driver",
@@ -2026,6 +2774,74 @@
   ],
   "checkedAt": "2026-10-16"
  },
+ "Logical replication publication": {
+  "sourceUrl": "https://neon.com/docs/guides/logical-replication-databricks.md",
+  "sourceTitle": "Replicate data to Databricks with Lakeflow Connect",
+  "summary": "A logical replication publication selects the tables whose row changes a consumer can read. In this Neon setup, a publication works with a pgoutput replication slot to stream changes to Databricks Lakeflow Connect.",
+  "explanation": "A logical replication publication defines which tables send row changes. A replication slot records the stream position so a consumer can read those changes with the pgoutput plugin. The publication and slot names are then given to the receiving service.",
+  "syntax": "CREATE PUBLICATION name FOR TABLE table_name;\nSELECT pg_create_logical_replication_slot(slot_name, 'pgoutput');",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Create a publication and slot",
+   "code": "CREATE PUBLICATION databricks_publication\n  FOR TABLE public.playing_with_neon;\n\nSELECT pg_create_logical_replication_slot(\n  'databricks_slot', 'pgoutput'\n);",
+   "language": "sql",
+   "explanation": "This creates a publication for one table and a logical replication slot that uses the pgoutput plugin."
+  },
+  "useCases": [
+   {
+    "title": "Continuous ingestion",
+    "scenario": "Send selected Neon tables to Databricks Lakehouse."
+   },
+   {
+    "title": "Change data capture",
+    "scenario": "Stream inserts, updates, and deletes to a consumer."
+   },
+   {
+    "title": "Manage replication scope",
+    "scenario": "Expand or reduce the replicated table set."
+   }
+  ],
+  "related": [
+   "Logical replication slot",
+   "pgoutput",
+   "ALTER PUBLICATION",
+   "REPLICA IDENTITY DEFAULT",
+   "REPLICA IDENTITY FULL",
+   "Lakeflow Connect"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does a logical replication publication define?",
+    "answer": "A publication is a named set of tables whose row changes are exposed for logical replication. You can list tables explicitly or publish all tables.",
+    "followUp": "How would you change the set later? Use ALTER PUBLICATION to add or remove tables."
+   },
+   {
+    "question": "What is the purpose of a replication slot?",
+    "answer": "A logical replication slot stores the position in the change stream for a consumer. In this guide, the slot uses the pgoutput plugin.",
+    "followUp": "What operational risk does a stopped consumer create? The slot can retain WAL, increasing storage and replication lag."
+   },
+   {
+    "question": "How should replica identity be selected?",
+    "answer": "Tables need enough row identity for updates and deletes. Tables with a primary key and no large TOAST columns can use REPLICA IDENTITY DEFAULT; other tables may need FULL.",
+    "followUp": "When is FULL useful? It records enough old row data to identify changes when a primary key is absent or large variable-length columns make the default unsuitable."
+   }
+  ],
+  "keyPoints": [
+   "Create one publication for the tables that the downstream system must receive.",
+   "A database should use one publication for this setup.",
+   "For Lakeflow Connect, create the slot with pgoutput.",
+   "Use ALTER PUBLICATION when the replicated table list changes.",
+   "Use DEFAULT replica identity for tables with a primary key and without large TOAST columns.",
+   "Use FULL replica identity when a table lacks a primary key or has very large variable-length fields."
+  ],
+  "gotchas": [
+   "A slot keeps write-ahead log data until the subscriber reads it. If the consumer stops, stored WAL can grow.",
+   "Tables are not replicated unless the publication includes them."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "Monitoring": {
   "sourceUrl": "https://neon.com/docs/introduction/monitoring-page",
   "sourceTitle": "Monitoring dashboard - Neon Docs",
@@ -2093,6 +2909,207 @@
    "Displayed values are not necessarily refreshed automatically; use Refresh when you need an updated view."
   ],
   "checkedAt": "2026-10-16"
+ },
+ "neon": {
+  "sourceUrl": "https://neon.com/docs/serverless/serverless-driver",
+  "sourceTitle": "Neon serverless driver - Neon Docs",
+  "summary": "The Neon serverless driver lets JavaScript and TypeScript applications query Neon Postgres from serverless and edge runtimes over HTTP or WebSockets. Use HTTP for simple queries and non-interactive transactions; use WebSockets for sessions and interactive transactions.",
+  "explanation": "Call neon() with a Neon connection string to create a query function. Use it as a tagged template for parameterized SQL. Each normal query is sent over HTTP. Use transaction() for several queries in one non-interactive transaction, or use Pool and Client over WebSockets when you need sessions or interactive transactions.",
+  "syntax": "import { neon, Pool, Client } from \"@neondatabase/serverless\";\nconst sql = neon(process.env.DATABASE_URL);\nconst rows = await sql`SELECT ...`;\nconst result = await sql.query(\"SELECT ... WHERE id = $1\", [value]);\nconst [a, b] = await sql.transaction([queryA, queryB]);",
+  "parameters": [
+   {
+    "name": "connectionStringOrOptions",
+    "type": "string | object",
+    "description": "Neon connection URL, or an options object with connection parameters."
+   },
+   {
+    "name": "query",
+    "type": "TemplateStringsArray and values",
+    "description": "SQL query text and interpolated values, supplied as a tagged template."
+   },
+   {
+    "name": "options",
+    "type": "object",
+    "description": "Optional settings such as arrayMode, fullResults, fetchOptions, and transaction options."
+   }
+  ],
+  "returns": "By default, an array of row objects. With fullResults, an object containing rows and query metadata. With arrayMode, rows are arrays.",
+  "example": {
+   "title": "Run a parameterized query",
+   "code": "import { neon } from \"@neondatabase/serverless\";\n\nconst sql = neon(process.env.DATABASE_URL!);\nconst userId = 1;\nconst rows = await sql`SELECT * FROM users WHERE id = ${userId}`;\nconsole.log(rows);",
+   "language": "typescript",
+   "explanation": "This sends one parameterized SQL query over HTTP and returns rows as objects."
+  },
+  "useCases": [
+   {
+    "title": "Single HTTP queries",
+    "scenario": "A serverless function needs to run one query without keeping a database connection open."
+   },
+   {
+    "title": "Batch database work",
+    "scenario": "Several independent queries should run together in one non-interactive transaction."
+   },
+   {
+    "title": "WebSocket-based database access",
+    "scenario": "An application needs sessions, interactive transactions, or a package designed for node-postgres."
+   },
+   {
+    "title": "Edge database access",
+    "scenario": "An application runs in an edge runtime and must connect to Postgres without TCP."
+   }
+  ],
+  "related": [
+   "neon()",
+   "Pool",
+   "Client",
+   "transaction()",
+   "neonConfig",
+   "arrayMode",
+   "fullResults",
+   "fetchOptions"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you run a parameterized query with the Neon serverless driver?",
+    "answer": "Use neon() and the returned function as a tagged template. The driver sends the query over HTTP, and interpolated values become parameters.",
+    "followUp": "When would WebSockets be better? Use Pool or Client for sessions, interactive transactions, or node-postgres compatibility."
+   },
+   {
+    "question": "How do you execute several queries in one transaction?",
+    "answer": "Use sql.transaction() with an array of query fragments or a function that returns query fragments. It runs them in one non-interactive transaction.",
+    "followUp": "How can you configure it? Pass isolationLevel, readOnly, deferrable, arrayMode, fullResults, or fetchOptions in the transaction options object."
+   },
+   {
+    "question": "When should an application use HTTP versus WebSockets?",
+    "answer": "Use HTTP by default because it is suited to single queries and non-interactive transactions. Use Pool or Client over WebSockets when the application needs a session or interactive transaction.",
+    "followUp": "What edge-runtime rule applies to Pool and Client? Connect, use, and close each object within the same request handler."
+   }
+  ],
+  "keyPoints": [
+   "The neon() function uses HTTP for each query. This is the default choice for one-shot queries.",
+   "Pool and Client use WebSockets and support sessions, interactive transactions, and compatibility with node-postgres.",
+   "The default result is an array of row objects. Set arrayMode to get arrays or fullResults to get metadata too.",
+   "The package includes TypeScript types, so a separate @types/pg installation is not needed.",
+   "A connection can use a full URL or separate values such as user, password, host, port, and database.",
+   "Configuration is optional. The driver also supports fetch options, transaction settings, and short-lived asynchronous passwords."
+  ],
+  "gotchas": [
+   "Do not call the query function like a normal function with SQL text and parameters. Use a tagged template or call sql.query() instead.",
+   "HTTP queries have a 64 MB limit for both request and response size.",
+   "In edge runtimes, create, use, and close Pool or Client inside one request handler. Do not reuse them across requests.",
+   "Running SQL in browser code can expose the database. Assess the risk and protect data, for example with Row-Level Security."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "Neon Auth": {
+  "sourceUrl": "https://neon.com/docs/cli/neon-auth",
+  "sourceTitle": "Neon CLI command: neon-auth",
+  "summary": "neon-auth manages Managed Better Auth on a Neon database branch. It can enable, disable, inspect, and configure auth, including OAuth providers and users.",
+  "explanation": "The command operates on Managed Better Auth attached to a Neon database branch. It can provision or remove auth, show its status, configure OAuth providers and domains, and manage users. Project and branch values can come from the CLI context or from flags.",
+  "syntax": "neon neon-auth <subcommand> [options]",
+  "parameters": [
+   {
+    "name": "--database-name",
+    "type": "string",
+    "description": "Database name used for auth data when enabling Managed Better Auth."
+   },
+   {
+    "name": "--branch",
+    "type": "string",
+    "description": "Branch ID or name."
+   },
+   {
+    "name": "--project-id",
+    "type": "string",
+    "description": "Project ID."
+   },
+   {
+    "name": "--delete-data",
+    "type": "boolean",
+    "description": "Permanently delete all Managed Better Auth data and schema when disabling."
+   },
+   {
+    "name": "--provider-id",
+    "type": "string",
+    "description": "OAuth provider ID when adding a provider."
+   },
+   {
+    "name": "--oauth-client-id",
+    "type": "string",
+    "description": "OAuth client ID from the provider application."
+   },
+   {
+    "name": "--oauth-client-secret",
+    "type": "string",
+    "description": "OAuth client secret from the provider application."
+   }
+  ],
+  "returns": "The commands display status or configuration details, or change Managed Better Auth configuration on a branch.",
+  "example": {
+   "title": "Manage auth on a branch",
+   "code": "neon neon-auth enable --project-id <project-id> --branch <branch-id>\nneon neon-auth status --project-id <project-id> --branch <branch-id>\nneon neon-auth disable --project-id <project-id> --branch <branch-id>",
+   "language": "bash",
+   "explanation": "These commands enable Managed Better Auth, show its branch configuration, and remove it."
+  },
+  "useCases": [
+   {
+    "title": "Enable Managed Better Auth",
+    "scenario": "Set up auth for a branch"
+   },
+   {
+    "title": "View status and connection details",
+    "scenario": "Check branch auth configuration"
+   },
+   {
+    "title": "Manage OAuth providers",
+    "scenario": "Add or change social sign-in"
+   },
+   {
+    "title": "Disable Managed Better Auth",
+    "scenario": "Remove auth from a branch"
+   }
+  ],
+  "related": [
+   "Managed Better Auth",
+   "OAuth providers",
+   "database branch",
+   "context file",
+   "auth users",
+   "trusted domains",
+   "webhooks"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is neon-auth used for?",
+    "answer": "The neon-auth command manages Managed Better Auth on a Neon database branch. Its subcommands cover setup, status, removal, OAuth providers, domains, plugins, and users.",
+    "followUp": "What happens if the project and branch flags are missing? The CLI uses its context file, selects the only available option, or asks for the missing flag when several options exist."
+   },
+   {
+    "question": "How do you enable and check Managed Better Auth?",
+    "answer": "Use neon-auth enable to provision Managed Better Auth on the current branch. The enable command can also receive a database name for the auth data.",
+    "followUp": "How would you verify the result? Run neon-auth status for the branch to view whether auth is configured and see connection details."
+   },
+   {
+    "question": "How are OAuth providers managed?",
+    "answer": "The oauth-provider group manages supported providers such as Google, GitHub, Vercel, Microsoft, and Apple. Its commands let you add, update, list, or delete provider settings.",
+    "followUp": "Which providers may require your own credentials? Microsoft and Apple require the user's own OAuth credentials; shared credentials can be used for some other providers when available."
+   }
+  ],
+  "keyPoints": [
+   "Use neon-auth from a terminal to manage Managed Better Auth for a database branch.",
+   "The enable subcommand creates the Managed Better Auth setup on the selected branch.",
+   "The status subcommand reports whether auth is configured and displays connection details.",
+   "The disable subcommand removes Managed Better Auth from the selected branch.",
+   "OAuth provider commands support Google, GitHub, Vercel, Microsoft, and Apple.",
+   "OAuth provider settings can be added, deleted, listed, or updated."
+  ],
+  "gotchas": [
+   "Using --delete-data with disable permanently removes the auth data and schema. This action cannot be undone.",
+   "Leaving out project or branch flags uses the saved context. If more than one choice exists, the CLI asks you to provide a flag."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "Neon Local": {
   "sourceUrl": "https://neon.com/docs/local/neon-local",
@@ -2625,6 +3642,71 @@
   ],
   "checkedAt": "2026-10-16"
  },
+ "neonctl connection-string": {
+  "sourceUrl": "https://neon.com/docs/cli/quickstart",
+  "sourceTitle": "Neon CLI quickstart",
+  "summary": "`neon connection-string` retrieves a PostgreSQL connection string for a Neon project. Provide the project ID to target the correct project.",
+  "explanation": "The command retrieves a PostgreSQL connection string for a Neon project. Select the project with its project ID; use the returned string to connect a PostgreSQL client or application.",
+  "syntax": "neon connection-string --project-id PROJECT_ID",
+  "parameters": [
+   {
+    "name": "--project-id",
+    "type": "string",
+    "description": "The Neon project to use."
+   }
+  ],
+  "returns": "A PostgreSQL connection string for the selected Neon project.",
+  "example": {
+   "title": "Get a project connection string",
+   "code": "neon connection-string --project-id \"$NEON_PROJECT_ID\"",
+   "language": "bash",
+   "explanation": "This prints the connection string for the selected Neon project."
+  },
+  "useCases": [
+   {
+    "title": "Connect a PostgreSQL client",
+    "scenario": "Local development"
+   },
+   {
+    "title": "Provide database access to a script",
+    "scenario": "Automation"
+   },
+   {
+    "title": "Configure an application database connection",
+    "scenario": "Deployment"
+   }
+  ],
+  "related": [
+   "neon projects",
+   "Neon project",
+   "Postgres connection string"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does `neon connection-string` do?",
+    "answer": "`neon connection-string` returns a connection string for a Neon project. The project is selected with `--project-id`.",
+    "followUp": "How would you use the result in a script? Capture the command output in a variable, then pass that value to the PostgreSQL client or application."
+   },
+   {
+    "question": "How do you select the Neon project?",
+    "answer": "The command needs a project identifier when the target project is not otherwise selected. Pass it with `--project-id PROJECT_ID`.",
+    "followUp": "What should a script do if the project ID is missing? Stop with a clear error instead of running against an unintended project."
+   },
+   {
+    "question": "What kind of value does the command return?",
+    "answer": "The command returns a PostgreSQL connection string. Treat it as sensitive because connection strings can contain database credentials.",
+    "followUp": "Where should credentials be stored? Use a secret manager or protected environment variable rather than committing the string to source control."
+   }
+  ],
+  "keyPoints": [
+   "Use the Neon CLI to manage projects from the terminal.",
+   "A project is the main container for a PostgreSQL workload.",
+   "Projects contain branches, compute endpoints, roles, and databases."
+  ],
+  "gotchas": [],
+  "checkedAt": "2026-11-03"
+ },
  "neonctl databases": {
   "sourceUrl": "https://neon.com/docs/reference/api/branches/list-project-branch-databases",
   "sourceTitle": "List databases - Neon Docs",
@@ -2690,6 +3772,98 @@
   ],
   "gotchas": [],
   "checkedAt": "2026-10-16"
+ },
+ "neonctl databases create": {
+  "sourceUrl": "https://neon.com/docs/ai/skills/neon-postgres/references/neon-cli.md",
+  "sourceTitle": "Neon CLI: Install and connect",
+  "summary": "Install the Neon CLI with npm, Homebrew, Bun, or a standalone binary. Sign in with `neon login`, or authenticate with `NEON_API_KEY` or `--api-key`.",
+  "explanation": "The Neon CLI is a terminal tool for working with Neon projects. Install it with a package manager or use it without a global install, then authenticate with browser login or an API key.",
+  "syntax": "npm i -g neon@latest\nneon login\nNEON_API_KEY=<api-key> neon <command>\nneon <command> --api-key <api-key>",
+  "parameters": [
+   {
+    "name": "--api-key",
+    "type": "string",
+    "description": "API key used to authenticate a command."
+   },
+   {
+    "name": "--project-id",
+    "type": "string",
+    "description": "Project ID used by database commands when automatic project selection is not suitable."
+   },
+   {
+    "name": "--branch",
+    "type": "string",
+    "description": "Branch ID or name targeted by database commands."
+   },
+   {
+    "name": "NEON_API_KEY",
+    "type": "string",
+    "description": "Environment variable containing the API key."
+   }
+  ],
+  "returns": "The page documents CLI installation and authentication commands rather than a programmatic return value.",
+  "example": {
+   "title": "Install and sign in",
+   "code": "neon login\nneon projects list",
+   "language": "bash",
+   "explanation": "This installs the CLI, signs in through a browser, and lists the projects available to the account."
+  },
+  "useCases": [
+   {
+    "title": "Global installation",
+    "scenario": "A developer needs Neon commands available system-wide."
+   },
+   {
+    "title": "One-off commands",
+    "scenario": "A script or temporary environment should not install the CLI globally."
+   },
+   {
+    "title": "Browser sign-in",
+    "scenario": "A terminal session needs interactive account authentication."
+   },
+   {
+    "title": "API-key authentication",
+    "scenario": "Automation or a Vercel-managed Neon project needs non-interactive authentication."
+   }
+  ],
+  "related": [
+   "neon login",
+   "neon databases",
+   "neon projects",
+   "--api-key",
+   "--project-id",
+   "--branch"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you install the Neon CLI?",
+    "answer": "Install the CLI globally with npm using `npm i -g neon@latest`. You can also use Homebrew, Bun, a standalone binary, or run commands with `npx` or `bunx`.",
+    "followUp": "How can a user avoid a global install? Run the command through `npx neon@latest` or `bunx neon@latest`."
+   },
+   {
+    "question": "How does browser authentication work?",
+    "answer": "Run `neon login` to authenticate through a browser. The CLI then uses that authentication for later commands.",
+    "followUp": "What should a Vercel-Managed Integration user do? Set `NEON_API_KEY` or pass `--api-key` because web authentication requires a Neon-registered account."
+   },
+   {
+    "question": "How can the CLI use an API key?",
+    "answer": "Set the `NEON_API_KEY` environment variable, or provide `--api-key` on an individual command. This lets the CLI authenticate without browser login.",
+    "followUp": "Which option is usually safer for repeated commands? An environment variable avoids putting the key directly in each command, while still keeping the credential outside the command text."
+   }
+  ],
+  "keyPoints": [
+   "Homebrew, Bun, and a standalone binary are other installation choices on supported operating systems.",
+   "Use `npx` or `bunx` when you do not want a global installation.",
+   "Use `neon login` to sign in with a browser.",
+   "Authenticate with an API key through an environment variable or a command option.",
+   "For database commands, the CLI can resolve a missing project ID from the context file."
+  ],
+  "gotchas": [
+   "If Neon is managed through the Vercel integration, use an API key instead of browser login.",
+   "Browser authentication needs an account registered with Neon."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "neonctl ip-allow": {
   "sourceUrl": "https://neon.com/docs/cli/ip-allow",
@@ -2918,6 +4092,80 @@
    "Current Neon documentation uses `neon` as the CLI name, while `neonctl` remains an alias, so both command forms work."
   ],
   "checkedAt": "2026-10-16"
+ },
+ "neonctl projects create": {
+  "sourceUrl": "https://neon.com/docs/reference/api/projects/create-project.md",
+  "sourceTitle": "Create project",
+  "summary": "Create a Neon project inside an organization with POST /projects. You can choose its region and PostgreSQL version.",
+  "explanation": "The endpoint creates a Neon project inside an organization. The request can choose the project's region and PostgreSQL version. A personal API key needs org_id; an organization API key gets the organization from the key.",
+  "syntax": "POST /projects",
+  "parameters": [
+   {
+    "name": "org_id",
+    "type": "string",
+    "description": "Organization that will own the project. Required with a personal API key and inferred with an organization API key."
+   },
+   {
+    "name": "project",
+    "type": "object",
+    "description": "Project settings, including the project name, region, and PostgreSQL version."
+   }
+  ],
+  "returns": "A newly created Neon project.",
+  "example": {
+   "title": "Create a Neon project",
+   "code": "curl -X POST 'https://console.neon.tech/api/v2/projects' \\\n  -H 'Authorization: Bearer $NEON_API_KEY' \\\n  -H 'Content-Type: application/json' \\\n  -d '{\"org_id\":\"org-example\",\"project\":{\"name\":\"demo\",\"region_id\":\"aws-us-east-2\",\"pg_version\":17}}'",
+   "language": "bash",
+   "explanation": "This sends a project creation request with an organization, name, region, and PostgreSQL version."
+  },
+  "useCases": [
+   {
+    "title": "Create an application database",
+    "scenario": "Provision a new Neon project for an application."
+   },
+   {
+    "title": "Set a project region",
+    "scenario": "Choose where a project runs."
+   },
+   {
+    "title": "Set the PostgreSQL version",
+    "scenario": "Select a PostgreSQL release during setup."
+   }
+  ],
+  "related": [
+   "Manage projects",
+   "projects create"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "Which endpoint creates a project?",
+    "answer": "Use `POST /projects`. Send the project data in the request body, and include `org_id` when authenticating with a personal API key.",
+    "followUp": "How does an organization API key change the request? The organization is inferred from that key, so `org_id` is not needed for that purpose."
+   },
+   {
+    "question": "Which project settings can the request body control?",
+    "answer": "The request body can specify the project region and PostgreSQL version. These settings control where the project runs and which PostgreSQL release it uses.",
+    "followUp": "What availability issue should you check for PostgreSQL versions? PostgreSQL 19 is still rolling out to enabled regions, so it may not be available in every region."
+   },
+   {
+    "question": "Why is `org_id` sometimes required?",
+    "answer": "A project must be created within an organization. With a personal API key, `org_id` identifies that organization; with an organization API key, Neon infers it automatically.",
+    "followUp": "What other account rule can reject creation? The plan may impose a maximum number of projects."
+   }
+  ],
+  "keyPoints": [
+   "The operation creates one Neon project under an organization.",
+   "The request body lets you choose the deployment region and PostgreSQL version.",
+   "Organization API keys let Neon determine the organization from the key.",
+   "Supported PostgreSQL versions include 14 through 18."
+  ],
+  "gotchas": [
+   "Personal API keys must include `org_id` so Neon knows the target organization.",
+   "The account's plan can limit the number of projects it may create.",
+   "Choose a PostgreSQL version supported by the target region; version 19 may not be available everywhere."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "neonctl roles": {
   "sourceUrl": "https://neon.com/docs/cli.md",
@@ -3157,6 +4405,92 @@
   ],
   "checkedAt": "2026-10-16"
  },
+ "node-postgres": {
+  "sourceUrl": "https://neon.com/docs/serverless/serverless-driver",
+  "sourceTitle": "Neon serverless driver",
+  "summary": "Use `@neondatabase/serverless` to query Neon Postgres from JavaScript or TypeScript. Use HTTP for one-shot queries and non-interactive transactions; use WebSockets with `Pool` or `Client` for sessions and interactive transactions.",
+  "explanation": "The Neon serverless driver lets JavaScript and TypeScript code query Postgres from serverless or edge environments. Its `neon()` function sends single queries over HTTP, while `Pool` or `Client` uses WebSockets for sessions and interactive transactions.",
+  "syntax": "import { neon } from '@neondatabase/serverless';\nconst sql = neon(process.env.DATABASE_URL);\nconst rows = await sql`SELECT * FROM posts WHERE id = ${id}`;",
+  "parameters": [
+   {
+    "name": "connectionString",
+    "type": "string",
+    "description": "A Neon Postgres connection string, commonly read from `process.env.DATABASE_URL`."
+   },
+   {
+    "name": "values",
+    "type": "unknown[]",
+    "description": "SQL values interpolated into a tagged template or passed to `query()`."
+   }
+  ],
+  "returns": "`neon()` returns a query function. HTTP queries return query results; `Pool` and `Client` provide node-postgres-compatible querying over WebSockets.",
+  "example": {
+   "title": "Query Neon with the serverless driver",
+   "code": "import 'dotenv/config';\nimport { neon } from '@neondatabase/serverless';\n\nconst sql = neon(process.env.DATABASE_URL);\nconst title = 'First post';\nawait sql`CREATE TABLE IF NOT EXISTS posts (id serial PRIMARY KEY, title text NOT NULL)`;\nawait sql`INSERT INTO posts (title) VALUES (${title})`;\nconst rows = await sql`SELECT * FROM posts ORDER BY id`;\nconsole.log(rows);",
+   "language": "javascript",
+   "explanation": "This Node.js script loads the database URL, sends SQL over HTTP, inserts a row, and reads the table."
+  },
+  "useCases": [
+   {
+    "title": "HTTP queries",
+    "scenario": "A serverless function needs to run one or more independent SQL queries."
+   },
+   {
+    "title": "HTTP transaction",
+    "scenario": "An application needs several statements in one non-interactive transaction."
+   },
+   {
+    "title": "WebSocket Pool or Client",
+    "scenario": "A backend needs a session or an interactive transaction."
+   },
+   {
+    "title": "Drop-in driver compatibility",
+    "scenario": "An existing application uses the node-postgres API."
+   }
+  ],
+  "related": [
+   "@neondatabase/serverless",
+   "neon()",
+   "Pool",
+   "Client",
+   "DATABASE_URL",
+   "node-postgres",
+   "WebSockets"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How does the Neon serverless driver send a basic query?",
+    "answer": "Use `neon(DATABASE_URL)` for HTTP queries. The returned function is used as a tagged template, and interpolated values become query parameters.",
+    "followUp": "When would you use `Pool` instead? Use it for sessions, interactive transactions, or code that needs the node-postgres interface."
+   },
+   {
+    "question": "How should an application configure its Neon connection?",
+    "answer": "The connection string is read from an environment variable such as `DATABASE_URL`. In a plain Node.js script, load the environment file with `node --env-file=.env index.js` or `dotenv/config`.",
+    "followUp": "Why must this value stay server-side? It contains database credentials, so exposing it in browser code could allow direct database misuse."
+   },
+   {
+    "question": "When should an application use HTTP rather than WebSockets?",
+    "answer": "The HTTP API supports one-shot queries and multiple queries in one non-interactive transaction. It does not provide the session behavior needed for interactive transactions.",
+    "followUp": "What is required in older Node.js versions for WebSocket mode? Provide a WebSocket implementation, such as the one from the `ws` package."
+   }
+  ],
+  "keyPoints": [
+   "The package provides a Postgres driver for JavaScript and TypeScript.",
+   "It supports HTTP and WebSocket connections, which fit serverless and edge runtimes.",
+   "Call `neon()` with the connection string to create an HTTP query function.",
+   "The package already includes TypeScript types, so an extra `@types/pg` package is not needed.",
+   "Use `sql.query(text, values)` when the SQL text and parameter array must be supplied separately.",
+   "Use `sql.unsafe()` only for trusted identifiers such as a table name; normal values should use parameters."
+  ],
+  "gotchas": [
+   "Keep `DATABASE_URL` on the server. Do not put database code or credentials in browser code.",
+   "Prefer the HTTP interface for one query or a group of queries without an interactive transaction.",
+   "Use `Pool` or `Client` over WebSockets when your code needs a session, interactive transaction, or `pg` compatibility.",
+   "In edge runtimes, create and close WebSocket pools or clients inside the same request handler."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "Organization billing": {
   "sourceUrl": "https://neon.com/docs/introduction/manage-billing",
   "sourceTitle": "Manage billing - Neon Docs",
@@ -3226,6 +4560,166 @@
   "gotchas": [],
   "checkedAt": "2026-10-16"
  },
+ "PgBouncer": {
+  "sourceUrl": "https://neon.com/docs/guides/serverless-connection-pooling",
+  "sourceTitle": "Using Neon from highly elastic serverless platforms",
+  "summary": "Use Neon’s pooled endpoint for serverless traffic and keep each container’s local pool to one or two connections. Reserve the direct endpoint for administrative work that needs session state.",
+  "explanation": "Neon places PgBouncer between serverless clients and Postgres. The pooled endpoint can accept many client connections and reuse fewer database connections. Each container should keep only one or two local connections, while direct connections should be reserved for tasks that need session state.",
+  "syntax": "postgresql://user:pass@ep-name-pooler.region.aws.neon.tech/database?sslmode=require&channel_binding=require",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Use a small client pool",
+   "code": "import { Pool } from \"@neondatabase/serverless\";\n\nconst pool = new Pool({\n  connectionString: process.env.DATABASE_URL,\n  max: 2,\n  idleTimeoutMillis: 5000,\n});\n\nconst result = await pool.query(\"SELECT 1\");\nconsole.log(result.rows);\nawait pool.end();",
+   "language": "typescript",
+   "explanation": "Use the pooled Neon URL and keep the local pool small. Close the pool when the process ends."
+  },
+  "useCases": [
+   {
+    "title": "Elastic application traffic",
+    "scenario": "Many short-lived serverless functions or rapidly scaling containers need database access."
+   },
+   {
+    "title": "Administrative database tasks",
+    "scenario": "Database migrations, schema pushes, or dumps need session-level database behavior."
+   },
+   {
+    "title": "Separate workload pools",
+    "scenario": "Web requests and background workers share one Neon database."
+   }
+  ],
+  "related": [
+   "PgBouncer",
+   "max_connections",
+   "default_pool_size",
+   "query_wait_timeout",
+   "Neon serverless driver",
+   "connection pooling"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How should a serverless application connect to Neon?",
+    "answer": "Use the hostname containing `-pooler` for application traffic. Neon’s PgBouncer accepts many client connections and multiplexes them over fewer Postgres connections.",
+    "followUp": "Why should the application pool still be small? Each container can create its own client connections, so many containers with large local pools can exhaust connection capacity before queries run."
+   },
+   {
+    "question": "Why is a small client-side pool important?",
+    "answer": "Set the local pool maximum to one or two connections per container. The number of containers changes during scale-out, so a large pool in every container multiplies total connections.",
+    "followUp": "What happens if 300 containers each use a pool of 10? They can create up to 3,000 client connections, which can exceed configured limits or create unnecessary contention."
+   },
+   {
+    "question": "What connection limits matter during a serverless burst?",
+    "answer": "Neon’s limits include up to 10,000 PgBouncer client connections, a transaction pool based on 90% of `max_connections`, and direct Postgres `max_connections` limits that vary by compute size. Excess queued work can fail after the query wait timeout.",
+    "followUp": "How can separate workloads reduce interference? Use different database roles so PgBouncer creates separate pools, but remember that they still share the total Postgres connection budget."
+   }
+  ],
+  "keyPoints": [
+   "Use the hostname with `-pooler` for normal serverless application traffic.",
+   "Limit each container’s local pool to one or two connections.",
+   "Let Neon reuse a smaller set of database connections behind the pooled endpoint.",
+   "Use a short idle timeout when the platform does not provide lifecycle hooks.",
+   "Close pools when the runtime receives termination signals.",
+   "Different database roles and names map to distinct PgBouncer pools."
+  ],
+  "gotchas": [
+   "Do not use the pooled endpoint for migrations or other operations that need session state.",
+   "A burst can make requests wait in PgBouncer; waiting too long causes a query_wait_timeout error.",
+   "Separate database roles provide soft isolation, not a separate total Postgres connection budget."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "Point-in-time restore": {
+  "sourceUrl": "https://neon.com/docs/postgres/backup-restore/branch-restore",
+  "sourceTitle": "Instant restore",
+  "summary": "Neon instant restore, or PITR, returns a root branch to an earlier point in its own or another root branch's history. It uses a timestamp or LSN within the history window and creates a backup branch before replacing the target state.",
+  "explanation": "Instant restore changes a Neon root branch to an earlier state from its own history or another root branch. Choose a timestamp or LSN within the history window. Neon replaces every database on the target branch, briefly interrupts its connections, and creates a backup branch containing the target's previous state.",
+  "syntax": "POST /projects/{project_id}/branches/{branch_id_to_restore}/restore",
+  "parameters": [
+   {
+    "name": "source_branch_id",
+    "type": "string",
+    "description": "ID of the branch whose data is used for the restore. It must be a root branch for point-in-time restore."
+   },
+   {
+    "name": "source_lsn",
+    "type": "string",
+    "description": "Log Sequence Number on the source branch. The target receives data up to this LSN."
+   },
+   {
+    "name": "source_timestamp",
+    "type": "string",
+    "description": "Timestamp on the source branch used as the restore point."
+   },
+   {
+    "name": "preserve_under_name",
+    "type": "string",
+    "description": "Name under which the target's pre-restore state is preserved when restoring from its own history."
+   }
+  ],
+  "returns": "The selected root branch is restored with the chosen data and schema, and Neon creates a backup branch containing its previous state.",
+  "example": {
+   "title": "Restore a branch at an LSN",
+   "code": "neon branches restore development --source-branch main --source-lsn 0/12345 --preserve-under-name development_old",
+   "language": "bash",
+   "explanation": "This restores the development root branch from the main root branch at the given LSN and keeps the old state under a backup name."
+  },
+  "useCases": [
+   {
+    "title": "Recover from accidental changes",
+    "scenario": "A production deployment deleted rows or changed a schema incorrectly."
+   },
+   {
+    "title": "Find a recovery point",
+    "scenario": "You need to inspect data as it existed before an incident."
+   },
+   {
+    "title": "Roll back the restore",
+    "scenario": "A restore produced an unwanted result."
+   }
+  ],
+  "related": [
+   "Time Travel Assist",
+   "History window",
+   "Schema Diff",
+   "Backup branches",
+   "pg_dump",
+   "pg_restore"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is Neon instant restore?",
+    "answer": "Instant restore, also called PITR, moves a root branch back to a selected time in its own history or another root branch's history. The selected point must still be inside the project's history window.",
+    "followUp": "How can you verify the point before changing data? Use Time Travel Assist to run read-only queries against the historical point, and use Schema Diff to compare branches."
+   },
+   {
+    "question": "What happens during a restore?",
+    "answer": "The operation updates all databases on the target branch with the data and schema from the selected point. The target branch's existing state is saved automatically in a backup branch.",
+    "followUp": "Why is the backup useful? You can use it as the source for another instant restore if the first restore was incorrect."
+   },
+   {
+    "question": "Which point-in-time identifiers can you use?",
+    "answer": "A restore can use a timestamp or an LSN. Restoring from a different branch can use its latest state by default, or an earlier point when the latest-data option is disabled.",
+    "followUp": "What must be supplied when restoring a branch from its own history through the API? The request must identify the source branch and include a source timestamp or LSN plus a name for the preserved backup branch."
+   }
+  ],
+  "keyPoints": [
+   "A root branch can be restored from its own history or from another root branch.",
+   "The available restore period depends on the Neon plan's history-window setting.",
+   "Neon automatically preserves a backup so you can undo a restore.",
+   "The operation affects every database on the selected branch, not only one database.",
+   "You can identify the restore point with a timestamp or a PostgreSQL Log Sequence Number.",
+   "After restoring a root branch, the restored and backup branches are independent root branches."
+  ],
+  "gotchas": [
+   "The restore replaces the target branch's current data and schema.",
+   "Applications using the target branch can lose connections during the operation.",
+   "The target and source for point-in-time restore must be root branches.",
+   "A branch made from a snapshot cannot currently be used for this restore operation."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "Pool": {
   "sourceUrl": "https://neon.com/docs/serverless/serverless-driver",
   "sourceTitle": "Neon serverless driver",
@@ -3293,6 +4787,93 @@
   "gotchas": [],
   "checkedAt": "2026-10-16"
  },
+ "pool.connect": {
+  "sourceUrl": "https://neon.com/docs/guides/serverless-connection-pooling",
+  "sourceTitle": "Using Neon from highly elastic serverless platforms",
+  "summary": "Use Neon's pooled endpoint and keep each container's local pool small. Create the pool globally so warm serverless invocations can reuse it without causing connection exhaustion.",
+  "explanation": "A global client-side pool can be reused by concurrent requests in one container. Keep its maximum small because many containers can start at once. Use Neon's pooled endpoint so PgBouncer multiplexes client connections to fewer Postgres connections.",
+  "syntax": "const pool = new Pool({ connectionString, max: 1|2, idleTimeoutMillis: 5000 });\nconst client = await pool.connect();\nclient.release();",
+  "parameters": [
+   {
+    "name": "connectionString",
+    "type": "string",
+    "description": "Postgres connection string, normally the Neon pooled endpoint for application traffic."
+   },
+   {
+    "name": "max",
+    "type": "number",
+    "description": "Maximum number of local connections held by this container."
+   },
+   {
+    "name": "idleTimeoutMillis",
+    "type": "number",
+    "description": "Time before an idle local connection is closed."
+   }
+  ],
+  "returns": "A checked-out database client from pool.connect(); release it after use.",
+  "example": {
+   "title": "Small global pool",
+   "code": "const pool = new Pool({\n  connectionString: process.env.DATABASE_URL,\n  max: 2,\n  idleTimeoutMillis: 5000,\n});\n\nexport default async function handler() {\n  const client = await pool.connect();\n  try {\n    const { rows } = await client.query('select 1');\n    return rows;\n  } finally {\n    client.release();\n  }\n}",
+   "language": "typescript",
+   "explanation": "Create the pool outside the handler, keep its size small, and release each checked-out client."
+  },
+  "useCases": [
+   {
+    "title": "Limit connection growth",
+    "scenario": "A serverless service runs many concurrent containers."
+   },
+   {
+    "title": "Reuse a global pool",
+    "scenario": "A warm container handles several requests over time."
+   },
+   {
+    "title": "Use the HTTP driver",
+    "scenario": "A function platform allows only one request per instance."
+   }
+  ],
+  "related": [
+   "@neondatabase/serverless",
+   "@vercel/functions",
+   "PgBouncer",
+   "default_pool_size",
+   "max_connections",
+   "query_wait_timeout",
+   "HTTP",
+   "WebSocket"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you size a pool for a highly elastic serverless platform?",
+    "answer": "The total attempted connections are the number of active containers multiplied by the local pool size. A large pool per container can exhaust limits during a scale-out event.",
+    "followUp": "How would you reduce this risk? Set the local pool to about one or two connections per container and use Neon's pooled endpoint for multiplexing."
+   },
+   {
+    "question": "When should an application use a TCP pool versus the Neon serverless driver?",
+    "answer": "Use a global TCP pool for platforms that process multiple requests in one container. For single-request environments, use the Neon serverless HTTP driver because opening and closing a connection per invocation is safer than retaining TCP connections.",
+    "followUp": "What transport should support an interactive transaction? Use WebSocket with the serverless driver, because HTTP is intended for independent queries and non-interactive transactions."
+   },
+   {
+    "question": "What is the difference between pooled and direct Neon connections?",
+    "answer": "The pooled connection string contains `-pooler` in the hostname and routes through PgBouncer. A direct connection bypasses PgBouncer and is intended for tasks such as migrations or operations needing session-level state.",
+    "followUp": "Why can a pooled endpoint still queue work? PgBouncer limits active backend transactions with `default_pool_size`; excess work waits and can fail after the configured queue timeout."
+   }
+  ],
+  "keyPoints": [
+   "Use Neon's pooled endpoint for serverless application traffic. It accepts many client connections while using fewer backend Postgres connections.",
+   "Keep the client-side pool at one or two connections per container so a large number of containers does not create an avoidable connection spike.",
+   "Create the pool once at module scope. Warm invocations can then reuse it instead of opening a new pool for every request.",
+   "Estimate peak client connections by multiplying active containers by the pool size in each container.",
+   "Choose HTTP for independent work and simple transactions. Choose WebSocket when several transaction steps must share a connection.",
+   "On platforms without lifecycle hooks, use a short idle timeout and handle shutdown signals to close connections."
+  ],
+  "gotchas": [
+   "Creating a pool inside the handler opens new connections repeatedly and can exhaust the database.",
+   "Use the pooled endpoint for application traffic. Use the direct endpoint for migrations and other operations that need session state.",
+   "Client timers may stop during suspension, so idle sockets can remain open. Use lifecycle cleanup or a short idle timeout."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "Pool.end": {
   "sourceUrl": "https://neon.com/docs/serverless/serverless-driver",
   "sourceTitle": "Neon serverless driver",
@@ -3352,6 +4933,170 @@
   ],
   "gotchas": [],
   "checkedAt": "2026-10-16"
+ },
+ "pool.query": {
+  "sourceUrl": "https://neon.com/docs/serverless/serverless-driver",
+  "sourceTitle": "Neon serverless driver",
+  "summary": "Neon's serverless driver lets JavaScript and TypeScript applications query Neon Postgres over HTTP or WebSockets. Use neon() for ordinary queries and non-interactive transactions; use Pool or Client for sessions and interactive transactions.",
+  "explanation": "The Neon serverless driver sends PostgreSQL queries from JavaScript or TypeScript serverless and edge runtimes over HTTP or WebSockets. Use neon() for single queries and non-interactive transactions; use Pool or Client when the application needs sessions, interactive transactions, or node-postgres compatibility.",
+  "syntax": "neon(connectionString); sql`SELECT ...`; sql.query(text, values); sql.transaction(queriesOrFn, options)",
+  "parameters": [
+   {
+    "name": "connectionString",
+    "type": "string",
+    "description": "A Neon PostgreSQL connection string, commonly read from DATABASE_URL."
+   },
+   {
+    "name": "text",
+    "type": "string",
+    "description": "SQL text containing placeholders such as $1 and $2."
+   },
+   {
+    "name": "values",
+    "type": "unknown[]",
+    "description": "Values bound to the SQL placeholders."
+   },
+   {
+    "name": "queriesOrFn",
+    "type": "array | function",
+    "description": "An array of query templates, or a non-async function that returns an array of queries."
+   }
+  ],
+  "returns": "The neon() function returns a query function. Queries return rows; transaction() returns an array containing the result of each query.",
+  "example": {
+   "title": "Run a parameterized query",
+   "code": "import { neon } from \"@neondatabase/serverless\";\n\nconst sql = neon(process.env.DATABASE_URL!);\nconst { rows } = await sql.query(\n  \"SELECT * FROM posts WHERE id = $1\",\n  [1]\n);\nconsole.log(rows);",
+   "language": "typescript",
+   "explanation": "Create a Neon HTTP query function, then call its query method with SQL placeholders and values."
+  },
+  "useCases": [
+   {
+    "title": "Single HTTP queries",
+    "scenario": "A serverless or edge function needs to run one SQL query without keeping a database session."
+   },
+   {
+    "title": "Non-interactive transactions",
+    "scenario": "Several independent statements should run atomically without interactive session behavior."
+   },
+   {
+    "title": "WebSocket Pool or Client",
+    "scenario": "An existing application expects the node-postgres API or needs session state."
+   },
+   {
+    "title": "Parameterized and composable SQL",
+    "scenario": "A query must insert values safely while composing optional SQL fragments."
+   }
+  ],
+  "related": [
+   "neon",
+   "Pool",
+   "Client",
+   "transaction()",
+   "sql.query()",
+   "sql.unsafe()",
+   "Neon serverless driver configuration",
+   "neonConfig"
+  ],
+  "since": "1.0.0",
+  "interview": [
+   {
+    "question": "How do you run a parameterized query over HTTP?",
+    "answer": "Use neon() for HTTP queries. Its returned function is used as a tagged template, and sql.query() is available when SQL uses numbered placeholders and a values array.",
+    "followUp": "When should Pool or Client be used? Use them when the application needs sessions, interactive transactions, or compatibility with node-postgres."
+   },
+   {
+    "question": "How do HTTP transactions work?",
+    "answer": "Use sql.transaction() with an array of query templates or with a non-async function that returns an array. The queries run in one non-interactive transaction.",
+    "followUp": "Can it support an interactive transaction with multiple steps on one session? No. Use Pool or Client over WebSockets for session and interactive-transaction support."
+   },
+   {
+    "question": "When would you choose WebSockets instead of HTTP?",
+    "answer": "The driver supports Pool and Client over WebSockets. They provide session and transaction support and are compatible with node-postgres APIs.",
+    "followUp": "What should a highly elastic serverless deployment do with client-side pools? Keep pools global, limit each instance to a small size such as one or two connections, and close idle connections when the platform suspends instances."
+   }
+  ],
+  "keyPoints": [
+   "Use neon() when each query can be sent as an HTTP request.",
+   "The npm package includes TypeScript types, so a separate type package is not needed.",
+   "transaction() accepts either an array of queries or a function that returns an array of queries.",
+   "Pool and Client provide sessions and transactions through WebSockets.",
+   "The tagged-template form safely inserts values as query parameters.",
+   "You can build reusable SQL fragments and combine them into one template query."
+  ],
+  "gotchas": [
+   "Do not call the neon() result like an ordinary function with SQL text and parameters. Use a tagged template or sql.query() instead.",
+   "HTTP queries have a 64 MB limit for both requests and responses.",
+   "Node.js versions below 19 are not supported by the driver."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "Pooled connection": {
+  "sourceUrl": "https://neon.com/docs/guides/serverless-connection-pooling",
+  "sourceTitle": "Using Neon from highly elastic serverless platforms",
+  "summary": "Use Neon’s pooled endpoint for serverless application traffic. Keep each container’s local pool at one or two connections and create it globally so warm invocations can reuse it.",
+  "explanation": "A pooled connection goes through Neon’s PgBouncer in transaction mode. PgBouncer accepts many client connections and shares fewer actual Postgres connections. In a serverless app, create one small pool in global scope so warm containers can reuse it. Use a direct connection only for tasks that need session state, such as migrations.",
+  "syntax": "const pool = new Pool({ connectionString: process.env.DATABASE_URL, max: 2 });",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Small global pool",
+   "code": "const pool = new Pool({\n  connectionString: process.env.DATABASE_URL,\n  max: 2,\n});\n\nexport default async function handler(request, response) {\n  const result = await pool.query('select now()');\n  response.json(result.rows);\n}",
+   "language": "typescript",
+   "explanation": "Create the pool outside the request handler and use Neon’s pooled connection string for application traffic."
+  },
+  "useCases": [
+   {
+    "title": "Elastic serverless traffic",
+    "scenario": "An application runs on AWS Fargate, Google Cloud Run, Modal, or Vercel and can rapidly create many instances."
+   },
+   {
+    "title": "High-concurrency application requests",
+    "scenario": "Many short-lived requests need database access without opening one direct Postgres connection per request."
+   },
+   {
+    "title": "Separate administrative connections",
+    "scenario": "An application uses migrations or administrative commands that require session-level database behavior."
+   }
+  ],
+  "related": [
+   "Connection pooling",
+   "Direct connection",
+   "PgBouncer",
+   "Transaction mode",
+   "Serverless connection pooling"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "Which connection string should a serverless application use?",
+    "answer": "Use the hostname containing `-pooler` for serverless application traffic. Neon’s PgBouncer accepts many client connections and multiplexes them onto fewer Postgres connections.",
+    "followUp": "When would you avoid the pooled endpoint? Use a direct endpoint for migrations and features that require session state, such as temporary tables or LISTEN/NOTIFY."
+   },
+   {
+    "question": "How should a local pool be sized?",
+    "answer": "Keep the local pool small, usually one or two connections per container. A serverless platform can create many containers, so a large pool on every container can exhaust Postgres connections.",
+    "followUp": "Why not set the pool to twenty? Two hundred containers with ten connections each would create two thousand possible connections before useful work begins."
+   },
+   {
+    "question": "Where should the database pool be created?",
+    "answer": "Declare the pool globally, outside the request handler. Warm serverless containers can then reuse the pool across invocations instead of opening a new pool for every request.",
+    "followUp": "What should handle multiplexing between many clients and Postgres? Neon’s managed PgBouncer should handle that work through the pooled endpoint."
+   }
+  ],
+  "keyPoints": [
+   "Neon includes the pooler, so the application does not need to deploy or operate its own PgBouncer.",
+   "The pooled endpoint is designed for high client concurrency, including bursts from elastic serverless platforms.",
+   "Select the pooled endpoint by using the hostname whose name contains `-pooler`.",
+   "Keep the direct endpoint for administration and other operations that need a stable Postgres session.",
+   "A global pool can survive between requests in a warm container and reduce connection setup work.",
+   "PgBouncer returns database connections to its shared pool after transactions, allowing many short-lived clients to share them."
+  ],
+  "gotchas": [
+   "Do not use pooled connections for session-scoped features such as temporary tables, LISTEN/NOTIFY, session variables, SQL PREPARE, or session-level advisory locks.",
+   "Creating a pool during each request can open unnecessary connections and quickly exhaust the database.",
+   "Large client-side pools multiply across serverless containers, so keep the local maximum at one or two connections."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "Pooled endpoint port": {
   "sourceUrl": "https://neon.com/docs/connect/connection-pooling",
@@ -3413,6 +5158,241 @@
   ],
   "gotchas": [],
   "checkedAt": "2026-10-16"
+ },
+ "poolQuery": {
+  "sourceUrl": "https://neon.com/docs/serverless/serverless-driver-configuration",
+  "sourceTitle": "Neon serverless driver configuration",
+  "summary": "The Neon serverless driver lets JavaScript and TypeScript code query Postgres through a tagged SQL function. It uses practical defaults and supports configuration for result formats, fetch behavior, connection parameters, and transactions.",
+  "explanation": "The Neon serverless driver creates a query function from a database connection string. Calling that function with a tagged SQL template sends the query and returns its rows. The driver can also be configured with result formats, fetch settings, connection parameters, and transaction options.",
+  "syntax": "const sql = neon(connectionString);\nconst rows = await sql`SQL query`;",
+  "parameters": [
+   {
+    "name": "connectionString",
+    "type": "string",
+    "description": "A Neon Postgres connection string used to create the query function."
+   },
+   {
+    "name": "query",
+    "type": "SQL tagged template",
+    "description": "SQL supplied through a tagged template. Values inserted into the template are used as query parameters."
+   }
+  ],
+  "returns": "A promise that resolves by default to an array of row objects. Object keys are column names.",
+  "example": {
+   "title": "Run a query",
+   "code": "import { neon } from '@neondatabase/serverless';\n\nconst sql = neon(process.env.DATABASE_URL!);\nconst posts = await sql`SELECT * FROM posts WHERE id = ${12};`;\nconsole.log(posts);",
+   "language": "typescript",
+   "explanation": "This creates a query function from the database URL and runs a parameterized SQL query."
+  },
+  "useCases": [
+   {
+    "title": "Run database queries from serverless code",
+    "scenario": "A serverless function needs to read or write Neon Postgres without managing a persistent database connection."
+   },
+   {
+    "title": "Customize query handling",
+    "scenario": "An application needs a different response shape or request behavior from the driver."
+   },
+   {
+    "title": "Control connection and transaction options",
+    "scenario": "A service must supply connection or transaction settings explicitly."
+   }
+  ],
+  "related": [
+   "Neon serverless driver",
+   "result formats",
+   "fetch options",
+   "connection parameters",
+   "transaction options"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you run a query with the Neon serverless driver?",
+    "answer": "Use `neon()` with the database connection string, usually from `DATABASE_URL`. The returned function accepts a tagged SQL template and resolves to the query rows.",
+    "followUp": "How can the default behavior be changed? The driver configuration supports result formats, fetch options, connection parameters, and transaction options."
+   },
+   {
+    "question": "What does a query return by default?",
+    "answer": "The default result contains only rows produced by the SQL statement. Each row is represented as an object whose keys are the column names.",
+    "followUp": "What should be checked when a query result does not have the expected shape? Check the configured result format and the SQL statement, because both affect the returned data."
+   },
+   {
+    "question": "Which configuration areas does the driver provide?",
+    "answer": "The driver can use its default configuration without extra options. Configuration is available when an application needs to control result handling, fetch behavior, connection details, or transactions.",
+    "followUp": "Why avoid adding configuration unnecessarily? Defaults reduce setup and keep the connection code simpler while preserving the documented standard behavior."
+   }
+  ],
+  "keyPoints": [
+   "Create the query function with `neon()` before sending SQL statements.",
+   "Pass the database connection string to `neon()`, commonly read from an environment variable.",
+   "The normal row format is an array of objects, with database column names as object keys.",
+   "This configuration page focuses on options; installation and basic transport usage are covered by the main driver guide."
+  ],
+  "gotchas": [
+   "Configuration options are optional because the driver provides defaults. Add settings only when the application needs different behavior.",
+   "The default result is an array containing row objects, not the full database response or command metadata."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "poolQueryViaFetch": {
+  "sourceUrl": "https://neon.com/docs/serverless/serverless-driver",
+  "sourceTitle": "Neon serverless driver",
+  "summary": "The Neon serverless driver lets JavaScript and TypeScript applications query Postgres from serverless and edge environments over HTTP or WebSockets. Use HTTP by default, and use WebSockets when sessions or interactive transactions are needed.",
+  "explanation": "The driver lets JavaScript and TypeScript code query Neon from serverless or edge runtimes without opening a TCP connection. By default, neon() sends each query as an HTTP fetch request, which suits single queries and non-interactive transactions. Use Pool or Client over WebSockets when the code needs sessions or interactive transactions.",
+  "syntax": "neon(connectionString)",
+  "parameters": [
+   {
+    "name": "connectionString",
+    "type": "string",
+    "description": "The Neon connection string used to connect to the database."
+   }
+  ],
+  "returns": "By default, an array of objects representing the rows returned by the SQL query.",
+  "example": {
+   "title": "Query Postgres over HTTP",
+   "code": "import { neon } from '@neondatabase/serverless';\n\nconst sql = neon(process.env.DATABASE_URL!);\nconst postId = 12;\nconst rows = await sql`SELECT * FROM posts WHERE id = ${postId}`;\nconsole.log(rows);",
+   "language": "typescript",
+   "explanation": "This creates an HTTP query function and uses it to fetch one post by ID."
+  },
+  "useCases": [
+   {
+    "title": "Single request queries",
+    "scenario": "A serverless function needs to run a short database query without maintaining a TCP connection."
+   },
+   {
+    "title": "Edge database access",
+    "scenario": "An edge application needs to read Postgres data using a low-latency driver."
+   },
+   {
+    "title": "Non-interactive transactions",
+    "scenario": "A workflow runs several statements that do not require an interactive transaction."
+   },
+   {
+    "title": "Stateful database work",
+    "scenario": "An application needs sessions or interactive transactions with Postgres."
+   }
+  ],
+  "related": [
+   "neon()",
+   "Pool",
+   "Client",
+   "HTTP",
+   "WebSockets",
+   "interactive transactions",
+   "node-postgres",
+   "fetch options"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is the Neon serverless driver?",
+    "answer": "The Neon serverless driver is a JavaScript and TypeScript Postgres driver for serverless and edge environments. It uses HTTP or WebSockets instead of TCP.",
+    "followUp": "When should WebSockets be used? Use them for interactive transactions, sessions, or compatibility with the pg package."
+   },
+   {
+    "question": "How do you run a query with the driver?",
+    "answer": "Use neon() for HTTP queries. Each query is sent as an HTTP fetch request, which is optimized for single queries and multiple queries in one non-interactive transaction.",
+    "followUp": "Why is HTTP the default? It avoids the need for a persistent database connection and is suited to serverless request handling."
+   },
+   {
+    "question": "What does a query return by default?",
+    "answer": "Create a query function with neon(process.env.DATABASE_URL), then pass a tagged SQL template to it. The result is an array of row objects whose keys are column names.",
+    "followUp": "How can connection behavior change? The driver also supports Pool and Client constructors for WebSocket connections."
+   }
+  ],
+  "keyPoints": [
+   "It is designed for JavaScript and TypeScript applications.",
+   "It supports serverless and edge runtimes through HTTP or WebSockets rather than TCP.",
+   "The neon() function uses HTTP fetch requests for queries.",
+   "HTTP is suited to one query or several queries in one non-interactive transaction.",
+   "The default result contains only the rows returned by the SQL statement.",
+   "Rows are returned as objects in an array, with column names used as keys."
+  ],
+  "gotchas": [
+   "Do not use the HTTP form for interactive transactions, sessions, or node-postgres compatibility. Use Pool or Client over WebSockets instead.",
+   "Configuration options are optional. The default behavior is usually enough."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "Postgres.js": {
+  "sourceUrl": "https://neon.com/docs/serverless/serverless-driver",
+  "sourceTitle": "Neon serverless driver",
+  "summary": "The Neon serverless driver lets JavaScript and TypeScript applications query Neon Postgres over HTTP or WebSockets. Use neon() for one-shot queries and Pool or Client for sessions or interactive transactions.",
+  "explanation": "The Neon serverless driver creates a query function from a database connection string. Use that function for one-shot SQL queries over HTTP, or use Pool and Client over WebSockets when you need sessions or interactive transactions.",
+  "syntax": "const sql = neon(process.env.DATABASE_URL);\nawait sql`SELECT * FROM table WHERE id = ${id}`;",
+  "parameters": [
+   {
+    "name": "connectionString",
+    "type": "string",
+    "description": "A Neon PostgreSQL connection string, usually read from the DATABASE_URL environment variable."
+   },
+   {
+    "name": "query values",
+    "type": "unknown",
+    "description": "SQL values inserted into a tagged template or supplied as parameters to query()."
+   }
+  ],
+  "returns": "neon() returns a query function. A query returns rows; transaction() returns an array of query results.",
+  "example": {
+   "title": "Run a parameterized query over HTTP",
+   "code": "import { neon } from \"@neondatabase/serverless\";\n\nconst sql = neon(process.env.DATABASE_URL);\nconst title = \"My post\";\nconst rows = await sql`SELECT * FROM posts WHERE title = ${title}`;\nconsole.log(rows);",
+   "language": "javascript",
+   "explanation": "This reads matching rows with a parameterized SQL template."
+  },
+  "useCases": [
+   {
+    "title": "HTTP queries",
+    "scenario": "A serverless function needs one database query with low connection overhead."
+   },
+   {
+    "title": "Batch transactions",
+    "scenario": "An application needs several statements in one non-interactive transaction."
+   },
+   {
+    "title": "WebSocket pools",
+    "scenario": "A Node.js service needs sessions or interactive transactions."
+   }
+  ],
+  "related": [
+   "Pool",
+   "Client",
+   "neonConfig",
+   "node-postgres",
+   "Drizzle-ORM",
+   "Cloudflare Workers",
+   "Vercel Functions"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "When should you use HTTP instead of WebSockets?",
+    "answer": "Use neon() for single queries and non-interactive transactions over HTTP. Use Pool or Client over WebSockets when the application needs sessions, interactive transactions, or node-postgres compatibility.",
+    "followUp": "What is required for Pool in older Node.js versions? Provide a WebSocket constructor, such as the one from the ws package."
+   },
+   {
+    "question": "How are values safely added to a Neon SQL query?",
+    "answer": "The query function is used as a tagged template. Values inside the template are sent as parameters, which helps prevent SQL injection and allows query fragments to be composed safely.",
+    "followUp": "How can you run several queries in one non-interactive transaction? Pass an array of SQL queries to sql.transaction()."
+   },
+   {
+    "question": "Why should the database connection string stay server-side?",
+    "answer": "Keep DATABASE_URL in the environment, not in browser code. The connection string contains database credentials, and the documentation warns that running SQL from a browser can expose the database to misuse.",
+    "followUp": "What can protect a browser-facing design? Use a server-side backend, or carefully assess protections such as Row-Level Security."
+   }
+  ],
+  "keyPoints": [
+   "Call neon() with DATABASE_URL to get a function for low-latency HTTP queries.",
+   "Choose Pool or Client for sessions, interactive transactions, or compatibility with node-postgres.",
+   "The npm package includes TypeScript types, so a separate @types/pg installation is not needed.",
+   "HTTP queries have a 64 MB limit for both request and response size.",
+   "Use transaction() with an array of queries when several statements should run in one non-interactive transaction."
+  ],
+  "gotchas": [
+   "The driver is installed from npm as @neondatabase/serverless. In Node.js, it requires version 19 or later.",
+   "Use the returned query function with tagged SQL templates, or use query() when you need a parameterized query call."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "Primary branch": {
   "sourceUrl": "https://neon.com/docs/manage/branches",
@@ -3704,6 +5684,102 @@
   ],
   "checkedAt": "2026-10-16"
  },
+ "Project": {
+  "sourceUrl": "https://neon.com/docs/serverless/serverless-driver",
+  "sourceTitle": "Neon serverless driver",
+  "summary": "Neon’s serverless driver lets JavaScript and TypeScript applications query Postgres from serverless and edge environments. Use HTTP by default; use WebSockets for interactive transactions, sessions, or node-postgres compatibility.",
+  "explanation": "The neon() function creates a query function from a Neon connection string. Tagged template queries send HTTP requests and safely bind inserted values. Use sql.query() for manually parameterized SQL, and use Pool or Client over WebSockets when interactive transactions or sessions are required.",
+  "syntax": "const sql = neon(process.env.DATABASE_URL);\nawait sql`SELECT ...`;\nawait sql.query('SELECT ... WHERE id = $1', [value]);\nawait sql.transaction([query1, query2]);",
+  "parameters": [
+   {
+    "name": "connectionString",
+    "type": "string",
+    "description": "A Neon Postgres connection string, usually read from DATABASE_URL."
+   },
+   {
+    "name": "values",
+    "type": "unknown[]",
+    "description": "SQL values inserted into a tagged template query."
+   },
+   {
+    "name": "text",
+    "type": "string",
+    "description": "SQL text containing placeholders such as $1."
+   },
+   {
+    "name": "params",
+    "type": "unknown[]",
+    "description": "Values that match the SQL placeholders."
+   }
+  ],
+  "returns": "neon() returns a query function. A query resolves to rows; the page's example reads the result from the returned rows array.",
+  "example": {
+   "title": "Query Neon over HTTP",
+   "code": "import { neon } from '@neondatabase/serverless';\n\nconst sql = neon(process.env.DATABASE_URL);\nconst posts = await sql`SELECT * FROM posts WHERE id = ${1}`;\nconsole.log(posts);",
+   "language": "javascript",
+   "explanation": "This runs a parameterized query over HTTP. Set DATABASE_URL before starting the script."
+  },
+  "useCases": [
+   {
+    "title": "HTTP queries",
+    "scenario": "Run independent reads or writes from a serverless function."
+   },
+   {
+    "title": "Non-interactive transactions",
+    "scenario": "Run several statements together without interactive transaction steps."
+   },
+   {
+    "title": "WebSocket connections",
+    "scenario": "Keep a session or use interactive transactions."
+   },
+   {
+    "title": "Node-postgres-style access",
+    "scenario": "Use an API compatible with the pg package."
+   }
+  ],
+  "related": [
+   "@neondatabase/serverless",
+   "neon()",
+   "sql.query()",
+   "sql.transaction()",
+   "Pool",
+   "Client",
+   "DATABASE_URL",
+   "WebSockets"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How does the Neon serverless driver send queries?",
+    "answer": "neon() creates a query function that sends SQL over HTTP. This is the default choice for single queries and non-interactive transactions.",
+    "followUp": "When would WebSockets be better? Use Pool or Client when the application needs interactive transactions, sessions, or node-postgres compatibility."
+   },
+   {
+    "question": "How do you write a safe query?",
+    "answer": "A tagged template binds interpolated values as query parameters. This helps protect values from SQL injection. Manually parameterized statements can use sql.query() with placeholders and a values array.",
+    "followUp": "How should trusted table or column names be inserted? Use the documented unsafe() function only for trusted strings, because identifiers cannot be passed as ordinary value parameters."
+   },
+   {
+    "question": "How are multiple queries grouped in a transaction?",
+    "answer": "Use sql.transaction() with an array of query promises for several queries in one non-interactive transaction. Use WebSockets instead when the transaction must remain interactive across multiple steps.",
+    "followUp": "What connection object is compatible with node-postgres? The driver provides Pool and Client constructors for WebSocket connections."
+   }
+  ],
+  "keyPoints": [
+   "The package provides a Postgres driver for JavaScript and TypeScript in serverless and edge runtimes.",
+   "It supports two transports: HTTP and WebSockets.",
+   "neon() sends queries through HTTP fetch requests, which suits independent queries.",
+   "sql.transaction() can group several HTTP queries into one non-interactive transaction.",
+   "Pool and Client provide the WebSocket connection style used for sessions and interactive transactions.",
+   "sql.query() accepts SQL with placeholders and a separate array of parameter values."
+  ],
+  "gotchas": [
+   "Use HTTP for normal one-shot queries. WebSockets are needed for interactive transactions, sessions, or node-postgres compatibility.",
+   "Load DATABASE_URL in the environment before creating the connection.",
+   "Use the tagged template form for the normal safe API. Use query() for manually parameterized SQL."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "Project sharing": {
   "sourceUrl": "https://neon.com/docs/guides/project-collaboration-guide",
   "sourceTitle": "Project collaboration",
@@ -3842,6 +5918,77 @@
    "IP restrictions are not automatic; configure IP Allow and select the protected-branches-only scope."
   ],
   "checkedAt": "2026-10-16"
+ },
+ "Read replicas": {
+  "sourceUrl": "https://neon.com/docs/introduction/read-replicas",
+  "sourceTitle": "Neon Read Replicas",
+  "summary": "Neon read replicas are independent, read-only computes that use the same data as a primary compute. They help move read traffic away from the primary without duplicating storage.",
+  "explanation": "A Neon read replica is a separate read-only compute that reads the same stored data as the primary compute. It does not keep a second copy of the data. Read traffic can move to replicas, while writes stay on the primary; because updates reach replicas asynchronously, a replica can briefly lag behind.",
+  "syntax": "withReplicas(primaryDb, [readReplicaDb1, readReplicaDb2])",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Route Drizzle queries",
+   "code": "import { drizzle } from \"drizzle-orm/node-postgres\";\nimport { withReplicas } from \"drizzle-orm/pg-core\";\n\nconst primary = drizzle(process.env.PRIMARY_DATABASE_URL!);\nconst replica1 = drizzle(process.env.REPLICA_DATABASE_URL!);\n\nconst db = withReplicas(primary, [replica1]);\n\nconst rows = await db.select().from(usersTable); // Uses replica\nawait db.delete(usersTable).where(eq(usersTable.id, 1)); // Uses primary",
+   "language": "typescript",
+   "explanation": "Drizzle sends reads to the replica and writes to the primary connection."
+  },
+  "useCases": [
+   {
+    "title": "Horizontal scaling",
+    "scenario": "An application receives many SELECT requests."
+   },
+   {
+    "title": "Analytics queries",
+    "scenario": "Reports or ad-hoc queries consume primary compute resources."
+   },
+   {
+    "title": "Read-only access",
+    "scenario": "A client needs database access without write permissions."
+   }
+  ],
+  "related": [
+   "Create and manage Read Replicas",
+   "Scale your application with Read Replicas",
+   "Run analytics queries with Read Replicas",
+   "Provide read-only access with Read Replicas",
+   "Autoscaling",
+   "Scale to Zero",
+   "Logical replication"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is a Neon read replica?",
+    "answer": "A read replica is an independent read-only compute. It reads the same data source as the primary, so Neon does not duplicate storage. Applications can send read traffic to replicas and keep writes on the primary.",
+    "followUp": "How can a replica be behind the primary? Updates are applied asynchronously, so the replica is eventually consistent. Monitor replication delay in bytes or seconds."
+   },
+   {
+    "question": "Why would an application use read replicas?",
+    "answer": "Read replicas can spread read requests across multiple computes, improving read throughput. They can also isolate analytics queries and provide read-only access without allowing writes.",
+    "followUp": "What trade-off must the application handle? A read may briefly return older data because replication is asynchronous."
+   },
+   {
+    "question": "How do you create and operate a read replica?",
+    "answer": "Create a read replica for a branch using the Neon Console, CLI, or API. Configure its compute size and optionally enable Scale to Zero. Connect with its connection string, and use that connection only for reads.",
+    "followUp": "What should be checked after changing the primary compute size? Restart the read replicas so synchronized PostgreSQL settings remain aligned."
+   }
+  ],
+  "keyPoints": [
+   "The replica uses the primary's stored data instead of maintaining another data copy.",
+   "Replicas can be added to any project branch when more read capacity is needed.",
+   "You can control replica compute use with autoscaling and scale-to-zero settings.",
+   "The monitoring page reports how many seconds the replica trails the latest primary transaction.",
+   "Some replica PostgreSQL limits must not be lower than the matching primary limits.",
+   "All Neon plans support read replicas, although the Free plan has a project limit."
+  ],
+  "gotchas": [
+   "Do not assume a read immediately sees a recent write. Check replication delay when fresh data matters.",
+   "Use the primary connection for inserts, updates, deletes, and other write operations.",
+   "A Free plan project cannot have more than three read replica computes.",
+   "A replica cannot be created directly in another region; use logical replication between projects for cross-region setups."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "Read-only compute": {
   "sourceUrl": "https://neon.com/docs/introduction/read-replicas",
@@ -4410,6 +6557,78 @@
   ],
   "checkedAt": "2026-10-16"
  },
+ "sql query": {
+  "sourceUrl": "https://neon.com/docs/serverless/serverless-driver",
+  "sourceTitle": "Neon serverless driver",
+  "summary": "Neon’s serverless driver lets JavaScript and TypeScript applications query Postgres from serverless and edge environments over HTTP or WebSockets. Use HTTP by default, and use WebSockets for interactive sessions or transactions.",
+  "explanation": "The driver sends SQL from JavaScript or TypeScript to Neon without using a TCP connection. Its default HTTP mode sends each query as a fetch request, which suits single queries and several queries inside one non-interactive transaction. Use its WebSocket Pool or Client when the application needs an interactive transaction, a session, or node-postgres compatibility.",
+  "syntax": "neon(connectionString)",
+  "parameters": [],
+  "returns": "The page does not specify a return type for the driver or neon() function.",
+  "example": {
+   "title": "Run a query over HTTP",
+   "code": "import { neon } from '@neondatabase/serverless';\n\nconst sql = neon(process.env.DATABASE_URL!);\nconst rows = await sql`SELECT version();`;\nconsole.log(rows);",
+   "language": "typescript",
+   "explanation": "This creates an HTTP-based query function and runs one SQL query against the database."
+  },
+  "useCases": [
+   {
+    "title": "Single-query functions",
+    "scenario": "A serverless function runs one database query."
+   },
+   {
+    "title": "Non-interactive transactions",
+    "scenario": "An edge application sends several queries without interactive transaction steps."
+   },
+   {
+    "title": "Interactive database work",
+    "scenario": "An application needs an interactive transaction or persistent database session."
+   },
+   {
+    "title": "node-postgres compatibility",
+    "scenario": "An application uses APIs designed for node-postgres."
+   }
+  ],
+  "related": [
+   "Use the driver over HTTP",
+   "Use the driver over WebSockets",
+   "Pool",
+   "Client",
+   "node-postgres",
+   "Postgres"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is the Neon serverless driver?",
+    "answer": "The Neon serverless driver is a JavaScript and TypeScript Postgres driver for serverless and edge environments. It communicates over HTTP or WebSockets instead of TCP.",
+    "followUp": "Why can it be low latency? The documentation attributes this to message pipelining and other optimizations."
+   },
+   {
+    "question": "When should HTTP be the default transport?",
+    "answer": "Use the neon() function with HTTP for single queries and for multiple queries in one non-interactive transaction. Each query is sent as an HTTP fetch request.",
+    "followUp": "What should be used for an interactive transaction? Use a WebSocket Pool or Client."
+   },
+   {
+    "question": "When should an application use WebSockets?",
+    "answer": "Use the Pool or Client constructors over WebSockets when the application needs interactive transactions, sessions, or compatibility with the pg package. HTTP does not cover those needs.",
+    "followUp": "What is the trade-off in the documented choice? HTTP is preferred for the stated fast query patterns, while WebSockets provide the session and interaction features."
+   }
+  ],
+  "keyPoints": [
+   "It is a Postgres driver for JavaScript and TypeScript.",
+   "It supports database queries from serverless and edge environments.",
+   "It uses HTTP or WebSockets instead of TCP.",
+   "The neon() function uses HTTP fetch requests for queries.",
+   "HTTP is the fastest documented option for a single query.",
+   "HTTP also supports multiple queries in one non-interactive transaction."
+  ],
+  "gotchas": [
+   "Do not switch to WebSockets for ordinary single queries. Use them when you need interactive transactions or sessions.",
+   "HTTP is the default choice for this driver."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "sql.query": {
   "sourceUrl": "https://neon.com/docs/serverless/serverless-driver",
   "sourceTitle": "Neon serverless driver",
@@ -4855,6 +7074,74 @@
   ],
   "checkedAt": "2026-10-16"
  },
+ "Time Travel queries": {
+  "sourceUrl": "https://neon.com/docs/postgres/backup-restore/time-travel-assist",
+  "sourceTitle": "Time Travel",
+  "summary": "Neon Time Travel lets you query a selected historical state of a Postgres database. It uses a temporary branch and compute within the project's history window.",
+  "explanation": "Time Travel creates a temporary branch and compute for a selected point within the project's history window. The query runs against that historical database state without adding time parameters. The temporary resources disappear after 30 seconds without queries.",
+  "syntax": "",
+  "parameters": [],
+  "returns": "Results from the selected historical Postgres database state.",
+  "example": {
+   "title": "Query an earlier database state",
+   "code": "SELECT count(*)\nFROM orders;",
+   "language": "text",
+   "explanation": "Run this read-only query after selecting a time in the SQL Editor. Neon runs it against the database state at that time."
+  },
+  "useCases": [
+   {
+    "title": "Investigate past data",
+    "scenario": "Check records before an accidental update or deletion."
+   },
+   {
+    "title": "Verify a restore point",
+    "scenario": "Review a possible restore point before changing a branch."
+   },
+   {
+    "title": "Analyze database history",
+    "scenario": "Run automated historical data checks from scripts or the command line."
+   }
+  ],
+  "related": [
+   "Instant restore",
+   "Time Travel tutorial",
+   "Neon SQL Editor",
+   "History window",
+   "Ephemeral compute"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is Neon Time Travel?",
+    "answer": "Time Travel lets you query a historical Postgres state at a selected time. Neon creates a temporary branch and compute for that query.",
+    "followUp": "What happens after the query stops? The temporary endpoint is removed after 30 seconds of inactivity."
+   },
+   {
+    "question": "What limits apply to a Time Travel query?",
+    "answer": "The selected time must be inside the project's history window. The query is read-only and does not need timestamp parameters in its SQL.",
+    "followUp": "How is the time selected? Enable Time Travel in the SQL Editor and choose a date and time within the history window."
+   },
+   {
+    "question": "How does Time Travel affect resources and billing?",
+    "answer": "An ephemeral compute uses 0.50 CU and has 2 GB of RAM. It contributes to consumption totals while active, then is suspended after 30 seconds without queries.",
+    "followUp": "Where can its lifecycle be observed? Related operations appear on the Operations page, while the ephemeral compute is not listed as a normal branch."
+   }
+  ],
+  "keyPoints": [
+   "It provides a connection to a selected historical point that is still retained.",
+   "Neon uses instant branching to create the temporary environment for historical queries.",
+   "The temporary branch and compute are removed after the historical query session ends.",
+   "The temporary compute does not appear as a normal branch or in branch-list API results.",
+   "The endpoint stays active while queries continue to run.",
+   "The SQL Editor provides a console interface for running database queries."
+  ],
+  "gotchas": [
+   "You can select only times inside the project's history window.",
+   "Time Travel uses billed consumption because its temporary compute consumes resources.",
+   "Time Travel cannot query historical Object Storage, Functions, or AI Gateway configuration."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "transaction": {
   "sourceUrl": "https://neon.com/docs/serverless/serverless-driver",
   "sourceTitle": "Neon serverless driver",
@@ -4932,6 +7219,241 @@
    "`deferrable` requires both a read-only transaction and Serializable isolation."
   ],
   "checkedAt": "2026-10-16"
+ },
+ "Usage metrics": {
+  "sourceUrl": "https://neon.com/docs/introduction/usage-calculations",
+  "sourceTitle": "Usage and cost calculations",
+  "summary": "Neon’s v2 consumption API returns project usage by metric and time period. Convert raw values into billing units such as CU-hours and GB-months before calculating cost.",
+  "explanation": "Neon’s v2 consumption endpoint returns usage for each project over a chosen time range and granularity. Convert compute-unit seconds to hours by dividing by 3,600. Convert byte-month values to billing GB-months by dividing by 1,000,000,000.",
+  "syntax": "GET /api/v2/consumption_history/v2/projects?org_id=...&from=...&to=...&granularity=...&metrics=...",
+  "parameters": [
+   {
+    "name": "org_id",
+    "type": "string",
+    "description": "Organization identifier used by the consumption history request."
+   },
+   {
+    "name": "from",
+    "type": "string",
+    "description": "Start of the requested ISO 8601 time range."
+   },
+   {
+    "name": "to",
+    "type": "string",
+    "description": "End of the requested ISO 8601 time range."
+   },
+   {
+    "name": "granularity",
+    "type": "string",
+    "description": "Result interval: hourly, daily, or monthly."
+   },
+   {
+    "name": "metrics",
+    "type": "string",
+    "description": "Comma-separated usage metric names."
+   }
+  ],
+  "returns": "Per-project usage records for the requested metrics, time range, and granularity.",
+  "example": {
+   "title": "Fetch daily usage",
+   "code": "curl \"https://console.neon.tech/api/v2/consumption_history/v2/projects?org_id=${ORG_ID}&from=2026-03-01T00:00:00Z&to=2026-04-01T00:00:00Z&granularity=daily&metrics=compute_unit_seconds,root_branch_bytes_month\" -H \"Authorization: Bearer ${NEON_API_KEY}\"",
+   "language": "bash",
+   "explanation": "This requests daily compute and root-branch storage metrics for an organization and time range."
+  },
+  "useCases": [
+   {
+    "title": "Build a usage dashboard",
+    "scenario": "A team needs daily usage data for an internal billing dashboard."
+   },
+   {
+    "title": "Reconcile billing",
+    "scenario": "An engineer wants to compare API consumption with an invoice."
+   },
+   {
+    "title": "Calculate estimated cost",
+    "scenario": "A cost report needs storage and compute in billing units."
+   }
+  ],
+  "related": [
+   "Monitor billing and usage",
+   "Querying consumption metrics",
+   "Invoice metrics",
+   "Network transfer"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you retrieve Neon usage data?",
+    "answer": "Use the v2 consumption history endpoint. Request the metrics, time range, and granularity you need, then convert the raw values into billing units.",
+    "followUp": "How would you avoid incorrect storage totals? Sum the logical_size values for all branches when calculating total project storage, and use the documented byte-month conversion for billing."
+   },
+   {
+    "question": "How are compute metrics converted?",
+    "answer": "Divide compute_unit_seconds by 3,600 to get CU-hours. A compute unit is one CPU with 4 GB of RAM, so a 2 CU endpoint adds two CU-seconds for each running second.",
+    "followUp": "Why can CU-hours differ from wall-clock hours? Because the endpoint’s compute size weights the CPU time; larger endpoints accumulate units faster."
+   },
+   {
+    "question": "How are storage values converted?",
+    "answer": "For current usage-based plans, byte-month metrics become GB-months by dividing by 1,000,000,000. Neon uses a fixed 744-hour billing period when converting legacy byte-hour values.",
+    "followUp": "What should be checked when Console and API values seem different? Check the metric type, conversion formula, billing period, and whether Console data is delayed by about an hour."
+   }
+  ],
+  "keyPoints": [
+   "The v2 API can return project usage with daily, hourly, or monthly granularity.",
+   "One CU represents one CPU and 4 GB of RAM.",
+   "Neon uses 744 hours as the standard billing period for the documented conversion.",
+   "Each branch result has a logical_size byte value that can be summed for project storage."
+  ],
+  "gotchas": [
+   "The older endpoint reports metrics that do not match invoices for current usage-based plans. Use the v2 endpoint for Launch, Scale, Agent, and Enterprise plans.",
+   "Storage conversions use decimal GB, not GiB. Dividing by 1,000,000,000 is the documented conversion.",
+   "The API does not provide consumption history from before the organization left the Free plan."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "useSecureWebSocket": {
+  "sourceUrl": "https://neon.com/docs/serverless/serverless-driver",
+  "sourceTitle": "Neon serverless driver",
+  "summary": "The Neon serverless driver connects JavaScript and TypeScript applications to Postgres from serverless and edge environments. It uses HTTP by default and WebSockets when sessions or interactive transactions are needed.",
+  "explanation": "The driver lets JavaScript and TypeScript code connect to Neon from serverless or edge runtimes without TCP. Its default HTTP mode sends each query through an HTTP fetch request. Use WebSockets with Pool or Client when the application needs interactive transactions, sessions, or node-postgres compatibility.",
+  "syntax": "neon(connectionString)",
+  "parameters": [
+   {
+    "name": "connectionString",
+    "type": "string",
+    "description": "Neon connection string, normally read from an environment variable."
+   }
+  ],
+  "returns": "The query function returns an array of row objects by default.",
+  "example": {
+   "title": "Run a query over HTTP",
+   "code": "import { neon } from '@neondatabase/serverless';\n\nconst sql = neon(process.env.DATABASE_URL!);\nconst rows = await sql`SELECT id, title FROM posts WHERE id = ${12}`;\nconsole.log(rows);",
+   "language": "typescript",
+   "explanation": "This creates an HTTP query function and runs one SQL query. The result is an array of objects."
+  },
+  "useCases": [
+   {
+    "title": "Single-query functions",
+    "scenario": "Run one database query from a serverless function."
+   },
+   {
+    "title": "HTTP transactions",
+    "scenario": "Run several queries without an interactive transaction."
+   },
+   {
+    "title": "WebSocket connections",
+    "scenario": "Keep a session or run an interactive transaction."
+   },
+   {
+    "title": "Postgres client compatibility",
+    "scenario": "Use code that expects the node-postgres API."
+   }
+  ],
+  "related": [
+   "Use the driver over HTTP",
+   "Use the driver over WebSockets",
+   "Pool",
+   "Client",
+   "interactive transactions",
+   "sessions",
+   "node-postgres"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is the Neon serverless driver?",
+    "answer": "The Neon serverless driver is a JavaScript and TypeScript Postgres driver for serverless and edge environments. It uses HTTP or WebSockets instead of TCP.",
+    "followUp": "Why is HTTP usually preferred? It avoids a persistent connection and is optimized for individual queries and non-interactive transactions."
+   },
+   {
+    "question": "How does the HTTP mode work?",
+    "answer": "The `neon()` function uses HTTP and sends each query as an HTTP fetch request. This is the default choice for single queries and several queries in one non-interactive transaction.",
+    "followUp": "When would HTTP not be enough? Use a WebSocket Pool or Client when the code needs an interactive transaction or a session."
+   },
+   {
+    "question": "When should an application use WebSockets?",
+    "answer": "Use the Pool or Client constructors to switch to WebSockets. This supports interactive transactions, sessions, and compatibility with the `pg` package.",
+    "followUp": "What trade-off does this choice reflect? WebSockets provide session-like behavior, while HTTP is usually simpler for serverless query execution."
+   }
+  ],
+  "keyPoints": [
+   "It is a Postgres driver for JavaScript and TypeScript applications.",
+   "It supports database queries from serverless and edge environments.",
+   "Message pipelining and other optimizations help reduce query latency.",
+   "The `neon()` function sends queries through HTTP fetch requests.",
+   "HTTP is suited to single queries and multiple queries in one non-interactive transaction.",
+   "Pool and Client constructors provide the WebSocket connection mode."
+  ],
+  "gotchas": [
+   "Use HTTP as the default connection method. WebSockets are needed for interactive transactions, sessions, or node-postgres compatibility."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "Vercel integration": {
+  "sourceUrl": "https://neon.com/docs/guides/vercel-managed-integration",
+  "sourceTitle": "Connecting with the Vercel-Managed Integration",
+  "summary": "The Vercel-Managed Integration connects a Neon Postgres database to a Vercel project. It can create preview branches and inject database connection variables, with billing managed in Vercel.",
+  "explanation": "The Vercel-Managed Integration adds a Neon Postgres database to a Vercel project. It creates preview database branches and supplies connection variables to deployments, while Vercel handles billing and integration settings.",
+  "syntax": "",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Connect Neon to Vercel",
+   "code": "# In Vercel: Marketplace → Native Integrations → Neon Postgres\n# Then choose a Neon project and enable Preview Branching.\n",
+   "language": "bash",
+   "explanation": "Install the integration in Vercel, then enable preview branching for isolated database branches."
+  },
+  "useCases": [
+   {
+    "title": "Create a database from Vercel",
+    "scenario": "A new project needs a Neon database without setting up a separate Neon account first."
+   },
+   {
+    "title": "Isolate preview environments",
+    "scenario": "Preview deployments need separate database branches instead of sharing one database."
+   },
+   {
+    "title": "Centralize team billing",
+    "scenario": "A team wants database billing and project management inside Vercel."
+   }
+  ],
+  "related": [
+   "Neon-Managed Integration",
+   "Manual Connections",
+   "Preview Branching",
+   "Automatic branch cleanup",
+   "Environment variables"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does the Vercel-Managed Integration do?",
+    "answer": "It creates or links a Neon project through Vercel and manages billing in Vercel. The integration also provides database connection variables to the Vercel project.",
+    "followUp": "How are preview databases isolated? Each preview deployment can use its own automatically created Neon database branch."
+   },
+   {
+    "question": "How does preview branching work?",
+    "answer": "Enable automated Preview Branching in the Vercel integration settings. Neon then creates branches for preview deployments and injects branch-specific connection variables at deployment time.",
+    "followUp": "What happens to those branches? Cleanup follows Vercel deployment retention, so deletion can be delayed."
+   },
+   {
+    "question": "What happens when a Vercel project changes teams?",
+    "answer": "The linked Neon project moves to the destination team's Neon organization when the Vercel project is transferred. Environment variables and settings move with it.",
+    "followUp": "What if the new team's plan is too limited? Vercel prompts for an upgrade when the destination plan cannot support the project's requirements."
+   }
+  ],
+  "keyPoints": [
+   "Installation can create a Neon account and project when you do not already have one.",
+   "For an existing Neon user, the integration creates a Vercel-named organization for the team.",
+   "You can add another database from the integration's management area by choosing its region, scale, plan, and name.",
+   "Database settings can change compute size, scale-to-zero behavior, and the Neon plan tier.",
+   "Transferring a Vercel project also transfers its linked Neon project to the destination team's Neon organization."
+  ],
+  "gotchas": [
+   "Preview branch variables are injected during deployment and are not visible in Vercel's environment-variable settings.",
+   "Vercel team members do not appear in the Neon organization until they complete this one-time linking step."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "Vercel Postgres": {
   "sourceUrl": "https://neon.com/guides/vercel-sdk-migration",

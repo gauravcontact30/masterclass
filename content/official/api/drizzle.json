@@ -211,6 +211,82 @@
   ],
   "checkedAt": "2026-10-16"
  },
+ ".for": {
+  "sourceUrl": "https://orm.drizzle.team/docs/update",
+  "sourceTitle": "Drizzle ORM - Update",
+  "summary": "Drizzle ORM updates rows with update(table).set(values). Use where to choose rows. Values are parameterized, undefined is ignored, null writes NULL, and SQL expressions are allowed.",
+  "explanation": "Call update with a table, then pass a column-value object to set. Add where to limit the rows. Normal values are parameterized automatically. Undefined values are skipped, while null writes SQL NULL. SQL expressions can also be used as values.",
+  "syntax": "db.update(table).set(values).where(condition)",
+  "parameters": [
+   {
+    "name": "table",
+    "type": "Table",
+    "description": "The table whose rows should be updated."
+   },
+   {
+    "name": "values",
+    "type": "Update object",
+    "description": "An object mapping schema column names to new values or SQL expressions."
+   },
+   {
+    "name": "condition",
+    "type": "SQL condition",
+    "description": "An optional condition that selects the rows to update."
+   }
+  ],
+  "returns": "An update query that can be awaited to execute the SQL update.",
+  "example": {
+   "title": "Update matching rows",
+   "code": "import { eq, sql } from \"drizzle-orm\";\nimport { users } from \"./schema\";\n\nawait db\n  .update(users)\n  .set({\n    name: \"Mr. Dan\",\n    updatedAt: sql`NOW()`,\n  })\n  .where(eq(users.name, \"Dan\"));",
+   "language": "typescript",
+   "explanation": "This updates matching users. The name uses a normal value, while updatedAt uses a SQL expression."
+  },
+  "useCases": [
+   {
+    "title": "Modify matching records",
+    "scenario": "Change one or more fields on rows selected by a condition."
+   },
+   {
+    "title": "Use a SQL expression",
+    "scenario": "Let the database compute a new field value during the update."
+   }
+  ],
+  "related": [
+   "set()",
+   "where()",
+   "eq",
+   "sql",
+   "Delete"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you update rows with Drizzle ORM?",
+    "answer": "Use db.update(table).set(values).where(condition). The keys in values must match columns in the table schema, and values are parameterized automatically.",
+    "followUp": "How do you assign a database expression? Pass a SQL expression as a value in the object given to set."
+   },
+   {
+    "question": "What does the object passed to set contain?",
+    "answer": "The set object maps schema column names to their new values. Undefined entries are ignored, so they do not overwrite existing data.",
+    "followUp": "How would you clear a column? Set that property to null rather than undefined."
+   },
+   {
+    "question": "Can an update value be a SQL expression?",
+    "answer": "Use a SQL expression as a property value, such as sql`NOW()`. This lets the database calculate the new value during the update.",
+    "followUp": "Why might this be preferable to calculating the value in application code? The database can evaluate the expression as part of the update for each affected row."
+   }
+  ],
+  "keyPoints": [
+   "Values passed to set are parameterized automatically.",
+   "Use database schema column names as the keys in the update object.",
+   "Pass null to store a SQL NULL value.",
+   "A SQL expression can be used for a column value."
+  ],
+  "gotchas": [
+   "An undefined property does not change its column. Use null when you need to write a null value."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  ".from": {
   "sourceUrl": "https://orm.drizzle.team/docs/select",
   "sourceTitle": "Drizzle ORM - Select",
@@ -367,6 +443,89 @@
    "The full join makes each table-shaped result nullable, so handle missing rows before reading joined fields."
   ],
   "checkedAt": "2026-10-16"
+ },
+ ".get": {
+  "sourceUrl": "https://orm.drizzle.team/docs/sqlite/connect-drizzle-proxy",
+  "sourceTitle": "Drizzle ORM - Drizzle Proxy",
+  "summary": "Drizzle SQLite Proxy lets you execute generated SQL through an asynchronous callback, often by sending it to an HTTP server. The callback receives SQL, parameters, and an operation method, then returns rows in a required shape.",
+  "explanation": "`.get()` is the method used for a query that returns one value or row through Drizzle's SQLite proxy callback. The callback receives SQL, parameters, and a method name. For `get`, it must return rows as a one-dimensional string array; other methods use a two-dimensional string array.",
+  "syntax": "drizzle(async (sql, params, method) => ({ rows }));",
+  "parameters": [
+   {
+    "name": "sql",
+    "type": "string",
+    "description": "SQL text containing placeholders."
+   },
+   {
+    "name": "params",
+    "type": "any[]",
+    "description": "Values used for the SQL placeholders."
+   },
+   {
+    "name": "method",
+    "type": "\"run\" | \"all\" | \"get\" | \"values\"",
+    "description": "The operation selected for the SQL statement: `run`, `all`, `get`, or `values`."
+   }
+  ],
+  "returns": "A promise resolving to `{ rows: string[][] }` for most methods, or `{ rows: string[] }` for `get`.",
+  "example": {
+   "title": "Use SQLite Proxy with an async callback",
+   "code": "import { drizzle } from \"drizzle-orm/sqlite-proxy\";\n\nconst db = drizzle(async (sql, params, method) => {\n  const response = await fetch(\"http://localhost:3000/query\", {\n    method: \"POST\",\n    headers: { \"content-type\": \"application/json\" },\n    body: JSON.stringify({ sql, params, method }),\n  });\n\n  return { rows: await response.json() };\n});\n\nconst rows = await db.select().from(users);",
+   "language": "typescript",
+   "explanation": "This callback sends the generated SQL, parameters, and method to an HTTP server, then returns the server response as rows."
+  },
+  "useCases": [
+   {
+    "title": "Send SQLite queries over HTTP",
+    "scenario": "The database is reachable only through an application server."
+   },
+   {
+    "title": "Add custom query-stage logic",
+    "scenario": "The driver needs behavior that the built-in drivers do not provide."
+   },
+   {
+    "title": "Handle batch requests",
+    "scenario": "Several SQL statements should be sent together."
+   }
+  ],
+  "related": [
+   "sqlite-proxy",
+   "Drizzle Proxy",
+   "batch requests",
+   "run",
+   "all",
+   "values"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does the SQLite proxy callback receive and return?",
+    "answer": "The callback receives the generated SQL, its parameter array, and a method such as `get`, `all`, `values`, or `run`. It sends these values to the proxy server and returns an object containing `rows`.",
+    "followUp": "What response shape is required for `get`? It must be `{ rows: string[] }`; other methods require `{ rows: string[][] }`."
+   },
+   {
+    "question": "How does `.get()` affect the proxy response shape?",
+    "answer": "Use `get` when the query expects one returned value or row. Its result uses a one-dimensional `rows` array.",
+    "followUp": "How would you support multiple rows? Use the `all` method and return `{ rows: string[][] }`."
+   },
+   {
+    "question": "How do you add batch support to SQLite Proxy?",
+    "answer": "Batch support requires a second callback. That callback receives an array of query objects, each containing `sql`, `params`, and `method`, and it sends the group to a batch endpoint.",
+    "followUp": "What should the batch endpoint return? It should provide the documented array of row results for the batch callback to pass back to Drizzle."
+   }
+  ],
+  "keyPoints": [
+   "SQLite Proxy can use an asynchronous callback instead of requiring a custom driver class.",
+   "The callback gets SQL with placeholders and the values that fill those placeholders.",
+   "The method identifies the expected operation: `run`, `all`, `values`, or `get`.",
+   "Batch requests are supported through a separate callback.",
+   "Batch mode needs its own callback and server-side batch handling."
+  ],
+  "gotchas": [
+   "The return shape for `get` differs from the other methods. Return `{ rows: string[] }`, not a two-dimensional array.",
+   "The callback must resolve to one of the documented row shapes. Returning the raw HTTP response is not sufficient."
+  ],
+  "checkedAt": "2026-11-03"
  },
  ".groupBy": {
   "sourceUrl": "https://orm.drizzle.team/docs/sqlite/goodies",
@@ -1912,6 +2071,87 @@
   "gotchas": [],
   "checkedAt": "2026-10-16"
  },
+ "char": {
+  "sourceUrl": "https://orm.drizzle.team/docs/mysql/column-types",
+  "sourceTitle": "Drizzle ORM - MySQL column types",
+  "summary": "Drizzle ORM's MySQL `char` function defines a fixed-length CHAR column. Use `length` for its size and `enum` to narrow inferred string values.",
+  "explanation": "Drizzle ORM's MySQL `char` function defines a fixed-length CHAR column. Set `length` to control its size and optionally set `enum` to narrow inferred insert and select types. MySQL pads stored values with spaces, and retrieved trailing spaces are normally removed.",
+  "syntax": "char(config?)",
+  "parameters": [
+   {
+    "name": "config",
+    "type": "object",
+    "description": "Optional object with `length` and `enum` settings."
+   },
+   {
+    "name": "config.length",
+    "type": "number",
+    "description": "Declared fixed character length. MySQL documents a range of 0 to 255."
+   },
+   {
+    "name": "config.enum",
+    "type": "string[]",
+    "description": "String literals used to narrow inferred insert and select types."
+   }
+  ],
+  "returns": "A Drizzle MySQL CHAR column builder.",
+  "example": {
+   "title": "Define a MySQL CHAR column",
+   "code": "import { char, mysqlTable } from \"drizzle-orm/mysql-core\";\n\nexport const users = mysqlTable(\"users\", {\n  code: char({ length: 2, enum: [\"US\", \"UK\"] }),\n});",
+   "language": "typescript",
+   "explanation": "This creates a MySQL CHAR column with a fixed length of two characters. The enum setting narrows inferred TypeScript values but does not validate database values at runtime."
+  },
+  "useCases": [
+   {
+    "title": "Fixed-width codes",
+    "scenario": "A code or country field must use a fixed number of characters."
+   },
+   {
+    "title": "Narrow inferred values",
+    "scenario": "TypeScript code should allow only a known set of string literals."
+   },
+   {
+    "title": "MySQL schema definition",
+    "scenario": "A schema needs a MySQL CHAR column instead of a variable-length VARCHAR column."
+   }
+  ],
+  "related": [
+   "mysqlTable",
+   "varchar",
+   "text",
+   "enum"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you define a CHAR column in Drizzle ORM for MySQL?",
+    "answer": "Use `char()` from `drizzle-orm/mysql-core` inside `mysqlTable`. Pass a configuration object such as `{ length: 2 }` to create a fixed-length MySQL CHAR column.",
+    "followUp": "How can the inferred value type be narrowed? Add `enum: [\"US\", \"UK\"]`; this changes TypeScript inference but does not enforce those values at runtime."
+   },
+   {
+    "question": "What does the `length` option control?",
+    "answer": "The `length` option sets the declared CHAR length. The documentation states that MySQL allows values from 0 through 255, with 1 as the default.",
+    "followUp": "What storage behavior should be considered? Shorter values are right-padded with spaces, and trailing spaces are normally removed when read."
+   },
+   {
+    "question": "What does the `enum` option do?",
+    "answer": "An `enum` array can narrow inferred insert and select values to the listed string literals. It is a type-inference feature, not runtime validation.",
+    "followUp": "How would runtime validation be added? Validate input before the insert with an application-level validator, because the documented `enum` option does not perform that check."
+   }
+  ],
+  "keyPoints": [
+   "`char` creates a fixed-width MySQL string column.",
+   "The declared length can range from 0 to 255, and the default is 1.",
+   "Use `enum` to narrow the inferred string literals for inserts and selects.",
+   "Import `char` and `mysqlTable` from the MySQL core package."
+  ],
+  "gotchas": [
+   "The `enum` option only affects inferred TypeScript types. It does not validate values while the program runs.",
+   "MySQL stores shorter CHAR values with trailing spaces until the declared length is reached.",
+   "Retrieved trailing spaces are usually removed, except when this SQL mode is enabled."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "count": {
   "sourceUrl": "https://orm.drizzle.team/docs/guides/count-rows",
   "sourceTitle": "Count rows - Drizzle ORM",
@@ -2989,6 +3229,188 @@
   ],
   "gotchas": [],
   "checkedAt": "2026-10-16"
+ },
+ "desc": {
+  "sourceUrl": "https://orm.drizzle.team/docs/sql",
+  "sourceTitle": "Drizzle ORM - Magic sql`` operator",
+  "summary": "Drizzle's `sql` template adds custom SQL expressions to type-safe queries. Use callback-provided table aliases in relational queries, and use core queries for aggregate expressions.",
+  "explanation": "The `sql` template lets you place SQL expressions inside Drizzle queries. In relational query callbacks, use the callback table parameter instead of the imported table. This keeps column references tied to the current query scope. You can use it for custom ordering and extra fields. Use core queries for aggregations.",
+  "syntax": "sql`...`\nsql<T>`...`\norderBy: (table) => sql`...`\nextras: { field: (table, { sql }) => sql<T>`...` }",
+  "parameters": [
+   {
+    "name": "sql template",
+    "type": "SQL template",
+    "description": "A template expression containing SQL text and Drizzle columns or values."
+   },
+   {
+    "name": "table callback parameter",
+    "type": "aliased table",
+    "description": "The current query scope's table alias, supplied to relational-query callbacks."
+   },
+   {
+    "name": "extras",
+    "type": "object",
+    "description": "A map of computed fields added to relational-query results."
+   }
+  ],
+  "returns": "A SQL expression for use in a query clause, or an added field in each relational-query result when used through `extras`.",
+  "example": {
+   "title": "Use custom SQL in a relational query",
+   "code": "import { sql } from 'drizzle-orm';\nimport { users } from './schema';\n\nconst result = await db.query.users.findMany({\n  orderBy: (table) => sql`${table.id} asc`,\n  extras: {\n    loweredName: (table, { sql }) => sql`lower(${table.name})`,\n  },\n});",
+   "language": "typescript",
+   "explanation": "This query orders users by their ID and adds a lowercase name field."
+  },
+  "useCases": [
+   {
+    "title": "Custom ordering",
+    "scenario": "You need ordering syntax that Drizzle's standard ordering API does not provide."
+   },
+   {
+    "title": "Extra computed fields",
+    "scenario": "You need a computed value such as a lowercase name in each result."
+   },
+   {
+    "title": "GROUP BY and HAVING expressions",
+    "scenario": "You need custom grouping or filtering of grouped rows in a core query."
+   }
+  ],
+  "related": [
+   "sql template",
+   "sql<T>",
+   "sql``.mapWith()",
+   "sql``.as()",
+   "orderBy",
+   "groupBy",
+   "having",
+   "extras"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "When should you use the `sql` template in a Drizzle relational query?",
+    "answer": "Use the `sql` template when Drizzle's normal API does not express the SQL needed. In relational query callbacks, write references such as `sql`${table.id} asc`` using the callback table.",
+    "followUp": "Why is the callback table required? It represents the alias for the current query scope, so nested and self-referential queries can generate correct column references."
+   },
+   {
+    "question": "How do you add custom SQL ordering?",
+    "answer": "Pass a callback to `orderBy`, such as `orderBy: (table) => sql`${table.id} asc``. The callback gives the correctly scoped table object.",
+    "followUp": "Can the same pattern be used in nested relations? Yes. Each callback receives the table for that relation's current scope."
+   },
+   {
+    "question": "How do custom extra fields work?",
+    "answer": "An `extras` field can return a typed SQL expression, such as `sql<string>\\`lower(${table.name})\\``. The returned property is included in every result object.",
+    "followUp": "What if the extra field is an aggregate? Relational-query `extras` does not support aggregations; use a core query instead."
+   }
+  ],
+  "keyPoints": [
+   "Use `sql` in `orderBy` for ordering rules that are not covered by Drizzle's normal ordering API.",
+   "Core queries also allow `sql` expressions in `GROUP BY` and `HAVING` when custom SQL is needed.",
+   "In relational queries, `orderBy` accepts a callback that can return a custom `sql` expression.",
+   "An `extras` property becomes a field on each returned result object."
+  ],
+  "gotchas": [
+   "In relational query clauses such as `orderBy`, `where` with `RAW`, and `extras`, use the table provided by the callback. Do not reference the imported table directly.",
+   "Do not calculate aggregates in `extras`; use core queries when the custom field needs an aggregation.",
+   "Do not add `.as()` to an `extras` field. Drizzle ignores that alias there."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "drizzle": {
+  "sourceUrl": "https://orm.drizzle.team/docs/sql",
+  "sourceTitle": "Drizzle ORM - Magic sql`` operator",
+  "summary": "Drizzle's sql template adds custom SQL to ORM queries while keeping identifiers escaped and values parameterized. It also supports type hints, runtime value mapping, aliases, raw fragments, and SQL-fragment composition.",
+  "explanation": "The sql template lets you add SQL where the query builder does not cover your needs. Drizzle escapes table and column references and turns inserted values into parameters. You can use it in query parts such as SELECT, WHERE, ORDER BY, GROUP BY, and HAVING.",
+  "syntax": "sql`...`; sql<T>`...`; sql`...`.mapWith(mapper); sql`...`.as('alias_name'); sql.raw(value); sql.fromList(chunks); sql.join(chunks, separator)",
+  "parameters": [
+   {
+    "name": "template values",
+    "type": "SQL template interpolations",
+    "description": "SQL template arguments, including tables, columns, SQL fragments, and dynamic values."
+   },
+   {
+    "name": "T",
+    "type": "generic type",
+    "description": "A TypeScript-only result type hint for a SQL expression."
+   },
+   {
+    "name": "mapWith mapper",
+    "type": "Column, decoder object, or Number",
+    "description": "A decoder or column mapping used to convert driver values."
+   },
+   {
+    "name": "alias_name",
+    "type": "string",
+    "description": "The selected field name for a SQL expression."
+   }
+  ],
+  "returns": "SQL fragments that Drizzle can place in a query or convert into SQL text and parameters.",
+  "example": {
+   "title": "Use a parameterized SQL template",
+   "code": "import { sql } from \"drizzle-orm\";\n\nconst id = 69;\nconst query = sql`select * from ${usersTable} where ${usersTable.id} = ${id}`;\nawait db.execute(query);",
+   "language": "typescript",
+   "explanation": "This builds a query with an escaped table and column name. The value becomes a database parameter."
+  },
+  "useCases": [
+   {
+    "title": "Add custom expressions",
+    "scenario": "A query builder clause needs a database expression that Drizzle does not provide."
+   },
+   {
+    "title": "Name and map computed fields",
+    "scenario": "A selected expression needs a known field name or decoded result."
+   },
+   {
+    "title": "Compose SQL fragments",
+    "scenario": "Application logic builds a query from several optional fragments."
+   },
+   {
+    "title": "Use database-specific SQL",
+    "scenario": "A database-specific ordering or full-text condition is required."
+   }
+  ],
+  "related": [
+   "sql<T>",
+   "sql``.mapWith()",
+   "sql``.as<T>()",
+   "sql.raw()",
+   "sql.fromList()",
+   "sql.join()",
+   "sql.empty()",
+   "PgDialect.sqlToQuery()"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How does Drizzle's sql template protect dynamic values?",
+    "answer": "The sql template creates SQL fragments. Table and column references are escaped, while inserted dynamic values become parameters and are sent separately.",
+    "followUp": "How would you decode a numeric aggregate? Use .mapWith(Number) so the database result is converted at runtime."
+   },
+   {
+    "question": "What does sql<T> do?",
+    "answer": "sql<T> changes the TypeScript type Drizzle reports for a selected expression. It does not map the database value at runtime.",
+    "followUp": "What should you use for runtime decoding? Use .mapWith() with a column decoder, a custom mapFromDriverValue function, or Number."
+   },
+   {
+    "question": "How do you name and decode a computed SQL field?",
+    "answer": "Use .as('alias_name') to give a computed SQL expression a selected field name. Use .mapWith() when the returned value also needs runtime mapping.",
+    "followUp": "Can raw SQL still be parameterized? Yes, use the sql template for values; sql.raw() bypasses parameterization for the supplied content."
+   }
+  ],
+  "keyPoints": [
+   "Use SQL fragments inside supported query-builder clauses instead of writing the whole query as a raw string.",
+   "Values inserted into the template become parameters, which helps prevent SQL injection.",
+   "Use mapWith() to decode database-driver values at runtime.",
+   "Use .as() when a computed field needs a clear selected name.",
+   "Use sql.raw() when content must be emitted without normal parameterization or escaping.",
+   "Use fromList() to assemble SQL fragments collected by application logic.",
+   "Use join() when you need a separator between SQL fragments."
+  ],
+  "gotchas": [
+   "The generic type only helps TypeScript. It does not convert the value returned by the database. Use mapWith() when runtime conversion is needed.",
+   "Do not treat sql<T> as runtime validation or decoding.",
+   "When converting a SQL object to a query string yourself, choose the dialect that matches the target database."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "drizzle-kit check": {
   "sourceUrl": "https://orm.drizzle.team/docs/drizzle-kit-check",
@@ -4620,6 +5042,82 @@
   ],
   "checkedAt": "2026-10-16"
  },
+ "jsonb": {
+  "sourceUrl": "https://orm.drizzle.team/docs/read-replicas",
+  "sourceTitle": "Drizzle ORM - Read Replicas",
+  "summary": "`withReplicas()` combines a primary database with read replicas. Drizzle routes reads to replicas and write operations to the primary.",
+  "explanation": "Create a database object with `withReplicas(primary, replicas)`. Drizzle chooses a replica for normal reads and uses the primary for writes. Use `$primary` when a read must use the primary database.",
+  "syntax": "withReplicas(primaryDb, [read1, read2])",
+  "parameters": [
+   {
+    "name": "primary",
+    "type": "Drizzle database instance",
+    "description": "The Drizzle database connection used for create, update, and delete operations."
+   },
+   {
+    "name": "replicas",
+    "type": "Array of Drizzle database instances",
+    "description": "The Drizzle database connections that can serve read queries."
+   }
+  ],
+  "returns": "A database object that routes reads and writes across the configured connections.",
+  "example": {
+   "title": "Use read replicas",
+   "code": "import { eq, withReplicas } from \"drizzle-orm\";\nimport { drizzle } from \"drizzle-orm/node-postgres\";\nimport { pgTable, serial, text } from \"drizzle-orm/pg-core\";\n\nconst users = pgTable(\"users\", {\n  id: serial(\"id\").primaryKey(),\n  name: text(\"name\").notNull(),\n});\n\nconst primary = drizzle(process.env.PRIMARY_DATABASE_URL!);\nconst replica1 = drizzle(process.env.REPLICA_1_DATABASE_URL!);\nconst replica2 = drizzle(process.env.REPLICA_2_DATABASE_URL!);\nconst db = withReplicas(primary, [replica1, replica2]);\n\nconst rows = await db.select().from(users);\nawait db.delete(users).where(eq(users.id, 1));\nconst primaryRows = await db.$primary.select().from(users);",
+   "language": "typescript",
+   "explanation": "Reads can use a replica, while the delete uses the primary. `$primary` also forces a read to the primary."
+  },
+  "useCases": [
+   {
+    "title": "Scale read traffic",
+    "scenario": "Send SELECT queries to replica databases while keeping data changes on the primary."
+   },
+   {
+    "title": "Force a fresh read",
+    "scenario": "Run a read after a write when the latest data is required."
+   },
+   {
+    "title": "Customize replica selection",
+    "scenario": "Choose replicas with weights or other application-specific rules."
+   }
+  ],
+  "related": [
+   "withReplicas()",
+   "$primary",
+   "drizzle()",
+   "select()",
+   "delete()"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you configure read replicas in Drizzle?",
+    "answer": "Call `withReplicas()` with the primary database and an array of read-replica databases. The returned object can be used for normal Drizzle queries.",
+    "followUp": "How can one read bypass replica selection? Use `db.$primary` before the query."
+   },
+   {
+    "question": "Where do reads and writes run?",
+    "answer": "A normal `select` can run on one of the configured replicas. Insert, update, and delete operations use the primary database.",
+    "followUp": "Why might a read need the primary? It may need the newest data before replication catches up."
+   },
+   {
+    "question": "How do you force a read to use the primary?",
+    "answer": "Use `$primary` on the database object, then build the read query from it. This forces the query to use the primary connection.",
+    "followUp": "Can this be used for writes too? Writes already use the primary, so `$primary` is mainly useful for reads."
+   }
+  ],
+  "keyPoints": [
+   "Use `withReplicas()` to combine one primary connection with read replicas.",
+   "The returned database object chooses the suitable connection for each operation.",
+   "A normal read can be sent to one of the configured replicas.",
+   "Delete operations are sent to the primary database.",
+   "You can provide custom replica-selection logic instead of relying only on the default choice."
+  ],
+  "gotchas": [
+   "Normal reads may use a replica. Use `$primary` when the read must use the primary instance."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "like": {
   "sourceUrl": "https://orm.drizzle.team/docs/guides/conditional-filters-in-query",
   "sourceTitle": "Drizzle ORM - Conditional filters in query",
@@ -5088,6 +5586,71 @@
    "Successful migration records are stored in the `__drizzle_migrations` table within the `drizzle` schema."
   ],
   "checkedAt": "2026-10-16"
+ },
+ "min": {
+  "sourceUrl": "https://orm.drizzle.team/docs/mysql/select",
+  "sourceTitle": "Drizzle ORM - Select",
+  "summary": "Drizzle ORM's min() helper selects the smallest value in a column or expression. Use it inside db.select().",
+  "explanation": "Use min() inside a select object to calculate the smallest value of a column or expression. Drizzle builds a SQL MIN aggregate for the selected expression, and the result is returned under the property name you choose.",
+  "syntax": "min(expression)",
+  "parameters": [
+   {
+    "name": "expression",
+    "type": "column or SQL expression",
+    "description": "The column or SQL expression whose smallest value should be selected."
+   }
+  ],
+  "returns": "A selected result containing the minimum value of the expression.",
+  "example": {
+   "title": "Select the minimum value",
+   "code": "import { min } from \"drizzle-orm\";\n\nconst result = await db\n  .select({ value: min(users.id) })\n  .from(users);",
+   "language": "typescript",
+   "explanation": "This selects the smallest value from the users.id column."
+  },
+  "useCases": [
+   {
+    "title": "Find a minimum value",
+    "scenario": "Find the smallest ID or numeric field in a table."
+   },
+   {
+    "title": "Add a minimum to a report",
+    "scenario": "Build an aggregate report that includes a minimum metric."
+   }
+  ],
+  "related": [
+   "select",
+   "sql",
+   "max",
+   "sum",
+   "count",
+   "groupBy"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does min() do in Drizzle ORM?",
+    "answer": "min() is a Drizzle aggregate helper that returns the smallest value in an expression. Pass a table column, such as users.id, inside a select projection.",
+    "followUp": "How would you use a custom expression? Use sql with a MIN expression and map the result type when needed."
+   },
+   {
+    "question": "How do you use min() in a query?",
+    "answer": "Import min from drizzle-orm and place it in db.select(), for example select({ value: min(users.id) }).from(users). The selected field is returned as value.",
+    "followUp": "How can you select other fields too? Add them as more properties in the select object, but remember that aggregate queries may need grouping."
+   },
+   {
+    "question": "What SQL does min() represent?",
+    "answer": "min() accepts an expression and produces SQL equivalent to MIN(expression). The documentation shows it with users.id and also shows the equivalent sql template form.",
+    "followUp": "Why use the helper instead of raw SQL? The helper expresses the aggregate through Drizzle's typed query API, while sql is useful for expressions not covered by a helper."
+   }
+  ],
+  "keyPoints": [
+   "min() returns the minimum value found in the supplied expression.",
+   "Import min from drizzle-orm before using the helper.",
+   "Put min() in a select projection and give the result an output property name.",
+   "The helper generates a SQL MIN aggregate over the selected column."
+  ],
+  "gotchas": [],
+  "checkedAt": "2026-11-03"
  },
  "mysqlTable": {
   "sourceUrl": "https://orm.drizzle.team/docs/mysql/sql-schema-declaration",
@@ -6144,6 +6707,102 @@
    "`real` stores a single-precision floating-point value and occupies 4 bytes."
   ],
   "checkedAt": "2026-10-16"
+ },
+ "relations": {
+  "sourceUrl": "https://orm.drizzle.team/docs/relations",
+  "sourceTitle": "Drizzle ORM - Drizzle Relations",
+  "summary": "Drizzle relations describe table links for nested relational queries. Define them with `defineRelations`, use `r.one` or `r.many`, and load them with the query builder's `with` option.",
+  "explanation": "Drizzle relations describe how tables connect for application-level relational queries. Use `defineRelations` with `r.one` for one related object and `r.many` for an array. Then pass the relations to `drizzle` and request related data with `with`. Relations do not create database foreign keys, so define foreign keys separately when database constraints are needed.",
+  "syntax": "defineRelations(schema, (r) => ({ table: { relation: r.one.target({ from, to, optional, alias, where }) } }))",
+  "parameters": [
+   {
+    "name": "relations",
+    "type": "Relations definition",
+    "description": "The tables and relations passed to `defineRelations` and then to the Drizzle database instance."
+   },
+   {
+    "name": "from",
+    "type": "Column or through column",
+    "description": "The source column or source column through a junction table."
+   },
+   {
+    "name": "to",
+    "type": "Column or through column",
+    "description": "The target column or target column through a junction table."
+   },
+   {
+    "name": "where",
+    "type": "Object",
+    "description": "A target-table filter for the related rows."
+   }
+  ],
+  "returns": "A relations definition used by Drizzle relational queries; queried records can include nested related objects or arrays.",
+  "example": {
+   "title": "Define and query relations",
+   "code": "import { defineRelations } from 'drizzle-orm';\nimport { sqliteTable, integer, text } from 'drizzle-orm/sqlite-core';\n\nconst users = sqliteTable('users', { id: integer().primaryKey(), name: text() });\nconst posts = sqliteTable('posts', {\n  id: integer().primaryKey(),\n  authorId: integer('author_id'),\n});\n\nconst relations = defineRelations({ users, posts }, (r) => ({\n  posts: {\n    author: r.one.users({ from: r.posts.authorId, to: r.users.id }),\n  },\n  users: { posts: r.many.posts() },\n}));\n\nconst db = drizzle(process.env.DB_URL, { relations });\nconst result = await db.query.posts.findMany({ with: { author: true } });",
+   "language": "typescript",
+   "explanation": "This defines a post-to-user relation and a user-to-posts relation. The query includes each post's author."
+  },
+  "useCases": [
+   {
+    "title": "One-to-one queries",
+    "scenario": "Load a related record with each row, such as a post's author."
+   },
+   {
+    "title": "One-to-many queries",
+    "scenario": "Load all child rows for each parent, such as a user's posts."
+   },
+   {
+    "title": "Many-to-many queries",
+    "scenario": "Load records connected through a junction table, such as users and groups."
+   },
+   {
+    "title": "Predefined relation filters",
+    "scenario": "Return only related rows meeting a fixed target-table condition."
+   }
+  ],
+  "related": [
+   "defineRelations",
+   "one()",
+   "many()",
+   "One-to-one",
+   "One-to-many",
+   "Many-to-many",
+   "Predefined filters",
+   "Foreign keys"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is the difference between `r.one` and `r.many`?",
+    "answer": "`r.one` describes one related object, while `r.many` describes an array of related objects. The relation uses `from` and `to` columns when the connection must be specified.",
+    "followUp": "How do you model a many-to-many relation? Define a junction table, then use `.through()` on the source and target columns to query the related records directly."
+   },
+   {
+    "question": "Do Drizzle relations create foreign keys?",
+    "answer": "Relations are application-level definitions used by Drizzle relational queries. They do not create or enforce database foreign keys.",
+    "followUp": "Can both be used together? Yes. Define relations for queries and foreign keys separately for database-level integrity."
+   },
+   {
+    "question": "How does Drizzle model many-to-many data?",
+    "answer": "A many-to-many relation uses a separate junction table containing links to both tables. The junction table is included in the schema and can be bypassed in the result with `.through()`.",
+    "followUp": "How can the related rows be filtered? Add `where` to the relation, but the filter can reference only the target table."
+   }
+  ],
+  "keyPoints": [
+   "Relations make nested relational queries concise.",
+   "Use `r.many` when the result should contain an array.",
+   "Set `optional: false` when the related record is guaranteed to exist.",
+   "Use `alias` to distinguish multiple relationships between the same tables.",
+   "A relation can include a predefined target-table filter.",
+   "Use `.through()` to return many-to-many targets without exposing the junction rows."
+  ],
+  "gotchas": [
+   "A relation's `where` filter can use columns only from the target table.",
+   "Relations do not change the database schema and do not create foreign keys.",
+   "Many-to-many relations need an explicit junction table."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "serial": {
   "sourceUrl": "https://orm.drizzle.team/docs/column-types",

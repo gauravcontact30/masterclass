@@ -1,6 +1,6 @@
 "use client";
 import { RouteH1 } from "@/components/route-heading";
-import { AccordionChevron } from "@/components/ui/accordion-chevron";
+import { AccordionChevron, AccordionSummary } from "@/components/ui/accordion-chevron";
 
 import { NativeSelect, NativeSelectOptGroup, NativeSelectOption } from "@/components/ui/native-select";
 import { Button } from "@/components/ui/button";
@@ -22,8 +22,7 @@ import {
   ArrowLeft,
   ArrowUpRight,
   FileCode2,
-  
-  
+  Lock,
   RotateCcw,
   Search,
   ShieldCheck,
@@ -41,10 +40,11 @@ import {
   type ApiEntry,
   type ApiPackage,
 } from "@/lib/api-docs";
-import { API_DETAILS } from "@/lib/api-docs-details";
-import { agenticSection, agenticSections } from "@/lib/api-docs-agentic";
+import type { AgenticIndex, ApiGuideCard, ApiPreview } from "@/lib/server/api-previews";
 import styles from "./api-docs.module.css";
 import ref from "./api-reference.module.css";
+import guideStyles from "./api-tech-guide.module.css";
+import { ApiMemberNotice } from "./api-member-notice";
 import projectStyles from "./api-project.module.css";
 import { ApiProjectWorkspace } from "./api-project-workspace";
 import { ApiInterviewPractice } from "./api-interview-practice";
@@ -120,7 +120,8 @@ export function ApiDetail({
   const { language } = page;
   const isAgentic = AGENTIC_FRAMEWORK_IDS.has(pkg.id);
   const lead = shortDefinition(detail.description);
-  const howItWorks = toPoints(`${detail.description} ${detail.descriptionLong ?? ""}`, [lead]);
+  // To the point: the first few of each list; practice is one click away.
+  const howItWorks = toPoints(`${detail.description} ${detail.descriptionLong ?? ""}`, [lead]).slice(0, 3);
 
   return (
     <div>
@@ -201,10 +202,10 @@ export function ApiDetail({
               <section id="api-key-points">
                 <h2 className={styles.coloredTitle} data-tone="violet">
                   <Sparkles size={20} aria-hidden="true" />
-                  Key features
+                  Key points
                 </h2>
                 <ol className={styles.pointCards}>
-                  {detail.notes.map((note, index) => (
+                  {detail.notes.slice(0, 6).map((note, index) => (
                     <li key={note}>
                       <span className={styles.pointNumber} aria-hidden="true">
                         {String(index + 1).padStart(2, "0")}
@@ -222,7 +223,7 @@ export function ApiDetail({
                   Real use cases
                 </h2>
                 <ol className={styles.pointCards}>
-                  {detail.useCases.map((note) => {
+                  {detail.useCases.slice(0, 3).map((note) => {
                     const { title, body } = splitUseCase(note);
                     return (
                       <li key={note}>
@@ -244,6 +245,8 @@ export function ApiDetail({
                   <ApiProjectWorkspace key={entry.name} project={detail.project} />
                 </section>
               )}
+              <details className={styles.practice}>
+                <AccordionSummary>Practice: interview questions and workplace vocabulary</AccordionSummary>
               <section id="api-vocabulary">
                 <div className={projectStyles.vocabularyHeading}>
                   <h2 className={styles.coloredTitle} data-tone="sage">
@@ -310,6 +313,7 @@ export function ApiDetail({
                 </p>
                 <ApiInterviewPractice key={entry.name} detail={detail} />
               </section>
+              </details>
             </>
           )}
           {learn.length > 0 && (
@@ -337,10 +341,7 @@ export function ApiDetail({
             </section>
           )}
           <p className={styles.provenance}>
-            {API_DETAILS[`${pkg.id}:${entry.name}`]
-              ? "Hand-authored reference prepared for study in MasterClass."
-              : "Prepared inside MasterClass for study."}{" "}
-            Behaviour can differ between versions; verify against the version installed in your
+            {page.provenance} Behaviour can differ between versions; verify against the version installed in your
             project.
           </p>
         </article>
@@ -396,7 +397,6 @@ function PackageFacts({ pkg }: { pkg: ApiPackage }) {
   const unstable = API_STATUSES.filter((item) => item.id !== "s")
     .map((item) => ({ ...item, count: pkg.entries.filter((entry) => entry.status === item.id).length }))
     .filter((item) => item.count > 0);
-  const guides = pkg.entries.filter((entry) => API_DETAILS[`${pkg.id}:${entry.name}`]).length;
   return (
     <dl className={ref.packageFacts}>
       <div>
@@ -435,68 +435,99 @@ function PackageFacts({ pkg }: { pkg: ApiPackage }) {
           <dd className={ref.topics}>{pkg.topics.slice(0, 6).join(" · ")}</dd>
         </div>
       )}
-      {guides > 0 && (
-        <div>
-          <dt>Guides</dt>
-          <dd>
-            {guides} hand-written {guides === 1 ? "page" : "pages"}
-          </dd>
-        </div>
-      )}
     </dl>
   );
 }
 
-const ApiEntryRow = memo(function ApiEntryRow({ packageId, entry, pathname }: { packageId: string; entry: ApiEntry; pathname: string }) {
-  const guide = API_DETAILS[`${packageId}:${entry.name}`];
-  // The agentic frameworks read as picture cards, like the Popular AWS
+const ART_TONES = 6;
+const artTone = (name: string) => [...name].reduce((sum, letter) => sum + letter.charCodeAt(0), 0) % ART_TONES;
+
+/** What a picture card shows while its illustration has not been generated: the technology's mark on a light tone chosen from the name. */
+function EntryArt({ entry, packageLabel, glyph }: { entry: ApiEntry; packageLabel: string; glyph: string }) {
+  return (
+    <div className={ref.entryArt} data-tone={artTone(entry.name)} aria-hidden="true">
+      <span className={ref.entryArtKind}>{kindLabel(entry.kind)}</span>
+      <span className={ref.entryArtMark}><BrandOrGlyph label={packageLabel} glyph={glyph} size={38} /></span>
+    </div>
+  );
+}
+
+const ApiEntryRow = memo(function ApiEntryRow({ packageId, entry, pathname, summary, locked, packageLabel = "", glyph = "" }: { packageId: string; entry: ApiEntry; pathname: string; summary?: string; locked?: boolean; packageLabel?: string; glyph?: string }) {
+  const meta = (
+    <span className={ref.entryMeta}>
+      {summary && <span className={ref.guideTag}>{locked === false ? "Free" : "Guide"}</span>}
+      {locked && <Lock size={13} aria-label="Subscribers only" />}
+      {entry.status !== "s" && (
+        <span className={ref.statusTag} data-status={entry.status}>
+          {statusLabel(entry.status)}
+        </span>
+      )}
+      <span className={ref.kindLabel}>{kindLabel(entry.kind)}</span>
+    </span>
+  );
+  const name = locked ? (
+    <span className={ref.entryLink} aria-disabled="true">{entry.name}</span>
+  ) : (
+    <Link prefetch={false} className={ref.entryLink} href={apiTopicHref(pathname, packageId, entry.name)}>
+      {entry.name}
+    </Link>
+  );
+  // The agentic frameworks read as picture cards for members, like the Popular AWS
   // services on Search: the illustration across the top, then the name.
-  if (AGENTIC_FRAMEWORK_IDS.has(packageId)) return (
-    <li className={`${ref.entry} ${ref.entryCard}`} key={entry.name} data-guide={guide ? "" : undefined}>
-      <LearningPicture variant="card" className={ref.entryPicture} src={learningImageUrl("api", [packageId, entry.name])} alt="" />
+  if (locked === undefined && AGENTIC_FRAMEWORK_IDS.has(packageId)) return (
+    <li className={`${ref.entry} ${ref.entryCard}`} key={entry.name} data-guide={summary ? "" : undefined}>
+      <LearningPicture variant="card" className={ref.entryPicture} src={learningImageUrl("api", [packageId, entry.name])} alt="" fallback={<EntryArt entry={entry} packageLabel={packageLabel} glyph={glyph} />} />
       <div className={ref.entryCardBody}>
         <Badge kind={entry.kind} />
         <div className={ref.entryText}>
-          <Link prefetch={false} className={ref.entryLink} href={apiTopicHref(pathname, packageId, entry.name)}>
-            {entry.name}
-          </Link>
-          {guide && <p className={ref.entrySummary}>{guide.description}</p>}
+          {name}
+          {summary && <p className={ref.entrySummary}>{summary}</p>}
         </div>
       </div>
-      <span className={ref.entryMeta}>
-        {guide && <span className={ref.guideTag}>Guide</span>}
-        {entry.status !== "s" && (
-          <span className={ref.statusTag} data-status={entry.status}>
-            {statusLabel(entry.status)}
-          </span>
-        )}
-        <span className={ref.kindLabel}>{kindLabel(entry.kind)}</span>
-      </span>
+      {meta}
     </li>
   );
   return (
-    <li className={ref.entry} key={entry.name} data-guide={guide ? "" : undefined}>
+    <li className={ref.entry} key={entry.name} data-guide={summary ? "" : undefined} data-locked={locked || undefined}>
       <Badge kind={entry.kind} />
       <div className={ref.entryText}>
-        <Link prefetch={false} className={ref.entryLink} href={apiTopicHref(pathname, packageId, entry.name)}>
-          {entry.name}
-        </Link>
-        {guide && <p className={ref.entrySummary}>{guide.description}</p>}
+        {name}
+        {summary && <p className={ref.entrySummary}>{summary}</p>}
       </div>
-      <span className={ref.entryMeta}>
-        {guide && <span className={ref.guideTag}>Guide</span>}
-        {entry.status !== "s" && (
-          <span className={ref.statusTag} data-status={entry.status}>
-            {statusLabel(entry.status)}
-          </span>
-        )}
-        <span className={ref.kindLabel}>{kindLabel(entry.kind)}</span>
-      </span>
+      {meta}
     </li>
   );
 });
 
-export function ApiDocs() {
+const LOCKED_ROWS_SHOWN = 8;
+
+/** The field guides at the top of API Docs: one card per headline technology. */
+function GuideShelf({ guides, pathname }: { guides: ApiGuideCard[]; pathname: string }) {
+  if (!guides.length) return null;
+  return (
+    <section className={guideStyles.shelf} aria-labelledby="api-guides-title">
+      <h2 id="api-guides-title">Field guides</h2>
+      <ul className={guideStyles.shelfGrid}>
+        {guides.map((guide) => (
+          <li key={guide.id}>
+            <Link prefetch={false} href={`${pathname}/${guide.id}`}>
+              <Image src={guide.logo} alt="" width={28} height={28} unoptimized={guide.logo.endsWith(".svg")} />
+              <span className={guideStyles.shelfName}>{guide.name}{guide.version && <small>{guide.version}</small>}</span>
+              <span className={guideStyles.shelfLine}>{guide.tagline}</span>
+              <span className={guideStyles.shelfCount}>{guide.count} APIs</span>
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </section>
+  );
+}
+
+/**
+ * `member` comes from the server, and the props hold only what this reader may see: a non-member's previews are short
+ * descriptions, and everything else is a disabled name. The detail page is gated on the server as well.
+ */
+export function ApiDocs({ member = true, previews = {}, summaries = {}, agentic = {}, guides = [] }: { member?: boolean; previews?: Record<string, ApiPreview[]>; summaries?: Record<string, string>; agentic?: AgenticIndex; guides?: ApiGuideCard[] }) {
   const pathname = usePathname();
   const params = useSearchParams();
   const [query, setQuery] = useState("");
@@ -508,7 +539,7 @@ export function ApiDocs() {
   const [expanded, setExpanded] = useState<string[]>([]);
   const [expandAll, setExpandAll] = useState(false);
   // Agentic AI framework packages start open with every entry listed; this tracks the ones the reader closed.
-  const [collapsed, setCollapsed] = useState<string[]>([]);
+  const [collapsed, setCollapsed] = useState<string[]>(member ? [] : [...AGENTIC_FRAMEWORK_ORDER]);
   const [showTypes, setShowTypes] = useState(false);
   const [searchScope, setSearchScope] = useState<SearchScope>("all");
   const [indexRail, setIndexRail] = useState(false);
@@ -533,10 +564,10 @@ export function ApiDocs() {
     return {
       packages: API_PACKAGES.length,
       identifiers,
-      guides: Object.keys(API_DETAILS).length,
+      guides: guides.length,
       categories: groupByCategory(API_PACKAGES),
     };
-  }, []);
+  }, [guides.length]);
 
   const groups = useMemo(() => {
     const rawGroups = filterApiPackages(deferredQuery, packageId, types, statuses);
@@ -629,8 +660,13 @@ export function ApiDocs() {
         eyebrow="Professional learning / API Docs"
         title="API Reference"
         icon={<FileCode2 />}
-        description="Look up any identifier across the stacks you study, see its type and stability at a glance, and open it for a full learning page with syntax, runnable code and practice."
+        description={member
+          ? "Look up any API across the stacks you study, see its type and stability at a glance, and open a focused page with syntax, runnable code and practice."
+          : "Short descriptions of five APIs per technology, free to read. Subscribe to open every API in full."}
       />
+
+      {!member && <ApiMemberNotice />}
+      <GuideShelf guides={guides} pathname={pathname} />
 
       <dl className={ref.facts} aria-label="Catalog at a glance">
         <div>
@@ -646,7 +682,7 @@ export function ApiDocs() {
           <dd>{catalogFacts.categories.length}</dd>
         </div>
         <div>
-          <dt>Hand-written guides</dt>
+          <dt>Field guides</dt>
           <dd>{catalogFacts.guides}</dd>
         </div>
       </dl>
@@ -922,10 +958,16 @@ export function ApiDocs() {
               </h2>
               <div className={ref.packages}>
                 {category.packages.map((pkg) => {
-                  const agentic = AGENTIC_FRAMEWORK_IDS.has(pkg.id);
-                  const isOpen = searching || expandAll || open === pkg.id || packageId === pkg.id || (agentic && !collapsed.includes(pkg.id));
-                  const entries = agentic || expanded.includes(pkg.id) || searching ? pkg.entries : pkg.entries.slice(0, 60);
-                  const sectionNames = agenticSections(pkg.id);
+                  const framework = AGENTIC_FRAMEWORK_IDS.has(pkg.id);
+                  const isOpen = searching || expandAll || open === pkg.id || packageId === pkg.id || (framework && !collapsed.includes(pkg.id));
+                  const free = new Map((previews[pkg.id] ?? []).map((item) => [item.name, item.summary]));
+                  // A non-member's list: the free entries first, then a few disabled names.
+                  const memberEntries = framework || expanded.includes(pkg.id) || searching ? pkg.entries : pkg.entries.slice(0, 60);
+                  const entries = member ? memberEntries : [...pkg.entries.filter((entry) => free.has(entry.name)), ...pkg.entries.filter((entry) => !free.has(entry.name)).slice(0, searching ? 40 : LOCKED_ROWS_SHOWN)];
+                  const sectionNames = member ? agentic[pkg.id]?.sections : undefined;
+                  const rowProps = (entry: ApiEntry) => member
+                    ? { summary: summaries[`${pkg.id}:${entry.name}`], packageLabel: pkg.name, glyph: pkg.icon }
+                    : { summary: free.get(entry.name), locked: !free.has(entry.name) };
                   const full = API_PACKAGES.find((item) => item.id === pkg.id);
                   const jsGroups = [...new Set(entries.map((entry) => javascriptGroup(entry.name)))];
                   return (
@@ -944,7 +986,7 @@ export function ApiDocs() {
                             aria-controls={`api-group-${pkg.id}`}
                             onClick={() => {
                               if (isOpen) {
-                                if (agentic) setCollapsed((previous) => [...previous, pkg.id]);
+                                if (framework) setCollapsed((previous) => [...previous, pkg.id]);
                                 setOpen(null);
                                 if (expandAll) setExpandAll(false);
                                 if (packageId === pkg.id) setPackageId("all");
@@ -975,16 +1017,17 @@ export function ApiDocs() {
                       {full && <PackageFacts pkg={full} />}
                       <div id={`api-group-${pkg.id}`} hidden={!isOpen}>
                         {isOpen && <LearningPicture src={learningImageUrl("api", [pkg.id])} alt={`Illustration of how ${pkg.name} works`} />}
+                        {isOpen && <Link prefetch={false} className={ref.showAll} href={`${pathname}/${pkg.id}`}>Open the {pkg.name} page</Link>}
                         {isOpen &&
                           (sectionNames ? (
                             sectionNames.map((section) => {
-                              const inSection = entries.filter((entry) => agenticSection(pkg.id, entry.name, entry.kind) === section);
+                              const inSection = entries.filter((entry) => (agentic[pkg.id]?.of[entry.name] ?? "More reference") === section);
                               return inSection.length ? (
                                 <div className={ref.subgroup} key={section}>
                                   <h4>
                                     {section} <span className={ref.subgroupCount}>{inSection.length}</span>
                                   </h4>
-                                  <ul className={agentic ? `${ref.entries} ${ref.cardGrid}` : ref.entries}>{inSection.map((entry) => <ApiEntryRow key={entry.name} packageId={pkg.id} entry={entry} pathname={pathname} />)}</ul>
+                                  <ul className={framework && member ? `${ref.entries} ${ref.cardGrid}` : ref.entries}>{inSection.map((entry) => <ApiEntryRow key={entry.name} packageId={pkg.id} entry={entry} pathname={pathname} {...rowProps(entry)} />)}</ul>
                                 </div>
                               ) : null;
                             })
@@ -993,14 +1036,19 @@ export function ApiDocs() {
                               <div className={ref.subgroup} key={group}>
                                 <h4>{group}</h4>
                                 <ul className={ref.entries}>
-                                  {entries.filter((entry) => javascriptGroup(entry.name) === group).map((entry) => <ApiEntryRow key={entry.name} packageId={pkg.id} entry={entry} pathname={pathname} />)}
+                                  {entries.filter((entry) => javascriptGroup(entry.name) === group).map((entry) => <ApiEntryRow key={entry.name} packageId={pkg.id} entry={entry} pathname={pathname} {...rowProps(entry)} />)}
                                 </ul>
                               </div>
                             ))
                           ) : (
-                            <ul className={agentic ? `${ref.entries} ${ref.cardGrid}` : ref.entries}>{entries.map((entry) => <ApiEntryRow key={entry.name} packageId={pkg.id} entry={entry} pathname={pathname} />)}</ul>
+                            <ul className={framework && member ? `${ref.entries} ${ref.cardGrid}` : ref.entries}>{entries.map((entry) => <ApiEntryRow key={entry.name} packageId={pkg.id} entry={entry} pathname={pathname} {...rowProps(entry)} />)}</ul>
                           ))}
-                        {isOpen && entries.length < pkg.entries.length && (
+                        {isOpen && !member && pkg.entries.length > entries.length && (
+                          <Link className={ref.showAll} href="/learning/plans">
+                            <Lock size={13} aria-hidden="true" /> {pkg.entries.length - entries.length} more {pkg.name} APIs for subscribers
+                          </Link>
+                        )}
+                        {isOpen && member && entries.length < pkg.entries.length && (
                           <button
                             type="button"
                             className={ref.showAll}
@@ -1033,7 +1081,7 @@ export function ApiDocs() {
                 <dt>
                   <span className={ref.guideTag}>Guide</span>
                 </dt>
-                <dd>A hand-written page with syntax, parameters and a worked example. Other identifiers open a page prepared in the app.</dd>
+                <dd>A page with syntax, parameters and a worked example, written from the official documentation.</dd>
               </div>
             </dl>
             <p>Statuses describe this catalog snapshot. Check them against the version installed in your project.</p>
@@ -1041,7 +1089,7 @@ export function ApiDocs() {
         </div>
       </div>
 
-      <AgentBlueprint />
+      {member && <AgentBlueprint />}
     </div>
   );
 }

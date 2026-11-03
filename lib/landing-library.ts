@@ -1,4 +1,5 @@
 import "server-only";
+import { API_PACKAGES } from "./api-docs";
 import { takeDaily } from "./daily-rotation";
 import { ENGLISH_EXAM_VOCABULARY } from "@/lib/pro-learn/english-exam-vocabulary";
 import { TECHNOLOGY_HANDBOOKS } from "@/lib/pro-learn/technology-handbooks";
@@ -30,7 +31,7 @@ export function landingLibrary(pro: LandingProPreview): LandingLibrary {
     ...SEARCH_FIXED_CATALOGUES.map(title => ({ id: `fixed:${title}`, kind: "technology" as const, title, note: "A curated catalogue on the Search page.", meta: "Catalogue" })),
     ...TECHNOLOGY_HANDBOOKS.map(handbook => ({ id: `tech:${handbook.title}`, kind: "technology" as const, title: handbook.title.split(" — ")[0], note: clip(handbook.description), meta: `${handbook.topics.length} topics` })),
   ];
-  const api: LibraryEntry[] = pro.api.packages.map(pkg => ({ id: `api:${pkg.id}`, kind: "api", title: pkg.name, note: clip(pkg.sample.slice(0, 6).map(item => item.name).join(" · ")), meta: `${pkg.count} entries` }));
+  const api: LibraryEntry[] = API_PACKAGES.map(pkg => ({ id: `api:${pkg.id}`, kind: "api", title: pkg.name, note: clip(pkg.entries.slice(0, 6).map(item => item.name).join(" · ")), meta: `${pkg.entries.length} entries` }));
   const courses: LibraryEntry[] = PREPARATIONS.filter(option => option.category !== "technology").map(option => ({
     id: `course:${option.id}`, kind: "course", title: option.label.en, hi: option.label.hi, note: CATEGORY_LABELS[option.category]?.en ?? "Preparation", meta: CATEGORY_LABELS[option.category]?.en ?? "",
   }));

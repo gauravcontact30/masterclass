@@ -142,64 +142,244 @@
   "checkedAt": "2026-10-15"
  },
  "AppProps": {
-  "sourceUrl": "https://nextjs.org/docs/pages/building-your-application/routing/custom-app",
-  "sourceTitle": "Custom App - Routing - Next.js",
-  "summary": "AppProps types the props received by a custom Pages Router App. It supplies the active page component and its page props so the App can render shared layouts or initialization logic.",
-  "explanation": "AppProps is the TypeScript shape used by a custom App component in the Pages Router. It provides the active page component through Component and that page's data through pageProps, which the custom App can render or use for shared initialization and layout behavior.",
-  "syntax": "type AppProps = { Component: NextPage; pageProps: object }",
-  "parameters": [
-   {
-    "name": "Component",
-    "type": "NextPage",
-    "description": "The currently active page component rendered by the custom App."
-   },
-   {
-    "name": "pageProps",
-    "type": "object",
-    "description": "Props supplied to the active page component."
-   }
-  ],
-  "returns": "A React element containing the active page component and its pageProps.",
+  "sourceUrl": "https://nextjs.org/docs/14/pages/building-your-application/configuring/typescript",
+  "sourceTitle": "TypeScript",
+  "summary": "Next.js has built-in TypeScript support for Pages Router projects. It can set up TypeScript automatically and provides types for pages, API routes, custom Apps, and configuration checking.",
+  "explanation": "Next.js adds TypeScript support when a Pages Router project uses a .ts or .tsx file. It creates or updates tsconfig.json during next dev or next build, and provides types for data functions, API routes, and a custom App.",
+  "syntax": "npx create-next-app@latest\n# Existing project: rename a file to .ts or .tsx, then run next dev or next build",
+  "parameters": [],
+  "returns": "",
   "example": {
-   "title": "Typing a custom App",
+   "title": "Typed custom App",
    "code": "import type { AppProps } from 'next/app'\n\nexport default function MyApp({ Component, pageProps }: AppProps) {\n  return <Component {...pageProps} />\n}",
    "language": "tsx",
-   "explanation": "Types a custom Pages Router App that renders the active page with its supplied props."
+   "explanation": "Use the built-in AppProps type for a custom Pages Router App."
   },
   "useCases": [
    {
-    "title": "Global layout",
-    "scenario": "Render every Pages Router page through a custom application shell."
+    "title": "Create a TypeScript project",
+    "scenario": "Starting a new Pages Router application"
    },
    {
-    "title": "Page initialization",
-    "scenario": "Apply initialization behavior shared by all Pages Router pages."
+    "title": "Convert files gradually",
+    "scenario": "Adding TypeScript to an existing JavaScript project"
    },
    {
-    "title": "Data injection",
-    "scenario": "Pass shared or computed values to the active page."
+    "title": "Type API routes",
+    "scenario": "Checking API route request and response shapes"
+   },
+   {
+    "title": "Type a custom App",
+    "scenario": "Typing pages/_app.tsx"
    }
   ],
   "related": [
-   "Custom App",
-   "NextPage",
-   "getInitialProps",
-   "getStaticProps",
-   "getServerSideProps"
+   "GetStaticProps",
+   "GetStaticPaths",
+   "GetServerSideProps",
+   "NextApiRequest",
+   "NextApiResponse",
+   "AppProps",
+   "NextConfig",
+   "paths"
   ],
-  "since": "",
+  "since": "v10.2.1",
+  "interview": [
+   {
+    "question": "How do you add TypeScript to an existing Next.js project?",
+    "answer": "Rename a file to .ts or .tsx, then run next dev or next build. Next.js installs needed packages and creates tsconfig.json with recommended settings.",
+    "followUp": "What should happen to an existing jsconfig.json? Copy its paths compiler option into tsconfig.json, then delete jsconfig.json."
+   },
+   {
+    "question": "How are Pages Router API handlers typed?",
+    "answer": "Use NextApiRequest and NextApiResponse from next. Give NextApiResponse a data type when you want the response body checked.",
+    "followUp": "How would you type a response containing a string name? Define type Data = { name: string } and use NextApiResponse<Data>."
+   },
+   {
+    "question": "How do you type a custom App?",
+    "answer": "Use the built-in AppProps type from next/app in pages/_app.tsx. It types both Component and pageProps for a custom App.",
+    "followUp": "How can next.config.js get editor type checking? Add // @ts-check and a JSDoc import type for next's NextConfig."
+   }
+  ],
   "keyPoints": [
-   "The custom App component initializes Pages Router pages.",
-   "A custom App can provide a layout that persists while users navigate between pages.",
-   "The App component can inject extra data into rendered pages.",
-   "Component identifies the currently active page component.",
-   "Props spread into Component become props received by the active page."
+   "In an existing project, changing a page or component to .ts or .tsx starts the TypeScript setup.",
+   "Use TypeScript 4.5.2 or newer for the documented syntax and performance improvements.",
+   "Path aliases and a base URL can be configured directly in tsconfig.json.",
+   "Enable TypeScript incremental checking in tsconfig.json to speed checks in large applications.",
+   "Production builds normally stop when the project contains TypeScript errors.",
+   "Use the matching Next.js types for static props, static paths, and server-side props functions."
   ],
   "gotchas": [
-   "A custom App cannot use page data-fetching methods such as getStaticProps or getServerSideProps.",
-   "Adding getInitialProps to the custom App disables automatic static optimization for pages that do not define getStaticProps."
+   "next.config.js stays JavaScript. Add JSDoc types if you want editor checking.",
+   "Ignoring build errors can let broken TypeScript reach production, so run type checks elsewhere.",
+   "Do not put custom declarations in next-env.d.ts."
   ],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-11-03"
+ },
+ "cacheComponents": {
+  "sourceUrl": "https://nextjs.org/docs/app/api-reference/config/next-config-js/cacheComponents",
+  "sourceTitle": "cacheComponents",
+  "summary": "Cache Components enables function- and component-level caching in the Next.js App Router. It also provides a static shell, streamed dynamic content, and preserved UI state during some client navigations.",
+  "explanation": "With Cache Components enabled, Next.js caches selected functions or components with the \"use cache\" directive. It builds a static HTML shell first, then streams uncached dynamic content. Client navigation can also preserve state for recently visited routes.",
+  "syntax": "const nextConfig: NextConfig = {\n  cacheComponents: true,\n  partialPrefetching: true,\n}",
+  "parameters": [
+   {
+    "name": "cacheComponents",
+    "type": "boolean",
+    "description": "Turns on Cache Components behavior in the App Router."
+   },
+   {
+    "name": "partialPrefetching",
+    "type": "boolean",
+    "description": "Controls Partial Prefetching and should be set explicitly."
+   }
+  ],
+  "returns": "",
+  "example": {
+   "title": "Enable Cache Components",
+   "code": "import type { NextConfig } from 'next'\n\nconst nextConfig: NextConfig = {\n  cacheComponents: true,\n  partialPrefetching: true,\n}\n\nexport default nextConfig",
+   "language": "typescript",
+   "explanation": "This enables Cache Components and explicitly enables Partial Prefetching in a Next.js configuration file."
+  },
+  "useCases": [
+   {
+    "title": "Cache data",
+    "scenario": "Cache a database query or computed value that can be reused."
+   },
+   {
+    "title": "Cache UI",
+    "scenario": "Cache a complete component or page while leaving other route content dynamic."
+   },
+   {
+    "title": "Mix static and dynamic content",
+    "scenario": "Serve a route shell quickly while slower dynamic parts stream later."
+   },
+   {
+    "title": "Preserve client UI state",
+    "scenario": "Keep form values or expanded sections when navigating back to a recent route."
+   }
+  ],
+  "related": [
+   "use cache",
+   "cacheLife",
+   "cacheTag",
+   "partialPrefetching",
+   "Partial Prerendering (PPR)",
+   "Revalidating",
+   "Preserving UI state"
+  ],
+  "since": "16.0.0",
+  "interview": [
+   {
+    "question": "How do you enable Cache Components?",
+    "answer": "Set cacheComponents to true in next.config.ts. Also set partialPrefetching explicitly, normally to true. In Next.js 16, the option is stable at the top level rather than under experimental.",
+    "followUp": "What behavior does this enable by default? It combines component and function caching, dynamic rendering with a static shell, and Partial Prerendering in the App Router."
+   },
+   {
+    "question": "How do you choose what to cache?",
+    "answer": "Use the \"use cache\" directive on an async function or component. This lets the application cache data-level results or a complete UI-level component or page.",
+    "followUp": "How are cached results refreshed? Use time-based behavior from the cache lifetime, or use on-demand revalidation after a mutation."
+   },
+   {
+    "question": "What runtime and migration limits apply?",
+    "answer": "Cache Components requires Node.js and does not support the runtime route segment configuration. Remove runtime exports, including runtime = 'nodejs' and the deprecated Edge setting.",
+    "followUp": "What happened to the old PPR configuration? Cache Components makes Partial Prerendering the default, so the experimental PPR flag and route segment setting are no longer needed."
+   }
+  ],
+  "keyPoints": [
+   "The feature lets you cache complete components or individual functions.",
+   "Fetching remains dynamic unless you mark selected work for caching.",
+   "Users can receive the static part of a route before dynamic content finishes.",
+   "Apply the directive to an async function or component to cache its returned result.",
+   "Use data-level caching for fetched or computed values, and UI-level caching for a component or page.",
+   "In version 16, configure this as a top-level Next.js option."
+  ],
+  "gotchas": [
+   "Use the Node.js runtime. Remove route segment runtime exports, including the old Edge setting.",
+   "Set partialPrefetching to true with cacheComponents, or set it to false only during the documented migration case.",
+   "Preserved route state is not permanent. Older routes can be removed from the DOM."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "cacheLife": {
+  "sourceUrl": "https://nextjs.org/docs/app/api-reference/functions/cacheLife",
+  "sourceTitle": "cacheLife",
+  "summary": "cacheLife sets the lifetime of cached functions and components in the Next.js App Router. It works inside a use cache scope and accepts preset names, custom profile names, or timing objects.",
+  "explanation": "Enable cacheComponents, then place use cache in a function or component and call cacheLife inside it. Pass a preset name, a configured profile name, or an object with stale, revalidate, and expire values. The profile controls client reuse, background server refresh, and the maximum stale period.",
+  "syntax": "cacheLife(profile)\ncacheLife({ stale, revalidate, expire })",
+  "parameters": [
+   {
+    "name": "profile",
+    "type": "string | CacheLifeConfig",
+    "description": "A preset or configured profile name, such as days or max; alternatively, an object containing stale, revalidate, and expire durations in seconds."
+   }
+  ],
+  "returns": "The documentation does not specify a return value.",
+  "example": {
+   "title": "Use a preset profile",
+   "code": "'use cache'\nimport { cacheLife } from 'next/cache'\n\nexport default async function BlogPage() {\n  cacheLife('days')\n  const posts = await getBlogPosts()\n  return <ul>{posts.map((post) => <li key={post.id}>{post.title}</li>)}</ul>\n}",
+   "language": "tsx",
+   "explanation": "This caches the page output with the built-in daily profile."
+  },
+  "useCases": [
+   {
+    "title": "Preset profiles",
+    "scenario": "Use days for blog posts or articles that change about once a day."
+   },
+   {
+    "title": "Shared custom profiles",
+    "scenario": "Define editorial or marketing timings once and reuse them across components."
+   },
+   {
+    "title": "Inline profiles",
+    "scenario": "Set one-off timing values for a specific function."
+   },
+   {
+    "title": "Long-lived utility caching",
+    "scenario": "Use max for settings or other data that rarely changes."
+   }
+  ],
+  "related": [
+   "cacheComponents",
+   "use cache",
+   "staleTimes",
+   "revalidateTag",
+   "revalidatePath",
+   "updateTag",
+   "refresh"
+  ],
+  "since": "v16.0.0",
+  "interview": [
+   {
+    "question": "What does cacheLife do?",
+    "answer": "cacheLife sets how long a cached function or component remains usable. It accepts a preset name, such as days, or a profile object with stale, revalidate, and expire values.",
+    "followUp": "What happens after revalidate? The server can return the cached result and refresh it in the background."
+   },
+   {
+    "question": "What are the three cache profile properties?",
+    "answer": "stale controls how long the client can use cached data without checking the server. revalidate controls background server refreshes. expire is the maximum stale period before the next request waits for fresh content.",
+    "followUp": "Can expire equal revalidate? No. When both are configured, expire must be longer."
+   },
+   {
+    "question": "How do you use cacheLife in an application?",
+    "answer": "Enable cacheComponents in next.config.js, add use cache to the function or component, and call cacheLife inside that scope. Without a cacheLife call, the default profile is used.",
+    "followUp": "Can profiles be reused? Yes. Define named profiles in next.config.js and pass their names to cacheLife."
+   }
+  ],
+  "keyPoints": [
+   "Turn on cacheComponents before using cacheLife.",
+   "A named profile applies to the complete output of the function or component.",
+   "stale lets the client router show cached content without a network request.",
+   "After revalidate, the server may serve the cached result while refreshing it.",
+   "After expire and no traffic, the next request waits for regeneration.",
+   "Next.js generates the cacheLife type signature from next.config.ts during development, build, or type generation."
+  ],
+  "gotchas": [
+   "Call cacheLife inside a use cache scope. A top-level call in the file is invalid.",
+   "The expire value must be greater than revalidate when both are set.",
+   "Missing values in a custom or inline profile come from the default profile."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "cacheTag": {
   "sourceUrl": "https://nextjs.org/docs/app/api-reference/functions/cacheTag",
@@ -275,6 +455,81 @@
   ],
   "checkedAt": "2026-10-15"
  },
+ "catchError": {
+  "sourceUrl": "https://nextjs.org/docs/app/api-reference/functions/catchError",
+  "sourceTitle": "catchError | Next.js Docs",
+  "summary": "catchError creates a component-level error boundary in the App Router. It shows fallback UI for child errors and supports recovery with retry().",
+  "explanation": "catchError creates a component-level error boundary for the App Router. It renders a fallback when a child throws and lets the user retry by fetching and rendering the children again.",
+  "syntax": "const ErrorWrapper = catchError(fallback)",
+  "parameters": [
+   {
+    "name": "fallback",
+    "type": "(props, errorInfo) => React.ReactNode",
+    "description": "A function that renders the fallback UI. It receives the wrapper props, excluding children, and an ErrorInfo object."
+   }
+  ],
+  "returns": "A React component that accepts the fallback's props, excluding children, and wraps its children in an error boundary.",
+  "example": {
+   "title": "A reusable error boundary",
+   "code": "'use client'\n\nimport { catchError, type ErrorInfo } from 'next/error'\n\nfunction Fallback(\n  props: { title: string },\n  { error, retry }: ErrorInfo\n) {\n  const message = error instanceof Error ? error.message : String(error)\n\n  return (\n    <div>\n      <h2>{props.title}</h2>\n      <p>{message}</p>\n      <button onClick={() => retry()}>Try again</button>\n    </div>\n  )\n}\n\nexport default catchError(Fallback)",
+   "language": "tsx",
+   "explanation": "This client component shows the thrown value and retries the wrapped children."
+  },
+  "useCases": [
+   {
+    "title": "Protect one component subtree",
+    "scenario": "A dashboard widget should show its own error UI without replacing the whole route."
+   },
+   {
+    "title": "Build a configurable fallback",
+    "scenario": "Several screens need the same error display with different headings or settings."
+   },
+   {
+    "title": "Let users retry",
+    "scenario": "A temporary server or data error may succeed after another fetch."
+   }
+  ],
+  "related": [
+   "ErrorInfo",
+   "retry",
+   "reset",
+   "error.js",
+   "redirect()",
+   "notFound()"
+  ],
+  "since": "v16.2.0 (unstable_catchError); stable in v16.3.0",
+  "interview": [
+   {
+    "question": "What does catchError do?",
+    "answer": "catchError returns a component that wraps its children in an error boundary. The fallback function receives wrapper props without children and an error-info object.",
+    "followUp": "How do you make one fallback reusable? Pass configuration such as a title as a wrapper prop; those props are forwarded to the fallback."
+   },
+   {
+    "question": "How should a user recover from an error?",
+    "answer": "retry() re-fetches and re-renders the children inside the boundary. If rendering succeeds, the fallback is replaced by the result.",
+    "followUp": "When would reset() be insufficient? It does not re-fetch, so it cannot recover from Server Component errors."
+   },
+   {
+    "question": "How should the fallback read the error?",
+    "answer": "The App Router fallback can receive an unknown thrown value, so narrow it before reading properties. For example, check instanceof Error before using message.",
+    "followUp": "How are redirect() and notFound() handled? catchError is designed to handle their special thrown errors without accidentally treating them as ordinary errors."
+   }
+  ],
+  "keyPoints": [
+   "Use catchError to protect any component subtree, not only a complete route segment.",
+   "It is useful when the boundary belongs to a component rather than to a route segment.",
+   "retry() keeps Client Component state outside the boundary while it recovers.",
+   "Moving to another route clears the displayed error state automatically.",
+   "Use wrapper props to configure shared fallback components, such as changing their title.",
+   "The argument is the fallback function that renders the error UI."
+  ],
+  "gotchas": [
+   "In the App Router, prefer retry() for recovery from server-rendered errors. reset() does not fetch new server data.",
+   "The fallback and the wrapper must follow Client Component rules when using this API.",
+   "Passing server-rendered fallback content can do extra work on every render, so use it only when needed."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "connection": {
   "sourceUrl": "https://nextjs.org/docs/app/api-reference/functions/connection",
   "sourceTitle": "connection",
@@ -346,69 +601,95 @@
  },
  "cookies": {
   "sourceUrl": "https://nextjs.org/docs/app/api-reference/functions/cookies",
-  "sourceTitle": "Functions: cookies | Next.js",
-  "summary": "`cookies` is an asynchronous Next.js function for reading incoming request cookies in Server Components and reading or writing outgoing cookies in Server Functions or Route Handlers. Await it to access the cookie store.",
-  "explanation": "Import `cookies` from `next/headers` and await it to obtain a cookie store. The store reads incoming cookies in Server Components and can read or modify outgoing cookies in Server Functions or Route Handlers. Use `get`, `getAll`, `has`, `set`, `delete`, and `toString` as appropriate.",
+  "sourceTitle": "cookies",
+  "summary": "The cookies function reads incoming request cookies in Server Components. It can read and change cookies in Server Functions or Route Handlers.",
+  "explanation": "Import cookies from next/headers and await it to get a cookie store. Read cookies in Server Components. Use set or delete only in a Server Function or Route Handler, where Next.js can add response headers.",
   "syntax": "const cookieStore = await cookies()",
   "parameters": [
    {
     "name": "name",
     "type": "string",
-    "description": "Cookie name used by `get`, `getAll`, `has`, or `delete`."
+    "description": "Cookie name used for reading, checking, setting, or deleting a cookie."
    },
    {
     "name": "value",
     "type": "string",
-    "description": "Value for the cookie being written."
+    "description": "Text stored in the cookie."
    },
    {
     "name": "options",
     "type": "object",
-    "description": "Cookie attributes such as path, secure, httpOnly, sameSite, maxAge, or expires."
+    "description": "Optional settings such as expires, maxAge, domain, path, secure, httpOnly, and sameSite."
    }
   ],
-  "returns": "A promise that resolves to a cookie store supporting `get`, `getAll`, `has`, `set`, `delete`, and `toString`.",
+  "returns": "cookies() returns a promise for a cookie store. get returns an object or undefined; getAll returns an array; has returns a boolean; toString returns a string.",
   "example": {
-   "title": "Read a cookie in a Server Component",
-   "code": "import { cookies } from 'next/headers'\n\nexport default async function Page() {\n  const cookieStore = await cookies()\n  const theme = cookieStore.get('theme')?.value ?? 'light'\n\n  return <p>Theme: {theme}</p>\n}",
+   "title": "Read a cookie",
+   "code": "import { cookies } from 'next/headers'\n\nexport default async function Page() {\n  const store = await cookies()\n  const theme = store.get('theme')?.value\n  return <p>Theme: {theme ?? 'default'}</p>\n}",
    "language": "tsx",
-   "explanation": "This Server Component awaits the cookie store and reads the value of the `theme` cookie, falling back to `light`."
+   "explanation": "This Server Component reads the theme cookie from the incoming request."
   },
   "useCases": [
    {
     "title": "Read request cookies",
-    "scenario": "Read preferences, feature flags, or session identifiers during server rendering."
+    "scenario": "Read a theme, locale, or preference sent by the browser during server rendering."
    },
    {
-    "title": "Set cookies",
-    "scenario": "Persist authentication or user-preference state from a Server Function."
+    "title": "Set a response cookie",
+    "scenario": "Store a session or other server-controlled value in a response cookie."
    },
    {
-    "title": "Delete cookies",
-    "scenario": "Remove a session or preference cookie from a Server Function or Route Handler."
+    "title": "Delete a cookie",
+    "scenario": "End a login session or remove an outdated cookie."
+   },
+   {
+    "title": "Inspect cookie state",
+    "scenario": "Inspect all cookies or test whether one exists before using it."
    }
   ],
   "related": [
-   "next/headers",
-   "Server Components",
    "Server Functions",
    "Route Handlers",
-   "use"
+   "revalidatePath",
+   "revalidateTag",
+   "cookies().get",
+   "cookies().getAll",
+   "cookies().has",
+   "cookies().set"
   ],
-  "since": "v15.0.0-RC",
+  "since": "v13.0.0",
+  "interview": [
+   {
+    "question": "How do you read a cookie in a Server Component?",
+    "answer": "cookies is an asynchronous function in the current App Router API. Await it, then use get, getAll, has, set, delete, or toString on the returned store.",
+    "followUp": "Why can set not run during Server Component rendering? The response must send a Set-Cookie header, and Server Component rendering cannot change headers after the response has started."
+   },
+   {
+    "question": "What is the difference between get and getAll?",
+    "answer": "Use get with the cookie name. It returns an object containing name and value, or undefined when the cookie is missing. Use getAll when multiple matching cookies or every available cookie is needed.",
+    "followUp": "How can you check only for existence? Call has(name), which returns a boolean without requiring the cookie value."
+   },
+   {
+    "question": "Where can cookies be changed?",
+    "answer": "Use set or delete in a Server Function or Route Handler. A cookie can also be removed by setting an empty value or by using maxAge: 0.",
+    "followUp": "What conditions apply to delete? The operation must use the same domain and protocol as the cookie, with an exact subdomain match for wildcard domains."
+   }
+  ],
   "keyPoints": [
-   "Use `cookies` to read request cookies in Server Components.",
-   "Use Server Functions or Route Handlers when you need to modify outgoing cookies.",
-   "`getAll(name)` returns every matching cookie; omit the name to retrieve all cookies.",
-   "`has(name)` checks whether a named cookie exists.",
-   "`set(name, value, options)` writes a cookie with configurable options.",
-   "`delete(name)` removes a named cookie."
+   "Call await cookies() to obtain the request cookie store.",
+   "get(name) returns the named cookie object.",
+   "getAll() can return every cookie when no name is supplied.",
+   "has(name) tells you whether a named cookie exists.",
+   "set accepts a name, value, and optional cookie settings.",
+   "toString() creates a string representation of the cookie store."
   ],
   "gotchas": [
-   "Because `cookies` is asynchronous, call it with `await` or React's `use` function.",
-   "Set or delete cookies only in a Server Function or Route Handler, before streaming begins."
+   "Reading cookies uses request-time data, so a page or layout that calls cookies becomes dynamically rendered.",
+   "Set cookies before streaming begins, and only from a Server Function or Route Handler.",
+   "Cookie deletion is restricted to Server Functions or Route Handlers.",
+   "Deletion must use the same domain and protocol as the cookie being removed."
   ],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-11-03"
  },
  "create-next-app": {
   "sourceUrl": "https://nextjs.org/docs/app/api-reference/cli/create-next-app",
@@ -662,6 +943,78 @@
   ],
   "checkedAt": "2026-10-15"
  },
+ "Dynamic routes": {
+  "sourceUrl": "https://nextjs.org/docs/app/api-reference/file-conventions/dynamic-routes",
+  "sourceTitle": "Dynamic Route Segments",
+  "summary": "Dynamic segments let an App Router route capture unknown URL parts. Create one with a bracketed folder name, then read the captured value from `params`.",
+  "explanation": "Create a folder with a name in square brackets, such as `[slug]`. Next.js uses that folder as a placeholder in the URL and gives its captured value to the page through `params`. The value can be received during a request or generated during the build with `generateStaticParams`.",
+  "syntax": "app/[folderName]/page.tsx",
+  "parameters": [
+   {
+    "name": "params",
+    "type": "Promise<{ slug: string }>",
+    "description": "An object containing values captured by dynamic route segments, such as `slug`. In the current example, it is received as a promise and awaited."
+   }
+  ],
+  "returns": "A page component that can use the captured dynamic segment value.",
+  "example": {
+   "title": "A dynamic blog route",
+   "code": "export async function generateStaticParams() {\n  return [{ slug: \"hello-world\" }]\n}\n\nexport default async function Page({\n  params,\n}: {\n  params: Promise<{ slug: string }>\n}) {\n  const { slug } = await params\n  return <h1>Post: {slug}</h1>\n}",
+   "language": "tsx",
+   "explanation": "This route handles `/blog/hello-world`. The folder name captures `hello-world` as `slug`."
+  },
+  "useCases": [
+   {
+    "title": "Blog pages",
+    "scenario": "A blog post URL contains a different slug for each post."
+   },
+   {
+    "title": "Product detail pages",
+    "scenario": "A product URL contains an ID loaded from a data source."
+   },
+   {
+    "title": "Static generation",
+    "scenario": "A known set of dynamic paths should be prerendered during the build."
+   }
+  ],
+  "related": [
+   "generateStaticParams",
+   "path params",
+   "route params",
+   "URL params",
+   "Dynamic Routes"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you create a dynamic segment in the App Router?",
+    "answer": "Wrap a folder name in square brackets, such as `app/blog/[slug]/page.tsx`. The bracketed name becomes a placeholder, and Next.js passes the captured URL value in `params`.",
+    "followUp": "How can known dynamic paths be generated during the build? Define `generateStaticParams` and return objects whose keys match the dynamic segment names."
+   },
+   {
+    "question": "What value does a dynamic segment provide?",
+    "answer": "For `app/blog/[slug]/page.tsx`, a request to `/blog/a` gives the page a parameter such as `{ slug: \"a\" }`. The same route can therefore handle different post identifiers.",
+    "followUp": "What happens when a route has more than one dynamic segment? Each bracketed folder contributes a matching key to `params`."
+   },
+   {
+    "question": "What is `generateStaticParams` used for?",
+    "answer": "`generateStaticParams` returns the parameter objects for paths that should be generated at build time. For example, it can fetch posts and map each post to an object containing its `slug`.",
+    "followUp": "Why use it instead of generating every path on demand? It lets selected dynamic routes be prerendered during the build."
+   }
+  ],
+  "keyPoints": [
+   "A URL is made of path segments, and each segment can be a fixed value or a placeholder.",
+   "Use a dynamic segment when the URL value is supplied by data or by the incoming request.",
+   "The folder pattern is `[name]`, such as `[id]` or `[slug]`.",
+   "The page reads the value captured from the URL through its `params` prop.",
+   "Static parameter generation moves selected route creation from request time to build time."
+  ],
+  "gotchas": [
+   "The `params` value is also available in layouts, route handlers, and `generateMetadata`, not only in pages.",
+   "Use `generateStaticParams` with a dynamic segment when you want to create known routes at build time."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "dynamicParams": {
   "sourceUrl": "https://nextjs.org/docs/app/api-reference/file-conventions/route-segment-config/dynamicParams",
   "sourceTitle": "dynamicParams - Route Segment Config",
@@ -809,6 +1162,159 @@
    "A boundary does not necessarily handle every descendant error if a nearer nested error.tsx catches it first."
   ],
   "checkedAt": "2026-10-15"
+ },
+ "experimental_ppr": {
+  "sourceUrl": "https://nextjs.org/docs/app/guides/upgrading/version-16",
+  "sourceTitle": "How to upgrade to version 16",
+  "summary": "Upgrade to Next.js 16 with the official codemod or an agent. Update Node.js, TypeScript, React, and Next.js, then handle changes such as default Turbopack, Cache Components, and middleware-to-proxy migration.",
+  "explanation": "Next.js 16 changes the upgrade process and several defaults. Run the upgrade codemod, update package versions and runtime requirements, then review Turbopack, request APIs, PPR, middleware, and other breaking changes.",
+  "syntax": "npx next@canary upgrade --agent=latest",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Migrate asynchronous request APIs",
+   "code": "npx @next/codemod@canary next-async-request-api .",
+   "language": "bash",
+   "explanation": "Run this after the main upgrade when the app still reads request APIs synchronously."
+  },
+  "useCases": [
+   {
+    "title": "Automated upgrade",
+    "scenario": "Moving an existing Next.js 15 app to Next.js 16"
+   },
+   {
+    "title": "Async request migration",
+    "scenario": "Updating request API access after the compatibility period"
+   },
+   {
+    "title": "Cache Components adoption",
+    "scenario": "Replacing the old PPR configuration"
+   },
+   {
+    "title": "Proxy migration",
+    "scenario": "Moving routing boundary code from middleware to proxy"
+   }
+  ],
+  "related": [
+   "cacheComponents",
+   "experimental_ppr",
+   "proxy",
+   "middleware",
+   "next-async-request-api",
+   "Turbopack",
+   "skipProxyUrlNormalize"
+  ],
+  "since": "16",
+  "interview": [
+   {
+    "question": "How should an application be upgraded to Next.js 16?",
+    "answer": "Use the upgrade CLI with an agent, or run the upgrade codemod manually. Then update packages and fix the listed breaking changes.",
+    "followUp": "What migration can the main codemod miss? It can miss synchronous request APIs, so run next-async-request-api separately."
+   },
+   {
+    "question": "What changed about Turbopack?",
+    "answer": "Turbopack is the default for both next dev and next build in Next.js 16. The --turbopack or --turbo flags are no longer needed.",
+    "followUp": "How can a project keep Webpack? Run next build --webpack when a Webpack build is required."
+   },
+   {
+    "question": "What is the middleware to proxy migration?",
+    "answer": "The middleware filename and named export are deprecated in favor of proxy. Rename the file and function, but do not use proxy when Edge runtime support is required.",
+    "followUp": "What happens to middleware-related configuration names? They are renamed too, such as skipMiddlewareUrlNormalize becoming skipProxyUrlNormalize."
+   }
+  ],
+  "keyPoints": [
+   "Next.js 16 requires Node.js 20.9 or newer. TypeScript must be 5.1 or newer.",
+   "Supported browser minimums are Chrome 111, Edge 111, Firefox 111, and Safari 16.4.",
+   "Turbopack now powers development and production builds by default.",
+   "The old PPR flag and experimental_ppr route setting are removed.",
+   "Enable the new Cache Components configuration when adopting the Next.js 16 PPR model.",
+   "Rename middleware files to proxy files and rename the exported function."
+  ],
+  "gotchas": [
+   "A proxy file always uses the Node.js runtime. Keep middleware if the code must run on the Edge runtime.",
+   "Run the separate async Request APIs codemod if the app still uses synchronous params, searchParams, cookies(), headers(), or draftMode().",
+   "A custom Webpack configuration can make the default build fail. Use Turbopack, migrate the configuration, or pass --webpack."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "fetch": {
+  "sourceUrl": "https://nextjs.org/docs/app/api-reference/functions/fetch",
+  "sourceTitle": "fetch",
+  "summary": "Next.js extends server-side fetch with persistent caching, revalidation, cache tags, and render-pass memoization. Configure these behaviors with cache and next options.",
+  "explanation": "Next.js extends the Web fetch API for server requests. Use cache to choose cache behavior, next.revalidate to set a lifetime, and next.tags to label cached data. Matching GET requests are memoized during one server render.",
+  "syntax": "fetch(url, options)",
+  "parameters": [
+   {
+    "name": "url, options",
+    "type": "string, Request, or fetch options",
+    "description": "The resource URL and native Web fetch options, plus Next.js server options such as cache, next.revalidate, and next.tags."
+   }
+  ],
+  "returns": "A Promise resolving to the Web Response object returned by fetch.",
+  "example": {
+   "title": "Cache and revalidate server data",
+   "code": "export default async function Page() {\n  const response = await fetch('https://api.vercel.app/blog', {\n    next: { revalidate: 60, tags: ['posts'] },\n  })\n  const posts = await response.json()\n\n  return (\n    <ul>\n      {posts.map((post: { id: string; title: string }) => (\n        <li key={post.id}>{post.title}</li>\n      ))}\n    </ul>\n  )\n}",
+   "language": "tsx",
+   "explanation": "This Server Component fetches blog data and keeps it cached for up to 60 seconds. The response also receives a cache tag for later on-demand revalidation."
+  },
+  "useCases": [
+   {
+    "title": "Use the server cache",
+    "scenario": "A page reads data that should be reused between requests."
+   },
+   {
+    "title": "Skip caching",
+    "scenario": "A page must always read current data."
+   },
+   {
+    "title": "Revalidate by tag",
+    "scenario": "Cached data changes after a write operation."
+   },
+   {
+    "title": "Share one fetch result",
+    "scenario": "Several Server Components need the same resource during one render."
+   }
+  ],
+  "related": [
+   "revalidateTag",
+   "Server Components",
+   "Route Handlers",
+   "generateStaticParams",
+   "generateViewport"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How does Next.js extend fetch?",
+    "answer": "Next.js adds server-side cache controls to the Web fetch API. Use cache: 'no-store' for every-request fetching, force-cache to use the server cache, or next.revalidate for a time limit.",
+    "followUp": "What happens when two fetches in one route use different revalidation times? The lower value controls the route's revalidation interval."
+   },
+   {
+    "question": "What values can next.revalidate use?",
+    "answer": "next.revalidate accepts false, 0, or a number of seconds. false keeps the resource cached indefinitely, 0 disables caching, and a number sets the maximum cache lifetime.",
+    "followUp": "Can the HTTP cache still remove an indefinitely cached resource? Yes. The documentation says HTTP cache eviction can still occur over time."
+   },
+   {
+    "question": "What is fetch memoization?",
+    "answer": "GET fetch requests with the same URL and options are memoized during one server render. Multiple Server Components can share the one result, but this memoization lasts only for that render pass.",
+    "followUp": "How can memoization be disabled? Pass an AbortController signal to fetch; Route Handlers also do not receive this component-tree memoization."
+   }
+  ],
+  "keyPoints": [
+   "Server fetch requests can define their own persistent caching and revalidation rules.",
+   "Use no-store when the server must fetch fresh data for every request.",
+   "Use force-cache to look up a matching request in Next.js's server cache.",
+   "next.revalidate sets how long a cached resource may remain valid, in seconds.",
+   "next.tags lets later code revalidate related cached data by tag.",
+   "For identical URLs in one route, the shortest revalidation value wins.",
+   "Identical GET fetches can run once and share their result across several server-rendering locations."
+  ],
+  "gotchas": [
+   "Do not combine a revalidate value with cache: 'no-store'. Next.js ignores both options, and development prints a warning.",
+   "The same fetch is not automatically memoized in Route Handlers.",
+   "During local development, HMR can reuse fetch results, so uncached data may not look fresh until navigation clears the cache."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "fetchCache": {
   "sourceUrl": "https://nextjs.org/docs/15/app/api-reference/file-conventions/route-segment-config.md",
@@ -1171,55 +1677,72 @@
  "generateSitemaps": {
   "sourceUrl": "https://nextjs.org/docs/app/api-reference/functions/generate-sitemaps",
   "sourceTitle": "generateSitemaps",
-  "summary": "generateSitemaps lets an App Router sitemap route produce multiple sitemap files. Return one object with an id for each partition, then use that id in the sitemap generator to create each file.",
-  "explanation": "Use generateSitemaps in a sitemap.(js|ts) file to return sitemap identifiers. Next.js invokes the sitemap generator for each identifier, producing separate XML files whose routes include the identifier.",
-  "syntax": "export async function generateSitemaps(): Promise<{ id: number }[]>",
+  "summary": "generateSitemaps lets a Next.js App Router application split its URLs across multiple sitemap files. Return sitemap IDs, then generate the entries for each ID.",
+  "explanation": "Place a sitemap.ts file in a route segment. Export generateSitemaps to return sitemap IDs. Next.js passes each ID to the default sitemap function, which returns the URLs for that part. In Next.js 16, the ID is provided as a promise that resolves to a string.",
+  "syntax": "export async function generateSitemaps(): Promise<Array<{ id: number }>>\nexport default async function sitemap(props: { id: Promise<string> }): Promise<MetadataRoute.Sitemap>",
   "parameters": [
    {
-    "name": "",
-    "type": "",
-    "description": "No direct parameters; call generateSitemaps to return sitemap descriptors."
+    "name": "props",
+    "type": "{ id: Promise<string> }",
+    "description": "An object containing id. In Next.js 16, id is a promise that resolves to the sitemap ID as a string."
    }
   ],
-  "returns": "An array of objects, each containing an id property.",
+  "returns": "generateSitemaps returns an array of objects with an id property. The default sitemap function returns MetadataRoute.Sitemap, an array of sitemap entry objects.",
   "example": {
-   "title": "Split a product sitemap into multiple files",
-   "code": "// app/product/sitemap.ts\nimport type { MetadataRoute } from 'next'\n\nexport async function generateSitemaps() {\n  return [{ id: 0 }, { id: 1 }, { id: 2 }]\n}\n\nexport default async function sitemap({ id }: { id: number }) {\n  const start = id * 50000\n  const products = await fetch(\n    `https://api.example.com/products?start=${start}&limit=50000`\n  ).then((response) => response.json())\n\n  return products.map((product: { slug: string }) => ({\n    url: `https://example.com/products/${product.slug}`,\n    lastModified: new Date(),\n  })) satisfies MetadataRoute.Sitemap\n}",
+   "title": "Split products into multiple sitemaps",
+   "code": "import type { MetadataRoute } from 'next'\n\nexport async function generateSitemaps() {\n  return [{ id: 0 }, { id: 1 }]\n}\n\nexport default async function sitemap(\n  { id }: { id: Promise<string> }\n): Promise<MetadataRoute.Sitemap> {\n  const sitemapId = Number(await id)\n  const start = sitemapId * 50000\n  const products = await getProducts(start, start + 50000)\n\n  return products.map((product) => ({\n    url: `https://example.com/product/${product.id}`,\n    lastModified: product.date,\n  }))\n}",
    "language": "typescript",
-   "explanation": "The function declares the sitemap partitions, while the default sitemap function uses each returned ID to fetch and format that partition's URLs."
+   "explanation": "Return one object for each sitemap, then use its ID to select the records for that file."
   },
   "useCases": [
    {
-    "title": "Partition large catalogs",
-    "scenario": "A product catalog exceeds a practical single-sitemap size."
+    "title": "Split a large catalog",
+    "scenario": "A product catalog has more URLs than one sitemap should contain."
    },
    {
-    "title": "Chunk database records",
-    "scenario": "Different sitemap files should correspond to separate record ranges."
+    "title": "Create route-based sitemap groups",
+    "scenario": "Different route segments need separate sitemap files."
    },
    {
-    "title": "Generate dynamic sitemap sets",
-    "scenario": "A dynamic application needs multiple crawler-facing sitemap URLs."
+    "title": "Add alternate language URLs",
+    "scenario": "A site serves pages in several languages."
    }
   ],
   "related": [
-   "sitemap.(xml|js|ts)",
+   "sitemap.xml",
    "MetadataRoute.Sitemap"
   ],
-  "since": "v15.0.0",
+  "since": "v13.3.2",
+  "interview": [
+   {
+    "question": "What does generateSitemaps return?",
+    "answer": "Return an array of objects from generateSitemaps, and give every object an id. Next.js uses these IDs to create separate sitemap files.",
+    "followUp": "How should a large product catalog be divided? Use one ID per range of records, and query only that range for each sitemap."
+   },
+   {
+    "question": "What must the default sitemap function return?",
+    "answer": "The default sitemap function returns an array of sitemap entry objects. Each entry needs a URL, and fields such as lastModified are optional.",
+    "followUp": "Which optional fields can be added? changeFrequency, priority, and language alternates are supported by the sitemap return type."
+   },
+   {
+    "question": "How is the sitemap ID passed in Next.js 16?",
+    "answer": "In Next.js 16, the function receives an object whose id property is a promise of a string. Await it before converting it to a number or using it in a query.",
+    "followUp": "Why convert the value? Numeric calculations and range queries require a number rather than the promise or its string result."
+   }
+  ],
   "keyPoints": [
-   "Export generateSitemaps from a sitemap route when one sitemap is too large or should be partitioned.",
-   "Return an array, and give every sitemap descriptor an id that identifies its partition.",
-   "Each returned identifier contributes to a distinct sitemap URL containing that identifier.",
-   "A sitemap nested under the product route can expose partition 1 at /product/sitemap/1.xml.",
-   "A common partitioning strategy is to calculate the number of chunks, then return one descriptor per chunk.",
-   "Read the identifier in the default sitemap generator to select the corresponding records and build that XML document."
+   "Use generateSitemaps when one sitemap is not enough.",
+   "Each returned object must include an id property.",
+   "A generated file uses the route segment followed by its ID and the .xml extension.",
+   "The default export produces the entries for one sitemap file.",
+   "Sitemap entries can include alternate language URLs."
   ],
   "gotchas": [
-   "The development URL pattern may differ from the production pattern; test generated sitemap URLs in the environment where they will be consumed.",
-   "The function's URL behavior changed in Next.js 15, so avoid relying on older development-only URL assumptions."
+   "In Next.js 16, await the ID and convert it from a string before using numeric calculations.",
+   "Keep each generated sitemap within 50,000 URLs.",
+   "The public URL includes the sitemap ID in the path."
   ],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-11-03"
  },
  "generateStaticParams": {
   "sourceUrl": "https://nextjs.org/docs/app/api-reference/functions/generate-static-params",
@@ -1291,59 +1814,81 @@
  "generateViewport": {
   "sourceUrl": "https://nextjs.org/docs/app/api-reference/functions/generate-viewport",
   "sourceTitle": "generateViewport",
-  "summary": "generateViewport dynamically defines a route's initial viewport configuration in a Next.js App Router page or layout. Return a Viewport object; use the static viewport export for settings that do not need dynamic computation.",
-  "explanation": "Export generateViewport from a layout or page when viewport settings must be computed dynamically. It returns a Viewport object; use the static viewport export instead when the values do not depend on dynamic data.",
-  "syntax": "export function generateViewport({ params }): Viewport { return { ... } }",
+  "summary": "Use generateViewport to create viewport settings at request or build time. It returns a Viewport object and is useful when settings depend on route data.",
+  "explanation": "Export a static viewport object from a server-component layout or page when its values are known without request data. Use generateViewport when the returned viewport must depend on route parameters or other dynamic inputs; it returns a Viewport object.",
+  "syntax": "export function generateViewport(options): Viewport",
   "parameters": [
    {
-    "name": "params",
+    "name": "options",
     "type": "object",
-    "description": "The route parameters supplied to the page or layout; available when the viewport depends on dynamic route data."
+    "description": "An object that may contain route segment props, including params and searchParams. The exact props depend on the page or layout route."
    }
   ],
   "returns": "A Viewport object containing one or more viewport fields.",
   "example": {
-   "title": "Dynamic viewport configuration",
-   "code": "import type { Viewport } from 'next'\n\nexport function generateViewport(): Viewport {\n  return {\n    themeColor: 'black',\n    colorScheme: 'dark',\n    width: 'device-width',\n    initialScale: 1,\n  }\n}\n\nexport default function Layout({\n  children,\n}: Readonly<{ children: React.ReactNode }>) {\n  return <html lang=\"en\"><body>{children}</body></html>\n}",
+   "title": "Static viewport with theme colors",
+   "code": "import type { Viewport } from 'next'\n\nexport const viewport: Viewport = {\n  themeColor: [\n    { media: '(prefers-color-scheme: light)', color: 'white' },\n    { media: '(prefers-color-scheme: dark)', color: 'black' },\n  ],\n}\n\nexport default function Page() {\n  return <main>Hello</main>\n}",
    "language": "tsx",
-   "explanation": "This server-component layout computes the initial viewport configuration and returns it as a typed Viewport object."
+   "explanation": "This exports a typed static viewport with a different browser theme color for light and dark color schemes."
   },
   "useCases": [
    {
-    "title": "Dynamic route viewport settings",
-    "scenario": "A route's theme color or color scheme depends on route-specific data."
+    "title": "Set theme colors for light and dark modes",
+    "scenario": "The browser theme color changes by user preference."
    },
    {
-    "title": "Data-driven viewport configuration",
-    "scenario": "A layout needs to compute viewport fields from external data."
+    "title": "Create route-aware viewport settings",
+    "scenario": "A viewport value depends on route segment data."
    },
    {
-    "title": "Type-safe viewport output",
-    "scenario": "The application needs a typed viewport declaration in TypeScript."
+    "title": "Cache external viewport data",
+    "scenario": "Viewport values come from external data but not from the current request."
+   },
+   {
+    "title": "Read dynamic request data",
+    "scenario": "The viewport must use a per-request value such as a cookie."
    }
   ],
   "related": [
-   "viewport",
    "Viewport",
-   "PageProps",
-   "LayoutProps",
    "themeColor",
-   "colorScheme"
+   "colorScheme",
+   "use cache",
+   "instant"
   ],
-  "since": "Next.js 14",
+  "since": "v14.0.0",
+  "interview": [
+   {
+    "question": "When should you use viewport versus generateViewport?",
+    "answer": "Export a viewport object from a layout or page for fixed values. Export generateViewport from a layout or page when the values need to be computed.",
+    "followUp": "What should you choose when the value does not depend on request data? Use the static viewport object instead of generateViewport."
+   },
+   {
+    "question": "What does generateViewport return?",
+    "answer": "generateViewport returns a Viewport object containing one or more viewport fields. Its function can receive segment props such as params and searchParams.",
+    "followUp": "How can TypeScript type the result? Add : Viewport to the function return type and type the segment props separately."
+   },
+   {
+    "question": "What happens when generateViewport uses runtime data?",
+    "answer": "With Cache Components, runtime data such as cookies, headers, params, or searchParams makes generation wait until request time. A runtime-dependent viewport cannot be streamed because it affects the initial page UI.",
+    "followUp": "How can a genuinely dynamic viewport be allowed? Set instant = false on the owning segment, or use a Suspense boundary around the document body as documented."
+   }
+  ],
   "keyPoints": [
-   "Use generateViewport for computed viewport settings, or export viewport for fixed settings.",
-   "The function returns a Viewport object containing fields such as themeColor, colorScheme, width, or initialScale.",
-   "The API is available from route-segment page and layout files.",
-   "Type the params argument with the route-specific PageProps or LayoutProps helper when needed."
+   "Next.js provides two ways to set the initial page viewport: a fixed object or a function.",
+   "Place the static export in a layout or page file.",
+   "The function must return an object containing viewport settings.",
+   "Type params with PageProps in a page or LayoutProps in a layout.",
+   "Width and scale settings usually need no manual configuration.",
+   "This API was introduced in Next.js 14.0.0."
   ],
   "gotchas": [
-   "Export it from a Server Component; it cannot be defined in a Client Component.",
-   "Choose either the static viewport object or generateViewport in one page or layout.",
-   "Do not use a dynamic function when a fixed viewport configuration is sufficient.",
-   "Viewport output must be available for the initial load and cannot be deferred like streamable metadata."
+   "Do not export either API from a Client Component.",
+   "Choose one export in each layout or page.",
+   "Prefer the static object when no dynamic input is needed.",
+   "Runtime-dependent viewport generation can block the page until it finishes."
   ],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-11-03"
  },
  "GetServerSideProps": {
   "sourceUrl": "https://nextjs.org/docs/pages/building-your-application/data-fetching/get-server-side-props",
@@ -1912,6 +2457,122 @@
   ],
   "checkedAt": "2026-10-15"
  },
+ "ImageProps": {
+  "sourceUrl": "https://nextjs.org/docs/app/api-reference/components/image",
+  "sourceTitle": "Image Component | Next.js",
+  "summary": "Next.js `Image` is an optimized replacement for HTML `img`. Provide `src` and `alt`; use `width` and `height` for fixed dimensions or `fill` for a container-sized image.",
+  "explanation": "Import `Image` from `next/image` and give it a source and alternative text. For a fixed-size image, also provide `width` and `height`; Next.js then renders an optimized image. Use `fill` instead when the image should fill its positioned parent.",
+  "syntax": "import Image from 'next/image'\n<Image src=\"/image.png\" alt=\"Description\" width={500} height={500} />",
+  "parameters": [
+   {
+    "name": "src",
+    "type": "string",
+    "description": "Image URL, local path, or supported static image import."
+   },
+   {
+    "name": "alt",
+    "type": "string",
+    "description": "Alternative text for the image."
+   },
+   {
+    "name": "width",
+    "type": "integer",
+    "description": "Rendered width in pixels for a fixed-size image."
+   },
+   {
+    "name": "height",
+    "type": "integer",
+    "description": "Rendered height in pixels for a fixed-size image."
+   },
+   {
+    "name": "fill",
+    "type": "boolean",
+    "description": "Makes the image fill its containing area."
+   },
+   {
+    "name": "sizes",
+    "type": "string",
+    "description": "Controls the responsive image size selection."
+   },
+   {
+    "name": "quality",
+    "type": "integer",
+    "description": "Image quality from 1 to 100."
+   },
+   {
+    "name": "placeholder",
+    "type": "string",
+    "description": "Shows a blur placeholder while loading."
+   }
+  ],
+  "returns": "A rendered optimized image component, or image props from `getImageProps()` for use on an underlying `img` element.",
+  "example": {
+   "title": "Basic Image component",
+   "code": "import Image from 'next/image'\n\nexport default function Page() {\n  return (\n    <Image\n      src=\"/profile.png\"\n      width={500}\n      height={500}\n      alt=\"Picture of the author\"\n    />\n  )\n}",
+   "language": "tsx",
+   "explanation": "This renders a local image with its source, dimensions, and alternative text."
+  },
+  "useCases": [
+   {
+    "title": "Fixed-size images",
+    "scenario": "Display a local image with known dimensions."
+   },
+   {
+    "title": "Container-filling images",
+    "scenario": "Display an image that adapts to its parent container."
+   },
+   {
+    "title": "Art direction",
+    "scenario": "Create responsive desktop and mobile variants."
+   },
+   {
+    "title": "Custom image rendering",
+    "scenario": "Use optimized image attributes on custom markup."
+   }
+  ],
+  "related": [
+   "getImageProps",
+   "remotePatterns",
+   "domains",
+   "fill",
+   "sizes",
+   "quality",
+   "placeholder",
+   "blurDataURL"
+  ],
+  "since": "v10.0.0",
+  "interview": [
+   {
+    "question": "What is the basic purpose of Next.js `Image`?",
+    "answer": "`Image` extends the HTML `img` element and adds image optimization. `src` and `alt` are required; fixed-size images normally also specify `width` and `height`.",
+    "followUp": "How would you make the image fill a container? Use `fill`, and make the parent positioned so the image has a containing block."
+   },
+   {
+    "question": "How should external images be allowed?",
+    "answer": "Use `remotePatterns` for controlled external-image access. The older `domains` option only lists hostnames and cannot limit protocol, port, or pathname.",
+    "followUp": "Why is a hostname-only allowlist weaker? A shared host can serve content for many tenants, so a path and protocol restriction reduces unintended optimization."
+   },
+   {
+    "question": "When would you use `getImageProps()`?",
+    "answer": "`getImageProps()` returns props for the underlying `img` element. It can support elements such as `picture`, canvas-related code, or custom rendering without using React state.",
+    "followUp": "How can it implement art direction? Call it separately for desktop and mobile sources, then place the resulting `srcSet` values in `picture` and `source` elements."
+   }
+  ],
+  "keyPoints": [
+   "`Image` adds automatic optimization to the normal HTML image element.",
+   "`src` is required and identifies the image source.",
+   "`alt` is required for alternative text.",
+   "`width` sets the image width in pixels for fixed-size images.",
+   "`height` sets the image height in pixels for fixed-size images.",
+   "`getImageProps()` produces props that can be passed to an underlying `img` or another rendering method."
+  ],
+  "gotchas": [
+   "Avoid `domains` when you need precise remote-image rules. Use `remotePatterns` to restrict the protocol, host, port, path, and query.",
+   "Do not combine `getImageProps()` with `placeholder=\"blur\"`. The placeholder remains visible.",
+   "For a light/dark pair, keep lazy loading. Do not preload either image, or both variants may load."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "ImageResponse": {
   "sourceUrl": "https://nextjs.org/docs/app/api-reference/functions/image-response",
   "sourceTitle": "ImageResponse",
@@ -1990,6 +2651,111 @@
   ],
   "checkedAt": "2026-10-15"
  },
+ "images": {
+  "sourceUrl": "https://nextjs.org/docs/app/api-reference/components/image",
+  "sourceTitle": "Image Component",
+  "summary": "Next.js Image adds automatic optimization to images. Give it src, alt, and dimensions, or use fill when the size is unknown.",
+  "explanation": "The Image component extends HTML img with image optimization. Provide a source, alternative text, and either width and height, a static import, or fill. For external sources, allow the exact URL pattern in next.config.js. Use sizes for responsive images so the browser can choose a suitable file.",
+  "syntax": "<Image src=\"/image.png\" width={500} height={500} alt=\"Description\" />",
+  "parameters": [
+   {
+    "name": "src",
+    "type": "string or static image import",
+    "description": "Image source path or URL."
+   },
+   {
+    "name": "alt",
+    "type": "string",
+    "description": "Text replacement for the image."
+   },
+   {
+    "name": "width",
+    "type": "integer",
+    "description": "Intrinsic image width in pixels."
+   },
+   {
+    "name": "height",
+    "type": "integer",
+    "description": "Intrinsic image height in pixels."
+   },
+   {
+    "name": "fill",
+    "type": "boolean",
+    "description": "Makes the image fill its parent."
+   },
+   {
+    "name": "sizes",
+    "type": "string",
+    "description": "Describes responsive display width."
+   }
+  ],
+  "returns": "An optimized image element rendered by the Image component.",
+  "example": {
+   "title": "Basic Image component",
+   "code": "import Image from 'next/image'\n\nexport default function Page() {\n  return (\n    <Image\n      src=\"/profile.png\"\n      width={500}\n      height={500}\n      alt=\"Profile picture\"\n    />\n  )\n}",
+   "language": "tsx",
+   "explanation": "This renders a local image with required size and alternative text."
+  },
+  "useCases": [
+   {
+    "title": "Fixed-size image",
+    "scenario": "Use Image with width and height for a known-size local image."
+   },
+   {
+    "title": "Container-filling image",
+    "scenario": "Use fill with a positioned parent when the image must cover a container."
+   },
+   {
+    "title": "Remote image access",
+    "scenario": "Use remotePatterns to permit only approved external image paths."
+   },
+   {
+    "title": "External image service",
+    "scenario": "Use loaderFile to send image URL generation to another optimization service."
+   }
+  ],
+  "related": [
+   "localPatterns",
+   "remotePatterns",
+   "loaderFile",
+   "deviceSizes",
+   "imageSizes",
+   "qualities",
+   "formats",
+   "unoptimized"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What props are required?",
+    "answer": "The component requires src and alt. It also needs width and height unless the image is statically imported or uses fill.",
+    "followUp": "How do you size a responsive fill image? Add sizes that describes its rendered width at breakpoints."
+   },
+   {
+    "question": "How do you allow remote images safely?",
+    "answer": "remotePatterns limits which external image URLs the optimizer can fetch. It can match protocol, hostname, port, path, and query string.",
+    "followUp": "Why avoid broad patterns? They can permit optimization of URLs that the application did not intend to allow."
+   },
+   {
+    "question": "Why use sizes?",
+    "answer": "The sizes prop tells the browser how wide a responsive image will be. It also makes Next.js generate a wider, width-based srcset.",
+    "followUp": "What happens without sizes on a fill image? The browser assumes 100vw, which can download an unnecessarily large image."
+   }
+  ],
+  "keyPoints": [
+   "Width and height reserve the aspect ratio and help prevent layout shift.",
+   "Use fill when the intrinsic dimensions are not known.",
+   "Add sizes to fill or CSS-responsive images to improve file selection.",
+   "The built-in optimization endpoint uses /_next/image by default.",
+   "Configure loaderFile when another image service should create image URLs."
+  ],
+  "gotchas": [
+   "When using fill, the parent must have a positioning rule.",
+   "Authenticated source images may fail with the default optimizer; use unoptimized or another approach.",
+   "Restrict query strings in remotePatterns when possible."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "instrumentation": {
   "sourceUrl": "https://nextjs.org/docs/app/guides/instrumentation",
   "sourceTitle": "Instrumentation",
@@ -2056,6 +2822,161 @@
    "Keep startup work deliberate: register must finish before the server handles requests."
   ],
   "checkedAt": "2026-10-15"
+ },
+ "instrumentation-client": {
+  "sourceUrl": "https://nextjs.org/docs/app/api-reference/file-conventions/instrumentation-client",
+  "sourceTitle": "instrumentation-client.js",
+  "summary": "Use instrumentation-client.js or .ts for client monitoring, analytics, error tracking, and other side effects before the app becomes interactive. Put it at the app root or in src; export onRouterTransitionStart to observe App Router navigation starts.",
+  "explanation": "Create instrumentation-client.js or instrumentation-client.ts at the application root or in src. Next.js runs its top-level synchronous code after the HTML loads but before React hydration and user interaction. Use it for browser monitoring, analytics, error handlers, and synchronous polyfills. Export onRouterTransitionStart to observe App Router navigation starts.",
+  "syntax": "instrumentation-client.js|ts\nexport function onRouterTransitionStart(url: string, navigationType: 'push' | 'replace' | 'traverse') { }",
+  "parameters": [
+   {
+    "name": "url",
+    "type": "string",
+    "description": "Destination URL passed to onRouterTransitionStart."
+   },
+   {
+    "name": "navigationType",
+    "type": "'push' | 'replace' | 'traverse'",
+    "description": "Navigation method: push, replace, or traverse."
+   },
+   {
+    "name": "event",
+    "type": "RouterTransitionStartEvent",
+    "description": "Optional experimental transition data: id, timestamp, fromRoutes, and prefetchIntent."
+   }
+  ],
+  "returns": "The file has no required return value. onRouterTransitionStart also has no documented return value.",
+  "example": {
+   "title": "instrumentation-client.ts",
+   "code": "// instrumentation-client.ts\nperformance.mark('app-init')\n\nwindow.addEventListener('error', (event) => {\n  reportError(event.error)\n})\n\nexport function onRouterTransitionStart(\n  url: string,\n  navigationType: 'push' | 'replace' | 'traverse'\n) {\n  performance.mark(`navigation-${url}`)\n}",
+   "language": "typescript",
+   "explanation": "This initializes browser monitoring before React hydration and records router navigation starts."
+  },
+  "useCases": [
+   {
+    "title": "Error tracking",
+    "scenario": "Install global error listeners and send early errors to an error service."
+   },
+   {
+    "title": "Analytics",
+    "scenario": "Initialize a browser analytics library and record navigation events."
+   },
+   {
+    "title": "Performance monitoring",
+    "scenario": "Add performance marks or observers before the app starts interacting."
+   },
+   {
+    "title": "Synchronous polyfills",
+    "scenario": "Install a missing browser feature synchronously before hydration."
+   }
+  ],
+  "related": [
+   "onRouterTransitionStart",
+   "instrumentationClientRouterTransitionEvents",
+   "RouterTransitionStartEvent",
+   "RouterTransitionType",
+   "useReportWebVitals",
+   "Custom Polyfills"
+  ],
+  "since": "v15.3",
+  "interview": [
+   {
+    "question": "Where does the client instrumentation file run, and when?",
+    "answer": "Place instrumentation-client.js or .ts at the application root or in src. Its synchronous top-level code runs after the document loads and before React hydration, so it can install early client monitoring.",
+    "followUp": "What happens to a top-level Promise? It is not awaited, so it can finish after hydration begins."
+   },
+   {
+    "question": "How do you track App Router navigation starts?",
+    "answer": "Export onRouterTransitionStart from the file. It receives the destination URL and a navigation type: push, replace, or traverse.",
+    "followUp": "How can it receive more data? Enable the experimental instrumentationClientRouterTransitionEvents option and accept the event as a third argument."
+   },
+   {
+    "question": "How should a polyfill be loaded from this file?",
+    "answer": "The file can apply a polyfill synchronously after a static import and feature check. A conditional dynamic import is fire-and-forget and may apply the polyfill too late.",
+    "followUp": "What is a suitable alternative for on-demand features? Apply the polyfill in the code that uses the feature."
+   }
+  ],
+  "keyPoints": [
+   "The supported filenames are instrumentation-client.js and instrumentation-client.ts. Put one at the app root or in src.",
+   "Monitoring, analytics, and other side effects can be written directly at the top level.",
+   "Synchronous top-level code is suitable for early error tracking, analytics setup, and performance marks.",
+   "Use this export to record navigation starts and their navigation type.",
+   "With the experimental option enabled, the hook can receive an event containing an ID, timestamp, previous route patterns, and prefetch intent.",
+   "An error in the navigation hook does not stop navigation or other hooks."
+  ],
+  "gotchas": [
+   "Protect monitoring setup with try-catch so one tracking failure does not disrupt other instrumentation.",
+   "Keep startup work small. Development warnings appear when initialization takes more than 16 ms.",
+   "Do not depend on asynchronous setup being ready before hydration.",
+   "Use a static import and synchronous feature check for polyfills needed before components run."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "Intercepting routes": {
+  "sourceUrl": "https://nextjs.org/docs/app/api-reference/file-conventions/intercepting-routes",
+  "sourceTitle": "Intercepting Routes",
+  "summary": "Intercepting routes render another route inside the current layout during navigation. They are useful for overlays such as photo modals, while direct visits and refreshes render the full page.",
+  "explanation": "An intercepting route loads a route from another part of the app inside the current layout. Client navigation can show a photo over a feed, while a direct URL visit or refresh renders the full photo page. Matchers count route segments, not folders in the file system.",
+  "syntax": "(.)segment\n(..)segment\n(..)(..)segment\n(...)segment",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Intercept a photo route",
+   "code": "// app/feed/page.tsx\nimport Link from \"next/link\"\n\nexport default function Feed() {\n  return <Link href=\"/photo/123\">Open photo</Link>\n}\n\n// app/feed/(.. )photo/[id]/page.tsx\nexport default function PhotoModal({ params }: { params: { id: string } }) {\n  return <div role=\"dialog\">Photo {params.id}</div>\n}\n",
+   "language": "tsx",
+   "explanation": "Create an intercepting route directory with a matcher such as `(..)photo`. This lets navigation from the feed show the photo inside the current layout. A direct visit or refresh renders the normal photo route instead."
+  },
+  "useCases": [
+   {
+    "title": "Photo modal",
+    "scenario": "A user selects a photo in a feed."
+   },
+   {
+    "title": "Shareable overlays",
+    "scenario": "A modal must keep its URL shareable."
+   },
+   {
+    "title": "History-aware dialogs",
+    "scenario": "Back and forward navigation should open or close a modal."
+   }
+  ],
+  "related": [
+   "Parallel Routes",
+   "Modals",
+   "Route segments"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What problem do intercepting routes solve?",
+    "answer": "Intercepting routes let one route render within another route's current layout. A common example is showing a photo in a modal over a feed during navigation. Direct navigation or a refresh renders the full photo page.",
+    "followUp": "How do parallel routes help with modals? They provide a slot for modal UI, while the intercepting route supplies the alternate route content and navigation behavior."
+   },
+   {
+    "question": "What matcher conventions are available?",
+    "answer": "The matcher is placed in a route-group directory name. `(.)` matches a segment at the same level, `(..)` matches one level above, `(..)(..)` matches two levels above, and `(...)` starts from the app root.",
+    "followUp": "What determines the level for `(..)`? Route segments determine it, not the number of file-system folders."
+   },
+   {
+    "question": "How would you intercept a photo route from a feed?",
+    "answer": "Use `(..)photo` when intercepting the `photo` segment from a `feed` segment. The matcher is based on route segments, so a parallel-route slot such as `@modal` does not add a level.",
+    "followUp": "What should happen when the user opens `/photo/123` directly? The normal full photo route should render rather than the intercepted modal."
+   }
+  ],
+  "keyPoints": [
+   "An intercepting route renders content from another route inside the current layout.",
+   "A photo link in a feed can open the photo as an overlay without leaving the feed context.",
+   "Use `(.)` to target a route segment at the same level.",
+   "Use `(..)` to target a route segment one level above the current segment.",
+   "Use `(..)(..)` to target a segment two levels above.",
+   "Use `(...)` to target a segment starting from the root of the app directory."
+  ],
+  "gotchas": [
+   "Matchers count route segments, so they do not count parallel-route slot folders such as `@modal`.",
+   "A shared URL or page refresh does not use the interception overlay; it renders the complete destination page."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "layout": {
   "sourceUrl": "https://nextjs.org/docs/app/api-reference/file-conventions/layout",
@@ -2361,6 +3282,76 @@
   ],
   "checkedAt": "2026-10-15"
  },
+ "localFont": {
+  "sourceUrl": "https://nextjs.org/docs/app/getting-started/fonts",
+  "sourceTitle": "How to use fonts",
+  "summary": "Use next/font/local to load and self-host local fonts in a Next.js App Router application. Apply the returned className to an element, often the root layout, to use the font.",
+  "explanation": "Import localFont from next/font/local and provide a font file path. Next.js self-hosts the file and gives you a className that applies the font to an element. Put that class on the root layout to use the font throughout the application.",
+  "syntax": "localFont({ src: string | FontSource[] })",
+  "parameters": [
+   {
+    "name": "src",
+    "type": "string | object[]",
+    "description": "A font file path or an array of file definitions for one font family."
+   }
+  ],
+  "returns": "A font object with a className property for applying the configured font.",
+  "example": {
+   "title": "Load a local font in the root layout",
+   "code": "import localFont from 'next/font/local'\n\nconst myFont = localFont({\n  src: './my-font.woff2',\n})\n\nexport default function RootLayout({ children }: { children: React.ReactNode }) {\n  return (\n    <html lang=\"en\" className={myFont.className}>\n      <body>{children}</body>\n    </html>\n  )\n}",
+   "language": "tsx",
+   "explanation": "This loads a local font and applies its generated class to the whole application."
+  },
+  "useCases": [
+   {
+    "title": "Self-host a local font",
+    "scenario": "An application needs a bundled font without browser requests to an external font provider."
+   },
+   {
+    "title": "Map several font files to one family",
+    "scenario": "A font family has separate regular, italic, and bold files."
+   },
+   {
+    "title": "Set a global application font",
+    "scenario": "Every route should use the same application font."
+   }
+  ],
+  "related": [
+   "next/font",
+   "next/font/google",
+   "next/font/local",
+   "Font API Reference"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you load a local font?",
+    "answer": "Use localFont from next/font/local. Pass the font file in src, then apply the returned className to the element that should use the font.",
+    "followUp": "How can one family support several styles? Pass an array to src. Each item can define a path, weight, and style."
+   },
+   {
+    "question": "How do you apply a font globally?",
+    "answer": "Place the font in the root layout and set the layout html element's className to the generated font class. Because the root layout wraps the application, the font applies across the application.",
+    "followUp": "How would you apply the font to only one part of the page? Put the generated className on that component's element instead of the root html element."
+   },
+   {
+    "question": "How do you configure multiple font files?",
+    "answer": "For one family with several files, set src to an array of objects. Each object describes a file and can identify its weight and style, such as regular, italic, or bold.",
+    "followUp": "Why include weight and style metadata? It lets the font setup distinguish the files when different text weights or styles are requested."
+   }
+  ],
+  "keyPoints": [
+   "next/font optimizes fonts and avoids external font requests.",
+   "Font files are self-hosted by the framework.",
+   "Use next/font/local and provide the local file through src.",
+   "Use an array in src when one family has multiple font files."
+  ],
+  "gotchas": [
+   "The font path is relative to the file that calls localFont, not necessarily the project root.",
+   "Avoid loading many font families because each one adds another client resource."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "manifest": {
   "sourceUrl": "https://nextjs.org/docs/app/api-reference/file-conventions/metadata/manifest.md",
   "sourceTitle": "Next.js",
@@ -2497,6 +3488,74 @@
   ],
   "checkedAt": "2026-10-15"
  },
+ "mdx-components": {
+  "sourceUrl": "https://nextjs.org/docs/app/api-reference/file-conventions/mdx-components",
+  "sourceTitle": "mdx-components.js",
+  "summary": "mdx-components.tsx or mdx-components.js defines the components used by MDX. It is required for @next/mdx with the App Router.",
+  "explanation": "Next.js uses mdx-components.tsx or mdx-components.js to define components for MDX files. With the App Router, @next/mdx requires this file. Export useMDXComponents, which returns the component mapping.",
+  "syntax": "export function useMDXComponents(): MDXComponents { return components }",
+  "parameters": [],
+  "returns": "useMDXComponents returns an MDXComponents object.",
+  "example": {
+   "title": "mdx-components.tsx",
+   "code": "import type { MDXComponents } from 'mdx/types'\n\nconst components: MDXComponents = {\n  h1: ({ children }) => <h1 style={{ color: 'red' }}>{children}</h1>,\n}\n\nexport function useMDXComponents(): MDXComponents {\n  return components\n}",
+   "language": "tsx",
+   "explanation": "Place this file at the project root, or inside src when that is your project layout. The custom h1 component then applies to all MDX files."
+  },
+  "useCases": [
+   {
+    "title": "Global MDX styling",
+    "scenario": "Set shared styles for headings, images, or other generated HTML elements in every MDX file."
+   },
+   {
+    "title": "Custom element rendering",
+    "scenario": "Replace a generated element with a React component, such as using Next Image for MDX images."
+   },
+   {
+    "title": "Page-specific overrides",
+    "scenario": "Pass a components mapping to one imported MDX page when its output needs different components."
+   }
+  ],
+  "related": [
+   "@next/mdx",
+   "MDXComponents",
+   "useMDXComponents",
+   "MDX",
+   "App Router"
+  ],
+  "since": "v13.1.2",
+  "interview": [
+   {
+    "question": "What is mdx-components.tsx used for?",
+    "answer": "The file defines the component mapping used when MDX is rendered. In an App Router project using @next/mdx, the file is required, and it must export useMDXComponents.",
+    "followUp": "Can styles apply to only one MDX page? Yes. Pass a components object to the imported MDX component; those local components override global mappings."
+   },
+   {
+    "question": "What must useMDXComponents return?",
+    "answer": "useMDXComponents takes no arguments and returns an MDXComponents object. That object can map elements such as h1 or img to custom React components.",
+    "followUp": "How would you type the mapping? Import MDXComponents from mdx/types and annotate the object or use satisfies MDXComponents."
+   },
+   {
+    "question": "How do global and local MDX components differ?",
+    "answer": "Global mappings in mdx-components.tsx affect all MDX files in the application. A mapping can replace built-in element rendering or connect an element such as img to a custom component.",
+    "followUp": "How can a page use a different heading component? Import the MDX file and pass a local components mapping when rendering it."
+   }
+  ],
+  "keyPoints": [
+   "App Router projects using @next/mdx need this file.",
+   "The supported filenames are mdx-components.tsx and mdx-components.js.",
+   "Use the file to create the component mapping for MDX output.",
+   "useMDXComponents has no parameters.",
+   "Mappings in this file apply globally to the application's MDX files.",
+   "Components passed to one imported MDX page can override global mappings."
+  ],
+  "gotchas": [
+   "Export exactly one function with the required name: useMDXComponents.",
+   "Do not define parameters for useMDXComponents.",
+   "Put the file at the project root, or use the src location when your project uses src."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "Metadata": {
   "sourceUrl": "https://nextjs.org/docs/app/api-reference/functions/generate-metadata",
   "sourceTitle": "generateMetadata | Next.js",
@@ -2630,121 +3689,158 @@
   "checkedAt": "2026-10-15"
  },
  "middleware": {
-  "sourceUrl": "https://nextjs.org/docs/14/app/building-your-application/routing/middleware",
-  "sourceTitle": "Middleware",
-  "summary": "Middleware runs before a request completes and can redirect, rewrite, or modify headers. In Next.js 16, the middleware convention is deprecated and replaced by Proxy, except when retaining Edge-runtime usage.",
-  "explanation": "Middleware runs before a request is completed and can alter routing or headers based on the incoming request. In Next.js 16, the convention is deprecated in favor of Proxy; retain Middleware when the Edge runtime is required.",
-  "syntax": "export function middleware(request: Request): Response | NextResponse",
-  "parameters": [
-   {
-    "name": "request",
-    "type": "Request",
-    "description": "The incoming request passed to the Middleware function."
-   }
-  ],
-  "returns": "A Response or NextResponse instance, or no response when continuing the request.",
+  "sourceUrl": "https://nextjs.org/docs/pages/api-reference/file-conventions/proxy",
+  "sourceTitle": "Proxy | Next.js",
+  "summary": "Next.js proxy runs server code before a request reaches a rendered route. It can redirect, rewrite, change headers, or return a response.",
+  "explanation": "Next.js runs a proxy on the server before it renders a route. The proxy can redirect, rewrite, change request or response headers, or return a response. It should stay separate from render code and should not depend on shared globals.",
+  "syntax": "export function proxy(request: NextRequest) { return NextResponse.redirect(new URL('/home', request.url)) }\nexport const config = { matcher: '/about/:path*' }",
+  "parameters": [],
+  "returns": "A response, such as a redirect, rewrite, or direct response. The page also shows proxy functions that can be async.",
   "example": {
-   "title": "middleware.ts",
-   "code": "export function middleware(request: Request) {\n  return Response.redirect(new URL('/login', request.url))\n}\n\nexport const config = {\n  matcher: ['/dashboard/:path*'],\n}",
+   "title": "A simple proxy",
+   "code": "export function proxy(request: Request) {\n  return Response.redirect(new URL('/home', request.url))\n}",
    "language": "typescript",
-   "explanation": "Redirects dashboard requests to the login page before the request completes."
+   "explanation": "This proxy redirects matching requests to /home. Add a matcher in the optional config when only some paths should run it."
   },
   "useCases": [
    {
-    "title": "Authentication redirects",
-    "scenario": "Protect dashboard or account routes by redirecting unauthenticated requests to login."
+    "title": "Redirects",
+    "scenario": "Send users from one path to another before rendering."
    },
    {
-    "title": "URL rewriting",
-    "scenario": "Send a request to a different route while keeping the visible URL unchanged."
+    "title": "Rewrites",
+    "scenario": "Serve another route while keeping the requested URL."
    },
    {
-    "title": "Request and response header changes",
-    "scenario": "Add or alter headers before a route handler or page processes the request."
+    "title": "Authentication and logging",
+    "scenario": "Run request checks or record request details before routing."
+   },
+   {
+    "title": "Path matching",
+    "scenario": "Apply the proxy only to selected URL paths."
    }
   ],
   "related": [
-   "Proxy",
+   "NextRequest",
    "NextResponse",
    "matcher",
-   "Edge runtime",
-   "redirect",
-   "rewrite"
+   "skipProxyUrlNormalize",
+   "skipTrailingSlashRedirect",
+   "middleware"
   ],
-  "since": "",
-  "keyPoints": [
-   "Middleware executes before the request finishes, enabling request-time routing decisions.",
-   "Use the incoming request to redirect, rewrite, or modify request and response headers.",
-   "Define Middleware in a root-level middleware.ts or middleware.js file.",
-   "Export matcher configuration to limit execution to selected URL paths.",
-   "The legacy Middleware convention is limited to the Edge runtime on the documented page."
-  ],
-  "gotchas": [],
-  "checkedAt": "2026-10-15"
- },
- "next build": {
-  "sourceUrl": "https://nextjs.org/docs/app/guides/building",
-  "sourceTitle": "Building | Next.js",
-  "summary": "`next build` compiles a Next.js application for production, prerenders eligible routes, and writes the result to `.next/`. It also reports how routes are served.",
-  "explanation": "Run the command from the project directory after configuring the application. Next.js loads environment variables and configuration, discovers routes, compiles application code, analyzes rendering, prerenders eligible routes, and writes the result to `.next/`; it also prints a route table. Use the generated build with `next start` for production Node.js hosting.",
-  "syntax": "next build [options]",
-  "parameters": [
+  "since": "16.0.0",
+  "interview": [
    {
-    "name": "--debug-prerender",
-    "type": "flag",
-    "description": "Enables more detailed output for prerendering errors."
+    "question": "What does a Next.js proxy do?",
+    "answer": "Next.js runs proxy code on the server before route rendering. It can redirect, rewrite, change headers, or return a response.",
+    "followUp": "What should proxy use to pass data to the application? Use headers, cookies, rewrites, redirects, or the URL."
    },
    {
-    "name": "--webpack",
-    "type": "flag",
-    "description": "Uses webpack instead of Turbopack for the build."
+    "question": "How do you define a proxy?",
+    "answer": "Create proxy.ts or proxy.js at the project root, or inside src. It must export one function, either as a default export or as a named proxy export.",
+    "followUp": "Can one file export several proxy functions? No. Multiple proxy exports from one file are not supported."
+   },
+   {
+    "question": "Which runtime does proxy use?",
+    "answer": "Proxy defaults to the Node.js runtime, and a runtime setting cannot be configured in the proxy file. Edge runtime code should remain in middleware.",
+    "followUp": "Why should an edge middleware file not be renamed automatically? Proxy does not support the Edge runtime, so the renamed code may no longer run correctly."
    }
   ],
-  "returns": "Creates an optimized production build in `.next/` and displays route information.",
+  "keyPoints": [
+   "Create proxy.ts or proxy.js in the project root or in src, at the same level as app or pages.",
+   "A proxy file exports exactly one function. The function can be the default export or a named proxy export.",
+   "Proxy runs before Next.js renders the route.",
+   "A proxy can rewrite or redirect requests, change request or response headers, or send a response directly.",
+   "You can export a config object with the proxy function. Use matcher to limit which paths invoke it."
+  ],
+  "gotchas": [
+   "Proxy uses the Node.js runtime. Do not rename edge middleware to proxy if the code needs the Edge runtime.",
+   "Do not set a runtime option in a proxy file. Next.js throws an error.",
+   "Proxy is not a complete security boundary. Check permissions again inside each Server Function."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "next build": {
+  "sourceUrl": "https://nextjs.org/docs/app/guides/upgrading/version-16",
+  "sourceTitle": "How to upgrade to version 16",
+  "summary": "Upgrade to Next.js 16 with the upgrade CLI or codemod, then handle the breaking changes. The main changes include asynchronous request APIs, Turbopack by default, newer Node.js and TypeScript requirements, and required default.js files for parallel routes.",
+  "explanation": "Next.js 16 upgrades the App Router by making request APIs asynchronous, using Turbopack by default, and requiring newer runtime and browser versions. Review the breaking changes, run the upgrade codemod, and check the application after updating.",
+  "syntax": "npx next@canary upgrade --agent=latest",
+  "parameters": [
+   {
+    "name": "--agent=latest",
+    "type": "CLI option",
+    "description": "Uses the latest canary upgrade CLI and asks the latest coding agent to perform the migration."
+   }
+  ],
+  "returns": "",
   "example": {
-   "title": "Build for production",
-   "code": "npm run build",
+   "title": "Upgrade with the recommended command",
+   "code": "npx next@canary upgrade --agent=latest",
    "language": "bash",
-   "explanation": "Runs the package script that invokes Next.js to create the production build."
+   "explanation": "Run this command in the application directory to let the upgrade agent prepare and apply the Next.js 16 changes."
   },
   "useCases": [
    {
-    "title": "Production builds",
-    "scenario": "Create artifacts for a production deployment."
+    "title": "Automated migration",
+    "scenario": "A project is moving from Next.js 15 to Next.js 16."
    },
    {
-    "title": "Route analysis",
-    "scenario": "Inspect which routes are static, prerendered, or dynamically rendered."
+    "title": "Bundler choice",
+    "scenario": "A project has custom webpack settings."
    },
    {
-    "title": "Self-hosting",
-    "scenario": "Produce a minimal Node.js deployment with standalone output."
+    "title": "Async request APIs",
+    "scenario": "A route reads cookies, headers, params, or searchParams."
    },
    {
-    "title": "Debugging prerender errors",
-    "scenario": "Investigate failures during prerendering."
+    "title": "Fallback route files",
+    "scenario": "A project uses parallel route slots."
    }
   ],
   "related": [
-   "next start",
-   "next dev",
+   "next typegen",
+   "PageProps",
+   "LayoutProps",
+   "RouteContext",
    "Turbopack",
-   "output: 'standalone'",
-   "generateBuildId"
+   "images.remotePatterns",
+   "default.js",
+   "next lint"
   ],
-  "since": "",
+  "since": "16",
+  "interview": [
+   {
+    "question": "What is the recommended way to upgrade to Next.js 16?",
+    "answer": "Run the upgrade command from the application directory. The command prepares the migration guides and codemod, then asks an agent to apply and verify the changes.",
+    "followUp": "How can a team upgrade without an agent? Run the upgrade codemod, update packages manually if needed, then work through the breaking changes and run checks."
+   },
+   {
+    "question": "What changed about the default bundler?",
+    "answer": "Turbopack is the default for both next dev and next build. Remove old --turbopack or --turbo flags from scripts unless they are still needed for clarity.",
+    "followUp": "How can production continue using Webpack? Add --webpack to the next build command while leaving development on the default Turbopack."
+   },
+   {
+    "question": "How did request APIs change in Next.js 16?",
+    "answer": "Request-time APIs must be used asynchronously. Await params and searchParams, and await cookies(), headers(), and draftMode().",
+    "followUp": "How can TypeScript types help? Run next typegen to generate PageProps, LayoutProps, and RouteContext helpers, then use the matching helper for the route."
+   }
+  ],
   "keyPoints": [
-   "Creates the optimized production application that can be started by the production server.",
-   "The build pre-renders routes when possible and reports each route's serving strategy.",
-   "The setup phase incorporates environment files, checks configuration, and assigns the build identifier.",
-   "Compilation handles the different runtime targets and uses Turbopack by default, with webpack as an alternative.",
-   "The generated production artifacts are placed in the `.next` directory.",
-   "Run this command before launching the application with `next start` in production mode."
+   "The recommended upgrade starts with npx next@canary upgrade --agent=latest in the application directory.",
+   "Turbopack is now the default bundler for development and production builds.",
+   "Use asynchronous access for cookies, headers, draftMode, params, and searchParams.",
+   "Replace images.domains with images.remotePatterns to make remote image access more specific.",
+   "Development output goes to .next/dev, so development and production builds can run separately.",
+   "Move Turbopack settings from experimental.turbopack to the top-level turbopack option."
   ],
   "gotchas": [
-   "Standalone output changes what is emitted, so deploy the generated standalone runtime rather than assuming every project file is included."
+   "The application needs Node.js 20.9 or newer. Node.js 18 is not supported.",
+   "Add a default.js file to every parallel route slot. It can call notFound() or return null.",
+   "Do not use next lint. Run ESLint or Biome yourself, because next build no longer runs linting.",
+   "A custom webpack configuration can make the default build fail. Use Turbopack, migrate the configuration, or add --webpack."
   ],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-11-03"
  },
  "next dev": {
   "sourceUrl": "https://nextjs.org/docs/app/api-reference/cli/next",
@@ -3050,70 +4146,235 @@
   "checkedAt": "2026-10-15"
  },
  "next telemetry": {
-  "sourceUrl": "https://nextjs.org/telemetry",
-  "sourceTitle": "Telemetry",
-  "summary": "`next telemetry` manages Next.js's optional anonymous usage-data collection. Enable, disable, or inspect it from the project root, with environment variables available for debugging or opt-out.",
-  "explanation": "The `next telemetry` command controls Next.js's optional anonymous usage-data collection. Run it from the project root with `enable`, `disable`, or `status`; use `NEXT_TELEMETRY_DEBUG=1` to inspect what is collected, or `NEXT_TELEMETRY_DISABLED=1` to opt out through the environment.",
-  "syntax": "next telemetry [enable|disable|status]",
+  "sourceUrl": "https://nextjs.org/docs/app/api-reference/cli/next",
+  "sourceTitle": "next CLI | Next.js",
+  "summary": "The Next.js CLI provides commands for development, builds, production starts, diagnostics, telemetry, and route type generation. Use next typegen to create route types without running a full build.",
+  "explanation": "The Next.js CLI provides commands for development, production builds, system details, telemetry settings, and route type generation. The typegen command creates TypeScript route definitions without running a full build, so a separate TypeScript check can validate route usage.",
+  "syntax": "pnpm next [command] [options]",
   "parameters": [
    {
-    "name": "-h, --help",
-    "type": "flag",
-    "description": "Displays command help and available options."
+    "name": "command",
+    "type": "string",
+    "description": "CLI command, such as dev, build, start, info, telemetry, or typegen."
    },
    {
-    "name": "--enable",
-    "type": "flag",
-    "description": "Enables Next.js telemetry collection."
-   },
-   {
-    "name": "--disable",
-    "type": "flag",
-    "description": "Disables Next.js telemetry collection."
+    "name": "options / directory",
+    "type": "string",
+    "description": "Command-specific options or a directory for type generation."
    }
   ],
-  "returns": "Changes or reports the local telemetry-collection setting; the command does not return application data.",
+  "returns": "The selected command performs its documented action and may generate build or type files.",
   "example": {
-   "title": "Manage telemetry",
-   "code": "npx next telemetry disable\nnpx next telemetry status\nnpx next telemetry enable",
+   "title": "Generate and check route types",
+   "code": "next typegen && npx tsc --noEmit",
    "language": "bash",
-   "explanation": "Disables telemetry, checks its current status, then enables it again."
+   "explanation": "Generate route types, then check the project with TypeScript."
   },
   "useCases": [
    {
-    "title": "Opt out",
-    "scenario": "A privacy policy prohibits framework usage reporting."
+    "title": "Local development",
+    "scenario": "Run the application locally with live reload and development error reporting."
    },
    {
-    "title": "Check status",
-    "scenario": "A developer wants to inspect the current setting."
+    "title": "Production deployment",
+    "scenario": "Create and serve an optimized production application."
    },
    {
-    "title": "Opt in",
-    "scenario": "A team chooses to participate after previously opting out."
+    "title": "CI type checking",
+    "scenario": "Generate route types and run TypeScript checks in CI without a full build."
+   },
+   {
+    "title": "Bug diagnosis",
+    "scenario": "Inspect system details while preparing a Next.js bug report."
    }
   ],
   "related": [
-   "NEXT_TELEMETRY_DEBUG",
-   "NEXT_TELEMETRY_DISABLED",
-   "next telemetry enable",
-   "next telemetry disable",
-   "next telemetry status"
+   "next dev",
+   "next build",
+   "next start",
+   "next info",
+   "next telemetry",
+   "next typegen",
+   "next-env.d.ts"
   ],
   "since": "",
+  "interview": [
+   {
+    "question": "What commands does the Next.js CLI provide?",
+    "answer": "The main commands are dev, build, start, info, telemetry, and typegen. They cover development, production compilation and serving, diagnostics, telemetry control, and generated route types.",
+    "followUp": "Which command helps CI check route usage without building? Use next typegen followed by a TypeScript check such as tsc --noEmit."
+   },
+   {
+    "question": "What does next typegen do?",
+    "answer": "next typegen generates TypeScript definitions for routes, pages, layouts, and route handlers. It does this without performing a full build, which allows type checking to run separately.",
+    "followUp": "Where are the generated files written? They go under <distDir>/types, commonly .next/dev/types or .next/types."
+   },
+   {
+    "question": "How can a project control Next.js telemetry?",
+    "answer": "Telemetry collection is optional and anonymous. Use next telemetry enable or next telemetry disable to change the setting, and next telemetry status to inspect it.",
+    "followUp": "How can telemetry be disabled outside the CLI? Set NEXT_TELEMETRY_DISABLED=1 in the environment."
+   }
+  ],
   "keyPoints": [
-   "Next.js collects anonymous, aggregate usage information.",
-   "The command supports help, enable, and disable options.",
-   "Disable collection with `next telemetry disable`.",
-   "Use `next telemetry status` to inspect whether collection is enabled.",
-   "Re-enable collection with `next telemetry enable`.",
-   "Set `NEXT_TELEMETRY_DISABLED=1` to opt out through the environment."
+   "Use the CLI to manage common development and production tasks for a Next.js application.",
+   "The dev command runs the application in development mode and provides live reload and error reporting.",
+   "The build command prepares an optimized version of the application for production.",
+   "The info command displays system and package details that can help with bug reports.",
+   "The typegen command creates types for route-related code without requiring a complete build.",
+   "Generated route types are stored below the configured distribution directory, usually in .next/types or .next/dev/types."
   ],
   "gotchas": [
-   "Telemetry participation is optional; disable it when the project or organization does not permit collection.",
-   "Run the command from the project's root directory."
+   "When running the command through npm scripts, add -- before CLI options. Other listed package managers do not need this separator.",
+   "Run the production build command before starting the application in production mode.",
+   "Do not commit the generated next-env.d.ts file unless your project has a specific reason to do so."
   ],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-11-03"
+ },
+ "next typegen": {
+  "sourceUrl": "https://nextjs.org/docs/app/api-reference/cli/next",
+  "sourceTitle": "CLI: next",
+  "summary": "`next typegen` generates TypeScript definitions for an application's routes without running a full build. Use it before TypeScript checking, especially when CI should validate route types without starting Next.js or building the app.",
+  "explanation": "Run `next typegen` to create TypeScript helpers and route definitions for the application. It uses the current directory by default, or a directory you provide, and writes generated files under the configured distribution directory. It also creates `next-env.d.ts`, which connects Next.js types to the project TypeScript configuration.",
+  "syntax": "next typegen [directory]",
+  "parameters": [
+   {
+    "name": "directory",
+    "type": "string",
+    "description": "Application directory. If omitted, the current directory is used."
+   }
+  ],
+  "returns": "Generated route and application TypeScript definitions, plus `next-env.d.ts`, written to the configured distribution directory.",
+  "example": {
+   "title": "Generate and check route types",
+   "code": "next typegen && npx tsc --noEmit",
+   "language": "bash",
+   "explanation": "This generates route types, then runs TypeScript checking without starting development mode or creating a full production build."
+  },
+  "useCases": [
+   {
+    "title": "CI type checking",
+    "scenario": "Run route type validation in CI without creating a production build."
+   },
+   {
+    "title": "IDE support",
+    "scenario": "Improve editor completion for route-related types."
+   },
+   {
+    "title": "Targeted app generation",
+    "scenario": "Generate types for one application in a monorepo."
+   }
+  ],
+  "related": [
+   "next dev",
+   "next build",
+   "PageProps",
+   "LayoutProps",
+   "RouteContext",
+   "next-env.d.ts"
+  ],
+  "since": "15.5.0",
+  "interview": [
+   {
+    "question": "What does `next typegen` do?",
+    "answer": "`next typegen` creates TypeScript definitions for the application's routes without running a full build. This lets `tsc --noEmit` check route usage independently.",
+    "followUp": "Why is this useful in CI? It allows route type checking without spending time on a development server or production build."
+   },
+   {
+    "question": "How can you target a specific application?",
+    "answer": "With no directory argument, it uses the current directory. With an argument, it generates types for that directory, such as `./apps/web`.",
+    "followUp": "Where are the generated files written? They are placed under `<distDir>/types`, commonly `.next/dev/types` or `.next/types`."
+   },
+   {
+    "question": "Why does `next typegen` create `next-env.d.ts`?",
+    "answer": "The command also creates `next-env.d.ts`. That file is included by `tsconfig.json` so the project can use Next.js types during TypeScript checking.",
+    "followUp": "What should be checked before running it? The Next.js configuration must be loadable, including its environment variables and dependencies."
+   }
+  ],
+  "keyPoints": [
+   "It generates TypeScript definitions for routes, pages, layouts, and route handlers.",
+   "It can create route types without running a complete production build.",
+   "The optional directory argument defaults to the current directory.",
+   "Generated type files go below the configured distribution directory, usually inside `.next`.",
+   "The command creates `next-env.d.ts` so the project can use Next.js types.",
+   "It supports editor completion and CI checks for route usage."
+  ],
+  "gotchas": [
+   "Do not commit the generated `next-env.d.ts` file unless your project has a specific reason to do so."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "next/cache": {
+  "sourceUrl": "https://nextjs.org/blog/next-16",
+  "sourceTitle": "Next.js 16 | Next.js",
+  "summary": "updateTag() is a Next.js cache API for Server Actions. It expires tagged data so a mutation can show fresh results immediately.",
+  "explanation": "updateTag expires cached data for a tag and makes the next read use fresh data. It is for Server Actions and read-your-writes behavior, so users can see a mutation immediately. Use revalidateTag instead when stale-while-revalidate behavior is acceptable.",
+  "syntax": "updateTag(tag)",
+  "parameters": [
+   {
+    "name": "tag",
+    "type": "string",
+    "description": "The tag string associated with cached data."
+   }
+  ],
+  "returns": "The documentation shows no return value; updateTag expires the matching tagged cache data.",
+  "example": {
+   "title": "Refresh data after a mutation",
+   "code": "import { updateTag } from 'next/cache'\n\nexport async function saveProfile(userId: string) {\n  'use server'\n  await db.users.update(userId)\n  updateTag(`user-${userId}`)\n}",
+   "language": "typescript",
+   "explanation": "This Server Action updates a user and expires that user's tagged cache data so later reads show the change."
+  },
+  "useCases": [
+   {
+    "title": "Read-your-writes after a form submission",
+    "scenario": "A user submits a profile form and expects the new profile to appear immediately."
+   },
+   {
+    "title": "Refresh content after a mutation",
+    "scenario": "A Server Action creates or edits content that the same user will view next."
+   },
+   {
+    "title": "Use revalidateTag for webhook invalidation",
+    "scenario": "A webhook invalidates shared cached content while allowing stale-while-revalidate behavior."
+   }
+  ],
+  "related": [
+   "revalidateTag()",
+   "cacheTag()",
+   "cacheLife()",
+   "use cache",
+   "Server Actions",
+   "revalidatePath()"
+  ],
+  "since": "Next.js 16",
+  "interview": [
+   {
+    "question": "What does updateTag do?",
+    "answer": "updateTag expires a cache tag and gives read-your-writes behavior. It is intended for mutations in Server Actions, where the user should immediately see the updated data.",
+    "followUp": "How would you invalidate a tag from a webhook? Use revalidateTag with a cache profile, such as max, because updateTag is limited to Server Actions."
+   },
+   {
+    "question": "How does revalidateTag differ from updateTag?",
+    "answer": "revalidateTag invalidates only cached entries that have the matching tag. With a profile such as max, stale data can be served while Next.js refreshes it in the background.",
+    "followUp": "Which API fits a form submission when the user must see the saved value immediately? Use updateTag in the Server Action."
+   },
+   {
+    "question": "How do Cache Components and cache tags work together?",
+    "answer": "With Cache Components, put use cache on the function or component that should be cached, set its lifetime with cacheLife, and add cacheTag for targeted invalidation. Uncached work stays outside that scope.",
+    "followUp": "What happens to request-time data? Keep it outside use cache and place the component behind Suspense so it can stream after the static shell."
+   }
+  ],
+  "keyPoints": [
+   "updateTag is designed for Server Actions that mutate data and need the next read to show the user's change.",
+   "It expires the matching tag and causes fresh data to be read immediately within the request flow.",
+   "It suits forms, profile settings, and other interactive features where stale results would confuse users.",
+   "In the Cache Components model, attach tags with cacheTag inside a use cache scope."
+  ],
+  "gotchas": [
+   "Call updateTag only inside a Server Action. Calling it from another context throws.",
+   "The old one-argument revalidateTag form is deprecated. Pass a profile such as max.",
+   "Add the tag inside the cached function before invalidating it."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "next/dynamic": {
   "sourceUrl": "https://nextjs.org/docs/app/guides/lazy-loading",
@@ -3738,6 +4999,76 @@
   ],
   "checkedAt": "2026-10-15"
  },
+ "next/root-params": {
+  "sourceUrl": "https://nextjs.org/docs/app/api-reference/functions/next-root-params",
+  "sourceTitle": "Functions: next/root-params",
+  "summary": "next/root-params exports async getters for dynamic route segments before the root layout. Server Components and server-side utilities can use them without passing values through props.",
+  "explanation": "The module exports an async getter for each dynamic segment located before a root layout. Import the generated function, then await it in a Server Component or server-side utility. This avoids passing shared route values through many component props. Parameters deeper in the route still come from the params prop.",
+  "syntax": "import { segmentName } from 'next/root-params'\nconst value = await segmentName()",
+  "parameters": [],
+  "returns": "Each getter returns a promise for its root parameter value. A catch-all getter returns string[] | undefined. With multiple root layouts, a parameter missing from the current layout can also produce undefined.",
+  "example": {
+   "title": "Read a root parameter",
+   "code": "import { lang } from 'next/root-params'\n\nexport default async function Page() {\n  const language = await lang()\n  return <p>Current language: {language}</p>\n}",
+   "language": "tsx",
+   "explanation": "This Server Component reads the dynamic [lang] segment through its generated getter."
+  },
+  "useCases": [
+   {
+    "title": "Read a shared locale",
+    "scenario": "An app uses app/[lang] as a root layout and needs the current language in nested Server Components."
+   },
+   {
+    "title": "Simplify shared server utilities",
+    "scenario": "A translation loader or data utility needs the current root route value without accepting it as an argument."
+   },
+   {
+    "title": "Build parameter-aware use cache functions",
+    "scenario": "Cached server data must vary by a root parameter."
+   }
+  ],
+  "related": [
+   "PageProps",
+   "LayoutProps",
+   "generateStaticParams",
+   "use cache",
+   "unstable_cache",
+   "Server Components",
+   "Internationalization"
+  ],
+  "since": "Next.js 16.3",
+  "interview": [
+   {
+    "question": "What does next/root-params provide?",
+    "answer": "A root parameter is a dynamic segment before the root layout. Next.js creates an async getter with the segment name, and Server Components can import and await it without receiving the value through props.",
+    "followUp": "What happens to a dynamic segment below the root layout? It is not a root parameter; read it from the params prop in the page or layout where that segment is defined."
+   },
+   {
+    "question": "Where can root parameter getters be used?",
+    "answer": "The getter is available in Server Components and server-side utilities. It is not available in Client Components, Server Actions, or Route Handlers.",
+    "followUp": "How should cached code read it? Use the getter inside a use cache scope; unstable_cache does not support root parameter getters."
+   },
+   {
+    "question": "How do root parameters work with use cache?",
+    "answer": "Next.js tracks which root getters a use cache function calls and includes only those values in that function's cache key. This lets cached data vary by the root parameters it actually uses.",
+    "followUp": "What if a function uses the regular params prop instead? Await the value outside the cached function and pass it as an argument."
+   }
+  ],
+  "keyPoints": [
+   "Each dynamic segment before the root layout becomes an async getter. Awaiting it returns the value for the current route.",
+   "The folder name determines the import name, so app/[locale] creates a locale export.",
+   "Shared Server Components and server-side utilities can read a root value directly instead of receiving it through several props.",
+   "Only segments above the root layout are root parameters. A deeper segment, such as [slug], remains in the params prop.",
+   "Run one of the documented Next.js commands to generate TypeScript types for these exports.",
+   "With multiple root layouts, a getter for a parameter missing from one layout can return undefined."
+  ],
+  "gotchas": [
+   "A segment such as [post-slug] cannot create a getter because its name is not a valid JavaScript identifier.",
+   "Do not import or call these getters in Client Components, Server Actions, or Route Handlers.",
+   "Use use cache instead of unstable_cache when cached code needs a root parameter."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "next/script": {
   "sourceUrl": "https://nextjs.org/docs/app/api-reference/components/script",
   "sourceTitle": "Script Component",
@@ -3834,6 +5165,74 @@
    "Without an explicit strategy, the script uses `afterInteractive`."
   ],
   "checkedAt": "2026-10-15"
+ },
+ "next/server": {
+  "sourceUrl": "https://nextjs.org/docs/app/guides/upgrading/version-16",
+  "sourceTitle": "How to upgrade to version 16",
+  "summary": "In Next.js 16, use connection() before reading server environment variables at request time. Use NEXT_PUBLIC_ variables for values that Client Components need.",
+  "explanation": "Next.js 16 lets a server component read environment values at request time by awaiting connection() before accessing process.env. This keeps the value out of the build output. Values needed by client components must use the NEXT_PUBLIC_ prefix, because client code cannot read private server-only variables.",
+  "syntax": "await connection();\nconst value = process.env.RUNTIME_CONFIG;",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Read runtime environment data",
+   "code": "import { connection } from \"next/server\";\n\nexport default async function Page() {\n  await connection();\n  const config = process.env.RUNTIME_CONFIG;\n  return <p>{config}</p>;\n}",
+   "language": "tsx",
+   "explanation": "This page reads an environment value at request time."
+  },
+  "useCases": [
+   {
+    "title": "Read request-time configuration",
+    "scenario": "A server-rendered page needs configuration that can change after deployment."
+   },
+   {
+    "title": "Expose a client value",
+    "scenario": "A Client Component needs a public API endpoint."
+   },
+   {
+    "title": "Migrate cache configuration",
+    "scenario": "An app is moving from Next.js 15 cache experiments to Next.js 16."
+   }
+  ],
+  "related": [
+   "connection()",
+   "cacheComponents",
+   "NEXT_PUBLIC_",
+   "process.env",
+   "Suspense",
+   "experimental.dynamicIO",
+   "experimental.useCache"
+  ],
+  "since": "16",
+  "interview": [
+   {
+    "question": "How do you read an environment variable at runtime in Next.js 16?",
+    "answer": "Use connection() from next/server and await it before reading process.env in a server component. This makes the value available at request time instead of bundling it during the build.",
+    "followUp": "What prefix is needed in client code? Use NEXT_PUBLIC_ for values exposed to Client Components."
+   },
+   {
+    "question": "How do environment variables differ between server and client components?",
+    "answer": "Private environment variables are for server code. A value used by a Client Component must use the NEXT_PUBLIC_ prefix, such as NEXT_PUBLIC_API_URL.",
+    "followUp": "Why should secrets not use that prefix? The prefix makes the value client-accessible, so it must not be used for private secrets."
+   },
+   {
+    "question": "What changed for the experimental cache flags in Next.js 16?",
+    "answer": "The documented migration changes experimental.dynamicIO and experimental.useCache to the top-level cacheComponents option. Enabling cacheComponents can expose build errors for uncached data outside Suspense.",
+    "followUp": "Is this only a configuration rename? No. It changes the caching model, so the application may need code changes."
+   }
+  ],
+  "keyPoints": [
+   "Add NEXT_PUBLIC_ to an environment variable name when the value must be available in client code.",
+   "In a server component, await connection() before accessing a value that must be read at request time.",
+   "The old experimental dynamicIO and useCache configuration flags are no longer supported in Next.js 16.",
+   "If those cache features were in use, move to the top-level cacheComponents option.",
+   "Turning on cacheComponents requires the application to follow the Cache Components model."
+  ],
+  "gotchas": [
+   "Call connection() before reading a runtime environment variable. Otherwise, the value may be included during the build instead of being read per request.",
+   "A client component can access only variables with the NEXT_PUBLIC_ prefix."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "NextConfig": {
   "sourceUrl": "https://nextjs.org/docs/app/api-reference/config/next-config-js",
@@ -3982,6 +5381,72 @@
    "Pass the actual background promise to waitUntil so its completion is tracked."
   ],
   "checkedAt": "2026-10-15"
+ },
+ "NextPage": {
+  "sourceUrl": "https://nextjs.org/docs/app/guides/upgrading/version-16",
+  "sourceTitle": "How to upgrade to version 16",
+  "summary": "Upgrade a Next.js application from version 15 to 16 with the recommended coding-agent CLI or with an ordered manual process. The manual path uses agent docs, a codemod or manual package installation, and then the breaking-change checks.",
+  "explanation": "The guide gives two upgrade paths. The recommended path runs the latest upgrade CLI with an agent. The manual path first prepares version-matched agent documentation, then runs the codemod or installs packages manually, and finally addresses the breaking changes.",
+  "syntax": "npx next@canary upgrade --agent=latest",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Upgrade with the coding agent",
+   "code": "npx next@canary upgrade --agent=latest",
+   "language": "bash",
+   "explanation": "Run this command in your app directory to let the upgrade agent prepare and apply the Next.js 16 changes."
+  },
+  "useCases": [
+   {
+    "title": "Use the upgrade agent",
+    "scenario": "You want an automated migration that also verifies the result."
+   },
+   {
+    "title": "Upgrade manually",
+    "scenario": "You need to control each migration step yourself."
+   },
+   {
+    "title": "Prepare version-matched agent docs",
+    "scenario": "You use an AI coding agent during the migration."
+   }
+  ],
+  "related": [
+   "Upgrade with a coding agent",
+   "upgrade codemod",
+   "AGENTS.md",
+   "node_modules/next/dist/docs/"
+  ],
+  "since": "16",
+  "interview": [
+   {
+    "question": "What is the recommended way to upgrade to Next.js 16?",
+    "answer": "Run `npx next@canary upgrade --agent=latest` from the app directory. It prepares the migration guides and codemod for the agent, then asks the agent to make and verify the changes.",
+    "followUp": "What is the manual fallback? Set up the agent documentation, run the upgrade codemod, or install packages manually, then work through the breaking changes."
+   },
+   {
+    "question": "What are the main steps for a manual upgrade?",
+    "answer": "The manual process starts by setting up AI agent documentation, then running the upgrade codemod. If the codemod is not used, install the packages manually before handling the listed breaking changes.",
+    "followUp": "Why set up the agent documentation first? It gives future agent work documentation matched to the version being upgraded to."
+   },
+   {
+    "question": "How should AGENTS.md be prepared?",
+    "answer": "Run `npx @next/codemod@canary agents-md` before upgrading when using a coding agent. Afterward, confirm that AGENTS.md points to the docs inside the installed package.",
+    "followUp": "Where should the file point? It should use the documentation bundled in `node_modules/next/dist/docs/`."
+   }
+  ],
+  "keyPoints": [
+   "The guide recommends using a coding agent for the upgrade.",
+   "Execute the upgrade command from the application directory.",
+   "The CLI gives the agent the migration guides and the codemod command.",
+   "The manual method has an ordered sequence of tasks.",
+   "The codemod is the second step in the manual upgrade path.",
+   "Manual package installation is an alternative when the codemod is not used.",
+   "Agent users should connect AGENTS.md to documentation matching the Next.js version."
+  ],
+  "gotchas": [
+   "After the upgrade, verify that AGENTS.md refers to the documentation shipped with the installed Next.js package."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "NextRequest": {
   "sourceUrl": "https://nextjs.org/docs/app/api-reference/functions/next-request",
@@ -4334,6 +5799,98 @@
   ],
   "checkedAt": "2026-10-15"
  },
+ "output": {
+  "sourceUrl": "https://nextjs.org/docs/app/api-reference/config/next-config-js/output",
+  "sourceTitle": "output | Next.js",
+  "summary": "Next.js traces production dependencies during `next build`. Set `output: 'standalone'` to create a smaller `.next/standalone` deployment with a minimal server.",
+  "explanation": "During `next build`, Next.js traces imports, requires, and file-system usage to find files needed by each page and by the production server. With `output: 'standalone'`, it copies the traced files into `.next/standalone` and writes a small `server.js` file that can run without installing `node_modules` again.",
+  "syntax": "module.exports = {\n  output: 'standalone',\n}",
+  "parameters": [
+   {
+    "name": "output",
+    "type": "string",
+    "description": "Selects the deployment output mode. Use `standalone` to create `.next/standalone`."
+   },
+   {
+    "name": "outputFileTracingRoot",
+    "type": "string",
+    "description": "Sets the directory used as the tracing root, useful when required files are outside the project directory."
+   },
+   {
+    "name": "outputFileTracingIncludes",
+    "type": "object",
+    "description": "Adds project-root-relative file globs to traces for matching routes."
+   },
+   {
+    "name": "outputFileTracingExcludes",
+    "type": "object",
+    "description": "Removes project-root-relative file globs from traces for matching routes."
+   }
+  ],
+  "returns": "",
+  "example": {
+   "title": "Create a standalone deployment",
+   "code": "module.exports = {\n  output: 'standalone',\n}\n\n// Build, then start the generated server:\n// next build\n// node .next/standalone/server.js",
+   "language": "javascript",
+   "explanation": "This creates a smaller deployment folder with the files needed to run the production server."
+  },
+  "useCases": [
+   {
+    "title": "Build a smaller Docker image with only traced runtime files.",
+    "scenario": "Container deployment"
+   },
+   {
+    "title": "Set a wider tracing root and include shared files needed by a route.",
+    "scenario": "Monorepo deployment"
+   },
+   {
+    "title": "Include native binaries or runtime data with route-specific glob patterns.",
+    "scenario": "Runtime asset control"
+   }
+  ],
+  "related": [
+   "outputFileTracingRoot",
+   "outputFileTracingIncludes",
+   "outputFileTracingExcludes",
+   "experimental.turbopackAdditionalRoots",
+   "fileHashes",
+   "symlinks",
+   "additionalRoots"
+  ],
+  "since": "12",
+  "interview": [
+   {
+    "question": "How does output file tracing work?",
+    "answer": "Next.js analyzes imports, `require`, and file-system usage during `next build`. It writes trace files in `.next` that list files needed by pages and the production server.",
+    "followUp": "How can a deployment tool use a trace? Read each `.nft.json` file and copy its listed paths relative to that file into the deployment directory."
+   },
+   {
+    "question": "What does standalone output do?",
+    "answer": "Set `output: 'standalone'` in `next.config.js`. The build creates `.next/standalone` with the traced files and a minimal `server.js`, which can run without installing `node_modules` in that folder.",
+    "followUp": "What else may be needed for static assets? Copy `public` to `.next/standalone/public` and `.next/static` to `.next/standalone/.next/static`, or serve them with a CDN."
+   },
+   {
+    "question": "How do you handle tracing in a monorepo?",
+    "answer": "The tracing root defaults to the Next.js project directory. In a monorepo, files outside that directory are not included unless `outputFileTracingRoot` is set.",
+    "followUp": "How do you add selected files after changing the root? Use `outputFileTracingIncludes` with route keys and project-root-relative glob patterns."
+   }
+  ],
+  "keyPoints": [
+   "A production build finds the files required by each page and reduces the deployment contents.",
+   "The production server has its own trace file at `.next/next-server.js.nft.json`.",
+   "`output: 'standalone'` creates a deployable `.next/standalone` directory.",
+   "A standalone deployment contains selected dependency files, so it does not need a separate `node_modules` installation.",
+   "Set `PORT` and `HOSTNAME` before starting the generated server when a custom bind address is needed.",
+   "`outputFileTracingIncludes` and `outputFileTracingExcludes` map route patterns to file glob patterns."
+  ],
+  "gotchas": [
+   "The generated server does not include `public` or `.next/static` automatically. Copy them manually or serve them through a CDN.",
+   "In a monorepo, files outside the project tracing root are omitted unless you set `outputFileTracingRoot`.",
+   "Include and exclude rules apply only to routes that produce server trace files.",
+   "Use focused glob patterns. Broad patterns can make the deployment much larger."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "page": {
   "sourceUrl": "https://nextjs.org/docs/app/api-reference/file-conventions/page",
   "sourceTitle": "page.js - Next.js",
@@ -4469,6 +6026,95 @@
    "Use a literal route rather than a broad or dynamically constructed string to retain autocomplete and strict parameter keys."
   ],
   "checkedAt": "2026-10-15"
+ },
+ "Parallel routes": {
+  "sourceUrl": "https://nextjs.org/docs/app/api-reference/file-conventions/parallel-routes",
+  "sourceTitle": "Parallel Routes | Next.js",
+  "summary": "Parallel Routes let one App Router layout render multiple pages at the same time or choose between them. Named `@folder` slots are passed to the shared layout and do not change the URL.",
+  "explanation": "Create named slots with folders such as `@analytics` and `@team`. The layout at the same route level receives them as props, along with the implicit `children` slot. Each slot can contain its own pages, loading UI, and error UI. Slots do not add path segments to the URL.",
+  "syntax": "app/route/@slot/page.tsx; layout({ children, slot })",
+  "parameters": [
+   {
+    "name": "children",
+    "type": "React.ReactNode",
+    "description": "The implicit slot for the normal page content."
+   },
+   {
+    "name": "analytics",
+    "type": "React.ReactNode",
+    "description": "A named slot created by an `@analytics` folder."
+   },
+   {
+    "name": "team",
+    "type": "React.ReactNode",
+    "description": "A named slot created by an `@team` folder."
+   }
+  ],
+  "returns": "A rendered layout containing any combination of the `children` and named slot props.",
+  "example": {
+   "title": "Render parallel slots",
+   "code": "export default function Layout({ children, analytics, team }: { children: React.ReactNode; analytics: React.ReactNode; team: React.ReactNode }) {\n  return <>{children}{analytics}{team}</>\n}",
+   "language": "tsx",
+   "explanation": "The layout receives each named slot as a prop and renders the slots with the page content."
+  },
+  "useCases": [
+   {
+    "title": "Dashboards",
+    "scenario": "A dashboard shows analytics and team content in separate areas that can load independently."
+   },
+   {
+    "title": "Conditional views",
+    "scenario": "A layout chooses an admin or user view based on the current role."
+   },
+   {
+    "title": "Independent tabs",
+    "scenario": "A slot contains its own navigation and pages for views such as page views and visitors."
+   },
+   {
+    "title": "Modals",
+    "scenario": "A modal stays alongside the current page and closes through a matching fallback route."
+   }
+  ],
+  "related": [
+   "default.js",
+   "useSelectedLayoutSegment",
+   "useSelectedLayoutSegments",
+   "Intercepting Routes",
+   "Loading UI",
+   "Error Handling",
+   "Authentication"
+  ],
+  "since": "13.3",
+  "interview": [
+   {
+    "question": "How are parallel routes declared and rendered?",
+    "answer": "Use folders whose names start with `@`, such as `@analytics`. The layout at that level receives the slot as a prop and can render it beside `children`.",
+    "followUp": "How does a slot affect the URL? It does not add a URL segment. For example, `@analytics/views` is reached at `/views`."
+   },
+   {
+    "question": "How do conditional parallel routes work?",
+    "answer": "A layout can choose between slot props, such as `admin` and `user`, based on a condition. However, both slot pages still run on the server, so authorization must happen inside each slot or in the data access layer.",
+    "followUp": "What security mistake should be avoided? Do not rely on the layout's conditional return to protect sensitive data, because the unselected slot still executes."
+   },
+   {
+    "question": "What are useful patterns built with parallel routes?",
+    "answer": "A slot can have its own layout, pages, loading UI, and error UI. This lets users navigate that slot independently, and each slot can stream its loading or error state separately.",
+    "followUp": "How can a modal close after navigation? Use a matching catch-all route in the modal slot that returns `null`, so the slot no longer stays visible."
+   }
+  ],
+  "keyPoints": [
+   "Use an `@folder` name to create a named slot, such as `@team` or `@analytics`.",
+   "The layout at the same route level receives named slots as component props.",
+   "The normal `children` content is already a slot; you do not need an `@children` folder.",
+   "Slot names are file-system conventions only. They are omitted from the browser URL.",
+   "Each slot can stream independently and have its own loading and error UI."
+  ],
+  "gotchas": [
+   "A dynamic slot makes every slot at the same route level dynamic. Do not mix static and dynamic slots there.",
+   "Conditional selection only controls the output shown to the user. The other slot still runs on the server, so protect data access inside each slot.",
+   "Add `default.js` when a slot may not match the URL after a reload. Without a fallback, an unmatched slot can produce a 404."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "permanentRedirect": {
   "sourceUrl": "https://nextjs.org/docs/app/api-reference/functions/permanentRedirect",
@@ -4771,6 +6417,181 @@
   ],
   "checkedAt": "2026-10-15"
  },
+ "proxy": {
+  "sourceUrl": "https://nextjs.org/docs/app/getting-started/proxy",
+  "sourceTitle": "Proxy",
+  "summary": "Next.js Proxy runs code before a request finishes. It can redirect, rewrite, change headers, or return a response, and a matcher can limit it to selected paths.",
+  "explanation": "Next.js Proxy runs on the server before a request finishes. It receives the request, then can redirect, rewrite, change headers, or return a response. Put one proxy.ts or proxy.js file at the project root or in src beside app or pages. Use matcher to limit which paths run the Proxy.",
+  "syntax": "export function proxy(request: NextRequest, event?: NextFetchEvent) { ... }\nexport const config = { matcher: '/path/:path*' }",
+  "parameters": [
+   {
+    "name": "request",
+    "type": "NextRequest",
+    "description": "The incoming HTTP request, represented by NextRequest."
+   },
+   {
+    "name": "event",
+    "type": "NextFetchEvent",
+    "description": "Optional event object. Its waitUntil method keeps the Proxy invocation alive for a promise."
+   }
+  ],
+  "returns": "A response, commonly a NextResponse redirect, rewrite, next response, or direct Response.",
+  "example": {
+   "title": "Redirect matched requests",
+   "code": "import { NextResponse } from 'next/server'\nimport type { NextRequest } from 'next/server'\n\nexport function proxy(request: NextRequest) {\n  return NextResponse.redirect(new URL('/home', request.url))\n}\n\nexport const config = {\n  matcher: '/about/:path*',\n}",
+   "language": "typescript",
+   "explanation": "This redirects requests whose path starts with /about to /home."
+  },
+  "useCases": [
+   {
+    "title": "Conditional redirects",
+    "scenario": "A request property determines the destination page."
+   },
+   {
+    "title": "A/B test rewrites",
+    "scenario": "Different users or experiments need different pages."
+   },
+   {
+    "title": "Header changes",
+    "scenario": "A common header must be added to selected requests or responses."
+   },
+   {
+    "title": "CORS handling",
+    "scenario": "A cross-origin request needs simple or preflight CORS handling."
+   }
+  ],
+  "related": [
+   "NextRequest",
+   "NextResponse",
+   "NextFetchEvent",
+   "matcher",
+   "redirects",
+   "waitUntil",
+   "skipTrailingSlashRedirect",
+   "skipProxyUrlNormalize"
+  ],
+  "since": "Next.js 16",
+  "interview": [
+   {
+    "question": "What does Next.js Proxy do?",
+    "answer": "Proxy runs before routes are rendered and can redirect, rewrite, change request or response headers, or return a response. Its function receives a NextRequest and can optionally receive a NextFetchEvent.",
+    "followUp": "How can background work continue after the response? Pass NextFetchEvent as the second parameter and call event.waitUntil(promise)."
+   },
+   {
+    "question": "How do you configure Proxy?",
+    "answer": "Create proxy.ts or proxy.js at the project root, or inside src at the same level as app or pages. Export one default function or one named proxy function.",
+    "followUp": "Can a project have several Proxy files? No. Use one main file and import separate modules for organized logic."
+   },
+   {
+    "question": "What is the matcher used for?",
+    "answer": "The matcher config selects the paths where Proxy runs. It can be one string, an array of paths, or an array of objects with source, locale, has, and missing conditions.",
+    "followUp": "Why should static assets often be excluded? Otherwise authentication or redirect logic can block CSS, JavaScript, images, or other public files."
+   }
+  ],
+  "keyPoints": [
+   "In Next.js 16, the old Middleware name changed to Proxy. The behavior stays the same.",
+   "Proxy runs before the request is complete, so it can inspect the incoming request before the route responds.",
+   "A Proxy can rewrite or redirect, change request or response headers, or send a response directly.",
+   "Create proxy.ts or proxy.js in the project root, or in src when the project uses src.",
+   "Use config.matcher to run Proxy only for selected paths instead of every path.",
+   "The Proxy function may be a default export or a named export called proxy."
+  ],
+  "gotchas": [
+   "Do not use Proxy for slow data fetching. It is also not a complete session management or authorization system.",
+   "A project supports one Proxy file. Put extra logic in imported modules instead of adding more Proxy files.",
+   "Matcher values must be static. A matcher built from variables will not be used.",
+   "Check access inside every Server Function. A matcher can exclude the route that handles a Server Function call."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "reactCompiler": {
+  "sourceUrl": "https://nextjs.org/docs/app/api-reference/config/next-config-js/reactCompiler",
+  "sourceTitle": "reactCompiler",
+  "summary": "The `reactCompiler` option enables React Compiler support in Next.js. It can automatically optimize component rendering and reduce the need for manual `useMemo` and `useCallback`.",
+  "explanation": "Next.js runs the React Compiler through its Babel plugin. An SWC optimization limits compilation to files that appear to use JSX or React Hooks, which reduces extra build work. You can enable compilation for the project, or use annotation mode and mark selected components or hooks with \"use memo\".",
+  "syntax": "reactCompiler: true\nreactCompiler: { compilationMode: 'annotation' }\nreactCompiler: { environment: { enablePreserveExistingMemoizationGuarantees: boolean } }",
+  "parameters": [
+   {
+    "name": "reactCompiler",
+    "type": "boolean | object",
+    "description": "Enables the compiler, or accepts an object with compilation and environment settings."
+   },
+   {
+    "name": "reactCompiler.compilationMode",
+    "type": "string",
+    "description": "Selects annotation mode, where marked code opts in."
+   },
+   {
+    "name": "reactCompiler.environment.enablePreserveExistingMemoizationGuarantees",
+    "type": "boolean",
+    "description": "Controls existing memoization guarantee preservation."
+   }
+  ],
+  "returns": "No runtime return value; this is a Next.js configuration option.",
+  "example": {
+   "title": "Enable reactCompiler",
+   "code": "import type { NextConfig } from 'next'\n\nconst nextConfig: NextConfig = {\n  reactCompiler: true,\n}\n\nexport default nextConfig",
+   "language": "typescript",
+   "explanation": "This enables the React Compiler for the Next.js application."
+  },
+  "useCases": [
+   {
+    "title": "Project-wide optimization",
+    "scenario": "Enable compiler-based rendering optimization across the application."
+   },
+   {
+    "title": "Opt-in compilation",
+    "scenario": "Compile only components and hooks marked with `use memo`."
+   },
+   {
+    "title": "Control memoization guarantees",
+    "scenario": "Choose whether existing memoization behavior is preserved."
+   }
+  ],
+  "related": [
+   "babel-plugin-react-compiler",
+   "compilationMode",
+   "use memo",
+   "use no memo",
+   "enablePreserveExistingMemoizationGuarantees",
+   "useMemo",
+   "useCallback",
+   "React.memo"
+  ],
+  "since": "v16.0.0",
+  "interview": [
+   {
+    "question": "How do you enable the React Compiler in Next.js?",
+    "answer": "Set `reactCompiler: true` in `next.config.js` or `next.config.ts`, and install `babel-plugin-react-compiler` as a development dependency. Next.js uses SWC to restrict the Babel compiler to relevant files.",
+    "followUp": "How can compilation be limited to selected code? Use `compilationMode: 'annotation'`, then add the React `\"use memo\"` directive to components or hooks that should opt in."
+   },
+   {
+    "question": "How do you enable the compiler only for annotated components?",
+    "answer": "Use the `compilationMode: 'annotation'` setting under `reactCompiler`. Only components or hooks marked with `\"use memo\"` are opted in.",
+    "followUp": "How can one selected component avoid compilation? Add React's `\"use no memo\"` directive to that component or hook."
+   },
+   {
+    "question": "What does the existing-memoization option control?",
+    "answer": "Set `environment.enablePreserveExistingMemoizationGuarantees` to `false` or `true` under `reactCompiler`. This controls preservation of existing guarantees from `useMemo`, `useCallback`, and `React.memo`.",
+    "followUp": "Why set it explicitly? The default comes from the active compiler implementation and can differ between implementations or versions."
+   }
+  ],
+  "keyPoints": [
+   "The option enables React Compiler support in a Next.js application.",
+   "The compiler can optimize component rendering automatically.",
+   "Next.js avoids running the compiler on every project file.",
+   "Files containing JSX or React Hooks are examples of files treated as relevant.",
+   "Annotation mode lets the configuration opt in to compilation selectively.",
+   "The `use memo` directive marks individual components or hooks for opt-in compilation.",
+   "The environment setting controls preservation of existing memoization guarantees."
+  ],
+  "gotchas": [
+   "Enabling the compiler can make development and production builds slightly slower.",
+   "If consistent behavior matters, set the memoization-preservation option explicitly because compiler defaults can change.",
+   "A component or hook can opt out with the \"use no memo\" directive."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "ReadonlyURLSearchParams": {
   "sourceUrl": "https://nextjs.org/docs/app/api-reference/functions/use-search-params",
   "sourceTitle": "useSearchParams",
@@ -4985,6 +6806,63 @@
   ],
   "checkedAt": "2026-10-15"
  },
+ "refresh": {
+  "sourceUrl": "https://nextjs.org/docs/app/api-reference/functions/refresh",
+  "sourceTitle": "refresh",
+  "summary": "refresh updates the client router from inside a Server Action. Use it after changing data that the page reads without caching.",
+  "explanation": "Call refresh after a Server Action changes data that the page reads without caching. It refreshes the client router, but it does not change cached data. The function must run inside a Server Action.",
+  "syntax": "refresh(): void",
+  "parameters": [],
+  "returns": "void; refresh does not return a value.",
+  "example": {
+   "title": "Refresh after a database change",
+   "code": "'use server'\n\nimport { refresh } from 'next/cache'\n\nexport async function markNotificationAsRead(id: string) {\n  await db.notifications.markAsRead(id)\n  refresh()\n}",
+   "language": "typescript",
+   "explanation": "This Server Action updates a notification, then asks the client router to refresh."
+  },
+  "useCases": [
+   {
+    "title": "Refresh uncached page data",
+    "scenario": "A Server Action changes a notification or status record, and the page displays that value from an uncached source."
+   },
+   {
+    "title": "Update a form view",
+    "scenario": "A form submits a database update and the current page should request the latest displayed values."
+   }
+  ],
+  "related": [
+   "Server Actions",
+   "router.refresh()",
+   "next/cache"
+  ],
+  "since": "Next.js 16",
+  "interview": [
+   {
+    "question": "What does refresh do?",
+    "answer": "refresh is a function from next/cache. It refreshes the client router after a Server Action completes.",
+    "followUp": "What happens to cached data? refresh does not change the cache. Use a cache invalidation API when cached content must be updated."
+   },
+   {
+    "question": "When should refresh be called?",
+    "answer": "The action should perform its write first and call refresh afterward. This lets the client request the latest uncached data after the change.",
+    "followUp": "Why call it after the write? Calling it before the write could refresh the UI before the database contains the new state."
+   },
+   {
+    "question": "What are its signature and allowed context?",
+    "answer": "refresh takes no arguments and returns void. It is only valid inside a Server Action.",
+    "followUp": "Can a Route Handler use it? No. The documented API says that using it there throws an error."
+   }
+  ],
+  "keyPoints": [
+   "It refreshes the client router from a Server Action.",
+   "The function returns nothing.",
+   "It is related to, but distinct from, the client-side router.refresh API."
+  ],
+  "gotchas": [
+   "Do not call refresh in a Route Handler, Client Component, or other non-Server-Action code."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "ResolvingMetadata": {
   "sourceUrl": "https://nextjs.org/docs/app/api-reference/functions/generate-metadata.md",
   "sourceTitle": "Next.js",
@@ -5056,6 +6934,150 @@
    "Parent metadata is resolved through the route hierarchy, so the value reflects metadata inherited from earlier segments rather than an arbitrary global object."
   ],
   "checkedAt": "2026-10-15"
+ },
+ "ResolvingViewport": {
+  "sourceUrl": "https://nextjs.org/docs/app/api-reference/functions/generate-viewport",
+  "sourceTitle": "generateViewport | Next.js",
+  "summary": "generateViewport lets a Next.js App Router page or layout return viewport settings dynamically. Export it from a Server Component and return a Viewport object.",
+  "explanation": "Export generateViewport from a layout.tsx or page.tsx file when viewport values depend on route data or other server-side logic. The function returns a Viewport object. Use either this function or a static viewport export in one route segment, not both.",
+  "syntax": "export function generateViewport({ params }) { return { ... } }",
+  "parameters": [
+   {
+    "name": "params",
+    "type": "Route parameters object",
+    "description": "Route parameters supplied to the function for dynamic route segments."
+   }
+  ],
+  "returns": "A Viewport object containing one or more viewport fields.",
+  "example": {
+   "title": "Dynamic viewport settings",
+   "code": "export function generateViewport() {\n  return {\n    themeColor: \"black\",\n    width: \"device-width\",\n    initialScale: 1,\n  }\n}\n\nexport default function Page() {\n  return <main>Hello</main>\n}",
+   "language": "tsx",
+   "explanation": "This Server Component route creates viewport settings dynamically."
+  },
+  "useCases": [
+   {
+    "title": "Route-dependent settings",
+    "scenario": "A page needs different viewport settings for different route parameters."
+   },
+   {
+    "title": "Static alternative",
+    "scenario": "A page needs a fixed viewport configuration."
+   }
+  ],
+  "related": [
+   "Viewport",
+   "viewport object",
+   "Server Components",
+   "layout.tsx",
+   "page.tsx",
+   "metadata-to-viewport-export codemod"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does generateViewport do?",
+    "answer": "Export generateViewport from a layout.tsx or page.tsx file. It returns a Viewport object with one or more viewport fields.",
+    "followUp": "How would you use route data? Define the function with the route parameters argument, then use those parameters to build the returned viewport values."
+   },
+   {
+    "question": "Why use generateViewport instead of a static viewport object?",
+    "answer": "It lets a route create viewport settings dynamically instead of declaring a fixed viewport object. The returned object follows the Viewport type.",
+    "followUp": "What must remain true when using dynamic settings? The export must stay in a Server Component."
+   },
+   {
+    "question": "Can both viewport export methods be used together?",
+    "answer": "A route segment cannot export both forms. Use either export const viewport or export function generateViewport in that segment.",
+    "followUp": "Can a child segment use another method? The restriction applies to the same route segment, so a child can define its own supported export according to its own file."
+   }
+  ],
+  "keyPoints": [
+   "Use the static object for fixed settings and generateViewport for settings that must be computed.",
+   "The static viewport export belongs in a layout or page file.",
+   "Return an object with the viewport fields needed by the route."
+  ],
+  "gotchas": [
+   "Do not export it from a Client Component.",
+   "Choose one viewport configuration method per route segment."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "revalidate": {
+  "sourceUrl": "https://nextjs.org/docs/app/guides/upgrading/version-16",
+  "sourceTitle": "Upgrading to version 16",
+  "summary": "`revalidateTag` invalidates cached entries with a matching tag. In Next.js 16, it requires a cache-life profile as its second argument and uses stale-while-revalidate behavior.",
+  "explanation": "`revalidateTag` marks cached data with a tag as stale. It uses stale-while-revalidate behavior, so users can receive the old value while Next.js refreshes it in the background.",
+  "syntax": "revalidateTag(tag, profile)",
+  "parameters": [
+   {
+    "name": "tag",
+    "type": "string",
+    "description": "The cache tag attached to the entries to invalidate."
+   },
+   {
+    "name": "profile",
+    "type": "string | object",
+    "description": "A cache-life profile name, custom profile, or `{ expire: number }` object."
+   }
+  ],
+  "returns": "",
+  "example": {
+   "title": "Invalidate tagged data",
+   "code": "import { revalidateTag } from 'next/cache'\n\nexport async function POST() {\n  revalidateTag('posts', 'max')\n  return Response.json({ ok: true })\n}",
+   "language": "typescript",
+   "explanation": "This Route Handler marks cached entries tagged with `posts` as stale and uses the `max` cache profile."
+  },
+  "useCases": [
+   {
+    "title": "Refresh tagged content in the background",
+    "scenario": "A blog post changes and a short delay before readers see the update is acceptable."
+   },
+   {
+    "title": "Invalidate data from a Route Handler",
+    "scenario": "A webhook needs to invalidate cached data from outside a Server Action."
+   },
+   {
+    "title": "Apply named or custom cache profiles",
+    "scenario": "Different data sets need different refresh periods."
+   }
+  ],
+  "related": [
+   "updateTag",
+   "revalidatePath",
+   "cacheLife",
+   "cacheTag",
+   "Server Actions"
+  ],
+  "since": "16",
+  "interview": [
+   {
+    "question": "What changed in the Next.js 16 signature?",
+    "answer": "Pass the cache tag first and a cache-life profile second, such as `revalidateTag('posts', 'max')`. The profile enables stale-while-revalidate behavior.",
+    "followUp": "When should `updateTag` be used instead? Use it in a Server Action when the user must immediately see the result of a mutation."
+   },
+   {
+    "question": "When should you use `revalidateTag`?",
+    "answer": "Use `revalidateTag` for tagged cached entries when eventual consistency is acceptable. It serves stale data while fresh data is generated in the background.",
+    "followUp": "What should a webhook use for immediate invalidation? A webhook should still use `revalidateTag`, because `updateTag` only works in Server Actions."
+   },
+   {
+    "question": "What values can the profile argument accept?",
+    "answer": "The second argument can be a built-in profile such as `max`, `hours`, or `days`. It can also be an inline object such as `{ expire: 3600 }` or a custom profile from `next.config`.",
+    "followUp": "Why is `max` commonly recommended? It supports background revalidation for long-lived content while allowing cached data to be returned immediately."
+   }
+  ],
+  "keyPoints": [
+   "In Next.js 16, call `revalidateTag` with both a tag and a cache-life profile.",
+   "Only entries carrying the selected tag are invalidated.",
+   "The `max` profile is the usual choice for content that can briefly remain stale.",
+   "Built-in profiles include `max`, `hours`, and `days`.",
+   "Use an inline expiration object when a built-in profile does not fit."
+  ],
+  "gotchas": [
+   "Calling `revalidateTag` with only the tag is deprecated and causes a TypeScript error. Add a cache profile.",
+   "Do not replace it with `updateTag` in a Route Handler. `updateTag` is limited to Server Actions."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "revalidatePath": {
   "sourceUrl": "https://nextjs.org/docs/app/api-reference/functions/revalidatePath",
@@ -5144,63 +7166,178 @@
  "revalidateTag": {
   "sourceUrl": "https://nextjs.org/docs/app/api-reference/functions/revalidateTag",
   "sourceTitle": "revalidateTag",
-  "summary": "Invalidates cached data associated with a tag using stale-while-revalidate behavior. In Next.js 16, pass a cacheLife profile such as `\"max\"` as the second argument.",
-  "explanation": "Call `revalidateTag` from server-side code with a cache tag and a revalidation profile. It marks matching cached data stale, then the next request serves stale content while revalidation runs; after the profile's allowed stale period, a request waits for fresh data.",
-  "syntax": "revalidateTag(tag: string, profile: string | { expire?: number }): void;",
+  "summary": "`revalidateTag` marks cached data with a tag as stale. The next request can serve stale data while Next.js refreshes it in the background.",
+  "explanation": "`revalidateTag` marks cached data with a matching tag as stale. A later request starts revalidation and can receive the stale value while the new value loads. Use a cache life profile as the second argument to control this behavior.",
+  "syntax": "revalidateTag(tag: string, profile: string | { expire: number })",
   "parameters": [
    {
     "name": "tag",
     "type": "string",
-    "description": "Cache tag associated with the cached data to invalidate. It is case-sensitive and limited to 256 characters."
+    "description": "The cache tag assigned to the data to invalidate."
    },
    {
     "name": "profile",
-    "type": "string | { expire?: number }",
-    "description": "Controls how long stale content may be served. Use `\"max\"`, another cacheLife profile, or an object with an expiration in seconds."
+    "type": "string | { expire: number }",
+    "description": "A cache life profile name, or an object with an `expire` value in seconds."
    }
   ],
-  "returns": "void",
+  "returns": "No value.",
   "example": {
-   "title": "Invalidate tagged article data",
-   "code": "import { revalidateTag } from 'next/cache'\n\nexport async function POST() {\n  // Update the data source here.\n  revalidateTag('articles', 'max')\n  return Response.json({ revalidated: true })\n}",
+   "title": "Mark tagged data stale",
+   "code": "import { revalidateTag } from 'next/cache'\n\nexport async function GET() {\n  revalidateTag('posts', 'max')\n  return Response.json({ revalidated: true })\n}",
    "language": "typescript",
-   "explanation": "This Route Handler marks cached entries tagged `articles` as stale; the next request receives stale data while fresh data is generated."
+   "explanation": "This Route Handler marks cached data tagged with `posts` as stale. The next request serves the old data while fresh data loads."
   },
   "useCases": [
    {
-    "title": "Refresh published content",
-    "scenario": "A blog post or documentation page changes and a small delay before fresh content appears is acceptable."
+    "title": "Refresh mostly static content",
+    "scenario": "A blog or documentation site can accept a short delay after content changes."
    },
    {
-    "title": "Invalidate related entries",
-    "scenario": "Several cached functions share one tag and should be invalidated together."
-   },
-   {
-    "title": "React to external updates",
-    "scenario": "A Route Handler receives a webhook from a content or product system."
+    "title": "Handle external updates",
+    "scenario": "A webhook or Route Handler needs to invalidate tagged data outside a Server Action."
    }
   ],
   "related": [
-   "cacheLife",
+   "updateTag",
    "revalidatePath",
-   "updateTag"
+   "cacheTag",
+   "cacheLife",
+   "fetch",
+   "next.tags"
   ],
-  "since": "16.0.0",
+  "since": "16",
+  "interview": [
+   {
+    "question": "What does `revalidateTag` do?",
+    "answer": "It marks cached entries with a matching tag as stale. The next request starts revalidation and may receive stale data while the fresh data is loaded.",
+    "followUp": "How would you make a user see a saved change immediately? Use `updateTag` in a Server Action, because it provides read-your-writes behavior."
+   },
+   {
+    "question": "When should you use the `max` profile?",
+    "answer": "Use `revalidateTag(tag, 'max')` when a short delay is acceptable, such as for blog content. This uses stale-while-revalidate behavior.",
+    "followUp": "What should you use when stale content must not be served outside a Server Action? Use `revalidateTag(tag, { expire: 0 })`."
+   },
+   {
+    "question": "How does cached data receive a tag?",
+    "answer": "First assign the tag to cached data, for example with `fetch` and `next.tags`, or with `cacheTag` inside a function using `use cache`. Then call `revalidateTag` with that tag.",
+    "followUp": "How does it differ from `revalidatePath`? Tags invalidate matching data across pages, while paths target a page or layout path."
+   }
+  ],
   "keyPoints": [
-   "It invalidates cached entries associated with one cache tag.",
-   "The function is available in server-side functions and Route Handlers.",
-   "Calling it changes matching entries to stale rather than synchronously rebuilding them.",
-   "The next request gets stale content while Next.js refreshes the data in the background.",
-   "The recommended `max` profile provides stale-while-revalidate behavior for a long stale window.",
-   "For a custom duration, provide an object such as `{ expire: 3600 }`."
+   "It invalidates cached data on demand by matching a specific tag.",
+   "The function is available in Server Functions and Route Handlers.",
+   "The `max` profile lets users receive stale content while revalidation runs in the background.",
+   "The second argument controls the time window during which stale data may be served.",
+   "A cache entry must have the tag before `revalidateTag` can affect it.",
+   "Tag invalidation can affect matching data used by multiple pages."
   ],
   "gotchas": [
-   "Use it only in Server Functions or Route Handlers; Client Components and Proxy are unsupported.",
-   "Keep tags within 256 characters and use consistent casing.",
-   "Pass the second profile argument; the old one-argument call is deprecated in Next.js 16.",
-   "Use `updateTag` in a Server Action when read-your-writes or immediate expiration is required."
+   "Call it only in server-side code, such as a Server Function or Route Handler.",
+   "Do not call it with only a tag. Pass a profile or an expiration object.",
+   "Calling the function does not refresh every page immediately. A later request starts the revalidation."
   ],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-11-03"
+ },
+ "rewrites": {
+  "sourceUrl": "https://nextjs.org/docs/app/api-reference/config/next-config-js/rewrites",
+  "sourceTitle": "rewrites",
+  "summary": "Rewrites map incoming paths to other destinations while keeping the original URL visible. Configure them in next.config.js to route requests internally or proxy them to an external site.",
+  "explanation": "A rewrite maps an incoming path to another path without changing the browser URL. Define rewrites in next.config.js. You can return one list or separate lists that run at different points in routing.",
+  "syntax": "async rewrites() { return [{ source: string, destination: string }] }",
+  "parameters": [
+   {
+    "name": "source",
+    "type": "String",
+    "description": "Incoming request path pattern."
+   },
+   {
+    "name": "destination",
+    "type": "String",
+    "description": "Path or external URL to serve."
+   },
+   {
+    "name": "basePath",
+    "type": "false or undefined",
+    "description": "Set false to avoid adding basePath; external rewrites only."
+   },
+   {
+    "name": "locale",
+    "type": "false or undefined",
+    "description": "Set false to avoid locale matching."
+   },
+   {
+    "name": "has",
+    "type": "Array",
+    "description": "Conditions that must match. Each item has type, key, and value."
+   },
+   {
+    "name": "missing",
+    "type": "Array",
+    "description": "Conditions that must not match. Each item has type, key, and value."
+   }
+  ],
+  "returns": "An array of rewrite objects, or an object with beforeFiles, afterFiles, and fallback arrays.",
+  "example": {
+   "title": "Map an old blog path",
+   "code": "module.exports = {\n  async rewrites() {\n    return {\n      afterFiles: [\n        {\n          source: \"/old-blog/:slug\",\n          destination: \"/blog/:slug\"\n        }\n      ]\n    }\n  }\n}",
+   "language": "javascript",
+   "explanation": "This keeps the old URL in the browser while serving the matching page at the new path."
+  },
+  "useCases": [
+   {
+    "title": "Path aliases",
+    "scenario": "Serve a new page for an old path without changing shared links."
+   },
+   {
+    "title": "Incremental migration",
+    "scenario": "Send paths that Next.js does not handle to an older website."
+   },
+   {
+    "title": "Conditional routing",
+    "scenario": "Route requests only when a header, cookie, host, or query condition matches."
+   }
+  ],
+  "related": [
+   "redirects",
+   "headers",
+   "middleware",
+   "basePath",
+   "getStaticPaths"
+  ],
+  "since": "v9.5.0",
+  "interview": [
+   {
+    "question": "How is a rewrite different from a redirect?",
+    "answer": "A rewrite serves content from another destination while keeping the requested URL. A redirect sends the browser to a new URL, so the address changes.",
+    "followUp": "When would you use a fallback rewrite? Use it after Next.js pages and dynamic routes, such as proxying remaining paths to an older site."
+   },
+   {
+    "question": "What forms can rewrites return?",
+    "answer": "An array uses the default order: after files are checked and before dynamic routes. An object lets you use beforeFiles, afterFiles, and fallback to control when rules run.",
+    "followUp": "What is special about beforeFiles? Matching does not immediately stop filesystem and dynamic-route checks; all beforeFiles rules are checked first."
+   },
+   {
+    "question": "How are rewrite parameters handled?",
+    "answer": "Parameters such as :slug can be placed in the destination. If a source parameter is not used there, Next.js adds it to the query automatically.",
+    "followUp": "How can you preserve an unused parameter when another parameter is already used? Add it explicitly to the destination query, such as ?second=:second."
+   }
+  ],
+  "keyPoints": [
+   "A rewrite proxies the request and hides the destination path from the user.",
+   "The rewrites function may return a list or an object containing routing-stage lists.",
+   "beforeFiles rules run after headers, redirects, and middleware, before static files and non-dynamic pages.",
+   "afterFiles rules run after static files and non-dynamic pages, before dynamic routes.",
+   "fallback rules run after dynamic routes and static assets, before Next.js renders a 404.",
+   "Path parameters support modifiers for optional, repeated, or wildcard path parts.",
+   "Use has or missing to match request headers, cookies, hosts, or query values."
+  ],
+  "gotchas": [
+   "Fallback rewrites do not run when getStaticPaths uses fallback true or blocking.",
+   "With trailingSlash enabled, include the trailing slash in the source. Include it in the destination when the target server expects one.",
+   "basePath: false is for external rewrites. Do not use it with an internal destination."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "robots": {
   "sourceUrl": "https://nextjs.org/docs/app/api-reference/file-conventions/metadata/robots",
@@ -5361,6 +7498,71 @@
   ],
   "checkedAt": "2026-10-15"
  },
+ "Route groups": {
+  "sourceUrl": "https://nextjs.org/docs/app/api-reference/file-conventions/route-groups",
+  "sourceTitle": "Route Groups",
+  "summary": "Route groups are folders named with parentheses, such as `(shop)`. They organize files and layouts without adding the folder name to the URL.",
+  "explanation": "A route group is a folder whose name is wrapped in parentheses. Next.js ignores that folder when building the URL, but it can use the folder to organize files and apply layouts to selected routes. Separate groups can also contain separate root layouts.",
+  "syntax": "app/(folderName)/page.tsx",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Organize routes with groups",
+   "code": "app/\n├── (marketing)/\n│   ├── layout.tsx\n│   └── page.tsx\n└── (shop)/\n    ├── layout.tsx\n    └── cart/\n        └── page.tsx",
+   "language": "text",
+   "explanation": "The group names are omitted, so the pages use paths such as `/` and `/cart`. Each group can have its own root layout."
+  },
+  "useCases": [
+   {
+    "title": "Organize routes by team",
+    "scenario": "A large app has routes owned by different teams."
+   },
+   {
+    "title": "Create multiple root layouts",
+    "scenario": "A shop and a marketing site need different top-level UI."
+   },
+   {
+    "title": "Apply a layout to selected routes",
+    "scenario": "Only some routes in a segment should share a layout."
+   }
+  ],
+  "related": [
+   "Nested layouts",
+   "Root layouts",
+   "App Router file-system conventions"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you create a route group, and what does it do?",
+    "answer": "Wrap a folder name in parentheses, such as `(shop)`. Next.js leaves that folder out of the URL, so files inside it still map to the surrounding URL structure.",
+    "followUp": "Can two groups contain the same route? No. If both resolve to one URL, Next.js reports a conflicting-path error."
+   },
+   {
+    "question": "How can route groups provide multiple root layouts?",
+    "answer": "Remove the top-level `layout.js`, then put a `layout.js` inside each route group. Each group layout must include the `html` and `body` elements.",
+    "followUp": "What happens when users move between these layouts? Navigation between different root layouts causes a full page load."
+   },
+   {
+    "question": "How can a layout apply to only some routes?",
+    "answer": "A group layout can be placed around only the routes that should share it. Routes outside that group do not use that layout, even when they are at the same URL segment level.",
+    "followUp": "Why use this instead of one shared layout? It lets separate sections have different UI or lets selected routes opt into a layout."
+   }
+  ],
+  "keyPoints": [
+   "Create a route group by putting the folder name in parentheses, such as `(marketing)`.",
+   "The group folder is organizational only. Its name does not appear in the route URL.",
+   "Use groups to arrange routes by team, feature, concern, or site section.",
+   "Route groups can define more than one root layout in an application.",
+   "Put selected routes in a group to make them share a layout while leaving other routes outside it."
+  ],
+  "gotchas": [
+   "Do not create two routes that produce the same URL. For example, `(marketing)/about/page.js` and `(shop)/about/page.js` both become `/about`.",
+   "When several root layouts replace the top-level layout, define the home page inside one route group.",
+   "Moving between routes that use different root layouts causes a full page reload instead of client-side navigation."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "RouteContext": {
   "sourceUrl": "https://nextjs.org/docs/app/api-reference/file-conventions/route",
   "sourceTitle": "File-system conventions: route.js",
@@ -5437,6 +7639,82 @@
    "Do not import RouteContext; it becomes a global helper after type generation."
   ],
   "checkedAt": "2026-10-15"
+ },
+ "RouteHandlerContext": {
+  "sourceUrl": "https://nextjs.org/docs/app/api-reference/file-conventions/route",
+  "sourceTitle": "route.js",
+  "summary": "Route Handlers let you define custom HTTP request handlers in the Next.js app directory. Put them in route.js or route.ts files and export functions for supported HTTP methods.",
+  "explanation": "Create a file named route.ts or route.js in the app directory and export a function for each HTTP method you want to handle. The function receives a Web Request and returns a Web Response. Route files can be placed in nested app directories, but they cannot share a route segment with page.js.",
+  "syntax": "export async function GET(request: Request) {}",
+  "parameters": [
+   {
+    "name": "request",
+    "type": "Request",
+    "description": "The incoming Web Request object. The page shows it as an optional handler parameter in its method examples."
+   }
+  ],
+  "returns": "A Web Response, such as the result of Response.json().",
+  "example": {
+   "title": "A basic GET handler",
+   "code": "export async function GET() {\n  return Response.json({ message: \"Hello World\" })\n}",
+   "language": "typescript",
+   "explanation": "This handler returns a JSON response when the route receives a GET request."
+  },
+  "useCases": [
+   {
+    "title": "Read data",
+    "scenario": "Create a JSON endpoint for a GET request."
+   },
+   {
+    "title": "Write data",
+    "scenario": "Accept submitted data with a POST handler."
+   },
+   {
+    "title": "Handle multiple methods",
+    "scenario": "Expose several HTTP methods from one route.ts file."
+   }
+  ],
+  "related": [
+   "Request",
+   "Response",
+   "NextRequest",
+   "NextResponse",
+   "API Routes",
+   "page.js",
+   "layout.js"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is a Route Handler?",
+    "answer": "A Route Handler is a custom request handler in the app directory. It uses the Web Request and Response APIs and is defined in a route.js or route.ts file.",
+    "followUp": "Where can it be placed? It can be nested anywhere under app, subject to the rule that it cannot share a segment with page.js."
+   },
+   {
+    "question": "How do you define supported methods?",
+    "answer": "Export a function named for the HTTP method, such as GET, POST, PUT, PATCH, DELETE, HEAD, or OPTIONS. The function can receive a Request and return a Response.",
+    "followUp": "What happens for an unsupported method? Next.js returns 405 Method Not Allowed."
+   },
+   {
+    "question": "How do Route Handlers relate to API Routes?",
+    "answer": "Route Handlers are available only in the app directory. They provide the App Router equivalent of API Routes, so an application does not need to use both systems together.",
+    "followUp": "What is one file-system restriction? A route.js or route.ts file cannot exist at the same route segment level as page.js."
+   }
+  ],
+  "keyPoints": [
+   "Use Route Handlers only under the app directory.",
+   "The file name is route.js or route.ts.",
+   "You can put handlers in nested app directories.",
+   "The supported methods are GET, POST, PUT, PATCH, DELETE, HEAD, and OPTIONS.",
+   "Handlers use the standard Web Request and Response interfaces.",
+   "A handler can return a JSON response with Response.json."
+  ],
+  "gotchas": [
+   "Do not place route.js or route.ts beside page.js in the same route segment.",
+   "A method without a supported handler returns a 405 response.",
+   "Next.js creates an OPTIONS response automatically when you do not export one."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "runtime": {
   "sourceUrl": "https://nextjs.org/docs/app/api-reference/file-conventions/route-segment-config/runtime",
@@ -5606,6 +7884,72 @@
    "Use `beforeInteractive` only when a script must run before Next.js code and hydration."
   ],
   "checkedAt": "2026-10-15"
+ },
+ "ServerRuntime": {
+  "sourceUrl": "https://nextjs.org/docs/app/guides/upgrading/version-16",
+  "sourceTitle": "How to upgrade to version 16",
+  "summary": "Next.js 16 removes serverRuntimeConfig and publicRuntimeConfig. Use environment variables instead, with NEXT_PUBLIC_ for values exposed to Client Components.",
+  "explanation": "Next.js 16 removes serverRuntimeConfig and publicRuntimeConfig. Use process.env for server-only values, and use the NEXT_PUBLIC_ prefix for values that Client Components can read. Call connection() before reading values that must be loaded at request time instead of build time.",
+  "syntax": "process.env.NAME; await connection()",
+  "parameters": [],
+  "returns": "An application configuration value is read from process.env and can be rendered or used by server code.",
+  "example": {
+   "title": "Read runtime configuration",
+   "code": "import { connection } from 'next/server'\n\nexport default async function Page() {\n  await connection()\n  const config = process.env.RUNTIME_CONFIG\n  return <p>{config}</p>\n}",
+   "language": "tsx",
+   "explanation": "This page reads an environment variable at request time after calling connection()."
+  },
+  "useCases": [
+   {
+    "title": "Read private server configuration",
+    "scenario": "A database URL or secret is needed during server rendering or server-side data access."
+   },
+   {
+    "title": "Read client configuration",
+    "scenario": "A public API path or other non-secret setting must be available in browser code."
+   },
+   {
+    "title": "Read request-time configuration",
+    "scenario": "The deployment supplies configuration that must be read for each request."
+   }
+  ],
+  "related": [
+   "environment variables",
+   "connection()",
+   "Server Components",
+   "Client Components",
+   "taint API"
+  ],
+  "since": "16",
+  "interview": [
+   {
+    "question": "What replaces runtime configuration in Next.js 16?",
+    "answer": "Next.js 16 removes serverRuntimeConfig and publicRuntimeConfig. Server code should read private values from process.env, while client-readable values should use NEXT_PUBLIC_ variables.",
+    "followUp": "How can a value be loaded at request time? Call connection() before reading process.env so the value is not bundled at build time."
+   },
+   {
+    "question": "How should server-only environment variables be used?",
+    "answer": "A Server Component can read a private variable such as process.env.DATABASE_URL and use it for server-side work. The value must not be passed to a Client Component.",
+    "followUp": "How can accidental disclosure be reduced? Use the taint API to help prevent sensitive server values from crossing into client code."
+   },
+   {
+    "question": "How do you expose an environment variable to a Client Component?",
+    "answer": "Prefix a client-accessible variable with NEXT_PUBLIC_, then read it through process.env in a Client Component. Values without that prefix are not intended for client access.",
+    "followUp": "What changes when the client value must be request-time configuration? Use the documented runtime pattern with connection() before reading the environment variable."
+   }
+  ],
+  "keyPoints": [
+   "Replace both runtime configuration objects with environment variables.",
+   "Read private settings directly from process.env in Server Components.",
+   "Use NEXT_PUBLIC_ for values that a Client Component needs to read.",
+   "Use connection() first when an environment variable must be read at runtime."
+  ],
+  "gotchas": [
+   "Do not pass private environment values to Client Components. Use the taint API to help prevent accidental exposure.",
+   "Call connection() before reading an environment variable when its value must be read at runtime.",
+   "Only variables with the NEXT_PUBLIC_ prefix are intended for client access."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "sitemap": {
   "sourceUrl": "https://nextjs.org/docs/app/api-reference/file-conventions/metadata/sitemap",
@@ -5811,6 +8155,76 @@
    "Use one of the documented extensions and place the file in the intended route segment."
   ],
   "checkedAt": "2026-10-15"
+ },
+ "typedRoutes": {
+  "sourceUrl": "https://nextjs.org/docs/app/api-reference/config/next-config-js/typedRoutes",
+  "sourceTitle": "typedRoutes | Next.js",
+  "summary": "`typedRoutes` enables compile-time checking for statically known App Router links. It is a stable Next.js configuration option and requires TypeScript.",
+  "explanation": "Enable typed routes in Next.js configuration to make statically known route paths type-safe. Next.js generates route types from the application's file structure, so invalid Link destinations can fail during TypeScript checking. The feature supports TypeScript projects and the App Router.",
+  "syntax": "const nextConfig = { typedRoutes: true }",
+  "parameters": [
+   {
+    "name": "typedRoutes",
+    "type": "boolean",
+    "description": "Enables statically typed links for the App Router."
+   }
+  ],
+  "returns": "",
+  "example": {
+   "title": "A typed route link",
+   "code": "import Link from 'next/link'\n\nexport default function Home() {\n  return <Link href=\"/blog/example-slug?ui=dark\">Read post</Link>\n}",
+   "language": "tsx",
+   "explanation": "This link uses a route checked by TypeScript when typed routes are enabled."
+  },
+  "useCases": [
+   {
+    "title": "Check internal links",
+    "scenario": "Catch an invalid `Link` destination during TypeScript checking."
+   },
+   {
+    "title": "Reflect application routes",
+    "scenario": "Keep route paths aligned with files in an App Router project."
+   },
+   {
+    "title": "Support both build systems",
+    "scenario": "Use route checking in projects built with Webpack or Turbopack."
+   }
+  ],
+  "related": [
+   "experimental.typedRoutes",
+   "App Router",
+   "TypeScript",
+   "Link"
+  ],
+  "since": "15.5",
+  "interview": [
+   {
+    "question": "How do you enable typed routes, and what does it check?",
+    "answer": "Set `typedRoutes: true` in `next.config.js` or `next.config.ts`. Next.js then generates route types from the file structure and checks statically typed links.",
+    "followUp": "Does it work with Turbopack? Yes. Next.js 15.5 adds a typed-route implementation that works with both Webpack and Turbopack builds."
+   },
+   {
+    "question": "Where does the configuration option belong?",
+    "answer": "The option is stable in the current documentation. It belongs at the top level of the Next.js configuration object.",
+    "followUp": "What should an older project change? Move `experimental.typedRoutes` to `typedRoutes` and remove the experimental wrapper."
+   },
+   {
+    "question": "What are the main limits of typed routes?",
+    "answer": "Typed routes use the App Router and TypeScript. They provide compile-time checking for statically typed links, helping detect invalid route paths before deployment.",
+    "followUp": "Does the option replace runtime navigation checks? No. It adds compile-time route checking; it does not make arbitrary runtime strings statically known."
+   }
+  ],
+  "keyPoints": [
+   "The option checks statically known link paths at compile time.",
+   "Your project must use TypeScript to use typed routes.",
+   "The current option is stable rather than experimental.",
+   "Generated route types reflect the routes in your application files."
+  ],
+  "gotchas": [
+   "Typed routes need a TypeScript project.",
+   "Use the stable top-level option, not the old experimental setting."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "unauthorized": {
   "sourceUrl": "https://nextjs.org/docs/app/api-reference/functions/unauthorized",
@@ -6026,6 +8440,77 @@
   ],
   "checkedAt": "2026-10-15"
  },
+ "unstable_cacheTag": {
+  "sourceUrl": "https://nextjs.org/docs/app/api-reference/functions/cacheTag",
+  "sourceTitle": "cacheTag",
+  "summary": "`cacheTag` adds tags to cached data so you can invalidate selected cache entries later. It requires Cache Components to be enabled and is used inside a `use cache` scope.",
+  "explanation": "`cacheTag` labels data stored by the Next.js cache. Later, a Server Function or Route Handler can invalidate entries that use a selected tag.",
+  "syntax": "cacheTag(...tags: string[])",
+  "parameters": [
+   {
+    "name": "tags",
+    "type": "string[]",
+    "description": "One or more string labels attached to the cached data."
+   }
+  ],
+  "returns": "The page does not specify a return value.",
+  "example": {
+   "title": "Tag cached data",
+   "code": "import { cacheTag } from 'next/cache'\n\nexport async function getData() {\n  'use cache'\n  cacheTag('products')\n  const response = await fetch('https://api.example.com/products')\n  return response.json()\n}",
+   "language": "typescript",
+   "explanation": "This cached function labels its result with the products tag."
+  },
+  "useCases": [
+   {
+    "title": "Group related cache entries",
+    "scenario": "Several cached operations share a data group and should be invalidated together."
+   },
+   {
+    "title": "Target one data set",
+    "scenario": "A data update affects only entries associated with a specific label."
+   },
+   {
+    "title": "Invalidate after an update",
+    "scenario": "A Server Function or Route Handler needs to refresh cached data after a mutation."
+   }
+  ],
+  "related": [
+   "cacheComponents",
+   "use cache",
+   "revalidateTag",
+   "updateTag",
+   "cacheLife"
+  ],
+  "since": "16.0.0",
+  "interview": [
+   {
+    "question": "What does `cacheTag` do?",
+    "answer": "`cacheTag` assigns one or more string labels to cached data. An invalidation function can then target entries with a selected label.",
+    "followUp": "How would you invalidate the label? Use `revalidateTag` with the tag, such as `revalidateTag('products', 'max')`."
+   },
+   {
+    "question": "What are the requirements for using `cacheTag`?",
+    "answer": "The function accepts one or more strings. The cached operation must use the `use cache` directive, and `cacheComponents` must be enabled.",
+    "followUp": "Why use several tags? They let one cached result belong to multiple invalidation groups, so different updates can target it."
+   },
+   {
+    "question": "How is tagged data invalidated?",
+    "answer": "`cacheTag` adds labels; it does not itself purge cached data. A Server Function or Route Handler can call an invalidation API later.",
+    "followUp": "Which API supports read-your-own-writes behavior? `updateTag` is intended for user-triggered mutations where the next read should use fresh data."
+   }
+  ],
+  "keyPoints": [
+   "Use `cacheTag` to mark cached data for later, selective invalidation.",
+   "Pass one or more string tags to the function.",
+   "Invalidate matching entries from a Server Function or Route Handler.",
+   "Use `revalidateTag` when a particular tag needs invalidation."
+  ],
+  "gotchas": [
+   "Enable `cacheComponents` before calling `cacheTag`.",
+   "In Next.js 16, import `cacheTag`, not `unstable_cacheTag`."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "unstable_noStore": {
   "sourceUrl": "https://nextjs.org/docs/app/api-reference/functions/unstable_noStore",
   "sourceTitle": "unstable_noStore",
@@ -6160,6 +8645,78 @@
    "Perform cleanup before calling it or in finally, because a framework exception may be rethrown immediately."
   ],
   "checkedAt": "2026-10-15"
+ },
+ "updateTag": {
+  "sourceUrl": "https://nextjs.org/docs/app/api-reference/functions/updateTag",
+  "sourceTitle": "updateTag | Next.js",
+  "summary": "updateTag expires cached data for a specific tag from a Server Action. The next request waits for fresh data, which helps users see their own writes immediately.",
+  "explanation": "Call updateTag after a mutation in a Server Action to expire cached data linked to a tag. The next request fetches fresh data instead of serving an expired cached result.",
+  "syntax": "updateTag(tag: string): void;",
+  "parameters": [
+   {
+    "name": "tag",
+    "type": "string",
+    "description": "A case-sensitive cache tag assigned to the data to invalidate. It must be 256 characters or fewer."
+   }
+  ],
+  "returns": "void",
+  "example": {
+   "title": "Expire post caches after a mutation",
+   "code": "'use server'\n\nimport { updateTag } from 'next/cache'\n\nexport async function createPost(title: string) {\n  const post = await db.post.create({ data: { title } })\n  updateTag('posts')\n  updateTag(`post-${post.id}`)\n  return post\n}",
+   "language": "typescript",
+   "explanation": "This Server Action creates a post, then expires the list and detail caches so later reads use current data."
+  },
+  "useCases": [
+   {
+    "title": "Read-your-own-writes",
+    "scenario": "A Server Action creates, edits, or deletes data and its result must appear immediately."
+   },
+   {
+    "title": "Invalidate related views",
+    "scenario": "A page uses tagged cached data for both a collection and one item."
+   },
+   {
+    "title": "Fresh post-mutation navigation",
+    "scenario": "A form mutation redirects to a page that should load the new record."
+   }
+  ],
+  "related": [
+   "revalidateTag",
+   "revalidatePath",
+   "cacheTag"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does updateTag do?",
+    "answer": "updateTag expires cached data for a named tag from a Server Action. The next request waits for fresh data, so the user can see a recent write instead of stale content.",
+    "followUp": "How would you invalidate a tag in a webhook? Use revalidateTag with a cache profile, such as 'max', because updateTag is limited to Server Actions."
+   },
+   {
+    "question": "What are updateTag's argument and return value?",
+    "answer": "It accepts one string tag and returns void. The tag must identify cached data, and its length cannot exceed 256 characters.",
+    "followUp": "How can data receive a tag? Add next.tags to a cached fetch, or call cacheTag inside a function or component using the 'use cache' directive."
+   },
+   {
+    "question": "When should updateTag be used instead of revalidateTag?",
+    "answer": "Use updateTag after a write when the same user must immediately see the changed data. Use revalidateTag when stale-while-revalidate behavior is acceptable or the caller is outside a Server Action.",
+    "followUp": "Why might revalidateTag be better for a public catalog? Serving the old result while refreshing can avoid making readers wait for the new result."
+   }
+  ],
+  "keyPoints": [
+   "It invalidates cached data on demand by targeting one cache tag.",
+   "It fits mutations where the person who made a change should see that change right away.",
+   "The following request does not receive the old cached result while fresh data is loaded.",
+   "A cached fetch can attach tags through its next.tags option.",
+   "Cached functions or components can attach tags with cacheTag and use cache.",
+   "The function has no return value."
+  ],
+  "gotchas": [
+   "Do not call it in a Route Handler, Client Component, or another context. Use revalidateTag in those contexts.",
+   "Keep tags at 256 characters or fewer, and use the exact same letter casing when assigning and updating them.",
+   "Updating a tag has an effect only when cached data already uses that tag."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "use cache": {
   "sourceUrl": "https://nextjs.org/docs/app/api-reference/directives/use-cache",

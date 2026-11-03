@@ -74,6 +74,102 @@
   ],
   "checkedAt": "2026-10-16"
  },
+ "__enter__": {
+  "sourceUrl": "https://docs.python.org/3/library/contextlib.html",
+  "sourceTitle": "contextlib — Utilities for with-statement contexts — Python 3.15.2 documentation",
+  "summary": "Python's contextlib module provides helpers for building and using with-statement context managers. It supports cleanup, optional resources, exception suppression, output redirection, directory changes, and dynamic cleanup stacks.",
+  "explanation": "The contextlib module provides tools for creating and using context managers. A context manager controls setup before a with block and cleanup after it, including cleanup when the block raises an exception.",
+  "syntax": "from contextlib import contextmanager, nullcontext, suppress, ExitStack",
+  "parameters": [
+   {
+    "name": "exceptions",
+    "type": "exception types",
+    "description": "Exception classes to suppress inside the with block."
+   },
+   {
+    "name": "enter_result",
+    "type": "object",
+    "description": "Value returned by nullcontext.__enter__()."
+   },
+   {
+    "name": "new_target",
+    "type": "object",
+    "description": "File-like object that temporarily replaces sys.stdout."
+   },
+   {
+    "name": "path",
+    "type": "path-like object",
+    "description": "Path used as the temporary current working directory."
+   }
+  ],
+  "returns": "The module provides context-manager classes, decorators, functions, and stack helpers. Specific helpers return context managers or perform context-stack operations.",
+  "example": {
+   "title": "Define a context manager with a generator",
+   "code": "from contextlib import contextmanager\n\n@contextmanager\ndef managed_resource():\n    resource = acquire_resource()\n    try:\n        yield resource\n    finally:\n        release_resource(resource)\n\nwith managed_resource() as resource:\n    use(resource)",
+   "language": "python",
+   "explanation": "The generator acquires a resource, yields it to the with block, and releases it afterward, including when the block raises an exception."
+  },
+  "useCases": [
+   {
+    "title": "Create a generator-based context manager",
+    "scenario": "A resource needs setup and guaranteed cleanup but has no context-manager class."
+   },
+   {
+    "title": "Handle optional resources",
+    "scenario": "A function accepts either a caller-owned resource or one it must open."
+   },
+   {
+    "title": "Manage dynamic resources",
+    "scenario": "Several resources are chosen at runtime and must be cleaned up safely."
+   },
+   {
+    "title": "Redirect standard output",
+    "scenario": "A utility script needs to capture or redirect output temporarily."
+   }
+  ],
+  "related": [
+   "AbstractContextManager",
+   "AbstractAsyncContextManager",
+   "contextmanager",
+   "aclosing",
+   "nullcontext",
+   "suppress",
+   "redirect_stdout",
+   "redirect_stderr"
+  ],
+  "since": "3.2",
+  "interview": [
+   {
+    "question": "How does contextmanager work?",
+    "answer": "The decorator turns a generator function into a context manager factory. Code before yield runs on entry, the yielded value becomes the as target, and code in finally runs on exit.",
+    "followUp": "What must the generator yield? It must yield exactly one value; yielding zero or multiple values is invalid for this use."
+   },
+   {
+    "question": "When would you use nullcontext?",
+    "answer": "nullcontext returns a value from __enter__ and performs no other work. It is useful when a function accepts either an owned resource or one supplied by its caller.",
+    "followUp": "Can it be used asynchronously? Yes. Python 3.10 added support for using nullcontext with async with."
+   },
+   {
+    "question": "Why use ExitStack?",
+    "answer": "ExitStack stores cleanup callbacks and runs them in reverse registration order when closed. enter_context enters a context manager and adds its exit method to the stack.",
+    "followUp": "What happens if a later acquisition fails? The already registered callbacks still unwind when the ExitStack context exits."
+   }
+  ],
+  "keyPoints": [
+   "contextlib contains reusable helpers for with-statement resource management.",
+   "A contextmanager generator yields one value for the with statement's as target.",
+   "nullcontext supplies an optional context manager without changing the resource.",
+   "suppress catches only the exception types passed to it inside the with block.",
+   "ExitStack unwinds registered cleanup actions in last-in, first-out order."
+  ],
+  "gotchas": [
+   "A contextmanager function must return a generator iterator.",
+   "Use suppress only for errors that are known to be safe to ignore.",
+   "redirect_stdout changes global state, so avoid it in libraries and most threaded applications.",
+   "chdir is not safe for most threaded or asynchronous code."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "__exit__": {
   "sourceUrl": "https://docs.python.org/3/reference/compound_stmts.html",
   "sourceTitle": "8.5. The with statement",
@@ -154,6 +250,88 @@
    "A truthy return hides the active exception, so suppress only errors the context manager can deliberately handle."
   ],
   "checkedAt": "2026-10-16"
+ },
+ "__getitem__": {
+  "sourceUrl": "https://docs.python.org/3/library/operator.html",
+  "sourceTitle": "operator — Standard operators as functions — Python 3.15.2 documentation",
+  "summary": "`operator.getitem(a, b)` performs the same lookup as `a[b]`. It returns the value selected by an index, key, or slice.",
+  "explanation": "`operator.getitem(a, b)` performs the same lookup as `a[b]`. It is useful when a lookup must be supplied as a function, such as to `map()` or another function-taking API.",
+  "syntax": "operator.getitem(a, b)",
+  "parameters": [
+   {
+    "name": "a",
+    "type": "object",
+    "description": "The object to index or query."
+   },
+   {
+    "name": "b",
+    "type": "object",
+    "description": "The index, key, or slice passed to the object."
+   }
+  ],
+  "returns": "The value returned by `a.__getitem__(b)`, equivalent to `a[b]`.",
+  "example": {
+   "title": "Read an item with getitem",
+   "code": "from operator import getitem\n\ncolors = [\"red\", \"blue\", \"green\"]\nfirst = getitem(colors, 0)\nprint(first)  # red",
+   "language": "python",
+   "explanation": "`getitem()` reads an item by passing the object and subscript to its `__getitem__()` method."
+  },
+  "useCases": [
+   {
+    "title": "Use a lookup as a callback",
+    "scenario": "Pass an item lookup as a function to `map()`, `sorted()`, or another function-taking API."
+   },
+   {
+    "title": "Read a sequence item",
+    "scenario": "Read a value from a list, tuple, string, or other sequence by index."
+   },
+   {
+    "title": "Read a mapping value",
+    "scenario": "Read a value from a dictionary or custom mapping by key."
+   },
+   {
+    "title": "Read a slice",
+    "scenario": "Read a range from a sequence by passing a `slice` object."
+   }
+  ],
+  "related": [
+   "operator.itemgetter",
+   "operator.setitem",
+   "operator.delitem",
+   "object.__getitem__",
+   "object.__setitem__",
+   "object.__delitem__"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does `operator.getitem()` do?",
+    "answer": "`operator.getitem(a, b)` returns the value obtained from `a[b]`. It calls the operand's `__getitem__()` method.",
+    "followUp": "What happens for a custom object? Its `__getitem__()` method receives `b` as the subscript and decides what value or exception to return."
+   },
+   {
+    "question": "What are the arguments to `getitem()`?",
+    "answer": "The first argument is the object being indexed. The second argument is the index, key, or slice passed to that object.",
+    "followUp": "Can the second argument be a slice? Yes. For example, use `slice(1, 3)` to represent the slice `1:3`."
+   },
+   {
+    "question": "How does item lookup relate to subscription?",
+    "answer": "Subscription can read, set, or delete items. Reading calls `__getitem__()`, assignment calls `__setitem__()`, and deletion calls `__delitem__()`; `operator.getitem()` performs only the read operation.",
+    "followUp": "How does a class subscription differ? When the primary is a class, `__class_getitem__()` may be called instead of `__getitem__()`."
+   }
+  ],
+  "keyPoints": [
+   "The function takes an object and a subscript.",
+   "For objects, item lookup is implemented through `__getitem__()`.",
+   "Sequences normally accept integer indexes or slice objects.",
+   "Mappings use the subscript as a key."
+  ],
+  "gotchas": [
+   "The subscript must have a type the object accepts. Otherwise, `__getitem__()` should raise `TypeError`.",
+   "A bad value should raise a lookup error, such as `IndexError` for a sequence or `KeyError` for a mapping.",
+   "Slicing also uses `__getitem__()`, so `getitem(sequence, slice(...))` can read a range."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "__init__": {
   "sourceUrl": "https://docs.python.org/3/tutorial/classes.html",
@@ -372,47 +550,80 @@
   "checkedAt": "2026-10-16"
  },
  "__next__": {
-  "sourceUrl": "https://docs.python.org/3/tutorial/classes.html",
-  "sourceTitle": "9. Classes — Python 3.15.0 documentation",
-  "summary": "__next__() is the iterator protocol method that returns the next item. It must raise StopIteration when the iterator is exhausted.",
-  "explanation": "Define __next__ without arguments to produce the next value from an iterator. Once no values remain, it must raise StopIteration; iteration constructs use that exception to detect completion.",
-  "syntax": "object.__next__()",
-  "parameters": [],
-  "returns": "The next element of the iterator; raises StopIteration when no elements remain.",
+  "sourceUrl": "https://docs.python.org/3/builtins/functions.html",
+  "sourceTitle": "Built-in Functions — Python 3.15.2 documentation",
+  "summary": "next() returns the next item from an iterator. It can return a default value instead of raising StopIteration when the iterator is exhausted.",
+  "explanation": "__next__ is the method that supplies the next item from an iterator. Call the built-in next() function to invoke it. When no item remains, it raises StopIteration unless next() receives a default value.",
+  "syntax": "next(iterator, /)\nnext(iterator, default, /)",
+  "parameters": [
+   {
+    "name": "iterator",
+    "type": "iterator",
+    "description": "An iterator whose __next__() method supplies the next item."
+   },
+   {
+    "name": "default",
+    "type": "object",
+    "description": "Optional value returned when the iterator has no more items."
+   }
+  ],
+  "returns": "The next item from the iterator, or the default value when supplied and the iterator is exhausted.",
   "example": {
-   "title": "Implementing an iterator",
-   "code": "class Countdown:\n    def __init__(self, start):\n        self.current = start\n\n    def __iter__(self):\n        return self\n\n    def __next__(self):\n        if self.current == 0:\n            raise StopIteration\n        self.current -= 1\n        return self.current + 1\n\nfor value in Countdown(3):\n    print(value)",
+   "title": "Read items from an iterator",
+   "code": "it = iter(\"abc\")\n\nprint(next(it))\nprint(next(it))\nprint(next(it))\nprint(next(it, \"done\"))",
    "language": "python",
-   "explanation": "This iterator returns successive values and signals completion by raising StopIteration."
+   "explanation": "The iterator returns one character at a time. After the last character, the default value is returned."
   },
   "useCases": [
    {
-    "title": "Custom iterators",
-    "scenario": "Create a custom object consumed by for loops."
+    "title": "Manual iteration",
+    "scenario": "Process iterator items one at a time without converting the whole iterable to a collection."
    },
    {
-    "title": "Streaming data",
-    "scenario": "Generate values incrementally without materializing a collection."
+    "title": "Safe first-item lookup",
+    "scenario": "Read an optional first item while handling an empty iterator with a fallback."
    },
    {
-    "title": "Stateful iteration",
-    "scenario": "Control stateful traversal through a sequence or resource."
+    "title": "Iterator implementations",
+    "scenario": "Build custom iterable classes that follow Python's iterator protocol."
    }
   ],
   "related": [
-   "__iter__",
-   "next()",
+   "iter()",
    "StopIteration",
-   "iter()"
+   "__iter__()",
+   "__next__()",
+   "for statement"
   ],
   "since": "",
-  "keyPoints": [
-   "Call next(iterator) as the usual built-in interface for invoking __next__().",
-   "An iterator exposes values incrementally rather than producing the complete sequence at once.",
-   "A class implementing both methods can return itself from __iter__()."
+  "interview": [
+   {
+    "question": "How does next() work?",
+    "answer": "An iterator provides a __next__() method. Calling next(iterator) calls that method and returns its next item; exhaustion raises StopIteration unless a default is supplied.",
+    "followUp": "What does a for loop do with this protocol? It calls iter() to get an iterator and stops when __next__() raises StopIteration."
+   },
+   {
+    "question": "What is the difference between next(iterator) and next(iterator, default)?",
+    "answer": "The one-argument form returns the next item and raises StopIteration when the iterator has no more items. The two-argument form returns the supplied default after exhaustion.",
+    "followUp": "Why use the default form? It lets code handle normal exhaustion without a try/except block."
+   },
+   {
+    "question": "How can a class implement the iterator protocol?",
+    "answer": "A class can support iteration by defining __iter__() to return an object with __next__(). If the class also defines __next__(), __iter__() can return self.",
+    "followUp": "What must __next__() raise at the end? It must raise StopIteration so iteration constructs know to stop."
+   }
   ],
-  "gotchas": [],
-  "checkedAt": "2026-10-15"
+  "keyPoints": [
+   "next() retrieves one item by calling the iterator's __next__() method.",
+   "A default value prevents an exception when the iterator is exhausted.",
+   "Without a default value, exhaustion is reported with StopIteration.",
+   "A for loop first obtains an iterator from the object with iter().",
+   "iter() returns an object whose __next__() method produces items."
+  ],
+  "gotchas": [
+   "Without a default, calling next() after exhaustion raises StopIteration. With a default, that value is returned instead."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "__repr__": {
   "sourceUrl": "https://docs.python.org/3/reference/datamodel.html",
@@ -636,6 +847,91 @@
   ],
   "checkedAt": "2026-10-16"
  },
+ "abc": {
+  "sourceUrl": "https://docs.python.org/3/library/abc.html",
+  "sourceTitle": "abc — Abstract Base Classes — Python 3.15.2 documentation",
+  "summary": "Python's abc module lets you define abstract base classes. They describe required methods and stop incomplete subclasses from being instantiated.",
+  "explanation": "An abstract base class defines required methods for subclasses. Use ABC as a base class and abstractmethod for methods that subclasses must implement; Python prevents creating an incomplete subclass.",
+  "syntax": "class MyABC(ABC):\n    @abstractmethod\n    def method(self):\n        ...",
+  "parameters": [
+   {
+    "name": "subclass",
+    "type": "class",
+    "description": "Class to mark as a virtual subclass of an ABC."
+   },
+   {
+    "name": "cls",
+    "type": "class",
+    "description": "Class to recalculate after abstract methods change."
+   }
+  ],
+  "returns": "register() returns the registered subclass. update_abstractmethods() returns cls. Abstract-base-class checks return Boolean results through issubclass() and isinstance().",
+  "example": {
+   "title": "Implement an abstract base class",
+   "code": "from abc import ABC, abstractmethod\n\nclass Storage(ABC):\n    @abstractmethod\n    def save(self, value):\n        \"\"\"Store a value.\"\"\"\n\nclass MemoryStorage(Storage):\n    def __init__(self):\n        self.values = []\n\n    def save(self, value):\n        self.values.append(value)\n\nstorage = MemoryStorage()\nstorage.save(\"item\")\nprint(storage.values)",
+   "language": "python",
+   "explanation": "The subclass implements the required method, so it can be created and used."
+  },
+  "useCases": [
+   {
+    "title": "Enforce subclass methods",
+    "scenario": "Define a shared interface for several implementations."
+   },
+   {
+    "title": "Test interfaces with collections.abc",
+    "scenario": "Check whether an object supplies a standard interface."
+   },
+   {
+    "title": "Register a virtual subclass",
+    "scenario": "Treat an unrelated class as implementing an interface."
+   },
+   {
+    "title": "Use ABC mixins",
+    "scenario": "Provide common behavior while requiring a small set of methods."
+   }
+  ],
+  "related": [
+   "ABCMeta",
+   "abstractmethod",
+   "register()",
+   "__subclasshook__()",
+   "update_abstractmethods()",
+   "collections.abc",
+   "Iterable",
+   "Sequence"
+  ],
+  "since": "3.4",
+  "interview": [
+   {
+    "question": "What is abc.ABC used for?",
+    "answer": "ABC is a helper class whose metaclass is ABCMeta. Subclassing ABC creates an abstract base class without writing the metaclass explicitly.",
+    "followUp": "What changes if a class uses ABCMeta directly? It can define the same kind of abstract base class with metaclass=ABCMeta."
+   },
+   {
+    "question": "How does abstractmethod affect instantiation?",
+    "answer": "An abstractmethod marks a method that must be implemented before a subclass can be instantiated. The class must use ABCMeta or inherit from ABC.",
+    "followUp": "Can an abstract method contain code? Yes. An overriding method can call that implementation through super()."
+   },
+   {
+    "question": "What is a virtual subclass?",
+    "answer": "register() marks an unrelated class as a virtual subclass. issubclass() and isinstance() then recognize it, but the registered class does not inherit implementations from the ABC.",
+    "followUp": "How can an ABC recognize classes by structure? Define __subclasshook__ as a class method and return True, False, or NotImplemented."
+   }
+  ],
+  "keyPoints": [
+   "abc provides ABCMeta and the simpler ABC helper for defining abstract base classes.",
+   "A subclass must implement every abstract method and property before it can be instantiated.",
+   "abstractmethod works only with ABCMeta or a metaclass derived from it.",
+   "Abstract methods may include an implementation that subclasses call with normal super() mechanisms.",
+   "register returns the class it registers, so it can also be used as a class decorator.",
+   "collections.abc supplies interfaces that can be checked with isinstance() or issubclass()."
+  ],
+  "gotchas": [
+   "Registering a virtual subclass does not make abstract methods required for that class.",
+   "For iterable checks, isinstance with Iterable misses objects that use only the old __getitem__ protocol; call iter instead."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "abs": {
   "sourceUrl": "https://docs.python.org/3/builtins/functions.html",
   "sourceTitle": "Built-in functions",
@@ -772,6 +1068,220 @@
    "An empty iterable produces True, so an empty validation set does not indicate that any item was checked."
   ],
   "checkedAt": "2026-10-16"
+ },
+ "Annotated": {
+  "sourceUrl": "https://docs.python.org/3/library/typing.html",
+  "sourceTitle": "typing — Support for type hints — Python 3.15.2 documentation",
+  "summary": "Annotated attaches metadata to an existing type. Type checkers can use the type, while other tools can inspect the metadata.",
+  "explanation": "Annotated adds one or more pieces of metadata to an existing type. Static type checkers can still use the underlying type, while a library can inspect the metadata at runtime. The meaning of the metadata belongs to the tool or library that reads it.",
+  "syntax": "Annotated[T, x]",
+  "parameters": [
+   {
+    "name": "T",
+    "type": "type",
+    "description": "The underlying type being annotated."
+   },
+   {
+    "name": "x",
+    "type": "object",
+    "description": "One or more metadata values for tools or libraries."
+   }
+  ],
+  "returns": "An annotated type that contains the underlying type and metadata.",
+  "example": {
+   "title": "Attach metadata to a type",
+   "code": "from typing import Annotated, get_type_hints\n\nUserId = Annotated[int, \"database identifier\"]\n\ndef load_user(user_id: UserId) -> str:\n    return f\"user {user_id}\"\n\nprint(load_user(42))\nprint(get_type_hints(load_user, include_extras=True))",
+   "language": "python",
+   "explanation": "The function runs like a normal function. A tool can read the metadata with get_type_hints(..., include_extras=True)."
+  },
+  "useCases": [
+   {
+    "title": "Validation metadata",
+    "scenario": "A validation library needs to attach a range, format, or other rule to a field."
+   },
+   {
+    "title": "Framework configuration",
+    "scenario": "A framework needs extra information while preserving normal type checking."
+   },
+   {
+    "title": "Runtime inspection",
+    "scenario": "A runtime tool reads annotations to build schemas or documentation."
+   }
+  ],
+  "related": [
+   "get_type_hints",
+   "include_extras",
+   "typing"
+  ],
+  "since": "3.9",
+  "interview": [
+   {
+    "question": "What does Annotated do?",
+    "answer": "Annotated[T, metadata] keeps T as the type and attaches metadata for tools or libraries. A type checker may use T while another tool interprets the metadata.",
+    "followUp": "How can runtime code read the metadata? Use get_type_hints with include_extras=True; without that option, Annotated metadata is removed from the returned hints."
+   },
+   {
+    "question": "What is the required form of Annotated?",
+    "answer": "It accepts a valid type followed by one or more metadata values. For example, Annotated[int, \"id\"] describes an int with extra context.",
+    "followUp": "What happens with nested annotations? Nested Annotated types are flattened, with inner metadata placed first."
+   },
+   {
+    "question": "Who interprets Annotated metadata?",
+    "answer": "Metadata is not given a universal meaning by Python. The library or tool that consumes the annotation decides how to interpret it, and unsupported metadata should be ignored.",
+    "followUp": "Can metadata be repeated? Yes. Repeated metadata is retained, and it can affect equality comparisons."
+   }
+  ],
+  "keyPoints": [
+   "Annotated decorates an existing type with context-specific metadata.",
+   "Metadata can support static analysis or runtime inspection.",
+   "The first item is always the underlying type.",
+   "You can attach several metadata values in one annotation.",
+   "Nested forms become one Annotated type, with inner metadata first."
+  ],
+  "gotchas": [
+   "You must provide the base type and at least one metadata value.",
+   "Tools that do not understand the metadata should treat the annotation as its underlying type.",
+   "Changing the metadata order can make two Annotated types unequal."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "any": {
+  "sourceUrl": "https://docs.python.org/3/library/functions.html?highlight=int",
+  "sourceTitle": "Built-in functions — Python 3.15.2 documentation",
+  "summary": "any() returns True if at least one item in an iterable is true. It returns False when all items are false or the iterable is empty.",
+  "explanation": "any() checks items in an iterable from left to right. It returns True as soon as it finds a true item. If every item is false, or the iterable has no items, it returns False.",
+  "syntax": "any(iterable, /)",
+  "parameters": [
+   {
+    "name": "iterable",
+    "type": "iterable",
+    "description": "An iterable whose elements are tested for truth."
+   }
+  ],
+  "returns": "True if at least one element is true; otherwise False.",
+  "example": {
+   "title": "Check whether any item is true",
+   "code": "values = [0, 1, 2]\nprint(any(values))\nprint(any([0, \"\", None]))",
+   "language": "python",
+   "explanation": "The first call finds 1 and returns True. The second call finds no true value and returns False."
+  },
+  "useCases": [
+   {
+    "title": "Find one matching value",
+    "scenario": "Check whether a list contains at least one enabled, matching, or nonzero value."
+   },
+   {
+    "title": "Short-circuit an iterator",
+    "scenario": "Test a generator without first building a list."
+   },
+   {
+    "title": "Check alternative conditions",
+    "scenario": "Validate input when one acceptable condition is enough."
+   }
+  ],
+  "related": [
+   "all()",
+   "iter()",
+   "bool()"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does any() return?",
+    "answer": "any() returns True when at least one item in the iterable is true. It returns False when all items are false or when the iterable is empty.",
+    "followUp": "How does any() avoid unnecessary work? It stops checking when it finds the first true item."
+   },
+   {
+    "question": "What can be passed to any()?",
+    "answer": "any() accepts one positional-only iterable argument. The iterable can be a list, iterator, generator, or another iterable object.",
+    "followUp": "What happens with a generator? any() consumes it until it finds a true item or reaches its end."
+   },
+   {
+    "question": "How are elements tested?",
+    "answer": "Truth testing is applied to each item. Values such as 0, an empty string, and None are false, while nonempty or nonzero values are usually true.",
+    "followUp": "Can a custom object control this result? Yes. Its __bool__() or, when absent, __len__() method can define its truth value."
+   }
+  ],
+  "keyPoints": [
+   "The result is True when at least one element passes Python's truth test.",
+   "An iterable with no elements produces False.",
+   "The function examines elements one by one instead of requiring a sequence.",
+   "The check can stop early after finding a true element."
+  ],
+  "gotchas": [
+   "An empty iterable returns False because it has no true elements."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "Any": {
+  "sourceUrl": "https://docs.python.org/3/library/typing.html",
+  "sourceTitle": "typing — Support for type hints — Python 3.15.2 documentation",
+  "summary": "Any is an unconstrained type for static typing. Type checkers allow every type to be assigned to Any and allow Any to be assigned to every type.",
+  "explanation": "Any represents an unconstrained type. A type checker accepts every type as a value for Any, and it also accepts Any where a more specific type is expected. This can allow operations that are not checked, so it is useful when code mixes dynamic and statically typed parts.",
+  "syntax": "from typing import Any\nvalue: Any",
+  "parameters": [
+   {
+    "name": "",
+    "type": "type",
+    "description": "No parameters. Any is a type used in annotations."
+   }
+  ],
+  "returns": "Not applicable. Any is a type, not a callable.",
+  "example": {
+   "title": "Using Any",
+   "code": "from typing import Any\n\nvalue: Any = 42\ntext: str = value\nprint(text)",
+   "language": "python",
+   "explanation": "This runs because Python does not enforce the annotation at runtime. A type checker also allows assigning Any to str."
+  },
+  "useCases": [
+   {
+    "title": "Dynamic data",
+    "scenario": "A module accepts data whose shape is decided at runtime."
+   },
+   {
+    "title": "Gradual typing",
+    "scenario": "Older code has incomplete annotations."
+   },
+   {
+    "title": "Mixed code",
+    "scenario": "Typed and untyped parts of an application must work together."
+   }
+  ],
+  "related": [
+   "object",
+   "typing",
+   "TypeVar",
+   "Generic"
+  ],
+  "since": "3.5",
+  "interview": [
+   {
+    "question": "What does Any mean in Python typing?",
+    "answer": "Any is a special typing value that is compatible with every type in both directions. A type checker therefore allows any operation on an Any value, including assigning it to a more specific type.",
+    "followUp": "How does object differ? Every type is a subtype of object, but object is not a subtype of every other type, so type checkers restrict operations on object values."
+   },
+   {
+    "question": "Does assigning Any to str check or convert the value?",
+    "answer": "A value annotated as Any can be assigned to a variable with a specific annotation without a type-checking error. The runtime value is not converted or checked, so it may still be incompatible.",
+    "followUp": "What risk does this create? An incorrect runtime value can pass static checking and fail later when code uses operations expected by the specific type."
+   },
+   {
+    "question": "When might Any be useful?",
+    "answer": "Any is useful as an escape hatch when dynamically typed code must work with statically typed code. It is also the implicit type for function parameters and return values when those annotations are omitted.",
+    "followUp": "What is a safer alternative when the value should only support general operations? Use object, then narrow or validate the value before using type-specific operations."
+   }
+  ],
+  "keyPoints": [
+   "Any is a special type used for values whose type is not constrained.",
+   "Type checkers allow values of any type to flow into and out of Any.",
+   "A type checker permits arbitrary operations and method calls on an Any value.",
+   "A function with no parameter or return annotations is treated as using Any for those parts."
+  ],
+  "gotchas": [
+   "Assigning Any to a specific type does not make the value safe. A runtime value can still have the wrong type.",
+   "Any and object are different. object accepts values of every type, but it does not allow arbitrary operations or assignment to a more specific type."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "argparse": {
   "sourceUrl": "https://docs.python.org/3/library/argparse.html",
@@ -1003,6 +1513,79 @@
    "An async with statement outside a coroutine function raises SyntaxError."
   ],
   "checkedAt": "2026-10-16"
+ },
+ "asyncio": {
+  "sourceUrl": "https://docs.python.org/3/library/asyncio.html",
+  "sourceTitle": "asyncio — Asynchronous I/O — Python 3.15.2 documentation",
+  "summary": "asyncio is Python’s library for concurrent code using async and await. It is mainly suited to I/O-bound work and structured network code.",
+  "explanation": "asyncio runs concurrent Python code with async and await. It uses an event loop to run coroutines and tasks, and it also supports network I/O, subprocesses, queues, and synchronization.",
+  "syntax": "asyncio.run(coro, *, debug=None)",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Run a coroutine",
+   "code": "import asyncio\n\nasync def main():\n    print(\"Hello ...\")\n    await asyncio.sleep(1)\n    print(\"... World!\")\n\nasyncio.run(main())",
+   "language": "python",
+   "explanation": "This program runs an async function, pauses without blocking the event loop, and then prints again."
+  },
+  "useCases": [
+   {
+    "title": "Network I/O",
+    "scenario": "An application must handle many network operations while waiting efficiently."
+   },
+   {
+    "title": "Subprocesses",
+    "scenario": "A program needs to start and communicate with external commands."
+   },
+   {
+    "title": "Task queues",
+    "scenario": "Several asynchronous workers need shared work distribution."
+   },
+   {
+    "title": "Synchronization",
+    "scenario": "Concurrent tasks need coordination."
+   }
+  ],
+  "related": [
+   "asyncio.run",
+   "asyncio.create_task",
+   "asyncio.sleep",
+   "asyncio.run_coroutine_threadsafe",
+   "loop.run_in_executor",
+   "contextlib.aclosing"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is asyncio used for?",
+    "answer": "asyncio is a library for concurrent Python code that uses async and await. It is a good fit for I/O-bound work and structured network code.",
+    "followUp": "What does the event loop do? It runs callbacks and tasks in one thread, switching tasks when the current task awaits."
+   },
+   {
+    "question": "How do you run a coroutine?",
+    "answer": "A coroutine is not started just because it is called. Await it directly, or schedule it with asyncio.create_task() so the event loop can run it.",
+    "followUp": "How can code from another OS thread submit a coroutine? Use asyncio.run_coroutine_threadsafe(), which returns a concurrent.futures.Future."
+   },
+   {
+    "question": "How should blocking work be handled?",
+    "answer": "Blocking CPU-bound code should run through an executor. This keeps the event-loop thread free for other tasks and I/O operations.",
+    "followUp": "Which executor choices are documented? run_in_executor() can use a thread, interpreter, or process pool, depending on the work."
+   }
+  ],
+  "keyPoints": [
+   "Use async and await to write concurrent Python code.",
+   "The high-level APIs support network I/O and inter-process communication.",
+   "Queues can distribute work between asynchronous tasks.",
+   "Synchronization primitives help coordinate concurrent tasks.",
+   "Lower-level APIs let library authors create and manage event loops."
+  ],
+  "gotchas": [
+   "Do not run CPU-heavy or blocking work directly in the event loop. Use an executor so other tasks and I/O are not delayed.",
+   "Creating a coroutine object does not run it. Await it or schedule it with create_task(), or Python may report that it was never awaited.",
+   "Network-based logging can pause asynchronous work. Handle logs in another thread or use non-blocking I/O.",
+   "Close an asynchronous generator with aclose() or contextlib.aclosing() when iteration ends early."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "await": {
   "sourceUrl": "https://docs.python.org/3/reference/expressions.html",
@@ -1312,6 +1895,89 @@
   ],
   "checkedAt": "2026-10-16"
  },
+ "bytearray": {
+  "sourceUrl": "https://docs.python.org/3.16/builtins/functions.html",
+  "sourceTitle": "Built-in functions — Python 3.16.0a1 documentation",
+  "summary": "bytearray() creates a mutable sequence of bytes. You can build it from text, a size, a buffer, or an iterable of byte values.",
+  "explanation": "The bytearray constructor creates a mutable sequence of integers from 0 through 255. You can create one from text with an encoding, an integer size, a buffer object, or an iterable of valid integers.",
+  "syntax": "bytearray(source=b'')\nbytearray(source, encoding, errors='strict')",
+  "parameters": [
+   {
+    "name": "source",
+    "type": "object or omitted",
+    "description": "Initial data, size, or source object. It defaults to an empty bytearray."
+   },
+   {
+    "name": "encoding",
+    "type": "str",
+    "description": "Text encoding required when source is a string."
+   },
+   {
+    "name": "errors",
+    "type": "str",
+    "description": "How encoding errors are handled. It defaults to 'strict'."
+   }
+  ],
+  "returns": "A new mutable bytearray object.",
+  "example": {
+   "title": "Change a byte",
+   "code": "data = bytearray(b\"cat\")\ndata[0] = ord(\"b\")\nprint(data)",
+   "language": "python",
+   "explanation": "This creates mutable binary data, changes its first byte, and prints the result."
+  },
+  "useCases": [
+   {
+    "title": "Modify binary data",
+    "scenario": "You need to edit binary data in place."
+   },
+   {
+    "title": "Create a working buffer",
+    "scenario": "You need a zero-filled mutable buffer of a known size."
+   },
+   {
+    "title": "Encode text",
+    "scenario": "You need to convert encoded text into editable bytes."
+   }
+  ],
+  "related": [
+   "bytes",
+   "memoryview",
+   "str.encode()",
+   "Mutable Sequence Types"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is the main difference between bytearray and bytes?",
+    "answer": "bytearray is mutable, so its elements can be changed after creation. Each element is an integer from 0 through 255.",
+    "followUp": "How would you make an immutable version? Use bytes with the same constructor-style inputs; bytes is the immutable counterpart."
+   },
+   {
+    "question": "How can bytearray be initialized?",
+    "answer": "With a string source, provide an encoding, such as bytearray(\"abc\", \"utf-8\"). With an integer source, the argument specifies the length and the result is filled with null bytes.",
+    "followUp": "What happens with bytearray(3)? It creates three zero-valued bytes."
+   },
+   {
+    "question": "What sources can the constructor accept?",
+    "answer": "Without an argument, bytearray() creates an empty array. An iterable source supplies the initial byte values, while a buffer object supplies its readable binary contents.",
+    "followUp": "Can a bytearray contain a value such as 256? No. Every element must be in the range 0 through 255."
+   }
+  ],
+  "keyPoints": [
+   "bytearray creates a mutable sequence of bytes.",
+   "Each bytearray element is an integer from 0 through 255.",
+   "Calling bytearray() creates an empty bytearray.",
+   "A string source is encoded before it becomes the bytearray contents.",
+   "A buffer source is used to initialize the new bytearray.",
+   "bytearray supports the usual operations for mutable sequences."
+  ],
+  "gotchas": [
+   "An integer argument creates that many zero-valued bytes. It does not create a bytearray containing the integer itself.",
+   "A string source requires an encoding. The optional errors argument controls encoding error handling.",
+   "An iterable source must contain only integers from 0 through 255."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "bytes": {
   "sourceUrl": "https://docs.python.org/3/builtins/stdtypes.html",
   "sourceTitle": "Built-in Types",
@@ -1398,55 +2064,69 @@
   "checkedAt": "2026-10-16"
  },
  "callable": {
-  "sourceUrl": "https://docs.python.org/3/library/functions.html",
-  "sourceTitle": "Built-in functions",
-  "summary": "Tests whether an object appears callable. Classes, functions, and instances with __call__() can return True, but a True result does not guarantee that invocation will succeed.",
-  "explanation": "callable() tests whether an object appears usable with call syntax. Functions and classes qualify, as do instances whose class defines __call__; a positive result does not guarantee that invoking the object will succeed.",
+  "sourceUrl": "https://docs.python.org/3/library/functions.html?highlight=int",
+  "sourceTitle": "Built-in functions — Python 3.15.2 documentation",
+  "summary": "callable() checks whether an object appears callable. It returns True for classes and for instances whose class defines __call__().",
+  "explanation": "callable() checks whether an object appears to support calls. Classes are callable, and an instance is callable when its class defines __call__(). A true result is only a possibility: the later call can still fail.",
   "syntax": "callable(object, /)",
   "parameters": [
    {
     "name": "object",
-    "type": "object",
-    "description": "The object to test for apparent callability."
+    "type": "any object",
+    "description": "The object to test for call support."
    }
   ],
-  "returns": "True if object appears callable; otherwise False.",
+  "returns": "True if the object appears callable; otherwise False.",
   "example": {
-   "title": "Checking callable objects",
-   "code": "def greet(name):\n    return f\"Hello, {name}\"\n\nclass Greeter:\n    def __call__(self, name):\n        return greet(name)\n\nfor item in (greet, Greeter(), 42):\n    print(callable(item))",
+   "title": "Check whether a value can be called",
+   "code": "if callable(value):\n    result = value()\nelse:\n    result = None",
    "language": "python",
-   "explanation": "Checks whether a function, an instance with __call__, or an integer can be invoked."
+   "explanation": "Check a value before calling it."
   },
   "useCases": [
    {
-    "title": "Callback validation",
-    "scenario": "Validate a callback before passing it to another function."
+    "title": "Check before calling",
+    "scenario": "Code may receive either a function or a value."
    },
    {
-    "title": "Strategy objects",
-    "scenario": "Distinguish callable strategy objects from ordinary values."
-   },
-   {
-    "title": "Dynamic invocation",
-    "scenario": "Check dynamically obtained attributes before invoking them."
+    "title": "Test a callable object",
+    "scenario": "A class instance should act like a function."
    }
   ],
   "related": [
-   "__call__",
-   "iter"
+   "__call__()",
+   "type()",
+   "isinstance()"
   ],
   "since": "3.2",
+  "interview": [
+   {
+    "question": "What does callable() do?",
+    "answer": "callable(object) returns True when the object appears callable. Classes are callable, and instances are callable when their class has a __call__() method.",
+    "followUp": "Can callable() prove that a call will work? No. The documentation says a true result can still be followed by a failed call."
+   },
+   {
+    "question": "Which objects are callable?",
+    "answer": "A class is callable because calling it creates an instance. An instance is callable when its class provides __call__().",
+    "followUp": "How can an object become callable? Define __call__() on its class."
+   },
+   {
+    "question": "What does a false or true result mean?",
+    "answer": "If callable() returns False, calling the object will never succeed. If it returns True, the call may still raise an error.",
+    "followUp": "Why might a true result still fail? The call can require arguments or the callable can raise an exception."
+   }
+  ],
   "keyPoints": [
-   "The function returns a Boolean indicating whether its argument appears callable.",
-   "Classes are callable because invoking one creates an instance.",
-   "An instance can be called when its class implements __call__().",
-   "callable() was added in Python 3.2 after being absent in Python 3.0."
+   "It returns a Boolean result.",
+   "Classes pass the check because calling one creates an instance.",
+   "An instance passes when its class defines __call__().",
+   "A false result means the object cannot be called successfully.",
+   "The function has been available again since Python 3.2."
   ],
   "gotchas": [
-   "True is only an indication that the object appears callable; calling it can still raise an exception.",
-   "A False result rules out successfully calling the object."
+   "A true result does not guarantee that calling the object will succeed."
   ],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-11-03"
  },
  "Callable": {
   "sourceUrl": "https://docs.python.org/3/library/typing.html",
@@ -2450,6 +3130,134 @@
   ],
   "checkedAt": "2026-10-16"
  },
+ "dataclass": {
+  "sourceUrl": "https://docs.python.org/3/library/dataclasses.html",
+  "sourceTitle": "dataclasses — Data Classes — Python 3.15.2 documentation",
+  "summary": "The dataclass decorator adds common methods to a class from its annotated fields. Use field() to control individual fields and dataclass options to control generated behavior.",
+  "explanation": "The decorator reads annotated class variables as fields and adds methods such as __init__, __repr__, and __eq__. Options control generated methods, ordering, hashing, frozen assignment, keyword-only fields, slots, and weak references. Use field() for per-field settings and default_factory for fresh mutable defaults.",
+  "syntax": "@dataclass(*, init=True, repr=True, eq=True, order=False, unsafe_hash=False, frozen=False, match_args=True, kw_only=False, slots=False, weakref_slot=False)",
+  "parameters": [
+   {
+    "name": "init",
+    "type": "bool",
+    "description": "Generate __init__ when true, unless the class defines it."
+   },
+   {
+    "name": "repr",
+    "type": "bool",
+    "description": "Generate __repr__ when true."
+   },
+   {
+    "name": "eq",
+    "type": "bool",
+    "description": "Generate field-based equality when true."
+   },
+   {
+    "name": "order",
+    "type": "bool",
+    "description": "Generate ordering methods when true."
+   },
+   {
+    "name": "unsafe_hash",
+    "type": "bool",
+    "description": "Control implicit hash generation."
+   },
+   {
+    "name": "frozen",
+    "type": "bool",
+    "description": "Prevent field assignment and deletion after initialization."
+   },
+   {
+    "name": "match_args",
+    "type": "bool",
+    "description": "Create __match_args__ when true."
+   },
+   {
+    "name": "kw_only",
+    "type": "bool",
+    "description": "Make all fields keyword-only when true."
+   },
+   {
+    "name": "slots",
+    "type": "bool",
+    "description": "Generate __slots__ when true."
+   },
+   {
+    "name": "weakref_slot",
+    "type": "bool",
+    "description": "Add __weakref__ support; requires slots=True."
+   }
+  ],
+  "returns": "The decorator returns the same class that it receives. fields() returns a tuple of Field objects; asdict() returns a dictionary; astuple() returns a tuple.",
+  "example": {
+   "title": "A dataclass with a safe list default",
+   "code": "from dataclasses import dataclass, field\n\n@dataclass\nclass User:\n    name: str\n    tags: list[str] = field(default_factory=list)\n\nuser = User(\"Ada\")\nuser.tags.append(\"admin\")\nprint(user)",
+   "language": "python",
+   "explanation": "The decorator creates the constructor and readable representation. The factory creates a new list for each object."
+  },
+  "useCases": [
+   {
+    "title": "Small data objects",
+    "scenario": "Represent records with named, typed values and automatic construction."
+   },
+   {
+    "title": "Read-only instances",
+    "scenario": "Create immutable-style value objects whose fields reject later assignment."
+   },
+   {
+    "title": "Data conversion",
+    "scenario": "Convert nested dataclass objects to dictionaries or tuples for serialization."
+   },
+   {
+    "title": "Dynamic dataclasses",
+    "scenario": "Build classes dynamically from field definitions."
+   }
+  ],
+  "related": [
+   "dataclasses.field",
+   "dataclasses.fields",
+   "dataclasses.asdict",
+   "dataclasses.astuple",
+   "dataclasses.make_dataclass",
+   "dataclasses.replace",
+   "dataclasses.is_dataclass",
+   "dataclasses.KW_ONLY"
+  ],
+  "since": "3.7",
+  "interview": [
+   {
+    "question": "How does @dataclass find fields?",
+    "answer": "@dataclass finds fields from class variables with type annotations. It can then generate methods such as __init__, __repr__, and __eq__. The decorator returns the same class rather than creating a replacement class.",
+    "followUp": "How are unannotated class variables treated? They are not dataclass fields because fields are identified by type annotations."
+   },
+   {
+    "question": "When should field(default_factory=...) be used?",
+    "answer": "default_factory is a zero-argument callable used to create a field value when needed. It is useful for mutable values such as lists because each instance can receive a new value.",
+    "followUp": "Why not use [] directly? A factory avoids sharing one mutable default between instances."
+   },
+   {
+    "question": "What does frozen=True do?",
+    "answer": "With frozen=True, assigning to or deleting a field raises an exception, so instances behave as read-only after initialization. If the class already defines __setattr__ or __delattr__, decoration raises TypeError.",
+    "followUp": "Does frozen make every contained object immutable? No. It prevents assignment through the generated dataclass interface; contained mutable objects can still be changed."
+   }
+  ],
+  "keyPoints": [
+   "Annotated class variables become dataclass fields, in the order written in the class.",
+   "init=True creates a constructor unless the class already defines __init__.",
+   "repr=True creates a representation containing the class name and included field values.",
+   "eq=True compares fields, and both values must have the same exact type.",
+   "Set order=True to generate all four ordering methods; order=True with eq=False raises ValueError.",
+   "Use kw_only=True or the KW_ONLY marker when constructor fields must be passed by keyword.",
+   "fields() inspects a dataclass or instance and excludes ClassVar and InitVar pseudo-fields.",
+   "asdict() and astuple() recurse into supported containers and deep-copy other objects."
+  ],
+  "gotchas": [
+   "Put required fields before fields with defaults. This rule also applies across inheritance.",
+   "Use weakref_slot only together with slots=True.",
+   "Do not define these methods when using frozen=True."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "dataclasses": {
   "sourceUrl": "https://docs.python.org/3/library/dataclasses.html",
   "sourceTitle": "dataclasses — Data Classes — Python 3.15.0 documentation",
@@ -3204,6 +4012,77 @@
   ],
   "checkedAt": "2026-10-15"
  },
+ "Dict": {
+  "sourceUrl": "https://docs.python.org/3/library/typing.html",
+  "sourceTitle": "typing — Support for type hints — Python 3.15.2 documentation",
+  "summary": "NewType creates a distinct type for static type checkers while keeping the same runtime representation as an existing type. Use it to separate values with different meanings, such as UserId and other integers.",
+  "explanation": "NewType helps a type checker distinguish a logical type from its underlying type. It adds little runtime cost because calling it returns the original argument unchanged.",
+  "syntax": "NewType(name, tp)",
+  "parameters": [
+   {
+    "name": "name",
+    "type": "str",
+    "description": "The name of the new distinct type."
+   },
+   {
+    "name": "tp",
+    "type": "type",
+    "description": "The underlying type for the new type."
+   }
+  ],
+  "returns": "A NewType object that static type checkers treat as a distinct type; calling it returns the supplied argument unchanged at runtime.",
+  "example": {
+   "title": "Create a distinct identifier type",
+   "code": "from typing import NewType\n\nUserId = NewType(\"UserId\", int)\n\n\ndef get_user_name(user_id: UserId) -> str:\n    return f\"User {user_id}\"\n\nuser_id = UserId(42)\nprint(get_user_name(user_id))\nprint(type(user_id))  # <class 'int'>",
+   "language": "python",
+   "explanation": "NewType creates a distinct type for static checkers, while the value remains an int at runtime."
+  },
+  "useCases": [
+   {
+    "title": "Separate logical identifiers",
+    "scenario": "A function accepts an integer user ID, but another integer represents a different kind of value."
+   },
+   {
+    "title": "Add lightweight type safety",
+    "scenario": "A codebase needs static checks without creating a runtime wrapper class."
+   }
+  ],
+  "related": [
+   "TypeVar",
+   "Generic",
+   "Protocol",
+   "TypedDict"
+  ],
+  "since": "3.5",
+  "interview": [
+   {
+    "question": "What is NewType used for?",
+    "answer": "NewType creates a distinct type for static type checkers while using an existing type at runtime. For example, UserId can be based on int.",
+    "followUp": "How much runtime overhead does it add? Almost none: calling the NewType object returns the argument unchanged."
+   },
+   {
+    "question": "How does NewType differ from subclassing?",
+    "answer": "A checker treats UserId as distinct from int, so it can catch passing the wrong logical identifier to a function. UserId still supports int operations.",
+    "followUp": "What type does UserId(1) + UserId(2) have? The result has type int, because arithmetic returns the underlying type."
+   },
+   {
+    "question": "What happens at runtime?",
+    "answer": "NewType does not create a new runtime class. The declaration creates a callable object, and calling it returns the supplied value unchanged.",
+    "followUp": "Can runtime isinstance checks distinguish the new type? No. The runtime value has the underlying type, so NewType is not a runtime validation mechanism."
+   }
+  ],
+  "keyPoints": [
+   "Use NewType when two values share a runtime type but have different meanings, such as a user ID and a product ID.",
+   "Static checkers treat the new type as a subtype of its source type.",
+   "Calling the NewType object does not wrap or copy the value.",
+   "Code expecting the underlying type can accept a NewType value."
+  ],
+  "gotchas": [
+   "NewType does not validate values at runtime. Passing an ordinary int can still run unless a static type checker reports it.",
+   "Operations on a NewType value produce the underlying type, not the distinct NewType."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "dir": {
   "sourceUrl": "https://docs.python.org/3/builtins/functions.html",
   "sourceTitle": "Built-in functions",
@@ -3796,6 +4675,108 @@
   ],
   "checkedAt": "2026-10-16"
  },
+ "except": {
+  "sourceUrl": "https://docs.python.org/3/reference/compound_stmts.html",
+  "sourceTitle": "8. Compound statements — Python 3.15.2 documentation",
+  "summary": "The try statement handles exceptions and runs cleanup code for a group of statements. It can use except, else, and finally clauses.",
+  "explanation": "Python checks the try block first. If an exception matches an except clause, Python runs that handler and then continues after the whole statement. The optional else block runs only when the try block finishes without an exception, while finally runs before the statement completes in every case.",
+  "syntax": "try:\n    suite\nexcept expression [as identifier]:\n    suite\nelse:\n    suite\nfinally:\n    suite",
+  "parameters": [
+   {
+    "name": "try suite",
+    "type": "suite",
+    "description": "Statements whose exceptions may be handled or whose completion may trigger cleanup."
+   },
+   {
+    "name": "exception type",
+    "type": "expression",
+    "description": "An exception class or tuple of exception classes to match."
+   },
+   {
+    "name": "target",
+    "type": "identifier",
+    "description": "The variable receiving the matching exception object."
+   },
+   {
+    "name": "else suite",
+    "type": "suite",
+    "description": "Statements run when no exception occurs in the try suite."
+   },
+   {
+    "name": "finally suite",
+    "type": "suite",
+    "description": "Statements run during final cleanup."
+   }
+  ],
+  "returns": "A try statement has no direct return value; control continues after it, or an exception propagates if it is not handled.",
+  "example": {
+   "title": "Handle an input error",
+   "code": "try:\n    number = int(input(\"Number: \"))\nexcept ValueError as error:\n    print(f\"Invalid number: {error}\")\nelse:\n    print(f\"You entered {number}\")\nfinally:\n    print(\"Done\")",
+   "language": "python",
+   "explanation": "This handles invalid input, runs the success code only when conversion works, and always prints the final message."
+  },
+  "useCases": [
+   {
+    "title": "Handle expected input errors",
+    "scenario": "Convert user input and report only invalid values."
+   },
+   {
+    "title": "Separate success logic",
+    "scenario": "Run a success-only action after a protected operation."
+   },
+   {
+    "title": "Guarantee cleanup",
+    "scenario": "Release or close resources even when an error occurs."
+   },
+   {
+    "title": "Use specific handlers",
+    "scenario": "Handle several exception types with different responses."
+   }
+  ],
+  "related": [
+   "except clause",
+   "except* clause",
+   "else clause",
+   "finally clause",
+   "raise statement",
+   "BaseException",
+   "Exception",
+   "with statement"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How does a try statement choose an except handler?",
+    "answer": "Python executes the try suite first. It skips except when no exception occurs; otherwise, it runs the first matching handler and then continues after the try statement.",
+    "followUp": "What happens to an unmatched exception? It continues searching in surrounding code and on the call stack; if no handler matches, it remains unhandled."
+   },
+   {
+    "question": "When does the else clause run?",
+    "answer": "The else suite runs only when the try suite raises no exception and does not exit with return, break, or continue. Exceptions raised in else are not handled by the preceding except clauses.",
+    "followUp": "Why use else instead of adding code to try? It prevents unrelated exceptions from being accidentally caught by the handlers."
+   },
+   {
+    "question": "What does finally guarantee?",
+    "answer": "finally is a cleanup clause. It runs after the try, except, and else clauses, whether the statement completes normally or an exception occurs.",
+    "followUp": "What if finally returns? Its return value replaces an earlier return, and an exception may not be re-raised, so this pattern is discouraged."
+   }
+  ],
+  "keyPoints": [
+   "Use try to protect a group of statements and add handlers or cleanup behavior.",
+   "If try completes normally, Python skips all except clauses.",
+   "Use except SomeError as error to access the matching exception object.",
+   "else marks code that should run only after a clean, normal try exit.",
+   "Use finally for actions that must happen before the try statement finishes.",
+   "Choose ordinary except handlers or exception-group handlers; they cannot be mixed in one try statement."
+  ],
+  "gotchas": [
+   "A bare except catches every exception and must come after typed handlers.",
+   "Keep success-only code in else carefully: its exceptions are not caught by the earlier handlers.",
+   "An exception variable from except ... as is not available after the handler in the usual way.",
+   "A return in finally can replace a return from try, so avoid returning there."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "exec": {
   "sourceUrl": "https://docs.python.org/3/builtins/functions.html",
   "sourceTitle": "Built-in Functions",
@@ -3959,6 +4940,76 @@
   ],
   "checkedAt": "2026-10-15"
  },
+ "Final": {
+  "sourceUrl": "https://docs.python.org/3/library/typing.html",
+  "sourceTitle": "typing — Support for type hints — Python 3.15.2 documentation",
+  "summary": "typing.Final tells type checkers that a name cannot be reassigned. A Final name in a class also cannot be overridden in a subclass.",
+  "explanation": "Use Final to tell static type checkers that a name must not be assigned a new value. A Final name in a class also cannot be overridden in a subclass. Python does not enforce these rules while the program runs.",
+  "syntax": "name: Final = value\nname: Final[type] = value",
+  "parameters": [
+   {
+    "name": "type",
+    "type": "type",
+    "description": "The optional type written inside Final, such as int. It describes the value protected by the declaration."
+   }
+  ],
+  "returns": "A typing annotation used by static type checkers; it does not create a runtime value or enforce immutability.",
+  "example": {
+   "title": "Mark a constant",
+   "code": "from typing import Final\n\nMAX_RETRIES: Final[int] = 3\n\nprint(MAX_RETRIES)",
+   "language": "python",
+   "explanation": "The annotation tells type checkers that MAX_RETRIES must not be reassigned."
+  },
+  "useCases": [
+   {
+    "title": "Protect configuration constants",
+    "scenario": "A module setting should stay constant."
+   },
+   {
+    "title": "Protect class attributes",
+    "scenario": "A base class exposes a value that subclasses must keep unchanged."
+   },
+   {
+    "title": "Find assignment mistakes",
+    "scenario": "A project uses static checking to catch accidental reassignment."
+   }
+  ],
+  "related": [
+   "ClassVar",
+   "final",
+   "TypedDict",
+   "Annotated"
+  ],
+  "since": "3.8",
+  "interview": [
+   {
+    "question": "What does typing.Final do?",
+    "answer": "Final is a typing construct for names that should not be reassigned. Type checkers use it to report invalid assignments.",
+    "followUp": "Does Final prevent assignment during execution? No. The Python runtime does not check this rule."
+   },
+   {
+    "question": "How can a variable be declared as final?",
+    "answer": "Use Final without a type argument when the assigned value gives enough information, such as MAX_SIZE: Final = 9000. You can also write Final[int] to state the type explicitly.",
+    "followUp": "Can Final be used as a normal runtime class? No. It is a typing construct interpreted by type-checking tools."
+   },
+   {
+    "question": "How does Final work with inheritance?",
+    "answer": "A Final attribute declared in a class cannot be replaced in a subclass. This lets a type checker protect class-level constants from being overridden.",
+    "followUp": "What happens if code changes the attribute anyway? Python does not enforce the restriction at runtime, so only static checking reports it."
+   }
+  ],
+  "keyPoints": [
+   "Final marks a name as not assignable again for static type checking.",
+   "A type checker should reject reassignment of a Final name.",
+   "A Final class attribute is also protected from subclass overrides.",
+   "Python 3.13 allows Final and ClassVar to appear inside each other."
+  ],
+  "gotchas": [
+   "Final does not stop reassignment at runtime. A type checker must report the error.",
+   "A subclass must not replace a Final class attribute."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "finally": {
   "sourceUrl": "https://docs.python.org/3/reference/compound_stmts.html",
   "sourceTitle": "8. Compound statements",
@@ -4102,50 +5153,87 @@
  },
  "for": {
   "sourceUrl": "https://docs.python.org/3/reference/compound_stmts.html",
-  "sourceTitle": "8. Compound statements — Python 3.15.0 documentation",
-  "summary": "The `for` statement repeats a suite for each element produced by a sequence or other iterable. It binds each element to a target and supports `break`, `continue`, and an optional `else` clause.",
-  "explanation": "A `for` statement obtains an iterator from its iterable and assigns each yielded value to the target before running the indented suite. It can include `else`, which runs if iteration finishes normally rather than through `break`.",
-  "syntax": "for target_list in expression_list:\n    suite\n[else:\n    suite]",
-  "parameters": [],
-  "returns": "",
+  "sourceTitle": "8. Compound statements — Python 3.15.2 documentation",
+  "summary": "A Python for statement runs a block once for each item from an iterable. An optional else block runs only when iteration ends normally.",
+  "explanation": "A for statement repeats a block for every value produced by an iterable. Python evaluates the iterable once, creates an iterator, assigns each next value to the target, and runs the block. After the iterator ends, an optional else block runs. break ends the loop without running else; continue skips to the next iteration.",
+  "syntax": "for target_list in starred_expression_list:\n    suite\nelse:\n    suite",
+  "parameters": [
+   {
+    "name": "target_list",
+    "type": "assignment target",
+    "description": "The target list receives each item from the iterator using normal assignment rules."
+   },
+   {
+    "name": "starred_expression_list",
+    "type": "iterable expression",
+    "description": "This expression must produce an iterable. It is evaluated once."
+   },
+   {
+    "name": "suite",
+    "type": "statement suite",
+    "description": "The indented block runs once for each item."
+   }
+  ],
+  "returns": "A for statement does not return a value. It executes its suite and then continues after the loop.",
   "example": {
-   "title": "Iterate over an iterable",
-   "code": "for item in items:\n    print(item)",
+   "title": "Iterate over values",
+   "code": "for item in [\"a\", \"b\", \"c\"]:\n    print(item)",
    "language": "python",
-   "explanation": "Prints each item from the iterable in iteration order."
+   "explanation": "The loop gets an iterator, assigns each item to item, and runs the indented block."
   },
   "useCases": [
    {
-    "title": "Collection traversal",
-    "scenario": "Process every element in a collection."
+    "title": "Visit items",
+    "scenario": "Process every value in a list, tuple, string, or other iterable."
    },
    {
-    "title": "Streaming iteration",
-    "scenario": "Read each record from a generator or file."
+    "title": "Handle normal completion",
+    "scenario": "Run a final block only when no break stopped the search."
    },
    {
-    "title": "Counted repetition",
-    "scenario": "Perform an action for each value in a numeric range."
+    "title": "Unpack items",
+    "scenario": "Use multiple loop targets to unpack each item."
    }
   ],
   "related": [
-   "while",
-   "break",
-   "continue",
+   "while statement",
+   "break statement",
+   "continue statement",
    "else clause",
-   "iterable",
-   "range"
+   "assignment statements",
+   "iterable object"
   ],
   "since": "",
-  "keyPoints": [
-   "Use `for` to process values from sequences and other iterable objects.",
-   "The loop works with lists, tuples, strings, dictionaries, sets, generators, and custom iterables.",
-   "Each iteration binds the next element to the loop target.",
-   "The loop header is followed by an indented suite containing the repeated statements.",
-   "`for` is a compound control-flow statement."
+  "interview": [
+   {
+    "question": "How does a Python for loop execute?",
+    "answer": "Python evaluates the expression after in once, creates an iterator, and assigns each item to the target list before running the loop body. The process repeats until the iterator is exhausted.",
+    "followUp": "What happens if the loop uses break? The loop ends immediately, and its else suite does not run."
+   },
+   {
+    "question": "When does a for loop's else block run?",
+    "answer": "The else suite runs when the iterator is exhausted normally. It does not run when break terminates the loop.",
+    "followUp": "Does continue prevent else? No. If continue leads to normal exhaustion, the else suite still runs."
+   },
+   {
+    "question": "How are loop variables assigned?",
+    "answer": "The target list uses normal assignment rules. It can contain multiple targets, so each item can be unpacked into matching targets.",
+    "followUp": "What if unpacking has the wrong number of values? The normal assignment rules apply, so the assignment fails when the iterable shape does not match."
+   }
   ],
-  "gotchas": [],
-  "checkedAt": "2026-10-15"
+  "keyPoints": [
+   "for works with sequences and other iterable objects.",
+   "Python creates an iterator from the value after in.",
+   "Each item is assigned to the loop target before the body runs.",
+   "A normal end of iteration runs the optional else suite.",
+   "continue skips the remaining body and proceeds with the next item."
+  ],
+  "gotchas": [
+   "Using break skips the loop's else block.",
+   "Loop targets are assigned during iteration, so earlier values in those names are replaced.",
+   "The expression after in is evaluated once, and its result must be iterable."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "format": {
   "sourceUrl": "https://docs.python.org/3/builtins/functions.html",
@@ -4298,56 +5386,76 @@
  },
  "frozenset": {
   "sourceUrl": "https://docs.python.org/3/builtins/stdtypes.html",
-  "sourceTitle": "Built-in Types — Python 3.15.0 documentation",
-  "summary": "frozenset creates an immutable, hashable set of unique elements. It is useful as a dictionary key or as an element of another set when the collection itself must remain fixed.",
-  "explanation": "Call frozenset with an iterable to create an immutable set of its elements. Because the contents cannot change, a frozenset is hashable and can serve as a dictionary key or as an element inside another set; it supports set operations but not mutating operations.",
-  "syntax": "class frozenset(iterable=(), /)",
+  "sourceTitle": "Built-in Types — Python 3.15.2 documentation",
+  "summary": "frozenset is an immutable set of distinct hashable objects. It can be used as a dictionary key or as an element of another set.",
+  "explanation": "frozenset creates an immutable collection of distinct hashable objects. Because its contents cannot change, a frozenset is hashable and can be used as a dictionary key or as an element inside another set.",
+  "syntax": "frozenset(iterable=(), /)",
   "parameters": [
    {
     "name": "iterable",
     "type": "iterable",
-    "description": "An optional iterable whose elements are used to create the new frozenset; it defaults to an empty iterable."
+    "description": "An optional iterable whose elements become the frozenset members."
    }
   ],
-  "returns": "A new frozenset object containing the elements taken from iterable.",
+  "returns": "A new frozenset containing the distinct elements taken from iterable.",
   "example": {
-   "title": "Use a frozenset as a dictionary key",
-   "code": "allowed = frozenset({\"read\", \"write\"})\npermissions = {allowed: \"editor\"}\n\nprint(\"write\" in allowed)\nprint(permissions[allowed])",
+   "title": "Create and use a frozenset",
+   "code": "values = [1, 2, 2, 3]\nunique = frozenset(values)\nlookup = {unique: \"saved\"}\n\nprint(unique)\nprint(lookup[unique])",
    "language": "python",
-   "explanation": "Creates an immutable set of permissions and uses it as a dictionary key."
+   "explanation": "This creates an immutable set from an iterable and uses it as a dictionary key."
   },
   "useCases": [
    {
-    "title": "Immutable membership collections",
-    "scenario": "Representing a fixed, unordered collection of values"
+    "title": "Composite lookup keys",
+    "scenario": "Use a set of values as a dictionary key."
    },
    {
-    "title": "Composite dictionary keys",
-    "scenario": "Using a collection of values as a dictionary key"
+    "title": "Nested sets",
+    "scenario": "Store sets inside another set."
    },
    {
-    "title": "Sets of sets",
-    "scenario": "Nesting one set-like collection inside another"
+    "title": "Immutable deduplication",
+    "scenario": "Remove duplicates while keeping the result immutable."
    }
   ],
   "related": [
    "set",
-   "frozenset.union",
-   "frozenset.intersection",
-   "frozenset.difference",
-   "frozenset.symmetric_difference"
+   "hash",
+   "dict",
+   "union",
+   "intersection",
+   "difference",
+   "symmetric_difference"
   ],
   "since": "",
+  "interview": [
+   {
+    "question": "What is frozenset?",
+    "answer": "frozenset is an immutable set type. It contains distinct hashable elements and can be used as a dictionary key or nested in another set.",
+    "followUp": "Why can a normal set not be a dictionary key? Its contents are mutable, so it has no hash value."
+   },
+   {
+    "question": "How do you create a frozenset?",
+    "answer": "Pass an iterable to the constructor, such as a list or a string. The resulting object contains the iterable's distinct elements.",
+    "followUp": "What happens with repeated elements? They appear only once because a set stores distinct elements."
+   },
+   {
+    "question": "How does frozenset differ from set?",
+    "answer": "A frozenset cannot be changed after creation. Set operations such as union and intersection return a new set-like object instead of modifying it.",
+    "followUp": "What type results when a frozenset operation is mixed with a set? The result uses the type of the first operand."
+   }
+  ],
   "keyPoints": [
-   "Python provides frozenset as the immutable counterpart to the mutable set type.",
-   "Its contents cannot be changed after construction, and it can therefore participate in hash-based collections.",
-   "Use a frozenset as a dictionary key when the key represents an unordered, fixed collection of values.",
-   "A frozenset can be nested inside a set because it is hashable."
+   "A frozenset's contents cannot be changed after construction, and the object can be hashed.",
+   "Use frozenset when a set must be stored as a dictionary key or nested inside another set.",
+   "A frozenset has no indexing or insertion order, and duplicate input elements are removed.",
+   "Operations such as union, intersection, difference, and symmetric difference are available."
   ],
   "gotchas": [
-   "Do not use mutating methods or in-place update operators; choose a new set operation when you need a changed value."
+   "Every value supplied to frozenset must be hashable. Mutable values such as lists cannot be elements.",
+   "Calling frozenset() without an argument creates an empty frozenset."
   ],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-11-03"
  },
  "functools": {
   "sourceUrl": "https://docs.python.org/3/library/functools.html",
@@ -5419,6 +6527,75 @@
   ],
   "checkedAt": "2026-10-16"
  },
+ "input": {
+  "sourceUrl": "https://docs.python.org/3/library/functions.html?highlight=int",
+  "sourceTitle": "Built-in functions — Python 3.15.2 documentation",
+  "summary": "`input()` optionally shows a prompt, reads one line from standard input, and returns it as a string without the trailing newline.",
+  "explanation": "`input()` optionally prints a prompt without adding a newline. It then reads one line from standard input, removes the ending newline, and returns the result as a string. If the input reaches end-of-file, it raises `EOFError`.",
+  "syntax": "input()\\ninput(prompt, /)",
+  "parameters": [
+   {
+    "name": "prompt",
+    "type": "object",
+    "description": "Optional text written to standard output before reading. It has no trailing newline."
+   }
+  ],
+  "returns": "A string containing the entered line without its trailing newline. Raises EOFError at end-of-file.",
+  "example": {
+   "title": "Read one line",
+   "code": "name = input(\"Name: \")\nprint(f\"Hello, {name}!\")",
+   "language": "python",
+   "explanation": "This displays a prompt, reads one line, removes its ending newline, and stores the result as a string."
+  },
+  "useCases": [
+   {
+    "title": "Read interactive input",
+    "scenario": "Ask a user for a name, option, or other short value in an interactive command-line program."
+   },
+   {
+    "title": "Process piped input",
+    "scenario": "Read one line from redirected standard input in a script."
+   },
+   {
+    "title": "Edit command-line input",
+    "scenario": "Use `readline` support for editing and history when that module is loaded."
+   }
+  ],
+  "related": [
+   "print",
+   "EOFError",
+   "readline"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does `input()` return?",
+    "answer": "`input()` reads a line from standard input and returns it as a string. A trailing newline is removed.",
+    "followUp": "What happens at end-of-file? `input()` raises `EOFError`, so code can catch it when input may be unavailable."
+   },
+   {
+    "question": "How does the prompt argument work?",
+    "answer": "If a prompt is supplied, Python writes it to standard output without a trailing newline before reading the line.",
+    "followUp": "Why is no newline useful? It lets the user's response appear on the same line as the prompt."
+   },
+   {
+    "question": "What is the signature of `input()`?",
+    "answer": "The optional prompt is positional-only. The function has forms `input()` and `input(prompt)`.",
+    "followUp": "What extra behavior can occur when the `readline` module is loaded? `input()` can use it for line editing and history."
+   }
+  ],
+  "keyPoints": [
+   "It reads one line and returns that line as a string.",
+   "Only the trailing newline is removed; other entered characters remain part of the result.",
+   "A prompt is optional and appears before the user types.",
+   "With `readline` available, input can provide line editing and command history.",
+   "Python emits an audit event before it reads the line."
+  ],
+  "gotchas": [
+   "Handle `EOFError` when input may end without a user response, such as redirected or closed input."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "int": {
   "sourceUrl": "https://docs.python.org/3/library/functions.html",
   "sourceTitle": "Built-in Functions",
@@ -5640,6 +6817,75 @@
   ],
   "checkedAt": "2026-10-15"
  },
+ "issubclass": {
+  "sourceUrl": "https://docs.python.org/3/builtins/functions.html",
+  "sourceTitle": "Built-in Functions — Python 3.15.2 documentation",
+  "summary": "issubclass() tests whether one class is a subclass of another. It can also test against several classes supplied in a tuple or union type.",
+  "explanation": "issubclass() checks whether one class is a subclass of another class or of any class in a supported group. It returns True for direct, indirect, virtual, or self relationships, and raises TypeError when the arguments have an invalid form.",
+  "syntax": "issubclass(cls, classinfo, /)",
+  "parameters": [
+   {
+    "name": "cls",
+    "type": "class",
+    "description": "The class to test for a subclass relationship."
+   },
+   {
+    "name": "classinfo",
+    "type": "class, nested tuple, or union type",
+    "description": "A class, nested tuple of classes, or union type used as the target."
+   }
+  ],
+  "returns": "True when cls is a direct, indirect, or virtual subclass of classinfo; otherwise False. Invalid arguments can raise TypeError.",
+  "example": {
+   "title": "Check a class relationship",
+   "code": "class Animal:\n    pass\n\nclass Dog(Animal):\n    pass\n\nprint(issubclass(Dog, Animal))\nprint(issubclass(Animal, Animal))",
+   "language": "python",
+   "explanation": "This prints True twice. A class counts as a subclass of itself."
+  },
+  "useCases": [
+   {
+    "title": "Validate a class hierarchy",
+    "scenario": "Check whether a class belongs to an inheritance hierarchy before selecting class-specific behavior."
+   },
+   {
+    "title": "Test several possible bases",
+    "scenario": "Accept one of several base classes without writing several separate checks."
+   }
+  ],
+  "related": [
+   "isinstance()",
+   "type()",
+   "super()"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does issubclass() test?",
+    "answer": "issubclass(C, B) returns True when C directly or indirectly inherits from B. A class is also considered a subclass of itself.",
+    "followUp": "What can the second argument contain? It can be one class, a nested tuple of classes, or a union type."
+   },
+   {
+    "question": "What are the arguments to issubclass()?",
+    "answer": "The first argument is the class being tested. The second argument supplies the class or classes to test against.",
+    "followUp": "What happens with an invalid second argument? Python raises TypeError, except an earlier successful match may prevent that error in some tuple cases."
+   },
+   {
+    "question": "How can issubclass() test multiple classes?",
+    "answer": "A tuple lets one call test several possible base classes. The result is True if the tested class is a subclass of at least one entry.",
+    "followUp": "How does a union type differ here? It is another supported way to provide multiple candidate classes."
+   }
+  ],
+  "keyPoints": [
+   "It returns True for direct, indirect, and virtual subclass relationships.",
+   "The class being tested matches itself.",
+   "The target may be a class, a nested tuple of classes, or a union type.",
+   "With multiple targets, one matching target is enough for True."
+  ],
+  "gotchas": [
+   "The second argument must be a class, a nested tuple of classes, or a union type."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "iter": {
   "sourceUrl": "https://docs.python.org/3/builtins/functions.html",
   "sourceTitle": "Built-in functions",
@@ -5717,55 +6963,75 @@
  },
  "Iterable": {
   "sourceUrl": "https://docs.python.org/3/library/typing.html",
-  "sourceTitle": "typing — Support for type hints",
-  "summary": "`collections.abc.Iterable[T]` annotates an object that can provide values of type `T` one at a time. It is the modern replacement for the deprecated `typing.Iterable` alias.",
-  "explanation": "`Iterable[T]` describes an object that can provide values of type `T` one at a time. Use the generic form from `collections.abc` in modern Python annotations; it can describe inputs such as lists, ranges, generators, and other iterable objects.",
-  "syntax": "collections.abc.Iterable[T]",
+  "sourceTitle": "typing — Support for type hints — Python 3.15.2 documentation",
+  "summary": "Iterable[T] annotates an object that can provide values of type T one at a time. It is useful when code only needs to read items and should accept many iterable objects.",
+  "explanation": "Iterable describes a value that can provide its members one at a time. Many objects support this, including lists, strings, dictionaries, and file objects. A function can use Iterable[T] to state the expected item type. Python itself does not enforce this annotation at runtime.",
+  "syntax": "Iterable[T]",
   "parameters": [
    {
-    "name": "T",
-    "type": "type parameter",
-    "description": "The element type yielded by the iterable."
+    "name": "values",
+    "type": "Iterable[int]",
+    "description": "The iterable value to consume."
    }
   ],
-  "returns": "An iterable object yielding values of the declared type; `Iterable[T]` is used in annotations rather than producing a runtime value.",
+  "returns": "An integer produced by summing the values in the example function.",
   "example": {
-   "title": "Annotate a function accepting iterable integers",
-   "code": "from collections.abc import Iterable\n\n\ndef total(values: Iterable[int]) -> int:\n    return sum(values)\n\n\nprint(total([1, 2, 3]))\nprint(total(range(4)))",
+   "title": "Annotate an iterable",
+   "code": "from collections.abc import Iterable\n\n\ndef total(values: Iterable[int]) -> int:\n    return sum(values)\n\n\nprint(total([1, 2, 3]))",
    "language": "python",
-   "explanation": "The function accepts any iterable of integers, including a list and a range."
+   "explanation": "The function accepts an iterable whose items should be integers."
   },
   "useCases": [
    {
-    "title": "Flexible function inputs",
-    "scenario": "Accept lists, tuples, ranges, generators, and other iterable inputs without requiring a concrete container."
+    "title": "Accept any iterable input",
+    "scenario": "A function reads values with a for loop but does not need indexing."
    },
    {
-    "title": "Generator return annotations",
-    "scenario": "Describe the values yielded by a generator that only produces items."
+    "title": "Process lazy data",
+    "scenario": "A function processes a stream or generator without requiring a list."
    },
    {
-    "title": "Reusable type aliases",
-    "scenario": "Build generic aliases whose element type is preserved."
+    "title": "Describe item types",
+    "scenario": "A type annotation states the expected item type in a loop."
    }
   ],
   "related": [
-   "collections.abc.Iterable",
-   "collections.abc.Iterator",
-   "typing.Iterator",
+   "Iterator",
+   "Sequence",
+   "collections.abc",
    "iter()",
-   "for"
+   "for statement"
   ],
-  "since": "3.9",
+  "since": "3.5",
+  "interview": [
+   {
+    "question": "What does Iterable mean in a type annotation?",
+    "answer": "Iterable is a type for objects that can return members one at a time. Examples include lists, strings, dictionaries, and file objects.",
+    "followUp": "How does an iterator differ? An iterator supplies successive items through __next__() and raises StopIteration when it is exhausted."
+   },
+   {
+    "question": "Why annotate a parameter as Iterable[int] instead of list[int]?",
+    "answer": "Use Iterable[T] when a function needs to read items of type T in order. It does not require a concrete container such as list.",
+    "followUp": "When would Sequence[T] be better? Use it when indexed access and length are part of the required interface."
+   },
+   {
+    "question": "How does Python consume an iterable?",
+    "answer": "An iterable can produce an iterator when passed to iter(). A for statement does this automatically and then requests successive values.",
+    "followUp": "What happens after an iterator is exhausted? Further calls to __next__() continue to raise StopIteration."
+   }
+  ],
   "keyPoints": [
-   "Modern annotations should import `Iterable` from `collections.abc`.",
-   "A generator that only yields values can be annotated with `Iterable[YieldType]`.",
-   "The type is parameterized with square brackets, such as `Iterable[int]`."
+   "Iterable describes an object that can produce its members one at a time.",
+   "Lists, strings, tuples, dictionaries, and file objects can be iterables.",
+   "A for loop can consume an iterable directly.",
+   "Calling iter() on an iterable returns an iterator.",
+   "The returned iterator normally represents one pass through the values.",
+   "Sequence is a stronger interface that includes indexed access and length."
   ],
   "gotchas": [
-   "`typing.Iterable` is deprecated; import `Iterable` from `collections.abc` instead."
+   "A for loop handles the iterator setup automatically; callers usually do not need to call iter() themselves."
   ],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-11-03"
  },
  "Iterator": {
   "sourceUrl": "https://docs.python.org/3/library/typing.html",
@@ -5838,6 +7104,76 @@
    "The annotation guides static type checkers but does not make Python enforce yielded values at runtime."
   ],
   "checkedAt": "2026-10-16"
+ },
+ "itertools": {
+  "sourceUrl": "https://docs.python.org/3/library/itertools.html",
+  "sourceTitle": "itertools — Functions creating iterators for efficient looping — Python 3.15.2 documentation",
+  "summary": "itertools.dropwhile() skips items at the beginning of an iterable while a predicate is true. After the first false result, it yields the rest unchanged.",
+  "explanation": "dropwhile() reads an iterable from the start and ignores items while predicate(item) is true. At the first item where the predicate is false, it yields that item and every remaining item without testing them again.",
+  "syntax": "itertools.dropwhile(predicate, iterable)",
+  "parameters": [
+   {
+    "name": "predicate",
+    "type": "callable",
+    "description": "A function called with each initial item. Skipping continues while it returns a true value."
+   },
+   {
+    "name": "iterable",
+    "type": "iterable",
+    "description": "The source iterable to read."
+   }
+  ],
+  "returns": "An iterator that yields items starting with the first item for which predicate returns false, then yields every remaining item.",
+  "example": {
+   "title": "Skip an initial prefix",
+   "code": "from itertools import dropwhile\n\nvalues = [1, 4, 6, 3, 8]\nresult = dropwhile(lambda value: value < 5, values)\nprint(list(result))  # [6, 3, 8]",
+   "language": "python",
+   "explanation": "The iterator skips values while the test is true, then yields the current and all later values."
+  },
+  "useCases": [
+   {
+    "title": "Skip an initial section",
+    "scenario": "Ignore header or setup records until the first data record appears."
+   },
+   {
+    "title": "Keep the remaining stream",
+    "scenario": "Remove leading values that meet a condition, while preserving later values even if they meet it again."
+   }
+  ],
+  "related": [
+   "takewhile()",
+   "filterfalse()",
+   "compress()",
+   "islice()"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does itertools.dropwhile() do?",
+    "answer": "dropwhile() returns an iterator that first skips consecutive items for which the predicate is true. It then returns the first item that fails the predicate and all later items.",
+    "followUp": "What happens if a later item matches the predicate? It is still returned, because predicate testing stops after the first failure."
+   },
+   {
+    "question": "When does dropwhile() stop applying its predicate?",
+    "answer": "The predicate is called only on the initial consecutive part of the input. Once it returns false, dropwhile() passes through the rest of the iterable unchanged.",
+    "followUp": "Can it restart skipping after another matching item? No. It has only one initial skip phase."
+   },
+   {
+    "question": "Why is dropwhile() useful for iterable processing?",
+    "answer": "It returns an iterator, so values are produced as the result is consumed rather than collected immediately. The source iterable is read in order from its beginning.",
+    "followUp": "What should you consider with a large or slow source? Consume only as much as needed, because the iterator may read through a long prefix before producing output."
+   }
+  ],
+  "keyPoints": [
+   "It removes only the initial consecutive items that pass the predicate.",
+   "After the first value below five is followed by six, all later values are returned, including three.",
+   "The result is lazy: creating dropwhile() does not create a list of output values.",
+   "The predicate used by dropwhile() receives one input item at a time."
+  ],
+  "gotchas": [
+   "The iterator cannot yield its first result until the predicate becomes false, so a long matching prefix delays output."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "json": {
   "sourceUrl": "https://docs.python.org/3/library/json.html",
@@ -6212,6 +7548,70 @@
    "Do not apply a second subscription to an already parameterized Literal."
   ],
   "checkedAt": "2026-10-16"
+ },
+ "locals": {
+  "sourceUrl": "https://docs.python.org/3/builtins/functions.html",
+  "sourceTitle": "Built-in functions — Python 3.15.2 documentation",
+  "summary": "`locals()` returns a mapping of the current local namespace. Its behavior differs between module, class, and optimized function scopes.",
+  "explanation": "`locals()` returns a mapping of the current local namespace. Its meaning depends on the scope: at module and class scope it exposes that namespace, while in an optimized function scope it returns a new dictionary of current bindings. Changes to that dictionary do not update function local variables.",
+  "syntax": "locals()",
+  "parameters": [],
+  "returns": "A mapping object representing the current local symbol table.",
+  "example": {
+   "title": "Inspect the current namespace",
+   "code": "names = {\"Ada\": 1, \"Linus\": 2}\nprint(locals())\n",
+   "language": "python",
+   "explanation": "At module level, this prints a mapping that includes the names currently defined in the module."
+  },
+  "useCases": [
+   {
+    "title": "Inspect names currently bound in a scope",
+    "scenario": "Debugging or inspection"
+   },
+   {
+    "title": "Provide or inspect a namespace used by `exec()` or `eval()`",
+    "scenario": "Dynamic execution"
+   },
+   {
+    "title": "Read the namespace created while a class body runs",
+    "scenario": "Class construction"
+   }
+  ],
+  "related": [
+   "globals()",
+   "exec()",
+   "eval()",
+   "vars()"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does `locals()` return?",
+    "answer": "`locals()` returns a mapping whose keys are local names and whose values are their current bindings. At module scope, it is the same namespace as `globals()`.",
+    "followUp": "What happens inside a function? Each call returns a fresh dictionary containing current local and nonlocal bindings, but edits to it are not written back to the variables."
+   },
+   {
+    "question": "How does `locals()` behave in a function?",
+    "answer": "In an optimized scope, such as a function, generator, or coroutine, `locals()` returns a fresh dictionary. It contains the bindings visible at that point in execution.",
+    "followUp": "Why can two results differ? A later call can include changes made since the earlier call because the earlier dictionary is not updated."
+   },
+   {
+    "question": "When does `locals()` match `globals()`?",
+    "answer": "At module scope, `locals()` and `globals()` refer to the same namespace. With `exec()` or `eval()` using one namespace, `locals()` also returns that namespace.",
+    "followUp": "What should be passed to `exec()` when local changes must be observed afterward? Pass an explicit locals dictionary."
+   }
+  ],
+  "keyPoints": [
+   "The returned mapping uses variable names as keys and their currently bound objects as values.",
+   "At module scope, `locals()` returns the same namespace as `globals()`.",
+   "In a class body, the result is the namespace later passed to the metaclass.",
+   "In module, class, and explicit-namespace cases, repeated calls in one frame return the same mapping object."
+  ],
+  "gotchas": [
+   "Inside a function, each call can return a new dictionary. Editing that dictionary does not change the function's local variables.",
+   "Do not use the returned dictionary to assign or delete local variables in a function."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "logging": {
   "sourceUrl": "https://docs.python.org/3/library/logging.html",
@@ -6619,6 +8019,82 @@
    "Ties preserve the first maximal item encountered."
   ],
   "checkedAt": "2026-10-15"
+ },
+ "memoryview": {
+  "sourceUrl": "https://docs.python.org/3/builtins/stdtypes.html",
+  "sourceTitle": "Built-in Types — Python 3.15.2 documentation",
+  "summary": "memoryview exposes an object's buffer data without copying it. It supports indexing, slicing, and, for writable buffers, compatible assignments.",
+  "explanation": "memoryview gives access to an object's buffer data without copying it. It supports indexing and slicing. If the underlying buffer is writable, compatible slice assignments can change the original data. Call release() when the view is no longer needed; operations after release raise ValueError.",
+  "syntax": "memoryview(object)",
+  "parameters": [
+   {
+    "name": "object",
+    "type": "buffer-providing object",
+    "description": "The object that provides the buffer protocol, such as bytes or bytearray."
+   }
+  ],
+  "returns": "A memoryview object that references the supplied buffer.",
+  "example": {
+   "title": "Read and change buffer data",
+   "code": "data = bytearray(b\"abc\")\nview = memoryview(data)\nview[0] = ord(\"z\")\nprint(data)  # bytearray(b'zbc')\nprint(bytes(view[1:]))  # b'bc'",
+   "language": "python",
+   "explanation": "The view changes the writable bytearray without copying it. Slicing exposes part of the data, and bytes() copies that part."
+  },
+  "useCases": [
+   {
+    "title": "Efficient buffer access",
+    "scenario": "Process binary data while avoiding an immediate copy."
+   },
+   {
+    "title": "Read binary data",
+    "scenario": "Inspect bytes or typed array elements through indexes and slices."
+   },
+   {
+    "title": "Modify a buffer",
+    "scenario": "Update existing data in a writable bytearray."
+   }
+  ],
+  "related": [
+   "bytes",
+   "bytearray",
+   "memoryview.hex()",
+   "memoryview.tolist()",
+   "memoryview.tobytes()",
+   "memoryview.release()",
+   "Buffer Protocol"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is memoryview used for?",
+    "answer": "memoryview is a Python object that exposes the buffer of another object. It lets code access binary data without making a copy.",
+    "followUp": "How can you tell whether a view can be changed? Check its readonly attribute; a writable exporter can provide a read/write view."
+   },
+   {
+    "question": "How do indexing, slicing, and bytes() differ?",
+    "answer": "Indexing returns elements, and slicing a one-dimensional view returns another view. Converting that slice with bytes() creates a bytes object.",
+    "followUp": "What happens with a non-contiguous view? bytes() returns the data in flattened form, converted to bytes."
+   },
+   {
+    "question": "When can a memoryview modify data?",
+    "answer": "A view over writable data can assign to one-dimensional slices, but the replacement must have a compatible structure. The underlying object is changed directly.",
+    "followUp": "Can a view change the size of its exporter? No. Resizing is not allowed while the view is active."
+   }
+  ],
+  "keyPoints": [
+   "memoryview works with objects that support the buffer protocol and avoids an initial data copy.",
+   "bytes and bytearray are common objects that can be wrapped in a memoryview.",
+   "Use indexes to read elements and slices to expose ranges of the buffer.",
+   "The length represents the number of elements in the view, including elements from multidimensional data.",
+   "itemsize tells you how many bytes make up one element.",
+   "tobytes() makes a bytes copy of the data represented by the view."
+  ],
+  "gotchas": [
+   "A memoryview can change existing writable elements, but it cannot resize the underlying object while the view is active.",
+   "After release(), do not use the view. Only another release() call is allowed.",
+   "Slice assignment must use data with a compatible structure and length."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "min": {
   "sourceUrl": "https://docs.python.org/3/builtins/functions.html",
@@ -7036,6 +8512,201 @@
    "The declaration affects the whole body, not merely the statements after it."
   ],
   "checkedAt": "2026-10-16"
+ },
+ "object": {
+  "sourceUrl": "https://docs.python.org/3/tutorial/classes.html",
+  "sourceTitle": "9. Classes — Python 3.15.2 documentation",
+  "summary": "Python classes bundle data and behavior into a new object type. Instances can keep their own state and use methods defined by the class.",
+  "explanation": "A class creates a new object type. Its instances can hold their own attributes, while methods defined by the class can read or change that state. Class attributes are shared, and instance attributes are created by assigning through the instance.",
+  "syntax": "class ClassName:\n    ...\n\ninstance = ClassName(arguments)",
+  "parameters": [
+   {
+    "name": "__init__ arguments",
+    "type": "varies",
+    "description": "Arguments passed when creating an instance are passed to __init__."
+   }
+  ],
+  "returns": "Class instantiation returns a new instance of the class.",
+  "example": {
+   "title": "A class with instance data and a method",
+   "code": "class Dog:\n    kind = \"canine\"\n\n    def __init__(self, name):\n        self.name = name\n        self.tricks = []\n\n    def add_trick(self, trick):\n        self.tricks.append(trick)\n\ndog = Dog(\"Fido\")\ndog.add_trick(\"roll over\")\nprint(dog.name, dog.tricks)",
+   "language": "python",
+   "explanation": "This creates a class, initializes per-object data, and calls an instance method."
+  },
+  "useCases": [
+   {
+    "title": "Model objects",
+    "scenario": "Represent an entity with state and operations."
+   },
+   {
+    "title": "Store instance state",
+    "scenario": "Give each object separate values such as names, settings, or collections."
+   },
+   {
+    "title": "Share class data",
+    "scenario": "Provide shared constants or behavior for all instances."
+   },
+   {
+    "title": "Build related types",
+    "scenario": "Extend or customize object behavior with inherited classes and overridden methods."
+   }
+  ],
+  "related": [
+   "__init__",
+   "class definition",
+   "class object",
+   "instance object",
+   "method object",
+   "class variable",
+   "instance variable",
+   "namespaces"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is a Python class?",
+    "answer": "A class bundles data and functionality and creates a new object type. Calling the class creates an instance, and an instance can have attributes and methods.",
+    "followUp": "What happens during construction? If the class defines __init__, Python calls it for the new instance and passes the construction arguments to it."
+   },
+   {
+    "question": "How do class and instance variables differ?",
+    "answer": "An instance attribute belongs to one object and is commonly assigned with self.name. A class attribute is stored on the class and can be shared by its instances.",
+    "followUp": "Why is a list usually a bad class attribute? Mutations would be visible through every instance that uses that shared list."
+   },
+   {
+    "question": "Why does a method have a self parameter?",
+    "answer": "For an instance x and a method f, calling x.f() supplies x as the method's first argument. It is equivalent to calling MyClass.f(x) when x is an instance of MyClass.",
+    "followUp": "Can the method be saved for later? Yes. x.f produces a bound method object that can be called later without supplying x again."
+   }
+  ],
+  "keyPoints": [
+   "A class defines a new object type. Calling the class creates an instance of that type.",
+   "The class body runs in a new namespace. Names defined there become class attributes.",
+   "You can read or change class attributes with dot notation, and instantiate the class with call syntax.",
+   "Define __init__ to set the initial state of each new instance. Python calls it during instantiation.",
+   "Instance data needs no separate declaration. An assignment such as self.name creates the attribute.",
+   "A function in a class becomes an instance method. Accessing it through an instance creates a method bound to that instance.",
+   "Use instance variables for per-object state. Use class variables for values or behavior shared by instances."
+  ],
+  "gotchas": [
+   "Do not use a mutable class attribute for data that should belong to one instance. Every instance would use the same object.",
+   "Assigning another name does not copy the object. Two names can refer to the same mutable object."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "open": {
+  "sourceUrl": "https://docs.python.org/3/builtins/functions.html",
+  "sourceTitle": "Built-in functions — Python 3.15.2 documentation",
+  "summary": "open() opens a path or file descriptor and returns a file object. Its mode chooses reading, writing, appending, text, binary, or update behavior.",
+  "explanation": "open() creates and returns a file object for a path or file descriptor. Its mode controls reading, writing, appending, binary data, or updating. Text files can use an explicit encoding, and the returned object should usually be used with with so it closes automatically.",
+  "syntax": "open(file, mode='r', buffering=-1, encoding=None, errors=None, newline=None, closefd=True, opener=None)",
+  "parameters": [
+   {
+    "name": "file",
+    "type": "path-like object | int",
+    "description": "A path-like object or an integer file descriptor."
+   },
+   {
+    "name": "mode",
+    "type": "str",
+    "description": "The access and I/O mode, such as r, w, x, a, b, t, or +."
+   },
+   {
+    "name": "buffering",
+    "type": "int",
+    "description": "The buffering policy; -1 selects the default."
+   },
+   {
+    "name": "encoding",
+    "type": "str | None",
+    "description": "The text encoding. Use only in text mode."
+   },
+   {
+    "name": "errors",
+    "type": "str | None",
+    "description": "The encoding error handler. It cannot be used in binary mode."
+   },
+   {
+    "name": "newline",
+    "type": "str | None",
+    "description": "How newline characters are read and written."
+   },
+   {
+    "name": "closefd",
+    "type": "bool",
+    "description": "Whether a passed file descriptor closes with the returned object."
+   },
+   {
+    "name": "opener",
+    "type": "callable | None",
+    "description": "A callable that supplies the underlying file descriptor."
+   }
+  ],
+  "returns": "A file object. Its concrete type depends on the mode: text mode returns a TextIOWrapper, buffered binary mode returns a buffered binary stream, and unbuffered mode returns a raw stream.",
+  "example": {
+   "title": "Read a text file",
+   "code": "with open(\"notes.txt\", \"r\", encoding=\"utf-8\") as file:\n    text = file.read()\nprint(text)",
+   "language": "python",
+   "explanation": "This opens a text file for reading with UTF-8 encoding. The with statement closes the file when the block ends, including when an error occurs."
+  },
+  "useCases": [
+   {
+    "title": "Open a text file for reading",
+    "scenario": "Read text data"
+   },
+   {
+    "title": "Create or replace text output",
+    "scenario": "Write a new file"
+   },
+   {
+    "title": "Read or write binary files",
+    "scenario": "Process raw data"
+   },
+   {
+    "title": "Append text without replacing existing content",
+    "scenario": "Add records"
+   }
+  ],
+  "related": [
+   "io",
+   "os",
+   "os.path",
+   "tempfile",
+   "shutil",
+   "read",
+   "write"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does open() do, and what is its default mode?",
+    "answer": "The default mode is r, which opens a text file for reading. Other modes include w for writing and truncating, x for exclusive creation, and a for appending.",
+    "followUp": "How would you read raw bytes? Use a binary mode such as rb and leave encoding unspecified."
+   },
+   {
+    "question": "What is the difference between text and binary mode?",
+    "answer": "Use b in the mode, such as rb or wb, for binary I/O. Text mode decodes input and encodes output, while binary mode works with bytes without text encoding.",
+    "followUp": "Why should encoding be omitted in binary mode? The documentation says encoding is for text mode, so it is not valid for binary data."
+   },
+   {
+    "question": "How should a file opened by open() be closed?",
+    "answer": "The with statement manages the returned file object and closes it when the block ends. A file descriptor passed as file is also closed with the returned I/O object unless closefd=False.",
+    "followUp": "When can closefd be False? Only when file is a file descriptor; using closefd=False with a filename raises an error."
+   }
+  ],
+  "keyPoints": [
+   "open() takes a path-like object or a file descriptor and returns a corresponding file object.",
+   "The default is text reading mode, written as r or rt.",
+   "Use w to write from the start; an existing file is truncated first.",
+   "The encoding argument selects how text is decoded when reading and encoded when writing."
+  ],
+  "gotchas": [
+   "Opening can fail with OSError, such as when the path is missing or access is denied.",
+   "Do not depend on the default text encoding when data must be portable. Pass encoding explicitly.",
+   "buffering=0 is valid only for binary mode.",
+   "Do not use the old U mode in current Python."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "Optional": {
   "sourceUrl": "https://docs.python.org/3/library/typing.html",
@@ -7595,75 +9266,94 @@
   "checkedAt": "2026-10-15"
  },
  "print": {
-  "sourceUrl": "https://docs.python.org/3.16/library/functions.html",
-  "sourceTitle": "Built-in Functions — Python 3.16.0a0 documentation",
-  "summary": "Writes zero or more objects to a text stream, separating them with sep and ending with end. The destination and flushing behavior can be customized with keyword-only arguments.",
-  "explanation": "Call print() with zero or more objects. Python converts the objects for text output, joins them with sep, appends end, and writes the result to file; flush=True requests an immediate flush of that stream.",
+  "sourceUrl": "https://docs.python.org/3/builtins/functions.html",
+  "sourceTitle": "Built-in Functions — Python 3.15.2 documentation",
+  "summary": "`print()` writes text to a stream. It converts objects to strings, separates them with `sep`, and adds `end`.",
+  "explanation": "`print()` converts each positional object to text and writes the results to a text stream. It places `sep` between objects and adds `end` afterward; without `file`, it writes to standard output.",
   "syntax": "print(*objects, sep=' ', end='\\n', file=None, flush=False)",
   "parameters": [
    {
     "name": "*objects",
     "type": "object",
-    "description": "Objects to convert and write; any number may be supplied."
+    "description": "Objects to convert to text and write."
    },
    {
     "name": "sep",
-    "type": "str or None",
-    "description": "Text inserted between objects; defaults to a single space."
+    "type": "str | None",
+    "description": "Text placed between objects. The default is a space."
    },
    {
     "name": "end",
-    "type": "str or None",
-    "description": "Text appended after the final object; defaults to a newline."
+    "type": "str | None",
+    "description": "Text written after the objects. The default is a newline."
    },
    {
     "name": "file",
-    "type": "object with write method or None",
-    "description": "Text stream receiving the output; defaults to standard output."
+    "type": "text stream | None",
+    "description": "Text stream receiving the output. `None` uses standard output."
    },
    {
     "name": "flush",
     "type": "bool",
-    "description": "Whether to flush the output stream immediately; defaults to False."
+    "description": "Whether to force a stream flush."
    }
   ],
-  "returns": "Returns None.",
+  "returns": "None",
   "example": {
-   "title": "Custom separator",
-   "code": "print(\"status\", 200, sep=\": \", end=\"\\n\")",
+   "title": "Print formatted text",
+   "code": "print(\"Hello\", \"world\", sep=\", \", end=\"!\\n\")",
    "language": "python",
-   "explanation": "Prints two values with a custom separator and the default line ending."
+   "explanation": "Writes two values with a comma and space between them, then ends the line with an exclamation mark."
   },
   "useCases": [
    {
     "title": "Console output",
-    "scenario": "Display status, results, or diagnostic information during a script run."
+    "scenario": "Show a status message or result in a command-line program."
    },
    {
-    "title": "Formatted output",
-    "scenario": "Control spacing or line endings when composing text output."
+    "title": "Format output",
+    "scenario": "Create simple structured text with custom separators or line endings."
    },
    {
-    "title": "Stream output",
-    "scenario": "Send output to a writable text stream instead of standard output."
+    "title": "Write to a stream",
+    "scenario": "Send text to a log or another text stream."
    }
   ],
   "related": [
    "str()",
-   "repr()",
-   "input()",
+   "open()",
    "sys.stdout"
   ],
   "since": "",
+  "interview": [
+   {
+    "question": "What does `print()` do?",
+    "answer": "`print()` writes text to a stream. It converts positional objects like `str()`, separates them with `sep`, and appends `end`.",
+    "followUp": "How can output be sent to a file? Pass a text stream with `file=`, such as an object returned by `open()`."
+   },
+   {
+    "question": "What are the default `sep` and `end` values?",
+    "answer": "The default separator is one space, and the default ending is a newline. Both arguments can also be set to `None` to request their default values.",
+    "followUp": "How would you print values on one line? Use `end=\"\"` or another string without a newline."
+   },
+   {
+    "question": "When is `flush` useful?",
+    "answer": "`flush=True` forces the stream to flush after writing. Otherwise, buffering is usually controlled by the selected file stream.",
+    "followUp": "What restriction applies to `file`? It must provide a `write(string)` method and should be a text stream."
+   }
+  ],
   "keyPoints": [
-   "print() writes its objects to a text stream, places sep between them, and appends end.",
-   "The separator, terminator, destination stream, and flushing option are keyword-only arguments.",
-   "print() is a built-in function, so ordinary Python code can use it without importing a module."
+   "The function writes objects to a text stream, using a separator and an ending string.",
+   "Each object is converted to text before it is written.",
+   "Calling `print()` with no objects writes only the ending string.",
+   "A custom output target must provide `write(string)`.",
+   "Set `flush=True` when the output must be sent through the stream immediately."
   ],
   "gotchas": [
-   "The formatting and output-stream options are keyword-only; pass them by name rather than position."
+   "Use `sep`, `end`, `file`, and `flush` by keyword, not as extra positional arguments.",
+   "Do not pass a binary-mode file to `print()`; use the file object's `write()` method instead."
   ],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-11-03"
  },
  "property": {
   "sourceUrl": "https://docs.python.org/3/builtins/functions.html",
@@ -7751,30 +9441,36 @@
  },
  "Protocol": {
   "sourceUrl": "https://docs.python.org/3/library/typing.html",
-  "sourceTitle": "typing — Support for type hints",
-  "summary": "typing.Protocol defines interfaces for structural subtyping. Static type checkers can accept any class that supplies the protocol’s declared members, even without explicit inheritance.",
-  "explanation": "Protocol defines an interface for structural subtyping: a class can satisfy the protocol by providing the declared members, without inheriting from it. Static type checkers use this relationship; runtime checks require the separate runtime_checkable decorator and only test attribute presence.",
-  "syntax": "class Protocol(Generic)",
-  "parameters": [],
-  "returns": "",
+  "sourceTitle": "typing — Support for type hints — Python 3.15.2 documentation",
+  "summary": "Protocol defines an interface through required methods or attributes. Static type checkers accept objects that match this structure, even without inheritance.",
+  "explanation": "Protocol defines an interface by listing the methods or attributes an object must provide. A type checker can accept any class that matches that structure, even when the class does not inherit from the protocol.",
+  "syntax": "class Name(Protocol): ...",
+  "parameters": [
+   {
+    "name": "object_or_class",
+    "type": "object or class",
+    "description": "The object or class checked against a protocol when using isinstance() or issubclass()."
+   }
+  ],
+  "returns": "A protocol class describes the required interface. Functions annotated with it may accept any object whose structure matches the protocol.",
   "example": {
-   "title": "Structural interface for closeable objects",
-   "code": "from typing import Protocol\n\nclass SupportsClose(Protocol):\n    def close(self) -> None: ...\n\ndef shut(resource: SupportsClose) -> None:\n    resource.close()\n\nclass FileLike:\n    def close(self) -> None:\n        print(\"closed\")\n\nshut(FileLike())",
+   "title": "A structural protocol",
+   "code": "from typing import Protocol\n\nclass HasMethod(Protocol):\n    def meth(self) -> int: ...\n\nclass Item:\n    def meth(self) -> int:\n        return 42\n\ndef use(item: HasMethod) -> int:\n    return item.meth()\n\nprint(use(Item()))",
    "language": "python",
-   "explanation": "FileLike satisfies SupportsClose structurally because it defines the required close method; no explicit inheritance is needed."
+   "explanation": "Item does not inherit from HasMethod, but its method matches the protocol, so a type checker accepts it."
   },
   "useCases": [
    {
-    "title": "Structural interfaces",
-    "scenario": "Annotate functions that accept any object implementing a known set of methods."
+    "title": "Share an interface without shared inheritance",
+    "scenario": "Several unrelated classes provide the same methods."
    },
    {
-    "title": "Generic protocols",
-    "scenario": "Define reusable generic interfaces whose members preserve a type parameter."
+    "title": "Type function inputs by behavior",
+    "scenario": "A function should accept any object with a required operation."
    },
    {
-    "title": "Runtime capability checks",
-    "scenario": "Add optional runtime attribute-presence checks with @runtime_checkable."
+    "title": "Check required names at runtime",
+    "scenario": "A simple runtime presence check is needed."
    }
   ],
   "related": [
@@ -7783,16 +9479,106 @@
    "typing.TypeVar"
   ],
   "since": "3.8",
+  "interview": [
+   {
+    "question": "What is a Protocol?",
+    "answer": "Protocol describes a required interface. Static type checkers use structural subtyping, so a class can match the protocol without inheriting from it.",
+    "followUp": "How can a protocol be checked at runtime? Add runtime_checkable, then use isinstance() or issubclass(); the check only tests required names."
+   },
+   {
+    "question": "How do you define a protocol?",
+    "answer": "Define a class that inherits from Protocol and declare the required methods or attributes. Generic protocols can also use a type variable.",
+    "followUp": "Why use a protocol instead of a base class? It lets unrelated classes match the same interface without changing their inheritance."
+   },
+   {
+    "question": "What does runtime_checkable do?",
+    "answer": "runtime_checkable enables isinstance() and issubclass() for a protocol. These checks ignore method signatures and types, so static checking is still needed for full type validation.",
+    "followUp": "What should performance-sensitive code consider? Prefer an alternative such as hasattr() when a structural name check is enough."
+   }
+  ],
   "keyPoints": [
-   "Protocol is the base class used to declare protocol interfaces.",
-   "Protocols let static type checkers accept objects based on the members they provide rather than explicit inheritance.",
-   "A protocol may be parameterized with type variables when the interface needs to preserve a value type.",
-   "Protocol annotations guide type checking; Python itself does not enforce ordinary annotations during execution."
+   "Create a protocol by inheriting from typing.Protocol.",
+   "Protocols are mainly for static type checkers.",
+   "A matching class does not need to inherit from the protocol.",
+   "Protocols may include type variables for reusable typed interfaces."
   ],
   "gotchas": [
-   "A protocol that is not decorated with @runtime_checkable cannot be passed to isinstance() or issubclass()."
+   "A protocol cannot be used with isinstance() or issubclass() unless it has the runtime_checkable decorator.",
+   "runtime_checkable checks only whether required names exist. It does not check their annotations or value types.",
+   "Runtime protocol checks may be slower than ordinary isinstance() checks."
   ],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-11-03"
+ },
+ "pytest": {
+  "sourceUrl": "https://docs.python.org/3/library/unittest.html",
+  "sourceTitle": "unittest — Unit testing framework — Python 3.15.2 documentation",
+  "summary": "Python's unittest module helps automate tests, reuse setup and cleanup, group tests, and report results. Tests usually subclass unittest.TestCase and use methods whose names start with test.",
+  "explanation": "Create a class that inherits from unittest.TestCase. Add methods whose names begin with test. Use assertion methods to check results, conditions, or expected exceptions. Run unittest.main() when the file is executed directly.",
+  "syntax": "class TestName(unittest.TestCase):\n    def test_name(self):\n        ...",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "A small unittest test",
+   "code": "import unittest\n\nclass TestStringMethods(unittest.TestCase):\n    def test_upper(self):\n        self.assertEqual(\"foo\".upper(), \"FOO\")\n\nif __name__ == \"__main__\":\n    unittest.main()",
+   "language": "python",
+   "explanation": "Run this file to execute the test method and report its result."
+  },
+  "useCases": [
+   {
+    "title": "Result checks",
+    "scenario": "Check that a function returns the expected value."
+   },
+   {
+    "title": "Exception checks",
+    "scenario": "Confirm that code raises the expected exception."
+   },
+   {
+    "title": "Test fixtures",
+    "scenario": "Prepare and clean up shared resources for tests."
+   },
+   {
+    "title": "Test suites and runners",
+    "scenario": "Run collections of tests and report their outcomes."
+   }
+  ],
+  "related": [
+   "unittest.TestCase",
+   "unittest.main",
+   "assertEqual",
+   "assertTrue",
+   "assertFalse",
+   "assertRaises"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you create a basic unittest test?",
+    "answer": "Subclass unittest.TestCase to define a test case. Put each test in a method whose name starts with test, then use assertions such as assertEqual, assertTrue, or assertRaises.",
+    "followUp": "How can a test verify an exception? Use assertRaises as a context manager around the code that should raise it."
+   },
+   {
+    "question": "What is a test fixture?",
+    "answer": "A test fixture contains preparation and cleanup needed by one or more tests. It can create resources such as temporary directories or databases and remove them afterward.",
+    "followUp": "Why use fixtures? They keep setup and cleanup consistent while allowing tests to remain focused on the behavior being checked."
+   },
+   {
+    "question": "What does a test runner do?",
+    "answer": "A test runner controls test execution and reports the outcome. It may provide a text interface, a graphical interface, or a result value.",
+    "followUp": "How are tests grouped? Test suites collect tests that should be executed together, and a runner executes the collection."
+   }
+  ],
+  "keyPoints": [
+   "unittest follows a style similar to JUnit and other unit testing frameworks.",
+   "It supports automated tests and shared setup and cleanup code.",
+   "A TestCase represents one unit of testing.",
+   "The test runner discovers test methods by their names.",
+   "Use assertEqual when an actual result must match an expected value.",
+   "Use assertTrue or assertFalse to check Boolean conditions."
+  ],
+  "gotchas": [
+   "Only methods with names starting with test are collected as test methods."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "raise": {
   "sourceUrl": "https://docs.python.org/3/reference/simple_stmts.html",
@@ -7953,6 +9739,176 @@
    "Do not use this module for passwords, tokens, or other security-sensitive values; use the secrets module instead."
   ],
   "checkedAt": "2026-10-16"
+ },
+ "range": {
+  "sourceUrl": "https://docs.python.org/3/builtins/functions.html",
+  "sourceTitle": "Built-in Functions — Python 3.15.2 documentation",
+  "summary": "`sorted()` returns a new list with the items from an iterable in sorted order. Use `key` to control comparisons and `reverse=True` for descending order.",
+  "explanation": "`sorted()` reads items from an iterable and returns a new list in order. Use `key` to choose the value used for comparison, and use `reverse=True` for descending order.",
+  "syntax": "sorted(iterable, /, *, key=None, reverse=False)",
+  "parameters": [
+   {
+    "name": "iterable",
+    "type": "iterable",
+    "description": "The iterable whose items should be sorted."
+   },
+   {
+    "name": "key",
+    "type": "callable | None",
+    "description": "A one-argument function that extracts a comparison value. The default is `None`."
+   },
+   {
+    "name": "reverse",
+    "type": "bool",
+    "description": "If `True`, sort in reverse order. The default is `False`."
+   }
+  ],
+  "returns": "A new list containing the items from `iterable` in sorted order.",
+  "example": {
+   "title": "Sort values without changing the input",
+   "code": "values = [3, 1, 2]\nresult = sorted(values)\nprint(result)",
+   "language": "python",
+   "explanation": "This creates a new list in ascending order. The original list stays unchanged."
+  },
+  "useCases": [
+   {
+    "title": "Make a sorted copy",
+    "scenario": "Create an ordered copy while keeping the source list unchanged."
+   },
+   {
+    "title": "Sort by a key",
+    "scenario": "Order records by a selected field or computed value."
+   },
+   {
+    "title": "Reverse the order",
+    "scenario": "Show values from largest to smallest."
+   }
+  ],
+  "related": [
+   "list.sort",
+   "reversed",
+   "key"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does `sorted()` return?",
+    "answer": "`sorted()` consumes an iterable and returns a new sorted list. It does not modify the original iterable.",
+    "followUp": "How would you sort objects by one field? Pass a one-argument function such as `key=lambda item: item.name`."
+   },
+   {
+    "question": "What is the purpose of `key`?",
+    "answer": "`key` receives each item and produces the value used for comparison. It must be supplied as a keyword argument.",
+    "followUp": "How would you sort by length in descending order? Use `sorted(items, key=len, reverse=True)`."
+   },
+   {
+    "question": "How do you sort in reverse order?",
+    "answer": "Set `reverse=True` to produce descending order. The default is `False`, so the normal order is ascending.",
+    "followUp": "Can the original list be changed by `sorted()`? No. Use `list.sort()` when an in-place change is required."
+   }
+  ],
+  "keyPoints": [
+   "The result is always a new list containing the iterable's items in sorted order.",
+   "Use `key` to transform each item into the value used for ordering.",
+   "`reverse` controls whether the result uses normal or reversed order.",
+   "If `key` is omitted, sorting compares the items directly."
+  ],
+  "gotchas": [
+   "The `key` and `reverse` options must be passed by name, not as positional arguments.",
+   "Without `key`, the items themselves must support the needed comparisons."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "re": {
+  "sourceUrl": "https://docs.python.org/3/library/re.html",
+  "sourceTitle": "re — Regular expression operations — Python 3.15.2 documentation",
+  "summary": "Python’s `re` module performs regular expression matching and text replacement. Patterns can be compiled and reused, or passed directly to module functions.",
+  "explanation": "The `re` module lets Python find, test, split, and replace text using regular expression patterns. Compile a pattern when you want a reusable pattern object, then call methods such as `search()` or `match()`.",
+  "syntax": "re.compile(pattern, flags=0)",
+  "parameters": [
+   {
+    "name": "pattern",
+    "type": "str | bytes",
+    "description": "The regular expression pattern, given as a string or bytes object."
+   },
+   {
+    "name": "string",
+    "type": "str | bytes",
+    "description": "The text or bytes object to inspect. It must have the same type as the pattern."
+   },
+   {
+    "name": "flags",
+    "type": "RegexFlag",
+    "description": "Optional flags that change matching behavior, such as `re.IGNORECASE` or `re.MULTILINE`."
+   }
+  ],
+  "returns": "Matching operations return a match object when successful and `None` otherwise. Collection operations can return strings, match objects, or replacement results depending on the operation.",
+  "example": {
+   "title": "Search for a matching word",
+   "code": "import re\n\npattern = re.compile(r\"\\b\\w+@\\w+\\.com\\b\")\ntext = \"Contact dev@example.com today.\"\nmatch = pattern.search(text)\n\nprint(match.group() if match else \"No match\")",
+   "language": "python",
+   "explanation": "This compiles a pattern, searches for the first matching email-like text, and prints it."
+  },
+  "useCases": [
+   {
+    "title": "Validate text",
+    "scenario": "Check whether input follows a pattern, such as a simple identifier or date."
+   },
+   {
+    "title": "Search text",
+    "scenario": "Find matching words or records inside a larger string."
+   },
+   {
+    "title": "Extract data",
+    "scenario": "Extract repeated matches from logs or documents."
+   },
+   {
+    "title": "Transform text",
+    "scenario": "Replace or divide text using a pattern."
+   }
+  ],
+  "related": [
+   "re.compile",
+   "re.search",
+   "re.match",
+   "re.fullmatch",
+   "re.findall",
+   "re.finditer",
+   "re.split",
+   "re.sub"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is the difference between searching and matching?",
+    "answer": "`search()` scans through the string and returns a match at any location. A beginning-matching operation only succeeds when the pattern starts at the beginning of the string.",
+    "followUp": "How can the pattern match at every line start? Use `re.MULTILINE`, which makes `^` match after each newline as well as at the start of the string."
+   },
+   {
+    "question": "How do common repetition operators work?",
+    "answer": "`*` allows zero or more repetitions, while `+` requires at least one. `?` allows zero or one repetition, and `{m,n}` sets a minimum and maximum.",
+    "followUp": "What does adding `?` after a repetition operator do? It makes the repetition non-greedy, so it tries to consume as little text as possible."
+   },
+   {
+    "question": "What is a character class?",
+    "answer": "A character class, such as `[abc]`, matches one character from its listed set. A leading `^`, as in `[^5]`, complements the set and matches a character not listed there.",
+    "followUp": "What changes inside a character class? Most special characters lose their special meaning, but backslash still escapes characters or introduces special sequences."
+   }
+  ],
+  "keyPoints": [
+   "Ordinary characters usually match themselves. Special characters change matching rules or represent character sets.",
+   "Compile a pattern with optional flags, such as `re.IGNORECASE`, to change matching behavior.",
+   "Default repetition is greedy: it tries to consume as much text as possible, then may backtrack if later parts fail.",
+   "Use forms such as `*?`, `+?`, and `{m,n}?` when the pattern should consume as little text as possible.",
+   "Possessive forms such as `*+`, `++`, and `?+` do not backtrack after consuming text.",
+   "Use `(?:...)` to group a pattern without storing the group's matched text for later retrieval."
+  ],
+  "gotchas": [
+   "Do not mix `str` patterns with `bytes` text, or `bytes` patterns with `str` text. Replacement text must also use the same type.",
+   "Prefer raw strings such as `r\"\\d+\"` for patterns. This avoids Python string escaping changing backslashes before the regular expression engine sees them.",
+   "A dot does not match a newline unless `re.DOTALL` is enabled."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "repr": {
   "sourceUrl": "https://docs.python.org/3/builtins/functions.html",
@@ -8321,6 +10277,86 @@
    "Every element must be hashable, so mutable containers such as lists cannot be direct set members."
   ],
   "checkedAt": "2026-10-15"
+ },
+ "setattr": {
+  "sourceUrl": "https://docs.python.org/3/builtins/functions.html",
+  "sourceTitle": "Built-in Functions",
+  "summary": "setattr() assigns a value to an object's named attribute. It is useful when the attribute name is stored in a string or computed at runtime.",
+  "explanation": "setattr() assigns a value to an attribute on an object. The object must allow that assignment. The attribute name is given as a string, so the name can be calculated at runtime.",
+  "syntax": "setattr(object, name, value, /)",
+  "parameters": [
+   {
+    "name": "object",
+    "type": "object",
+    "description": "The object whose attribute is changed."
+   },
+   {
+    "name": "name",
+    "type": "string",
+    "description": "The attribute name."
+   },
+   {
+    "name": "value",
+    "type": "arbitrary value",
+    "description": "The value assigned to the attribute."
+   }
+  ],
+  "returns": "The documentation does not specify a return value.",
+  "example": {
+   "title": "Set an object attribute",
+   "code": "class User:\n    pass\n\nuser = User()\nsetattr(user, \"role\", \"admin\")\nprint(user.role)",
+   "language": "python",
+   "explanation": "This creates an attribute named role and then reads it with dot notation."
+  },
+  "useCases": [
+   {
+    "title": "Dynamic attribute names",
+    "scenario": "A program receives an attribute name from configuration and must assign its value."
+   },
+   {
+    "title": "Add object state",
+    "scenario": "A library adds optional state to an object without using fixed dot notation."
+   },
+   {
+    "title": "Update object fields",
+    "scenario": "Code updates an existing attribute when the field name is known only at runtime."
+   }
+  ],
+  "related": [
+   "getattr()",
+   "delattr()",
+   "__getattribute__()",
+   "__slots__"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does setattr() do?",
+    "answer": "setattr(object, name, value) assigns value to the named attribute of object. The object must permit the assignment.",
+    "followUp": "What happens with a name containing characters that are not valid in an identifier? It can still be stored, but dot notation cannot access it; getattr() can."
+   },
+   {
+    "question": "What are the arguments to setattr()?",
+    "answer": "The name argument is a string. It may refer to an existing attribute or define a new one, depending on what the object allows.",
+    "followUp": "How can code read the resulting attribute? Use getattr(object, name), or use dot notation when name is a valid identifier known in the source code."
+   },
+   {
+    "question": "How does setattr() handle private attributes?",
+    "answer": "Private-name transformation is performed when Python compiles source code. setattr() receives the actual string, so code must manually create the mangled name for a double-leading-underscore attribute.",
+    "followUp": "Why can a class with __slots__ reject setattr()? Because the object may restrict which attributes can be assigned."
+   }
+  ],
+  "keyPoints": [
+   "setattr() is the assignment counterpart of getattr().",
+   "It takes an object, an attribute name as a string, and any value.",
+   "The named attribute may already exist, or setattr() may create it.",
+   "Assignment succeeds only when the object permits that attribute change."
+  ],
+  "gotchas": [
+   "An attribute name does not have to be a valid Python identifier. Such a name cannot be used with dot notation, but it can be accessed with getattr().",
+   "For a private attribute with two leading underscores, name mangling must be done manually before using setattr()."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "shutil": {
   "sourceUrl": "https://docs.python.org/3/library/shutil.html",
@@ -8993,6 +11029,78 @@
   ],
   "checkedAt": "2026-10-15"
  },
+ "super": {
+  "sourceUrl": "https://docs.python.org/3/builtins/functions.html",
+  "sourceTitle": "Built-in functions — Python 3.15.2 documentation",
+  "summary": "super() returns a proxy for accessing inherited methods and attributes. It follows Python's method resolution order and supports ordinary inheritance and cooperative multiple inheritance.",
+  "explanation": "super() returns a proxy that looks up attributes after a specified class in the method resolution order. In a normal method, zero-argument super() uses the enclosing class and the method's first argument automatically. This lets overridden methods call inherited behavior without naming the parent class.",
+  "syntax": "super(type, object_or_type=None, /)",
+  "parameters": [
+   {
+    "name": "type",
+    "type": "type",
+    "description": "The class where the search begins. Lookup continues after this class in the method resolution order."
+   },
+   {
+    "name": "object_or_type",
+    "type": "object or type",
+    "description": "An object or type used to determine the method resolution order. It is optional in zero-argument form."
+   }
+  ],
+  "returns": "A proxy object that performs method and attribute lookup through the relevant method resolution order.",
+  "example": {
+   "title": "Call an inherited method",
+   "code": "class Parent:\n    def greet(self):\n        return \"hello\"\n\nclass Child(Parent):\n    def greet(self):\n        return super().greet() + \" from child\"\n\nprint(Child().greet())",
+   "language": "python",
+   "explanation": "The child method uses zero-argument super() to call the inherited method."
+  },
+  "useCases": [
+   {
+    "title": "Call inherited behavior",
+    "scenario": "An overridden method needs the inherited implementation without naming a parent class."
+   },
+   {
+    "title": "Cooperative multiple inheritance",
+    "scenario": "Several classes share a method and each class should participate in the runtime method order."
+   }
+  ],
+  "related": [
+   "getattr()",
+   "isinstance()",
+   "issubclass()",
+   "__mro__"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does super() do?",
+    "answer": "super() returns a proxy for method and attribute lookup. The lookup starts after the specified class in the method resolution order.",
+    "followUp": "How does zero-argument super() work? In an ordinary class method, Python supplies the enclosing class and the method's first argument."
+   },
+   {
+    "question": "What arguments can super() accept?",
+    "answer": "The two-argument form is super(type, object_or_type). If the second value is an object, it must be an instance of type; if it is a type, that type must be a subclass of the first argument.",
+    "followUp": "Why can the second argument be a type? This supports uses such as class methods, where the lookup is based on a class rather than an instance."
+   },
+   {
+    "question": "Why use super() with multiple inheritance?",
+    "answer": "super() supports cooperative multiple inheritance because lookup follows the method resolution order. Each class can call super(), allowing the runtime order to include sibling classes in a diamond hierarchy.",
+    "followUp": "What design rule helps cooperative inheritance work? Implementations should use compatible calling signatures because the runtime determines the call order."
+   }
+  ],
+  "keyPoints": [
+   "super() creates a proxy that forwards method calls to an inherited class or a sibling found by method resolution order.",
+   "Lookup begins immediately after the specified class in the method resolution order.",
+   "The object's class __mro__ shows the order used by super() and getattr().",
+   "Use super() to access inherited attributes as well as methods.",
+   "Python 3.14 added support for copying and pickling super objects."
+  ],
+  "gotchas": [
+   "Zero-argument super() cannot be used as expected in nested functions, including generator expressions.",
+   "Use explicit dotted lookups such as super().method(); subscription syntax such as super()[name] is not supported."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "sys": {
   "sourceUrl": "https://docs.python.org/3/library/sys.html",
   "sourceTitle": "sys — System-specific parameters and functions",
@@ -9066,6 +11174,103 @@
    "sys.executable is not guaranteed to contain a usable path; handle an empty string or None."
   ],
   "checkedAt": "2026-10-15"
+ },
+ "threading": {
+  "sourceUrl": "https://docs.python.org/3/library/threading.html",
+  "sourceTitle": "threading — Thread-based parallelism — Python 3.15.2 documentation",
+  "summary": "Python's threading module runs multiple threads in one process. It is mainly useful for concurrent I/O-bound work.",
+  "explanation": "The threading module creates and manages threads inside one process. Threads share memory and are useful when tasks spend time waiting for input or output, such as network or file operations.",
+  "syntax": "threading.Thread(group=None, target=None, name=None, args=(), kwargs={}, *, daemon=None, context=None)",
+  "parameters": [
+   {
+    "name": "target",
+    "type": "callable or None",
+    "description": "Callable executed by run(); defaults to no call."
+   },
+   {
+    "name": "args",
+    "type": "tuple",
+    "description": "Positional arguments passed to target."
+   },
+   {
+    "name": "kwargs",
+    "type": "dict",
+    "description": "Keyword arguments passed to target."
+   },
+   {
+    "name": "name",
+    "type": "str or None",
+    "description": "Thread name."
+   },
+   {
+    "name": "daemon",
+    "type": "bool or None",
+    "description": "Whether this is a daemon thread."
+   }
+  ],
+  "returns": "Thread objects are returned by Thread construction. start() begins execution; join() waits for termination; is_alive() returns whether the thread is alive.",
+  "example": {
+   "title": "Run several tasks with threads",
+   "code": "import threading\nimport time\n\ndef fetch(name):\n    print(f\"start: {name}\")\n    time.sleep(0.2)\n    print(f\"done: {name}\")\n\nthreads = [\n    threading.Thread(target=fetch, args=(name,))\n    for name in [\"one\", \"two\", \"three\"]\n]\n\nfor thread in threads:\n    thread.start()\nfor thread in threads:\n    thread.join()",
+   "language": "python",
+   "explanation": "Each thread runs the same function with a different argument. The main thread starts them, then waits for all of them with join()."
+  },
+  "useCases": [
+   {
+    "title": "Concurrent I/O",
+    "scenario": "Several network requests or file operations can wait at the same time."
+   },
+   {
+    "title": "Background workers",
+    "scenario": "A worker can process items while the main thread continues other work."
+   },
+   {
+    "title": "Shared in-process tasks",
+    "scenario": "A program needs multiple activities that share process memory."
+   }
+  ],
+  "related": [
+   "threading.Thread",
+   "threading.current_thread",
+   "threading.enumerate",
+   "threading.main_thread",
+   "threading.Event",
+   "threading.Lock",
+   "threading.RLock",
+   "threading.Condition"
+  ],
+  "since": "3.3",
+  "interview": [
+   {
+    "question": "When is Python threading a good choice?",
+    "answer": "Threading lets several tasks run concurrently in one process. The threads share the process memory, so it fits tasks that wait for I/O.",
+    "followUp": "What should you use for CPU-heavy work in normal CPython? Use multiprocessing or concurrent.futures.ProcessPoolExecutor, because the GIL limits Python bytecode execution to one thread at a time."
+   },
+   {
+    "question": "How do you start and wait for a Thread?",
+    "answer": "Call start() to begin a thread. Call join() when another thread must wait until it finishes.",
+    "followUp": "What happens if join() is not called? The caller does not wait for that thread, so program coordination can occur before the worker finishes."
+   },
+   {
+    "question": "What is a daemon thread?",
+    "answer": "A daemon thread does not keep the program running when only daemon threads remain. The initial value comes from the creating thread, or it can be set with the daemon argument or property.",
+    "followUp": "Why can daemon threads be unsafe for cleanup? Python stops them abruptly during shutdown, so resources may remain open or unfinished."
+   }
+  ],
+  "keyPoints": [
+   "A thread is a smaller unit of work that can run alongside other threads in the same process.",
+   "Use threads for work that often waits for files, networks, or other external resources.",
+   "join() makes the caller wait until the selected thread ends.",
+   "Use is_alive() to check whether a thread has started and has not yet finished.",
+   "enumerate() returns currently active Thread objects, including daemon and dummy threads.",
+   "main_thread() identifies the thread where the interpreter normally started."
+  ],
+  "gotchas": [
+   "Do not use daemon threads when cleanup matters. They may stop before closing files or completing database work.",
+   "In normal CPython builds, threads do not usually speed up CPU-heavy Python code. Use processes for that workload.",
+   "Do not treat get_ident() values as permanent identifiers."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "time": {
   "sourceUrl": "https://docs.python.org/3/library/time.html",
@@ -9295,58 +11500,157 @@
   ],
   "checkedAt": "2026-10-15"
  },
+ "Tuple": {
+  "sourceUrl": "https://docs.python.org/3/library/typing.html",
+  "sourceTitle": "typing — Support for type hints — Python 3.15.2 documentation",
+  "summary": "Python typing lets you describe tuple contents. Use one type per fixed position, or use tuple[T, ...] for any-length tuples containing only T.",
+  "explanation": "Use tuple with type arguments to describe tuple contents. Give one type for each fixed position, or use an ellipsis after one type when every item has the same type and the length can vary.",
+  "syntax": "tuple[T1, T2, ...]\ntuple[T, ...]\ntuple[()]",
+  "parameters": [
+   {
+    "name": "type arguments",
+    "type": "type",
+    "description": "The type of the first tuple position, or the repeated item type when followed by an ellipsis."
+   },
+   {
+    "name": "...",
+    "type": "ellipsis",
+    "description": "Use three dots after one type to allow any tuple length with that repeated item type."
+   }
+  ],
+  "returns": "A type annotation describing the permitted tuple shape and item types.",
+  "example": {
+   "title": "Annotate tuples with fixed or repeated item types",
+   "code": "from typing import Tuple\n\npoint: Tuple[int, str] = (7, \"seven\")\nvalues: Tuple[int, ...] = (1, 2, 3)\n\nprint(point)\nprint(values)",
+   "language": "python",
+   "explanation": "The first annotation describes a tuple with two fixed positions. The second describes a tuple of any length whose items are integers."
+  },
+  "useCases": [
+   {
+    "title": "Describe fixed-position records",
+    "scenario": "A function returns a pair such as an identifier and a label."
+   },
+   {
+    "title": "Describe homogeneous tuples",
+    "scenario": "A function accepts a sequence of values that must all have one type."
+   },
+   {
+    "title": "Describe an empty tuple",
+    "scenario": "An API can return no values in a tuple."
+   }
+  ],
+  "related": [
+   "Any",
+   "Tuple",
+   "TypeVar",
+   "NamedTuple"
+  ],
+  "since": "3.5",
+  "interview": [
+   {
+    "question": "How do you annotate fixed-length and variable-length tuples?",
+    "answer": "Use tuple[int, str] for a two-item tuple whose first item is an integer and second item is a string. Use tuple[int, ...] when the tuple may have any length but every item must be an integer.",
+    "followUp": "How do you annotate an empty tuple? Use tuple[()]."
+   },
+   {
+    "question": "Why does tuple have special typing rules?",
+    "answer": "Most containers use one type argument for their elements. Tuples are different because Python code commonly stores values of different types in them, so tuple accepts several type arguments.",
+    "followUp": "What does tuple[int] mean? It describes a one-item tuple containing an integer, not an arbitrary-length tuple."
+   },
+   {
+    "question": "Does tuple[int, str] allow tuples of any length?",
+    "answer": "A tuple[int, str] annotation describes exactly two positions. Assigning a tuple with a different length does not match that annotation.",
+    "followUp": "How can you describe any length with one item type? Use tuple[T, ...], such as tuple[str, ...]."
+   }
+  ],
+  "keyPoints": [
+   "Use one type argument per position for a fixed-length tuple, such as tuple[int, str].",
+   "Use tuple[int, ...] for any-length tuples whose items are all integers.",
+   "tuple[int] means a one-item tuple containing an integer. The trailing comma is required to create that runtime tuple.",
+   "A fixed tuple can contain different types at different positions, such as an integer followed by a string."
+  ],
+  "gotchas": [
+   "Do not give list multiple type arguments. Tuples are the special case that can describe different types at different positions.",
+   "Use tuple[()] when an annotation must describe only the empty tuple.",
+   "A plain tuple allows any number of items of any type. It is less precise than specifying the item types."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "type": {
-  "sourceUrl": "https://docs.python.org/3/builtins/functions.html",
-  "sourceTitle": "Built-in functions",
-  "summary": "type() returns an object's runtime type, or creates a new type when called with three arguments. Its one-argument result generally matches the object's __class__.",
-  "explanation": "Call type() with one argument to inspect an object's runtime type. With three arguments, it dynamically creates a new type from a name, base classes, and an attribute namespace; the one-argument form is generally equivalent to accessing object.__class__.",
-  "syntax": "type(object)\ntype(name, bases, dict)",
+  "sourceUrl": "https://docs.python.org/3//builtins/stdtypes.html",
+  "sourceTitle": "Built-in Types — Python 3.15.2 documentation",
+  "summary": "Python built-in types define common behavior for truth tests, comparisons, and numbers. Empty values and numeric zero are false; classes can customize truth testing with __bool__() or __len__().",
+  "explanation": "Python tests an object as true or false in conditions and Boolean expressions. An object is usually true unless its class defines __bool__() to return False or __len__() to return zero. Built-in false values include None, False, numeric zero, and empty collections.",
+  "syntax": "if object:\n    ...\nx < y <= z\nx is y",
   "parameters": [
    {
     "name": "object",
     "type": "object",
-    "description": "The object whose runtime type is requested; alternatively, the three-argument form accepts a name, base classes, and an attribute namespace for creating a type."
+    "description": "The object whose truth value, comparison, or numeric behavior is being used."
    }
   ],
-  "returns": "With one argument, returns the object's type object; the three-argument form creates a new type.",
+  "returns": "Truth tests and comparisons produce Boolean results, except and and or, which return one of their operands. Numeric operators return values of the applicable numeric type.",
   "example": {
-   "title": "Inspect an object's type",
-   "code": "value = 42\nprint(type(value))\nprint(type(value) is int)",
+   "title": "Test a value",
+   "code": "value = 0\n\nif value:\n    print(\"true\")\nelse:\n    print(\"false\")",
    "language": "python",
-   "explanation": "Displays the runtime type of an integer and checks whether that type object is exactly int."
+   "explanation": "The integer 0 is treated as false, so the program prints false."
   },
   "useCases": [
    {
-    "title": "Runtime inspection",
-    "scenario": "Inspecting values during debugging or logging."
+    "title": "Check for an empty value",
+    "scenario": "Validate input before processing it."
    },
    {
-    "title": "Exact type checks",
-    "scenario": "Comparing a value with an exact built-in class."
+    "title": "Chain comparisons",
+    "scenario": "Compare ordered values while avoiding repeated evaluation of the middle value."
    },
    {
-    "title": "Dynamic class creation",
-    "scenario": "Creating classes dynamically from a name, bases, and namespace."
+    "title": "Customize truth testing",
+    "scenario": "Define whether a custom object counts as empty or active."
    }
   ],
   "related": [
-   "object.__class__",
-   "isinstance()",
-   "issubclass()",
-   "types"
+   "bool",
+   "__bool__()",
+   "__len__()",
+   "and",
+   "or",
+   "not",
+   "is",
+   "is not"
   ],
   "since": "",
+  "interview": [
+   {
+    "question": "How does Python decide whether an object is true?",
+    "answer": "Python uses an object's __bool__() method first when truth is tested. If that method is not defined, Python uses __len__(); a zero length means false. Otherwise, the object is true.",
+    "followUp": "What happens if both methods are absent? The object is true by default."
+   },
+   {
+    "question": "Which built-in values are false?",
+    "answer": "None, False, numeric zero, and empty sequences or collections are false. Examples include 0, 0.0, \"\", (), [], {}, set(), and range(0).",
+    "followUp": "Is an empty custom object automatically false? No. It needs __len__() returning zero or __bool__() returning False."
+   },
+   {
+    "question": "How do chained comparisons work?",
+    "answer": "A chained comparison such as x < y <= z checks both comparisons in order. The middle expression y is evaluated only once, and evaluation stops when an earlier comparison is false.",
+    "followUp": "How can identity be tested? Use is or is not; these operators cannot be customized and do not raise comparison exceptions."
+   }
+  ],
   "keyPoints": [
-   "Use type(value) to obtain the runtime type of value.",
-   "The result can be compared with a class object such as int or str.",
-   "type() is available directly; no import is needed.",
-   "A type object represents an object type and does not add special operations through type() itself."
+   "Any object can be used in an if or while condition and receives a truth value.",
+   "A class can control truth testing with __bool__(). Returning False makes the object false.",
+   "The and and or operators return an operand, not necessarily a Boolean result.",
+   "You can write several comparisons in one expression, such as x < y <= z.",
+   "is and is not test object identity and cannot be changed by a class.",
+   "Python has int, float, and complex as its three main built-in numeric types."
   ],
   "gotchas": [
-   "For inspection, type() returns a type object; it is generally the same object available through object.__class__.",
-   "The one-argument form reports an object's type rather than testing whether it belongs to a class hierarchy."
+   "and and or do not always return True or False. They return one of their operands.",
+   "An error raised by __bool__() or __len__() is passed to the caller."
   ],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-11-03"
  },
  "TypedDict": {
   "sourceUrl": "https://docs.python.org/3/library/typing.html?highlight=typeddict",
@@ -10041,6 +12345,175 @@
    "continue does not terminate the loop; it immediately begins another condition test."
   ],
   "checkedAt": "2026-10-16"
+ },
+ "with": {
+  "sourceUrl": "https://docs.python.org/3/reference/compound_stmts.html",
+  "sourceTitle": "8.5. The with statement — Python 3.15.2 documentation",
+  "summary": "The with statement runs a block with a context manager. It calls __enter__() before the block and __exit__() afterward, so setup and cleanup stay together.",
+  "explanation": "Python evaluates the expression to get a context manager, calls its __enter__() method, and runs the indented suite. Afterward, it calls __exit__(); an exception is passed to that method, which can suppress it by returning a true value.",
+  "syntax": "with expression [as target]: suite",
+  "parameters": [
+   {
+    "name": "expression",
+    "type": "expression",
+    "description": "An expression that evaluates to a context manager."
+   },
+   {
+    "name": "target",
+    "type": "assignment target",
+    "description": "Optional target that receives the result of __enter__()."
+   },
+   {
+    "name": "suite",
+    "type": "suite",
+    "description": "Statements controlled by the with clause."
+   }
+  ],
+  "returns": "",
+  "example": {
+   "title": "Read and close a file",
+   "code": "with open(\"notes.txt\", encoding=\"utf-8\") as file:\n    text = file.read()\nprint(text)",
+   "language": "python",
+   "explanation": "The file is opened for the block and closed after the block, including when an error occurs."
+  },
+  "useCases": [
+   {
+    "title": "Manage files",
+    "scenario": "Open a file and ensure it is closed after reading or writing."
+   },
+   {
+    "title": "Manage locks",
+    "scenario": "Acquire a lock for a critical section and release it afterward."
+   },
+   {
+    "title": "Manage temporary state",
+    "scenario": "Temporarily change a resource or execution context, then restore it."
+   }
+  ],
+  "related": [
+   "__enter__()",
+   "__exit__()",
+   "context manager",
+   "try statement",
+   "contextlib"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How does a with statement work?",
+    "answer": "The expression produces a context manager. Python calls __enter__(), optionally assigns its result to the as target, runs the suite, and then calls __exit__().",
+    "followUp": "What arguments does __exit__() receive after an exception? It receives the exception type, value, and traceback."
+   },
+   {
+    "question": "What does the as target receive?",
+    "answer": "The value after as is the result of __enter__(), not necessarily the context manager itself. The target is assigned after __enter__() returns.",
+    "followUp": "What happens if target assignment fails? Python treats it like an error inside the suite and still calls __exit__()."
+   },
+   {
+    "question": "How are multiple with items processed?",
+    "answer": "With multiple items, Python processes them like nested with statements. The first context manager is entered first, and the last one is exited first.",
+    "followUp": "Why does order matter? Each later manager is entered inside the earlier manager's active block, so cleanup happens in reverse order."
+   }
+  ],
+  "keyPoints": [
+   "A with statement surrounds a block with setup and cleanup behavior supplied by a context manager.",
+   "Python calls __enter__() before it starts the with block.",
+   "The optional as target receives the value returned by __enter__().",
+   "Python calls __exit__() after the block finishes.",
+   "__exit__() controls exception handling: false keeps the exception, while true suppresses it.",
+   "Multiple context managers act like nested with statements."
+  ],
+  "gotchas": [
+   "If __enter__() succeeds, __exit__() runs even when assigning the value to the as target or executing the suite fails.",
+   "A context manager can hide an exception by returning a true value from __exit__(); a false value lets the exception continue."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "yield": {
+  "sourceUrl": "https://docs.python.org/3.11/reference/expressions.html?highlight=yield",
+  "sourceTitle": "6. Expressions — Python 3.11.18 documentation",
+  "summary": "A yield expression turns a function into a generator function. It pauses execution, returns a value, and later continues with preserved local state.",
+  "explanation": "A yield expression makes a function a generator function. Calling it returns a generator, but its body does not run until next(), send(), throw(), or another generator method resumes it. Each yield pauses execution while keeping local variables and other execution state. Resuming with next() makes yield produce None; resuming with send(value) makes it produce value.",
+  "syntax": "yield_expression ::= \"yield\" expression_list | yield_from",
+  "parameters": [
+   {
+    "name": "expression_list",
+    "type": "expression list",
+    "description": "Optional expression whose value is produced when the generator pauses. If omitted, the yielded value is None."
+   },
+   {
+    "name": "value",
+    "type": "object",
+    "description": "Value delivered to the paused yield expression by send(). The initial send() must use None."
+   },
+   {
+    "name": "type, value, traceback",
+    "type": "exception arguments",
+    "description": "Exception type, optional value, and optional traceback supplied to throw()."
+   }
+  ],
+  "returns": "A yield expression produces its expression value when suspending. After resumption, it produces None when resumed by next(), or the value passed to send(). Generator methods return the next yielded value or raise StopIteration when the generator finishes.",
+  "example": {
+   "title": "Pause and resume a generator",
+   "code": "def count_up(limit):\n    for number in range(limit):\n        received = yield number\n        if received is not None:\n            print(\"received:\", received)\n\nnumbers = count_up(3)\nprint(next(numbers))\nprint(numbers.send(\"hello\"))\nprint(next(numbers))",
+   "language": "python",
+   "explanation": "The generator pauses at each yield. next() resumes it with None, while send() makes the current yield expression produce the sent value."
+  },
+  "useCases": [
+   {
+    "title": "Lazy iteration",
+    "scenario": "Produce items one at a time instead of building the complete result at once."
+   },
+   {
+    "title": "Two-way generator communication",
+    "scenario": "Pause a function and continue it later with data from send()."
+   },
+   {
+    "title": "Generator control",
+    "scenario": "Inject an exception or request cleanup at a paused point."
+   }
+  ],
+  "related": [
+   "generator functions",
+   "next()",
+   "send()",
+   "throw()",
+   "close()",
+   "StopIteration",
+   "GeneratorExit"
+  ],
+  "since": "2.5",
+  "interview": [
+   {
+    "question": "What does yield do to a function?",
+    "answer": "A function containing yield becomes a generator function. Calling it returns a generator iterator, and the function body starts only when a generator method resumes it.",
+    "followUp": "What state survives a pause? Local variable bindings, the instruction pointer, and the internal evaluation stack are retained."
+   },
+   {
+    "question": "How does next() resume a generator?",
+    "answer": "next() starts or resumes the generator. The current yield expression evaluates to None, and the next yielded value is returned; completion raises StopIteration.",
+    "followUp": "How does send() differ? It resumes the generator and makes the current yield expression evaluate to the value passed to send()."
+   },
+   {
+    "question": "What does close() do?",
+    "answer": "close() raises GeneratorExit at the pause point. Normal termination or an uncaught GeneratorExit lets close() return; yielding during close() causes RuntimeError.",
+    "followUp": "What happens to another exception? An exception other than StopIteration or GeneratorExit propagates to the caller."
+   }
+  ],
+  "keyPoints": [
+   "Putting yield in a function changes the function's kind; it is no longer a normal function.",
+   "Calling the function creates a generator object rather than immediately running its code.",
+   "A pause preserves the information needed to continue from the same yield point.",
+   "A resume through next() supplies None to the paused yield expression.",
+   "send(value) supplies data to the paused generator, where the yield expression receives that value.",
+   "throw() injects an exception at the suspended yield, allowing generator code to catch it or let it propagate."
+  ],
+  "gotchas": [
+   "The first resume cannot send a data value because the generator has not reached a yield expression yet.",
+   "Do not assume every resume returns a value. A finished generator signals completion with StopIteration.",
+   "After close() injects GeneratorExit, the generator must stop instead of yielding another value."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "zip": {
   "sourceUrl": "https://docs.python.org/3/builtins/functions.html",

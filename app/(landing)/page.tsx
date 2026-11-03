@@ -50,7 +50,7 @@ export default async function Home() {
   // Cached for everyone, so it is priced in rupees; with international billing on, the page re-prices itself for the visitor.
   // A festive sale in force (lib/server/festive-sale.ts) rides along in rupees; the client hides it at its end time.
   // Independent reads share the cold-render critical path.
-  // Fresh Tech Buzz stories (titles and links only) for the Technology docs, Techy and API Docs sections.
+  // Tech Buzz stories (titles and links only) for the Tech Buzz section.
   const [festive, docs, overrides, fresh, buzz, buzzTopics] = await Promise.all([activeSale().catch(() => null), officialTechDocs(), contentOverrides(), landingFresh(today), landingBuzz(), landingBuzzTopics()]);
   const sale = festive && { slug: festive.slug, title: festive.title, titleHi: festive.titleHi, percent: festive.percent, endsAt: festive.endsAt,
     monthly: festive.plans.monthly?.inr ?? null, yearly: festive.plans.yearly?.inr ?? null, inr: { monthly: festive.plans.monthly?.inr ?? null, yearly: festive.plans.yearly?.inr ?? null } };
@@ -59,5 +59,5 @@ export default async function Home() {
   // Today's AI-written additions (lib/server/landing-fresh.ts); the nightly job publishes them with revalidateTag("landing").
   // The page's content turns over every Monday at 00:00 IST, so that is when it last changed.
   const updated = weekStartDate(today);
-  return <><JsonLd data={[websiteSchema(), webPageSchema("/", updated), organizationSchema({ monthly:sale?.monthly ?? prices.monthly, yearly:sale?.yearly ?? prices.yearly, endsAt:sale?.endsAt })]} /><LandingPage features={features} answers={<LandingAnswers monthly={prices.monthly} yearly={prices.yearly} updated={updated} />} certifications={<LandingCertifications />} techBuzz={<LandingTechBuzz stories={buzz} topics={buzzTopics} week={today} />} workflows={previewWorkflows(overrides)} pro={pro} library={previewLibrary(landingLibrary(pro), today)} prices={prices} daily={daily} techDocs={previewTechDocs(docs, featuredDoc)} featuredDoc={featuredDoc} fresh={fresh} today={today} overrides={overrides} coffee={blogTeasers(8, today)} buzz={buzz} /></>;
+  return <><JsonLd data={[websiteSchema(), webPageSchema("/", updated), organizationSchema({ monthly:sale?.monthly ?? prices.monthly, yearly:sale?.yearly ?? prices.yearly, endsAt:sale?.endsAt })]} /><LandingPage features={features} answers={<LandingAnswers monthly={prices.monthly} yearly={prices.yearly} updated={updated} />} certifications={<LandingCertifications />} techBuzz={<LandingTechBuzz stories={buzz} topics={buzzTopics} week={today} />} workflows={previewWorkflows(overrides)} pro={pro} library={previewLibrary(landingLibrary(pro), today)} prices={prices} daily={daily} techDocs={previewTechDocs(docs, featuredDoc)} featuredDoc={featuredDoc} fresh={fresh} today={today} overrides={overrides} coffee={blogTeasers(8, today)} /></>;
 }

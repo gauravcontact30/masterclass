@@ -236,6 +236,116 @@
   ],
   "checkedAt": "2026-10-15"
  },
+ "dcc.Graph": {
+  "sourceUrl": "https://dash.plotly.com/dash-core-components/graph",
+  "sourceTitle": "Graph | Plotly Dash dcc.Graph",
+  "summary": "dcc.Graph renders interactive Plotly charts in Dash. Give it a Plotly figure, then use its interaction properties in callbacks or control sizing with responsive.",
+  "explanation": "Create a Plotly figure with Plotly Express, graph objects, or a figure dictionary, then pass it to dcc.Graph through figure. The component can expose hover, click, selection, and layout-change data to Dash callbacks. Set responsive to control resizing and mathjax to render supported LaTeX text.",
+  "syntax": "dcc.Graph(id=None, figure=None, responsive='auto', mathjax=False, config=None, ...)",
+  "parameters": [
+   {
+    "name": "id",
+    "type": "string; optional",
+    "description": "Unique component ID used to identify the graph in callbacks."
+   },
+   {
+    "name": "responsive",
+    "type": "true, false, or 'auto'; default 'auto'",
+    "description": "Controls resizing. Allowed values are true, false, or 'auto'."
+   },
+   {
+    "name": "figure",
+    "type": "dict; optional",
+    "description": "Plotly figure containing data, layout, and optional frames."
+   },
+   {
+    "name": "mathjax",
+    "type": "boolean; default False",
+    "description": "Enables MathJax version 3 for supported LaTeX content."
+   },
+   {
+    "name": "config",
+    "type": "dict; optional",
+    "description": "Plotly.js configuration options."
+   },
+   {
+    "name": "extendData",
+    "type": "list or dict; optional",
+    "description": "Adds data to existing traces."
+   },
+   {
+    "name": "prependData",
+    "type": "list or dict; optional",
+    "description": "Adds data before existing trace data."
+   }
+  ],
+  "returns": "A Dash component that renders a Plotly visualization.",
+  "example": {
+   "title": "Responsive scatter plot",
+   "code": "from dash import Dash, dcc\nimport plotly.express as px\n\napp = Dash(__name__)\nfig = px.scatter(px.data.iris(), x=\"sepal_width\", y=\"sepal_length\")\napp.layout = dcc.Graph(id=\"iris-graph\", figure=fig, responsive=True)\n\nif __name__ == \"__main__\":\n    app.run(debug=True)",
+   "language": "python",
+   "explanation": "This creates a Dash app with a responsive scatter plot made by Plotly Express."
+  },
+  "useCases": [
+   {
+    "title": "Render a chart",
+    "scenario": "Show a Plotly Express, graph_objects, or dictionary-based chart in a Dash layout."
+   },
+   {
+    "title": "Build interactive callbacks",
+    "scenario": "Use hover, click, selection, or zoom events to update other components."
+   },
+   {
+    "title": "Create responsive layouts",
+    "scenario": "Make charts fit browser and parent-container size changes."
+   },
+   {
+    "title": "Render LaTeX",
+    "scenario": "Show formulas in supported titles, axis labels, and annotations."
+   }
+  ],
+  "related": [
+   "figure",
+   "clickData",
+   "hoverData",
+   "selectedData",
+   "relayoutData",
+   "extendData",
+   "prependData",
+   "responsive"
+  ],
+  "since": "2.13",
+  "interview": [
+   {
+    "question": "What is dcc.Graph?",
+    "answer": "dcc.Graph renders interactive Plotly visualizations in a Dash app. Its figure property accepts the same figure structure used by plotly.py.",
+    "followUp": "How can a callback read user actions? Use hoverData, clickData, selectedData, or relayoutData as callback inputs."
+   },
+   {
+    "question": "How does graph responsiveness work?",
+    "answer": "Use responsive=True to force resizing with the browser window and parent element. Use responsive=False to disable both kinds of resizing. The default auto mode follows the figure and config settings.",
+    "followUp": "What else affects sizing? figure.layout.height, figure.layout.width, figure.layout.autosize, and config.responsive also control graph dimensions."
+   },
+   {
+    "question": "Which user interactions can callbacks handle?",
+    "answer": "The component exposes clickData, hoverData, selectedData, and relayoutData for user interaction. A callback can receive these properties and update another component or the graph figure.",
+    "followUp": "How can a graph update without replacing all data? Use extendData or prependData to append or prepend data to existing traces."
+   }
+  ],
+  "keyPoints": [
+   "dcc.Graph displays interactive Plotly charts inside a Dash layout.",
+   "Pass a Plotly Express figure, a graph_objects figure, or a compatible dictionary to figure.",
+   "The main interaction properties are hoverData, clickData, selectedData, and relayoutData.",
+   "relayoutData reports zooming, panning, and other layout edits.",
+   "extendData adds new points to existing traces without rebuilding the complete figure.",
+   "prependData adds points at the beginning of existing traces."
+  ],
+  "gotchas": [
+   "LaTeX does not work in every graph text field. It is not supported in hover text, text templates, tick text, bar text, or pie labels.",
+   "Set mathjax=True to load MathJax. Put mathematical content between dollar-sign delimiters."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "fig.add_annotation": {
   "sourceUrl": "https://plotly.com/python/text-and-annotations/",
   "sourceTitle": "Text and Annotations in Python - Plotly",
@@ -1786,6 +1896,107 @@
   ],
   "checkedAt": "2026-10-15"
  },
+ "Figure": {
+  "sourceUrl": "https://plotly.com/python-api-reference/generated/generated/plotly.graph_objects.Figure.html",
+  "sourceTitle": "plotly.graph_objects.Figure — 7.1.0 documentation",
+  "summary": "plotly.graph_objects.Figure is the main Plotly object for building, changing, displaying, and exporting charts. It contains data traces, layout settings, and optional animation frames.",
+  "explanation": "A Figure stores traces in data, display settings in layout, and optional animation steps in frames. You can create it from graph objects or dictionaries, then add traces, update properties, display it, or convert it to dictionaries and JSON.",
+  "syntax": "plotly.graph_objects.Figure(data=None, layout=None, frames=None, skip_invalid=False, **kwargs)",
+  "parameters": [
+   {
+    "name": "data",
+    "type": "list, tuple, trace, or dictionaries",
+    "description": "Trace objects, one trace, or trace dictionaries for the figure's data."
+   },
+   {
+    "name": "layout",
+    "type": "plotly.graph_objects.Layout or dictionary",
+    "description": "A Layout object or layout dictionary containing chart configuration."
+   },
+   {
+    "name": "frames",
+    "type": "list, tuple, or frame dictionaries",
+    "description": "Frame objects or frame dictionaries for animated figures."
+   },
+   {
+    "name": "skip_invalid",
+    "type": "bool",
+    "description": "If true, skip invalid figure properties; otherwise invalid properties raise ValueError."
+   },
+   {
+    "name": "**kwargs",
+    "type": "keyword arguments",
+    "description": "Additional figure properties accepted as keyword arguments."
+   }
+  ],
+  "returns": "A plotly.graph_objects.Figure instance; mutating methods generally return the figure unless the documentation states otherwise.",
+  "example": {
+   "title": "Create and update a figure",
+   "code": "import plotly.graph_objects as go\n\nfig = go.Figure()\nfig.add_bar(x=[\"A\", \"B\", \"C\"], y=[2, 5, 3])\nfig.update_layout(title_text=\"Sales\")\nfig.show()",
+   "language": "python",
+   "explanation": "This creates an empty figure, adds a bar trace, changes the title, and displays the figure."
+  },
+  "useCases": [
+   {
+    "title": "Create charts",
+    "scenario": "Build a chart from trace objects or dictionaries."
+   },
+   {
+    "title": "Compose figures",
+    "scenario": "Add traces to a chart or place them in subplot cells."
+   },
+   {
+    "title": "Customize charts",
+    "scenario": "Change titles, axes, traces, annotations, and other properties."
+   },
+   {
+    "title": "Serialize or export figures",
+    "scenario": "Export a chart as a dictionary, JSON, HTML, or image."
+   }
+  ],
+  "related": [
+   "plotly.express",
+   "plotly.graph_objects",
+   "plotly.io",
+   "plotly.subplots.make_subplots",
+   "add_trace()",
+   "update_layout()",
+   "update_traces()",
+   "to_dict()"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is a Plotly Figure?",
+    "answer": "A Figure is the main object for a Plotly chart. It has three top-level parts: data for traces, layout for chart settings, and frames for animation.",
+    "followUp": "Where do animation controls usually live? They are usually defined in layout.sliders or layout.updatemenus."
+   },
+   {
+    "question": "How do you add data to a Figure?",
+    "answer": "Use add_trace() with a trace such as go.Scatter or go.Bar. For subplots, pass row and col so the trace goes to a particular cell.",
+    "followUp": "What convenience alternative exists? Methods such as add_scatter() and add_bar() construct and add a trace directly."
+   },
+   {
+    "question": "How do you change a Figure after creating it?",
+    "answer": "Use update_layout() for layout properties and update_traces() for trace properties. Both support nested-property updates through magic underscores.",
+    "followUp": "How can you inspect the result? Use print(fig), fig.to_dict(), or fig.to_json()."
+   }
+  ],
+  "keyPoints": [
+   "A Figure can be built as a Python object or from a dictionary specification.",
+   "data contains traces, layout controls non-data chart parts, and frames define sequential animation states.",
+   "Read properties with either object access, such as fig.layout, or dictionary-style access.",
+   "Graph objects check property names and values and report invalid input with an exception.",
+   "add_trace() adds a graph-object trace to an existing Figure.",
+   "update_layout() changes one or more nested layout properties."
+  ],
+  "gotchas": [
+   "Invalid properties raise ValueError by default. Set skip_invalid=True to ignore them silently.",
+   "The Python object is serialized to JSON before Plotly.js renders it.",
+   "Magic underscore notation is not universal. Some existing property names already contain underscores."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "go.Bar": {
   "sourceUrl": "https://plotly.com/python/bar-charts/",
   "sourceTitle": "Bar charts in Python - Plotly",
@@ -2284,6 +2495,102 @@
    "Ensure that locations uses identifiers compatible with locationmode; otherwise regions will not match as intended."
   ],
   "checkedAt": "2026-10-15"
+ },
+ "go.Choroplethmapbox": {
+  "sourceUrl": "https://plotly.com/r/mapbox-county-choropleth/",
+  "sourceTitle": "Mapbox choropleth maps in R",
+  "summary": "Create a Mapbox choropleth in R by pairing GeoJSON polygons with values. Use locations and featureidkey to match each data row to a polygon, then set the map style and view.",
+  "explanation": "Pass GeoJSON geometry to geojson and data values to z. Plotly matches each row in locations to a GeoJSON feature. Use featureidkey when the matching identifier is inside a feature's properties object. Configure the map base layer, zoom, and center in mapbox.",
+  "syntax": "add_trace(type = \"choroplethmapbox\", geojson = ..., locations = ..., z = ..., featureidkey = ..., colorscale = ...)",
+  "parameters": [
+   {
+    "name": "geojson",
+    "type": "object or URL",
+    "description": "GeoJSON geometry for the map features, or a URL to a GeoJSON file."
+   },
+   {
+    "name": "locations",
+    "type": "list",
+    "description": "Identifiers that connect data rows to GeoJSON features."
+   },
+   {
+    "name": "z",
+    "type": "list",
+    "description": "Numeric values used to color the regions."
+   },
+   {
+    "name": "featureidkey",
+    "type": "string",
+    "description": "Path to the matching identifier inside each GeoJSON feature."
+   },
+   {
+    "name": "colorscale",
+    "type": "string or array",
+    "description": "Color scale for the region values."
+   }
+  ],
+  "returns": "A Plotly figure object containing the Mapbox choropleth map.",
+  "example": {
+   "title": "Create a Mapbox choropleth in R",
+   "code": "library(plotly)\nlibrary(rjson)\n\ngeojson <- rjson::fromJSON(file = \"https://raw.githubusercontent.com/plotly/datasets/master/election.geojson\")\ndata <- read.csv(\"https://raw.githubusercontent.com/plotly/datasets/master/election.csv\")\n\nfig <- plot_ly() |>\n  add_trace(\n    type = \"choroplethmapbox\",\n    geojson = geojson,\n    locations = data$district,\n    z = data$Bergeron,\n    colorscale = \"Viridis\",\n    featureidkey = \"properties.district\"\n  ) |>\n  layout(mapbox = list(style = \"carto-positron\", zoom = 9,\n                       center = list(lon = -73.7073, lat = 45.5517)))\nfig",
+   "language": "text",
+   "explanation": "Load GeoJSON regions and matching values, then connect them with featureidkey."
+  },
+  "useCases": [
+   {
+    "title": "Compare values by region",
+    "scenario": "Show unemployment or another measurement for geographic regions."
+   },
+   {
+    "title": "Map district-level results",
+    "scenario": "Display election results for districts."
+   },
+   {
+    "title": "Use the map in Dash for R",
+    "scenario": "Embed the figure in an analytical web application."
+   }
+  ],
+  "related": [
+   "plotly",
+   "add_trace",
+   "choroplethmapbox",
+   "mapbox",
+   "featureidkey",
+   "geojson",
+   "locations",
+   "z"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What inputs does a choropleth tile map need?",
+    "answer": "The geojson argument supplies polygon geometry, while z supplies the numeric value used for coloring. locations identifies the data rows that correspond to GeoJSON features.",
+    "followUp": "How do you match a property instead of feature.id? Set featureidkey to the property path, such as properties.district."
+   },
+   {
+    "question": "How do you match data to GeoJSON features?",
+    "answer": "Set locations to the data identifier and set featureidkey to the matching GeoJSON property path. The values in those two fields must correspond.",
+    "followUp": "What happens if the identifiers do not match? The corresponding regions cannot be associated with data values, so they will not be colored as intended."
+   },
+   {
+    "question": "How is the map view configured?",
+    "answer": "Use mapbox in layout to set the base-map style, zoom, and center. For example, the documented examples use carto-positron or light styles.",
+    "followUp": "How can the same figure be used in Dash for R? Pass the figure to the figure argument of the Dash Graph component."
+   }
+  ],
+  "keyPoints": [
+   "A choropleth colors polygon regions to show how a quantity varies across space.",
+   "Each GeoJSON feature needs an identifier, either in its id field or in a property.",
+   "Provide one data value for each feature identifier.",
+   "Use geojson for geometry and z for the values that control polygon colors.",
+   "With choroplethmapbox, each data row represents one map region.",
+   "Set featureidkey when the GeoJSON property and data-column identifiers are the matching fields."
+  ],
+  "gotchas": [
+   "Some map styles require a Mapbox account and public access token. Configure the token before using token-based styles.",
+   "A GeoJSON URL can be used directly. This may improve rendering speed in some cases."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "go.Cone": {
   "sourceUrl": "https://plotly.com/python-api-reference/generated/plotly.graph_objects.Cone.html",
@@ -3391,6 +3698,99 @@
    "Supply all four price series—open, high, low, and close—because the trace represents each of these values."
   ],
   "checkedAt": "2026-10-15"
+ },
+ "go.Parcats": {
+  "sourceUrl": "https://plotly.com/python/parallel-categories-diagram/",
+  "sourceTitle": "Parallel categories diagram in Python",
+  "summary": "Plotly's Parcats trace shows relationships among categorical variables. Dimensions are connected by ribbons whose widths represent frequencies.",
+  "explanation": "A Parcats trace displays categorical data across several dimensions. Each dimension contains categories, and ribbons connect category combinations. Ribbon and rectangle sizes represent frequencies. Use counts when frequencies are already aggregated.",
+  "syntax": "go.Parcats(dimensions=[...], counts=[...], line={...})",
+  "parameters": [
+   {
+    "name": "dimensions",
+    "type": "list of dimension objects",
+    "description": "A list of categorical dimensions. Each dimension can include a label and values."
+   },
+   {
+    "name": "counts",
+    "type": "array",
+    "description": "Frequencies for the category combinations when data is aggregated."
+   },
+   {
+    "name": "line.color",
+    "type": "array or color",
+    "description": "Values used to color ribbons."
+   },
+   {
+    "name": "line.colorscale",
+    "type": "colorscale",
+    "description": "Color mapping used when line.color contains numeric values."
+   }
+  ],
+  "returns": "A Plotly Figure containing a Parcats trace.",
+  "example": {
+   "title": "Create a parallel categories diagram",
+   "code": "import plotly.graph_objects as go\n\nfig = go.Figure(go.Parcats(\n    dimensions=[\n        {\"label\":\"Hair\", \"values\":[\"Black\",\"Brown\",\"Red\"]},\n        {\"label\":\"Eye\", \"values\":[\"Brown\",\"Blue\",\"Blue\"]},\n        {\"label\":\"Sex\", \"values\":[\"Female\",\"Male\",\"Male\"]}\n    ],\n    counts=[6, 10, 7]\n))\nfig.show()",
+   "language": "python",
+   "explanation": "Create a Parcats trace with one dimension for each categorical variable. Use counts when each row represents a known frequency."
+  },
+  "useCases": [
+   {
+    "title": "Multidimensional category analysis",
+    "scenario": "Explore relationships among several categorical columns in a data set."
+   },
+   {
+    "title": "Aggregated category counts",
+    "scenario": "Show frequencies when combinations have already been grouped."
+   },
+   {
+    "title": "Outcome comparison",
+    "scenario": "Color paths by an outcome such as survival."
+   },
+   {
+    "title": "Linked brushing",
+    "scenario": "Connect category selections with a scatter plot in a notebook."
+   }
+  ],
+  "related": [
+   "plotly.express.parallel_categories()",
+   "go.Parcats",
+   "parallel coordinates",
+   "radar charts",
+   "scatterplot matrix (SPLOM)",
+   "sankey diagrams"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you create a parallel categories chart with graph_objects?",
+    "answer": "Use go.Parcats with a dimensions list. Each dimension defines a label and its categorical values; connected ribbons show combinations across dimensions.",
+    "followUp": "How would you represent pre-aggregated data? Add counts containing the frequency for each combination instead of repeating every observation."
+   },
+   {
+    "question": "How can ribbon colors encode another variable?",
+    "answer": "Set line.color to numeric values and provide line.colorscale. The numbers map to colors, so ribbons can show an additional measure or outcome.",
+    "followUp": "How can hover text describe colored groups? Set hoveron to color and hoverinfo to count+probability."
+   },
+   {
+    "question": "How does linked brushing work with Parcats?",
+    "answer": "Use a FigureWidget with callbacks such as on_selection and on_click. The callback can update selected points in a scatter trace and the Parcats line colors.",
+    "followUp": "What must the callback update for multiple color groups? Use a shared color array and update both traces with the active color values."
+   }
+  ],
+  "keyPoints": [
+   "Each categorical variable becomes one dimension in the chart.",
+   "A category rectangle becomes taller when that category occurs more often.",
+   "Ribbons show how categories combine across dimensions.",
+   "A thicker ribbon represents a more common category combination.",
+   "Use counts to provide frequencies for already aggregated category combinations.",
+   "Set line.color to control ribbon colors."
+  ],
+  "gotchas": [
+   "Callbacks for linked brushing require a FigureWidget, not a regular Figure.",
+   "Use freeform arrangement when users need to reorder dimensions or categories interactively."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "go.Parcoords": {
   "sourceUrl": "https://plotly.com/python/reference/parcoords/",
@@ -4946,6 +5346,87 @@
   "gotchas": [],
   "checkedAt": "2026-10-15"
  },
+ "Input": {
+  "sourceUrl": "https://plotly.com/python-api-reference/plotly.express.html",
+  "sourceTitle": "plotly.express: high-level interface for data visualization — 7.1.0 documentation",
+  "summary": "Plotly Express is Plotly's high-level Python API for rapid figure generation. Use chart functions such as `scatter` to create interactive figures from data.",
+  "explanation": "Use `plotly.express` to create figures with short function calls. For example, `scatter` maps each data row to a plotted symbol. The returned figure can then be displayed or changed with other Plotly APIs.",
+  "syntax": "plotly.express.scatter([data_frame, x, y, color, symbol, …])",
+  "parameters": [
+   {
+    "name": "data_frame",
+    "type": "data frame or compatible data",
+    "description": "Data frame or other data source used to build the chart."
+   },
+   {
+    "name": "x",
+    "type": "str or array-like",
+    "description": "Column or sequence mapped to the horizontal axis."
+   },
+   {
+    "name": "y",
+    "type": "str or array-like",
+    "description": "Column or sequence mapped to the vertical axis."
+   }
+  ],
+  "returns": "A Plotly figure.",
+  "example": {
+   "title": "Create a scatter figure",
+   "code": "import plotly.express as px\n\nfig = px.scatter(x=[1, 2, 3], y=[4, 1, 6])\nfig.show()",
+   "language": "python",
+   "explanation": "This creates a scatter figure from two sequences and displays it."
+  },
+  "useCases": [
+   {
+    "title": "Rapid chart creation",
+    "scenario": "You need a quick interactive chart from tabular data."
+   },
+   {
+    "title": "Data-driven styling",
+    "scenario": "You want to map columns to visual properties."
+   },
+   {
+    "title": "Specialized chart types",
+    "scenario": "You need a 3D or polar chart."
+   }
+  ],
+  "related": [
+   "plotly.express.scatter",
+   "plotly.express.scatter_3d",
+   "plotly.graph_objects",
+   "plotly.io.from_json",
+   "plotly.io.read_json"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is Plotly Express?",
+    "answer": "Plotly Express is Plotly's high-level API for quickly generating figures. Its functions include chart-specific arguments such as `x`, `y`, `color`, and `symbol`.",
+    "followUp": "When would you use a lower-level API? Use `plotly.graph_objects` when you need direct control over figures, traces, or layout."
+   },
+   {
+    "question": "How does `plotly.express.scatter` map data?",
+    "answer": "A scatter plot represents each row of the input data frame as a symbol. The `x`, `y`, and other arguments map data to visual properties.",
+    "followUp": "How can you make a three-dimensional version? Use `plotly.express.scatter_3d` with `x`, `y`, and `z` data."
+   },
+   {
+    "question": "How does Plotly load a figure from JSON?",
+    "answer": "`plotly.io.from_json` builds a figure from a JSON string or bytes. By default, invalid figure properties raise an error; `skip_invalid=True` ignores them.",
+    "followUp": "How would you load JSON from a local file? Use `plotly.io.read_json`, which accepts a file path or another readable Python object."
+   }
+  ],
+  "keyPoints": [
+   "`plotly.express` is the high-level API for making figures quickly.",
+   "`scatter` represents each data-frame row with one symbol.",
+   "`plotly.io` handles displaying figures and reading or writing them.",
+   "`read_json` creates a figure from a local file or readable Python object."
+  ],
+  "gotchas": [
+   "JSON made by one Plotly.py version may not work with another version.",
+   "`full_figure_for_development` is mainly for development, not normal production use."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "make_subplots": {
   "sourceUrl": "https://plotly.com/python-api-reference/plotly.subplots.html",
   "sourceTitle": "plotly.subplots : helper function for laying out multi-plot figures",
@@ -5077,6 +5558,91 @@
    "horizontal_spacing is normalized, so its value must stay within the inclusive range from 0 to 1."
   ],
   "checkedAt": "2026-10-15"
+ },
+ "Output": {
+  "sourceUrl": "https://plotly.com/python/interactive-html-export/",
+  "sourceTitle": "Interactive html export in Python",
+  "summary": "Export a Plotly figure as interactive HTML. Use `write_html` for a file and `to_html` for an HTML string.",
+  "explanation": "Call `write_html` on a Plotly figure to create an HTML file that opens in a browser with Plotly interactions. Use `to_html` instead when the HTML should be returned as a string, such as for insertion into a template.",
+  "syntax": "fig.write_html(file, config=None, full_html=True, ...)",
+  "parameters": [
+   {
+    "name": "fig",
+    "type": "Plotly figure",
+    "description": "The figure to export as HTML."
+   },
+   {
+    "name": "file",
+    "type": "path or writable object",
+    "description": "The destination file or writable object."
+   },
+   {
+    "name": "config",
+    "type": "dict, optional",
+    "description": "Plotly configuration options for the exported figure."
+   },
+   {
+    "name": "full_html",
+    "type": "bool, optional",
+    "description": "Whether the exported HTML should include a complete document."
+   }
+  ],
+  "returns": "`write_html` writes an HTML representation. `to_html` returns an HTML string.",
+  "example": {
+   "title": "Save an interactive figure",
+   "code": "import plotly.express as px\n\nfig = px.scatter(x=range(10), y=range(10))\nfig.write_html(\"plot.html\")",
+   "language": "python",
+   "explanation": "Creates a scatter figure and saves a self-contained interactive HTML file."
+  },
+  "useCases": [
+   {
+    "title": "Save a self-contained interactive chart",
+    "scenario": "Share a chart as a standalone browser file."
+   },
+   {
+    "title": "Embed figure HTML in a template",
+    "scenario": "Place a chart inside an existing web page."
+   },
+   {
+    "title": "Set export configuration",
+    "scenario": "Control browser behavior and responsive display."
+   }
+  ],
+  "related": [
+   "plotly.io.to_html",
+   "plotly.io.write_html",
+   "fig.show",
+   "dcc.Graph"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does `write_html` do?",
+    "answer": "`write_html` converts a figure into an HTML representation and writes it to a file. The resulting file can be opened in a browser and keeps the figure interactive.",
+    "followUp": "How would you embed the figure in a template? Use `to_html(full_html=False)` and insert the returned HTML into the template."
+   },
+   {
+    "question": "Why can an exported HTML file be large?",
+    "answer": "The default output is self-contained because it includes an inline copy of Plotly.js. This makes the file easy to share, but the file can be large.",
+    "followUp": "How can the size be reduced? Configure the `include_plotlyjs` option to use another Plotly.js inclusion strategy."
+   },
+   {
+    "question": "What is the difference between `to_html` and `write_html`?",
+    "answer": "`to_html` returns HTML as a Python string, while `write_html` writes the HTML representation to a file or writable object. Both are used for interactive HTML export.",
+    "followUp": "Which option is useful for a Jinja2 page? Use `full_html=False` with `to_html` so only the figure markup is returned."
+   }
+  ],
+  "keyPoints": [
+   "Use `fig.write_html(path)` to save an interactive figure.",
+   "The saved file preserves browser interactions such as hover, pan, zoom, and legend controls.",
+   "Use `to_html` when the generated markup must be handled in Python instead of saved directly.",
+   "For responsive output, enable autosizing and use responsive configuration when building the HTML."
+  ],
+  "gotchas": [
+   "The default file includes the Plotly.js library, so the output can be large.",
+   "When adding a figure to an existing HTML template, do not generate a complete HTML document."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "pio.show": {
   "sourceUrl": "https://plotly.com/python/renderers/",
@@ -5216,6 +5782,250 @@
    "Changing the default affects subsequently created figures that do not override it."
   ],
   "checkedAt": "2026-10-15"
+ },
+ "px.area": {
+  "sourceUrl": "https://plotly.com/python/filled-area-plots/",
+  "sourceTitle": "Filled area plots in Python",
+  "summary": "px.area creates stacked area charts from tabular data. Use color and line_group to define categories and areas, or use Scatter for lower-level fill control.",
+  "explanation": "px.area creates a stacked area plot from tabular data. The x and y arguments select the axes, color separates categories, and line_group controls which rows form each filled trace. Pattern fills can add texture, while graph_objects.Scatter provides lower-level fill control.",
+  "syntax": "px.area(data_frame=None, x=None, y=None, color=None, line_group=None, pattern_shape=None, pattern_shape_sequence=None, pattern_shape_map=None, ...)",
+  "parameters": [
+   {
+    "name": "data_frame",
+    "type": "DataFrame or similar tabular data",
+    "description": "Input data frame containing the columns used by the chart."
+   },
+   {
+    "name": "x",
+    "type": "str or array-like",
+    "description": "Column or data used for horizontal positions."
+   },
+   {
+    "name": "y",
+    "type": "str or array-like",
+    "description": "Column or data used for vertical values."
+   },
+   {
+    "name": "color",
+    "type": "str or array-like",
+    "description": "Column used to split and color categories."
+   },
+   {
+    "name": "line_group",
+    "type": "str or array-like",
+    "description": "Column used to identify separate lines or filled areas."
+   },
+   {
+    "name": "pattern_shape",
+    "type": "str or array-like",
+    "description": "Column used to assign hatch or texture patterns."
+   },
+   {
+    "name": "pattern_shape_sequence",
+    "type": "list",
+    "description": "Ordered pattern list used with pattern_shape."
+   },
+   {
+    "name": "pattern_shape_map",
+    "type": "dict",
+    "description": "Explicit category-to-pattern mapping."
+   }
+  ],
+  "returns": "A Plotly Figure object.",
+  "example": {
+   "title": "Create a stacked area chart",
+   "code": "import plotly.express as px\n\ndf = px.data.gapminder()\nfig = px.area(\n    df,\n    x=\"year\",\n    y=\"pop\",\n    color=\"continent\",\n    line_group=\"country\",\n)\nfig.show()",
+   "language": "python",
+   "explanation": "This creates a stacked area chart. Each filled area represents one country, grouped and colored by continent."
+  },
+  "useCases": [
+   {
+    "title": "Compare trends",
+    "scenario": "Show how values change over time while comparing several categories."
+   },
+   {
+    "title": "Display stacked composition",
+    "scenario": "Show composition across ordered x-axis values."
+   },
+   {
+    "title": "Use color and texture together",
+    "scenario": "Make categories distinguishable in grayscale or for accessibility."
+   }
+  ],
+  "related": [
+   "plotly.express",
+   "go.Scatter",
+   "fill",
+   "stackgroup",
+   "pattern_shape",
+   "pattern_shape_sequence",
+   "pattern_shape_map",
+   "fillgradient"
+  ],
+  "since": "5.7 for area-chart pattern fills; 5.20 for Scatter fill grad",
+  "interview": [
+   {
+    "question": "What does px.area do?",
+    "answer": "px.area is Plotly Express's high-level function for making area charts. It supports long-form data and can use columns such as x, y, color, and line_group to define the chart.",
+    "followUp": "How can the input shape be changed? Plotly Express 2D Cartesian functions, including px.area, can also accept wide-form and mixed-form data."
+   },
+   {
+    "question": "What is the purpose of color and line_group?",
+    "answer": "The color argument separates the data into categories, while line_group identifies the rows that belong to each individual line or filled area. In the example, continent supplies color and country supplies line_group.",
+    "followUp": "How can the same variable be encoded without relying only on color? Use pattern_shape together with color, and control its mapping with pattern_shape_sequence or pattern_shape_map."
+   },
+   {
+    "question": "How do you fill areas with graph_objects?",
+    "answer": "For lower-level control, use go.Scatter with fill. fill='tozeroy' fills from a trace to the x-axis, and fill='tonexty' fills between the current trace and the previous one.",
+    "followUp": "How are stacked values produced with graph_objects? Put traces in the same stackgroup; their y values are added and each trace fills to the next trace in that group."
+   }
+  ],
+  "keyPoints": [
+   "Use px.area to create a stacked area chart from tabular data.",
+   "line_group decides which rows form each filled area.",
+   "Plotly Express supports pattern_shape for area charts, so a category can be shown with both color and texture.",
+   "Use pattern_shape_sequence to assign patterns by order, or pattern_shape_map to assign a pattern to each category explicitly.",
+   "With graph_objects, stackgroup adds y values for traces that share the same group.",
+   "For supported Scatter fills, fillgradient.colorscale sets the gradient colors, while its type controls the direction."
+  ],
+  "gotchas": [
+   "Use px.area for stacked areas. It does not create a simple independent filled region for every category.",
+   "The first category gets an empty pattern by default. Set pattern_shape_sequence or pattern_shape_map when the assignment must be predictable."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "px.bar": {
+  "sourceUrl": "https://plotly.com/python/horizontal-bar-charts/",
+  "sourceTitle": "Horizontal bar charts in Python",
+  "summary": "Create vertical or horizontal bar charts with Plotly Express. Map data columns to x and y, then control colors, grouping, labels, text, patterns, and facets.",
+  "explanation": "Call px.bar with a data frame and map columns to chart roles. Use orientation=\"h\" for horizontal bars. Add color, labels, hover_data, faceting, or text_auto to control the display. Use go.Bar when you need lower-level trace control.",
+  "syntax": "plotly.express.bar(data_frame=None, x=None, y=None, color=None, orientation=None, barmode=None, text=None, text_auto=False, hover_data=None, facet_row=None, facet_col=None, labels=None, height=None, ...)",
+  "parameters": [
+   {
+    "name": "data_frame",
+    "type": "DataFrame or compatible data",
+    "description": "Data frame or other column-oriented data used for plotting."
+   },
+   {
+    "name": "x",
+    "type": "str, array-like, or column reference",
+    "description": "Column or values mapped to the horizontal axis."
+   },
+   {
+    "name": "y",
+    "type": "str, array-like, or column reference",
+    "description": "Column, list of columns, or values mapped to the vertical axis."
+   },
+   {
+    "name": "color",
+    "type": "str or array-like",
+    "description": "Column used to assign bar colors."
+   },
+   {
+    "name": "orientation",
+    "type": "str",
+    "description": "Set to \"h\" for horizontal bars."
+   },
+   {
+    "name": "barmode",
+    "type": "str",
+    "description": "Controls stacking or grouping, such as \"stack\" or \"group\"."
+   },
+   {
+    "name": "text",
+    "type": "str or array-like",
+    "description": "Column or values shown as text on bars."
+   },
+   {
+    "name": "text_auto",
+    "type": "bool or str",
+    "description": "True or a d3-format string for automatic bar labels."
+   },
+   {
+    "name": "hover_data",
+    "type": "list or dict",
+    "description": "Extra columns shown in hover information."
+   },
+   {
+    "name": "facet_row",
+    "type": "str",
+    "description": "Creates subplot rows by category."
+   },
+   {
+    "name": "facet_col",
+    "type": "str",
+    "description": "Creates subplot columns by category."
+   }
+  ],
+  "returns": "A Plotly Figure object.",
+  "example": {
+   "title": "Horizontal bar chart",
+   "code": "import plotly.express as px\n\ndf = px.data.tips()\nfig = px.bar(\n    df,\n    x=\"total_bill\",\n    y=\"day\",\n    color=\"sex\",\n    orientation=\"h\",\n    hover_data=[\"tip\", \"size\"],\n)\nfig.show()",
+   "language": "python",
+   "explanation": "This creates a horizontal bar chart. Bar length comes from total_bill, categories come from day, and color separates sex."
+  },
+  "useCases": [
+   {
+    "title": "Basic bar chart",
+    "scenario": "Compare numeric values across categories."
+   },
+   {
+    "title": "Horizontal bar chart",
+    "scenario": "Show categories along the vertical axis when labels are long."
+   },
+   {
+    "title": "Stacked or grouped bars",
+    "scenario": "Compare parts within totals or compare series side by side."
+   },
+   {
+    "title": "Faceted bar charts",
+    "scenario": "Show several related charts split by one or two categorical columns."
+   }
+  ],
+  "related": [
+   "plotly.express",
+   "px.histogram",
+   "plotly.graph_objects",
+   "go.Bar",
+   "barmode",
+   "orientation",
+   "facet_row",
+   "facet_col"
+  ],
+  "since": "5.5",
+  "interview": [
+   {
+    "question": "What is the difference between px.bar and px.histogram?",
+    "answer": "px.bar is Plotly Express's high-level function for making bar charts. Each input row normally becomes one rectangular mark.",
+    "followUp": "How would you aggregate rows? Use px.histogram, because px.bar is intended for disaggregated marks while px.histogram aggregates them."
+   },
+   {
+    "question": "How do you make a horizontal bar chart?",
+    "answer": "Set orientation=\"h\" and map the numeric measure to x and the category to y. For example, use px.bar(df, x=\"total_bill\", y=\"day\", orientation=\"h\").",
+    "followUp": "How can you show several components? Add color and choose barmode=\"stack\" or barmode=\"group\", depending on whether totals or component values matter."
+   },
+   {
+    "question": "What data shapes can px.bar accept?",
+    "answer": "Long-form data has one row per observation and one column per variable. Wide-form data has one row per value of one variable and columns for values of another; px.bar accepts a list of columns for wide-form input.",
+    "followUp": "What labels appear with wide-form input? Plotly Express may use inferred names such as value and variable; pass labels to rename them."
+   }
+  ],
+  "keyPoints": [
+   "Use px.bar for a simple, high-level bar-chart interface.",
+   "Rows with the same x value are stacked by default when color creates multiple bar series.",
+   "Set barmode=\"group\" to place related bars side by side instead of stacking them.",
+   "Use text_auto=True to show values, or pass a d3-format string to control their format.",
+   "Use text to put a data-frame column or other text values on each bar.",
+   "Use pattern_shape to distinguish bars with texture as well as color.",
+   "Use facet_row or facet_col to split a chart into subplots by category.",
+   "Use go.Bar from plotly.graph_objects when Plotly Express is not a suitable starting point."
+  ],
+  "gotchas": [
+   "px.bar draws one rectangular mark for each input row. Use px.histogram when multiple rows must be aggregated into one bar.",
+   "px.histogram sums y values by default. Set histfunc when you need another aggregation, such as an average.",
+   "With histfunc values other than sum or count, use grouped bars. Stacking averages can give a misleading result."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "px.bar_polar": {
   "sourceUrl": "https://plotly.com/python/wind-rose-charts/",
@@ -5731,6 +6541,109 @@
   ],
   "checkedAt": "2026-10-15"
  },
+ "px.density_mapbox": {
+  "sourceUrl": "https://plotly.com/python/density-heatmaps/",
+  "sourceTitle": "Density heatmaps in Python",
+  "summary": "`px.density_map` creates a smoothed density map from DataFrame rows. Coordinates place each point, and an optional value column supplies the displayed values.",
+  "explanation": "`px.density_map` turns rows in a DataFrame into map points and smooths them within a chosen influence radius. Latitude and longitude place the points, while an optional value column controls the displayed density values.",
+  "syntax": "px.density_map(data_frame, lat=None, lon=None, z=None, radius=None, center=None, zoom=None, map_style=None, ...)",
+  "parameters": [
+   {
+    "name": "data_frame",
+    "type": "pandas.DataFrame",
+    "description": "DataFrame containing the rows to plot."
+   },
+   {
+    "name": "lat",
+    "type": "str",
+    "description": "Column containing latitude values."
+   },
+   {
+    "name": "lon",
+    "type": "str",
+    "description": "Column containing longitude values."
+   },
+   {
+    "name": "z",
+    "type": "str",
+    "description": "Optional column supplying values for the density display."
+   },
+   {
+    "name": "radius",
+    "type": "number",
+    "description": "Radius of influence used to smooth each point."
+   },
+   {
+    "name": "center",
+    "type": "dict",
+    "description": "Initial map center with latitude and longitude."
+   },
+   {
+    "name": "zoom",
+    "type": "number",
+    "description": "Initial map zoom level."
+   },
+   {
+    "name": "map_style",
+    "type": "str",
+    "description": "Map tile style."
+   }
+  ],
+  "returns": "A Plotly figure object.",
+  "example": {
+   "title": "Create a density map",
+   "code": "import pandas as pd\nimport plotly.express as px\n\ndf = pd.read_csv(\"https://raw.githubusercontent.com/plotly/datasets/master/earthquakes-23k.csv\")\nfig = px.density_map(\n    df,\n    lat=\"Latitude\",\n    lon=\"Longitude\",\n    z=\"Magnitude\",\n    radius=10,\n    center={\"lat\": 0, \"lon\": 180},\n    zoom=0,\n    map_style=\"open-street-map\",\n)\nfig.show()",
+   "language": "python",
+   "explanation": "This creates a density map from earthquake coordinates. Magnitude supplies the values used for the density display."
+  },
+  "useCases": [
+   {
+    "title": "Event concentration maps",
+    "scenario": "Show where earthquakes or other events are concentrated across a geographic area."
+   },
+   {
+    "title": "Weighted location density",
+    "scenario": "Display a geographic distribution where each record has a numeric measure."
+   }
+  ],
+  "related": [
+   "plotly.express",
+   "plotly.graph_objects",
+   "go.Densitymap",
+   "px.scatter_map",
+   "px.choropleth_map"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does `px.density_map` represent?",
+    "answer": "`px.density_map` creates a map where each DataFrame row becomes a point. The points are smoothed using the selected radius, and latitude and longitude identify their positions.",
+    "followUp": "How would you control the map's initial view? Pass `center` with latitude and longitude, and set `zoom` to the desired starting zoom level."
+   },
+   {
+    "question": "Which data arguments are commonly used?",
+    "answer": "Use `lat` and `lon` to select the coordinate columns. Use `z` when a data column, such as magnitude, should provide values for the density display.",
+    "followUp": "What can you change to make each point influence a larger area? Increase the `radius` argument."
+   },
+   {
+    "question": "How does this differ from the older Mapbox API?",
+    "answer": "The current function uses `map_style` for the map tile style. Older Mapbox-based APIs use `mapbox_style`, but the version 7 migration page lists the Mapbox functions as removed.",
+    "followUp": "Which graph-object trace replaces `go.Densitymapbox`? Use `go.Densitymap`."
+   }
+  ],
+  "keyPoints": [
+   "Each DataFrame row becomes a map point, and the `radius` argument controls the smoothing area around it.",
+   "Pass the DataFrame plus column names through `lat`, `lon`, and optionally `z`.",
+   "Set `center` to choose the initial map location and `zoom` to choose its starting scale.",
+   "Use `map_style` to select the map tile style, such as OpenStreetMap.",
+   "Use the generic `go.Densitymap` graph-object class when Plotly Express is not a suitable starting point."
+  ],
+  "gotchas": [
+   "This is a Plotly Express function, so it is a high-level starting point rather than the most generic graph-object interface.",
+   "Do not replace this function with the removed `px.density_mapbox`; use `px.density_map` instead."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "px.ecdf": {
   "sourceUrl": "https://plotly.com/python/ecdf-plots/",
   "sourceTitle": "Empirical cumulative distribution plots in Python",
@@ -5831,6 +6744,274 @@
    "The default vertical scale is probability; select `ecdfnorm=None` for counts or `ecdfnorm=\"percent\"` for percentages."
   ],
   "checkedAt": "2026-10-15"
+ },
+ "px.funnel": {
+  "sourceUrl": "https://plotly.com/python/funnel-charts/",
+  "sourceTitle": "Funnel charts in Python",
+  "summary": "`px.funnel` creates a funnel chart from tabular data. Each row becomes a stage, with one column for numeric values and another for stage names.",
+  "explanation": "Use `px.funnel` to show values across ordered stages. Give it stage names and numeric values; each input row becomes one stage. Add a grouping column with `color` to compare funnels.",
+  "syntax": "px.funnel(data_frame=None, x=None, y=None, color=None, ...)",
+  "parameters": [
+   {
+    "name": "data_frame",
+    "type": "DataFrame-like",
+    "description": "Data containing the funnel stages and their values. Plotly Express accepts supported tabular data forms."
+   },
+   {
+    "name": "x",
+    "type": "str or array-like",
+    "description": "Column or data containing numeric values for the funnel stages."
+   },
+   {
+    "name": "y",
+    "type": "str or array-like",
+    "description": "Column or data containing stage names."
+   },
+   {
+    "name": "color",
+    "type": "str or array-like",
+    "description": "Optional column or data used to split the funnel into groups."
+   }
+  ],
+  "returns": "A Plotly Figure object.",
+  "example": {
+   "title": "Create a funnel chart",
+   "code": "import plotly.express as px\n\ndata = {\n    \"stage\": [\"Visit\", \"Download\", \"Sign-up\", \"Purchase\"],\n    \"count\": [100, 60, 25, 10],\n}\nfig = px.funnel(data, x=\"count\", y=\"stage\")\nfig.show()",
+   "language": "python",
+   "explanation": "Each row becomes one funnel stage. The x column supplies stage values, and the y column supplies stage names."
+  },
+  "useCases": [
+   {
+    "title": "Process drop-off",
+    "scenario": "Track how counts decrease through steps such as visits, downloads, and purchases."
+   },
+   {
+    "title": "Group comparison",
+    "scenario": "Compare the same ordered stages for different offices, teams, or regions."
+   },
+   {
+    "title": "Find problem stages",
+    "scenario": "Inspect which stage loses the most records in a business process."
+   }
+  ],
+  "related": [
+   "plotly.express",
+   "px.funnel_area",
+   "plotly.graph_objects",
+   "go.Funnel"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you create a basic funnel chart?",
+    "answer": "`px.funnel` is the high-level Plotly Express function for making a funnel chart. In the basic form, pass data plus the value column through `x` and the stage column through `y`.",
+    "followUp": "How can you compare groups? Add a grouping column and pass its name to `color`; the documentation uses this to create a stacked funnel."
+   },
+   {
+    "question": "How does `px.funnel` map tabular data to stages?",
+    "answer": "Plotly Express maps each row to a funnel stage. The stage labels come from one column, and the corresponding numeric amounts come from another column.",
+    "followUp": "What if the data is wide? Pass a list of value columns, or reshape the data into long form when that better represents the stages."
+   },
+   {
+    "question": "Which data shapes can `px.funnel` use?",
+    "answer": "`px.funnel` accepts long-form data and also supports wide-form and mixed-form data. With wide data, Plotly Express internally uses a value/variable representation, so axis and legend labels may need adjustment.",
+    "followUp": "How can labels be changed? Supply the `labels` argument, for example `labels={\"value\": \"count\", \"variable\": \"stage\"}`."
+   }
+  ],
+  "keyPoints": [
+   "Each DataFrame row becomes one funnel stage.",
+   "Use Plotly Express when you want a short, high-level way to create the chart.",
+   "Set `x` to the numeric value column and `y` to the stage-label column.",
+   "Pass a categorical column to `color` to compare groups such as offices.",
+   "`px.funnel` is one of the Plotly Express Cartesian functions that supports wide-form and mixed-form data."
+  ],
+  "gotchas": [
+   "Plotly Express also accepts wide-form and mixed-form data for `px.funnel`, but the column names used for axes and labels can differ from long-form input.",
+   "Unlike `px.imshow`, `px.funnel` supports long-form input and is listed among the Cartesian functions that also support wide-form and mixed-form data."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "px.funnel_area": {
+  "sourceUrl": "https://plotly.com/python/funnel-charts/",
+  "sourceTitle": "Funnel chart in Python",
+  "summary": "Use `px.funnel` to visualize values across ordered process stages. Each input row becomes one stage, making progressive decreases easy to inspect.",
+  "explanation": "Use `px.funnel` to show values across ordered process stages. Each input row becomes one stage, so decreasing values can show where a process loses items.",
+  "syntax": "px.funnel(data_frame=None, x=None, y=None, ...)",
+  "parameters": [
+   {
+    "name": "data_frame",
+    "type": "data frame or compatible data",
+    "description": "Data source containing the stage and value fields."
+   },
+   {
+    "name": "x",
+    "type": "str",
+    "description": "Column or field containing numeric stage values."
+   },
+   {
+    "name": "y",
+    "type": "str",
+    "description": "Column or field containing stage labels."
+   }
+  ],
+  "returns": "A Plotly figure object.",
+  "example": {
+   "title": "Create a funnel chart",
+   "code": "import plotly.express as px\n\ndata = {\n    \"number\": [39, 27.4, 20.6, 11, 2],\n    \"stage\": [\n        \"Website visit\", \"Downloads\", \"Potential customers\",\n        \"Requested price\", \"Invoice sent\"\n    ],\n}\nfig = px.funnel(data, x=\"number\", y=\"stage\")\nfig.show()",
+   "language": "python",
+   "explanation": "Each data row becomes one horizontal funnel stage."
+  },
+  "useCases": [
+   {
+    "title": "Find where potential customers drop out",
+    "scenario": "Sales process"
+   },
+   {
+    "title": "Compare values across process stages",
+    "scenario": "Business intelligence"
+   },
+   {
+    "title": "Inspect progressive decreases from one stage to the next",
+    "scenario": "Conversion analysis"
+   }
+  ],
+  "related": [
+   "px.funnel_area",
+   "go.Funnel",
+   "go.Funnelarea",
+   "plotly.graph_objects",
+   "plotly.express"
+  ],
+  "since": "4.4.1",
+  "interview": [
+   {
+    "question": "What does `px.funnel` create?",
+    "answer": "`px.funnel` is a high-level Plotly Express function for process-stage data. It maps one column to stage labels with `y` and another to stage values with `x`.",
+    "followUp": "How can you create an area funnel instead? Use `px.funnel_area`, which accepts stage names and values for an area-style funnel."
+   },
+   {
+    "question": "How is funnel data mapped to the chart?",
+    "answer": "Each row of the supplied data represents one funnel stage. The example passes a dictionary directly and selects its fields with `x=\"number\"` and `y=\"stage\"`.",
+    "followUp": "What should be changed for a DataFrame? Pass the DataFrame as the first argument and use its column names for `x` and `y`."
+   },
+   {
+    "question": "When would you use `go.Funnel` instead of `px.funnel`?",
+    "answer": "Use `go.Funnel` when the generic graph-objects interface is a better starting point. It supports settings such as orientation, text position, and text information.",
+    "followUp": "How can multiple funnel series be shown? Add more `go.Funnel` traces to one `go.Figure`."
+   }
+  ],
+  "keyPoints": [
+   "Funnel charts display values at successive stages of a business process.",
+   "Use one input row for each stage.",
+   "Plotly Express provides a high-level way to create the chart.",
+   "Plotly Express functions can work with several data formats, including DataFrames.",
+   "Use `px.funnel_area` when the chart should use funnel areas instead of the standard funnel plot."
+  ],
+  "gotchas": [
+   "The input rows define the stages, so keep the data in the intended process order.",
+   "The chart expresses stages as percentages, so interpret widths together with the underlying values."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "px.histogram": {
+  "sourceUrl": "https://plotly.com/python/histograms/",
+  "sourceTitle": "Histograms in Python",
+  "summary": "px.histogram creates an aggregated bar chart. It bins numerical, date, or categorical data and can count, sum, or average values in each bin.",
+  "explanation": "px.histogram groups values into bins or categories and combines the values in each group. With y, it applies histfunc to that column; the default is sum. Use histnorm when the bars should show percentages, probabilities, or density instead of raw totals.",
+  "syntax": "plotly.express.histogram(data_frame=None, x=None, y=None, color=None, histfunc=None, histnorm=None, nbins=None, barmode=None, text_auto=None, marginal=None, **kwargs)",
+  "parameters": [
+   {
+    "name": "data_frame",
+    "type": "DataFrame or array-like",
+    "description": "Data source containing the columns used by the chart."
+   },
+   {
+    "name": "x",
+    "type": "str or array-like",
+    "description": "Column or values to bin along the horizontal axis."
+   },
+   {
+    "name": "y",
+    "type": "str or array-like",
+    "description": "Column whose values are aggregated in each bin."
+   },
+   {
+    "name": "histfunc",
+    "type": "str",
+    "description": "Aggregation function, such as count, sum, or avg."
+   },
+   {
+    "name": "nbins",
+    "type": "int",
+    "description": "Number of bins to request."
+   },
+   {
+    "name": "histnorm",
+    "type": "str",
+    "description": "Normalization mode for bar heights or density."
+   }
+  ],
+  "returns": "A Plotly Figure object.",
+  "example": {
+   "title": "Grouped average histogram",
+   "code": "import plotly.express as px\n\ndf = px.data.tips()\nfig = px.histogram(\n    df,\n    x=\"day\",\n    y=\"total_bill\",\n    color=\"sex\",\n    histfunc=\"avg\",\n    barmode=\"group\",\n    text_auto=True,\n)\nfig.show()",
+   "language": "python",
+   "explanation": "This creates grouped bars showing the average bill for each day and sex. Labels are added to the bars."
+  },
+  "useCases": [
+   {
+    "title": "Show a numeric distribution",
+    "scenario": "You need the distribution of numeric measurements."
+   },
+   {
+    "title": "Aggregate by category",
+    "scenario": "You need totals or averages grouped by a category."
+   },
+   {
+    "title": "Normalize the bars",
+    "scenario": "You need percentages or density instead of counts."
+   }
+  ],
+  "related": [
+   "px.bar",
+   "go.Histogram",
+   "histnorm",
+   "histfunc",
+   "marginal",
+   "nbins",
+   "barmode"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is the difference between px.histogram and px.bar?",
+    "answer": "px.histogram creates an aggregated bar chart. It can bin numerical, date, or categorical x values and can apply functions such as count, sum, or average.",
+    "followUp": "How can you show raw records instead? Use px.bar, which draws one rectangle for each input row rather than aggregating rows."
+   },
+   {
+    "question": "What does histfunc control?",
+    "answer": "If y is omitted, the default aggregation is a count of records in each bin. If y is provided, the default histfunc is sum.",
+    "followUp": "How would you show average values? Pass the measured column as y and set histfunc=\"avg\"."
+   },
+   {
+    "question": "How can a histogram show normalized values?",
+    "answer": "Use histnorm to change the bar meaning. Options include percent, probability, density, and probability density.",
+    "followUp": "What does probability density mean? The total area of all bars equals one."
+   }
+  ],
+  "keyPoints": [
+   "A histogram places numerical observations into bins and displays the result for each bin.",
+   "Plotly histograms also work with categorical and date axes, not only numeric axes.",
+   "When y is supplied, values in each bin are summed unless another histfunc is selected.",
+   "Plotly chooses a default bin count, but nbins can request a different number.",
+   "Date values can be grouped into time bins automatically.",
+   "histnorm changes the scale from counts to percentages, probabilities, or density."
+  ],
+  "gotchas": [
+   "Avoid stacked or relative modes with averages or other non-sum functions. Adding average bar heights usually does not represent a useful total.",
+   "Histogram counts are calculated in the browser, so they are not available directly in the figure object. Calculate them separately if your code needs the counts."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "px.icicle": {
   "sourceUrl": "https://plotly.com/python-api-reference/generated/plotly.express.icicle.html",
@@ -7666,6 +8847,82 @@
    "The `points` option accepts `all`, `outliers`, or `False`; choose deliberately because displaying every observation can make dense distributions difficult to read."
   ],
   "checkedAt": "2026-10-15"
+ },
+ "State": {
+  "sourceUrl": "https://plotly.com/python/click-events/",
+  "sourceTitle": "Click events in Python",
+  "summary": "`trace.on_click` registers a Python callback for clicks on points in a Plotly trace. It works when the trace is in a displayed `FigureWidget` inside an ipywidget context.",
+  "explanation": "Call `trace.on_click` with a function that receives the trace, selected point information, and input-device state. The callback runs for a trace in a displayed `FigureWidget` inside an ipywidget context. Use `append=True` to keep existing click callbacks; the default replaces them.",
+  "syntax": "trace.on_click(callback, append=False)",
+  "parameters": [
+   {
+    "name": "callback",
+    "type": "callable",
+    "description": "Function called with the trace, a `plotly.callbacks.Points` object, and a `plotly.callbacks.InputDeviceState` object."
+   },
+   {
+    "name": "append",
+    "type": "bool",
+    "description": "If false, replace existing click callbacks. If true, append this callback."
+   }
+  ],
+  "returns": "None",
+  "example": {
+   "title": "Register a click callback",
+   "code": "import plotly.graph_objects as go\n\nfig = go.FigureWidget([\n    go.Scatter(x=[1, 2], y=[3, 0], mode=\"markers\")\n])\n\ntrace = fig.data[0]\n\ndef on_click(trace, points, state):\n    print(points.point_inds)\n\ntrace.on_click(on_click)\nfig",
+   "language": "python",
+   "explanation": "This registers a click callback on a scatter trace in a FigureWidget."
+  },
+  "useCases": [
+   {
+    "title": "React to selected points",
+    "scenario": "Interactive notebooks"
+   },
+   {
+    "title": "Inspect clicked point indexes",
+    "scenario": "Data exploration"
+   },
+   {
+    "title": "Update trace styling after clicks",
+    "scenario": "Interactive charts"
+   }
+  ],
+  "related": [
+   "plotly.graph_objects.FigureWidget",
+   "plotly.callbacks.Points",
+   "plotly.callbacks.InputDeviceState",
+   "plotly.graph_objects.Scatter",
+   "plotly.graph_objects.Figure"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you handle clicks on points in a Plotly Python trace?",
+    "answer": "Use `trace.on_click(callback)`. The callback receives three arguments: the trace, a `Points` object, and an `InputDeviceState` object. The clicked point indexes are available as `points.point_inds`.",
+    "followUp": "What must be true for the callback to run? The trace must belong to a displayed `FigureWidget` in an ipywidget context; plot and iplot displays do not trigger it."
+   },
+   {
+    "question": "What information does an on-click callback receive?",
+    "answer": "The callback function has three arguments: the trace, point information, and input-device state. `points.point_inds` identifies the points involved in the click.",
+    "followUp": "How could a callback update the chart efficiently? Change the trace properties inside `fig.batch_update()` so related updates are sent together."
+   },
+   {
+    "question": "What does the append parameter do?",
+    "answer": "By default, registering a callback replaces callbacks already registered for that trace. Pass `append=True` when the new callback should be added to the existing list.",
+    "followUp": "When would replacement be safer? Use the default when a component owns the callback and old behavior must not remain active."
+   }
+  ],
+  "keyPoints": [
+   "`on_click` attaches a function to point-click events for one trace.",
+   "The callback accepts the trace, a `Points` object, and an input-device state object.",
+   "Read `points.point_inds` to get the indexes of clicked points.",
+   "With the default `append=False`, the new callback replaces earlier click callbacks."
+  ],
+  "gotchas": [
+   "The callback needs a FigureWidget displayed in an ipywidget context.",
+   "Callbacks do not run for figures shown with plot or iplot."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "update_layout": {
   "sourceUrl": "https://plotly.com/python-api-reference/generated/generated/plotly.graph_objects.Figure.update_layout.html",

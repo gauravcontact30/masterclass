@@ -76,6 +76,7 @@ const API_EXTRA_HOSTS: Record<string, string[]> = {
   langgraph: ["reference.langchain.com", "docs.langchain.com", "langchain-ai.github.io"],
   integrations: ["reference.langchain.com", "docs.langchain.com", "python.langchain.com"],
   langsmith: ["reference.langchain.com", "docs.langchain.com", "docs.smith.langchain.com"],
+  pydantic: ["docs.pydantic.dev"],
 };
 
 /** System design has no single vendor, so it searches openly like the mixed Search tabs. */

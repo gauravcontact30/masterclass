@@ -1,4 +1,148 @@
 {
+ "Action": {
+  "sourceUrl": "https://redux.js.org/faq/actions/",
+  "sourceTitle": "Actions | Redux",
+  "summary": "A Redux action is a plain object that describes an event. Its string type identifies the event, while other fields carry data; Redux Toolkit can generate action creators and type strings for you.",
+  "explanation": "An Action is a plain object that describes an event in Redux. Its type is a string, and its other fields carry data for reducers or middleware. Redux Toolkit can create action types and creators from slice reducers, while the match method provides type-safe checks.",
+  "syntax": "{ type: string, ...additionalFields }",
+  "parameters": [
+   {
+    "name": "type",
+    "type": "string",
+    "description": "A string identifying the event or action kind."
+   },
+   {
+    "name": "payload and other fields",
+    "type": "serializable values",
+    "description": "Optional data used by reducers or middleware. The documentation does not require a specific shape."
+   }
+  ],
+  "returns": "An action object, or an action creator that produces action objects when called.",
+  "example": {
+   "title": "Use a typed action creator",
+   "code": "import { createAction } from '@reduxjs/toolkit'\n\nconst increment = createAction<number>('counter/increment')\n\nfunction handleAction(action: unknown) {\n  if (increment.match(action)) {\n    return action.payload + 1\n  }\n  return 0\n}",
+   "language": "typescript",
+   "explanation": "The match method checks the action type and narrows the payload to number."
+  },
+  "useCases": [
+   {
+    "title": "Describe state changes",
+    "scenario": "A reducer needs to update state after a user event or domain event."
+   },
+   {
+    "title": "Share one event across reducers",
+    "scenario": "Several reducers must react to the same event."
+   },
+   {
+    "title": "Start middleware logic",
+    "scenario": "An operation needs API calls or other side effects."
+   }
+  ],
+  "related": [
+   "createAction",
+   "createSlice",
+   "createAsyncThunk",
+   "configureStore",
+   "RTK Query",
+   "listener middleware",
+   "Redux Thunk"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is a Redux action?",
+    "answer": "An action is a plain object describing an event. It must have a string type, and it can include serializable data such as a payload.",
+    "followUp": "Why use strings for type? Strings are serializable and readable, which supports debugging, recording, replaying, and time travel."
+   },
+   {
+    "question": "Must one action belong to one reducer?",
+    "answer": "No. One action can be handled by several reducers, one reducer, or no reducers. This lets different parts of the state respond to the same event.",
+    "followUp": "How can Redux Toolkit create related action types? createSlice combines its name and reducer names, such as todos/todoAdded."
+   },
+   {
+    "question": "Where should asynchronous logic go?",
+    "answer": "Use middleware for side effects and asynchronous work because reducers must remain pure. configureStore adds thunk middleware by default, and createAsyncThunk creates promise lifecycle actions.",
+    "followUp": "Which API fits server fetching and caching? RTK Query is the recommended choice because it handles request state, caching, invalidation, and refetching."
+   }
+  ],
+  "keyPoints": [
+   "Use a string for action.type. It is readable and serializable.",
+   "createSlice generates action type strings from the slice name and reducer name.",
+   "The same createSlice call also creates matching action creators.",
+   "Reducers do not have a one-to-one relationship with actions.",
+   "Reducers must be pure. Put side effects outside reducers."
+  ],
+  "gotchas": [
+   "Keep actions serializable when they reach reducers. Non-serializable values are only suitable for middleware-specific actions.",
+   "In a switch statement, compare the action type with actionCreator.type, not with the action creator function."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "ActionReducerMapBuilder": {
+  "sourceUrl": "https://redux.js.org/toolkit",
+  "sourceTitle": "Redux Toolkit - The official, opinionated, batteries-included toolset for efficient Redux development",
+  "summary": "Redux Toolkit provides utilities for setting up a store, defining reducers, and writing immutable updates with less code. It also supports creating complete state slices.",
+  "explanation": "Redux Toolkit provides utilities for setting up a store, defining reducers, and writing immutable updates with less code. A slice can group related state and its reducer logic.",
+  "syntax": "configureStore({ reducer, middleware, enhancers })",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Create a slice and update state",
+   "code": "import { createSlice, configureStore } from '@reduxjs/toolkit'\n\nconst counterSlice = createSlice({\n  name: 'counter',\n  initialState: { value: 0 },\n  reducers: {\n    increment(state) {\n      state.value += 1\n    }\n  }\n})\n\nconst store = configureStore({\n  reducer: { counter: counterSlice.reducer }\n})\n\nstore.dispatch(counterSlice.actions.increment())\nconsole.log(store.getState().counter.value)",
+   "language": "javascript",
+   "explanation": "This creates a slice with an initial value and an increment action, then adds the reducer to a store and dispatches the action."
+  },
+  "useCases": [
+   {
+    "title": "Set up a store with defaults",
+    "scenario": "Starting a Redux application"
+   },
+   {
+    "title": "Create a state slice",
+    "scenario": "Managing one feature's state"
+   },
+   {
+    "title": "Write immutable update logic",
+    "scenario": "Updating state safely"
+   }
+  ],
+  "related": [
+   "configureStore",
+   "createSlice",
+   "createReducer",
+   "Immer",
+   "combineReducers"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is Redux Toolkit?",
+    "answer": "Redux Toolkit is a set of utilities for common Redux tasks. It includes store setup, reducer creation, and immutable update logic.",
+    "followUp": "Why can reducer code appear to mutate state? Redux Toolkit uses Immer-based update logic, which turns these updates into immutable state changes."
+   },
+   {
+    "question": "What does a slice provide?",
+    "answer": "A slice groups related state and reducer logic. It can also create action creators for the reducers defined in that slice.",
+    "followUp": "What should be added to the store? Add the slice reducer under a key in the store's reducer configuration."
+   },
+   {
+    "question": "How is reducer logic added to a store?",
+    "answer": "A Redux store needs reducer logic to calculate new state. With `configureStore`, the reducer option can receive an object of functions that can be passed to `combineReducers`.",
+    "followUp": "What must custom middleware contain? Each supplied middleware value must be a function."
+   }
+  ],
+  "keyPoints": [
+   "Redux Toolkit includes utilities that simplify store setup and reducer creation.",
+   "Its store setup uses useful defaults instead of requiring every option to be configured manually.",
+   "It supports update code that looks mutative while preserving immutable state updates.",
+   "It can create complete state slices, including related reducer logic."
+  ],
+  "gotchas": [
+   "Do not use the removed object form of `createReducer`. Use the builder callback form instead.",
+   "Every middleware entry passed to `configureStore` must be a function."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "adapter.addMany": {
   "sourceUrl": "https://redux.js.org/toolkit/api/createEntityAdapter",
   "sourceTitle": "createEntityAdapter",
@@ -306,6 +450,79 @@
    "Calling getSelectors without an input selector does not produce selectors for the whole Redux store."
   ],
   "checkedAt": "2026-10-15"
+ },
+ "adapter.removeAll": {
+  "sourceUrl": "https://redux.js.org/toolkit/api/createEntityAdapter%23crud-functions",
+  "sourceTitle": "createEntityAdapter | Redux Toolkit",
+  "summary": "adapter.removeAll clears every entity from a normalized entity state. It can be used as a Redux Toolkit case reducer or as a helper inside reducer logic.",
+  "explanation": "adapter.removeAll takes an entity state and clears both its stored IDs and entity records. It returns the resulting state and can be used directly as a case reducer or called as a helper inside Redux Toolkit reducer logic.",
+  "syntax": "removeAll<S extends EntityState<T>>(state: S): S",
+  "parameters": [
+   {
+    "name": "state",
+    "type": "EntityState<T>",
+    "description": "The normalized entity state object containing the entities to clear."
+   }
+  ],
+  "returns": "The updated entity state with no entities.",
+  "example": {
+   "title": "Use removeAll in a slice",
+   "code": "import { createEntityAdapter, createSlice } from '@reduxjs/toolkit'\n\ntype Todo = { id: number; text: string }\nconst todos = createEntityAdapter<Todo>()\n\nconst slice = createSlice({\n  name: 'todos',\n  initialState: todos.getInitialState(),\n  reducers: {\n    clearTodos: todos.removeAll,\n  },\n})\n\nconst state = slice.reducer(undefined, { type: 'todos/clearTodos' })\nconsole.log(state) // { ids: [], entities: {} }",
+   "language": "typescript",
+   "explanation": "This slice uses the adapter method as a case reducer. Dispatching clearTodos removes every entity."
+  },
+  "useCases": [
+   {
+    "title": "Clear entity data",
+    "scenario": "A user signs out and cached account data must be cleared."
+   },
+   {
+    "title": "Reset a collection",
+    "scenario": "A new server response replaces the current collection."
+   },
+   {
+    "title": "Create a clear action",
+    "scenario": "A slice needs a reducer action that empties normalized state."
+   }
+  ],
+  "related": [
+   "createEntityAdapter",
+   "EntityState",
+   "createSlice",
+   "createReducer",
+   "addOne",
+   "removeOne",
+   "removeMany",
+   "updateOne"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does adapter.removeAll do?",
+    "answer": "removeAll accepts an entity state shaped like an IDs array and an entities map. It removes all stored entities and returns the resulting entity state.",
+    "followUp": "How could it be used in a slice? Use it as a case reducer, for example by assigning clearTodos: adapter.removeAll in createSlice."
+   },
+   {
+    "question": "What kind of state does removeAll operate on?",
+    "answer": "It is one of the generated CRUD reducer functions from createEntityAdapter. The method is designed for normalized entity state rather than an ordinary array.",
+    "followUp": "What is the normalized shape? It contains ids and entities, where the map stores entities by ID."
+   },
+   {
+    "question": "How can removeAll be integrated with Redux Toolkit?",
+    "answer": "The adapter methods can be passed directly to createReducer or createSlice. They can also be called manually as mutating-style helpers within Redux Toolkit reducer logic.",
+    "followUp": "Why is direct mutation acceptable there? Redux Toolkit uses its reducer handling to produce immutable updates from these mutating-style operations."
+   }
+  ],
+  "keyPoints": [
+   "It clears every entity in the adapter-managed state.",
+   "removeAll belongs to the CRUD reducer methods generated by createEntityAdapter.",
+   "You can register removeAll directly as a case reducer in createSlice or createReducer.",
+   "You can also call removeAll manually inside Redux Toolkit reducer logic."
+  ],
+  "gotchas": [
+   "Calling this method removes every entity, not only entities that match a condition or ID."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "adapter.removeMany": {
   "sourceUrl": "https://redux.js.org/toolkit/api/createEntityAdapter",
@@ -1224,6 +1441,96 @@
   ],
   "checkedAt": "2026-10-15"
  },
+ "BaseQueryFn": {
+  "sourceUrl": "https://redux.js.org/toolkit/rtk-query/usage/customizing-queries",
+  "sourceTitle": "Customizing Queries | Redux Usage",
+  "summary": "Customize RTK Query request handling with a shared baseQuery. Use fetchBaseQuery by default, wrap it for extra behavior, or replace it with your own function.",
+  "explanation": "A base query is the shared function that processes endpoint requests. RTK Query includes fetchBaseQuery, but you can wrap it or replace it with another request library. A custom base query must return either data or error, and it can also return meta information.",
+  "syntax": "type BaseQueryFn<Args = any, Result = unknown, Error = unknown, DefinitionExtraOptions = {}, Meta = {}> = (args: Args, api: BaseQueryApi, extraOptions: DefinitionExtraOptions) => MaybePromise<QueryReturnValue<Result, Error, Meta>>",
+  "parameters": [
+   {
+    "name": "args",
+    "type": "Args",
+    "description": "Request arguments passed by the endpoint query or queryFn."
+   },
+   {
+    "name": "api",
+    "type": "BaseQueryApi",
+    "description": "Context object with signal, abort, dispatch, getState, extra, endpoint, type, and optional forced fields."
+   },
+   {
+    "name": "extraOptions",
+    "type": "DefinitionExtraOptions",
+    "description": "Optional endpoint-specific options."
+   }
+  ],
+  "returns": "A promise or value containing either { data: Result } or { error: Error }, with optional meta information.",
+  "example": {
+   "title": "Retry after authorization failure",
+   "code": "const baseQuery = fetchBaseQuery({ baseUrl: '/' })\n\nconst baseQueryWithReauth = async (args, api, extraOptions) => {\n  let result = await baseQuery(args, api, extraOptions)\n\n  if (result.error?.status === 401) {\n    const refresh = await baseQuery('/refreshToken', api, extraOptions)\n    if (refresh.data) {\n      api.dispatch(tokenReceived(refresh.data))\n      result = await baseQuery(args, api, extraOptions)\n    } else {\n      api.dispatch(loggedOut())\n    }\n  }\n  return result\n}",
+   "language": "javascript",
+   "explanation": "Wrap the normal base query to refresh a token after a 401 error, then retry the original request."
+  },
+  "useCases": [
+   {
+    "title": "Replace fetch requests",
+    "scenario": "Your API uses Axios or another request library."
+   },
+   {
+    "title": "Add reauthorization",
+    "scenario": "Requests need token refresh and retry behavior."
+   },
+   {
+    "title": "Build dynamic URLs",
+    "scenario": "A project or tenant ID in Redux state changes the request URL."
+   },
+   {
+    "title": "Pass request metadata",
+    "scenario": "Response processing needs request IDs or timestamps."
+   }
+  ],
+  "related": [
+   "createApi",
+   "fetchBaseQuery",
+   "queryFn",
+   "QueryReturnValue",
+   "BaseQueryApi",
+   "BaseQueryFn",
+   "transformResponse"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How does an endpoint use a base query?",
+    "answer": "The endpoint's query value is passed to the API's shared baseQuery. The base query performs the request and returns a result with either data or error.",
+    "followUp": "How can endpoint-specific request logic avoid the shared base query? Define the endpoint with queryFn and perform the asynchronous work there."
+   },
+   {
+    "question": "When should you customize the base query?",
+    "answer": "Use fetchBaseQuery for the default fetch-based behavior. If it does not fit, wrap it to add behavior or write a base query that uses another request library such as Axios.",
+    "followUp": "How can a wrapper refresh authentication? Call the wrapped query, detect status 401, request a new token, dispatch it, and retry the original request."
+   },
+   {
+    "question": "What context does a base query receive?",
+    "answer": "The base query receives the request arguments, an API object, and endpoint extra options. The API object includes signal, dispatch, getState, endpoint, request type, and forced status.",
+    "followUp": "How can state affect the request URL? Read the current state with api.getState(), build the needed URL portion, and pass the adjusted arguments to the underlying base query."
+   }
+  ],
+  "keyPoints": [
+   "fetchBaseQuery is the built-in lightweight wrapper for fetch requests.",
+   "Wrap fetchBaseQuery when you need extra behavior, such as token refresh or a dynamically built URL.",
+   "A custom base query can use Axios or another request system instead of fetch.",
+   "Return successful request results in a data object.",
+   "Return failed request results in an error object.",
+   "Add meta to either a successful or failed result when callers need request details or other extra information."
+  ],
+  "gotchas": [
+   "A base query must return an object containing either error or data. Do not return both as successful results.",
+   "Keep related endpoints in one API slice when they use the same base URL, because automatic tag invalidation works only within one API slice.",
+   "A reauthorization wrapper should retry only after the base query reports a 401 response."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "batch": {
   "sourceUrl": "https://redux.js.org/react-redux/api/batch",
   "sourceTitle": "batch()",
@@ -1292,6 +1599,167 @@
    "Automatic batching in React 18 covers updates regardless of where they are queued."
   ],
   "checkedAt": "2026-10-15"
+ },
+ "buildCreateApi": {
+  "sourceUrl": "https://redux.js.org/toolkit/rtk-query/api/createApi",
+  "sourceTitle": "createApi | Redux API: createApi reference",
+  "summary": "createApi defines RTK Query endpoints and returns an API slice. The slice manages data fetching and caching, and the React version can generate hooks.",
+  "explanation": "createApi defines endpoints for fetching and transforming asynchronous data. It returns an API slice containing Redux logic for requests and caching, and the React entry point can also generate hooks.",
+  "syntax": "createApi(options)",
+  "parameters": [
+   {
+    "name": "options",
+    "type": "CreateApiOptions",
+    "description": "Configuration object containing endpoint definitions and request behavior."
+   }
+  ],
+  "returns": "An API slice object containing Redux logic and, when using the React entry point, generated React hooks.",
+  "example": {
+   "title": "Basic createApi definition",
+   "code": "import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react'\n\nexport const api = createApi({\n  reducerPath: 'api',\n  baseQuery: fetchBaseQuery({ baseUrl: '/api/' }),\n  endpoints: (build) => ({\n    getPosts: build.query({\n      query: () => 'posts'\n    })\n  })\n})\n\nexport const { useGetPostsQuery } = api",
+   "language": "typescript",
+   "explanation": "This creates one API slice for endpoints under the same base URL and generates a React hook for the query."
+  },
+  "useCases": [
+   {
+    "title": "Define query endpoints",
+    "scenario": "A React app reads server data from a backend."
+   },
+   {
+    "title": "Group related endpoints",
+    "scenario": "Several resources use the same backend base URL."
+   },
+   {
+    "title": "Use tag invalidation",
+    "scenario": "An application needs cache updates after mutations."
+   },
+   {
+    "title": "Build a customized API creator",
+    "scenario": "A project needs custom hooks or selector behavior."
+   }
+  ],
+  "related": [
+   "createBaseApi",
+   "buildCreateApi",
+   "coreModule",
+   "reactHooksModule",
+   "fetchBaseQuery",
+   "endpoints",
+   "API slice",
+   "automatic tag invalidation"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does createApi do?",
+    "answer": "createApi accepts endpoint definitions and produces an API slice. That slice contains Redux logic for data fetching and caching, and the React version can add generated hooks.",
+    "followUp": "Why group endpoints by base URL? Automatic tag invalidation works only inside one API slice, so grouping related endpoints enables cross-endpoint cache updates."
+   },
+   {
+    "question": "What is an API slice?",
+    "answer": "An API slice groups endpoint definitions and the Redux code needed to manage their requests and cached data. It can also include React hooks when imported from the React entry point.",
+    "followUp": "What is the trade-off of creating several API slices? Each call creates its own middleware, and tags cannot invalidate data across slice boundaries."
+   },
+   {
+    "question": "What is the difference between createApi and createBaseApi?",
+    "answer": "The standard React version includes both the core RTK Query module and the React hooks module. The UI-agnostic variant contains only the core Redux behavior.",
+    "followUp": "How can createApi be customized? Use buildCreateApi with selected modules, custom hook implementations, selector creators, or additional modules."
+   }
+  ],
+  "keyPoints": [
+   "Define endpoints that describe how each data request works.",
+   "Endpoint definitions can configure both fetching and data transformation.",
+   "The result is an API slice containing the Redux logic needed by RTK Query.",
+   "The generated slice handles data fetching and caching instead of requiring handwritten logic.",
+   "Tag-based automatic invalidation does not cross API slice boundaries.",
+   "createBaseApi is the core-only variant and does not depend on a UI framework.",
+   "The React version includes both RTK Query's core behavior and generated React hooks."
+  ],
+  "gotchas": [
+   "Use one API slice for each base URL when possible. Separate slices prevent automatic tag invalidation from working between them.",
+   "Each API slice needs its middleware added to the Redux store. Multiple slices also make multiple middleware instances run."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "builder.addCase": {
+  "sourceUrl": "https://redux.js.org/toolkit/api/createReducer",
+  "sourceTitle": "createReducer | Redux",
+  "summary": "createReducer makes Redux reducers shorter. It uses a builder callback to connect actions with case reducers and supports Immer-style updates.",
+  "explanation": "createReducer builds a Redux reducer from an initial state and a builder callback. The builder registers exact action handlers, matcher handlers, and an optional fallback. Immer lets case reducers update draft state with direct-looking changes while preserving immutable updates.",
+  "syntax": "createReducer(initialState, builderCallback)",
+  "parameters": [
+   {
+    "name": "initialState",
+    "type": "State | (() => State)",
+    "description": "The starting state, or a function that returns it when the reducer receives undefined state."
+   },
+   {
+    "name": "builderCallback",
+    "type": "(builder: Builder) => void",
+    "description": "A callback that receives the builder and registers case reducers."
+   }
+  ],
+  "returns": "The generated reducer function, with a getInitialState function attached.",
+  "example": {
+   "title": "Handle one action",
+   "code": "import { createAction, createReducer } from '@reduxjs/toolkit'\n\nconst increment = createAction('counter/increment')\n\nconst reducer = createReducer({ value: 0 }, (builder) => {\n  builder.addCase(increment, (state) => {\n    state.value += 1\n  })\n})\n\nconsole.log(reducer(undefined, increment()))\nconsole.log(reducer.getInitialState())",
+   "language": "javascript",
+   "explanation": "This reducer handles one action and exposes its initial state."
+  },
+  "useCases": [
+   {
+    "title": "Map actions to handlers",
+    "scenario": "A reducer handles several known action creators without a switch statement."
+   },
+   {
+    "title": "Match action groups",
+    "scenario": "A reducer must respond to actions that share a property or naming pattern."
+   },
+   {
+    "title": "Read initial state",
+    "scenario": "Tests or React useReducer need the reducer's starting value."
+   }
+  ],
+  "related": [
+   "builder.addCase",
+   "builder.addAsyncThunk",
+   "builder.addMatcher",
+   "builder.addDefaultCase",
+   "createAction",
+   "createSlice"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does createReducer do?",
+    "answer": "createReducer takes an initial state and a builder callback. The callback registers case reducers with methods such as addCase, addMatcher, and addDefaultCase.",
+    "followUp": "When must addCase calls appear? They must come before addMatcher and addDefaultCase calls."
+   },
+   {
+    "question": "Why can reducer code mutate state?",
+    "answer": "A case reducer can change draft state directly because createReducer uses Immer internally. Immer turns those draft changes into an immutable result.",
+    "followUp": "Can a case reducer return a value instead? Yes. The returned value replaces the current state completely."
+   },
+   {
+    "question": "How do the builder methods differ?",
+    "answer": "addCase handles one exact action type. addMatcher uses a filter function, and addDefaultCase runs only when no case or matcher handled the action.",
+    "followUp": "What happens when several matchers match? They all run in the order in which they were added."
+   }
+  ],
+  "keyPoints": [
+   "Use createReducer to avoid writing a switch statement for each action type.",
+   "The initial state can be a function, which is useful when state must be read from storage.",
+   "addCase accepts an action type string or an action creator.",
+   "addMatcher can handle actions using custom conditions rather than only their type.",
+   "addDefaultCase provides fallback behavior for unhandled actions.",
+   "The generated reducer includes getInitialState for tests or React useReducer."
+  ],
+  "gotchas": [
+   "Register exact cases before matchers or the default case.",
+   "More than one matcher can run for the same action.",
+   "Returning a value replaces the whole state, so return only a complete replacement."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "builder.addDefaultCase": {
   "sourceUrl": "https://redux-toolkit.js.org/api/createReducer",
@@ -3248,6 +3716,185 @@
   ],
   "checkedAt": "2026-10-15"
  },
+ "EndpointBuilder": {
+  "sourceUrl": "https://redux.js.org/toolkit/rtk-query/api/created-api/code-splitting",
+  "sourceTitle": "API Slices: Code Splitting and Generation",
+  "summary": "RTK Query lets you add endpoint definitions after creating an API slice. Use injectEndpoints for new endpoints and enhanceEndpoints for tag types or partial endpoint changes.",
+  "explanation": "injectEndpoints adds endpoint definitions to an existing RTK Query API slice. enhanceEndpoints instead changes tag types or merges partial settings into existing endpoint definitions without replacing the whole definition.",
+  "syntax": "const enhancedApi = api.injectEndpoints({ endpoints: (build) => ({ ... }), overrideExisting?: boolean | 'throw' })\nconst enhancedApi = api.enhanceEndpoints({ addTagTypes?: readonly string[], endpoints?: Record<string, Partial<EndpointDefinition>> })",
+  "parameters": [
+   {
+    "name": "createApi configuration",
+    "type": "object",
+    "description": "Configuration object passed to createApi, including baseQuery and the initial endpoints callback."
+   },
+   {
+    "name": "endpointOptions",
+    "type": "InjectedEndpointOptions",
+    "description": "Object with an endpoints builder callback and optional overrideExisting setting."
+   },
+   {
+    "name": "endpointOptions",
+    "type": "EnhanceEndpointsOptions",
+    "description": "Object with optional tag types and partial endpoint definitions."
+   }
+  ],
+  "returns": "injectEndpoints and enhanceEndpoints each return an updated, enhanced API slice containing the resulting endpoint definitions.",
+  "example": {
+   "title": "Add an endpoint later",
+   "code": "const api = createApi({\n  baseQuery: fetchBaseQuery({ baseUrl: '/api' }),\n  endpoints: () => ({})\n})\n\nconst extendedApi = api.injectEndpoints({\n  endpoints: (build) => ({\n    getUser: build.query({\n      query: (id: string) => `users/${id}`\n    })\n  })\n})",
+   "language": "typescript",
+   "explanation": "Create the API slice first with no endpoints. Later, call injectEndpoints to add an endpoint and use the returned enhanced API object."
+  },
+  "useCases": [
+   {
+    "title": "Split endpoints across files",
+    "scenario": "A large app has many endpoint groups."
+   },
+   {
+    "title": "Customize generated endpoints",
+    "scenario": "Generated endpoints need app-specific tags or settings."
+   },
+   {
+    "title": "Support hot reloading",
+    "scenario": "Development reloads endpoint modules repeatedly."
+   }
+  ],
+  "related": [
+   "createApi",
+   "EndpointBuilder",
+   "fetchBaseQuery",
+   "enhanceEndpoints",
+   "overrideExisting",
+   "tagTypes",
+   "API slice"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does injectEndpoints do?",
+    "answer": "injectEndpoints takes an endpoint builder callback and merges the returned definitions into the API slice. It returns an enhanced API object containing the combined endpoints.",
+    "followUp": "When should enhanceEndpoints be used instead? Use it when adding tag types or changing parts of existing endpoint definitions, because it merges partial definitions per endpoint."
+   },
+   {
+    "question": "How are duplicate endpoint names handled?",
+    "answer": "By default, an existing endpoint is not replaced. Set overrideExisting to true to replace it, or to 'throw' to raise an error when a different definition uses the same name.",
+    "followUp": "Why might a duplicate definition appear? Code splitting or hot reloading can load endpoint definitions more than once, so explicit override behavior can make this safer."
+   },
+   {
+    "question": "Why avoid creating many API slices?",
+    "answer": "A single API slice usually covers one base URL and holds related endpoints. Automatic tag invalidation works only inside one API slice, and every API slice adds its own middleware.",
+    "followUp": "What is the trade-off of many API slices? They prevent cross-slice tag invalidation and add more middleware work to the store."
+   }
+  ],
+  "keyPoints": [
+   "You can add endpoint definitions after the initial API slice has been created.",
+   "Place endpoint groups in separate files to support code splitting and clearer module organization.",
+   "The builder callback returns the new endpoints that become part of the existing API slice.",
+   "The overrideExisting option controls whether a duplicate endpoint definition replaces the current one.",
+   "enhanceEndpoints can add tag types and endpoint settings to an existing API slice.",
+   "enhanceEndpoints preserves the existing endpoint definition and merges the supplied partial fields into it."
+  ],
+  "gotchas": [
+   "A duplicate endpoint name is not replaced by default. Set overrideExisting to true to replace it, or use 'throw' to fail when a different definition already exists.",
+   "Keep related endpoints in one API slice when they need automatic tag invalidation to work together."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "EnhancedStore": {
+  "sourceUrl": "https://redux.js.org/toolkit/api/configureStore",
+  "sourceTitle": "configureStore | Redux",
+  "summary": "configureStore creates a Redux store from a root reducer or an object of slice reducers. It also supplies default middleware, development checks, and Redux DevTools support.",
+  "explanation": "configureStore creates a Redux store from a root reducer function or an object of slice reducers. It also applies default middleware, development checks, and Redux DevTools support, while allowing custom middleware and enhancer settings.",
+  "syntax": "configureStore<S = any, A extends Action = UnknownAction, M extends Tuple<Middlewares<S>> = Tuple<Middlewares<S>>, E extends Tuple<Enhancers> = Tuple<Enhancers>, P = S>(options: ConfigureStoreOptions<S, A, M, E, P>): EnhancedStore<S, A, M, E>",
+  "parameters": [
+   {
+    "name": "reducer",
+    "type": "Reducer<S, A> | ReducersMapObject<S, A>",
+    "description": "A root reducer function, or an object of slice reducers that configureStore combines with combineReducers."
+   },
+   {
+    "name": "middleware",
+    "type": "(getDefaultMiddleware) => Middleware[]",
+    "description": "A callback that receives getDefaultMiddleware and returns the middleware array for the store."
+   },
+   {
+    "name": "devTools",
+    "type": "boolean | DevToolsOptions",
+    "description": "Enables DevTools with a boolean, or enables it with enhancer options when given an object. Defaults to true."
+   },
+   {
+    "name": "enhancers",
+    "type": "(getDefaultEnhancers) => Enhancers",
+    "description": "A callback that receives getDefaultEnhancers and returns the enhancer array."
+   },
+   {
+    "name": "duplicateMiddlewareCheck",
+    "type": "boolean",
+    "description": "Checks the final middleware list for duplicate middleware references when enabled."
+   }
+  ],
+  "returns": "An enhanced Redux store.",
+  "example": {
+   "title": "Create a Redux store",
+   "code": "import { configureStore } from '@reduxjs/toolkit'\nimport counterReducer from './counterSlice'\n\nexport const store = configureStore({\n  reducer: {\n    counter: counterReducer,\n  },\n})",
+   "language": "typescript",
+   "explanation": "This creates a store from a slice-reducer object. configureStore builds the root reducer and uses its default middleware and enhancers."
+  },
+  "useCases": [
+   {
+    "title": "Application store setup",
+    "scenario": "Create a store for an application using slice reducers."
+   },
+   {
+    "title": "Default middleware and checks",
+    "scenario": "Use thunk and development checks without configuring them separately."
+   },
+   {
+    "title": "Custom store behavior",
+    "scenario": "Add middleware or enhancers while retaining selected defaults."
+   }
+  ],
+  "related": [
+   "getDefaultMiddleware",
+   "Tuple",
+   "combineReducers",
+   "applyMiddleware",
+   "Redux DevTools",
+   "createStore"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What forms can the reducer option take?",
+    "answer": "The reducer option accepts either one root reducer function or an object of slice reducers. For an object, configureStore uses combineReducers to create the root reducer.",
+    "followUp": "What happens if the reducer object has invalid values? The values must be reducer functions that can be passed to combineReducers."
+   },
+   {
+    "question": "How does configureStore handle middleware?",
+    "answer": "By default, configureStore calls getDefaultMiddleware and passes the returned middleware to applyMiddleware. A middleware callback can replace that list with a custom collection.",
+    "followUp": "How should TypeScript represent a custom middleware collection? Return a Tuple instance for better type inference."
+   },
+   {
+    "question": "What does the devTools option control?",
+    "answer": "The devTools option controls Redux DevTools support. It defaults to true; it can also be an options object passed to the DevTools enhancer.",
+    "followUp": "Can custom enhancers be added? Yes. Use the enhancers callback and return an array, such as the default enhancers plus another enhancer."
+   }
+  ],
+  "keyPoints": [
+   "Use configureStore as the normal way to create a Redux store.",
+   "An object of slice reducers is converted into one root reducer automatically.",
+   "The default setup includes thunk middleware and applies middleware to the store.",
+   "Development builds add checks that can detect common state-management mistakes.",
+   "Leaving middleware unset makes configureStore use getDefaultMiddleware."
+  ],
+  "gotchas": [
+   "When you provide the middleware callback, return every middleware the store should use. The default middleware is not automatically kept.",
+   "In TypeScript, use Tuple for a custom middleware collection unless you return the Tuple produced by getDefaultMiddleware.",
+   "Every middleware entry must be a function."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "EntityAdapter": {
   "sourceUrl": "https://redux.js.org/toolkit/api/createEntityAdapter",
   "sourceTitle": "createEntityAdapter",
@@ -3601,6 +4248,67 @@
    "Use a custom baseQuery or another HTTP client when your requirements exceed the common fetch-based request cases."
   ],
   "checkedAt": "2026-10-15"
+ },
+ "freeze": {
+  "sourceUrl": "https://redux.js.org/toolkit/api/other-exports",
+  "sourceTitle": "Other Exports | Redux",
+  "summary": "`freeze` is an Immer function re-exported by Redux Toolkit. It freezes draftable objects to help prevent mutation.",
+  "explanation": "`freeze` is an Immer utility exported by Redux Toolkit. It freezes draftable objects so their properties cannot be changed normally. Use it when you need to protect an object from mutation, such as shared configuration or state data.",
+  "syntax": "freeze(value)",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Freeze an object",
+   "code": "import { freeze } from '@reduxjs/toolkit'\n\nconst value = freeze({\n  todos: [{ id: 1, text: 'Learn Redux Toolkit' }]\n})\n\nconsole.log(Object.isFrozen(value)) // true",
+   "language": "typescript",
+   "explanation": "This freezes a draftable object and then checks that it is frozen."
+  },
+  "useCases": [
+   {
+    "title": "Prevent mutation",
+    "scenario": "Protecting shared state data from accidental changes."
+   },
+   {
+    "title": "Protect shared objects",
+    "scenario": "Freezing a draftable configuration or value before passing it to other code."
+   }
+  ],
+  "related": [
+   "createNextState",
+   "current",
+   "original",
+   "isDraft",
+   "combineReducers",
+   "compose"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does Redux Toolkit's `freeze` export do?",
+    "answer": "`freeze` is an Immer function that Redux Toolkit re-exports. It freezes draftable objects, which helps prevent normal mutation of those objects.",
+    "followUp": "How does `freeze` relate to Redux Toolkit reducers? The page lists it among Immer exports, while reducer examples use Immer draft state through Redux Toolkit's reducer APIs."
+   },
+   {
+    "question": "Where does `freeze` come from?",
+    "answer": "The function comes from the Immer library and is available through the Redux Toolkit package. Its documented purpose is freezing draftable objects.",
+    "followUp": "Why use the re-export instead of importing Immer directly? It can be imported from the Redux Toolkit package together with other Redux Toolkit APIs, keeping the package boundary consistent."
+   },
+   {
+    "question": "What limitation does the documentation mention?",
+    "answer": "`freeze` protects draftable objects by freezing them. The documentation does not give a separate argument list, return type, or version introduction for this export.",
+    "followUp": "What should be checked before using it on a value? Confirm that the value is draftable, because that is the type of object named by the documentation."
+   }
+  ],
+  "keyPoints": [
+   "Redux Toolkit re-exports `freeze` from Immer.",
+   "`freeze` is grouped with functions exported from other libraries.",
+   "The page lists `freeze` with related Immer exports such as `original` and `isDraft`.",
+   "The page explains that Redux Toolkit exposes selected utility functions."
+  ],
+  "gotchas": [
+   "`freeze` applies to draftable objects. It is not described as a general-purpose deep-freeze function for every JavaScript value."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "getDefaultMiddleware": {
   "sourceUrl": "https://redux.js.org/toolkit/api/getDefaultMiddleware",
@@ -4607,6 +5315,168 @@
   ],
   "checkedAt": "2026-10-15"
  },
+ "lruMemoize": {
+  "sourceUrl": "https://redux.js.org/reselect/api/lrumemoize/",
+  "sourceTitle": "lruMemoize | Redux",
+  "summary": "lruMemoize caches function results with an LRU policy. It uses reference equality by default, stores one entry unless maxSize is set, and can reuse equal output values with resultEqualityCheck.",
+  "explanation": "lruMemoize wraps a function and reuses results when its arguments match cached arguments. It compares arguments with equalityCheck, which defaults to reference equality. Its cache holds one entry by default, or an exact number set with maxSize. resultEqualityCheck can reuse an older equal result.",
+  "syntax": "lruMemoize(func, equalityCheckOrOptions?)",
+  "parameters": [
+   {
+    "name": "func",
+    "type": "Function",
+    "description": "The function to wrap and cache."
+   },
+   {
+    "name": "equalityCheckOrOptions",
+    "type": "EqualityFn | LruMemoizeOptions",
+    "description": "An equality function, or an options object containing equalityCheck, resultEqualityCheck, and maxSize."
+   }
+  ],
+  "returns": "A memoized function with a clearCache() method.",
+  "example": {
+   "title": "Use lruMemoize with createSelector",
+   "code": "import { createSelector, lruMemoize } from 'reselect'\n\nconst selectTodoIds = createSelector(\n  [state => state.todos],\n  todos => todos.map(todo => todo.id),\n  {\n    memoize: lruMemoize,\n    memoizeOptions: { maxSize: 10 }\n  }\n)\n\nconst state = { todos: [{ id: 1 }, { id: 2 }] }\nconsole.log(selectTodoIds(state))\nconsole.log(selectTodoIds(state) === selectTodoIds(state))",
+   "language": "javascript",
+   "explanation": "This selector keeps up to 10 argument combinations in its LRU cache."
+  },
+  "useCases": [
+   {
+    "title": "Keep multiple selector results",
+    "scenario": "A selector receives several recurring argument combinations."
+   },
+   {
+    "title": "Preserve equal result references",
+    "scenario": "A selector creates a new output array whose contents often stay equal."
+   },
+   {
+    "title": "Use an exact LRU bound",
+    "scenario": "A project needs a fixed cache limit with predictable eviction."
+   }
+  ],
+  "related": [
+   "referenceEqualityCheck",
+   "createSelector",
+   "createSelectorCreator",
+   "weakMapMemoize"
+  ],
+  "since": "4.1.0 for the options object and configurable maxSize",
+  "interview": [
+   {
+    "question": "What does lruMemoize do?",
+    "answer": "lruMemoize caches calls to a function. It compares arguments with equalityCheck and uses an LRU cache. The default cache size is one.",
+    "followUp": "How can the cache keep more calls? Set maxSize in the options object, such as { maxSize: 10 }."
+   },
+   {
+    "question": "How does lruMemoize detect changed arguments?",
+    "answer": "The default equality check uses ===. This checks whether argument references are the same, so immutable updates work well.",
+    "followUp": "What happens after an object is mutated in place? Its reference stays the same, so the selector may reuse a stale result."
+   },
+   {
+    "question": "What is resultEqualityCheck used for?",
+    "answer": "resultEqualityCheck compares a new result with results already in the cache. When it finds an equal result, lruMemoize returns the older result reference.",
+    "followUp": "Why is this useful for mapping IDs? A new array can contain the same IDs, so reusing the old array preserves reference equality."
+   }
+  ],
+  "keyPoints": [
+   "The function was previously called defaultMemoize.",
+   "Without options, only one argument combination is cached.",
+   "Use maxSize to choose a larger cache.",
+   "The returned function has clearCache(), which removes its cached entries.",
+   "equalityCheck controls how each input argument is compared.",
+   "resultEqualityCheck can compare a fresh output with cached outputs."
+  ],
+  "gotchas": [
+   "Do not put resultEqualityCheck in argsMemoizeOptions. It does nothing there.",
+   "Use immutable updates. Reference checks may miss changes when an object is mutated in place.",
+   "maxSize is an exact cache limit, and entries are removed by least-recently-used order."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "Middleware": {
+  "sourceUrl": "https://redux.js.org/toolkit/usage/usage-guide",
+  "sourceTitle": "Usage Guide | Redux",
+  "summary": "Redux middleware wraps dispatch to add behavior such as logging, async control, and side effects. With Redux Toolkit, add custom middleware through configureStore while keeping the default middleware.",
+  "explanation": "Middleware wraps dispatch. It can inspect actions, read state, run code before or after the next middleware, and return a dispatch result. In modern Redux apps, configureStore adds default middleware and lets you add custom middleware with its middleware option.",
+  "syntax": "configureStore({ reducer, middleware: getDefaultMiddleware => getDefaultMiddleware().concat(customMiddleware) })",
+  "parameters": [
+   {
+    "name": "reducer",
+    "type": "Reducer | Record<string, Reducer>",
+    "description": "The store reducer, or an object of slice reducers."
+   },
+   {
+    "name": "middleware",
+    "type": "(getDefaultMiddleware) => Middleware[]",
+    "description": "A callback that receives getDefaultMiddleware and returns the middleware list."
+   }
+  ],
+  "returns": "Middleware functions wrap dispatch and can change the value returned by dispatch.",
+  "example": {
+   "title": "Add custom middleware",
+   "code": "import { configureStore } from '@reduxjs/toolkit'\n\nconst logger = store => next => action => {\n  console.log('before', action)\n  const result = next(action)\n  console.log('after', store.getState())\n  return result\n}\n\nconst store = configureStore({\n  reducer: (state = { count: 0 }, action) =>\n    action.type === 'inc' ? { count: state.count + 1 } : state,\n  middleware: getDefaultMiddleware =>\n    getDefaultMiddleware().concat(logger),\n})\n\nstore.dispatch({ type: 'inc' })",
+   "language": "javascript",
+   "explanation": "This adds a logger while keeping the middleware included by default."
+  },
+  "useCases": [
+   {
+    "title": "Logging",
+    "scenario": "Record actions and resulting state for debugging."
+   },
+   {
+    "title": "Side effects",
+    "scenario": "Run logic when actions arrive or state changes."
+   },
+   {
+    "title": "Thunk logic",
+    "scenario": "Dispatch functions for asynchronous control flow."
+   },
+   {
+    "title": "Development checks",
+    "scenario": "Warn about non-serializable actions or state during development."
+   }
+  ],
+  "related": [
+   "configureStore",
+   "getDefaultMiddleware",
+   "createListenerMiddleware",
+   "createAsyncThunk",
+   "thunk",
+   "serializability check middleware"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is Redux middleware?",
+    "answer": "Middleware is an extension point around dispatch. Each middleware receives the store API, receives the next dispatch function, and returns a new dispatch function.",
+    "followUp": "What is the difference between next(action) and store.dispatch(action)? next sends the action to the following middleware, while store.dispatch starts the complete chain again."
+   },
+   {
+    "question": "How do you add custom middleware in Redux Toolkit?",
+    "answer": "configureStore accepts a middleware callback. The callback receives getDefaultMiddleware, and custom middleware can be added with concat or prepend.",
+    "followUp": "Why prefer concat over an array spread? The specialized methods preserve middleware types more reliably, especially in TypeScript."
+   },
+   {
+    "question": "How do thunks use middleware?",
+    "answer": "A thunk is middleware-supported logic that receives dispatch and getState instead of being reduced as a normal action. configureStore includes thunk middleware by default.",
+    "followUp": "When is createAsyncThunk a better choice? Use it when a promise should produce pending, fulfilled, and rejected actions in the store."
+   }
+  ],
+  "keyPoints": [
+   "Middleware extends the store without changing reducers.",
+   "Middleware runs as a chain around dispatch.",
+   "Middleware can read current state and dispatch more actions.",
+   "configureStore is the standard modern way to create a store.",
+   "An object of slice reducers can be passed directly to configureStore.",
+   "Default middleware includes thunk and development checks."
+  ],
+  "gotchas": [
+   "Replacing the default middleware array can remove useful built-in checks and thunk support. Use getDefaultMiddleware().concat(...) or .prepend(...).",
+   "Do not dispatch while middleware is still being constructed. Setup is not complete, so the full middleware chain is unavailable.",
+   "Non-serializable actions or state can trigger development warnings. Prefer serializable values, or configure specific ignored paths only when needed."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "MutationDefinition": {
   "sourceUrl": "https://redux.js.org/toolkit/rtk-query/api/createApi",
   "sourceTitle": "createApi",
@@ -4768,6 +5638,95 @@
    "Do not use nanoid when an identifier must provide cryptographic security."
   ],
   "checkedAt": "2026-10-15"
+ },
+ "original": {
+  "sourceUrl": "https://redux.js.org/introduction/why-rtk-is-redux-today",
+  "sourceTitle": "Why Redux Toolkit is How To Use Redux Today",
+  "summary": "Redux Toolkit is the recommended way to write Redux logic. It simplifies store setup, reducer creation, immutable updates, and action creation while reducing common mistakes.",
+  "explanation": "Redux Toolkit is the recommended way to write Redux logic. It provides APIs for store setup, reducers, immutable updates, and state slices. `configureStore` creates a ready-to-use store, while `createSlice` creates reducers and matching action creators. Immer lets reducer code use update syntax that looks mutable while producing immutable state.",
+  "syntax": "configureStore(options)\ncreateSlice({ name, initialState, reducers })",
+  "parameters": [
+   {
+    "name": "options",
+    "type": "object",
+    "description": "Options for configuring the Redux store, including its reducer and other store settings."
+   },
+   {
+    "name": "initialState",
+    "type": "any",
+    "description": "The initial state value for a slice."
+   },
+   {
+    "name": "reducers",
+    "type": "object",
+    "description": "An object of reducer functions used to define slice updates."
+   }
+  ],
+  "returns": "`configureStore` returns a Redux store. `createSlice` returns a slice object containing the reducer, generated action creators, and generated action types.",
+  "example": {
+   "title": "Create a counter store with Redux Toolkit",
+   "code": "import { configureStore, createSlice } from '@reduxjs/toolkit'\n\nconst counterSlice = createSlice({\n  name: 'counter',\n  initialState: { value: 0 },\n  reducers: {\n    incremented(state) {\n      state.value += 1\n    }\n  }\n})\n\nconst store = configureStore({\n  reducer: { counter: counterSlice.reducer }\n})\n\nstore.dispatch(counterSlice.actions.incremented())\nconsole.log(store.getState().counter.value) // 1",
+   "language": "javascript",
+   "explanation": "This creates a slice, configures a store, dispatches its generated action, and reads the updated state."
+  },
+  "useCases": [
+   {
+    "title": "Set up a store",
+    "scenario": "Create a new Redux application with standard middleware and DevTools support."
+   },
+   {
+    "title": "Build a state slice",
+    "scenario": "Keep state updates for one feature together."
+   },
+   {
+    "title": "Write immutable updates",
+    "scenario": "Update nested objects or arrays without manually writing spreads."
+   },
+   {
+    "title": "Generate actions",
+    "scenario": "Replace repetitive hand-written action types and creators."
+   }
+  ],
+  "related": [
+   "Redux",
+   "@reduxjs/toolkit",
+   "configureStore",
+   "createSlice",
+   "Immer",
+   "thunk middleware",
+   "Redux DevTools"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does `configureStore` do?",
+    "answer": "`configureStore` creates a configured Redux store in one call. It can combine reducers, add thunk middleware, and enable Redux DevTools integration.",
+    "followUp": "What does `createSlice` add? It creates reducer logic, action creators, and action type strings from one slice definition."
+   },
+   {
+    "question": "What is `createSlice`?",
+    "answer": "`createSlice` groups a state name, initial state, and reducer functions. It generates action creators and action types for those reducers.",
+    "followUp": "Why can its reducers use assignments such as `state.value = 1`? Immer converts that code into an immutable update."
+   },
+   {
+    "question": "How does Redux state change?",
+    "answer": "Redux changes happen through dispatched actions. Reducers receive the current state and an action, then produce the next state; Redux can record and replay those actions.",
+    "followUp": "Why is this useful for debugging? Each state change can be traced to the action that caused it."
+   }
+  ],
+  "keyPoints": [
+   "Use Redux Toolkit for new Redux logic.",
+   "`configureStore` reduces the store setup to one main function call.",
+   "Its default setup combines reducers, adds thunk middleware, and connects Redux DevTools.",
+   "`createSlice` generates action creators from the reducer functions you define.",
+   "It also creates action type strings from the slice and reducer names.",
+   "The toolkit helps prevent accidental state mutation, a common source of Redux bugs."
+  ],
+  "gotchas": [
+   "The update syntax is safe inside a `createSlice` reducer because Immer creates the immutable result. Do not assume the same syntax is safe in ordinary Redux reducers.",
+   "Keep Redux state serializable. Prefer plain objects, arrays, and primitive values."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "PayloadAction": {
   "sourceUrl": "https://redux.js.org/tutorials/quick-start",
@@ -5146,6 +6105,95 @@
    "Use retry.fail when the error guarantees that subsequent attempts would be redundant."
   ],
   "checkedAt": "2026-10-15"
+ },
+ "Selector": {
+  "sourceUrl": "https://redux.js.org/usage/deriving-data-selectors",
+  "sourceTitle": "Deriving Data with Selectors | Redux",
+  "summary": "Selectors are functions that read Redux state and return selected or derived data. They can hide state shape and memoize expensive calculations.",
+  "explanation": "A selector is a function that reads Redux state and returns selected or derived data. Use selectors to hide state shape, calculate values, and avoid repeated work with memoization.",
+  "syntax": "const selectValue = (state: RootState) => state.value\nconst selectDerived = createSelector([selectInput], input => derive(input))",
+  "parameters": [
+   {
+    "name": "state",
+    "type": "RootState or state slice",
+    "description": "The Redux root state, or the state portion needed by the selector."
+   },
+   {
+    "name": "inputs",
+    "type": "Selector results",
+    "description": "Values returned by input selectors that the result function transforms."
+   },
+   {
+    "name": "result function",
+    "type": "(...inputs) => result",
+    "description": "The calculation that creates the selected or derived value."
+   }
+  ],
+  "returns": "Selected or derived data. A memoized selector can return the cached result when its inputs are unchanged.",
+  "example": {
+   "title": "Memoized selector",
+   "code": "import { createSelector } from '@reduxjs/toolkit'\n\ntype RootState = { todos: { id: number; done: boolean }[] }\nconst selectTodos = (state: RootState) => state.todos\nconst selectDoneTodos = createSelector(\n  [selectTodos],\n  todos => todos.filter(todo => todo.done)\n)\n\nconst state: RootState = { todos: [{ id: 1, done: true }] }\nconsole.log(selectDoneTodos(state))",
+   "language": "typescript",
+   "explanation": "The selector filters todos and reuses its previous result when the input array has not changed."
+  },
+  "useCases": [
+   {
+    "title": "Derive values",
+    "scenario": "A component needs a filtered or sorted list without storing another copy in Redux."
+   },
+   {
+    "title": "Encapsulate state shape",
+    "scenario": "Several parts of the app need the same nested state lookup."
+   },
+   {
+    "title": "Memoize calculations",
+    "scenario": "A calculation creates new arrays or takes significant CPU time."
+   },
+   {
+    "title": "Read state in a thunk",
+    "scenario": "A thunk needs the latest value once, without a React subscription."
+   }
+  ],
+  "related": [
+   "createSelector",
+   "useSelector",
+   "getState",
+   "Reselect",
+   "Redux Toolkit",
+   "React-Redux"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is a selector?",
+    "answer": "A selector accepts the store state, or part of it, and returns data based on that input. It may directly look up a value or derive a new value.",
+    "followUp": "Where should reusable selectors usually live? Define them in slice files when possible, so components do not depend on the exact state layout."
+   },
+   {
+    "question": "How does a memoized selector work?",
+    "answer": "createSelector takes input selectors and a result function. It reruns the result function only when an input selector returns a different value, then caches the result.",
+    "followUp": "Why does this help useSelector? Stable result references reduce unnecessary component re-renders when the inputs did not change."
+   },
+   {
+    "question": "Why use selectors instead of direct state access?",
+    "answer": "Selectors can encapsulate where data lives in the store. Components then call a named selector instead of repeating deep property access.",
+    "followUp": "What should code outside React use for a one-time read? A thunk can call the selector with getState(); it does not subscribe to later updates."
+   }
+  ],
+  "keyPoints": [
+   "Store source data, such as todos, and calculate filtered lists or counts instead of storing duplicate derived values.",
+   "A selector can be an ordinary function. It does not need a special library or syntax.",
+   "Names such as selectTodoById and selectVisibleTodos make a selector's purpose clear.",
+   "Selectors hide state structure and make the same lookup reusable across components, thunks, and middleware.",
+   "Redux Toolkit re-exports createSelector, so a separate Reselect installation is not needed when using Toolkit.",
+   "Memoization saves the previous result and returns it again when the input results are unchanged."
+  ],
+  "gotchas": [
+   "A selector that creates a new array on every call can make a component re-render after every dispatch. Memoize derived arrays when their inputs are unchanged.",
+   "Keep input selectors simple. Put filtering, sorting, or other transformations in the result function.",
+   "Most selectors expect the whole root state, but a slice reducer can access only its own slice."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "SerializedError": {
   "sourceUrl": "https://redux.js.org/toolkit/api/other-exports",
@@ -5594,6 +6642,72 @@
   ],
   "checkedAt": "2026-10-15"
  },
+ "TagDescription": {
+  "sourceUrl": "https://redux.js.org/toolkit/rtk-query/usage/automated-refetching",
+  "sourceTitle": "Automated Re-fetching | Redux Usage",
+  "summary": "RTK Query uses tags to connect query caches with mutations. When a mutation invalidates a tag provided by a query, active subscriptions can fetch fresh data.",
+  "explanation": "RTK Query connects query caches and mutations with tags. A query declares which tags its cached result provides. A mutation declares which tags it invalidates. When the tags match, RTK Query marks the cache as invalid. With an active subscription, it requests fresh data.",
+  "syntax": "providesTags: TagDescription[]\ninvalidatesTags: TagDescription[]",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Invalidate a query after a mutation",
+   "code": "const api = createApi({\n  baseQuery: fetchBaseQuery({ baseUrl: '/api' }),\n  tagTypes: ['Post'],\n  endpoints: (build) => ({\n    getPosts: build.query({\n      query: () => 'posts',\n      providesTags: ['Post'],\n    }),\n    addPost: build.mutation({\n      query: (post) => ({ url: 'posts', method: 'POST', body: post }),\n      invalidatesTags: ['Post'],\n    }),\n  }),\n});",
+   "language": "typescript",
+   "explanation": "The query supplies the Post tag. The mutation invalidates that tag, so an active getPosts subscription can fetch new data."
+  },
+  "useCases": [
+   {
+    "title": "Refresh a list after writes",
+    "scenario": "A list query caches records, and a create, update, or delete mutation changes that list."
+   },
+   {
+    "title": "Keep active views current",
+    "scenario": "Several screens subscribe to related query data and should update after one mutation."
+   },
+   {
+    "title": "Invalidate a related cache",
+    "scenario": "A mutation changes data that one specific query cache represents."
+   }
+  ],
+  "related": [
+   "cache tags",
+   "queryCacheKey",
+   "providesTags",
+   "invalidatesTags",
+   "query endpoints",
+   "mutation endpoints"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How does tag invalidation work?",
+    "answer": "RTK Query uses tags to connect cached query results with mutations. A query provides tags, and a mutation invalidates tags. Matching tags mark the cached result invalid.",
+    "followUp": "What happens after invalidation? If the query has an active subscription, RTK Query fetches the data again; otherwise, the cache is considered invalid without an active fetch."
+   },
+   {
+    "question": "What does a query provide?",
+    "answer": "A query endpoint can provide tags for its cached data. A mutation can invalidate those tags. When the tags match, the related query cache is treated as invalid.",
+    "followUp": "Why can two calls to the same endpoint have separate cache entries? Each endpoint and parameter combination has its own query cache key."
+   },
+   {
+    "question": "How are query cache entries identified?",
+    "answer": "Each endpoint and parameter combination contributes its own queryCacheKey. This lets RTK Query associate tags with a particular cached query result rather than with every result from an endpoint.",
+    "followUp": "How can re-fetching be triggered by means other than tags? The documentation points to the API for manipulating cache behavior and re-fetching directly."
+   }
+  ],
+  "keyPoints": [
+   "Tags let RTK Query coordinate cache invalidation and automatic refetching.",
+   "The cache key is specific to both the endpoint and its parameters.",
+   "Queries declare the tags associated with their cached results.",
+   "A matching mutation invalidates a query cache's provided tags."
+  ],
+  "gotchas": [
+   "Adding a subscription does not always send a request. Existing cached data is used first.",
+   "Invalidation alone does not imply a request when no subscription is active."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "ThunkAction": {
   "sourceUrl": "https://redux.js.org/usage/usage-with-typescript",
   "sourceTitle": "Usage With TypeScript",
@@ -6039,6 +7153,84 @@
    "The hook must use the AppDispatch type inferred from the actual store, rather than an unrelated or manually duplicated dispatch type."
   ],
   "checkedAt": "2026-10-15"
+ },
+ "useAppSelector": {
+  "sourceUrl": "https://redux.js.org/tutorials/essentials/part-4-using-data",
+  "sourceTitle": "Redux Essentials, Part 4: Using Redux Data",
+  "summary": "A Redux selector is a function that reads the needed value from store state. Reusable selectors keep lookup logic in slice files and can accept extra arguments such as an item ID.",
+  "explanation": "useAppSelector runs a selector against the complete Redux state and returns the selected value. A selector can be an inline function or a reusable function exported by a slice. Reusable selectors can accept extra arguments, such as an item ID, to perform lookups. Components should select only the data they need, and selectors that create new arrays or objects may need memoization.",
+  "syntax": "const selectPostById = (state: RootState, postId: string) => state.posts.find(post => post.id === postId)",
+  "parameters": [
+   {
+    "name": "state",
+    "type": "RootState",
+    "description": "The complete Redux store state for standalone selectors."
+   },
+   {
+    "name": "postId",
+    "type": "string",
+    "description": "An optional value used by a selector, such as the ID to find."
+   }
+  ],
+  "returns": "The selected state value, such as an array, an item, or undefined when no matching item exists.",
+  "example": {
+   "title": "Reusable Redux selectors",
+   "code": "import { createSlice } from '@reduxjs/toolkit'\nimport type { RootState } from './store'\n\nconst postsSlice = createSlice({\n  name: 'posts',\n  initialState: [{ id: '1', title: 'Hello' }],\n  reducers: {}\n})\n\nexport const selectAllPosts = (state: RootState) => state.posts\nexport const selectPostById = (state: RootState, id: string) =>\n  state.posts.find(post => post.id === id)\n\nexport default postsSlice.reducer",
+   "language": "typescript",
+   "explanation": "These selectors keep store lookup logic in the slice file. Components can call them with useSelector."
+  },
+  "useCases": [
+   {
+    "title": "Share lookup logic",
+    "scenario": "Several components need the same state lookup."
+   },
+   {
+    "title": "Find data by ID",
+    "scenario": "A component needs one item from a collection."
+   },
+   {
+    "title": "Memoize derived data",
+    "scenario": "Derived arrays or objects cause extra renders."
+   }
+  ],
+  "related": [
+   "useAppSelector",
+   "RootState",
+   "createSlice",
+   "createSelector",
+   "selectAllPosts",
+   "selectPostById"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is a Redux selector?",
+    "answer": "A selector is a function that receives Redux state and returns the data a component needs. It may also receive other arguments, such as an ID.",
+    "followUp": "Why can a selector cause extra renders? If it returns a new object or array reference each time, use a memoized selector to reuse the result."
+   },
+   {
+    "question": "Why use reusable selectors instead of inline selectors?",
+    "answer": "Reusable selectors belong in a slice file when several components need the same lookup or when the state structure should be hidden from components. For example, selectPostById can find a post by ID.",
+    "followUp": "When should you avoid adding a selector? Do not create one for every field automatically; add selectors when lookups are reused or need encapsulation."
+   },
+   {
+    "question": "When does a component using a selector re-render?",
+    "answer": "useAppSelector subscribes a component to the selected value. The component renders again when that selected value changes to a new reference.",
+    "followUp": "How can you reduce unnecessary renders? Select the smallest needed value and memoize selectors that return derived arrays or objects."
+   }
+  ],
+  "keyPoints": [
+   "A selector usually takes RootState first and returns one feature value or a derived result.",
+   "Standalone selectors receive the complete root state, so they can read the slice they need.",
+   "Memoization can avoid recalculating derived data and can preserve references between calls.",
+   "Selectors are useful abstractions, but they are not required for every state field."
+  ],
+  "gotchas": [
+   "Selecting a large state value can cause a component to render when unrelated data changes.",
+   "A selector that creates a fresh array or object on every call can cause unnecessary renders.",
+   "Selectors defined inside createSlice use slice state, unlike standalone selectors that receive RootState."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "useDispatch": {
   "sourceUrl": "https://redux.js.org/react-redux/api/hooks",

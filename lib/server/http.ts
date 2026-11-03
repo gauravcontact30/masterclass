@@ -1,7 +1,7 @@
 import "server-only";
 import { ZodError } from "zod";
 import { authConfigured } from "./config";
-import { supabaseServer } from "./auth";
+import { authUser } from "./auth";
 import { after } from "next/server";
 import { recordEvent } from "./monitoring";
 import { UNTRACKED_COOKIE } from "./tracking-exclusions";
@@ -9,10 +9,7 @@ import { AUTH_USER, requestOnce, withRequestCache } from "./request-cache";
 export class HttpError extends Error { constructor(public status: number, public code: string) { super(code); } }
 export async function userId() {
   if (!authConfigured()) throw new HttpError(503, "setup_required");
-  const user = await requestOnce(AUTH_USER, async () => {
-    const { data } = await (await supabaseServer()).auth.getUser();
-    return data.user;
-  });
+  const user = await requestOnce(AUTH_USER, authUser);
   if (!user) throw new HttpError(401, "signin_required");
   return user.id;
 }

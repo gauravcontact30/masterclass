@@ -5,11 +5,9 @@ import Image from "@/components/responsive-image";
 import { ArrowRight, ArrowUpRight, BookOpenCheck, Gauge, Layers, Lightbulb, Search, Sparkles, TrendingUp, X } from "lucide-react";
 import type { LandingSearchIndex } from "@/lib/landing-search-types";
 import type { FreshDocTip } from "@/lib/landing-fresh-types";
-import type { LandingBuzz } from "@/lib/landing-buzz-types";
 import { useContentItem } from "./content-editing";
 import { useNearViewport } from "./use-near-viewport";
 import { useVisiblePlayback } from "./use-visible-playback";
-import { BuzzStrip } from "./landing-buzz-strip";
 import { CodeFiles } from "./code-files";
 import { PillPager } from "./pill-pager";
 import home from "./landing-home.module.css";
@@ -64,7 +62,7 @@ function highlight(text: string, words: string[]): ReactNode {
  * in X ms" proof is measured, not claimed. Each result opens on the Search page after sign-in. Today's AI-written doc
  * tip (lib/server/landing-fresh.ts) and fresh Tech Buzz stories sit beside it.
  */
-export function LandingSearchDocs({ fresh, buzz, week = 0 }: Readonly<{ fresh?: FreshDocTip | null; buzz?: LandingBuzz[]; week?: number }>) {
+export function LandingSearchDocs({ fresh, week = 0 }: Readonly<{ fresh?: FreshDocTip | null; week?: number }>) {
   const section = useContentItem("section:tech-docs", "section");
   const ref = useRef<HTMLElement>(null);
   const near = useNearViewport(ref); const visible = useVisiblePlayback(ref);
@@ -189,7 +187,6 @@ export function LandingSearchDocs({ fresh, buzz, week = 0 }: Readonly<{ fresh?: 
       </aside>
     </div>
 
-    <BuzzStrip stories={buzz} label={shownLogoLabel ?? "technology docs"} keywords={shownLogoLabel ? [shownLogoLabel, ...words] : words.length ? words : filters.slice(0, 8).map(item => item.label)} />
     <div className={frame.actions}><Link className={frame.cta} href={searchHref(query.trim())}>Open Search<ArrowRight size={16} aria-hidden="true" /></Link><small>Every result opens with its explanation and code after you sign in.</small></div>
   </div></section>;
 }

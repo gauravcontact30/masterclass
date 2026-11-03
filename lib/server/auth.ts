@@ -16,11 +16,21 @@ export async function supabaseServer() {
     },
   });
 }
+/**
+ * The signed-in user, or null. A brief Auth failure is not a signed-out visitor: requests racing to refresh one token get
+ * a 409, and a network error or 5xx says nothing about the session. Those used to read as 401 signin_required, so one
+ * retry comes first. A real answer (no session, expired or revoked) has a 4xx status and is returned at once.
+ */
+export async function authUser() {
+  const client = await supabaseServer();
+  const first = await client.auth.getUser();
+  const { status } = first.error ?? {};
+  if (!first.error || (status && status !== 409 && status < 500)) return first.data.user;
+  await new Promise(done => setTimeout(done, 250));
+  return (await client.auth.getUser()).data.user;
+}
 // Deduplicate repeated authorization reads within one server render only.
 // React resets this cache for each request; users never share cached sessions.
 export const currentUser = cache(async function currentUser() {
-  return requestOnce(AUTH_USER, async () => {
-    const { data } = await (await supabaseServer()).auth.getUser();
-    return data.user;
-  });
+  return requestOnce(AUTH_USER, authUser);
 });

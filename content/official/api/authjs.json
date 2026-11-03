@@ -419,6 +419,78 @@
   ],
   "checkedAt": "2026-10-15"
  },
+ "Atlassian": {
+  "sourceUrl": "https://authjs.dev/reference/core/providers/atlassian",
+  "sourceTitle": "Auth.js | Atlassian",
+  "summary": "Auth.js includes a built-in Atlassian OAuth provider. Configure it with an Atlassian client ID and secret, then register the Auth.js callback URL in the Atlassian app.",
+  "explanation": "The provider connects Auth.js to Atlassian through OAuth. Auth.js uses the client ID and secret to start the sign-in flow, then reads the returned Atlassian profile, including the account ID, email, name, and profile picture.",
+  "syntax": "Atlassian(options): OAuthConfig<AtlassianProfile>",
+  "parameters": [
+   {
+    "name": "options",
+    "type": "OAuthUserConfig<AtlassianProfile>",
+    "description": "OAuth settings for the Atlassian provider, including client credentials."
+   }
+  ],
+  "returns": "OAuthConfig<AtlassianProfile>",
+  "example": {
+   "title": "Configure Atlassian",
+   "code": "import Atlassian from \"@auth/core/providers/atlassian\"\n\nexport const providers = [\n  Atlassian({\n    clientId: process.env.AUTH_ATLASSIAN_ID!,\n    clientSecret: process.env.AUTH_ATLASSIAN_SECRET!,\n  }),\n]",
+   "language": "typescript",
+   "explanation": "This imports the built-in provider and supplies the Atlassian OAuth client values."
+  },
+  "useCases": [
+   {
+    "title": "Atlassian sign-in",
+    "scenario": "Add Atlassian as a login option in an Auth.js application."
+   },
+   {
+    "title": "Use the returned profile",
+    "scenario": "Read basic account details after OAuth completes."
+   },
+   {
+    "title": "Environment-based configuration",
+    "scenario": "Keep OAuth credentials outside source code."
+   }
+  ],
+  "related": [
+   "AtlassianProfile",
+   "OAuthConfig<AtlassianProfile>",
+   "@auth/core/providers/atlassian",
+   "AUTH_ATLASSIAN_ID",
+   "AUTH_ATLASSIAN_SECRET"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you add Atlassian sign-in to Auth.js?",
+    "answer": "Import the built-in Atlassian provider and add it to the Auth.js providers list. Pass the Atlassian client ID and client secret.",
+    "followUp": "Where do these values come from? Create or select an app in the Atlassian Developer Console, configure OAuth 2.0, and copy its client ID and secret from Settings."
+   },
+   {
+    "question": "What callback URL does the Atlassian provider use?",
+    "answer": "Set the callback URL to https://your-domain/api/auth/callback/atlassian. The same URL must be configured in the Atlassian app.",
+    "followUp": "What should be checked if sign-in fails at the callback step? Compare the configured URL exactly, including the domain and provider path."
+   },
+   {
+    "question": "What user data does the provider return?",
+    "answer": "The profile includes account_id, email, name, and picture. These fields describe the Atlassian account returned after sign-in.",
+    "followUp": "Which field identifies the Atlassian account? account_id is the provider's account identifier."
+   }
+  ],
+  "keyPoints": [
+   "Auth.js provides a built-in provider for Atlassian sign-in.",
+   "The profile contains account_id, which identifies the user's Atlassian account.",
+   "The profile exposes the user's email through the email field.",
+   "The name field contains the user's Atlassian display name.",
+   "The picture field contains the user's profile image.",
+   "Store the Atlassian client ID in AUTH_ATLASSIAN_ID."
+  ],
+  "gotchas": [
+   "The provider has built-in OAuth settings. Override them only when your use case needs different settings."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "auth": {
   "sourceUrl": "https://authjs.dev/reference/nextjs",
   "sourceTitle": "Nextjs - Auth.js",
@@ -1480,6 +1552,77 @@
   ],
   "checkedAt": "2026-10-15"
  },
+ "createUser": {
+  "sourceUrl": "https://authjs.dev/reference/nextjs",
+  "sourceTitle": "Auth.js | Nextjs",
+  "summary": "`createUser` is an Auth.js event handler that runs when a user is created. Use it for asynchronous side effects such as audit logging.",
+  "explanation": "Set the `createUser` event handler inside the Auth.js configuration. Auth.js calls it after creating a user and passes an object containing the created user. The handler can perform asynchronous work, such as writing an audit record.",
+  "syntax": "createUser?: (message: { user: User }) => Awaitable<void>",
+  "parameters": [
+   {
+    "name": "message",
+    "type": "{ user: User }",
+    "description": "Event message containing the created user."
+   },
+   {
+    "name": "message.user",
+    "type": "User",
+    "description": "The user created by Auth.js."
+   }
+  ],
+  "returns": "Awaitable<void>",
+  "example": {
+   "title": "Log a new user",
+   "code": "import NextAuth from \"next-auth\";\n\nexport const { handlers, auth } = NextAuth({\n  events: {\n    async createUser({ user }) {\n      console.log(\"Created user:\", user.id);\n    },\n  },\n});",
+   "language": "typescript",
+   "explanation": "This logs the user after Auth.js creates the user."
+  },
+  "useCases": [
+   {
+    "title": "Audit new users",
+    "scenario": "Keep an audit trail of account creation."
+   },
+   {
+    "title": "Trigger a notification",
+    "scenario": "Send a notification after registration."
+   }
+  ],
+  "related": [
+   "events",
+   "updateUser",
+   "signIn",
+   "signOut",
+   "linkAccount"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is the purpose of the `createUser` event?",
+    "answer": "The `createUser` event runs when Auth.js creates a user. Its message contains a `user` property, and the handler returns an awaitable void result.",
+    "followUp": "What should the handler return? It should finish its side effect and return no response value."
+   },
+   {
+    "question": "How do you configure a `createUser` handler?",
+    "answer": "Configure `events.createUser` with an asynchronous function. Auth.js passes the created user in the event message.",
+    "followUp": "How would you record the event? Await a database or logging call inside the handler."
+   },
+   {
+    "question": "What data does `createUser` receive?",
+    "answer": "The event is useful for audit logging because it is asynchronous and does not produce an authentication response. The message contains `user: User`.",
+    "followUp": "What information is available to this event? The created user object, including the fields supplied by Auth.js."
+   }
+  ],
+  "keyPoints": [
+   "The handler takes one message argument and may return a value that Auth.js can await.",
+   "The event message contains a `user` field with the newly created user.",
+   "The `user` value uses Auth.js's `User` type.",
+   "Use this event for side effects, not to build or modify the sign-in response."
+  ],
+  "gotchas": [
+   "Do not use the event handler to change the authentication response. It is for side effects such as audit logging."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "Credentials": {
   "sourceUrl": "https://authjs.dev/getting-started/providers/credentials",
   "sourceTitle": "Credentials provider - Auth.js",
@@ -1863,6 +2006,85 @@
    "When configuring a custom decoder, replace the default implementation consistently wherever Auth.js encodes or decodes tokens."
   ],
   "checkedAt": "2026-10-15"
+ },
+ "DefaultSession": {
+  "sourceUrl": "https://authjs.dev/getting-started/typescript",
+  "sourceTitle": "Auth.js | Typescript",
+  "summary": "Use TypeScript module augmentation to add custom fields to Auth.js shared types. Return those fields from the session callback if they should be available to the client.",
+  "explanation": "Auth.js uses TypeScript module augmentation to add application-specific fields to shared types. The added fields are available across Auth.js code, but the session callback must also copy their runtime values into the session returned to the client.",
+  "syntax": "declare module \"next-auth\" { interface Session { user: { customField: string } & DefaultSession[\"user\"] } }",
+  "parameters": [
+   {
+    "name": "config",
+    "type": "NextAuthConfig",
+    "description": "The Auth.js configuration object, including callbacks such as session."
+   },
+   {
+    "name": "session callback params",
+    "type": "{ session; token; user; ... }",
+    "description": "The session callback receives session data and, depending on the session strategy, token or user data."
+   }
+  ],
+  "returns": "The session callback returns Awaitable<Session | DefaultSession>. NextAuth returns a NextAuthResult.",
+  "example": {
+   "title": "Extend the session type",
+   "code": "import NextAuth, { type DefaultSession } from \"next-auth\"\n\ndeclare module \"next-auth\" {\n  interface Session {\n    user: {\n      address: string\n    } & DefaultSession[\"user\"]\n  }\n}\n\nexport const { auth, handlers } = NextAuth({\n  callbacks: {\n    session({ session, user }) {\n      return {\n        ...session,\n        user: { ...session.user, address: user.address },\n      }\n    },\n  },\n})",
+   "language": "typescript",
+   "explanation": "Module augmentation adds a checked address field while keeping the default session user fields."
+  },
+  "useCases": [
+   {
+    "title": "Add custom session fields",
+    "scenario": "Your application stores a value such as an address on a user and needs checked access through session APIs."
+   },
+   {
+    "title": "Share types across packages",
+    "scenario": "Several Auth.js packages use the same User or Session shape."
+   },
+   {
+    "title": "Expose selected token data",
+    "scenario": "A JWT contains an application value that the browser must receive as session data."
+   }
+  ],
+  "related": [
+   "DefaultSession",
+   "Session",
+   "User",
+   "NextAuthConfig",
+   "callbacks.session",
+   "JWT",
+   "DefaultUser"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How can you add a custom field to an Auth.js session type?",
+    "answer": "Use module augmentation to declare extra properties on the Auth.js Session interface. This changes TypeScript checking across Auth.js without passing the same generic type through each call.",
+    "followUp": "How do you keep the built-in user fields? Add the new fields with an intersection such as DefaultSession[\"user\"]."
+   },
+   {
+    "question": "What is the role of the session callback?",
+    "answer": "The session callback runs whenever Auth.js checks a session. Its returned value is sent to the client, so custom values must be included there explicitly.",
+    "followUp": "What happens to a custom JWT field if the session callback does not return it? It remains unavailable to the client session."
+   },
+   {
+    "question": "Which token fields reach the client by default?",
+    "answer": "The default session exposes only a subset of token data, including email, name, and image. To expose another value, copy it into the returned session object.",
+    "followUp": "Why should this be done carefully? Session callback output is client-visible and may contain data that should remain private."
+   }
+  ],
+  "keyPoints": [
+   "Module augmentation adds custom fields to shared Auth.js types. This avoids repeating generics throughout the application.",
+   "Session and User are examples of shared interfaces that can be extended.",
+   "After augmentation, the custom property is checked wherever the session user is used.",
+   "The session callback is the runtime place to build the session value returned to the client."
+  ],
+  "gotchas": [
+   "Adding a new user object can replace the default user fields in the type. Extend it with DefaultSession[\"user\"] when those fields must remain.",
+   "A field added to a JWT is not automatically exposed in the session. Return it explicitly from the session callback.",
+   "Do not put sensitive values in the object returned by the session callback."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "Descope": {
   "sourceUrl": "https://authjs.dev/reference/core/providers/descope",
@@ -2378,6 +2600,81 @@
    "Do not assume every event message has the same shape; its contents depend on the authentication and session flow."
   ],
   "checkedAt": "2026-10-15"
+ },
+ "experimental": {
+  "sourceUrl": "https://authjs.dev/getting-started/authentication/webauthn",
+  "sourceTitle": "WebAuthn",
+  "summary": "Auth.js WebAuthn, or passkeys, provides experimental passwordless authentication. It requires supported package versions, SimpleWebAuthn dependencies, and an Authenticator database table.",
+  "explanation": "Auth.js WebAuthn, also called passkeys, adds experimental passwordless authentication. It needs supported NextAuth.js, Prisma adapter, and Node.js versions, plus an Authenticator database table.",
+  "syntax": "experimental: { enableWebAuthn: true }",
+  "parameters": [
+   {
+    "name": "experimental.enableWebAuthn",
+    "type": "boolean",
+    "description": "Turns experimental WebAuthn support on or off. The default is false."
+   }
+  ],
+  "returns": "",
+  "example": {
+   "title": "Enable WebAuthn",
+   "code": "import NextAuth from \"next-auth\"\n\nexport const { handlers, auth, signIn, signOut } = NextAuth({\n  experimental: { enableWebAuthn: true },\n  providers: [],\n})",
+   "language": "typescript",
+   "explanation": "This enables the experimental WebAuthn feature in a NextAuth configuration."
+  },
+  "useCases": [
+   {
+    "title": "Add experimental passkeys",
+    "scenario": "A Next.js application needs passkey sign-in using Auth.js default pages."
+   },
+   {
+    "title": "Build a custom passkey page",
+    "scenario": "A custom sign-in page needs to start browser WebAuthn flows."
+   },
+   {
+    "title": "Store authenticators",
+    "scenario": "An application uses Prisma and needs to persist registered passkey credentials."
+   }
+  ],
+  "related": [
+   "WebAuthn",
+   "Passkeys",
+   "Authenticator",
+   "@simplewebauthn/server",
+   "@simplewebauthn/browser",
+   "@auth/prisma-adapter",
+   "next-auth"
+  ],
+  "since": "next-auth 5.0.0-beta.8",
+  "interview": [
+   {
+    "question": "How do you enable WebAuthn in Auth.js?",
+    "answer": "WebAuthn support is enabled with the experimental.enableWebAuthn option. Its default value is false, and enabling experimental features prints a warning.",
+    "followUp": "What should be checked before enabling it? Confirm the supported framework and adapter versions, Node.js 20 or newer, and the required Authenticator table."
+   },
+   {
+    "question": "What dependencies and versions are required?",
+    "answer": "The documented support requires next-auth 5.0.0-beta.8 or newer, @auth/prisma-adapter 1.3.0 or newer, and Node.js 20 or newer. The required SimpleWebAuthn packages must also be installed.",
+    "followUp": "When is @simplewebauthn/browser unnecessary? It is unnecessary when the application uses Auth.js default pages instead of a custom sign-in page."
+   },
+   {
+    "question": "What database change does the Passkeys provider require?",
+    "answer": "The database needs an Authenticator table in addition to the normal Auth.js tables. It stores credential data, the user relation, a counter, device type, backup state, and transports.",
+    "followUp": "What database-specific guidance is given? The page provides raw PostgreSQL SQL and points to updated Prisma schemas for other database migration examples."
+   }
+  ],
+  "keyPoints": [
+   "The supported NextAuth.js version is 5.0.0-beta.8 or newer.",
+   "The supported Prisma adapter version is 1.3.0 or newer.",
+   "Node.js 20.0.0 or newer is required.",
+   "A separate Authenticator table is required for passkey credentials.",
+   "The browser peer package is needed only for custom sign-in pages."
+  ],
+  "gotchas": [
+   "WebAuthn is experimental and the documentation does not recommend it for production.",
+   "The feature may require changes to the framework integration and database adapter.",
+   "Install the browser package only when building a custom sign-in page; default Auth.js pages do not need it."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "Facebook": {
   "sourceUrl": "https://authjs.dev/getting-started/providers/facebook",
@@ -4783,6 +5080,74 @@
   ],
   "checkedAt": "2026-10-15"
  },
+ "OAuthConfig": {
+  "sourceUrl": "https://authjs.dev/reference/core/providers/box",
+  "sourceTitle": "Auth.js | Box",
+  "summary": "The Box provider adds Box OAuth login to Auth.js. Give it a Box client ID and client secret, then use the Box callback URL in your app.",
+  "explanation": "The Box provider adds Box OAuth login to Auth.js. Configure it with the Box client ID and client secret, then register the callback URL with Box. Auth.js uses its built-in Box OAuth configuration unless you override it.",
+  "syntax": "default(options): OAuthConfig<Record<string, any>>",
+  "parameters": [
+   {
+    "name": "options",
+    "type": "OAuthUserConfig<Record<string, any>>",
+    "description": "OAuth provider options, including the Box client ID and client secret."
+   }
+  ],
+  "returns": "OAuthConfig<Record<string, any>>",
+  "example": {
+   "title": "Add Box login",
+   "code": "import { Auth } from \"@auth/core\"\nimport Box from \"@auth/core/providers/box\"\n\nconst request = new Request(origin)\nconst response = await Auth(request, {\n  providers: [\n    Box({\n      clientId: process.env.BOX_CLIENT_ID!,\n      clientSecret: process.env.BOX_CLIENT_SECRET!,\n    }),\n  ],\n})",
+   "language": "typescript",
+   "explanation": "This creates an Auth.js request handler with Box as a login provider."
+  },
+  "useCases": [
+   {
+    "title": "Box sign-in",
+    "scenario": "Users need to sign in with an existing Box account."
+   },
+   {
+    "title": "Box API access",
+    "scenario": "An Auth.js application needs Box OAuth access."
+   }
+  ],
+  "related": [
+   "OAuthConfig",
+   "OAuthUserConfig",
+   "customizing a built-in OAuth provider",
+   "Box developers documentation",
+   "Box OAuth documentation"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you configure Box login in Auth.js?",
+    "answer": "Use the built-in Box provider from `@auth/core/providers/box` and add the result of `Box({ clientId, clientSecret })` to the `providers` array. Auth.js then handles the Box OAuth flow.",
+    "followUp": "What callback URL must be configured? Use `https://example.com/api/auth/callback/box`, replacing the example host with the application host."
+   },
+   {
+    "question": "What does the Box provider function accept and return?",
+    "answer": "The provider accepts an `OAuthUserConfig<Record<string, any>>` value and returns an `OAuthConfig<Record<string, any>>`. The configuration includes the Box client ID and client secret.",
+    "followUp": "When would you change the default configuration? Change it when the application's needs differ from the built-in provider settings, using Auth.js OAuth-provider customization."
+   },
+   {
+    "question": "What protocol does the Box provider use?",
+    "answer": "Box login uses OAuth 2 according to the provider's default configuration. Auth.js follows the OAuth specification for this integration.",
+    "followUp": "What should you do if Box is not specification-compliant? Report the issue if useful, but Auth.js may not pursue a fix for provider non-compliance."
+   }
+  ],
+  "keyPoints": [
+   "Auth.js includes a ready-made provider for Box.",
+   "Use the provider to let users sign in with Box.",
+   "The Box callback path ends with `/api/auth/callback/box`.",
+   "Pass the Box client ID and client secret when creating the provider.",
+   "The provider already supplies default OAuth settings."
+  ],
+  "gotchas": [
+   "The provider follows OAuth 2 by default. If Box behaves differently from the specification, Auth.js may not handle that behavior.",
+   "Auth.js does not promise to fix provider behavior that does not follow the OAuth 2 specification."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "Okta": {
   "sourceUrl": "https://authjs.dev/getting-started/providers/okta",
   "sourceTitle": "Okta Provider - Auth.js",
@@ -5397,6 +5762,84 @@
    "For OIDC providers, the profile can originate from either the decoded ID token or the /userinfo response."
   ],
   "checkedAt": "2026-10-15"
+ },
+ "Provider": {
+  "sourceUrl": "https://authjs.dev/reference/core/providers",
+  "sourceTitle": "Auth.js | Providers",
+  "summary": "Provider is the Auth.js type for authentication provider configurations. It supports OAuth, OIDC, email, credentials, and WebAuthn providers.",
+  "explanation": "A Provider value tells Auth.js how to authenticate users with OAuth, OIDC, email, credentials, or WebAuthn. Each provider has a type, and provider factory functions can return a supported configuration.",
+  "syntax": "type Provider<P extends Profile = any> = OIDCConfig<P> | OAuth2Config<P> | EmailConfig | CredentialsConfig | WebAuthnConfig & InternalProviderOptions | ((...args: any[]) => OIDCConfig<P> | OAuth2Config<P> | EmailConfig | CredentialsConfig | WebAuthnConfig & InternalProviderOptions)",
+  "parameters": [
+   {
+    "name": "P",
+    "type": "Profile",
+    "description": "Provider configuration or factory function. Supported configurations include OAuth2Config, OIDCConfig, EmailConfig, CredentialsConfig, and WebAuthnConfig."
+   }
+  ],
+  "returns": "A supported provider configuration, or a provider factory function that returns one.",
+  "example": {
+   "title": "Create an OAuth provider",
+   "code": "import GitHub from \"@auth/core/providers/github\"\n\nconst provider = GitHub({\n  clientId: process.env.AUTH_GITHUB_ID,\n  clientSecret: process.env.AUTH_GITHUB_SECRET,\n})\n\nconst providers = [provider]",
+   "language": "typescript",
+   "explanation": "This creates a GitHub OAuth provider configuration that can be passed to Auth.js."
+  },
+  "useCases": [
+   {
+    "title": "OAuth sign-in",
+    "scenario": "Add a social login provider such as GitHub or Google."
+   },
+   {
+    "title": "OIDC sign-in",
+    "scenario": "Connect an OpenID Connect server with discovery metadata."
+   },
+   {
+    "title": "Email and credentials sign-in",
+    "scenario": "Configure passwordless email or username-and-password authentication."
+   },
+   {
+    "title": "WebAuthn sign-in",
+    "scenario": "Use passkeys through a WebAuthn provider."
+   }
+  ],
+  "related": [
+   "ProviderType",
+   "ProviderId",
+   "OAuth2Config",
+   "OIDCConfig",
+   "EmailConfig",
+   "CredentialsConfig",
+   "WebAuthnConfig",
+   "ProfileCallback"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is the Provider type?",
+    "answer": "Provider is a union type for OAuth, OIDC, email, credentials, and WebAuthn configurations. A provider can also be a function that returns one of these configurations.",
+    "followUp": "How can a provider be selected during sign-in? Use its id, which uniquely identifies it in the provider list and is also part of the sign-in URL."
+   },
+   {
+    "question": "What values can ProviderType contain?",
+    "answer": "ProviderType can be \"oidc\", \"oauth\", \"email\", \"credentials\", or a WebAuthn provider type. Auth.js uses this value to identify the authentication method.",
+    "followUp": "What configuration is needed for an OAuth provider? It needs an id, name, type, and the OAuth endpoints or a well-known OIDC URL, plus client credentials as required."
+   },
+   {
+    "question": "What does the profile callback do?",
+    "answer": "The profile callback receives the provider profile and token set, then returns a user object. Auth.js uses that result to create the user in the database; its default fields are id, email, name, and image.",
+    "followUp": "How are provider tokens stored? The account callback can return a selected subset of the token set for the database account record."
+   }
+  ],
+  "keyPoints": [
+   "Provider accepts supported OAuth, OIDC, email, credentials, or WebAuthn configurations, including provider factory functions.",
+   "The name appears on the default sign-in page, such as “Sign in with Google”.",
+   "ProviderType is the discriminator for a provider configuration.",
+   "An OIDC provider can use a well-known URL instead of defining its authorization, token, and user-info endpoints separately."
+  ],
+  "gotchas": [
+   "Do not enable automatic linking unless you trust the provider to verify email addresses securely.",
+   "A provider configuration must use a supported provider type."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "providers": {
   "sourceUrl": "https://authjs.dev/guides/configuring-oauth-providers",
@@ -6585,6 +7028,83 @@
   ],
   "checkedAt": "2026-10-15"
  },
+ "signOut": {
+  "sourceUrl": "https://authjs.dev/reference/nextjs",
+  "sourceTitle": "Auth.js | Nextjs",
+  "summary": "signOut ends the current Auth.js session. It can redirect to the current page by default or to a relative path you provide.",
+  "explanation": "Call signOut to end the current Auth.js session. With database sessions, Auth.js removes the session record and invalidates the related cookie. With JWT sessions, it invalidates the cookie. The default result redirects the user to the current page, or you can set a relative redirectTo path.",
+  "syntax": "signOut(options?)",
+  "parameters": [
+   {
+    "name": "options.redirect",
+    "type": "boolean",
+    "description": "Controls whether Auth.js redirects automatically. If false, the returned value contains the redirect URL."
+   },
+   {
+    "name": "options.redirectTo",
+    "type": "string",
+    "description": "Relative path to use after sign-out. The default is the current page."
+   }
+  ],
+  "returns": "Promise. By default it redirects after sign-out. With redirect: false, it returns the URL to redirect to.",
+  "example": {
+   "title": "Sign out with a server action",
+   "code": "import { signOut } from \"@/auth\"\n\nexport default function SignOutButton() {\n  return (\n    <form action={async () => {\n      \"use server\"\n      await signOut()\n    }}>\n      <button type=\"submit\">Sign out</button>\n    </form>\n  )\n}",
+   "language": "tsx",
+   "explanation": "This Next.js server component submits a form and calls signOut on the server."
+  },
+  "useCases": [
+   {
+    "title": "Basic logout",
+    "scenario": "A user clicks a standard logout button and should leave the current session."
+   },
+   {
+    "title": "Custom sign-out page",
+    "scenario": "A custom confirmation page submits a server-side form."
+   },
+   {
+    "title": "Manual navigation",
+    "scenario": "The application needs to navigate after sign-out using its own code."
+   }
+  ],
+  "related": [
+   "signIn",
+   "auth",
+   "handlers",
+   "AuthError",
+   "Session"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does signOut do for database and JWT sessions?",
+    "answer": "signOut ends the current session. For a database session, it deletes the session from the database and invalidates its cookie. For a JWT session, it invalidates the cookie.",
+    "followUp": "How can the normal redirect be changed? Pass a relative path with redirectTo, or set redirect to false to receive the redirect URL."
+   },
+   {
+    "question": "How do you control the post-sign-out redirect?",
+    "answer": "With no options, signOut redirects the user to the page they are currently on. The redirectTo option changes this to a relative path.",
+    "followUp": "What happens when redirect is false? The method returns the URL instead of redirecting automatically."
+   },
+   {
+    "question": "What options does signOut accept?",
+    "answer": "The function accepts an optional options object. Its useful fields are redirect, a boolean controlling automatic redirection, and redirectTo, the relative destination path.",
+    "followUp": "Why might an application set redirect to false? It can use the returned URL to perform navigation itself or combine it with custom client behavior."
+   }
+  ],
+  "keyPoints": [
+   "signOut ends the authenticated session for the current user.",
+   "Auth.js invalidates the session cookie when sign-out completes.",
+   "Use redirectTo to choose a relative destination after signing out.",
+   "Set redirect to false when the application should handle navigation itself.",
+   "In Next.js, signOut can be used in a server action attached to a form."
+  ],
+  "gotchas": [
+   "Calling signOut normally redirects after the session ends. Set redirect to false when the caller needs the redirect URL instead.",
+   "Database sessions are deleted from the database. JWT sessions only have their cookie invalidated."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "signOut event": {
   "sourceUrl": "https://authjs.dev/reference/core",
   "sourceTitle": "auth/core",
@@ -6936,6 +7456,67 @@
    "This adapter does not provide integration with Supabase Auth itself."
   ],
   "checkedAt": "2026-10-15"
+ },
+ "theme": {
+  "sourceUrl": "https://authjs.dev/reference/nextjs",
+  "sourceTitle": "Auth.js | Nextjs",
+  "summary": "The `theme` option controls the appearance of Auth.js built-in pages. It accepts a `Theme` value in the NextAuth configuration.",
+  "explanation": "The `theme` option changes the appearance of Auth.js built-in pages. Pass a `Theme` value in the NextAuth configuration to customize those pages.",
+  "syntax": "theme?: Theme",
+  "parameters": [
+   {
+    "name": "theme",
+    "type": "Theme",
+    "description": "An optional theme configuration for Auth.js built-in pages."
+   }
+  ],
+  "returns": "",
+  "example": {
+   "title": "Initialize Auth.js in Next.js",
+   "code": "import NextAuth from \"next-auth\"\nimport GitHub from \"next-auth/providers/github\"\n\nexport const { auth, handlers } = NextAuth({\n  providers: [GitHub],\n})",
+   "language": "typescript",
+   "explanation": "This initializes Auth.js with GitHub and exports the universal `auth` method and route handlers."
+  },
+  "useCases": [
+   {
+    "title": "Customize built-in page appearance",
+    "scenario": "Change the look of sign-in and other built-in authentication pages."
+   },
+   {
+    "title": "Configure authentication UI",
+    "scenario": "Keep Auth.js page styling configuration with the main NextAuth setup."
+   }
+  ],
+  "related": [
+   "AuthConfig.pages",
+   "Theme",
+   "NextAuth"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does the `theme` option do?",
+    "answer": "Set `theme` in the object passed to `NextAuth`. It changes the theme used by Auth.js built-in pages.",
+    "followUp": "What other configuration option controls whether built-in pages are used? The `pages` option lets you define custom routes for Auth.js pages."
+   },
+   {
+    "question": "What type of value does `theme` accept?",
+    "answer": "The option accepts a `Theme` value. This value controls the appearance of the built-in Auth.js pages.",
+    "followUp": "Where is this option configured in a Next.js app? It is configured when initializing `NextAuth`, commonly in `auth.ts`."
+   },
+   {
+    "question": "What is the scope of the `theme` option?",
+    "answer": "The option affects Auth.js built-in pages, not the general styling of the whole application. Use application-level styling separately for other pages.",
+    "followUp": "How can an application change the route for a built-in page? Configure the corresponding entry in the `pages` option."
+   }
+  ],
+  "keyPoints": [
+   "`theme` changes the appearance of Auth.js built-in pages.",
+   "The option is optional and uses the `Theme` type.",
+   "The current documentation notes that Auth.js is now part of Better Auth."
+  ],
+  "gotchas": [],
+  "checkedAt": "2026-11-03"
  },
  "Todoist": {
   "sourceUrl": "https://authjs.dev/reference/core/providers/todoist",
@@ -7792,6 +8373,91 @@
    "A custom API version is not set globally; pass version-specific URL overrides in the Vk options object."
   ],
   "checkedAt": "2026-10-15"
+ },
+ "WebAuthn": {
+  "sourceUrl": "https://authjs.dev/getting-started/authentication/webauthn",
+  "sourceTitle": "WebAuthn",
+  "summary": "Auth.js WebAuthn adds passkey registration and sign-in. It needs the Passkey provider, a supported adapter, an Authenticator table, and an experimental feature flag.",
+  "explanation": "WebAuthn lets users sign in or register with passkeys. Auth.js stores each passkey in an Authenticator database table and currently exposes this provider only through selected framework integrations and database adapters.",
+  "syntax": "signIn(provider?, options?, authorizationParams?): Promise<void> | Promise<SignInResponse>",
+  "parameters": [
+   {
+    "name": "provider",
+    "type": "ProviderId | undefined",
+    "description": "The provider identifier, such as \"passkey\"."
+   },
+   {
+    "name": "options",
+    "type": "SignInOptions<true> | SignInOptions<false> | undefined",
+    "description": "Sign-in options. For a custom WebAuthn page, the action can register a passkey."
+   },
+   {
+    "name": "authorizationParams",
+    "type": "SignInAuthorizationParams | undefined",
+    "description": "Additional authorization parameters."
+   }
+  ],
+  "returns": "The WebAuthn signIn function returns Promise<void> or Promise<SignInResponse>, depending on the redirect option.",
+  "example": {
+   "title": "Enable Passkeys",
+   "code": "import Passkey from \"next-auth/providers/passkey\"\nimport { PrismaAdapter } from \"@auth/prisma-adapter\"\nimport { PrismaClient } from \"@prisma/client\"\n\nconst prisma = new PrismaClient()\n\nexport default {\n  adapter: PrismaAdapter(prisma),\n  providers: [Passkey],\n  experimental: { enableWebAuthn: true },\n}",
+   "language": "typescript",
+   "explanation": "This configuration enables the Passkeys provider with a compatible Prisma adapter."
+  },
+  "useCases": [
+   {
+    "title": "Passkey sign-in",
+    "scenario": "Users sign in without typing a password by using a device passkey."
+   },
+   {
+    "title": "Passkey registration",
+    "scenario": "An authenticated user adds another passkey from a custom page."
+   },
+   {
+    "title": "Default sign-in page",
+    "scenario": "A built-in Auth.js sign-in page provides the passkey option."
+   }
+  ],
+  "related": [
+   "Passkey",
+   "Authenticator",
+   "@simplewebauthn/browser",
+   "PrismaAdapter",
+   "enableWebAuthn",
+   "signIn"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does the Auth.js WebAuthn provider require?",
+    "answer": "The Passkeys provider starts WebAuthn registration or sign-in. Auth.js needs a compatible adapter and an Authenticator table to store passkey data.",
+    "followUp": "What does a custom sign-in page need? It must install @simplewebauthn/browser and call the WebAuthn signIn function with the correct action."
+   },
+   {
+    "question": "How do you enable WebAuthn in Auth.js?",
+    "answer": "Use the Passkey provider, a supported database adapter, and experimental.enableWebAuthn set to true. Built-in Auth.js pages can then show a passkey sign-in option.",
+    "followUp": "How would you support registration? Use the WebAuthn signIn function with action set to register from a custom page."
+   },
+   {
+    "question": "What data must the database store?",
+    "answer": "The database needs an Authenticator table linked to User. It stores the credential ID, public key, counter, device type, backup state, and transports.",
+    "followUp": "Why is the credential ID indexed uniquely? Each credential ID must identify only one stored authenticator."
+   }
+  ],
+  "keyPoints": [
+   "The WebAuthn signIn function starts a passkey sign-in flow.",
+   "The default sign-in page can include a button for signing in with passkeys.",
+   "Import Passkey and add it to the providers list.",
+   "Enable WebAuthn with the experimental configuration flag.",
+   "Support is limited to the framework integrations and database adapters listed by the documentation.",
+   "Using this provider may require framework and adapter changes."
+  ],
+  "gotchas": [
+   "The provider is experimental, so do not use it for production systems.",
+   "Install @simplewebauthn/browser only when a custom sign-in page calls the WebAuthn signIn function.",
+   "Add the Authenticator table to the database schema before enabling the provider."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "Wikimedia": {
   "sourceUrl": "https://authjs.dev/getting-started/providers/wikimedia",

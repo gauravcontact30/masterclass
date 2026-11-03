@@ -3,7 +3,7 @@ import { api } from "@/lib/server/http";
 import { requireSuperAdmin } from "@/lib/server/super-admin";
 import { db, check } from "@/lib/server/db";
 import { billingConfigured } from "@/lib/server/config";
-import { cacheFetch } from "@/lib/redis";
+import { cacheFetch, cacheGet, cacheSet } from "@/lib/redis";
 import { inngest } from "@/lib/inngest/client";
 
 
@@ -25,7 +25,18 @@ export async function GET(request: Request) {
     const data = await cacheFetch(
       cacheKey,
       async () => {
-        return check(await db().rpc("super_admin_snapshot", { p_days: days }));
+        // The report can hit the database's statement timeout on a busy or cold moment. The last good copy is a better
+        // answer than a 500 for a screen that re-reads every few seconds.
+        const lastGood = `${cacheKey}:last-good`;
+        try {
+          const fresh = check(await db().rpc("super_admin_snapshot", { p_days: days }));
+          await cacheSet(lastGood, fresh, 3600);
+          return fresh;
+        } catch (failure) {
+          const previous = await cacheGet<Awaited<ReturnType<typeof check>>>(lastGood);
+          if (previous) return previous;
+          throw failure;
+        }
       },
       30
     );

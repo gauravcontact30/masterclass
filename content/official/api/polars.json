@@ -1451,6 +1451,96 @@
   ],
   "checkedAt": "2026-10-15"
  },
+ ".profile": {
+  "sourceUrl": "https://docs.pola.rs/api/python/stable/reference/lazyframe/api/polars.LazyFrame.collect.html",
+  "sourceTitle": "polars.LazyFrame.collect — Polars documentation",
+  "summary": "Executes a LazyFrame query and returns its result as a DataFrame. You can select the execution engine and control optimization behavior.",
+  "explanation": "A LazyFrame describes a query without running it. Calling collect executes that query and returns its DataFrame result. You can choose an execution engine, run it in the background, or control optimization passes.",
+  "syntax": "LazyFrame.collect(*, engine: EngineType = 'auto', background: bool = False, optimizations: QueryOptFlags = (), **_kwargs: Any) -> DataFrame | InProcessQuery",
+  "parameters": [
+   {
+    "name": "engine",
+    "type": "EngineType = 'auto'",
+    "description": "Selects the engine used to process the query. Supported names include auto, in-memory, streaming, and gpu. An Engine instance can also be passed."
+   },
+   {
+    "name": "background",
+    "type": "bool = False",
+    "description": "Runs the query in background mode when true."
+   },
+   {
+    "name": "optimizations",
+    "type": "QueryOptFlags = ()",
+    "description": "Controls the optimization passes used during query optimization."
+   },
+   {
+    "name": "_kwargs",
+    "type": "Any",
+    "description": "Additional keyword arguments accepted by the method."
+   }
+  ],
+  "returns": "DataFrame, or an InProcessQuery when background execution is enabled.",
+  "example": {
+   "title": "Materialize a lazy query",
+   "code": "import polars as pl\n\nlf = pl.LazyFrame({\n    \"group\": [\"a\", \"b\", \"a\"],\n    \"value\": [1, 2, 3],\n})\n\nresult = lf.group_by(\"group\").agg(pl.col(\"value\").sum()).collect()\nprint(result)",
+   "language": "python",
+   "explanation": "The lazy query is executed and its result is returned as a DataFrame."
+  },
+  "useCases": [
+   {
+    "title": "Execute a query",
+    "scenario": "Run a lazy query after building its transformations."
+   },
+   {
+    "title": "Reduce memory pressure",
+    "scenario": "Process large queries in batches."
+   },
+   {
+    "title": "Run on a GPU",
+    "scenario": "Use CUDA for supported workloads."
+   },
+   {
+    "title": "Use background execution",
+    "scenario": "Retrieve or cancel an asynchronous query."
+   }
+  ],
+  "related": [
+   "explain",
+   "profile",
+   "polars.collect_all",
+   "polars.Config.set_streaming_chunk_size"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does LazyFrame.collect do?",
+    "answer": "collect executes a LazyFrame query and materializes the result as a DataFrame. Query optimizations are enabled by default.",
+    "followUp": "How can execution reduce memory pressure? Use the streaming engine, which processes the query in batches."
+   },
+   {
+    "question": "How do you choose the execution engine?",
+    "answer": "Set engine to \"streaming\" to process the query in batches. Set it to \"in-memory\" to use the in-memory engine.",
+    "followUp": "What does engine=\"auto\" do? It uses configured engine affinity when available; otherwise it defaults to the streaming engine."
+   },
+   {
+    "question": "What happens when background execution is enabled?",
+    "answer": "With background=True, collect returns an in-process query handle instead of immediately returning the DataFrame. The handle can be used to fetch the result or cancel the query.",
+    "followUp": "What limitation applies? Background mode is unstable and may change without a breaking change."
+   }
+  ],
+  "keyPoints": [
+   "collect runs the lazy query and produces a DataFrame.",
+   "The query uses all available optimizations unless you change the optimizations argument.",
+   "The engine can be selected by name.",
+   "The streaming engine works in batches and can lower memory use.",
+   "Use the background handle to retrieve the result or stop the query."
+  ],
+  "gotchas": [
+   "Background execution may change without being treated as a breaking change.",
+   "The optimization control interface may change without being treated as a breaking change."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  ".qcut": {
   "sourceUrl": "https://docs.pola.rs/api/python/stable/reference/expressions/api/polars.Expr.qcut.html",
   "sourceTitle": "polars.Expr.qcut — Polars documentation",
@@ -3512,6 +3602,90 @@
    "Negative values do not select rows from the end; they exclude that many rows from the DataFrame's tail."
   ],
   "checkedAt": "2026-10-15"
+ },
+ "df.melt": {
+  "sourceUrl": "https://docs.pola.rs/api/python/version/0.18/reference/dataframe/api/polars.DataFrame.melt.html",
+  "sourceTitle": "polars.DataFrame.melt — Polars documentation",
+  "summary": "Reshape a DataFrame from wide format to long format. Keep identifier columns and turn selected value columns into rows.",
+  "explanation": "The method keeps the columns in id_vars as identifiers. It turns each selected value column into rows, using one column for the original column name and another for its value. You can rename these output columns with variable_name and value_name.",
+  "syntax": "DataFrame.melt(id_vars: Sequence[str] | str | None = None, value_vars: Sequence[str] | str | None = None, variable_name: str | None = None, value_name: str | None = None) → Self",
+  "parameters": [
+   {
+    "name": "id_vars",
+    "type": "Sequence[str] | str | None = None",
+    "description": "Columns to keep as identifier columns."
+   },
+   {
+    "name": "value_vars",
+    "type": "Sequence[str] | str | None = None",
+    "description": "Columns to unpivot. If empty, Polars uses columns not listed in id_vars."
+   },
+   {
+    "name": "variable_name",
+    "type": "str | None = None",
+    "description": "Name for the output column containing original value-column names. Defaults to variable."
+   },
+   {
+    "name": "value_name",
+    "type": "str | None = None",
+    "description": "Name for the output column containing unpivoted values. Defaults to value."
+   }
+  ],
+  "returns": "A DataFrame in long format.",
+  "example": {
+   "title": "Convert wide data to long data",
+   "code": "import polars as pl\n\ndf = pl.DataFrame({\n    \"name\": [\"Ana\", \"Ben\"],\n    \"math\": [90, 80],\n    \"science\": [85, 88],\n})\n\nlong = df.melt(\n    id_vars=\"name\",\n    value_vars=[\"math\", \"science\"],\n    variable_name=\"subject\",\n    value_name=\"score\",\n)\nprint(long)",
+   "language": "python",
+   "explanation": "The identifier column stays in each row. The selected columns become rows under subject and score."
+  },
+  "useCases": [
+   {
+    "title": "Normalize measurement columns",
+    "scenario": "A table has one column per measurement, such as math and science scores."
+   },
+   {
+    "title": "Prepare data for analysis",
+    "scenario": "A report needs one row per identifier and measured variable."
+   },
+   {
+    "title": "Combine selected columns",
+    "scenario": "Several similarly structured columns must be combined into one value column."
+   }
+  ],
+  "related": [
+   "polars.DataFrame.pivot",
+   "polars.DataFrame"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does DataFrame.melt do?",
+    "answer": "melt changes a DataFrame from wide format to long format. Identifier columns stay in place, while selected value columns become rows represented by variable and value columns.",
+    "followUp": "What happens when value_vars is empty? Polars uses all columns that are not in id_vars."
+   },
+   {
+    "question": "What is the purpose of id_vars?",
+    "answer": "id_vars names the columns that identify each original row. These values are repeated for each output row created from the value columns.",
+    "followUp": "Can id_vars contain more than one column? Yes. Pass a sequence of column names."
+   },
+   {
+    "question": "How do you control the columns and names in the result?",
+    "answer": "value_vars selects the columns to unpivot. variable_name and value_name optionally change the default output names variable and value.",
+    "followUp": "What are the default output names? They are variable for the column names and value for the unpivoted data."
+   }
+  ],
+  "keyPoints": [
+   "Use melt to reshape wide data into long data.",
+   "Columns listed in id_vars remain as identifier columns.",
+   "The chosen value columns move from the column axis to the row axis.",
+   "The reshaped values are represented by two non-identifier columns.",
+   "variable_name controls the name of the column containing original column names.",
+   "value_name controls the name of the column containing unpivoted values."
+  ],
+  "gotchas": [
+   "When value_vars is empty, Polars uses every column that is not listed in id_vars."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "df.partition_by": {
   "sourceUrl": "https://docs.pola.rs/api/python/stable/reference/dataframe/api/polars.DataFrame.partition_by.html",

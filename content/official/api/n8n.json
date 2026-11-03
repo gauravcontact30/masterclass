@@ -1,0 +1,2846 @@
+{
+ "$env": {
+  "sourceUrl": "https://docs.n8n.io/build/code-in-n8n/use-built-in-shortcuts/n8n-metadata",
+  "sourceTitle": "n8n metadata | Build | n8n Docs",
+  "summary": "`$env` lets JavaScript in an n8n Code node read environment variables configured for a self-hosted n8n instance.",
+  "explanation": "`$env` provides access to environment variables configured for a self-hosted n8n instance. In a Code node, read a variable by its name, such as `$env.N8N_DEFAULT_BINARY_DATA_MODE`, and use the value in your code.",
+  "syntax": "$env.<VARIABLE_NAME>",
+  "parameters": [
+   {
+    "name": "variableName",
+    "type": "string",
+    "description": "The environment variable name configured on the n8n instance."
+   }
+  ],
+  "returns": "The configured value of the requested n8n environment variable.",
+  "example": {
+   "title": "Read an environment variable",
+   "code": "const region = $env.N8N_DEFAULT_BINARY_DATA_MODE;\nreturn [{ json: { region } }];",
+   "language": "javascript",
+   "explanation": "This reads an n8n instance environment variable and returns it in the item."
+  },
+  "useCases": [
+   {
+    "title": "Use configuration in a Code node",
+    "scenario": "Read an instance setting and use it when building output data."
+   },
+   {
+    "title": "Support different environments",
+    "scenario": "Select behavior based on an environment-specific value."
+   }
+  ],
+  "related": [
+   "$vars",
+   "$secrets",
+   "$execution.id",
+   "$workflow.active"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is `$env` in n8n?",
+    "answer": "`$env` exposes n8n instance configuration environment variables to JavaScript in the Code node. A variable is read with property access, such as `$env.MY_VARIABLE`.",
+    "followUp": "Where can this shortcut be used? It is available in the Code node, but not in expressions according to the metadata reference."
+   },
+   {
+    "question": "What does `$env` contain?",
+    "answer": "It reads configuration from the environment of a self-hosted n8n instance. The variable name must match the configured environment variable.",
+    "followUp": "What happens if the variable is not configured? The reference does not define missing-variable behavior, so code should not assume a value is present."
+   },
+   {
+    "question": "How can a Code node use `$env`?",
+    "answer": "A Code node can read `$env` and return the value as workflow data. For example, `return [{ json: { value: $env.MY_VARIABLE } }]` returns one item.",
+    "followUp": "How should secret values be handled? Avoid returning sensitive environment values as workflow data unless the workflow requires it."
+   }
+  ],
+  "keyPoints": [
+   "`$env` exposes environment variables used by the n8n instance.",
+   "The documented use is for self-hosted n8n environments.",
+   "The metadata reference lists `$env` under JavaScript methods.",
+   "`$env` is available in the Code node."
+  ],
+  "gotchas": [
+   "`$env` is for self-hosted n8n. It does not provide instance environment variables in n8n Cloud.",
+   "Use the configured variable name exactly. The value comes from the n8n instance configuration."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "$execution": {
+  "sourceUrl": "https://docs.n8n.io/build/work-with-data/transform-data/expression-reference/root",
+  "sourceTitle": "Root | Build | n8n Docs",
+  "summary": "`$execution` gives an expression access to metadata for the current n8n workflow execution. It can expose the run ID, mode, resume URL, and custom execution data.",
+  "explanation": "`$execution` is an n8n expression object for reading metadata about the current workflow execution. Use properties such as `id` and `mode` to access execution details.",
+  "syntax": "$execution",
+  "parameters": [],
+  "returns": "ExecData",
+  "example": {
+   "title": "Read the current execution ID",
+   "code": "{{$execution.id}}",
+   "language": "text",
+   "explanation": "This expression returns the ID of the workflow execution that is currently running."
+  },
+  "useCases": [
+   {
+    "title": "Trace a workflow run",
+    "scenario": "Add the current run ID to a log record or outgoing request."
+   },
+   {
+    "title": "Store execution metadata",
+    "scenario": "Mark executions with values used for later filtering."
+   },
+   {
+    "title": "Resume a waiting workflow",
+    "scenario": "Continue a workflow after a Wait node pauses it."
+   }
+  ],
+  "related": [
+   "$exec.customData",
+   "$exec.id",
+   "$exec.mode",
+   "$exec.resumeUrl",
+   "$input",
+   "$workflow"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is `$execution` used for?",
+    "answer": "`$execution` provides metadata for the current workflow execution. For example, `$execution.id` returns its unique ID, while `$execution.mode` reports whether it is a test or production execution.",
+    "followUp": "How can execution-specific custom data be stored? Use `$execution.customData` or the Execution Data node."
+   },
+   {
+    "question": "What does `$execution.id` return?",
+    "answer": "`$execution.id` returns the ID of the workflow execution currently being processed. The value is a string.",
+    "followUp": "How could this ID help when investigating a failed run? It can identify the exact execution in n8n's execution history."
+   },
+   {
+    "question": "What values can `$execution.mode` have?",
+    "answer": "`$execution.mode` indicates how the workflow started. Its documented values are `test` and `production`.",
+    "followUp": "What other execution metadata is available? The execution object also supports custom data and a resume URL for a waiting workflow."
+   }
+  ],
+  "keyPoints": [
+   "Use `$execution` to read or set metadata linked to the workflow execution that is running now.",
+   "`$execution.id` gives the unique identifier of the current workflow run.",
+   "`$execution.mode` tells you whether the run is a test or production execution.",
+   "`$execution.resumeUrl` provides the URL used to continue a workflow paused at a Wait node.",
+   "Use `$execution.customData` to store and read custom values for an execution, such as filtering information."
+  ],
+  "gotchas": [
+   "Python code cannot use this expression object. Use JavaScript expressions instead."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "$input": {
+  "sourceUrl": "https://docs.n8n.io/build/work-with-data/transform-data/expression-reference/nodeinputdata",
+  "sourceTitle": "Nodeinputdata | Build | n8n Docs",
+  "summary": "`$input` reads data entering the current n8n node. It can return all, one selected, or the active input item, and it can expose the node's configuration.",
+  "explanation": "`$input` provides data entering the current node. Use its methods to read all, the first, or the last input item, or use `$input.item` for the item currently being processed. `$input.params` reads the current node's configuration.",
+  "syntax": "$input.all(branchIndex?, runIndex?)\n$input.first(branchIndex?, runIndex?)\n$input.item\n$input.last(branchIndex?, runIndex?)\n$input.params",
+  "parameters": [
+   {
+    "name": "branchIndex",
+    "type": "Number",
+    "description": "Output branch index. Defaults to 0."
+   },
+   {
+    "name": "runIndex",
+    "type": "Number",
+    "description": "Node run index. Defaults to 0."
+   }
+  ],
+  "returns": "`$input.all()` returns an array; `$input.first()` and `$input.last()` return an item; `$input.item` returns an item; `$input.params` returns node parameters.",
+  "example": {
+   "title": "Get all input items",
+   "code": "{{ $input.all() }}",
+   "language": "text",
+   "explanation": "Returns all input items for the current node."
+  },
+  "useCases": [
+   {
+    "title": "Process all inputs",
+    "scenario": "Read every incoming item before building an expression."
+   },
+   {
+    "title": "Select an input item",
+    "scenario": "Read one item without handling the full input array."
+   },
+   {
+    "title": "Read node parameters",
+    "scenario": "Use the current node's settings in an expression."
+   }
+  ],
+  "related": [
+   "$json",
+   "$parameter",
+   "$nodeoutputdata"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does `$input.all()` return?",
+    "answer": "`$input.all()` returns an array containing the current node's input items. It can also accept branchIndex and runIndex.",
+    "followUp": "How do you read only the item being processed? Use `$input.item`, which returns the current input item."
+   },
+   {
+    "question": "How do `$input.first()` and `$input.last()` differ?",
+    "answer": "`$input.first()` returns the first input item. `$input.last()` returns the last input item.",
+    "followUp": "What can these methods select? They can receive optional branch and run indexes."
+   },
+   {
+    "question": "What does `$input.params` provide?",
+    "answer": "`$input.params` gives the settings configured in the current node. These include values entered in the node's configuration.",
+    "followUp": "What is the related root expression? `$parameter` also returns the current node's configuration settings."
+   }
+  ],
+  "keyPoints": [
+   "Use `$input.all()` when you need every item entering the current node.",
+   "Use `$input.first()` to read the first input item.",
+   "Use `$input.last()` to read the final input item.",
+   "Use `$input.item` when an expression should read the active item.",
+   "Use `$input.params` to access the current node's configured settings."
+  ],
+  "gotchas": [
+   "If you omit branchIndex, n8n uses branch 0.",
+   "If you omit runIndex, n8n uses run 0."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "$items": {
+  "sourceUrl": "https://docs.n8n.io/build/work-with-data/transform-data/expression-reference/item",
+  "sourceTitle": "Item | Build | n8n Docs",
+  "summary": "`$item` gives access to the current workflow item. Use `$item.json` for JSON data and `$item.binary` for binary data.",
+  "explanation": "`$item` represents the current workflow item. Use `$item.json` to access its JSON object, or `$item.binary` to access binary data attached to that item.",
+  "syntax": "$item.json\n$item.binary",
+  "parameters": [],
+  "returns": "`$item.json` returns an Object. `$item.binary` returns an Array.",
+  "example": {
+   "title": "Read a JSON field",
+   "code": "{{$item.json.email}}",
+   "language": "text",
+   "explanation": "Reads the `email` field from the current item’s JSON data."
+  },
+  "useCases": [
+   {
+    "title": "Access JSON fields",
+    "scenario": "Read values from the current item in an expression."
+   },
+   {
+    "title": "Access binary data",
+    "scenario": "Work with a file or other binary attachment on the current item."
+   }
+  ],
+  "related": [
+   "$items",
+   "$().all()",
+   "$().first()",
+   "$().last()"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does `$item` provide?",
+    "answer": "`$item` refers to the current item. Its `json` property contains the item’s JSON data, while `binary` contains attached binary data.",
+    "followUp": "How would you read a field? Use an expression such as `{{$item.json.email}}`."
+   },
+   {
+    "question": "What does `$item.json` return?",
+    "answer": "`$item.json` returns an object containing the current item’s JSON data. It is suitable for reading fields such as `email` or `id`.",
+    "followUp": "What happens when the requested field is not present? The expression produces an undefined or empty value, depending on the expression context."
+   },
+   {
+    "question": "When should `$item.binary` be used?",
+    "answer": "`$item.binary` returns an array containing binary data held by the current item. Use it when working with files or other binary values.",
+    "followUp": "Which property should be used for normal structured values? Use `$item.json`, because it returns the item’s JSON object."
+   }
+  ],
+  "keyPoints": [
+   "Use `$item.json` to access the current item’s structured JSON data.",
+   "Use `$item.binary` to access binary data attached to the current item.",
+   "These properties are provided as n8n expression features."
+  ],
+  "gotchas": [
+   "`$item.binary` is for binary data, not ordinary JSON fields."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "$json": {
+  "sourceUrl": "https://docs.n8n.io/build/work-with-data/transform-data/expressions-for-data-transformation",
+  "sourceTitle": "Expressions for data transformation | Build | n8n Docs",
+  "summary": "n8n expressions read and transform workflow data inside node fields. Use `{{ ... }}` syntax, and use the Edit Fields (Set) node when a step is mainly for changing data.",
+  "explanation": "`$json` refers to the current input item's JSON data. Use dot notation or bracket notation to read nested fields, such as `{{$json.body.city}}` or `{{$json['body']['city']}}`. Expressions can also use data from earlier nodes and workflow context.",
+  "syntax": "{{ expression }}",
+  "parameters": [
+   {
+    "name": "$json",
+    "type": "object",
+    "description": "Current input item's JSON object."
+   }
+  ],
+  "returns": "The value produced by the expression, or the transformed data returned by the expression.",
+  "example": {
+   "title": "Read a webhook field",
+   "code": "{{$json.body.city}}",
+   "language": "text",
+   "explanation": "Reads the city field from the current item's webhook body."
+  },
+  "useCases": [
+   {
+    "title": "Extract a field",
+    "scenario": "Read a nested value from a webhook or another input item."
+   },
+   {
+    "title": "Apply a light transformation",
+    "scenario": "Format a value or perform a small calculation directly in a node parameter."
+   },
+   {
+    "title": "Prepare item data",
+    "scenario": "Add, change, remove, or rename fields in a dedicated data step."
+   },
+   {
+    "title": "Set a dynamic credential value",
+    "scenario": "Use a value received earlier in the same workflow run in a credential field."
+   }
+  ],
+  "related": [
+   "Edit Fields (Set) node",
+   "Code node",
+   "AI Transform node",
+   "Expression reference",
+   "JMESPath",
+   "$input",
+   "$()"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "When should you use an n8n expression?",
+    "answer": "Use an expression when you need a value from existing data or a small calculation in a node parameter. Expressions use `{{ ... }}` and can reference the current item with `$json`.",
+    "followUp": "When should you use the Code node instead? Use it for complex transformations, such as restructuring arrays, aggregating items, or processing many items together."
+   },
+   {
+    "question": "What does `$json` mean?",
+    "answer": "`$json` accesses the current item's JSON data. For example, `{{$json.body.city}}` reads `city` inside `body`; bracket notation can express the same path.",
+    "followUp": "How can you access data from another node? Use n8n's node-reference syntax, such as `$('<node-name>').item.json`, when the needed data is not in the current item."
+   },
+   {
+    "question": "How do expressions work in credential fields?",
+    "answer": "Expressions in credential fields are evaluated during the current workflow execution. They can use data available in that execution, including values from previous nodes.",
+    "followUp": "Do separate executions share expression data? No. Each execution has its own data context."
+   }
+  ],
+  "keyPoints": [
+   "Transformation expressions work in any field that supports expressions.",
+   "Use the Edit Fields (Set) node when transformation is the main purpose of the step.",
+   "Expressions use small JavaScript-like snippets inside `{{ ... }}`.",
+   "An expression can fill a parameter from earlier node data, workflow metadata, or environment variables.",
+   "n8n passes workflow data as an array of item objects.",
+   "Each normal item's data is stored under the `json` key."
+  ],
+  "gotchas": [
+   "Some expression helpers use JMESPath syntax, so do not assume every query uses JavaScript property syntax.",
+   "JSON mode requires a valid JSON object; malformed JSON causes an error.",
+   "Credential expressions use only the data context of the current workflow execution."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "$now": {
+  "sourceUrl": "https://docs.n8n.io/build/work-with-data/transform-data/expression-reference/root",
+  "sourceTitle": "Root | Build | n8n Docs",
+  "summary": "`$now` gives the current moment as a DateTime in an n8n expression. It uses the workflow’s time zone.",
+  "explanation": "`$now` is an n8n expression variable that represents the current moment. It uses the workflow time zone, so date and time operations use that configured zone.",
+  "syntax": "$now",
+  "parameters": [],
+  "returns": "DateTime",
+  "example": {
+   "title": "Read the current time",
+   "code": "{{$now}}",
+   "language": "text",
+   "explanation": "Uses the current moment in an n8n expression. The result is a DateTime value."
+  },
+  "useCases": [
+   {
+    "title": "Use the current time",
+    "scenario": "Insert the current date or time into a field."
+   },
+   {
+    "title": "Format a date",
+    "scenario": "Create a date string for an API or filename."
+   },
+   {
+    "title": "Adjust a date",
+    "scenario": "Calculate a date relative to now."
+   }
+  ],
+  "related": [
+   "$today",
+   "DateTime",
+   "toFormat()",
+   "minus()"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does `$now` return?",
+    "answer": "`$now` returns a DateTime for the current moment. It uses the workflow’s configured time zone.",
+    "followUp": "How would you get the current date at midnight? Use `$today`, which is the current day rounded down to midnight."
+   },
+   {
+    "question": "How can you format `$now`?",
+    "answer": "Use a DateTime method, such as `$now.toFormat(\"yyyy-MM-dd\")`, to create a formatted date string.",
+    "followUp": "How would you subtract time? Use Luxon operations such as `$now.minus({days: 7})`."
+   },
+   {
+    "question": "Where does `$now` get its time zone?",
+    "answer": "An expression can use `$now` directly, and n8n also documents it as a DateTime value for date operations.",
+    "followUp": "What controls its time zone? The workflow time zone controls it, and workflow settings can change that value."
+   }
+  ],
+  "keyPoints": [
+   "`$now` represents the current moment as a DateTime value.",
+   "Its time zone comes from the workflow settings.",
+   "You can use `$now` when an expression needs the current date and time.",
+   "You can format the value as text with a DateTime format method."
+  ],
+  "gotchas": [
+   "The value follows the workflow time zone. A workflow setting can change that zone."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "$today": {
+  "sourceUrl": "https://docs.n8n.io/build/work-with-data/handle-special-data-types/work-with-dates-and-times",
+  "sourceTitle": "Work with dates and times | Build | n8n Docs",
+  "summary": "Use `$today` and Luxon DateTime methods to calculate, compare, parse, and format dates in n8n expressions. Dates passed between nodes are strings, so parse them before date arithmetic.",
+  "explanation": "`$today` is an n8n-provided Luxon DateTime set to midnight at the start of the current day. Use its DateTime methods, such as `minus()` and `toFormat()`, to calculate and format dates in expressions.",
+  "syntax": "$today; DateTime.fromISO(value); DateTime.fromFormat(value, format)",
+  "parameters": [
+   {
+    "name": "duration",
+    "type": "Object",
+    "description": "The number of days, hours, or other units used by a Luxon DateTime operation."
+   },
+   {
+    "name": "value",
+    "type": "String",
+    "description": "An ISO date-time string to parse."
+   },
+   {
+    "name": "format",
+    "type": "String",
+    "description": "The format pattern for a non-ISO date string."
+   }
+  ],
+  "returns": "A Luxon DateTime object for `$today`; formatted expressions return a string.",
+  "example": {
+   "title": "Get a date seven days ago",
+   "code": "{{$today.minus({days: 7}).toFormat('yyyy-MM-dd')}}",
+   "language": "javascript",
+   "explanation": "Returns the date seven days before today in year-month-day format."
+  },
+  "useCases": [
+   {
+    "title": "Calculate future or past dates",
+    "scenario": "Create a date relative to today."
+   },
+   {
+    "title": "Format readable dates",
+    "scenario": "Display dates for users."
+   },
+   {
+    "title": "Parse date strings",
+    "scenario": "Work with dates received from another node."
+   },
+   {
+    "title": "Find the difference between dates",
+    "scenario": "Measure elapsed time."
+   }
+  ],
+  "related": [
+   "$now",
+   "DateTime.fromISO()",
+   "DateTime.fromFormat()",
+   "toFormat()",
+   "toLocaleString()",
+   "plus()",
+   "minus()",
+   "diff()"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is `$today` in an n8n expression?",
+    "answer": "`$today` is a Luxon DateTime for midnight at the start of the current day. It uses the instance time zone unless the workflow overrides it.",
+    "followUp": "How would you get the date seven days earlier? Use `$today.minus({days: 7})`."
+   },
+   {
+    "question": "How do you calculate a relative date?",
+    "answer": "Use `minus()` or `plus()` with a duration object, then format the result if needed. For example, `$today.minus({days: 7}).toFormat('yyyy-MM-dd')` returns a date string.",
+    "followUp": "How can you show a human-readable result? Call `toLocaleString()` with suitable date options."
+   },
+   {
+    "question": "How should a date string from another node be handled?",
+    "answer": "Dates become strings when n8n passes them between nodes, so they must be parsed before date arithmetic. Luxon provides explicit parsers such as `DateTime.fromISO()` and `DateTime.fromFormat()`.",
+    "followUp": "Why avoid `new Date()`? It does not support some n8n features, including workflow-specific time zones."
+   }
+  ],
+  "keyPoints": [
+   "n8n uses Luxon for date and time operations in expressions.",
+   "Use n8n's date helpers, including `$now` and `$today`, in expressions.",
+   "`$today` is rounded down to the beginning of the current day.",
+   "Parse ISO strings with `DateTime.fromISO()` or formatted strings with `DateTime.fromFormat()`.",
+   "Use `toFormat()` or `toLocaleString()` to create readable date output."
+  ],
+  "gotchas": [
+   "Dates from another node are strings. Parse them before doing date calculations.",
+   "Prefer Luxon DateTime methods instead of JavaScript `Date()` so workflow time zones work correctly.",
+   "`$today` represents the start of today, not the current time."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "$workflow": {
+  "sourceUrl": "https://docs.n8n.io/build/work-with-data/transform-data/expression-reference/workflowdata",
+  "sourceTitle": "Workflowdata | Build | n8n Docs",
+  "summary": "Use `$workflow` to read information about the current n8n workflow, such as its active state, ID, and name.",
+  "explanation": "`$workflow` is an object with information about the workflow that is running. Use its properties to read whether the workflow is active, its ID, or its displayed name.",
+  "syntax": "$workflow",
+  "parameters": [],
+  "returns": "WorkflowData; its documented properties return Boolean or String values.",
+  "example": {
+   "title": "Read the current workflow name",
+   "code": "{{$workflow.name}}",
+   "language": "text",
+   "explanation": "This expression returns the name of the current workflow."
+  },
+  "useCases": [
+   {
+    "title": "Display the workflow name",
+    "scenario": "Show the current workflow name in a message or field."
+   },
+   {
+    "title": "Read workflow status",
+    "scenario": "Check whether a workflow is active before using its status."
+   },
+   {
+    "title": "Use the workflow ID",
+    "scenario": "Store or compare the current workflow ID."
+   }
+  ],
+  "related": [
+   "$()",
+   "$execution",
+   "$input",
+   "$json",
+   "$now",
+   "$vars",
+   "$workflow.active",
+   "$workflow.id"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does `$workflow` represent?",
+    "answer": "`$workflow` provides information about the current workflow. Its documented properties are `active`, `id`, and `name`.",
+    "followUp": "How would you read the workflow name? Use the expression `{{$workflow.name}}`."
+   },
+   {
+    "question": "What does `$workflow.active` return?",
+    "answer": "`$workflow.active` returns a Boolean showing whether the workflow is active. It does not return the workflow name or ID.",
+    "followUp": "What type should code expect from `$workflow.active`? A Boolean value."
+   },
+   {
+    "question": "What is the type of `$workflow.id`?",
+    "answer": "`$workflow.id` returns the workflow ID as a string. The same ID can also be found in the workflow URL.",
+    "followUp": "How would you get the displayed workflow name instead? Use `$workflow.name`, which returns a string."
+   }
+  ],
+  "keyPoints": [
+   "`$workflow` gives access to information about the workflow currently being used.",
+   "`$workflow.active` tells you whether the workflow is active.",
+   "`$workflow.id` returns the workflow ID as a string.",
+   "`$workflow.name` returns the workflow name shown at the top of the editor."
+  ],
+  "gotchas": [
+   "The ID is returned as a string and is also present in the workflow URL."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "Aggregate": {
+  "sourceUrl": "https://docs.n8n.io/integrations/builtin/core-nodes/n8n-nodes-base.aggregate",
+  "sourceTitle": "Aggregate | Nodes | n8n Docs",
+  "summary": "The Aggregate node groups data from separate input items. It can collect selected fields or put all item data into one list.",
+  "explanation": "The Aggregate node combines data from separate input items. Choose Individual Fields to collect selected fields, or All Item Data to place complete item data into one list. Options control nested field names, list flattening, binary data, and missing values.",
+  "syntax": "",
+  "parameters": [
+   {
+    "name": "Aggregate",
+    "type": "selection",
+    "description": "Select Individual Fields or All Item Data."
+   },
+   {
+    "name": "Input Field Name",
+    "type": "field name",
+    "description": "For Individual Fields, name the input field to collect."
+   },
+   {
+    "name": "Rename Field",
+    "type": "toggle",
+    "description": "Choose whether to give the aggregated field another output name."
+   },
+   {
+    "name": "Include",
+    "type": "selection",
+    "description": "Choose fields to keep, or fields to exclude, depending on the selected mode."
+   },
+   {
+    "name": "Fields To Exclude",
+    "type": "comma-separated field names",
+    "description": "For All Fields Except, provide comma-separated fields to exclude."
+   }
+  ],
+  "returns": "New output items containing selected aggregated fields or all input item data, with optional binary data and list flattening.",
+  "example": {
+   "title": "Flatten a field across items",
+   "code": "[\n  {\"name\":\"Ada\",\"tags\":[\"admin\",\"active\"]},\n  {\"name\":\"Lin\",\"tags\":[\"active\"]}\n]\n\nAggregate node settings:\n- Aggregate: Individual Fields\n- Input Field Name: tags\n- Merge Lists: enabled\n\nOutput:\n{\"tags\":[\"admin\",\"active\",\"active\"]}",
+   "language": "text",
+   "explanation": "Configure the Aggregate node to collect the tags field from all input items. Enable Merge Lists when each value is a list and the result should be one flat list."
+  },
+  "useCases": [
+   {
+    "title": "Build a list from fields",
+    "scenario": "Collect values such as names, IDs, or tags from many input items."
+   },
+   {
+    "title": "Group full item data",
+    "scenario": "Combine complete records before passing them to a later node."
+   },
+   {
+    "title": "Flatten lists",
+    "scenario": "Create a flat list from array-valued fields."
+   }
+  ],
+  "related": [
+   "Limit",
+   "Remove Duplicates",
+   "Sort",
+   "Split Out",
+   "Summarize",
+   "Expressions",
+   "Code node",
+   "AI Transform node"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does the Aggregate node do?",
+    "answer": "It combines separate input items into grouped output items. Individual Fields collects chosen fields, while All Item Data collects complete item data into one list.",
+    "followUp": "How would you flatten arrays while aggregating? Enable Merge Lists under the Individual Fields options."
+   },
+   {
+    "question": "What are the two aggregation modes?",
+    "answer": "Individual Fields lets you select fields to collect separately. All Item Data groups the data from every input item into one list.",
+    "followUp": "How can you prevent unwanted fields from appearing? Use the Include option and select only the fields to keep, or use All Fields Except with a comma-separated exclusion list."
+   },
+   {
+    "question": "Which options change how fields are read and output?",
+    "answer": "Disable Dot Notation controls whether names such as parent.child can reference nested fields. Include Binaries controls whether binary input data is copied into the new output.",
+    "followUp": "What happens to missing values? Enable Keep Missing And Null Values to add a null entry; otherwise missing or empty values are skipped."
+   }
+  ],
+  "keyPoints": [
+   "Use this node to group data from separate input items into new output items.",
+   "Individual Fields collects selected fields independently.",
+   "All Item Data puts complete input item data into one list.",
+   "The Include setting keeps only the fields you specify.",
+   "All Fields Except keeps every field except those named in the exclusion list.",
+   "Disable Dot Notation prevents nested fields from being referenced with parent.child syntax."
+  ],
+  "gotchas": [
+   "When aggregating more than one field, give each output field a different name if renaming is enabled.",
+   "With Keep Missing And Null Values disabled, missing and null inputs are not added to the output list.",
+   "Enable Merge Lists for list-valued fields when you need one flat list instead of nested lists."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "AI Agent": {
+  "sourceUrl": "https://docs.n8n.io/integrations/builtin/cluster-nodes/root-nodes/n8n-nodes-langchain.agent",
+  "sourceTitle": "AI Agent | Nodes | n8n Docs",
+  "summary": "The AI Agent node adds an AI agent to an n8n workflow. It uses a chat model and connected tools to decide what actions to take for a task.",
+  "explanation": "The AI Agent node uses a language model to interpret a request and choose actions. Connect a chat model and tools as sub-nodes. The agent can call tools and APIs to retrieve information or perform tasks. Its choices depend on the request and the instructions you configure.",
+  "syntax": "",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Minimal AI Agent workflow node",
+   "code": "{\n  \"nodes\": [\n    {\n      \"parameters\": {},\n      \"type\": \"@n8n/n8n-nodes-langchain.agent\",\n      \"typeVersion\": 2,\n      \"position\": [420, 300],\n      \"name\": \"AI Agent\"\n    }\n  ],\n  \"connections\": {}\n}",
+   "language": "json",
+   "explanation": "This workflow JSON adds an AI Agent node. In the editor, connect a chat model and at least one tool sub-node before running it."
+  },
+  "useCases": [
+   {
+    "title": "Automate actions",
+    "scenario": "Give an agent access to APIs or app integrations so it can perform actions chosen from the user's request."
+   },
+   {
+    "title": "Retrieve information",
+    "scenario": "Connect information-retrieval tools so the agent can gather data before producing an answer."
+   },
+   {
+    "title": "Work with databases",
+    "scenario": "Use database tools with a current Agent node for tasks that require database queries."
+   }
+  ],
+  "related": [
+   "Conversational Agent",
+   "Common issues",
+   "LangChain Code",
+   "MCP servers",
+   "AI agents"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does the AI Agent node do?",
+    "answer": "An AI Agent node is a workflow node that uses a language model to decide which actions to take. It can call connected tools and APIs to complete a task.",
+    "followUp": "How does it differ from a chain? A chain follows a fixed sequence, while an agent chooses actions based on the request."
+   },
+   {
+    "question": "What must be connected to an AI Agent node?",
+    "answer": "The node must have a chat model and at least one tool sub-node connected. Tools give the agent access to focused actions or external systems.",
+    "followUp": "Why use several tools? The agent can select the tool that best fits each request."
+   },
+   {
+    "question": "What changed in recent AI Agent versions?",
+    "answer": "The agent type setting is deprecated from n8n 1.82.0. Current AI Agent nodes work as Tools Agents, and version 1 should be updated.",
+    "followUp": "What should replace an SQL Agent? Use a recent Agent node with a Postgres or MySQL tool sub-node."
+   }
+  ],
+  "keyPoints": [
+   "Use this node to add an AI agent inside an n8n workflow.",
+   "A chat model supplies reasoning, while tools let the agent take actions or fetch data.",
+   "Connected tools can interact with outside services and return information to the agent.",
+   "The agent selects among available tools according to the task.",
+   "The current node behavior is the Tools Agent pattern."
+  ],
+  "gotchas": [
+   "The node cannot work without at least one connected tool sub-node.",
+   "Do not build new workflows around the old agent type setting.",
+   "Update version 1 nodes before n8n 3.0, because that version is scheduled for removal."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "Code": {
+  "sourceUrl": "https://docs.n8n.io/build/code-in-n8n/using-the-code-node",
+  "sourceTitle": "Using the Code node | Build | n8n Docs",
+  "summary": "Use the Code node to run JavaScript or Python as a workflow step. Select whether it runs once for all input items or once per item.",
+  "explanation": "The Code node lets you run JavaScript or Python inside a workflow. Select whether the code runs once for all input items or separately for each item, then return the workflow data for the next node.",
+  "syntax": "$input.all()",
+  "parameters": [
+   {
+    "name": "code",
+    "type": "string",
+    "description": "JavaScript or Python source code to execute in the workflow."
+   },
+   {
+    "name": "mode",
+    "type": "selection",
+    "description": "Execution mode: once for all items or once for each item."
+   }
+  ],
+  "returns": "Workflow items for the next node.",
+  "example": {
+   "title": "Add a position to every input item",
+   "code": "const items = $input.all();\n\nreturn items.map((item, index) => ({\n  json: {\n    ...item.json,\n    position: index + 1,\n  },\n}));",
+   "language": "javascript",
+   "explanation": "This Code node reads all input items and adds a one-based position to each item."
+  },
+  "useCases": [
+   {
+    "title": "Transform workflow data",
+    "scenario": "Transform or enrich incoming workflow items with custom logic."
+   },
+   {
+    "title": "Debug code",
+    "scenario": "Inspect values while testing a workflow."
+   },
+   {
+    "title": "Add workflow logic",
+    "scenario": "Use custom logic when standard nodes are not enough."
+   }
+  ],
+  "related": [
+   "Code in n8n",
+   "Built-in methods and variables",
+   "Expressions",
+   "HTTP Request node",
+   "Read/Write File From Disk",
+   "Cookbook"
+  ],
+  "since": "0.198.0",
+  "interview": [
+   {
+    "question": "What are the two Code node execution modes?",
+    "answer": "Run Once for All Items executes one time for the whole input. Run Once for Each Item executes separately for every input item. Choose the mode based on whether the logic needs the complete collection or one item at a time.",
+    "followUp": "Which mode is better for sorting all records? Run Once for All Items, because sorting needs access to the complete input collection."
+   },
+   {
+    "question": "What JavaScript features does the Code node provide?",
+    "answer": "The node supports Node.js JavaScript, including promises and console.log for debugging. n8n also supplies built-in methods and variables, which can be suggested by typing $ in the editor.",
+    "followUp": "How would you inspect a value while testing? Use console.log in JavaScript, then review the browser console output."
+   },
+   {
+    "question": "How should a workflow perform an HTTP request from code-based logic?",
+    "answer": "The Code node cannot make HTTP requests or access the file system. Use the HTTP Request node for network calls and Read/Write File From Disk for file operations.",
+    "followUp": "Why separate these tasks into other nodes? Those nodes provide the documented workflow features for HTTP and file handling instead of relying on restricted Code node access."
+   }
+  ],
+  "keyPoints": [
+   "Choose Run Once for All Items when one execution should process the complete input set.",
+   "Choose Run Once for Each Item when the same code must run independently for each input item.",
+   "JavaScript in the node uses the Node.js runtime.",
+   "JavaScript can return a promise when the result is asynchronous.",
+   "Use console.log to inspect values while debugging a workflow.",
+   "Built-in methods and variables help code read workflow data and n8n context."
+  ],
+  "gotchas": [
+   "Cloud users cannot import external npm packages. Self-hosted users can enable supported external modules.",
+   "Do not use the Code node for file access or HTTP calls. Use the Read/Write File From Disk or HTTP Request node instead.",
+   "Python can be slower because it needs extra compilation steps."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "Edit Fields": {
+  "sourceUrl": "https://docs.n8n.io/integrations/builtin/core-nodes/n8n-nodes-base.set",
+  "sourceTitle": "Edit Fields (Set) | Nodes | n8n Docs",
+  "summary": "The Edit Fields node adds, changes, or removes workflow fields. It supports GUI mapping, JSON output, expressions, and options for controlling which input data remains.",
+  "explanation": "The Edit Fields node changes workflow data. In Manual Mapping mode, add or change fields in the interface. In JSON Output mode, provide JSON that n8n adds to the incoming data. You can keep all input fields or discard fields that are not set. Expressions can read incoming data and transform values.",
+  "syntax": "",
+  "parameters": [
+   {
+    "name": "Mode",
+    "type": "selection",
+    "description": "Select Manual Mapping or JSON Output."
+   },
+   {
+    "name": "Fields to Set",
+    "type": "fields",
+    "description": "Fields to create or update when using Manual Mapping."
+   },
+   {
+    "name": "Keep Only Set Fields",
+    "type": "boolean",
+    "description": "Discard input fields that are not configured in the node."
+   },
+   {
+    "name": "Include in Output",
+    "type": "selection",
+    "description": "Select which input data is included in the output."
+   },
+   {
+    "name": "Include Binary Data",
+    "type": "option",
+    "description": "Include input binary data in the output."
+   },
+   {
+    "name": "Ignore Type Conversion Errors",
+    "type": "option",
+    "description": "Ignore some mapping type errors in Manual Mapping mode."
+   },
+   {
+    "name": "Support Dot Notation",
+    "type": "option",
+    "description": "Control whether names with dots create nested objects."
+   }
+  ],
+  "returns": "Workflow items containing the configured fields, with input data included or removed according to the selected options.",
+  "example": {
+   "title": "Create fields from webhook data",
+   "code": "{\n  \"city\": \"={{ $json.body.city }}\",\n  \"source\": \"webhook\"\n}",
+   "language": "json",
+   "explanation": "Use this JSON in the Edit Fields node's JSON Output mode to create fields from incoming webhook data."
+  },
+  "useCases": [
+   {
+    "title": "Prepare records",
+    "scenario": "Prepare values before sending data to a Google Sheet or database."
+   },
+   {
+    "title": "Test workflow logic",
+    "scenario": "Create a small, controlled dataset while building a workflow."
+   },
+   {
+    "title": "Transform webhook input",
+    "scenario": "Shape webhook data before later nodes use it."
+   }
+  ],
+  "related": [
+   "Expressions for data transformation",
+   "Code",
+   "Customer Datastore",
+   "Data pinning",
+   "JSON Output",
+   "Manual Mapping"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does the Edit Fields node do?",
+    "answer": "It sets new fields and can overwrite fields already present in the input. It supports Manual Mapping for GUI-based editing and JSON Output for writing JSON.",
+    "followUp": "When should transformation be moved into this node? Use it when preparing data before later nodes, so business logic and data shaping stay separate."
+   },
+   {
+    "question": "How do you remove unused input fields?",
+    "answer": "Keep Only Set Fields removes input fields that are not configured in Fields to Set. If it is disabled, the node retains the other input data.",
+    "followUp": "How can you also control included input data? Use Include in Output to choose which input data appears in the node output."
+   },
+   {
+    "question": "How do expressions read incoming data?",
+    "answer": "Expressions can use n8n's $json variable to read incoming JSON, such as a webhook body. The node is intended for adding, changing, removing, or renaming fields with expression-based values.",
+    "followUp": "How can nested input be accessed without dot syntax? Use bracket notation such as {{$json['body']['city']}}."
+   }
+  ],
+  "keyPoints": [
+   "Use this node to add new workflow data or replace values that already exist.",
+   "Manual Mapping lets you build fields by dragging values from the INPUT pane.",
+   "Keep Only Set Fields limits the output to fields configured in the node.",
+   "Include in Output controls what input data is copied into the output.",
+   "Include Binary Data controls whether input binary data passes through the node.",
+   "The node can create small custom datasets for development and testing."
+  ],
+  "gotchas": [
+   "Pinned data is for development tests only. Do not depend on it in production runs.",
+   "A name such as number.one creates nested JSON by default. Turn off Support Dot Notation when you need a literal field name.",
+   "This setting applies only to Manual Mapping mode and lets the node ignore some mapping type errors."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "Error Trigger": {
+  "sourceUrl": "https://docs.n8n.io/integrations/builtin/core-nodes/n8n-nodes-base.errortrigger",
+  "sourceTitle": "Error Trigger | Nodes | n8n Docs",
+  "summary": "Error Trigger starts a separate n8n workflow when a linked automatic workflow fails. It passes failure details to that workflow for actions such as alerts or logging.",
+  "explanation": "Create a separate workflow that starts with Error Trigger. Assign it in the main workflow's settings as its error workflow. When an automatic execution fails, n8n starts the error workflow and passes details about the failure to the Error Trigger.",
+  "syntax": "",
+  "parameters": [],
+  "returns": "The node receives error data containing execution and workflow details; trigger-node failures use a different structure with more data under trigger.",
+  "example": {
+   "title": "Minimal error workflow",
+   "code": "{\n  \"nodes\": [\n    {\n      \"parameters\": {},\n      \"name\": \"Error Trigger\",\n      \"type\": \"n8n-nodes-base.errorTrigger\",\n      \"typeVersion\": 1,\n      \"position\": [240, 300]\n    }\n  ],\n  \"connections\": {}\n}",
+   "language": "json",
+   "explanation": "Create a separate workflow that starts with Error Trigger, then add alert or logging nodes after it."
+  },
+  "useCases": [
+   {
+    "title": "Failure alerts",
+    "scenario": "Send an email or Slack message when a workflow fails."
+   },
+   {
+    "title": "Error logging",
+    "scenario": "Record execution errors for later investigation."
+   },
+   {
+    "title": "Intentional failure handling",
+    "scenario": "Use Stop And Error to invoke handling when a business condition is not met."
+   }
+  ],
+  "related": [
+   "Stop And Error",
+   "Error workflows",
+   "Workflow Settings",
+   "Executions"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you configure an error workflow?",
+    "answer": "Create a workflow whose first node is Error Trigger. Save it, then choose it in the main workflow under Options, Settings, and Error workflow.",
+    "followUp": "Can one handler serve several workflows? Yes. The documentation says the same error workflow can be used for multiple workflows."
+   },
+   {
+    "question": "When does Error Trigger run?",
+    "answer": "It runs when an automatic workflow execution fails. It receives details about the failed workflow and its error, which can then be sent to an alerting or logging node.",
+    "followUp": "How can a workflow fail intentionally? Add Stop And Error and configure the condition that should produce the failure."
+   },
+   {
+    "question": "What data does Error Trigger receive?",
+    "answer": "The usual payload includes execution details such as the error, the last node, and execution mode, plus the failed workflow's ID and name. Some execution fields depend on execution data being saved.",
+    "followUp": "What changes for a trigger-node failure? The payload contains less execution data and more information under trigger."
+   }
+  ],
+  "keyPoints": [
+   "Use this node as the starting point for a workflow that handles failures.",
+   "It receives failure details from the linked workflow and starts the configured handler.",
+   "Place Error Trigger as the first node in the handler workflow.",
+   "One handler workflow can be assigned to more than one source workflow.",
+   "Use Stop And Error when a chosen condition should deliberately invoke the handler."
+  ],
+  "gotchas": [
+   "Manual runs do not start the error workflow. Test it with an automatic execution instead.",
+   "The execution ID is unavailable when executions are not saved.",
+   "The retry reference appears only for executions that retry an earlier failure.",
+   "Errors in the main workflow's trigger provide different data because the main workflow never starts normally."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "Execute Workflow": {
+  "sourceUrl": "https://docs.n8n.io/build/flow-logic/break-workflows-into-smaller-parts",
+  "sourceTitle": "Break workflows into smaller parts | Build | n8n Docs",
+  "summary": "Execute Workflow calls one n8n workflow from another. Use it with an Execute Sub-workflow Trigger to split large processes into smaller, reusable workflows.",
+  "explanation": "Execute Workflow lets one n8n workflow call another workflow. The called workflow uses an Execute Sub-workflow Trigger node to receive input and perform its work. This splits a large process into smaller, reusable parts and can help avoid memory issues.",
+  "syntax": "",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Workflow outline",
+   "code": "{\n  \"title\":\"Daily report\",\n  \"nodes\":[\n    {\"name\":\"Schedule Trigger\"},\n    {\"name\":\"Execute Workflow\"}\n  ]\n}",
+   "language": "json",
+   "explanation": "This illustrates a workflow that could start on a schedule and call another workflow. Configure the nodes in n8n before running it."
+  },
+  "useCases": [
+   {
+    "title": "Split a large workflow",
+    "scenario": "A workflow has several independent stages that should be maintained separately."
+   },
+   {
+    "title": "Reuse shared logic",
+    "scenario": "Several parent workflows need the same process."
+   },
+   {
+    "title": "Reduce workflow size",
+    "scenario": "A process is too large and may use too much memory."
+   }
+  ],
+  "related": [
+   "Execute Sub-workflow Trigger",
+   "When Executed by Another Workflow",
+   "Workflow settings",
+   "Sub-workflow conversion"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you call one workflow from another?",
+    "answer": "A parent workflow uses Execute Workflow to call another workflow. The called workflow needs an Execute Sub-workflow Trigger node, also named When Executed by Another Workflow.",
+    "followUp": "How can the child workflow define its inputs? It can define fields and types, provide a JSON example, or accept all data."
+   },
+   {
+    "question": "Why use sub-workflows?",
+    "answer": "Use sub-workflows to split a large workflow into smaller, modular parts. This can also help when a workflow is large enough to have memory issues.",
+    "followUp": "What execution-limit benefit does this provide? Sub-workflow executions do not count toward monthly execution or active-workflow limits."
+   },
+   {
+    "question": "How can a sub-workflow define input data?",
+    "answer": "The Execute Sub-workflow Trigger supports three input modes: fields defined below, a JSON example, or accepting all data. The first two describe the expected input; the last accepts input without required items.",
+    "followUp": "What is the risk of accepting all data? The sub-workflow must validate and handle missing or inconsistent values itself."
+   }
+  ],
+  "keyPoints": [
+   "A parent workflow can call a separate workflow.",
+   "Calling another workflow helps you create modular workflow components.",
+   "The caller uses Execute Workflow, and the called workflow uses Execute Sub-workflow Trigger.",
+   "Workflow settings can control which workflows are allowed to call the sub-workflow."
+  ],
+  "gotchas": [
+   "Sub-workflow runs do not count toward the plan's monthly execution or active-workflow limits.",
+   "With the Accept all data mode, the sub-workflow accepts input without defining required fields, so it must handle missing or inconsistent values itself."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "Gmail": {
+  "sourceUrl": "https://docs.n8n.io/integrations/builtin/app-nodes/n8n-nodes-base.gmail/message-operations",
+  "sourceTitle": "Message Operations | Nodes | n8n Docs",
+  "summary": "The n8n Gmail node automates Gmail messages and related resources. It can send, reply to, find, label, mark, and delete messages.",
+  "explanation": "The Gmail node connects to Gmail with configured Google credentials. Choose a resource, such as Message, then choose an operation. Message operations can send, reply to, read, label, or delete messages. You can also filter message lists by labels, search text, read state, sender, and received time.",
+  "syntax": "",
+  "parameters": [
+   {
+    "name": "Credential",
+    "type": "credential",
+    "description": "Google credential used to connect to Gmail."
+   },
+   {
+    "name": "Resource",
+    "type": "string",
+    "description": "Gmail resource, such as Message, Draft, Label, or Thread."
+   },
+   {
+    "name": "Operation",
+    "type": "string",
+    "description": "Action performed on the selected resource."
+   },
+   {
+    "name": "Message ID",
+    "type": "string",
+    "description": "Message identifier used by message operations."
+   },
+   {
+    "name": "To",
+    "type": "string",
+    "description": "Recipient address for a sent message."
+   },
+   {
+    "name": "Subject",
+    "type": "string",
+    "description": "Email subject."
+   },
+   {
+    "name": "Email Type",
+    "type": "string",
+    "description": "Body format: Text or HTML."
+   },
+   {
+    "name": "Message",
+    "type": "string",
+    "description": "Email body."
+   }
+  ],
+  "returns": "The selected Gmail operation's result, such as a message, a list of messages, or an operation response.",
+  "example": {
+   "title": "Send a Gmail message",
+   "code": "{\n  \"nodes\": [\n    {\n      \"parameters\": {\n        \"resource\": \"message\",\n        \"operation\": \"send\",\n        \"to\": \"user@example.com\",\n        \"subject\": \"Build complete\",\n        \"emailType\": \"text\",\n        \"message\": \"The build finished successfully.\"\n      },\n      \"name\": \"Send Gmail message\",\n      \"type\": \"n8n-nodes-base.gmail\",\n      \"typeVersion\": 2,\n      \"position\": [460,300]\n    }\n  ]\n}",
+   "language": "json",
+   "explanation": "This n8n workflow node sends a plain-text Gmail message."
+  },
+  "useCases": [
+   {
+    "title": "Send status emails",
+    "scenario": "A workflow creates an email after a job finishes and sends it to a team address."
+   },
+   {
+    "title": "Process filtered messages",
+    "scenario": "A workflow finds unread messages from a sender and processes them."
+   },
+   {
+    "title": "Organize messages",
+    "scenario": "A workflow adds a label after a message enters a business process."
+   },
+   {
+    "title": "Request approval",
+    "scenario": "A workflow sends an email and waits for a recipient's approval."
+   }
+  ],
+  "related": [
+   "Google credentials",
+   "Gmail Trigger node",
+   "Gmail API",
+   "HTTP Request node",
+   "Draft operations",
+   "Label operations",
+   "Thread operations",
+   "Human-in-the-loop for AI tool calls"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you send an email with the Gmail node?",
+    "answer": "Choose Message as the resource and Send as the operation. Set the recipient, subject, email type, and message body. Optional settings include CC, BCC, attachments, sender name, and a reply-to address.",
+    "followUp": "How would you send an attachment? Select Add Attachment and enter the input field name that contains the binary attachment."
+   },
+   {
+    "question": "What is the difference between Get and Get Many messages?",
+    "answer": "Get retrieves one message by its Message ID. Get Many returns a list and can filter by labels, Gmail search syntax, read status, sender, and received time.",
+    "followUp": "What does Simplify change? It returns a smaller metadata-style response instead of the raw API response."
+   },
+   {
+    "question": "How do you troubleshoot Gmail authentication errors?",
+    "answer": "OAuth2 credentials require the Gmail API to be enabled. Service account credentials require domain-wide delegation with the Gmail API included in that configuration.",
+    "followUp": "What can cause a bad request after authentication works? A nonexistent Message ID, Thread ID, or Label ID can cause it."
+   }
+  ],
+  "keyPoints": [
+   "The node automates Gmail tasks inside n8n workflows and connects Gmail with other services.",
+   "Message actions include adding or removing labels, deleting, reading, marking read or unread, replying, and sending.",
+   "Get Many can include messages from Spam and Trash when that filter is enabled.",
+   "Use Gmail search filters to narrow message lists, such as messages from a specific sender.",
+   "Received After and Received Before restrict results by date and time.",
+   "The Gmail node can act as an AI tool, and it can pause for human approval before selected tool calls."
+  ],
+  "gotchas": [
+   "Deleting a message is permanent. Use the Thread Trash operation when you need a recoverable deletion.",
+   "Sent messages and replies include an n8n attribution by default. Turn off Append n8n attribution in Options to remove it.",
+   "A service account may need user impersonation enabled before label dropdown values can load.",
+   "Invalid message, thread, or label IDs can cause a bad request. Use a Get operation to check the ID."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "Google Sheets": {
+  "sourceUrl": "https://docs.n8n.io/integrations/builtin/app-nodes/n8n-nodes-base.googlesheets",
+  "sourceTitle": "Google Sheets | Nodes | n8n Docs",
+  "summary": "The n8n Google Sheets node automates spreadsheet work. It can create or delete spreadsheets and manage rows, columns, and sheets inside a spreadsheet.",
+  "explanation": "The Google Sheets node connects to a spreadsheet and performs actions on a selected sheet. You choose the document and sheet, then select an operation such as appending, reading, updating, clearing, creating, or deleting data. Automatic mapping uses incoming field names that match the sheet's column headers.",
+  "syntax": "",
+  "parameters": [
+   {
+    "name": "Credential to connect with",
+    "type": "Google Sheets credentials",
+    "description": "Authentication used to access Google Sheets."
+   },
+   {
+    "name": "Document",
+    "type": "Spreadsheet selected by list, URL, or ID",
+    "description": "The spreadsheet containing the target sheet."
+   },
+   {
+    "name": "Sheet",
+    "type": "Sheet selected by list, URL, ID, or name",
+    "description": "The tab used by the operation."
+   },
+   {
+    "name": "Operation",
+    "type": "Document or Sheet Within Document operation",
+    "description": "The action performed on the selected document or sheet."
+   }
+  ],
+  "returns": "The page does not define a single return signature. The result depends on the selected Google Sheets operation.",
+  "example": {
+   "title": "Data for automatic mapping",
+   "code": "{\n  \"title\": \"Add customer\",\n  \"email\": \"ada@example.com\"\n}",
+   "language": "json",
+   "explanation": "Use this object as incoming data for an n8n Google Sheets node with automatic column mapping."
+  },
+  "useCases": [
+   {
+    "title": "Append rows",
+    "scenario": "Add workflow data to a spreadsheet."
+   },
+   {
+    "title": "Append or update records",
+    "scenario": "Keep a sheet synchronized with incoming records."
+   },
+   {
+    "title": "Read rows",
+    "scenario": "Load spreadsheet data into later workflow steps."
+   },
+   {
+    "title": "Clear or delete data",
+    "scenario": "Remove or reset spreadsheet content."
+   }
+  ],
+  "related": [
+   "Google Sheets credentials",
+   "Document operations",
+   "Sheet Within Document operations",
+   "Common issues",
+   "HTTP Request node",
+   "Edit Fields node"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What kinds of operations does the Google Sheets node support?",
+    "answer": "The node supports document actions and sheet actions. Document actions include creating and deleting spreadsheets. Sheet actions include appending, updating, reading, clearing, creating, deleting, and removing rows or columns.",
+    "followUp": "How would you handle an unsupported action? Use the HTTP Request node with the Google Sheets credential and call the service API."
+   },
+   {
+    "question": "How do Append Row and Append or Update Row differ?",
+    "answer": "Append Row always adds a new row at the end of the sheet's data. Append or Update Row checks for a matching entry and updates it when found; otherwise, it adds a row.",
+    "followUp": "What choice improves performance when the sheet has a clean layout? The append endpoint can reduce API calls, but it is less safe for sheets with gaps."
+   },
+   {
+    "question": "How does column mapping work?",
+    "answer": "Automatic mapping matches incoming data fields to Google Sheets columns. The incoming field names must therefore match the sheet's column names. Manual mapping lets you enter values for each column.",
+    "followUp": "What can you do if the incoming names differ? Use an Edit Fields node before Google Sheets to rename them."
+   }
+  ],
+  "keyPoints": [
+   "Use this node to automate spreadsheet work inside an n8n workflow.",
+   "Append or Update Row updates a matching row or adds a new row when no match exists.",
+   "Get Row(s) reads the rows from a selected sheet.",
+   "Clear removes sheet data, either from the whole sheet or from selected rows, columns, or a range.",
+   "The node can create a tab in an existing spreadsheet.",
+   "You can remove a selected number of rows or columns starting at a specified position."
+  ],
+  "gotchas": [
+   "With automatic mapping, incoming field names must match the sheet's column headers. Rename fields before this node when needed.",
+   "The append endpoint can place data incorrectly when the sheet has gaps or broken rows or columns. Use it when the sheet layout is consistent.",
+   "Deleting a sheet is permanent, so select the target sheet carefully."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "HTTP Request": {
+  "sourceUrl": "https://docs.n8n.io/integrations/builtin/core-nodes/n8n-nodes-base.httprequest",
+  "sourceTitle": "HTTP Request | Nodes | n8n Docs",
+  "summary": "The HTTP Request node sends REST API calls to apps and services. Configure the request in the node or import a curl command, and use pagination for multi-page results.",
+  "explanation": "The HTTP Request node sends REST API calls. Set its method, URL, authentication, query parameters, headers, and body, or import a curl command. It can also fetch multiple pages when pagination is configured.",
+  "syntax": "",
+  "parameters": [
+   {
+    "name": "Method",
+    "type": "selection",
+    "description": "HTTP operation to perform, such as GET, POST, DELETE, HEAD, or OPTIONS."
+   },
+   {
+    "name": "URL",
+    "type": "string",
+    "description": "The endpoint URL for the request."
+   },
+   {
+    "name": "Authentication",
+    "type": "credential or selection",
+    "description": "Authentication credentials or a generic authentication method."
+   },
+   {
+    "name": "Send Query Parameters",
+    "type": "fields or JSON",
+    "description": "Optional URL filters or other query values."
+   },
+   {
+    "name": "Send Headers",
+    "type": "fields or JSON",
+    "description": "Optional request metadata."
+   },
+   {
+    "name": "Send Body",
+    "type": "fields or JSON",
+    "description": "Optional request payload and its content type."
+   },
+   {
+    "name": "Pagination",
+    "type": "selection",
+    "description": "Controls whether and how the node fetches additional result pages."
+   },
+   {
+    "name": "Proxy",
+    "type": "string",
+    "description": "Optional HTTP proxy for this request."
+   },
+   {
+    "name": "Timeout",
+    "type": "number",
+    "description": "Maximum wait for the initial response, in milliseconds."
+   }
+  ],
+  "returns": "The HTTP response. During pagination, the response object includes the body, headers, and status code.",
+  "example": {
+   "title": "Import a curl request",
+   "code": "curl -X GET 'https://api.example.com/users?limit=10' \\\n  -H 'Accept: application/json'",
+   "language": "bash",
+   "explanation": "This command can be imported into the HTTP Request node to create a matching request configuration."
+  },
+  "useCases": [
+   {
+    "title": "Query an API",
+    "scenario": "Call an app or service that exposes a REST API."
+   },
+   {
+    "title": "Build a custom request",
+    "scenario": "Send filters, metadata, or payload data to an API endpoint."
+   },
+   {
+    "title": "Handle pagination",
+    "scenario": "Retrieve all results when an API splits data across pages."
+   },
+   {
+    "title": "Connect unsupported services",
+    "scenario": "Use an API operation that does not have a dedicated n8n integration."
+   }
+  ],
+  "related": [
+   "HTTP Request node cookbook",
+   "Pagination",
+   "HTTP node",
+   "HTTP Request credentials",
+   "Custom API operations",
+   "Predefined Credential Type",
+   "Generic credentials"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is the HTTP Request node used for?",
+    "answer": "The node makes REST API calls. Configure the HTTP method and URL, then add authentication, query parameters, headers, or a request body as the API requires.",
+    "followUp": "How can it request every page of a result? Enable pagination and either update a parameter for each request or follow a next-page URL from the response."
+   },
+   {
+    "question": "How does the node authenticate requests?",
+    "answer": "Authentication is configured in the Authentication section. A predefined credential is simplest when n8n supports the service; generic credentials support methods such as Basic, Header, OAuth1, and OAuth2 authentication.",
+    "followUp": "What should you check before choosing pagination settings? Check the API documentation for its next-page behavior, page-size or page-number limits, and response structure."
+   },
+   {
+    "question": "Which variables help with pagination?",
+    "answer": "For pagination, $pageCount tracks the number of fetched pages, $request contains the outgoing request, and $response contains the response, including its body, headers, and status code.",
+    "followUp": "What happens if a request takes too long to start returning data? Set Timeout in milliseconds; the node aborts the request when the initial response exceeds that limit."
+   }
+  ],
+  "keyPoints": [
+   "Build a request by filling in node settings or by importing a curl command.",
+   "Use query parameters when the API supports filtering or other URL parameters.",
+   "Headers carry request metadata, such as accepted response formats or authorization information.",
+   "Enable Send Body when the API expects data in the request body, then choose its content type.",
+   "Pagination can follow a next-page URL returned by the API.",
+   "Timeout controls how long the node waits for response headers and the beginning of the response body."
+  ],
+  "gotchas": [
+   "Importing curl treats parameter values as strings. Use JSON mode afterward when numbers or Boolean values must keep their original types.",
+   "A proxy set on the node overrides the matching proxy environment variables.",
+   "The pagination variables are available only in expressions inside the HTTP Request node."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "IF": {
+  "sourceUrl": "https://docs.n8n.io/integrations/builtin/core-nodes/n8n-nodes-base.if",
+  "sourceTitle": "If | Nodes | n8n Docs",
+  "summary": "The If node splits a workflow based on comparison conditions. Matching data goes to the true output; other data goes to the false output.",
+  "explanation": "The If node evaluates one or more conditions for each incoming item. It sends matching items through the true output and non-matching items through the false output. Conditions use a selected data type and comparison operation, and multiple conditions can require all or any to match.",
+  "syntax": "",
+  "parameters": [],
+  "returns": "The node routes incoming data through a true output when its conditions match and a false output otherwise.",
+  "example": {
+   "title": "Route items by status",
+   "code": "{\n  \"conditions\": [\n    {\n      \"leftValue\": \"={{ $json.status }}\",\n      \"operator\": { \"type\": \"string\", \"operation\": \"equals\" },\n      \"rightValue\": \"ready\"\n    }\n  ],\n  \"combineOperation\": \"all\"\n}",
+   "language": "json",
+   "explanation": "Configure an If node to send items with status `ready` to its true output. Other items go to the false output."
+  },
+  "useCases": [
+   {
+    "title": "Filter text",
+    "scenario": "Route records by a status, name, or other text value."
+   },
+   {
+    "title": "Check numbers",
+    "scenario": "Send items to different paths based on numeric thresholds."
+   },
+   {
+    "title": "Compare dates",
+    "scenario": "Test whether a date is before or after a chosen date."
+   },
+   {
+    "title": "Check presence or Boolean values",
+    "scenario": "Choose a path when a value exists, is empty, true, or false."
+   }
+  ],
+  "related": [
+   "Switch",
+   "Merge",
+   "Edit Fields",
+   "Splitting with conditionals"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does the If node do?",
+    "answer": "The If node splits a workflow according to comparison conditions. Each condition has a data type, an operation, and values; matching data uses the true output, while other data uses the false output.",
+    "followUp": "How can several conditions be combined? Choose all conditions for an AND-style result, or choose OR between conditions so any one can match."
+   },
+   {
+    "question": "How are If conditions configured?",
+    "answer": "Select a data type such as String, Number, Date & Time, Boolean, or Array, then choose a comparison supported for that type. The available fields change when the data type or operation changes.",
+    "followUp": "What comparison would check a date threshold? Use Date & Time with `is after`, `is before`, or one of the inclusive variants."
+   },
+   {
+    "question": "When should Switch be used instead of If?",
+    "answer": "The If node provides two conditional outputs. For more than two outputs, use the Switch node instead.",
+    "followUp": "Why might both branches run in an older workflow? In the legacy execution order, a connected Merge node could trigger the other branch even when the If node sent no data there."
+   }
+  ],
+  "keyPoints": [
+   "Choose the value type and comparison operation for each condition. The fields you fill in depend on those choices.",
+   "Add more conditions when one comparison is not enough.",
+   "Use the all option when every condition must match.",
+   "Use the any option when at least one condition can match; select OR between conditions.",
+   "String checks include existence, empty or non-empty values, equality, containment, prefixes, suffixes, and regular expressions.",
+   "Number checks include equality, ordering, existence, and empty-value tests.",
+   "Date and time checks include equality and before or after comparisons, including inclusive forms.",
+   "Array checks include containment, emptiness, existence, and comparisons based on array length."
+  ],
+  "gotchas": [
+   "Use Switch instead of If when the workflow needs more than two conditional outputs.",
+   "In legacy workflow execution order, adding a Merge node can cause both If branches to execute; this behavior applies to workflows built before n8n 1.0."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "Loop Over Items": {
+  "sourceUrl": "https://docs.n8n.io/integrations/builtin/core-nodes/n8n-nodes-base.splitinbatches",
+  "sourceTitle": "Loop Over Items (Split in Batches) | Nodes | n8n Docs",
+  "summary": "Loop Over Items processes incoming data in batches. It sends each batch through the loop output and sends combined processed data through the done output when processing ends.",
+  "explanation": "The Loop Over Items node stores its incoming items and sends a configured number through its loop output on each iteration. After the loop finishes, it combines the processed items and sends them through the done output.",
+  "syntax": "",
+  "parameters": [
+   {
+    "name": "Batch Size",
+    "type": "number",
+    "description": "Number of items sent through the loop output in each iteration."
+   },
+   {
+    "name": "Reset",
+    "type": "boolean",
+    "description": "Starts processing again with the current input as a new data set."
+   }
+  ],
+  "returns": "The loop output returns each configured batch. The done output returns the combined processed data after the loop completes.",
+  "example": {
+   "title": "Batch items in a loop",
+   "code": "[\n  {\"url\":\"https://medium.com/feed/n8n-io\"},\n  {\"url\":\"https://dev.to/feed/n8n\"}\n]\n\n# Workflow wiring:\n# Input -> Loop Over Items -> Work node\n# Work node -> Loop Over Items\n# Loop Over Items (done output) -> Next step",
+   "language": "text",
+   "explanation": "Send each batch to the work node, then connect that node back to Loop Over Items. Use the done output after all batches finish."
+  },
+  "useCases": [
+   {
+    "title": "Process data in batches",
+    "scenario": "An API or node needs manual batch processing instead of receiving the full input list."
+   },
+   {
+    "title": "Reduce rate-limit problems",
+    "scenario": "An external service limits request frequency or request size."
+   },
+   {
+    "title": "Handle unknown pagination",
+    "scenario": "The workflow must request pages until an exit condition is met."
+   }
+  ],
+  "related": [
+   "Wait",
+   "If",
+   "RSS Feed Read",
+   "HTTP Request",
+   "Retry On Fail"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does Loop Over Items do?",
+    "answer": "Set Batch Size to the number of items that each loop iteration should send through the loop output. After the loop has no more items, the node sends the processed data through its done output.",
+    "followUp": "How would you pace API calls? Add a Wait node after the API call and connect it back to Loop Over Items so each iteration pauses."
+   },
+   {
+    "question": "When should Reset be used?",
+    "answer": "Enable Reset when each incoming result should start a new data set instead of continuing the previous loop. This is useful for pagination when the next page determines whether another iteration is needed.",
+    "followUp": "What must pagination workflows include? A termination condition that eventually becomes true; otherwise the workflow can run forever."
+   },
+   {
+    "question": "How can a workflow check whether the loop is finished?",
+    "answer": "Use the node's context expression `{{$('Loop Over Items').context['noItemsLeft']}}`. It returns `false` when items remain and `true` when processing is complete.",
+    "followUp": "How can you inspect the iteration number? Use `{{$('Loop Over Items').context['currentRunIndex']}}`."
+   }
+  ],
+  "keyPoints": [
+   "Batch Size controls how many input items the node sends during one loop iteration.",
+   "The node keeps the original input while it processes the data in batches.",
+   "Connect the loop output to the work that should run for every batch.",
+   "Use the done output for steps that should run only after all batches are processed.",
+   "Reset makes each new pagination result a fresh input set rather than a continuation."
+  ],
+  "gotchas": [
+   "When using Reset for pagination, include a condition that eventually stops the loop.",
+   "Most n8n nodes already process lists of input items, so add this node only when manual looping is needed."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "Manual Trigger": {
+  "sourceUrl": "https://docs.n8n.io/integrations/builtin/core-nodes/n8n-nodes-base.manualworkflowtrigger.md",
+  "sourceTitle": "Manual Trigger | Nodes | n8n Docs",
+  "summary": "The Manual Trigger node starts an n8n workflow when you select Execute Workflow. Use it for manual runs, especially while testing or when no automatic trigger is needed.",
+  "explanation": "The Manual Trigger node is a starting point for workflows that should not start from an event or schedule. It lets you run the workflow by choosing Execute Workflow, which is useful while building and testing. A workflow can contain only one Manual Trigger node.",
+  "syntax": "",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "A workflow with a Manual Trigger",
+   "code": "{\n  \"nodes\": [\n    {\n      \"name\": \"Manual Trigger\",\n      \"type\": \"n8n-nodes-base.manualTrigger\",\n      \"typeVersion\": 1,\n      \"position\": [300, 300],\n      \"parameters\": {}\n    }\n  ],\n  \"connections\": {}\n}",
+   "language": "json",
+   "explanation": "Add the Manual Trigger node as the workflow's starting node. In the editor, select Execute Workflow to run the workflow manually."
+  },
+  "useCases": [
+   {
+    "title": "Test a workflow",
+    "scenario": "You are building a workflow and want to test its steps before adding an event or schedule trigger."
+   },
+   {
+    "title": "Run on demand",
+    "scenario": "The workflow should run only when a person starts it from the editor."
+   },
+   {
+    "title": "Provide a manual start point",
+    "scenario": "The workflow has no event-based or scheduled start condition."
+   }
+  ],
+  "related": [
+   "Schedule Trigger",
+   "Execute Workflow",
+   "trigger node",
+   "automatic trigger"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does the Manual Trigger node do?",
+    "answer": "The Manual Trigger node starts a workflow when the user selects Execute Workflow. It is used when the workflow has no automatic trigger, or while testing before adding one.",
+    "followUp": "How would you make the workflow run on a schedule? Add an automatic trigger, such as the Schedule Trigger, instead of relying on manual execution."
+   },
+   {
+    "question": "When should you use a Manual Trigger?",
+    "answer": "It acts as the workflow's trigger, or start point. Unlike an event or schedule trigger, it does not provide an automatic way to start the workflow.",
+    "followUp": "What should a workflow have before its action nodes? It should have a trigger node that defines how execution begins."
+   },
+   {
+    "question": "What limitation applies to Manual Trigger nodes?",
+    "answer": "Use one Manual Trigger node in a workflow. Adding another produces an error, so remove the existing trigger or change the workflow connection.",
+    "followUp": "Can the same workflow have several automatic triggers? The provided documentation only states the one-node limit for Manual Trigger; choose trigger design based on the workflow's documented behavior."
+   }
+  ],
+  "keyPoints": [
+   "Run the workflow from the editor by selecting Execute Workflow.",
+   "A trigger provides the workflow's starting point.",
+   "Automatic workflows can begin when an external event fires.",
+   "Use this node when the workflow has no automatic trigger.",
+   "Use it to test the workflow before adding an automatic trigger."
+  ],
+  "gotchas": [
+   "A workflow cannot contain two Manual Trigger nodes. Remove the existing node or connect it to a different node."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "Merge": {
+  "sourceUrl": "https://docs.n8n.io/integrations/builtin/core-nodes/n8n-nodes-base.merge",
+  "sourceTitle": "Merge | Nodes | n8n Docs",
+  "summary": "The Merge node combines data from multiple workflow streams after their inputs are available. It supports appending, joining by fields or position, all combinations, SQL queries, and choosing one branch.",
+  "explanation": "The Merge node waits for its connected inputs, then joins their data according to the selected mode. It can append streams, combine items by fields or position, run a SQL query, or pass through one selected input.",
+  "syntax": "Merge node: Mode → Append | Combine | SQL Query | Choose Branch",
+  "parameters": [
+   {
+    "name": "Mode",
+    "type": "selection",
+    "description": "Controls how the node combines its inputs, such as Append, Combine, SQL Query, or Choose Branch."
+   },
+   {
+    "name": "Combine By",
+    "type": "selection",
+    "description": "For Combine mode, selects Matching Fields, Position, or All Possible Combinations."
+   },
+   {
+    "name": "Fields to Match",
+    "type": "field names",
+    "description": "Fields used to compare items in Matching Fields mode."
+   },
+   {
+    "name": "Output Type",
+    "type": "selection",
+    "description": "Controls which matching or non-matching items are returned."
+   },
+   {
+    "name": "SQL Query",
+    "type": "SQL query",
+    "description": "SQL statement used to merge the input tables."
+   },
+   {
+    "name": "Query Parameters",
+    "type": "values or expression array",
+    "description": "Values inserted into SQL question-mark placeholders."
+   }
+  ],
+  "returns": "Items produced according to the selected mode and options. SQL mode can return no items or a success object when a query returns no rows, depending on the Empty Query Result setting.",
+  "example": {
+   "title": "Combine items by position",
+   "code": "// Code node: Input 1\nreturn [\n  { json: { name: \"Ana\", team: \"A\" } },\n  { json: { name: \"Ben\", team: \"B\" } }\n];\n\n// Merge node settings:\n// Mode: Combine\n// Combine by: Position",
+   "language": "javascript",
+   "explanation": "Connect two inputs to the Merge node. In Combine by Position mode, item 0 from the first input joins item 0 from the second input, and so on."
+  },
+  "useCases": [
+   {
+    "title": "Join records by matching fields",
+    "scenario": "Two branches produce related records with a shared identifier."
+   },
+   {
+    "title": "Pair items by position",
+    "scenario": "Two branches produce values in the same order."
+   },
+   {
+    "title": "Append streams",
+    "scenario": "Several branches must become one list."
+   },
+   {
+    "title": "Query inputs with SQL",
+    "scenario": "Input data needs a custom relational operation."
+   }
+  ],
+  "related": [
+   "Compare Datasets",
+   "Code",
+   "IF",
+   "Switch",
+   "Loop Over Items"
+  ],
+  "since": "0.194.0",
+  "interview": [
+   {
+    "question": "What does the Merge node do?",
+    "answer": "It combines data from multiple streams after the connected inputs are available. Append places input items one after another, while Combine joins items by matching fields, position, or every possible combination.",
+    "followUp": "How can you keep items that do not match? Use Combine by Matching Fields and select Keep Non-Matches or Keep Everything, depending on the required output."
+   },
+   {
+    "question": "How does matching-field mode work?",
+    "answer": "Combine by Matching Fields compares specified field values. Its output type can keep matches, non-matches, everything, or enrich either input, similar to inner, outer, left, and right joins.",
+    "followUp": "How can repeated matches be handled? Enable Include All Matches to output each match, or Include First Match Only to retain only the first one."
+   },
+   {
+    "question": "When would you use SQL Query mode?",
+    "answer": "SQL Query lets the workflow use earlier inputs as tables named input1, input2, input3, and so on. Query parameters can supply dynamic values through placeholders without changing the query structure.",
+    "followUp": "What happens when a valid query returns no rows? In newer nodes, Empty Query Result can output no items or a single success object."
+   }
+  ],
+  "keyPoints": [
+   "Use it when separate workflow branches must become one stream after their data is ready.",
+   "Recent versions support more than two inputs; older versions support only two.",
+   "Combine mode supports matching fields, item position, and all possible item combinations.",
+   "Matching-field mode joins items when selected field values agree.",
+   "Position mode pairs item 0 with item 0, item 1 with item 1, and continues by index.",
+   "All Possible Combinations creates every pairing between the input items.",
+   "SQL mode exposes prior inputs as queryable tables."
+  ],
+  "gotchas": [
+   "When the inputs have different lengths, Input 1 controls how many item positions are processed. Extra items from Input 2 are ignored.",
+   "Append mode waits for every connected input before producing output.",
+   "When fields have the same name, the value from Input 2 wins unless clash handling changes that behavior.",
+   "Older Merge nodes may not show the empty-query setting and can return a success object when a query finds no rows."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "n8n export:workflow": {
+  "sourceUrl": "https://docs.n8n.io/deploy/host-n8n/configure-n8n/use-the-command-line",
+  "sourceTitle": "Use the command line | Deploy | n8n Docs",
+  "summary": "`n8n export:workflow` exports one or more n8n workflows as JSON. It can export all workflows, a selected version, a published version, or a backup.",
+  "explanation": "The command exports workflow definitions from the n8n database. You can export one workflow by ID or all workflows, and choose an output file or directory. The command also supports exporting a selected version, the published version, or a backup.",
+  "syntax": "n8n export:workflow [--id=<ID> | --all] [--output=<PATH>] [--version=<VERSION_ID>] [--published] [--backup]",
+  "parameters": [
+   {
+    "name": "--id",
+    "type": "string",
+    "description": "Workflow ID to export."
+   },
+   {
+    "name": "--all",
+    "type": "flag",
+    "description": "Export all workflows."
+   },
+   {
+    "name": "--output",
+    "type": "string",
+    "description": "Output file or directory."
+   },
+   {
+    "name": "--version",
+    "type": "string",
+    "description": "Workflow version ID."
+   },
+   {
+    "name": "--published",
+    "type": "flag",
+    "description": "Export the published workflow version."
+   },
+   {
+    "name": "--backup",
+    "type": "flag",
+    "description": "Create a backup export."
+   }
+  ],
+  "returns": "A JSON workflow file or workflow backup in the specified output location.",
+  "example": {
+   "title": "Export one workflow",
+   "code": "n8n export:workflow --id=123 --output=workflow.json",
+   "language": "bash",
+   "explanation": "This writes workflow 123 to workflow.json."
+  },
+  "useCases": [
+   {
+    "title": "Export a single workflow",
+    "scenario": "Save one workflow for transfer or review."
+   },
+   {
+    "title": "Back up workflows",
+    "scenario": "Create a regular file-based backup."
+   },
+   {
+    "title": "Export published workflows",
+    "scenario": "Export the deployed version of a workflow."
+   },
+   {
+    "title": "Export a workflow version",
+    "scenario": "Keep a specific historical workflow version."
+   }
+  ],
+  "related": [
+   "n8n import:workflow",
+   "n8n export:credentials",
+   "n8n export:entities",
+   "n8n CLI",
+   "Server CLI"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you export workflows with the Server CLI?",
+    "answer": "Use `n8n export:workflow --id=<ID> --output=file.json` to export one workflow. Use `n8n export:workflow --all` to export every workflow.",
+    "followUp": "How do you export a published workflow? Use `--published`, for example `n8n export:workflow --id=<ID> --published --output=published.json`."
+   },
+   {
+    "question": "How can you create and restore a workflow backup?",
+    "answer": "The command can write a backup to a directory with `--backup`. For example, `n8n export:workflow --backup --output=backups/latest/` creates a workflow backup in that location.",
+    "followUp": "How can you import files from a backup directory? Use `n8n import:workflow --separate --input=backups/latest/`."
+   },
+   {
+    "question": "How do you export a specific workflow version?",
+    "answer": "Use `--version=<VERSION_ID>` to export a specific workflow version. Use `--published` when you need the published version instead.",
+    "followUp": "How can import preserve the active state stored in JSON? Add `--activeState=fromJson` to the separate workflow import command."
+   }
+  ],
+  "keyPoints": [
+   "Workflows are stored as JSON, so the export is a JSON file or a set of JSON files.",
+   "Use `--all` to export every workflow instead of selecting one workflow ID.",
+   "Use `--id` to choose one workflow and `--output` to choose the destination file.",
+   "The command can export a particular workflow version by passing its version ID.",
+   "The `--published` option exports the published form of workflows.",
+   "The `--backup` option writes a workflow backup to the chosen output directory."
+  ],
+  "gotchas": [
+   "Exported workflow files can contain credential names and IDs. IDs are not sensitive, but credential names may reveal sensitive information. Remove or anonymize them before sharing.",
+   "A workflow imported from cURL may include authentication headers in an HTTP Request node. Check and remove these headers before sharing the file."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "n8n import:workflow": {
+  "sourceUrl": "https://docs.n8n.io/deploy/host-n8n/configure-n8n/use-the-command-line",
+  "sourceTitle": "Use the command line | Deploy | n8n Docs",
+  "summary": "Use the n8n Server CLI to import workflow JSON files. You can import one file or import several files separately from a directory.",
+  "explanation": "The Server CLI imports a workflow JSON file into the n8n instance. Use the input option to identify the file. The separate option can import workflows from a directory, and activeState can control how activation state is handled during that import.",
+  "syntax": "n8n import:workflow --input=<file-or-directory> [--separate] [--activeState=fromJson]",
+  "parameters": [
+   {
+    "name": "--input",
+    "type": "path",
+    "description": "The workflow JSON file or directory to read."
+   },
+   {
+    "name": "--separate",
+    "type": "boolean flag",
+    "description": "Import files as separate workflows."
+   },
+   {
+    "name": "--activeState",
+    "type": "option",
+    "description": "Choose how activation state is set during separate import."
+   }
+  ],
+  "returns": "The imported workflow or workflows are written to the n8n instance.",
+  "example": {
+   "title": "Import a workflow with the Server CLI",
+   "code": "n8n import:workflow --input=file.json",
+   "language": "bash",
+   "explanation": "Imports a workflow from the specified JSON file."
+  },
+  "useCases": [
+   {
+    "title": "Restore one workflow",
+    "scenario": "Restore a workflow from a JSON backup file."
+   },
+   {
+    "title": "Restore many workflows",
+    "scenario": "Load a set of separately saved workflow files."
+   },
+   {
+    "title": "Preserve activation state",
+    "scenario": "Keep activation settings from exported files during a bulk import."
+   }
+  ],
+  "related": [
+   "Export and import",
+   "Use the command line",
+   "Export a package",
+   "Import a package"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you import one workflow from a JSON file?",
+    "answer": "Use the Server CLI command `n8n import:workflow --input=file.json`. The input option identifies the JSON file that contains the workflow.",
+    "followUp": "How can several workflow files be imported? Use `n8n import:workflow --separate --input=backups/latest/` to import separate files from a directory."
+   },
+   {
+    "question": "How do you import multiple workflow files separately?",
+    "answer": "Add `--separate` and point `--input` to the directory containing the workflow files. This imports the files as separate workflows.",
+    "followUp": "How can activation state be handled during a separate import? Add `--activeState=fromJson` so the imported state comes from the JSON data."
+   },
+   {
+    "question": "What is the Server CLI, and when can it run?",
+    "answer": "The Server CLI runs on the same machine as n8n and can execute most commands even when n8n is not running. It uses direct database access rather than an API key.",
+    "followUp": "When should the remote n8n CLI be used instead? Use it from another machine or when programmatic access through the running n8n service is needed."
+   }
+  ],
+  "keyPoints": [
+   "Workflow files use JSON format.",
+   "The workflow editor supports exporting workflows to JSON and importing JSON into the workflow library.",
+   "The Server CLI can export one published workflow to a named JSON output file.",
+   "Use `import:workflow` with `--input` to load a workflow JSON file.",
+   "Use the `--separate` option to import workflow files from a directory as separate workflows.",
+   "During separate import, `--activeState=fromJson` preserves the activation state stored in the JSON files."
+  ],
+  "gotchas": [
+   "Do not confuse JSON workflow import with package import. Package import is a Preview feature, so its options may change.",
+   "Review exported JSON before sharing it. Credential names and IDs can appear in the file.",
+   "Remove or anonymize authentication headers from imported cURL-based HTTP Request nodes before sharing the workflow."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "n8n start": {
+  "sourceUrl": "https://docs.n8n.io/deploy/host-n8n/install-options/install-with-npm",
+  "sourceTitle": "Install with npm | Deploy | n8n Docs",
+  "summary": "Install or run n8n locally with npm, npx, or a global package. Node.js 20.19 through 24.x is required.",
+  "explanation": "The `n8n` command starts the server from a global npm installation. You can also use `npx` to run n8n without installing it globally. n8n uses the local machine and serves its editor at port 5678 by default.",
+  "syntax": "npm install n8n -g\nnpx n8n\nn8n\nn8n start",
+  "parameters": [],
+  "returns": "Starts the n8n server and provides access to its local editor.",
+  "example": {
+   "title": "Run n8n without a global install",
+   "code": "npx n8n",
+   "language": "bash",
+   "explanation": "This downloads what n8n needs, starts it, and lets you open the local editor at http://localhost:5678."
+  },
+  "useCases": [
+   {
+    "title": "Try n8n with npx",
+    "scenario": "Quick local trial"
+   },
+   {
+    "title": "Install n8n globally",
+    "scenario": "Reusable terminal command"
+   },
+   {
+    "title": "Install a specific version",
+    "scenario": "Testing a chosen release"
+   }
+  ],
+  "related": [
+   "Try n8n with npx",
+   "Install globally with npm",
+   "Updating n8n with tunnel",
+   "Reverting an upgrade"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you install and start n8n with npm?",
+    "answer": "Install n8n globally with `npm install n8n -g`. Then run `n8n` or `n8n start` to start the server.",
+    "followUp": "How can you test n8n without a global installation? Run `npx n8n`; it downloads the required packages and starts n8n."
+   },
+   {
+    "question": "How do you try n8n without installing it?",
+    "answer": "Use `npx n8n`. This runs n8n without a separate global install and makes the local editor available on port 5678.",
+    "followUp": "What prerequisite still applies? Node.js must be installed, and its version must be from 20.19 through 24.x."
+   },
+   {
+    "question": "How do you update or select an n8n version?",
+    "answer": "Run `npm update -g n8n` to update a global installation. To choose a release explicitly, install a version with the `@` syntax, such as `npm install -g n8n@next`.",
+    "followUp": "What limitation applies to npm installs? The n8n Assistant is unavailable, and npm-based installs are deprecated from n8n 3.0."
+   }
+  ],
+  "keyPoints": [
+   "npm is a quick way to run n8n locally.",
+   "Node.js must already be installed before using npm or npx.",
+   "After startup, open the local editor at http://localhost:5678.",
+   "A global installation makes the `n8n` command available from the terminal.",
+   "Use `@version` after the package name when selecting a specific release."
+  ],
+  "gotchas": [
+   "Install a compatible Node.js version first. Supported versions are 20.19 through 24.x.",
+   "npm-based installation is deprecated starting with n8n 3.0.",
+   "The n8n Assistant cannot be used with an npm installation."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "OpenAI Chat Model": {
+  "sourceUrl": "https://docs.n8n.io/integrations/builtin/cluster-nodes/sub-nodes/n8n-nodes-langchain.lmchatopenai",
+  "sourceTitle": "OpenAI Chat Model | Nodes | n8n Docs",
+  "summary": "The OpenAI Chat Model node connects n8n AI workflows to OpenAI chat models. It uses Chat Completions by default and can use the Responses API with optional built-in tools.",
+  "explanation": "The OpenAI Chat Model node supplies a conversational model to n8n AI workflows. It uses the Chat Completions API by default, or the Responses API when enabled. The Responses API can support persistent conversations and built-in tools when used with the AI Agent node.",
+  "syntax": "",
+  "parameters": [
+   {
+    "name": "Model and credentials",
+    "type": "Node configuration",
+    "description": "Selects the model and its connection settings in the node editor."
+   },
+   {
+    "name": "Use Responses API",
+    "type": "Boolean",
+    "description": "Switches output generation to the OpenAI Responses API."
+   },
+   {
+    "name": "Maximum Number of Tokens",
+    "type": "Number",
+    "description": "Limits the completion length in tokens."
+   },
+   {
+    "name": "Sampling Temperature",
+    "type": "Number",
+    "description": "Controls output randomness."
+   },
+   {
+    "name": "Frequency Penalty",
+    "type": "Number",
+    "description": "Controls repeated content."
+   },
+   {
+    "name": "Presence Penalty",
+    "type": "Number",
+    "description": "Controls the chance of introducing new topics."
+   },
+   {
+    "name": "Timeout",
+    "type": "Number",
+    "description": "Sets the maximum request duration in milliseconds."
+   },
+   {
+    "name": "Max Retries",
+    "type": "Number",
+    "description": "Sets the maximum retry count."
+   }
+  ],
+  "returns": "A configured chat-model output for use by connected n8n AI nodes.",
+  "example": {
+   "title": "Configure the OpenAI Chat Model node",
+   "code": "// This is an n8n node, not standalone application code.\n// Add an OpenAI Chat Model sub-node to an AI Agent.\n// Set the model, credentials, and optional node parameters.",
+   "language": "text",
+   "explanation": "Use the node inside an n8n AI workflow and configure it in the node editor."
+  },
+  "useCases": [
+   {
+    "title": "AI agent conversations",
+    "scenario": "Use an OpenAI model as the language model for an n8n AI Agent."
+   },
+   {
+    "title": "Tool-assisted answers",
+    "scenario": "Enable Responses API built-in tools for current web facts, uploaded-file lookup, or Python execution."
+   },
+   {
+    "title": "Conversation context",
+    "scenario": "Use a memory sub-node to preserve context when using the Chat Completions API."
+   }
+  ],
+  "related": [
+   "Responses API",
+   "Chat Completions API",
+   "Web Search",
+   "File Search",
+   "Code Interpreter",
+   "AI Agent node",
+   "Simple Memory sub-node",
+   "Basic LLM Chain node"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is the OpenAI Chat Model node used for?",
+    "answer": "The node provides a chat model for n8n AI workflows. It uses Chat Completions by default and can use Responses when that option is enabled.",
+    "followUp": "What does the Responses API add? It can let the model use built-in tools and keep a conversation through a conversation ID."
+   },
+   {
+    "question": "How do you select the Responses API?",
+    "answer": "Enable Use Responses API to select the Responses API instead of the default Chat Completions API. This is the API OpenAI recommends for new projects.",
+    "followUp": "Which built-in tools are listed? Web Search, File Search, and Code Interpreter."
+   },
+   {
+    "question": "What do the main node options control?",
+    "answer": "Frequency Penalty affects repeated content, Presence Penalty affects discussion of new topics, and Sampling Temperature controls randomness. Maximum Number of Tokens limits completion length.",
+    "followUp": "What happens when temperature is increased? Output becomes more varied, but the risk of hallucinations also increases."
+   }
+  ],
+  "keyPoints": [
+   "The node uses Chat Completions unless you turn on the Responses API option.",
+   "Choose the Responses API for new projects when its features match your workflow.",
+   "The Responses API can continue a conversation by passing a conversation ID.",
+   "Web Search lets the model look up current information before it answers.",
+   "File Search retrieves relevant information from previously uploaded files.",
+   "Code Interpreter lets the model run Python code in a sandbox."
+  ],
+  "gotchas": [
+   "Responses API built-in tools work with the AI Agent node, not with a Basic LLM Chain node.",
+   "Higher sampling temperature can produce less predictable answers and more hallucinations.",
+   "Without the Responses API, conversation state must be managed separately, such as with a memory sub-node."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "Postgres": {
+  "sourceUrl": "https://docs.n8n.io/integrations/builtin/app-nodes/n8n-nodes-base.postgres",
+  "sourceTitle": "Postgres | Nodes | n8n Docs",
+  "summary": "The n8n Postgres node connects workflows to PostgreSQL. It can run SQL and select, insert, update, upsert, or delete table data.",
+  "explanation": "The Postgres node connects to a PostgreSQL database and performs database actions in a workflow. It can run SQL directly or use operations for selecting, inserting, updating, deleting, and upserting table rows. Query batching can process all input together, each input separately, or all queries in one transaction.",
+  "syntax": "",
+  "parameters": [
+   {
+    "name": "Credential to connect with",
+    "type": "Postgres credential",
+    "description": "The PostgreSQL credential used to authenticate the connection."
+   },
+   {
+    "name": "Operation",
+    "type": "Operation",
+    "description": "The database action, such as Select or Execute Query."
+   },
+   {
+    "name": "Query",
+    "type": "SQL string",
+    "description": "The SQL statement used by Execute Query."
+   },
+   {
+    "name": "Query Parameters",
+    "type": "Comma-separated values",
+    "description": "Values supplied to SQL placeholders such as $1, $2, and $3."
+   }
+  ],
+  "returns": "The node returns database rows or operation results as n8n items. Selected output columns can be controlled for supported table operations.",
+  "example": {
+   "title": "Parameterized IN query",
+   "code": "SELECT color, shirt_size\nFROM shirts\nWHERE shirt_size IN ({{ $json.input_shirt_sizes.map((i, pos) => \"$\" + (pos + 1)).join(\", \") }});",
+   "language": "text",
+   "explanation": "Use this query in the Postgres node's Execute Query operation. Put the array of sizes in Query Parameters. n8n creates one prepared placeholder for each array value."
+  },
+  "useCases": [
+   {
+    "title": "Execute SQL",
+    "scenario": "Run a custom database statement from a workflow."
+   },
+   {
+    "title": "Insert rows",
+    "scenario": "Load incoming workflow data into a PostgreSQL table."
+   },
+   {
+    "title": "Insert or update records",
+    "scenario": "Keep a table synchronized with incoming records."
+   },
+   {
+    "title": "Listen for database events with Postgres Trigger",
+    "scenario": "React to database changes."
+   }
+  ],
+  "related": [
+   "Postgres credentials",
+   "Postgres Trigger",
+   "Date & Time node",
+   "Edit Fields (Set) node"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "Which operations does the Postgres node support?",
+    "answer": "The node supports Delete, Execute Query, Insert, Insert or Update, Select, and Update. Execute Query runs SQL, while the other operations provide table-focused controls.",
+    "followUp": "How can query parameters improve safety? They let n8n sanitize supplied values and use prepared placeholders, which helps prevent SQL injection."
+   },
+   {
+    "question": "What does Query Batching control?",
+    "answer": "Query batching controls how incoming items are sent to PostgreSQL. Single Query sends one query for all items, Independently runs one query per item, and Transaction runs them together with rollback on failure.",
+    "followUp": "When should Transaction be used? Use it when all changes must succeed together or none should remain."
+   },
+   {
+    "question": "How does Select filter and sort rows?",
+    "answer": "The Select operation can return all rows or apply a limit. It can filter with column, operator, and value conditions, combine conditions with AND or OR, and sort by a chosen column.",
+    "followUp": "How should dates be returned as plain dates? Use PostgreSQL TO_CHAR in the query so the result is a date string without time or timezone parts."
+   }
+  ],
+  "keyPoints": [
+   "The node supports common PostgreSQL work, including SQL execution and table row operations.",
+   "Insert or Update writes a new row or changes an existing row.",
+   "Automatic mapping requires incoming field names to match PostgreSQL column names.",
+   "Use Query Parameters for supplied values instead of placing untrusted values directly into SQL.",
+   "UTC is the recommended basis for storing and passing timestamp values.",
+   "Use ISO 8601 strings when passing dates between n8n nodes."
+  ],
+  "gotchas": [
+   "Choose Text when NUMERIC or BIGINT values can exceed 16 digits. Otherwise, the output number may be wrong.",
+   "A Delete operation without row conditions removes every row in the selected table.",
+   "Transaction batching rolls back the changes when any query in the transaction fails.",
+   "The Postgres Trigger needs suitable database permissions when it creates triggers and procedures."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "Respond to Webhook": {
+  "sourceUrl": "https://docs.n8n.io/integrations/builtin/core-nodes/n8n-nodes-base.respondtowebhook",
+  "sourceTitle": "Respond to Webhook | Nodes | n8n Docs",
+  "summary": "Respond to Webhook lets a workflow control the HTTP response from a Webhook trigger. It runs once and uses the first incoming data item.",
+  "explanation": "Use this node with a Webhook trigger when the workflow must choose the HTTP response. Set the Webhook node to use Respond to Webhook, then place this node after the steps that create the response. It runs once and uses the first incoming item. A later Respond to Webhook node is ignored.",
+  "syntax": "",
+  "parameters": [
+   {
+    "name": "Response configuration",
+    "type": "Node parameters",
+    "description": "Select the response content and configure the response body, status, headers, or other available response settings."
+   }
+  ],
+  "returns": "An HTTP response sent to the triggering Webhook, with optional output containing the response object.",
+  "example": {
+   "title": "Return JSON from a webhook",
+   "code": "{\n  \"nodes\": [\n    {\n      \"parameters\": {\"path\":\"orders\",\"httpMethod\":\"POST\",\"responseMode\":\"responseNode\"},\n      \"name\":\"Webhook\",\n      \"type\":\"n8n-nodes-base.webhook\",\n      \"typeVersion\":2,\n      \"position\":[260,300]\n    },\n    {\n      \"parameters\": {\"respondWith\":\"json\",\"responseBody\":\"={{ { ok: true, orderId: $json.id } }}\"},\n      \"name\":\"Respond to Webhook\",\n      \"type\":\"n8n-nodes-base.respondToWebhook\",\n      \"typeVersion\":1,\n      \"position\":[520,300]\n    }\n  ],\n  \"connections\":{\"Webhook\":{\"main\":[[{\"node\":\"Respond to Webhook\",\"type\":\"main\",\"index\":0}]]}}\n}",
+   "language": "json",
+   "explanation": "This workflow receives a POST request and returns a JSON object from the Respond to Webhook node."
+  },
+  "useCases": [
+   {
+    "title": "Return processed data",
+    "scenario": "An API endpoint needs to return a result created by several workflow nodes."
+   },
+   {
+    "title": "Control an API response",
+    "scenario": "A workflow must choose the response body or status after checking input."
+   },
+   {
+    "title": "Expose the response object",
+    "scenario": "Later nodes need to inspect what was sent to the caller."
+   }
+  ],
+  "related": [
+   "Webhook",
+   "Wait",
+   "When Last Node Finishes",
+   "Using 'Respond to Webhook' node",
+   "All Incoming Items"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you use Respond to Webhook?",
+    "answer": "The Webhook node must be configured to respond using the Respond to Webhook node. Add this node after the workflow steps whose data should be returned.",
+    "followUp": "What happens if the workflow ends without reaching it? n8n returns a standard message with status 200."
+   },
+   {
+    "question": "How does the node handle multiple items?",
+    "answer": "It runs once and uses the first incoming data item. A loop cannot make this node send responses for each item.",
+    "followUp": "How can all items be returned? Use the Webhook node's When Last Node Finishes option, or the supported All Incoming Items option where available."
+   },
+   {
+    "question": "What does Enable Response Output Branch do?",
+    "answer": "The node has an input-data output by default. Settings can add a Response output containing the response object sent to the webhook.",
+    "followUp": "Why enable that output? It lets later workflow steps inspect the HTTP response while retaining the original input branch."
+   }
+  ],
+  "keyPoints": [
+   "Start with a Webhook trigger.",
+   "Configure the trigger to delegate its response to this node.",
+   "The node can be placed at any point, but place it after nodes that produce the returned data.",
+   "The default output passes through the input items.",
+   "Turn on this setting to expose the HTTP response as a second output."
+  ],
+  "gotchas": [
+   "Only the first incoming item is used. Looping does not make the webhook response contain later items.",
+   "Only the first response node that executes controls the webhook response.",
+   "If the node never runs, n8n sends its default successful response instead.",
+   "An error before the response node runs produces a 500 response."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "Schedule Trigger": {
+  "sourceUrl": "https://docs.n8n.io/integrations/builtin/core-nodes/n8n-nodes-base.scheduletrigger",
+  "sourceTitle": "Schedule Trigger | Nodes | n8n Docs",
+  "summary": "Schedule Trigger starts n8n workflows at fixed times or intervals. Configure one or more rules, then publish the workflow for the schedule to run.",
+  "explanation": "The Schedule Trigger starts a workflow at fixed times or intervals. It uses the workflow timezone when one is set; otherwise, it uses the n8n instance timezone. Choose one or more interval types, then configure the fields shown for each type. The workflow must be published for the schedule to run.",
+  "syntax": "n8n-nodes-base.scheduleTrigger",
+  "parameters": [
+   {
+    "name": "Trigger rules",
+    "type": "Schedule interval configuration",
+    "description": "The interval rule or rules that determine when the workflow starts. Options include seconds, minutes, hours, days, weeks, months, and custom cron."
+   }
+  ],
+  "returns": "A trigger event that starts the workflow according to the configured schedule.",
+  "example": {
+   "title": "Schedule Trigger workflow definition",
+   "code": "{\n  \"nodes\": [\n    {\n      \"parameters\": {\n        \"rule\": {\n          \"interval\": [\n            {\n              \"field\": \"hours\",\n              \"hoursInterval\": 6,\n              \"triggerAtMinute\": 30\n            }\n          ]\n        }\n      },\n      \"name\": \"Every 6 hours at :30\",\n      \"type\": \"n8n-nodes-base.scheduleTrigger\",\n      \"typeVersion\": 1,\n      \"position\": [0,0]\n    }\n  ],\n  \"connections\": {}\n}",
+   "language": "json",
+   "explanation": "This workflow definition uses a Schedule Trigger rule for every six hours at 30 minutes past the hour."
+  },
+  "useCases": [
+   {
+    "title": "Daily reports",
+    "scenario": "Run a report every morning at a chosen hour."
+   },
+   {
+    "title": "Periodic maintenance",
+    "scenario": "Run maintenance work every few hours or on selected weekdays."
+   },
+   {
+    "title": "Custom schedules",
+    "scenario": "Use a cron expression for a schedule that the standard interval fields cannot describe."
+   }
+  ],
+  "related": [
+   "Workflow settings",
+   "Schedule Trigger timing",
+   "durable scheduler",
+   "in-memory scheduler",
+   "Custom (Cron) interval"
+  ],
+  "since": "2.36",
+  "interview": [
+   {
+    "question": "What does the Schedule Trigger do?",
+    "answer": "It starts workflows at fixed intervals or times, much like a Unix cron job. You configure one or more trigger rules, such as minutes, hours, days, weeks, months, or a custom cron expression.",
+    "followUp": "What controls the time zone? The workflow timezone has priority; if it is not set, n8n uses the instance timezone."
+   },
+   {
+    "question": "What must you do before a scheduled workflow runs automatically?",
+    "answer": "The workflow must be saved and published. Testing the workflow manually while building it is separate from the published schedule.",
+    "followUp": "What happens after changing the interval? The new interval takes effect only after unpublishing and publishing a new workflow version."
+   },
+   {
+    "question": "How do you troubleshoot a custom cron expression?",
+    "answer": "A custom cron rule must use the syntax supported by the node. To troubleshoot it, check the documented examples and validate the expression without its seconds field.",
+    "followUp": "Why can a valid-looking schedule still run at an unexpected time? The configured workflow or instance timezone may differ from the intended timezone."
+   }
+  ],
+  "keyPoints": [
+   "One Schedule Trigger can contain multiple rules, so the same workflow can run on several schedules.",
+   "The seconds interval runs the workflow after the configured number of seconds between triggers.",
+   "The minutes interval repeats after the configured number of minutes.",
+   "Day, week, and month schedules let you choose the hour at which the workflow starts.",
+   "For time-based intervals, set the minute within the hour using a value from 0 through 59.",
+   "A custom interval lets you define the schedule with a cron expression."
+  ],
+  "gotchas": [
+   "A schedule does not run until the workflow is saved and published.",
+   "A wrong run time can come from the workflow or instance timezone. Set the workflow timezone or the global timezone.",
+   "Variables used by the schedule are captured at publication time. Later variable changes do not affect the published schedule.",
+   "Changing the trigger interval requires unpublishing and publishing a new version before the new schedule is used."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "Slack": {
+  "sourceUrl": "https://docs.n8n.io/integrations/builtin/trigger-nodes/n8n-nodes-base.slacktrigger",
+  "sourceTitle": "Slack Trigger | Nodes | n8n Docs",
+  "summary": "Slack Trigger starts an n8n workflow when selected Slack events occur. It can monitor one channel or the whole workspace and can filter users, emojis, and downloaded files.",
+  "explanation": "The Slack Trigger node receives selected Slack events and starts an n8n workflow. You can watch one channel or the whole workspace, filter users or emoji names, and optionally download files. Slack must send events to the node through event subscriptions.",
+  "syntax": "",
+  "parameters": [
+   {
+    "name": "Events",
+    "type": "Event selection",
+    "description": "Slack events that should start the workflow, such as new messages, mentions, reactions, or new channels."
+   },
+   {
+    "name": "Watch Whole Workspace",
+    "type": "Boolean",
+    "description": "Watch all relevant channels in the workspace when enabled; otherwise use Channel to Watch."
+   },
+   {
+    "name": "Channel to Watch",
+    "type": "Channel selector",
+    "description": "The channel to monitor, selected from a list, by ID, or by URL."
+   },
+   {
+    "name": "Download Files",
+    "type": "Boolean",
+    "description": "Download files from matching events into the node output."
+   },
+   {
+    "name": "Usernames or IDs to ignore",
+    "type": "User filter",
+    "description": "Users or encoded user IDs whose events should be ignored."
+   },
+   {
+    "name": "Emoji Names to Filter",
+    "type": "Comma-separated string",
+    "description": "Emoji names used to filter Reaction Added events."
+   }
+  ],
+  "returns": "The Slack event payload, with optional downloaded files when Download Files is enabled.",
+  "example": {
+   "title": "Watch Slack reactions",
+   "code": "{\n  \"nodes\": [\n    {\n      \"parameters\": {\n        \"events\": [\"reaction_added\"],\n        \"channelToWatch\": \"C0123ABC456\"\n      },\n      \"name\": \"Slack Trigger\",\n      \"type\": \"n8n-nodes-base.slackTrigger\"\n    }\n  ]\n}",
+   "language": "json",
+   "explanation": "This workflow configuration watches one Slack channel for added reactions."
+  },
+  "useCases": [
+   {
+    "title": "Process channel messages",
+    "scenario": "Start a workflow when a new message appears in a monitored channel."
+   },
+   {
+    "title": "Handle app mentions",
+    "scenario": "Run automation when someone mentions the bot or app."
+   },
+   {
+    "title": "Monitor reactions",
+    "scenario": "React to selected emoji reactions on messages."
+   },
+   {
+    "title": "Process file events",
+    "scenario": "Start a workflow when a file is shared or made public."
+   }
+  ],
+  "related": [
+   "Slack node",
+   "Slack credentials",
+   "Event subscriptions",
+   "Slack Signing Secret",
+   "conversations.list",
+   "users.list"
+  ],
+  "since": "1.106.0 for incoming webhook signature verification",
+  "interview": [
+   {
+    "question": "What does the Slack Trigger node do?",
+    "answer": "It starts a workflow when a selected Slack event occurs. Events include new channel messages, app mentions, new channels, new users, file events, and added reactions.",
+    "followUp": "How can you limit the events to one channel? Turn off Watch Whole Workspace, then select a channel from the list, enter its ID, or provide its Slack URL."
+   },
+   {
+    "question": "How do you control where the trigger listens?",
+    "answer": "Watch Whole Workspace controls the scope. When it is off, Channel to Watch selects the channel; when it is on, the node watches selected events across channels where the app is present.",
+    "followUp": "What is the operational risk of workspace-wide watching? Each matching event can start a separate execution, which may create high execution volume."
+   },
+   {
+    "question": "What must be configured in Slack before using this trigger?",
+    "answer": "Slack event subscriptions must be enabled, and the Slack app needs suitable scopes. The minimum documented methods are conversations.list and users.list.",
+    "followUp": "How can incoming requests be verified? Set a Slack Signing Secret in the credential; n8n then checks that requests contain a trusted Slack signature."
+   }
+  ],
+  "keyPoints": [
+   "The trigger can react when a user opens your app's Home tab.",
+   "Bot or app mentions can start the workflow.",
+   "New channel messages are one supported event.",
+   "You can choose whether files from matching events are downloaded into the output.",
+   "User filters can exclude events from selected users or user IDs.",
+   "Reaction events can be limited to named emojis using a comma-separated list without colons."
+  ],
+  "gotchas": [
+   "A Slack app can have only one registered webhook. Testing and production URLs cannot receive events at the same time.",
+   "Watching the whole workspace can create one execution for every matching event, so use it carefully.",
+   "The Slack app needs at least the scopes needed for listing channels and users.",
+   "Slack token rotation makes tokens expire after 12 hours and should be disabled for production credentials."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "Split Out": {
+  "sourceUrl": "https://docs.n8n.io/integrations/builtin/core-nodes/n8n-nodes-base.splitout",
+  "sourceTitle": "Split Out | Nodes | n8n Docs",
+  "summary": "Split Out turns a list inside one n8n item into separate output items. It can copy selected input fields and binary data to each new item.",
+  "explanation": "The Split Out node takes a list stored inside one input item and creates separate output items from its entries. You choose the list field and can control whether other input fields and binary data are copied to each output item.",
+  "syntax": "",
+  "parameters": [
+   {
+    "name": "Field to Split Out",
+    "type": "field or expression",
+    "description": "The input field containing the list to split into individual output items."
+   },
+   {
+    "name": "Include",
+    "type": "selection",
+    "description": "Controls which other input fields are copied to each output item: none, all, or selected fields."
+   },
+   {
+    "name": "Destination Field Name",
+    "type": "field name",
+    "description": "The output field that receives each split value."
+   },
+   {
+    "name": "Include Binary",
+    "type": "boolean",
+    "description": "Controls whether binary input data is copied to new output items."
+   },
+   {
+    "name": "Disable Dot Notation",
+    "type": "boolean",
+    "description": "Disables the default parent.child syntax for referencing nested fields."
+   }
+  ],
+  "returns": "Multiple output items, created from the entries in the selected input list.",
+  "example": {
+   "title": "Split a customer list",
+   "code": "{\n  \"customers\": [\n    {\"name\":\"Ada\",\"email\":\"ada@example.com\"},\n    {\"name\":\"Linus\",\"email\":\"linus@example.com\"}\n  ]\n}",
+   "language": "json",
+   "explanation": "Configure Split Out to use `customers` as the field to split. It produces one output item for each customer."
+  },
+  "useCases": [
+   {
+    "title": "Process list entries individually",
+    "scenario": "An API returns many customers in one array, and each customer needs separate processing."
+   },
+   {
+    "title": "Move split values",
+    "scenario": "A workflow receives a nested list and needs to place each value in a chosen output field."
+   },
+   {
+    "title": "Split binary-related data",
+    "scenario": "A file or binary input contains multiple values that must become separate workflow items."
+   }
+  ],
+  "related": [
+   "Aggregate",
+   "Limit",
+   "Remove Duplicates",
+   "Sort",
+   "Summarize",
+   "Expressions",
+   "Code node"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does the Split Out node do?",
+    "answer": "Split Out is a data transformation node. It changes one item containing a list into multiple items, with one output item for each list entry.",
+    "followUp": "How can you preserve context from the original item? Configure Include to copy all other fields or only selected fields into each new item."
+   },
+   {
+    "question": "Which parameter selects the list?",
+    "answer": "Field to Split Out identifies the input field whose list should become separate items. The node then places each list entry in the output.",
+    "followUp": "Where can the resulting values be placed? Set Destination Field Name to choose the output field."
+   },
+   {
+    "question": "How does Split Out preserve input data?",
+    "answer": "Include controls whether other input fields are copied. You can keep no other fields, all other fields, or selected fields.",
+    "followUp": "What other input data can be copied independently? Include Binary controls whether binary data is added to each output item."
+   }
+  ],
+  "keyPoints": [
+   "Use it when one input item contains a list and later steps should process each list entry separately.",
+   "Field to Split Out names the input field that contains the list.",
+   "Choose No Other Fields when each output should contain only the split values.",
+   "Destination Field Name lets you choose where each split value is written in the output.",
+   "Include Binary controls whether input binary data is copied into the new items."
+  ],
+  "gotchas": [
+   "For binary input, set the split field with an expression that uses `$binary`.",
+   "Dot notation is enabled by default, so names such as `parent.child` can address nested fields. Disable the option when literal dots are needed."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "Switch": {
+  "sourceUrl": "https://docs.n8n.io/integrations/builtin/core-nodes/n8n-nodes-base.switch",
+  "sourceTitle": "Switch | Nodes | n8n Docs",
+  "summary": "The Switch node routes workflow items to different outputs. Use rules for comparisons or an expression that returns an output index.",
+  "explanation": "The Switch node sends workflow items to different outputs. In Rules mode, each output has comparison conditions. In Expression mode, an expression returns the output number for each item.",
+  "syntax": "",
+  "parameters": [
+   {
+    "name": "Mode",
+    "type": "selection",
+    "description": "Choose Rules or Expression mode."
+   },
+   {
+    "name": "Routing configuration",
+    "type": "rules or expression",
+    "description": "In Rules mode, define comparison rules and choose the data type and operator. In Expression mode, set the number of outputs."
+   },
+   {
+    "name": "Output Index",
+    "type": "expression",
+    "description": "In Expression mode, calculate the output index. The expression must return a number."
+   }
+  ],
+  "returns": "Routes each input item to one or more Switch outputs according to matching rules or the returned output index.",
+  "example": {
+   "title": "Route items with rules",
+   "code": "{\n  \"mode\": \"rules\",\n  \"rules\": [\n    {\"value\": \"error\", \"output\": 0},\n    {\"value\": \"ok\", \"output\": 1}\n  ],\n  \"sendToAllMatchingOutputs\": false\n}",
+   "language": "json",
+   "explanation": "Configure a Switch node with rules that route matching items to different outputs."
+  },
+  "useCases": [
+   {
+    "title": "Route by conditions",
+    "scenario": "A workflow must send items to different branches based on status, type, or another value."
+   },
+   {
+    "title": "Create multiple branches",
+    "scenario": "A workflow needs several possible destinations instead of a simple true or false split."
+   },
+   {
+    "title": "Fan out matching items",
+    "scenario": "Several matching rules should receive the same item."
+   }
+  ],
+  "related": [
+   "IF node",
+   "Splitting with conditionals",
+   "Merge",
+   "Understand execution order"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What modes does the Switch node provide?",
+    "answer": "Rules mode lets you define comparison conditions for each output. Expression mode lets an expression calculate the output number.",
+    "followUp": "How can one item reach several outputs? Turn on the option to send data to all matching outputs."
+   },
+   {
+    "question": "How does Expression mode select an output?",
+    "answer": "Set the number of outputs, then create an expression that returns the output index for an input item. The returned number selects the route.",
+    "followUp": "What must the expression return? It must return a number."
+   },
+   {
+    "question": "Which data types can Rules mode compare?",
+    "answer": "Rules can compare strings, numbers, dates and times, booleans, arrays, and objects. The available operators depend on the selected data type.",
+    "followUp": "Which string comparison can test a pattern? Use matches regex or does not match regex."
+   }
+  ],
+  "keyPoints": [
+   "Use Switch when a workflow needs conditional routing based on comparisons.",
+   "Unlike IF, Switch supports more than two output routes.",
+   "Rules mode creates matching rules for each output.",
+   "Expression mode chooses an output programmatically by returning its index.",
+   "Expression mode lets you choose how many outputs the node has.",
+   "Rules mode can send an item to every output whose condition matches."
+  ],
+  "gotchas": [
+   "Expression mode requires the routing expression to produce a number.",
+   "If sending to all matching outputs is off, an item goes only to the first matching output.",
+   "When several outputs receive data in a form workflow, their branches run one after another."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "Vector Store": {
+  "sourceUrl": "https://docs.n8n.io/integrations/builtin/cluster-nodes/sub-nodes/n8n-nodes-langchain.toolvectorstore",
+  "sourceTitle": "Vector Store Question Answer Tool | Nodes | n8n Docs",
+  "summary": "The Vector Store Question Answer Tool helps an AI agent answer questions with data from a connected vector store. Configure a data description and a result limit.",
+  "explanation": "The Vector Store Question Answer Tool lets an AI agent ask a connected vector store for relevant documents. You describe the stored data and set the maximum number of results. n8n uses the node name and this description to tell the agent when to use the tool.",
+  "syntax": "",
+  "parameters": [
+   {
+    "name": "Description of Data",
+    "type": "string",
+    "description": "Explains what data is available in the connected vector store."
+   },
+   {
+    "name": "Limit",
+    "type": "number",
+    "description": "Sets the maximum number of results returned."
+   }
+  ],
+  "returns": "Answers based on results retrieved from the connected vector store.",
+  "example": {
+   "title": "Vector Store question tool settings",
+   "code": "{\n  \"name\": \"Search product docs\",\n  \"description\": \"Product setup and troubleshooting information\",\n  \"limit\": 5\n}",
+   "language": "json",
+   "explanation": "Use these values when configuring the Vector Store Question Answer Tool. Connect the tool to a vector store node and provide a chat model to the agent."
+  },
+  "useCases": [
+   {
+    "title": "Document question answering",
+    "scenario": "An AI agent must answer questions about indexed company documents."
+   },
+   {
+    "title": "Bounded retrieval",
+    "scenario": "An agent needs a controlled maximum number of retrieved matches."
+   }
+  ],
+  "related": [
+   "Oracle Database Vector Store",
+   "Vector Store Retriever",
+   "AI Agent"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "Which parameters configure the Vector Store Question Answer Tool?",
+    "answer": "Set Description of Data to explain what information the connected vector store contains. Set Limit to the largest number of results the tool may return.",
+    "followUp": "How does the agent learn when to use the tool? n8n combines the node name and Description of Data into the tool description."
+   },
+   {
+    "question": "How is this tool used in an AI workflow?",
+    "answer": "The tool is connected to a vector store and is then connected to the AI agent's tools input. The agent can use it to retrieve information and answer questions.",
+    "followUp": "When might direct vector-store access be preferable? Use direct access when the agent should receive retrieved documents without this tool's result-summarizing step."
+   },
+   {
+    "question": "How does n8n describe the tool to an agent?",
+    "answer": "n8n creates a tool description from the node name and Description of Data. The generated description tells the agent what information the tool covers and that it should receive a complete question.",
+    "followUp": "What naming constraint matters for generated tool names? The name must avoid special characters so the resulting function name meets the allowed pattern."
+   }
+  ],
+  "keyPoints": [
+   "Describe the information stored in the connected vector store.",
+   "Limit controls how many search results the tool can return.",
+   "The agent should send a complete question to the tool.",
+   "Spaces in the node name become underscores in the generated tool description."
+  ],
+  "gotchas": [
+   "Expressions in this sub-node do not resolve separately for every input item. They always use the first item.",
+   "Avoid other special characters in the node name. They can make the agent tool fail."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "Wait": {
+  "sourceUrl": "https://docs.n8n.io/integrations/builtin/core-nodes/n8n-nodes-base.wait",
+  "sourceTitle": "Wait | Nodes | n8n Docs",
+  "summary": "The Wait node pauses a workflow and resumes it later. It can resume after a duration, at a chosen date and time, through an HTTP call, or after a form submission.",
+  "explanation": "The Wait node pauses a workflow and later continues with the same execution data. It can resume after a duration, at a chosen date and time, after an HTTP call, or after a form submission.",
+  "syntax": "",
+  "parameters": [
+   {
+    "name": "Resume",
+    "type": "selection",
+    "description": "How the workflow should resume: after an interval, at a specified time, on a webhook call, or on a form submission."
+   },
+   {
+    "name": "Wait Amount",
+    "type": "number",
+    "description": "For a time interval, the amount to wait."
+   },
+   {
+    "name": "Wait Unit",
+    "type": "selection",
+    "description": "For a time interval, the unit: seconds, minutes, hours, or days."
+   },
+   {
+    "name": "On Webhook Call options",
+    "type": "configuration",
+    "description": "For a webhook resume, the authentication method, HTTP method, response behavior, and optional access controls."
+   },
+   {
+    "name": "On Form Submitted options",
+    "type": "configuration",
+    "description": "For a form resume, the form fields, response behavior, and optional timeout."
+   },
+   {
+    "name": "Limit Wait Time",
+    "type": "configuration",
+    "description": "Whether to resume automatically after a configured interval or at a specified time."
+   }
+  ],
+  "returns": "The workflow continues with the data available before the wait when the selected resume condition occurs.",
+  "example": {
+   "title": "Wait for a time interval",
+   "code": "{\n  \"nodes\": [\n    {\n      \"parameters\": {\n        \"amount\": 5,\n        \"unit\": \"seconds\"\n      },\n      \"name\": \"Wait 5 seconds\",\n      \"type\": \"n8n-nodes-base.wait\",\n      \"typeVersion\": 1,\n      \"position\": [460, 300]\n    }\n  ]\n}",
+   "language": "json",
+   "explanation": "This workflow fragment configures a Wait node to pause for five seconds."
+  },
+  "useCases": [
+   {
+    "title": "Pace requests",
+    "scenario": "An API limits request frequency."
+   },
+   {
+    "title": "Wait for an external event",
+    "scenario": "A workflow must continue after another system sends an event."
+   },
+   {
+    "title": "Collect a form response",
+    "scenario": "A person must approve or provide information before processing continues."
+   },
+   {
+    "title": "Schedule a later step",
+    "scenario": "A process must continue at a scheduled date and time."
+   }
+  ],
+  "related": [
+   "Loop Over Items",
+   "Respond to Webhook",
+   "Webhook",
+   "Handle rate limits",
+   "$execution.resumeUrl"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does the Wait node do?",
+    "answer": "The Wait node suspends workflow execution and resumes it later. For longer waits, n8n stores execution data in the database and reloads it when the resume condition is met.",
+    "followUp": "How can the node resume from an external system?"
+   },
+   {
+    "question": "Which resume conditions does the node support?",
+    "answer": "Choose After Time Interval for a duration, At Specified Time for a date and time, On Webhook Call for an HTTP request, or On Form Submitted for a form submission.",
+    "followUp": "Which option fits an approval process in another application?"
+   },
+   {
+    "question": "How can an external service resume a waiting workflow securely?",
+    "answer": "On Webhook Call exposes the runtime value $execution.resumeUrl. The URL can use Basic Auth, Header Auth, JWT Auth, or no authentication, and the node can restrict callers by IP.",
+    "followUp": "How can a workflow avoid accepting requests from unknown addresses?"
+   }
+  ],
+  "keyPoints": [
+   "Use this node when a workflow must stop and continue later.",
+   "It supports four resume modes: a time interval, a specified time, a webhook call, and a form submission.",
+   "For an interval, set the amount and choose seconds, minutes, hours, or days.",
+   "For a scheduled resume, select the exact date and time.",
+   "Use this expression to pass the generated resume webhook URL to another service or to an email.",
+   "An IP whitelist can limit which addresses may invoke the resume webhook.",
+   "Webhook responses can be sent immediately, after the last node finishes, or through a Respond to Webhook node."
+  ],
+  "gotchas": [
+   "Waits shorter than 65 seconds keep the process running instead of saving the execution data to the database.",
+   "Time-based waits use the n8n server's time zone, not the workflow time zone.",
+   "A resume URL is created at runtime and is different for each workflow execution.",
+   "When using partial executions, the resume URL can change; send it to the external service during the same execution."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "Webhook": {
+  "sourceUrl": "https://docs.n8n.io/integrations/builtin/core-nodes/n8n-nodes-base.webhook",
+  "sourceTitle": "Webhook | Nodes | n8n Docs",
+  "summary": "The Webhook node creates an HTTP endpoint that starts an n8n workflow when it receives a request. It can also send workflow data back as the HTTP response.",
+  "explanation": "The Webhook node exposes an HTTP endpoint that starts a workflow when a service sends a request. It can also return workflow output. Use the test URL while building and the production URL after publishing the workflow.",
+  "syntax": "HTTP request → https://<n8n-host>/webhook/<path>",
+  "parameters": [
+   {
+    "name": "HTTP Method",
+    "type": "DELETE | GET | HEAD | PATCH | POST | PUT",
+    "description": "HTTP method accepted by the endpoint."
+   },
+   {
+    "name": "Path",
+    "type": "string",
+    "description": "The URL path, optionally with route parameters."
+   },
+   {
+    "name": "Respond",
+    "type": "Immediately | When Last Node Finishes | Using Respond to Webhook Node | Streaming response",
+    "description": "How n8n sends the HTTP response."
+   },
+   {
+    "name": "Authentication",
+    "type": "Basic auth | Header auth | JWT auth | n8n User Auth (OAuth2) | None",
+    "description": "Authentication required from callers."
+   }
+  ],
+  "returns": "An HTTP response with a configurable status code and optional JSON, binary, string, or empty body. The exact response depends on the selected response mode.",
+  "example": {
+   "title": "Call a webhook",
+   "code": "curl --request POST 'https://your-n8n.url/webhook/path' \\\n  --data 'key=value'",
+   "language": "bash",
+   "explanation": "Send a POST request to the webhook URL. Replace the sample URL with the URL shown in the Webhook node."
+  },
+  "useCases": [
+   {
+    "title": "External event trigger",
+    "scenario": "Receive an event from a service without a dedicated n8n trigger."
+   },
+   {
+    "title": "Simple API endpoint",
+    "scenario": "Process request data and send a result to the caller."
+   },
+   {
+    "title": "Multi-method endpoint",
+    "scenario": "Handle different operations through HTTP methods."
+   }
+  ],
+  "related": [
+   "Respond to Webhook",
+   "HTTP Request",
+   "Workflow development",
+   "Webhook credentials"
+  ],
+  "since": "1.103.0",
+  "interview": [
+   {
+    "question": "What is the difference between the test and production URLs?",
+    "answer": "The test URL is for building and debugging. It shows incoming data in the editor and works after selecting Listen for test event. The production URL works after publishing and does not show data in the editor.",
+    "followUp": "How can you test a local self-hosted webhook? Run n8n in tunnel mode so an external service can reach the local instance."
+   },
+   {
+    "question": "How can you secure a webhook?",
+    "answer": "The node supports Basic auth, Header auth, JWT auth, n8n User Auth (OAuth2), or no authentication. An IP allowlist can also reject callers outside the configured addresses.",
+    "followUp": "What happens when a caller is outside the IP allowlist? n8n returns a 403 response."
+   },
+   {
+    "question": "How can a webhook return workflow results?",
+    "answer": "The node can respond immediately, after the last node finishes, or through the Respond to Webhook node. With the last-node mode, the response can contain all entries, the first JSON entry, the first binary entry, or no body.",
+    "followUp": "What should you do for a process that may exceed n8n Cloud's timeout? Send an immediate response and provide another webhook to check the status."
+   }
+  ],
+  "keyPoints": [
+   "Choose one of DELETE, GET, HEAD, PATCH, POST, or PUT for the webhook request.",
+   "Requests can contain up to 16 MB by default. Self-hosted instances can change this with N8N_PAYLOAD_SIZE_MAX.",
+   "The path can be fixed or include route variables such as /users/:id.",
+   "Allow Multiple HTTP Methods to accept several methods and route each method to its own output.",
+   "Use the Respond to Webhook node when the workflow needs custom response timing or content.",
+   "Only Run If can prevent execution when a request does not meet an expression condition."
+  ],
+  "gotchas": [
+   "A test webhook expires after 120 seconds. Select Listen for test event before sending the request.",
+   "You cannot register two webhooks with the same path and HTTP method.",
+   "On n8n Cloud, long requests can fail after 100 seconds. Return early and check the result later."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ 

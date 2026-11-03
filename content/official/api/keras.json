@@ -2789,6 +2789,73 @@
   ],
   "checkedAt": "2026-10-15"
  },
+ "keras.ops": {
+  "sourceUrl": "https://keras.io/keras_3/",
+  "sourceTitle": "Keras 3: Multi-backend deep learning",
+  "summary": "keras.ops provides backend-independent NumPy and neural-network operations. Use it in custom Keras components to share code across JAX, TensorFlow, and PyTorch.",
+  "explanation": "keras.ops is Keras's backend-independent operation namespace. It includes NumPy operations and neural-network functions, so code that uses it can run with supported Keras backends without changing the operation code.",
+  "syntax": "keras.ops.<operation>(...)",
+  "parameters": [],
+  "returns": "A namespace of backend-independent NumPy and neural-network operations.",
+  "example": {
+   "title": "Resize feature maps with adaptive average pooling",
+   "code": "import keras\nimport numpy as np\n\nx = np.random.rand(2, 64, 64, 3)\ny = keras.ops.adaptive_average_pool(x, output_size=7)\nprint(y.shape)  # (2, 7, 7, 3)",
+   "language": "python",
+   "explanation": "This changes inputs with different spatial sizes to the requested height and width."
+  },
+  "useCases": [
+   {
+    "title": "Portable custom layers",
+    "scenario": "Build a custom layer that should run on more than one Keras backend."
+   },
+   {
+    "title": "Backend-independent training components",
+    "scenario": "Write a loss or metric without importing a backend-specific tensor API."
+   },
+   {
+    "title": "Cross-backend model code",
+    "scenario": "Use tensor math and neural-network operations in one shared implementation."
+   }
+  ],
+  "related": [
+   "keras.ops.adaptive_average_pool",
+   "keras.ops.binary_crossentropy",
+   "keras.ops.conv",
+   "keras.ops.matmul",
+   "keras.ops.softmax"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is keras.ops?",
+    "answer": "keras.ops provides a common operation API for Keras code. It includes NumPy functions and neural-network operations such as softmax, binary cross-entropy, and convolution.",
+    "followUp": "Why use it in a custom layer? Using only backend-independent Keras APIs lets the same custom layer work with JAX, TensorFlow, and PyTorch."
+   },
+   {
+    "question": "How does keras.ops support multi-backend code?",
+    "answer": "A custom component can use keras.ops for tensor calculations instead of calling a backend directly. This keeps the implementation portable across supported backends.",
+    "followUp": "Can such a layer be used in native framework code? Yes. The documentation says Keras layers written with Keras APIs can work with native PyTorch and JAX code, with JAX using stateless_call()."
+   },
+   {
+    "question": "What kinds of operations are available?",
+    "answer": "Keras provides NumPy operations and neural-network-specific operations in the same namespace. Examples include matmul, sum, stack, einsum, softmax, binary_crossentropy, and conv.",
+    "followUp": "What should be checked when comparing backends? Check random-number behavior and small floating-point differences; seeded random values can still differ between backends."
+   }
+  ],
+  "keyPoints": [
+   "The namespace includes a broad NumPy-compatible operation set.",
+   "It also contains neural-network operations that NumPy does not provide.",
+   "Using only keras.ops helps custom layers, losses, metrics, and optimizers stay portable.",
+   "The same operation-based component can target JAX, PyTorch, and TensorFlow.",
+   "Keras aims for consistent numerics across supported backends, within documented floating-point limits."
+  ],
+  "gotchas": [
+   "For cross-backend custom components, use keras.ops or other backend-independent Keras APIs.",
+   "Numerical results can differ slightly between backends because floating-point implementations are not identical.",
+   "Average pooling with same padding can produce different border values when the PyTorch backend lacks asymmetric-padding support."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "keras.regularizers": {
   "sourceUrl": "https://keras.io/api/layers/regularizers/",
   "sourceTitle": "Layer weight regularizers - Keras",
@@ -7885,6 +7952,111 @@
    "If data_format is omitted, the layer follows the image layout configured globally, so input and output shape expectations can depend on Keras configuration."
   ],
   "checkedAt": "2026-10-15"
+ },
+ "losses.BinaryCrossentropy": {
+  "sourceUrl": "https://keras.io/api/losses/probabilistic_losses/",
+  "sourceTitle": "Probabilistic losses",
+  "summary": "BinaryCrossentropy measures error between binary labels and predictions. Use from_logits=True for raw logits, or use probabilities from 0 to 1 with the default setting.",
+  "explanation": "BinaryCrossentropy measures the difference between binary labels and model predictions. Set from_logits=True when predictions are raw logits; otherwise pass probabilities between 0 and 1.",
+  "syntax": "keras.losses.BinaryCrossentropy(from_logits=False, label_smoothing=0.0, axis=-1, reduction=\"sum_over_batch_size\", name=\"binary_crossentropy\", dtype=None)",
+  "parameters": [
+   {
+    "name": "from_logits",
+    "type": "bool",
+    "description": "Whether y_pred contains logits instead of probabilities."
+   },
+   {
+    "name": "label_smoothing",
+    "type": "float",
+    "description": "Amount of smoothing applied to target labels; range 0 to 1."
+   },
+   {
+    "name": "axis",
+    "type": "int",
+    "description": "Axis used to compute cross-entropy."
+   },
+   {
+    "name": "reduction",
+    "type": "string or None",
+    "description": "Method used to aggregate loss values."
+   },
+   {
+    "name": "name",
+    "type": "string or None",
+    "description": "Optional loss instance name."
+   },
+   {
+    "name": "dtype",
+    "type": "dtype or None",
+    "description": "Data type used for loss computations."
+   }
+  ],
+  "returns": "A binary cross-entropy loss value, aggregated according to reduction; with no reduction, individual loss values are returned.",
+  "example": {
+   "title": "Compute binary cross-entropy from logits",
+   "code": "import numpy as np\nimport keras\n\ny_true = np.array([0, 1, 0, 0])\ny_logits = np.array([-18.6, 0.51, 2.94, -12.8])\n\nloss = keras.losses.BinaryCrossentropy(from_logits=True)\nprint(float(loss(y_true, y_logits)))",
+   "language": "python",
+   "explanation": "This computes binary cross-entropy when the predictions are logits."
+  },
+  "useCases": [
+   {
+    "title": "Binary classification",
+    "scenario": "A model predicts one of two classes."
+   },
+   {
+    "title": "Probability output",
+    "scenario": "A model already applies a sigmoid and returns values from 0 to 1."
+   },
+   {
+    "title": "Logit output",
+    "scenario": "A model returns unrestricted final-layer scores."
+   },
+   {
+    "title": "Smoothed targets",
+    "scenario": "Training needs less certainty in the target labels."
+   }
+  ],
+  "related": [
+   "BinaryFocalCrossentropy",
+   "CategoricalCrossentropy",
+   "CategoricalFocalCrossentropy",
+   "SparseCategoricalCrossentropy",
+   "Poisson",
+   "CTC",
+   "KLDivergence"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is BinaryCrossentropy used for?",
+    "answer": "BinaryCrossentropy is a loss for binary classification. It compares labels of 0 or 1 with either predicted probabilities or logits.",
+    "followUp": "What should change if the model returns logits? Set from_logits=True so the loss interprets the values as logits."
+   },
+   {
+    "question": "When should from_logits be True?",
+    "answer": "Use from_logits=True for raw model outputs that are not limited to 0 through 1. Use the default False when the model output is a probability.",
+    "followUp": "Why must this setting match the output? The loss applies different handling to logits and probabilities, so a mismatch gives an incorrect loss."
+   },
+   {
+    "question": "What do label_smoothing and reduction control?",
+    "answer": "label_smoothing moves the target labels toward 0.5. A value of 0 disables smoothing, while larger values apply more smoothing.",
+    "followUp": "What happens when reduction is None? The loss is not aggregated, so separate loss values are returned."
+   }
+  ],
+  "keyPoints": [
+   "Use this loss when each target is a binary value: 0 or 1.",
+   "The prediction can be one floating-point value for each example.",
+   "With from_logits=False, predictions must represent probabilities from 0 to 1.",
+   "label_smoothing accepts a value from 0 through 1.",
+   "Increasing label_smoothing makes the targets move more toward 0.5.",
+   "Supported reduction choices include sum, mean, sum_over_batch_size, mean_with_sample_weight, and None."
+  ],
+  "gotchas": [
+   "Set from_logits to match the model output. Raw logits need True; probabilities need False.",
+   "The default reduction is usually the right choice for training.",
+   "With no reduction, the loss is returned per item instead of as one aggregated value."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "losses.CategoricalCrossentropy": {
   "sourceUrl": "https://keras.io/api/losses/",

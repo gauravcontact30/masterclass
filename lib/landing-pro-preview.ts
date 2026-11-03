@@ -1,5 +1,6 @@
-import { API_PACKAGES, API_STATUSES, API_TYPES } from "./api-docs";
-import { API_DETAILS } from "./api-docs-details";
+import { API_CATEGORIES, API_PACKAGES, API_TYPES } from "./api-docs";
+import { brandAssetFor } from "./media";
+import { FIELD_GUIDES, fieldGuide } from "./api-field-guides";
 import { pickDaily, rotateDaily, takeDaily } from "./daily-rotation";
 import { TECHY_PUZZLES } from "./techy-additional-examples";
 import { POLYGLOT, type PolyglotConcept } from "./landing-polyglot";
@@ -7,30 +8,28 @@ import { TECHY_TOPICS, TECHY_VOCABULARY } from "./techy-content";
 
 export type LandingTechyTopic = { id: string; title: string; category: string; summary: string; feature: string; question: string; answer: string; questionNumber: number; questionCount: number };
 export type LandingPuzzle = { title: string; code: string; output: string; explanation: string };
-export type LandingApiPackage = { id: string; name: string; icon: string; accent: string; count: number; sample: { name: string; kind: string; status: string }[] };
-/** One identifier from the dashboard's API Docs, in full: what the landing "API of the week" card shows. */
-export type LandingApiSpotlight = {
-  name: string; packageName: string; description: string; signature: string; parameters: { name: string; type: string; description: string }[];
-  returns: string; notes: string[]; code: string; language: string; related: string[];
+/** One technology in the landing API Docs section: five short entries to read, then disabled names of the rest. */
+export type LandingApiGuide = {
+  id: string; name: string; logo: string; tagline: string; version?: string; install?: string; count: number;
+  free: { name: string; kind: string; summary: string; signature: string }[];
+  locked: { name: string; kind: string }[];
 };
+/** Every technology, for choosing one. Technologies without a field guide load their entries on demand (/api/landing/api-guides). */
+export type LandingApiTech = { id: string; name: string; logo: string | null; icon: string; count: number; category: string };
 export type LandingProPreview = {
   techy: { topics: LandingTechyTopic[]; questionCount: number; vocabularyCount: number; puzzleCount: number; puzzles: LandingPuzzle[]; polyglot: PolyglotConcept };
-  api: { packages: LandingApiPackage[]; identifierCount: number; types: { k: string; label: string; c: string }[]; statusCount: number; statuses: { id: string; label: string }[]; spotlight: LandingApiSpotlight | null };
+  api: { guides: LandingApiGuide[]; technologies: LandingApiTech[]; categories: { id: string; label: string }[]; identifierCount: number; technologyCount: number; types: { k: string; label: string; c: string }[] };
 };
-
-/** Identifiers with a complete entry (signature, parameters and example), so the weekly spotlight is never thin. */
-const SPOTLIGHTS = Object.entries(API_DETAILS).filter(([, detail]) => detail.signature && detail.code && detail.code.length < 900 && detail.parameters.length);
 
 /**
  * Server-only summary of the dashboard Techy and API Docs libraries. The full
  * catalogs are large, so the landing page receives only counts and samples.
  *
  * `day` (the IST week number) turns the preview over: the topic and technology shown first, each topic's feature and
- * interview question, each technology's sample identifiers, the API of the week and the week's code puzzles.
- * The default, 0, keeps the full ledger stable. Official-site links (`source`) are never sent: the site does not link out.
+ * interview question, each technology's locked names and the week's code puzzles. The default, 0, keeps the full ledger
+ * stable. API Docs sends short descriptions only: in-depth pages are for subscribers, and the site does not link out.
  */
 export function landingProPreview(day = 0): LandingProPreview {
-  const spotlight = SPOTLIGHTS.length ? pickDaily(SPOTLIGHTS, day) : null;
   return {
     techy: {
       topics: rotateDaily(TECHY_TOPICS, day).map(topic => {
@@ -44,16 +43,26 @@ export function landingProPreview(day = 0): LandingProPreview {
       puzzles: takeDaily(TECHY_PUZZLES, day, TECHY_PUZZLES.length).map(({ title, code, output, explanation }) => ({ title, code, output, explanation })),
     },
     api: {
-      packages: rotateDaily(API_PACKAGES, day).map(pkg => ({ id: pkg.id, name: pkg.name, icon: pkg.icon, accent: pkg.accent, count: pkg.entries.length, sample: takeDaily(pkg.entries, day, 12).map(({ name, kind, status }) => ({ name, kind, status })) })),
+      guides: rotateDaily(FIELD_GUIDES, day).flatMap(guide => {
+        const pkg = API_PACKAGES.find(item => item.id === guide.id);
+        if (!pkg) return [];
+        const kinds = new Map(pkg.entries.map(entry => [entry.name, entry.kind]));
+        const free = guide.essentials.filter(item => kinds.has(item.name));
+        const open = new Set(free.map(item => item.name));
+        return [{
+          id: guide.id, name: guide.name, logo: guide.logo, tagline: guide.tagline, version: guide.version, install: guide.install, count: pkg.entries.length,
+          free: free.map(item => ({ ...item, kind: kinds.get(item.name) ?? "" })),
+          locked: takeDaily(pkg.entries.filter(entry => !open.has(entry.name)), day, 8).map(({ name, kind }) => ({ name, kind })),
+        }];
+      }),
+      technologies: API_CATEGORIES.flatMap(category => category.packages.flatMap(id => {
+        const pkg = API_PACKAGES.find(item => item.id === id);
+        return pkg ? [{ id, name: pkg.name, logo: fieldGuide(id)?.logo ?? brandAssetFor(pkg.name)?.src ?? null, icon: pkg.icon, count: pkg.entries.length, category: category.id }] : [];
+      })),
+      categories: API_CATEGORIES.map(({ id, label }) => ({ id, label })),
       identifierCount: API_PACKAGES.reduce((sum, pkg) => sum + pkg.entries.length, 0),
+      technologyCount: API_PACKAGES.length,
       types: API_TYPES,
-      statusCount: API_STATUSES.length,
-      statuses: API_STATUSES,
-      spotlight: spotlight && {
-        name: spotlight[0], packageName: spotlight[1].packageName, description: spotlight[1].description, signature: spotlight[1].signature,
-        parameters: spotlight[1].parameters.slice(0, 4), returns: spotlight[1].returns, notes: spotlight[1].notes.slice(0, 3),
-        code: spotlight[1].code, language: spotlight[1].language, related: spotlight[1].related.slice(0, 5),
-      },
     },
   };
 }

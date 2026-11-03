@@ -23,6 +23,7 @@ import { ReviewStars } from "./tech-buzz-review-stars";
 import { TechBuzzShowcase } from "./tech-buzz-showcase";
 import { setMark, useMarks, useMarksSync } from "@/lib/tech-buzz-marks";
 import { markKey } from "@/lib/tech-buzz-mark-keys";
+import { matchesStorySearch } from "@/lib/tech-buzz-search";
 import { replaceFeedParams, subscribeUrl, urlParam } from "@/lib/tech-buzz-url";
 
 /**
@@ -289,7 +290,6 @@ export function TechBuzzBlog({ cards, groups, showcase = false }: { cards: TechB
   }, [cards, less]);
 
   const ranked = useMemo(() => {
-    const q = query.trim().toLowerCase();
     // A reader's own lists stay complete, whatever they tuned out.
     const list = (feed === "saved" || feed === "reposts" ? cards : tunedCards).filter(card => {
       if (feed === "for-you" && less[card.id]) return false;
@@ -309,7 +309,7 @@ export function TechBuzzBlog({ cards, groups, showcase = false }: { cards: TechB
         return false;
       }
       // Search query filter
-      if (q && ![card.title, card.subtitle, card.technology, card.category, card.author.name, ...card.tags].some(text => text.toLowerCase().includes(q))) {
+      if (!matchesStorySearch(query, [card.title, card.subtitle, card.technology, card.category, card.author.name, ...card.tags])) {
         return false;
       }
       return true;
@@ -517,7 +517,8 @@ export function TechBuzzBlog({ cards, groups, showcase = false }: { cards: TechB
       </div>
     </header>
 
-    {showcase && <TechBuzzShowcase cards={tunedCards} />}
+    {/* While searching, the results come first: these sections would push them below the fold. */}
+    {showcase && !query.trim() && <TechBuzzShowcase cards={tunedCards} />}
 
     {/* 2. Featured Technology Learning Tracks Bar with Proper Pagination */}
     <section data-track-topic={TECH_BUZZ_TRACKED.tracks} className={styles.techTracksSection} aria-label={t("techBuzzPopularTracks")}>

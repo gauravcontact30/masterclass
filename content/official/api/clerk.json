@@ -1562,6 +1562,77 @@
   ],
   "checkedAt": "2026-10-15"
  },
+ "EmailLinkFactor": {
+  "sourceUrl": "https://clerk.com/docs/js-frontend/reference/types/sign-in-first-factor",
+  "sourceTitle": "SignInFirstFactor - Types - JavaScript | Clerk Docs",
+  "summary": "SignInFirstFactor is a union of possible first verification methods in a Clerk sign-in flow. Its strategy selects the method, while fields such as emailAddressId or phoneNumberId provide method-specific identifiers.",
+  "explanation": "Use SignInFirstFactor when code needs to handle the possible first verification methods in a sign-in flow. Check the strategy before reading method-specific fields: emailAddressId belongs to email methods, phoneNumberId belongs to phone methods, and web3WalletId belongs to web3 methods.",
+  "syntax": "type SignInFirstFactor = EmailCodeFactor | EmailLinkFactor | PhoneCodeFactor | PasswordFactor | ResetPasswordPhoneCodeFactor | ResetPasswordEmailCodeFactor | Web3SignatureFactor | OauthFactor",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Model an email link factor",
+   "code": "type EmailLinkFactor = {\n  strategy: 'email_link';\n  emailAddressId: string;\n  safeIdentifier: 'emailAddress';\n  primary: boolean;\n};\n\nfunction getEmailId(factor: EmailLinkFactor): string {\n  return factor.emailAddressId;\n}",
+   "language": "typescript",
+   "explanation": "This example models an email-link first factor and reads the email address ID."
+  },
+  "useCases": [
+   {
+    "title": "Choose a sign-in method",
+    "scenario": "A sign-in UI must show the available first verification method."
+   },
+   {
+    "title": "Read an email or phone target",
+    "scenario": "Application code receives factor data from Clerk and needs the related contact identifier."
+   },
+   {
+    "title": "Model factor data safely",
+    "scenario": "TypeScript code needs compile-time handling of supported factor variants."
+   }
+  ],
+  "related": [
+   "EmailCodeFactor",
+   "EmailLinkFactor",
+   "PhoneCodeFactor",
+   "PasswordFactor",
+   "ResetPasswordPhoneCodeFactor",
+   "ResetPasswordEmailCodeFactor",
+   "Web3SignatureFactor",
+   "OauthFactor"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is SignInFirstFactor?",
+    "answer": "SignInFirstFactor is a union of factor types used for the first verification step of sign-in. Its members include email, phone, password, reset-password, web3, and OAuth-related factors.",
+    "followUp": "How should code safely access emailAddressId? First narrow the value by strategy, then read emailAddressId only for email_code, email_link, or reset_password_email_code."
+   },
+   {
+    "question": "What does strategy represent?",
+    "answer": "The strategy field identifies the verification method. Its values include email_code, email_link, phone_code, password, passkey, reset-password code methods, web3 signature methods, OAuthStrategy, and enterprise_sso.",
+    "followUp": "Why use a discriminated union here? The strategy lets code select the correct factor shape and avoid treating method-specific fields as universally available."
+   },
+   {
+    "question": "How do contact identifiers differ?",
+    "answer": "emailAddressId identifies the email address used for an email code or link. phoneNumberId identifies the phone number used for a phone code, and safeIdentifier says whether that factor uses an email address or phone number.",
+    "followUp": "Which field identifies a web3 wallet? Use web3WalletId for web3 factor data; the page lists it as a field of this type."
+   }
+  ],
+  "keyPoints": [
+   "SignInFirstFactor describes the method used for the first verification step in sign-in.",
+   "The type is a union of several specific factor types, including email-code, email-link, and phone-code factors.",
+   "safeIdentifier can identify the factor as using an email address or a phone number.",
+   "web3WalletId is a string field available for identifying the wallet used by a web3 factor.",
+   "primary is a Boolean that indicates whether the factor is the primary factor.",
+   "strategy stores the factor's verification method as a defined string value or OAuthStrategy."
+  ],
+  "gotchas": [
+   "Do not assume emailAddressId exists for every factor. It is only populated for the listed email strategies.",
+   "Use phoneNumberId only with the two phone-code strategies.",
+   "The primary field tells whether the factor is the primary one; it is not a general indicator that a factor exists."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "ExternalAccount": {
   "sourceUrl": "https://clerk.com/docs/reference/types/external-account",
   "sourceTitle": "ExternalAccount - Types",
@@ -3122,6 +3193,172 @@
   ],
   "checkedAt": "2026-10-15"
  },
+ "orgId": {
+  "sourceUrl": "https://clerk.com/docs/reference/backend/types/auth-object",
+  "sourceTitle": "Auth object - Types | Clerk Docs",
+  "summary": "Clerk's server-side Auth object describes the current authentication context. It provides session and user details, optional active-Organization data, and methods for authorization checks and token retrieval.",
+  "explanation": "The server-side Auth object describes the current authentication context. It includes session and user identifiers, optional active-Organization details, and methods for authorization and token access. Use has() for permission, role, feature, plan, or reverification checks.",
+  "syntax": "has(isAuthorizedParams: CheckAuthorizationParamsWithCustomPermissions): boolean; getToken(): ServerGetToken",
+  "parameters": [
+   {
+    "name": "isAuthorizedParams",
+    "type": "CheckAuthorizationParamsWithCustomPermissions",
+    "description": "Authorization data such as feature, permission, plan, or reverification configuration."
+   },
+   {
+    "name": "feature",
+    "type": "string",
+    "description": "The feature to check."
+   },
+   {
+    "name": "permission",
+    "type": "string",
+    "description": "The permission to check."
+   },
+   {
+    "name": "plan",
+    "type": "string",
+    "description": "The plan to check."
+   },
+   {
+    "name": "reverification",
+    "type": "ReverificationConfig",
+    "description": "The reverification configuration to check."
+   }
+  ],
+  "returns": "has() returns a boolean. getToken() returns the current user's session token or a custom JWT template.",
+  "example": {
+   "title": "Check an organization permission",
+   "code": "const auth = await getAuth();\n\nif (auth.has({ permission: \"org:billing:manage\" })) {\n  return \"Allowed\";\n}\n\nreturn \"Denied\";",
+   "language": "typescript",
+   "explanation": "Call has() on the server-side Auth object to check whether the current user has a permission."
+  },
+  "useCases": [
+   {
+    "title": "Authorization checks",
+    "scenario": "Protect a server endpoint or action from users without a required organization permission."
+   },
+   {
+    "title": "Token retrieval",
+    "scenario": "Pass a Clerk session token or custom JWT to another service."
+   },
+   {
+    "title": "Reverification",
+    "scenario": "Require a recent credential check before a sensitive operation."
+   }
+  ],
+  "related": [
+   "has()",
+   "getToken()",
+   "sessionId",
+   "userId",
+   "orgId",
+   "orgRole",
+   "orgPermissions",
+   "factorVerificationAge"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is the Clerk Auth object?",
+    "answer": "The Auth object is available on the request object in server contexts. It commonly exposes sessionId, userId, optional organization fields, has(), and getToken().",
+    "followUp": "How does a machine-authenticated request differ? It exposes machine authentication data instead of user session details."
+   },
+   {
+    "question": "What is has() used for?",
+    "answer": "has() returns a boolean authorization result. It can check an organization role, custom permission, feature, plan, or a reverification requirement.",
+    "followUp": "What does a failed check return? It returns false, so the server should deny the protected operation."
+   },
+   {
+    "question": "What does getToken() return?",
+    "answer": "getToken() retrieves the current user's session token or a custom JWT template. It is a server-side method on the Auth object.",
+    "followUp": "When should a custom template be used? Use it when another service needs claims from a configured custom JWT template."
+   }
+  ],
+  "keyPoints": [
+   "Auth describes the current request and can identify its session, user, and active organization.",
+   "Access Auth from the request in server-side code, or use a framework helper when one is provided.",
+   "Use has() to test organization roles and custom permissions.",
+   "Use getToken() to obtain a session token or a custom JWT template.",
+   "factorVerificationAge reports the age of first- and second-factor verification in minutes."
+  ],
+  "gotchas": [
+   "Machine-authenticated requests use machine-level authentication data instead of normal user session details.",
+   "Do not depend on reverification checks for production use while this feature is in public beta.",
+   "Use session token version 2 rather than the deprecated version 1."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "orgRole": {
+  "sourceUrl": "https://clerk.com/docs/raw/guides/organizations/control-access/roles-and-permissions.mdx",
+  "sourceTitle": "Roles and Permissions",
+  "summary": "Clerk Organizations use Roles and Permissions to control access to resources and actions. Roles provide broad access levels, while custom Permissions provide finer control.",
+  "explanation": "An Organization has a Role Set, and that Role Set makes Roles available for assignment. A Role groups Permissions, while authorization checks test whether the signed-in user has a Role or Permission before allowing access to content, routes, or actions.",
+  "syntax": "auth().has({ permission: \"org:invoices:create\" })",
+  "parameters": [],
+  "returns": "The `has()` helper returns `false` when the user is unauthorized.",
+  "example": {
+   "title": "Check a custom permission",
+   "code": "const canCreateInvoice = await auth().has({\n  permission: \"org:invoices:create\",\n});\n\nif (!canCreateInvoice) {\n  return new Response(\"Forbidden\", { status: 403 });\n}\n\nreturn new Response(\"Invoice created\");",
+   "language": "typescript",
+   "explanation": "This checks a custom Organization Permission before allowing an invoice operation."
+  },
+  "useCases": [
+   {
+    "title": "Route protection",
+    "scenario": "Protect an application route from users without the required Organization access."
+   },
+   {
+    "title": "Feature authorization",
+    "scenario": "Allow a user to perform one feature-specific action only when they have its Permission."
+   },
+   {
+    "title": "Team access levels",
+    "scenario": "Use broad access levels for common Organization team responsibilities."
+   }
+  ],
+  "related": [
+   "Role Sets",
+   "Roles",
+   "Permissions",
+   "Organizations",
+   "Authorization checks",
+   "has() helper",
+   "org:admin",
+   "org:invoices:create"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is the difference between a Role and a Permission?",
+    "answer": "Roles describe a user's level of access in an Organization. Custom Permissions provide more detailed control over individual features or actions.",
+    "followUp": "When would a Permission be better than a Role? Use a Permission when access must target one specific operation, such as creating invoices, rather than a broad access level."
+   },
+   {
+    "question": "How do Roles become available in an Organization?",
+    "answer": "Organizations receive a Role Set. The Role Set determines which Roles members can receive.",
+    "followUp": "What happens if a Role is not in the Role Set? It is not available to that Organization's members for assignment."
+   },
+   {
+    "question": "How should application code check access?",
+    "answer": "Authorization checks determine whether a user may access content or perform an action. The `has()` helper is recommended because it returns `false` when the user is unauthorized.",
+    "followUp": "How can authorization protect a route? Check membership, the required Role, or the required Permission before rendering or handling the route."
+   }
+  ],
+  "keyPoints": [
+   "Clerk includes `admin` and `member` as default Organization Roles.",
+   "Applications can define custom Roles and detailed Permissions for their own features and team structures.",
+   "A Role is an access level that describes allowed actions and resources inside one Organization.",
+   "Use an Organization Role to represent a user's broad access level.",
+   "Use a Custom Permission when access must target a specific feature or action.",
+   "Authorization checks can protect both page content and complete routes."
+  ],
+  "gotchas": [
+   "A Role cannot be assigned through an Organization unless its Role Set makes that Role available.",
+   "Check authorization before exposing sensitive data, protected content, or exclusive features."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "orgSlug": {
   "sourceUrl": "https://clerk.com/docs/guides/organizations/org-slugs-in-urls",
   "sourceTitle": "Use Organization slugs in URLs for tenant-specific auth flows - Clerk",
@@ -3495,6 +3732,78 @@
    "Treat the key as configuration that determines which Frontend API instance the app contacts."
   ],
   "checkedAt": "2026-10-15"
+ },
+ "PublishableKey": {
+  "sourceUrl": "https://clerk.com/docs/react/reference/objects/clerk",
+  "sourceTitle": "Clerk class - Objects - React | Clerk Docs",
+  "summary": "The Clerk class is the main client object for Clerk in React. It holds authentication state and provides methods for loading Clerk, managing sessions, and controlling authentication UI.",
+  "explanation": "The Clerk instance is the main client object for Clerk in a React application. It stores configuration and current authentication state, and provides methods for loading Clerk, handling navigation, managing sessions, and opening authentication UI.",
+  "syntax": "new Clerk(publishableKey)",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Read Clerk instance properties",
+   "code": "const clerk = new Clerk('pk_test_example');\nawait clerk.load();\n\nconsole.log(clerk.publishableKey);\nconsole.log(clerk.status);",
+   "language": "typescript",
+   "explanation": "This creates a Clerk instance, loads it, and reads its publishable key and current status."
+  },
+  "useCases": [
+   {
+    "title": "Check session and user state",
+    "scenario": "Read the current authentication state after Clerk has loaded."
+   },
+   {
+    "title": "Run authentication flows",
+    "scenario": "Start or finish sign-in and sign-up flows."
+   },
+   {
+    "title": "Manage sessions",
+    "scenario": "Change the active session or sign out."
+   },
+   {
+    "title": "Control authentication UI",
+    "scenario": "Open hosted or prebuilt Clerk screens."
+   }
+  ],
+  "related": [
+   "load()",
+   "setActive()",
+   "signOut()",
+   "session",
+   "user",
+   "status"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is the Clerk class used for?",
+    "answer": "The Clerk class is the central client object for Clerk. It exposes configuration, current user and session state, and methods for authentication and navigation.",
+    "followUp": "How can loading state be distinguished from signed-out state? A session of undefined means loading, while null means there is no active session."
+   },
+   {
+    "question": "What does publishableKey represent?",
+    "answer": "The publishableKey identifies the Clerk Frontend API location used by the application. It is client-side configuration and is available as a Clerk instance property.",
+    "followUp": "What should be used for administrative backend operations? The page describes the Backend API for administrative actions affecting multiple users."
+   },
+   {
+    "question": "What values can Clerk.status have?",
+    "answer": "The status describes the Clerk instance lifecycle. It can be loading during initialization, ready when fully operational, degraded when partly operational, or error when loading fails.",
+    "followUp": "How should a UI react to these values? It should avoid assuming Clerk is ready until status is ready and should provide an error path for error."
+   }
+  ],
+  "keyPoints": [
+   "The session property points to the active session from the client's session list.",
+   "The loading status is used while Clerk initializes.",
+   "The ready status means the Clerk instance can operate normally.",
+   "The degraded status means only part of Clerk is working.",
+   "The publishableKey property stores the application's Clerk Publishable Key."
+  ],
+  "gotchas": [
+   "Do not treat an undefined session as signed out. It means the session is still loading.",
+   "A null session means there is no active session. This differs from an undefined session.",
+   "The status can be error when Clerk or its loading process fails."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "redirectToSignIn": {
   "sourceUrl": "https://clerk.com/docs/nextjs/reference/objects/clerk",
@@ -3973,6 +4282,82 @@
   ],
   "checkedAt": "2026-10-15"
  },
+ "SessionResource": {
+  "sourceUrl": "https://clerk.com/docs/js-frontend/reference/objects/client",
+  "sourceTitle": "Client object - Objects - JavaScript | Clerk Docs",
+  "summary": "The Client object tracks authentication sessions and sign-in or sign-up attempts for the current device. It is available from the Clerk object.",
+  "explanation": "The Client object represents the current device's authentication state. It contains sessions and any sign-in or sign-up attempts in progress. Its methods can refresh, clear, create, or delete client data.",
+  "syntax": "clerk.client\nbuildTouchUrl(params: { redirectUrl: URL }): string\nclearCache(): void\ncreate(): Promise<ClientResource>\ndestroy(): Promise<void>\nisEligibleForTouch(): boolean\nisNew(): boolean\nreload(): Promise<ClientResource>",
+  "parameters": [
+   {
+    "name": "params.redirectUrl",
+    "type": "URL",
+    "description": "The URL where the user should be redirected."
+   }
+  ],
+  "returns": "buildTouchUrl() returns a string. create() returns Promise<ClientResource>. destroy() returns Promise<void>. clearCache(), isEligibleForTouch(), isNew(), removeSessions(), resetSignIn(), and resetSignUp() return void or boolean as indicated by their signatures.",
+  "example": {
+   "title": "Read and reload the client",
+   "code": "import { Clerk } from '@clerk/clerk-js'\n\nconst clerk = new Clerk(import.meta.env.VITE_CLERK_PUBLISHABLE_KEY)\nawait clerk.load()\n\nconst client = clerk.client\nconsole.log(client.signedInSessions)\nawait client.reload()",
+   "language": "javascript",
+   "explanation": "This loads Clerk, reads the current client, lists its signed-in sessions, and refreshes the client data."
+  },
+  "useCases": [
+   {
+    "title": "Refresh current authentication data",
+    "scenario": "After changing user or session data, call reload() to get the latest resource and refresh the session token."
+   },
+   {
+    "title": "Inspect signed-in sessions",
+    "scenario": "Use signedInSessions to show or inspect sessions that completed sign-in."
+   },
+   {
+    "title": "Build a redirect URL",
+    "scenario": "Use buildTouchUrl() when an authentication-state refresh must be followed by navigation to another URL."
+   }
+  ],
+  "related": [
+   "SessionResource",
+   "SignInResource",
+   "SignUpResource",
+   "buildTouchUrl()",
+   "create()",
+   "destroy()",
+   "reload()"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does the Client object represent?",
+    "answer": "The Client object tracks authenticated sessions for the current device and stores active sign-in or sign-up attempts. It is available through the Clerk object.",
+    "followUp": "How would you inspect the sessions? Read the sessions or signedInSessions properties, depending on whether all created sessions or only completed sign-ins are needed."
+   },
+   {
+    "question": "What is the difference between sessions and signedInSessions?",
+    "answer": "sessions contains every session created on the client. signedInSessions contains sessions where the user completed sign-in; those sessions can be active or pending.",
+    "followUp": "What distinguishes pending from active? A pending session still has required tasks, while an active session has completed those tasks."
+   },
+   {
+    "question": "When should reload() be used?",
+    "answer": "reload fetches the latest resource data and forces a session-token refresh, rather than waiting for the normal automatic refresh cycle. This is useful after a mutation.",
+    "followUp": "What should be used to remove the client instead? destroy deletes the client and resets all sessions."
+   }
+  ],
+  "keyPoints": [
+   "Client stores authentication sessions for the current device.",
+   "It also tracks sign-in and sign-up attempts that have not finished.",
+   "sessions lists all sessions created on the client.",
+   "signedInSessions contains sessions whose sign-in flow is complete.",
+   "signIn gives access to the current sign-in attempt.",
+   "signUp gives access to the current sign-up attempt.",
+   "clearCache removes locally cached session data."
+  ],
+  "gotchas": [
+   "Destroying the client also resets every session connected to it.",
+   "Use reload when updated data must be available immediately; it forces a token refresh."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "sessions.getSession": {
   "sourceUrl": "https://clerk.com/docs/reference/backend/sessions/get-session",
   "sourceTitle": "getSession() - Sessions | Clerk Docs",
@@ -4270,6 +4655,80 @@
   ],
   "gotchas": [],
   "checkedAt": "2026-10-15"
+ },
+ "SignedOut": {
+  "sourceUrl": "https://clerk.com/docs/reference/components/control/show",
+  "sourceTitle": "<Show> component - Control components | Clerk Docs",
+  "summary": "`Show` conditionally displays content based on authentication or authorization. In Clerk Core 3, it replaces `SignedIn`, `SignedOut`, and `Protect`.",
+  "explanation": "`Show` conditionally renders content after checking authentication or authorization. Set `when` to an authentication state such as `signed-in` or `signed-out`, or pass a role, permission, feature, plan, or callback check. It replaces the older `SignedIn`, `SignedOut`, and `Protect` components.",
+  "syntax": "<Show when=\"signed-in\">...</Show>",
+  "parameters": [
+   {
+    "name": "when",
+    "type": "string, authorization object, or callback",
+    "description": "Controls the authentication or authorization condition. It can be `signed-in`, `signed-out`, an authorization condition, or a callback that checks `has`."
+   }
+  ],
+  "returns": "Conditionally displayed children.",
+  "example": {
+   "title": "Show content by authentication state",
+   "code": "import { Show } from '@clerk/nextjs'\n\nexport default function Page() {\n  return (\n    <>\n      <Show when=\"signed-in\">\n        <p>Only signed-in users see this.</p>\n      </Show>\n      <Show when=\"signed-out\">\n        <p>Sign in to continue.</p>\n      </Show>\n    </>\n  )\n}",
+   "language": "tsx",
+   "explanation": "Use the `when` prop to choose which authentication state can see each block."
+  },
+  "useCases": [
+   {
+    "title": "Signed-in content",
+    "scenario": "Display a dashboard or account controls only for authenticated users."
+   },
+   {
+    "title": "Signed-out content",
+    "scenario": "Display a sign-in prompt only for unauthenticated users."
+   },
+   {
+    "title": "Authorization-based content",
+    "scenario": "Display an admin panel only when a user has a required role or permission."
+   },
+   {
+    "title": "Route and section control",
+    "scenario": "Guard a route or larger page section with one shared control component."
+   }
+  ],
+  "related": [
+   "SignedIn",
+   "SignedOut",
+   "Protect"
+  ],
+  "since": "Clerk Core 3 (March 3, 2026)",
+  "interview": [
+   {
+    "question": "What problem does the `Show` component solve?",
+    "answer": "`Show` controls whether content is displayed according to authentication or authorization. Its `when` prop can select states such as `signed-in` and `signed-out`, or perform an authorization check.",
+    "followUp": "How should sensitive data be protected? Perform authorization checks on the server before sending the data to the client, because `Show` only hides client-side content."
+   },
+   {
+    "question": "How do you migrate from the older control components?",
+    "answer": "In Core 3, `Show` replaces `SignedIn`, `SignedOut`, and `Protect`. Import `Show` from the SDK package used by the application, such as `@clerk/nextjs`.",
+    "followUp": "What should a migration check besides changing JSX? Remove the old names from imports and search for aliases and re-exports too."
+   },
+   {
+    "question": "How do you show content only to a signed-in user?",
+    "answer": "Use `when=\"signed-in\"` for content available to authenticated users and `when=\"signed-out\"` for content available to signed-out users. The same component also supports authorization conditions.",
+    "followUp": "How can an authorization callback be expressed? Pass a function to `when` that receives `has`, then call it with a role or permission condition."
+   }
+  ],
+  "keyPoints": [
+   "Use `Show` to control access to content or whole routes using authentication and optional authorization.",
+   "The `when` prop lets one component handle both authentication checks and authorization checks.",
+   "For Next.js, import `Show` from `@clerk/nextjs` instead of importing the removed control components.",
+   "Use `when=\"signed-in\"` or `when=\"signed-out\"` for the two basic authentication states.",
+   "An authorization callback can test a role, such as `org:admin`, before showing content.",
+   "Core 3 consolidates the previous authorization and authentication control components into `Show`."
+  ],
+  "gotchas": [
+   "Do not put sensitive data inside `Show` as a security boundary. The children can still appear in the browser source, so protect sensitive data on the server."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "SignIn": {
   "sourceUrl": "https://clerk.com/docs/js-frontend/reference/components/authentication/sign-in",
@@ -4573,6 +5032,65 @@
    "Configure both sign-in and sign-up fallback destinations to handle users who switch flows."
   ],
   "checkedAt": "2026-10-15"
+ },
+ "SignInResource": {
+  "sourceUrl": "https://clerk.com/docs/js-frontend/reference/objects/clerk",
+  "sourceTitle": "Clerk class - Objects - JavaScript | Clerk Docs",
+  "summary": "The Clerk class is the main interface for Clerk in a JavaScript application. `handleUnauthenticated()` refreshes the Client and Session after a 401 response from the Frontend API.",
+  "explanation": "The Clerk class is the main interface for Clerk in a JavaScript application. Its handleUnauthenticated method responds to an HTTP 401 by refreshing the current Client and Session objects, then returns a promise when the update finishes.",
+  "syntax": "function handleUnauthenticated(): Promise<unknown>",
+  "parameters": [],
+  "returns": "Promise<unknown>",
+  "example": {
+   "title": "Refresh after an unauthenticated response",
+   "code": "const clerk = useClerk()\n\nawait clerk.handleUnauthenticated()",
+   "language": "tsx",
+   "explanation": "Call this after a request returns HTTP 401 so Clerk can refresh its client and session data."
+  },
+  "useCases": [
+   {
+    "title": "Recover from an expired or invalid authentication state",
+    "scenario": "An API request receives HTTP 401 from Clerk's Frontend API."
+   },
+   {
+    "title": "Synchronize later work with the refresh",
+    "scenario": "Application code must wait until Clerk finishes updating authentication resources."
+   }
+  ],
+  "related": [
+   "Client",
+   "Session",
+   "useClerk()",
+   "handleRedirectCallback()",
+   "signOut()"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does handleUnauthenticated do?",
+    "answer": "handleUnauthenticated() handles a 401 response from the Frontend API by refreshing the Client and Session objects. It returns a Promise, so callers should await it when they need the refresh to finish before continuing.",
+    "followUp": "What should happen after the refresh? The application should retry or re-evaluate the failed operation using the newly refreshed authentication state."
+   },
+   {
+    "question": "What are the parameters and return type?",
+    "answer": "The method has no parameters. Its signature is `function handleUnauthenticated(): Promise<unknown>`, so it is asynchronous and resolves with an unspecified result.",
+    "followUp": "Why use `await` if the return value is not useful? `await` ensures later code runs after Clerk has updated its authentication resources."
+   },
+   {
+    "question": "How would you use this method in an application?",
+    "answer": "Use the Clerk instance, usually obtained with `useClerk()`, and call `await clerk.handleUnauthenticated()` after detecting the relevant 401 response. This lets Clerk refresh the current client and session state.",
+    "followUp": "How could a request wrapper use it? The wrapper could detect status 401, call the method, and then retry once while preventing an infinite retry loop."
+   }
+  ],
+  "keyPoints": [
+   "Use the Clerk class as the main interface for Clerk features in a JavaScript application.",
+   "handleUnauthenticated refreshes both the Client and Session objects after the Frontend API returns 401.",
+   "The method is asynchronous and returns a promise with an unknown resolved value."
+  ],
+  "gotchas": [
+   "Use this method for a 401 response from Clerk's Frontend API. It does not describe handling every kind of authentication error."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "signInUrl": {
   "sourceUrl": "https://clerk.com/docs/react/reference/components/clerk-provider",
@@ -6813,6 +7331,69 @@
    "sessions represents sessions registered on the current client device, not an arbitrary server-side session query."
   ],
   "checkedAt": "2026-10-15"
+ },
+ "useSignIn": {
+  "sourceUrl": "https://clerk.com/docs/expo/reference/hooks/use-sign-in",
+  "sourceTitle": "useSignIn() - Hooks - Expo | Clerk Docs",
+  "summary": "Expo's useSignIn() hook exposes the active SignInFuture resource, fetch state, and recent fetch errors. Use it to build a custom sign-in flow.",
+  "explanation": "The Expo useSignIn() hook gives a component the active SignInFuture resource and the status of its fetch. Use the resource to manage a custom sign-in flow. The resource object can change as the flow moves forward, so include it in dependency arrays when needed.",
+  "syntax": "const { errors, fetchStatus, signIn } = useSignIn()",
+  "parameters": [],
+  "returns": "An object with errors, fetchStatus, and signIn. signIn has type SignInFutureResource.",
+  "example": {
+   "title": "Read the current sign-in state",
+   "code": "import { useSignIn } from '@clerk/expo'\nimport { Text, View } from 'react-native'\n\nexport default function SignInPage() {\n  const { fetchStatus, signIn } = useSignIn()\n\n  if (fetchStatus === 'fetching') {\n    return <Text>Loading...</Text>\n  }\n\n  return (\n    <View>\n      <Text>Sign-in status: {signIn.status}</Text>\n    </View>\n  )\n}",
+   "language": "tsx",
+   "explanation": "This component reads the current sign-in resource. It shows a loading message while Clerk fetches the resource, then displays its status."
+  },
+  "useCases": [
+   {
+    "title": "Custom sign-in interface",
+    "scenario": "Build a sign-in screen with your own React Native UI."
+   },
+   {
+    "title": "Loading feedback",
+    "scenario": "Show a loading state while Clerk fetches sign-in data."
+   },
+   {
+    "title": "Fetch error handling",
+    "scenario": "Display or handle errors from the latest resource fetch."
+   }
+  ],
+  "related": [
+   "SignInFutureResource",
+   "SignInErrors",
+   "fetchStatus",
+   "signIn"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does useSignIn() return in Expo?",
+    "answer": "It returns errors, fetchStatus, and signIn. signIn is the active SignInFutureResource used to inspect and manage the current sign-in flow.",
+    "followUp": "What should a hook dependency array account for? Include signIn because its identity changes as the sign-in flow progresses."
+   },
+   {
+    "question": "How can a component handle loading?",
+    "answer": "fetchStatus tells whether the underlying resource is idle or fetching. Use it to render an appropriate loading state before reading the sign-in resource.",
+    "followUp": "What other state is exposed? errors contains errors from the last fetch of the underlying resource."
+   },
+   {
+    "question": "Why would an application use this hook?",
+    "answer": "The hook supports custom sign-in flows. The SignInFuture resource uses APIs designed for those flows, while the hook exposes the currently active resource.",
+    "followUp": "What kinds of custom flows can it support? The documentation directs readers to the build-your-own-UI guides for example flows."
+   }
+  ],
+  "keyPoints": [
+   "The hook exposes the current SignInFuture object for a custom sign-in flow.",
+   "errors reports problems from the most recent fetch of the sign-in resource.",
+   "fetchStatus shows whether fetching is idle or in progress.",
+   "signIn represents the sign-in attempt that is active at the time of the render."
+  ],
+  "gotchas": [
+   "The signIn object can be replaced during the flow. Include it in dependency arrays for useEffect, useCallback, or useMemo."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "useSignUp": {
   "sourceUrl": "https://clerk.com/docs/react/reference/hooks/use-sign-up",

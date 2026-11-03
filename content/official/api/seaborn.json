@@ -352,6 +352,134 @@
   ],
   "checkedAt": "2026-10-15"
  },
+ "clustermap": {
+  "sourceUrl": "https://seaborn.pydata.org/generated/seaborn.clustermap.html",
+  "sourceTitle": "seaborn.clustermap — seaborn 0.13.2 documentation",
+  "summary": "Create a heatmap that hierarchically clusters the rows and columns of a rectangular dataset. The function can also normalize or standardize one dimension before plotting.",
+  "explanation": "`clustermap` displays rectangular data as a heatmap and groups similar rows and columns with hierarchical clustering. It returns a `ClusterGrid`, which exposes the reordered indices and a `savefig` method.",
+  "syntax": "seaborn.clustermap(data, *, pivot_kws=None, method='average', metric='euclidean', z_score=None, standard_scale=None, figsize=(10, 10), cbar_kws=None, row_cluster=True, col_cluster=True, row_linkage=None, col_linkage=None, row_colors=None, col_colors=None, mask=None, dendrogram_ratio=0.2, colors_ratio=0.03, cbar_pos=(0.02, 0.8, 0.05, 0.18), tree_kws=None, **kwargs)",
+  "parameters": [
+   {
+    "name": "data",
+    "type": "2D array-like",
+    "description": "Rectangular 2D data used for clustering; it must not contain missing values."
+   },
+   {
+    "name": "pivot_kws",
+    "type": "dict, optional",
+    "description": "Keyword arguments used to pivot tidy data into a rectangular table."
+   },
+   {
+    "name": "method",
+    "type": "str, optional",
+    "description": "Linkage method for calculating clusters."
+   },
+   {
+    "name": "metric",
+    "type": "str, optional",
+    "description": "Distance metric used for the data."
+   },
+   {
+    "name": "z_score",
+    "type": "int or None, optional",
+    "description": "Dimension for z-score calculation: `0` for rows or `1` for columns."
+   },
+   {
+    "name": "standard_scale",
+    "type": "int or None, optional",
+    "description": "Dimension to standardize: `0` for rows or `1` for columns."
+   },
+   {
+    "name": "figsize",
+    "type": "tuple, optional",
+    "description": "Figure size as width and height."
+   },
+   {
+    "name": "row_cluster",
+    "type": "bool, optional",
+    "description": "Whether to cluster rows."
+   },
+   {
+    "name": "col_cluster",
+    "type": "bool, optional",
+    "description": "Whether to cluster columns."
+   },
+   {
+    "name": "row_linkage",
+    "type": "array-like, optional",
+    "description": "Precomputed linkage matrix for rows."
+   },
+   {
+    "name": "col_linkage",
+    "type": "array-like, optional",
+    "description": "Precomputed linkage matrix for columns."
+   },
+   {
+    "name": "row_colors",
+    "type": "color list or pandas DataFrame, optional",
+    "description": "Colors used to annotate rows."
+   }
+  ],
+  "returns": "A `ClusterGrid` instance.",
+  "example": {
+   "title": "Cluster numeric data",
+   "code": "import seaborn as sns\n\niris = sns.load_dataset(\"iris\")\ngrid = sns.clustermap(\n    iris.drop(columns=\"species\"),\n    metric=\"correlation\",\n    method=\"single\",\n    standard_scale=1,\n    cmap=\"vlag\",\n    center=0,\n)\ngrid.savefig(\"clustered-iris.png\")",
+   "language": "python",
+   "explanation": "This creates a clustered heatmap from numeric iris data, scales each column, and saves the returned grid without clipping its dendrograms."
+  },
+  "useCases": [
+   {
+    "title": "Cluster a matrix",
+    "scenario": "You need to see groups of similar observations and variables in a matrix."
+   },
+   {
+    "title": "Standardize features",
+    "scenario": "Measurements use different units or ranges across features."
+   },
+   {
+    "title": "Annotate rows or columns",
+    "scenario": "You need to label groups beside the heatmap."
+   }
+  ],
+  "related": [
+   "heatmap",
+   "ClusterGrid",
+   "scipy.cluster.hierarchy.linkage",
+   "scipy.spatial.distance.pdist"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does `clustermap` do?",
+    "answer": "It takes 2D rectangular data and draws a heatmap with hierarchical clustering for rows and columns. The default linkage method is `average`, and the default distance metric is `euclidean`.",
+    "followUp": "How can different row and column clustering settings be used?"
+   },
+   {
+    "question": "How does `z_score` work?",
+    "answer": "Set `z_score` to `0` to standardize each row or to `1` to standardize each column. A z-score subtracts that dimension's mean and divides by its standard deviation.",
+    "followUp": "What is another supported transformation?"
+   },
+   {
+    "question": "How can clustering be controlled?",
+    "answer": "Set `row_cluster=False` or `col_cluster=False` to disable clustering for one dimension. The returned grid provides `dendrogram_row.reordered_ind` and `dendrogram_col.reordered_ind` for the reordered indices.",
+    "followUp": "How can row and column linkage differ?"
+   }
+  ],
+  "keyPoints": [
+   "Use `clustermap` to combine a matrix heatmap with hierarchical clustering.",
+   "`method` selects the linkage method used to calculate clusters.",
+   "`metric` selects the distance measure used during clustering.",
+   "`z_score=0` transforms rows, while `z_score=1` transforms columns.",
+   "`standard_scale` rescales either rows or columns using their minimum and maximum values.",
+   "Read reordered row indices from the returned grid's row dendrogram."
+  ],
+  "gotchas": [
+   "SciPy must be installed before calling this function.",
+   "The input must be rectangular and must not contain missing values.",
+   "Use the returned object's `savefig` method when saving, so dendrograms are not clipped."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "color_palette": {
   "sourceUrl": "https://seaborn.pydata.org/generated/seaborn.color_palette.html",
   "sourceTitle": "seaborn.color_palette",
@@ -447,6 +575,378 @@
    "Requesting more colors than a finite palette provides repeats its colors."
   ],
   "checkedAt": "2026-10-15"
+ },
+ "countplot": {
+  "sourceUrl": "https://seaborn.pydata.org/generated/seaborn.countplot.html",
+  "sourceTitle": "seaborn.countplot — seaborn 0.13.2 documentation",
+  "summary": "Draw bars showing how many observations fall in each categorical bin. Use hue to compare subgroups and stat to show values such as percentages.",
+  "explanation": "The function groups observations by categorical values and draws a bar for each group. Add hue to split each category by another variable, and use order or hue_order when you need a specific level order. By default, category positions are ordinal; native_scale=True preserves numeric or date positions.",
+  "syntax": "seaborn.countplot(data=None, *, x=None, y=None, hue=None, order=None, hue_order=None, orient=None, color=None, palette=None, saturation=0.75, fill=True, hue_norm=None, stat='count', width=0.8, dodge='auto', gap=0, log_scale=None, native_scale=False, formatter=None, legend='auto', ax=None, **kwargs)",
+  "parameters": [
+   {
+    "name": "data",
+    "type": "DataFrame, Series, dict, array, or list of arrays",
+    "description": "The dataset. Without x and y, it is treated as wide-form; otherwise it is expected to be long-form."
+   },
+   {
+    "name": "x",
+    "type": "name of variable in data or vector data",
+    "description": "Variable or vector to place on the horizontal axis."
+   },
+   {
+    "name": "y",
+    "type": "name of variable in data or vector data",
+    "description": "Variable or vector to place on the vertical axis."
+   },
+   {
+    "name": "hue",
+    "type": "name of variable in data or vector data",
+    "description": "Variable used to divide each category into subgroups."
+   },
+   {
+    "name": "order",
+    "type": "list of strings",
+    "description": "Order of the main categorical levels."
+   },
+   {
+    "name": "hue_order",
+    "type": "list of strings",
+    "description": "Order of the hue levels."
+   },
+   {
+    "name": "orient",
+    "type": "“v” | “h” | “x” | “y”",
+    "description": "Plot direction: vertical or horizontal."
+   },
+   {
+    "name": "stat",
+    "type": "string",
+    "description": "Statistic used for bar heights, such as count or percent."
+   },
+   {
+    "name": "native_scale",
+    "type": "boolean",
+    "description": "Keep numeric or date values on their native scale when true."
+   },
+   {
+    "name": "ax",
+    "type": "matplotlib Axes",
+    "description": "Axes to draw on. If omitted, the current Axes is used."
+   }
+  ],
+  "returns": "A matplotlib Axes object containing the plot.",
+  "example": {
+   "title": "Compare category percentages",
+   "code": "import seaborn as sns\n\nsns.countplot(data=titanic, x=\"class\", hue=\"survived\", stat=\"percent\")",
+   "language": "python",
+   "explanation": "This draws one bar for each class and separates the bars by survival status. The bar heights show percentages instead of raw counts."
+  },
+  "useCases": [
+   {
+    "title": "Category frequencies",
+    "scenario": "Count records in categories"
+   },
+   {
+    "title": "Grouped counts",
+    "scenario": "Compare category frequencies across a second variable"
+   },
+   {
+    "title": "Normalized category values",
+    "scenario": "Show shares instead of raw totals"
+   }
+  ],
+  "related": [
+   "histplot",
+   "barplot",
+   "catplot"
+  ],
+  "since": "0.13.0 (native_scale)",
+  "interview": [
+   {
+    "question": "What does countplot show?",
+    "answer": "countplot counts observations in each categorical bin and displays those counts as bars. It is similar to a histogram, but it groups a categorical rather than a quantitative variable.",
+    "followUp": "How can the chart compare subgroups? Add hue to divide each category by a second variable, and use hue_order to control that variable's level order."
+   },
+   {
+    "question": "Which parameters control grouping and ordering?",
+    "answer": "Use x or y to choose the categorical variable. Use hue to create subgroup bars, order or hue_order to set category order, and orient when the direction cannot be inferred.",
+    "followUp": "What happens when x and y are both omitted? The input is treated as wide-form data, so provide x or y for explicit long-form selection."
+   },
+   {
+    "question": "What does countplot return?",
+    "answer": "The function returns a matplotlib Axes object containing the drawn plot. The ax parameter lets you draw on a particular Axes; otherwise, it uses the current Axes.",
+    "followUp": "How would you preserve numeric category spacing? Pass native_scale=True, which disables the default ordinal positioning."
+   }
+  ],
+  "keyPoints": [
+   "Each bar represents the number of observations in one categorical bin.",
+   "Its main options follow the barplot interface, so nested category comparisons use familiar parameters.",
+   "Version 0.13.0 added native_scale, which keeps numeric or date values on their native axis scale.",
+   "Set order to control the main category sequence; otherwise Seaborn infers it from the input data.",
+   "The return value is a matplotlib Axes object, which can be used for further plot changes."
+  ],
+  "gotchas": [
+   "Numeric or date values are treated as categories by default, so their original spacing is not shown. Set native_scale=True when the actual spacing matters.",
+   "Without x or y, the input uses wide-form interpretation. Use x or y with long-form data when selecting a specific variable."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "displot": {
+  "sourceUrl": "https://seaborn.pydata.org/generated/seaborn.displot.html",
+  "sourceTitle": "seaborn.displot — seaborn 0.13.2 documentation",
+  "summary": "seaborn.displot() creates distribution plots at the figure level. It supports histograms, KDE curves, ECDF curves, grouping, and multiple subplot facets.",
+  "explanation": "displot() is a figure-level function for distribution charts. It creates a FacetGrid and can draw histograms, KDE curves, or ECDF curves. Use x and y for one- or two-variable distributions, hue for color-based groups, and row or col for separate panels.",
+  "syntax": "seaborn.displot(data=None, *, x=None, y=None, hue=None, row=None, col=None, weights=None, kind='hist', rug=False, rug_kws=None, log_scale=None, legend=True, palette=None, hue_order=None, hue_norm=None, color=None, col_wrap=None, row_order=None, col_order=None, height=5, aspect=1, facet_kws=None, **kwargs)",
+  "parameters": [
+   {
+    "name": "data",
+    "type": "pandas.DataFrame, numpy.ndarray, mapping, or sequence",
+    "description": "Input data. It can be long-form or wide-form data."
+   },
+   {
+    "name": "x",
+    "type": "vector or key in data",
+    "description": "Variable or data key for the x-axis."
+   },
+   {
+    "name": "y",
+    "type": "vector or key in data",
+    "description": "Variable or data key for the y-axis."
+   },
+   {
+    "name": "hue",
+    "type": "vector or key in data",
+    "description": "Variable used to split groups by color."
+   },
+   {
+    "name": "row",
+    "type": "vector or key in data",
+    "description": "Variable used to create rows of facets."
+   },
+   {
+    "name": "col",
+    "type": "vector or key in data",
+    "description": "Variable used to create columns of facets."
+   },
+   {
+    "name": "kind",
+    "type": "string",
+    "description": "Plot representation. The documented values are hist, kde, and ecdf."
+   },
+   {
+    "name": "rug",
+    "type": "boolean",
+    "description": "Add a rug showing individual observations."
+   },
+   {
+    "name": "log_scale",
+    "type": "boolean, number, or pair",
+    "description": "Use logarithmic scaling for the axes."
+   },
+   {
+    "name": "height",
+    "type": "number",
+    "description": "Set facet height in inches."
+   },
+   {
+    "name": "aspect",
+    "type": "number",
+    "description": "Set the facet width-to-height ratio."
+   }
+  ],
+  "returns": "A FacetGrid object containing the distribution plot.",
+  "example": {
+   "title": "Compare distributions with facets",
+   "code": "import seaborn as sns\n\npenguins = sns.load_dataset(\"penguins\")\nsns.displot(\n    data=penguins,\n    x=\"flipper_length_mm\",\n    hue=\"species\",\n    kind=\"kde\",\n    col=\"sex\",\n)",
+   "language": "python",
+   "explanation": "This draws one KDE distribution for each species and creates separate panels for each sex."
+  },
+  "useCases": [
+   {
+    "title": "Explore a distribution",
+    "scenario": "Inspect the shape, range, and common values of one numeric variable."
+   },
+   {
+    "title": "Compare groups",
+    "scenario": "Compare a measurement across categories using hue or separate facets."
+   },
+   {
+    "title": "View a bivariate distribution",
+    "scenario": "Show how two numeric variables occur together with a bivariate histogram or KDE."
+   },
+   {
+    "title": "Combine estimates with observations",
+    "scenario": "Display each observation while also showing a distribution estimate."
+   }
+  ],
+  "related": [
+   "histplot()",
+   "kdeplot()",
+   "ecdfplot()",
+   "rugplot()",
+   "jointplot()",
+   "FacetGrid"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does the kind parameter control?",
+    "answer": "The default kind is \"hist\", which creates a histogram. Other documented choices are \"kde\" for kernel density estimation and \"ecdf\" for empirical cumulative distributions.",
+    "followUp": "Which kinds support bivariate plots? Histograms and KDE plots support x and y together; ECDF is univariate-only."
+   },
+   {
+    "question": "How can displot compare subsets?",
+    "answer": "Use hue to calculate and distinguish distributions for groups. Use row or col to place groups in separate FacetGrid panels instead of only changing their colors.",
+    "followUp": "When might separate panels help? They can show each subset clearly, but direct comparison becomes harder than when distributions share one plot."
+   },
+   {
+    "question": "How do the main distribution plot kinds differ?",
+    "answer": "A histogram groups observations into bins and shows counts or another statistic. A KDE smooths observations into a continuous estimate, while an ECDF shows the cumulative proportion at each value.",
+    "followUp": "What avoids choosing a bin width or smoothing bandwidth? ECDF does not require either parameter, but its distribution shape can be less intuitive to read."
+   }
+  ],
+  "keyPoints": [
+   "displot() is figure-level and builds its result on a FacetGrid.",
+   "Set kind to choose a histogram, KDE, or ECDF representation.",
+   "Set rug=True to add marks for individual observations.",
+   "Options such as binwidth, kde, multiple, and bw_adjust are passed to the selected plotting function.",
+   "Provide both x and y to visualize a two-variable distribution.",
+   "Use height and aspect to control the size and shape of the generated facets."
+  ],
+  "gotchas": [
+   "Histogram results depend strongly on bin size. Check the distribution with more than one bin size before drawing conclusions.",
+   "KDE curves can go beyond natural data limits. Use cut=0 to stop the curve at the extreme observations, but this can make the ends look too low.",
+   "Avoid KDE for discrete or strongly repeated values. A histogram may show the data shape more faithfully."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "ecdfplot": {
+  "sourceUrl": "https://seaborn.pydata.org/generated/seaborn.ecdfplot.html",
+  "sourceTitle": "seaborn.ecdfplot — seaborn 0.13.2 documentation",
+  "summary": "Plot an empirical cumulative distribution function with Seaborn. It shows how the proportion, percentage, or count of observations accumulates across unique values.",
+  "explanation": "The function sorts observed values and draws the cumulative proportion, count, or percentage reached at each unique value. Use x or y to choose the variable, hue to draw separate groups, and complementary=True to show values above each point instead.",
+  "syntax": "seaborn.ecdfplot(data=None, *, x=None, y=None, hue=None, weights=None, stat='proportion', complementary=False, palette=None, hue_order=None, hue_norm=None, log_scale=None, legend=True, ax=None, **kwargs)",
+  "parameters": [
+   {
+    "name": "data",
+    "type": "pandas.DataFrame, numpy.ndarray, mapping, or sequence",
+    "description": "Input data structure. It can be long-form data or a wide-form dataset reshaped internally."
+   },
+   {
+    "name": "x",
+    "type": "vector or key in data",
+    "description": "Vector or column name that supplies positions on the x axis."
+   },
+   {
+    "name": "y",
+    "type": "vector or key in data",
+    "description": "Vector or column name that supplies positions on the y axis."
+   },
+   {
+    "name": "hue",
+    "type": "vector or key in data",
+    "description": "Variable used to choose colors for plot elements."
+   },
+   {
+    "name": "weights",
+    "type": "vector or key in data",
+    "description": "Values that weight each corresponding observation."
+   },
+   {
+    "name": "stat",
+    "type": "{\"proportion\", \"percent\", \"count\"}",
+    "description": "Vertical-axis statistic: proportion, percent, or count."
+   },
+   {
+    "name": "complementary",
+    "type": "bool",
+    "description": "Whether to use 1 minus the CDF."
+   },
+   {
+    "name": "palette",
+    "type": "string, list, dict, or matplotlib.colors.Colormap",
+    "description": "Method for choosing plot colors."
+   },
+   {
+    "name": "hue_order",
+    "type": "list-like",
+    "description": "Order for hue levels."
+   },
+   {
+    "name": "hue_norm",
+    "type": "tuple or matplotlib.colors.Normalize",
+    "description": "Normalization for hue values."
+   },
+   {
+    "name": "log_scale",
+    "type": "bool or number or pair of bools/numbers",
+    "description": "Whether to use logarithmic scaling, per axis or both."
+   },
+   {
+    "name": "legend",
+    "type": "bool",
+    "description": "Whether to show the legend."
+   }
+  ],
+  "returns": "matplotlib.axes.Axes: the Matplotlib axes containing the plot.",
+  "example": {
+   "title": "Compare distributions with an ECDF",
+   "code": "import seaborn as sns\nimport matplotlib.pyplot as plt\n\npenguins = sns.load_dataset(\"penguins\")\nsns.ecdfplot(data=penguins, x=\"flipper_length_mm\", hue=\"species\", stat=\"percent\")\nplt.show()",
+   "language": "python",
+   "explanation": "This draws one empirical cumulative distribution curve for each penguin species and uses percentages on the vertical axis."
+  },
+  "useCases": [
+   {
+    "title": "Group comparison",
+    "scenario": "Compare numeric distributions across categories"
+   },
+   {
+    "title": "Cumulative thresholds",
+    "scenario": "Show the cumulative percentage or count for measured values"
+   },
+   {
+    "title": "Direct observation view",
+    "scenario": "Display distributions without choosing histogram bins or density bandwidths"
+   }
+  ],
+  "related": [
+   "displot",
+   "histplot",
+   "kdeplot",
+   "rugplot"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does seaborn.ecdfplot show?",
+    "answer": "ecdfplot draws an empirical cumulative distribution function. It shows the proportion or count of observations at or below each unique data value, without histogram bins or density smoothing.",
+    "followUp": "What does complementary=True do? It switches the display to the complementary CDF, calculated as 1 minus the CDF."
+   },
+   {
+    "question": "How do you plot multiple distributions?",
+    "answer": "Use x or y to select the variable to plot. Use hue to split observations into groups and assign different colors to those groups.",
+    "followUp": "How can you control the group order? Pass the desired category order with hue_order."
+   },
+   {
+    "question": "How do you change the ECDF statistic?",
+    "answer": "The stat argument selects the vertical-axis measure. Its documented choices are proportion, percent, and count; proportion is the default.",
+    "followUp": "How can observations contribute unequally? Pass weights so each corresponding data point contributes according to its weight."
+   }
+  ],
+  "keyPoints": [
+   "An ECDF shows cumulative distribution values at unique observations.",
+   "Unlike histograms and density plots, it does not require bin widths or smoothing settings.",
+   "Use hue to create separate colored curves for groups.",
+   "Use weights when data points should have different contributions.",
+   "Choose proportion, percent, or count with stat.",
+   "Set complementary=True to plot the complementary cumulative distribution.",
+   "The function returns the Matplotlib Axes object containing the plot."
+  ],
+  "gotchas": [
+   "An ECDF can be less intuitive than other distribution plots for judging central tendency, variance, or bimodality.",
+   "Without x or y, Seaborn interprets the input as wide-form data and plots each numeric column."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "FacetGrid": {
   "sourceUrl": "https://seaborn.pydata.org/generated/seaborn.FacetGrid.html",
@@ -838,6 +1338,252 @@
   ],
   "checkedAt": "2026-10-15"
  },
+ "JointGrid": {
+  "sourceUrl": "https://seaborn.pydata.org/generated/seaborn.JointGrid.html",
+  "sourceTitle": "seaborn.JointGrid — seaborn 0.13.2 documentation",
+  "summary": "JointGrid builds a square layout with one bivariate plot and two marginal plots. Use it when you need direct control over these plots.",
+  "explanation": "JointGrid creates a square figure with one main bivariate axes and two marginal axes. You choose the data and variables when constructing it, then draw plots with plotting methods such as plot_joint(), plot_marginals(), or plot().",
+  "syntax": "seaborn.JointGrid(data=None, *, x=None, y=None, hue=None, height=6, ratio=5, space=0.2, palette=None, hue_order=None, hue_norm=None, dropna=False, xlim=None, ylim=None, marginal_ticks=False)",
+  "parameters": [
+   {
+    "name": "data",
+    "type": "pandas.DataFrame, numpy.ndarray, mapping, or sequence",
+    "description": "Input data, such as a pandas DataFrame, NumPy array, mapping, or sequence."
+   },
+   {
+    "name": "x, y",
+    "type": "vectors or keys in data",
+    "description": "Variables or data vectors that define the x and y positions."
+   },
+   {
+    "name": "hue",
+    "type": "vector or key in data",
+    "description": "Variable used to assign colors to plot elements."
+   },
+   {
+    "name": "height",
+    "type": "number",
+    "description": "Length of each side of the square figure, in inches."
+   },
+   {
+    "name": "ratio",
+    "type": "number",
+    "description": "Ratio of joint-axis height to marginal-axis height."
+   },
+   {
+    "name": "space",
+    "type": "number",
+    "description": "Gap between the joint and marginal axes."
+   },
+   {
+    "name": "dropna",
+    "type": "bool",
+    "description": "Whether to remove missing observations before plotting."
+   },
+   {
+    "name": "xlim, ylim",
+    "type": "pairs of numbers",
+    "description": "Limits applied to the x and y data axes."
+   },
+   {
+    "name": "marginal_ticks",
+    "type": "bool",
+    "description": "Whether to show ticks on the density axis of marginal plots."
+   }
+  ],
+  "returns": "plot_joint() returns the JointGrid instance, allowing method chaining. apply() also returns self; the supplied function's return value is ignored.",
+  "example": {
+   "title": "Draw a joint plot",
+   "code": "import seaborn as sns\n\npenguins = sns.load_dataset(\"penguins\")\ngrid = sns.JointGrid(\n    data=penguins,\n    x=\"bill_length_mm\",\n    y=\"bill_depth_mm\",\n)\ngrid.plot_joint(sns.scatterplot, s=40, alpha=0.7)",
+   "language": "python",
+   "explanation": "This creates a grid with a bivariate plot on its joint axes. The marginal axes remain available for separate plots."
+  },
+  "useCases": [
+   {
+    "title": "Show a relationship with marginal distributions",
+    "scenario": "You need a scatter, regression, or other two-variable plot with distributions beside it."
+   },
+   {
+    "title": "Customize each part independently",
+    "scenario": "The main plot and side plots need different functions or keyword arguments."
+   },
+   {
+    "title": "Build a controlled statistical figure",
+    "scenario": "You need to add reference lines or adjust the joint-to-marginal layout."
+   }
+  ],
+  "related": [
+   "jointplot",
+   "PairGrid",
+   "JointGrid.plot",
+   "JointGrid.plot_joint",
+   "JointGrid.plot_marginals",
+   "JointGrid.refline",
+   "JointGrid.pipe"
+  ],
+  "since": "0.12.0",
+  "interview": [
+   {
+    "question": "What is JointGrid used for?",
+    "answer": "JointGrid prepares one joint axes and two marginal axes for a bivariate plot with univariate plots at the sides. It gives more control than the figure-level jointplot() function.",
+    "followUp": "How can you use different options for the main and marginal plots? Call plot_joint() and plot_marginals() separately, passing keyword arguments to each call."
+   },
+   {
+    "question": "How does plot_joint() choose the plotting function's inputs?",
+    "answer": "plot_joint() draws a bivariate plot on the grid's joint axes. A seaborn function should accept x and y; a custom function must receive x and y vectors first and draw on the current axes.",
+    "followUp": "What extra requirement applies when the grid has hue? The plotting function must accept hue as a parameter."
+   },
+   {
+    "question": "What does JointGrid.apply() return?",
+    "answer": "apply() passes the grid object as the first argument to a user function and returns the same grid. The user's return value is discarded.",
+    "followUp": "Which method should you use to keep the user function's result? Use pipe(), whose purpose is to pass the grid to a function and return that function's value."
+   }
+  ],
+  "keyPoints": [
+   "Use the grid for one two-variable plot plus one-variable plots along the x and y margins.",
+   "Choose JointGrid when you need more control than the higher-level jointplot() interface provides.",
+   "The constructor creates the subplot layout and keeps the supplied data for later plotting calls.",
+   "plot() accepts one function for the joint axes and one function for both marginal axes.",
+   "plot_marginals() applies a one-variable plotting function to the two marginal axes.",
+   "refline() can add reference lines to the main plot, marginal plots, or both."
+  ],
+  "gotchas": [
+   "A function used with a hue value must accept hue. Not every axes-level plotting function supports it.",
+   "The figure is square by default. Resize it through Matplotlib if a different overall shape is needed.",
+   "apply() does not return the function's result. Use pipe() when that result is needed."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "jointplot": {
+  "sourceUrl": "https://seaborn.pydata.org/generated/seaborn.jointplot.html",
+  "sourceTitle": "seaborn.jointplot — seaborn 0.13.2 documentation",
+  "summary": "seaborn.jointplot draws a two-variable plot with a separate distribution plot on each margin. Use kind to choose the plot style and hue to split values by color.",
+  "explanation": "jointplot combines one plot for the relationship between two variables with one plot for each variable's distribution. It uses JointGrid internally and selects the underlying plot functions from kind, while hue can separate values by color.",
+  "syntax": "seaborn.jointplot(data=None, *, x=None, y=None, hue=None, kind='scatter', height=6, ratio=5, space=0.2, dropna=False, xlim=None, ylim=None, color=None, palette=None, hue_order=None, hue_norm=None, marginal_ticks=False, joint_kws=None, marginal_kws=None, **kwargs)",
+  "parameters": [
+   {
+    "name": "data",
+    "type": "pandas.DataFrame, numpy.ndarray, mapping, or sequence",
+    "description": "Input data, such as a pandas DataFrame, NumPy array, mapping, or sequence."
+   },
+   {
+    "name": "x, y",
+    "type": "vectors or keys in data",
+    "description": "Variables or data keys for the x and y axes."
+   },
+   {
+    "name": "hue",
+    "type": "vector or key in data",
+    "description": "Variable used to assign colors to plot elements."
+   },
+   {
+    "name": "kind",
+    "type": "{\"scatter\", \"kde\", \"hist\", \"hex\", \"reg\", \"resid\"}",
+    "description": "Plot style: scatter, kde, hist, hex, reg, or resid."
+   },
+   {
+    "name": "height",
+    "type": "numeric",
+    "description": "Square figure size."
+   },
+   {
+    "name": "ratio",
+    "type": "numeric",
+    "description": "Ratio of joint-axis height to marginal-axis height."
+   },
+   {
+    "name": "space",
+    "type": "numeric",
+    "description": "Gap between the joint and marginal axes."
+   },
+   {
+    "name": "dropna",
+    "type": "bool",
+    "description": "Whether to remove observations missing x or y."
+   },
+   {
+    "name": "xlim, ylim",
+    "type": "pairs of numbers",
+    "description": "Axis limits applied before plotting."
+   },
+   {
+    "name": "color",
+    "type": "matplotlib color",
+    "description": "Single color used when hue mapping is absent."
+   },
+   {
+    "name": "palette",
+    "type": "string, list, dict, or matplotlib.colors.Colormap",
+    "description": "Method or values used to choose colors."
+   },
+   {
+    "name": "hue_order",
+    "type": "list-like",
+    "description": "Ordering of hue levels."
+   }
+  ],
+  "returns": "JointGrid",
+  "example": {
+   "title": "Plot conditional distributions",
+   "code": "import seaborn as sns\n\npenguins = sns.load_dataset(\"penguins\")\ng = sns.jointplot(\n    data=penguins,\n    x=\"bill_length_mm\",\n    y=\"bill_depth_mm\",\n    hue=\"species\",\n    kind=\"kde\",\n)\n",
+   "language": "python",
+   "explanation": "This draws a bivariate KDE and separate marginal KDE curves for each species."
+  },
+  "useCases": [
+   {
+    "title": "Relationship exploration",
+    "scenario": "Explore whether two numeric variables move together while also seeing each variable's distribution."
+   },
+   {
+    "title": "Grouped analysis",
+    "scenario": "Compare relationships or distributions across categories using a color variable."
+   },
+   {
+    "title": "Alternative plot styles",
+    "scenario": "Show dense point data with bins, contours, or a fitted regression line."
+   }
+  ],
+  "related": [
+   "JointGrid",
+   "PairGrid",
+   "scatterplot()",
+   "kdeplot()",
+   "histplot()",
+   "regplot()",
+   "matplotlib.axes.Axes.hexbin()"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does seaborn.jointplot create and return?",
+    "answer": "jointplot shows a two-variable view in the center and one-variable views on the margins. It returns a JointGrid object that manages these axes.",
+    "followUp": "When would you choose JointGrid? Choose it when you need more control than the lightweight jointplot wrapper provides."
+   },
+   {
+    "question": "What does the kind parameter control?",
+    "answer": "kind selects the central and marginal plot approach. Supported values are scatter, kde, hist, hex, reg, and resid.",
+    "followUp": "Which kind uses hexagonal bins? kind=\"hex\" uses Matplotlib's hexbin operation for the bivariate histogram."
+   },
+   {
+    "question": "How does hue change a joint plot?",
+    "answer": "hue maps a semantic variable to colors. In the documented example, it colors the scatter plot by species and creates separate marginal density curves.",
+    "followUp": "What happens if hue is not used? The color parameter can provide one color, and otherwise the plot can use Matplotlib's property cycle."
+   }
+  ],
+  "keyPoints": [
+   "Use jointplot to inspect the relationship between two variables together with each variable's separate distribution.",
+   "Choose among six built-in plot styles with kind.",
+   "height sets the square figure size.",
+   "ratio controls the relative height of the main axes and marginal axes.",
+   "Set dropna=True to omit rows missing either plotted variable.",
+   "The function returns a JointGrid for the central and marginal subplots."
+  ],
+  "gotchas": [
+   "Use JointGrid instead when the wrapper does not provide enough layout or plotting control.",
+   "Extra keyword arguments affect the joint plot function, not necessarily the marginal plots; use marginal_kws for marginal settings."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "kdeplot": {
   "sourceUrl": "https://seaborn.pydata.org/generated/seaborn.kdeplot.html",
   "sourceTitle": "seaborn.kdeplot — seaborn 0.13.2 documentation",
@@ -1076,6 +1822,274 @@
   ],
   "checkedAt": "2026-10-15"
  },
+ "lmplot": {
+  "sourceUrl": "https://seaborn.pydata.org/generated/seaborn.lmplot.html",
+  "sourceTitle": "seaborn.lmplot — seaborn 0.13.2 documentation",
+  "summary": "lmplot() plots observations and regression fits across groups or subplot facets. It combines regplot() with FacetGrid.",
+  "explanation": "lmplot() combines a regression plot with a FacetGrid. It draws observations and a fitted model, then can split or color the results by other columns in a tidy DataFrame.",
+  "syntax": "seaborn.lmplot(data, *, x=None, y=None, hue=None, col=None, row=None, palette=None, col_wrap=None, height=5, aspect=1, markers='o', sharex=None, sharey=None, hue_order=None, col_order=None, row_order=None, legend=True, legend_out=None, x_estimator=None, x_bins=None, x_ci='ci', scatter=True, fit_reg=True, ci=95, n_boot=1000, units=None, seed=None, order=1, logistic=False, lowess=False, robust=False, logx=False, x_partial=None, y_partial=None, truncate=True, x_jitter=None, y_jitter=None, scatter_kws=None, line_kws=None, facet_kws=None)",
+  "parameters": [
+   {
+    "name": "data",
+    "type": "DataFrame",
+    "description": "Long-form DataFrame containing the observations."
+   },
+   {
+    "name": "x",
+    "type": "str, optional",
+    "description": "Column name used for the predictor."
+   },
+   {
+    "name": "y",
+    "type": "str, optional",
+    "description": "Column name used for the response."
+   },
+   {
+    "name": "hue",
+    "type": "str, optional",
+    "description": "Variable that defines colored subsets."
+   },
+   {
+    "name": "col",
+    "type": "str, optional",
+    "description": "Variable that defines facet columns."
+   },
+   {
+    "name": "row",
+    "type": "str, optional",
+    "description": "Variable that defines facet rows."
+   },
+   {
+    "name": "ci",
+    "type": "int or None",
+    "description": "Confidence interval percentage for the fit."
+   },
+   {
+    "name": "order",
+    "type": "int",
+    "description": "Polynomial degree for the regression fit."
+   },
+   {
+    "name": "logistic",
+    "type": "bool",
+    "description": "Use logistic regression for a binary response."
+   },
+   {
+    "name": "robust",
+    "type": "bool",
+    "description": "Use a robust regression fit."
+   },
+   {
+    "name": "lowess",
+    "type": "bool",
+    "description": "Use a LOWESS smoother."
+   },
+   {
+    "name": "x_jitter",
+    "type": "float, optional",
+    "description": "Add horizontal jitter to plotted x values."
+   }
+  ],
+  "returns": "A seaborn FacetGrid object containing the plots.",
+  "example": {
+   "title": "Compare regression fits by groups",
+   "code": "import seaborn as sns\n\npenguins = sns.load_dataset(\"penguins\")\ng = sns.lmplot(\n    data=penguins,\n    x=\"bill_length_mm\",\n    y=\"bill_depth_mm\",\n    hue=\"species\",\n    col=\"sex\",\n    height=4,\n)\ng.set_axis_labels(\"Bill length (mm)\", \"Bill depth (mm)\")",
+   "language": "python",
+   "explanation": "This plots bill measurements, fits one regression for each species, and puts sex groups in separate columns."
+  },
+  "useCases": [
+   {
+    "title": "Show a regression relationship",
+    "scenario": "Explore whether two quantitative variables have a simple relationship."
+   },
+   {
+    "title": "Color group fits with hue",
+    "scenario": "Compare fitted relationships across a category."
+   },
+   {
+    "title": "Create row and column facets",
+    "scenario": "Inspect relationships across two categorical dimensions."
+   },
+   {
+    "title": "Add scatterplot jitter",
+    "scenario": "Make discrete x or y values easier to inspect visually."
+   }
+  ],
+  "related": [
+   "regplot",
+   "FacetGrid",
+   "pairplot",
+   "jointplot"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is the difference between lmplot() and regplot()?",
+    "answer": "lmplot() is a figure-level function. It combines regplot() with FacetGrid so it can show regression fits for hue groups or row and column facets.",
+    "followUp": "How does it differ from regplot()? regplot() is axes-level and can accept arrays or Series, while lmplot() requires data and string column names."
+   },
+   {
+    "question": "How can lmplot() condition a regression on other variables?",
+    "answer": "Use hue to draw group fits on the same axes. Use col or row to place group levels in separate subplot columns or rows.",
+    "followUp": "Which grouping should usually come first? The documentation suggests using hue for the most important comparison, followed by col and row."
+   },
+   {
+    "question": "Which model options does lmplot() provide?",
+    "answer": "Use order greater than 1 for a polynomial fit, robust=True to reduce the influence of large residuals, logistic=True for a binary response, and lowess=True for a nonparametric smoother.",
+    "followUp": "Why might confidence intervals be disabled for logistic or robust fits? Their bootstrap calculation can make these fits slower, so ci=None can speed iteration."
+   }
+  ],
+  "keyPoints": [
+   "The function plots data and model fits across a grid of conditional subsets.",
+   "The data input should be a long-form DataFrame: columns hold variables and rows hold observations.",
+   "Regression choices include linear, polynomial, robust, logistic, and LOWESS approaches; choose compatible options rather than combining every mode.",
+   "By default, it fits y from x, shows a regression line, and displays a 95% confidence interval.",
+   "Use hue to compare multiple groups with separate colored fits on the same axes.",
+   "Set sharex=False and sharey=False inside facet_kws when each facet needs independent axis limits."
+  ],
+  "gotchas": [
+   "Pass a DataFrame with data, and give x and y as column-name strings.",
+   "Logistic and robust fits can take longer. Set ci=None when you do not need the bootstrap confidence interval.",
+   "x_jitter and y_jitter make discrete observations easier to see, but they do not change the fitted model."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "PairGrid": {
+  "sourceUrl": "https://seaborn.pydata.org/archive/0.12/generated/seaborn.PairGrid.html",
+  "sourceTitle": "seaborn.PairGrid — seaborn 0.12.2 documentation",
+  "summary": "PairGrid builds a grid of plots for pairwise relationships between dataset variables. It lets you choose different plotting functions for the diagonal, upper triangle, and lower triangle.",
+  "explanation": "PairGrid creates a grid where each row and column represents a data variable. Mapping methods place plotting functions on all cells, the diagonal, or selected triangles, so you can combine different plot types and add a hue variable.",
+  "syntax": "seaborn.PairGrid(data, *, hue=None, vars=None, x_vars=None, y_vars=None, hue_order=None, palette=None, hue_kws=None, corner=False, diag_sharey=True, height=2.5, aspect=1, layout_pad=0.5, despine=True, dropna=False)",
+  "parameters": [
+   {
+    "name": "data",
+    "type": "DataFrame",
+    "description": "Tidy DataFrame whose columns are variables and rows are observations."
+   },
+   {
+    "name": "hue",
+    "type": "string, optional",
+    "description": "Column used to assign colors to observations."
+   },
+   {
+    "name": "vars",
+    "type": "list of variable names, optional",
+    "description": "Variables to include in both grid dimensions."
+   },
+   {
+    "name": "x_vars, y_vars",
+    "type": "lists of variable names, optional",
+    "description": "Variables used for the grid columns and rows, respectively."
+   },
+   {
+    "name": "hue_order",
+    "type": "list of strings, optional",
+    "description": "Order of hue levels in the palette."
+   },
+   {
+    "name": "palette",
+    "type": "dict or seaborn color palette, optional",
+    "description": "Colors or a mapping of hue levels to colors."
+   },
+   {
+    "name": "hue_kws",
+    "type": "dict, optional",
+    "description": "Extra keyword mappings for hue levels."
+   },
+   {
+    "name": "corner",
+    "type": "bool, optional",
+    "description": "Whether to omit the upper triangle."
+   },
+   {
+    "name": "diag_sharey",
+    "type": "bool, optional",
+    "description": "Whether diagonal plots share their y-axis."
+   },
+   {
+    "name": "height",
+    "type": "scalar, optional",
+    "description": "Height of each facet in inches."
+   },
+   {
+    "name": "aspect",
+    "type": "scalar, optional",
+    "description": "Facet width divided by facet height."
+   },
+   {
+    "name": "layout_pad",
+    "type": "scalar, optional",
+    "description": "Padding passed to fig.tight_layout."
+   }
+  ],
+  "returns": "A PairGrid object whose plotting methods return the grid for continued configuration.",
+  "example": {
+   "title": "Pairwise relationships with PairGrid",
+   "code": "import seaborn as sns\n\npenguins = sns.load_dataset(\"penguins\")\ngrid = sns.PairGrid(penguins, hue=\"species\", corner=True)\ngrid.map_diag(sns.histplot)\ngrid.map_lower(sns.scatterplot)\ngrid.add_legend()",
+   "language": "python",
+   "explanation": "This creates a colored pairwise plot for the penguins data. It draws histograms on the diagonal and scatter plots below the diagonal."
+  },
+  "useCases": [
+   {
+    "title": "Pairwise data exploration",
+    "scenario": "Explore relationships among several numeric columns."
+   },
+   {
+    "title": "Combined distributions and relationships",
+    "scenario": "Compare variable distributions with relationships between variables."
+   },
+   {
+    "title": "Grouped visual analysis",
+    "scenario": "Show how groups differ across pairwise plots."
+   },
+   {
+    "title": "Non-square comparison grids",
+    "scenario": "Create a rectangular grid with different row and column variables."
+   }
+  ],
+  "related": [
+   "pairplot",
+   "FacetGrid",
+   "map",
+   "map_diag",
+   "map_lower",
+   "map_offdiag",
+   "map_upper",
+   "add_legend"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does PairGrid do?",
+    "answer": "PairGrid assigns variables to rows and columns, then creates a subplot for each pair. You call a mapping method to apply a plotting function to those subplots.",
+    "followUp": "How would you avoid duplicate relationships? Use map_lower() or map_upper() with corner=True so only one off-diagonal triangle is drawn."
+   },
+   {
+    "question": "How do PairGrid mapping methods differ?",
+    "answer": "map() applies one function throughout the grid. map_diag() targets diagonal cells, while map_upper(), map_lower(), and map_offdiag() target specific off-diagonal cells.",
+    "followUp": "How can the diagonal and off-diagonal plots differ? Map a univariate function with map_diag() and a bivariate function with map_offdiag()."
+   },
+   {
+    "question": "How does hue work in PairGrid?",
+    "answer": "The hue parameter colors observations by a variable and is passed to plotting functions that support it. A legend can be added with add_legend().",
+    "followUp": "What happens with a Matplotlib function that does not understand hue? PairGrid groups the data by hue level and draws a separate plot for each level."
+   }
+  ],
+  "keyPoints": [
+   "Each dataset variable becomes a row and a column in the grid.",
+   "You can choose different functions for the upper and lower parts of the grid.",
+   "The diagonal can display each variable's one-dimensional distribution.",
+   "Use vars to select one exact set of variables for the grid.",
+   "Use x_vars and y_vars to make a non-square grid.",
+   "Set corner=True to omit the upper triangle."
+  ],
+  "gotchas": [
+   "When you set hue, that column is not included among the default variables plotted on the rows and columns.",
+   "Diagonal distribution plots may use a different scale, so their tick marks do not represent counts or density directly.",
+   "Using both triangles can duplicate the same pairwise relationships; use corner=True or map only one triangle when appropriate."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "pairplot": {
   "sourceUrl": "https://seaborn.pydata.org/generated/seaborn.pairplot.html",
   "sourceTitle": "seaborn.pairplot — seaborn 0.13.2 documentation",
@@ -1203,6 +2217,263 @@
    "The diagonal is not another pairwise relationship; it displays a univariate distribution for each variable."
   ],
   "checkedAt": "2026-10-15"
+ },
+ "regplot": {
+  "sourceUrl": "https://seaborn.pydata.org/generated/seaborn.regplot.html",
+  "sourceTitle": "seaborn.regplot — seaborn 0.13.2 documentation",
+  "summary": "Use seaborn.regplot() to show data and a fitted regression relationship. It supports linear, polynomial, logistic, robust, log-linear, and LOWESS fits, with optional confidence intervals.",
+  "explanation": "regplot() draws data points and fits a regression model between x and y. It can show a confidence interval and offers alternatives such as polynomial, logistic, robust, log-linear, and LOWESS fits.",
+  "syntax": "seaborn.regplot(data=None, *, x=None, y=None, x_estimator=None, x_bins=None, x_ci='ci', scatter=True, fit_reg=True, ci=95, n_boot=1000, units=None, seed=None, order=1, logistic=False, lowess=False, robust=False, logx=False, x_partial=None, y_partial=None, truncate=True, dropna=True, x_jitter=None, y_jitter=None, label=None, color=None, marker='o', scatter_kws=None, line_kws=None, ax=None)",
+  "parameters": [
+   {
+    "name": "x",
+    "type": "string, series, or vector array",
+    "description": "Input x variable, as a column name, Series, or vector array."
+   },
+   {
+    "name": "y",
+    "type": "string, series, or vector array",
+    "description": "Input y variable, as a column name, Series, or vector array."
+   },
+   {
+    "name": "data",
+    "type": "DataFrame",
+    "description": "Long-form DataFrame containing the variables."
+   },
+   {
+    "name": "x_estimator",
+    "type": "callable, optional",
+    "description": "Function applied to y values for each unique x value."
+   },
+   {
+    "name": "x_bins",
+    "type": "int or vector, optional",
+    "description": "Number or positions of bins used for displayed x summaries."
+   },
+   {
+    "name": "x_ci",
+    "type": "\"ci\", \"sd\", int in [0, 100], or None",
+    "description": "How to display uncertainty for x summaries."
+   },
+   {
+    "name": "scatter",
+    "type": "bool",
+    "description": "Whether to draw the scatterplot."
+   },
+   {
+    "name": "fit_reg",
+    "type": "bool",
+    "description": "Whether to draw the regression fit."
+   },
+   {
+    "name": "ci",
+    "type": "int in [0, 100] or None",
+    "description": "Confidence interval size for the regression fit."
+   },
+   {
+    "name": "n_boot",
+    "type": "int",
+    "description": "Number of bootstrap resamples for confidence intervals."
+   },
+   {
+    "name": "units",
+    "type": "variable name or vector, optional",
+    "description": "Variable used to account for repeated measurements during bootstrapping."
+   },
+   {
+    "name": "seed",
+    "type": "int, Generator, or RandomState, optional",
+    "description": "Seed or random generator for reproducible bootstrapping."
+   }
+  ],
+  "returns": "A matplotlib Axes object containing the plot.",
+  "example": {
+   "title": "Basic regression plot",
+   "code": "import seaborn as sns\nimport matplotlib.pyplot as plt\n\nmpg = sns.load_dataset(\"mpg\")\nsns.regplot(data=mpg, x=\"weight\", y=\"acceleration\", ci=None)\nplt.show()",
+   "language": "python",
+   "explanation": "This draws the observations, a fitted linear regression line, and no confidence interval."
+  },
+  "useCases": [
+   {
+    "title": "Basic regression visualization",
+    "scenario": "Explore a possible relationship between two numeric variables."
+   },
+   {
+    "title": "Nonlinear trend exploration",
+    "scenario": "Show a curved trend with a polynomial fit."
+   },
+   {
+    "title": "Binary outcome visualization",
+    "scenario": "Model a binary response variable."
+   },
+   {
+    "title": "Discrete-data display",
+    "scenario": "Make discrete x values easier to read."
+   }
+  ],
+  "related": [
+   "lmplot",
+   "jointplot",
+   "pairplot",
+   "residplot"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How does regplot() differ from lmplot()?",
+    "answer": "regplot() is an axes-level function. It draws one relationship on an existing Matplotlib Axes, while lmplot() is figure-level and combines regplot() with FacetGrid.",
+    "followUp": "How can several groups be shown? Use lmplot() with hue or faceting, because regplot() always shows one relationship."
+   },
+   {
+    "question": "How do you fit a nonlinear trend?",
+    "answer": "Set order to an integer greater than 1 to fit a polynomial regression. For example, order=2 can show a quadratic trend.",
+    "followUp": "When might this be misleading? A higher-order curve can describe nonlinear patterns, but the plot is still an exploratory visual guide rather than a full statistical analysis."
+   },
+   {
+    "question": "When should logistic regression be used?",
+    "answer": "Set logistic=True when y is binary. The fitted line then represents the estimated probability that y equals 1 for a given x value.",
+    "followUp": "How can plotting become faster? Set ci=None to disable the bootstrap confidence interval, which is useful for logistic or robust regression."
+   }
+  ],
+  "keyPoints": [
+   "By default, the function plots the data and a linear regression fit.",
+   "Use x_estimator to summarize y for each distinct x value, which helps with discrete x data.",
+   "Use x_bins to group x values for displayed summaries; this does not change the regression fit.",
+   "The marker argument selects the symbol used for scatterplot points.",
+   "Pass scatter_kws and line_kws to control the point and fitted-line drawing settings.",
+   "The function returns the Matplotlib Axes that contains the plot."
+  ],
+  "gotchas": [
+   "x_bins changes the displayed points, not the data used to fit the regression.",
+   "LOWESS does not provide a confidence interval.",
+   "Logistic regression can take more time, especially when confidence intervals use bootstrapping."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "relplot": {
+  "sourceUrl": "https://seaborn.pydata.org/generated/seaborn.relplot.html",
+  "sourceTitle": "seaborn.relplot — seaborn 0.13.2 documentation",
+  "summary": "relplot() draws scatter or line plots at the figure level. It can map extra variables to color, size, and style, and can create subplot facets.",
+  "explanation": "relplot() is a figure-level function for relational plots. It chooses scatterplot() or lineplot(), maps extra variables with hue, size, and style, and can split data into subplot grids with row and col.",
+  "syntax": "seaborn.relplot(data=None, *, x=None, y=None, hue=None, size=None, style=None, units=None, weights=None, row=None, col=None, col_wrap=None, row_order=None, col_order=None, palette=None, hue_order=None, hue_norm=None, sizes=None, size_order=None, size_norm=None, markers=None, dashes=None, style_order=None, legend='auto', kind='scatter', height=5, aspect=1, facet_kws=None, **kwargs)",
+  "parameters": [
+   {
+    "name": "data",
+    "type": "DataFrame or compatible data",
+    "description": "Input data in long or wide form."
+   },
+   {
+    "name": "x, y",
+    "type": "string or vector",
+    "description": "Variables for the horizontal and vertical axes."
+   },
+   {
+    "name": "hue, size, style",
+    "type": "string or vector",
+    "description": "Variables mapped to color, point or line size, and marker or dash style."
+   },
+   {
+    "name": "row, col",
+    "type": "string or vector",
+    "description": "Variables used to create row and column facets."
+   },
+   {
+    "name": "col_wrap",
+    "type": "int",
+    "description": "Maximum number of column facets before wrapping into rows."
+   },
+   {
+    "name": "kind",
+    "type": "string",
+    "description": "Plot type. The choices are \"scatter\" and \"line\"."
+   },
+   {
+    "name": "height",
+    "type": "float",
+    "description": "Height of each facet in inches."
+   },
+   {
+    "name": "aspect",
+    "type": "float",
+    "description": "Facet width divided by facet height."
+   },
+   {
+    "name": "facet_kws",
+    "type": "dict",
+    "description": "Other keyword arguments passed to FacetGrid."
+   },
+   {
+    "name": "**kwargs",
+    "type": "key-value pairs",
+    "description": "Other keyword arguments passed to the selected plotting function."
+   }
+  ],
+  "returns": "FacetGrid",
+  "example": {
+   "title": "Scatter plot with facets",
+   "code": "import seaborn as sns\n\nsns.set_theme(style=\"darkgrid\")\ntips = sns.load_dataset(\"tips\")\n\ng = sns.relplot(\n    data=tips,\n    x=\"total_bill\",\n    y=\"tip\",\n    hue=\"day\",\n    col=\"time\",\n    kind=\"scatter\",\n)\ng.set_axis_labels(\"Total bill\", \"Tip\")",
+   "language": "python",
+   "explanation": "This creates scatter plots of tips against total bills and makes one facet for each meal time. Point colors show the day."
+  },
+  "useCases": [
+   {
+    "title": "Grouped scatter plot",
+    "scenario": "Compare two numeric variables and show groups with color or marker changes."
+   },
+   {
+    "title": "Trend line",
+    "scenario": "Show how a value changes over an ordered or continuous variable."
+   },
+   {
+    "title": "Faceted comparison",
+    "scenario": "Compare the same relationship across categories."
+   },
+   {
+    "title": "Separate measurement lines",
+    "scenario": "Show repeated measurements for individual sampling units."
+   }
+  ],
+  "related": [
+   "scatterplot()",
+   "lineplot()",
+   "FacetGrid",
+   "hue",
+   "size",
+   "style",
+   "col_wrap"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does relplot() do?",
+    "answer": "relplot() is a figure-level function that combines a FacetGrid with scatterplot() or lineplot(). The kind argument selects the axes-level function.",
+    "followUp": "How would you show trends instead of individual observations? Set kind=\"line\"; lineplot() sorts x values and aggregates repeated observations by default."
+   },
+   {
+    "question": "How do semantic mappings work?",
+    "answer": "Use hue, size, and style to map additional variables to color, size, and marker or line style. These mappings identify subsets of the data.",
+    "followUp": "How can you improve accessibility? Map the same variable to both hue and style, or use style so groups remain distinguishable without color."
+   },
+   {
+    "question": "How does relplot() create multiple subplots?",
+    "answer": "Use row and col to create facets, and col_wrap to wrap column facets across rows. height controls each facet's height, while aspect controls its width-to-height ratio.",
+    "followUp": "What object does the function return? It always returns a FacetGrid, which provides methods for changing labels, titles, and axes."
+   }
+  ],
+  "keyPoints": [
+   "relplot() creates a figure-level relational plot managed by a FacetGrid.",
+   "kind=\"scatter\" uses scatterplot(), while kind=\"line\" uses lineplot().",
+   "hue, size, and style add visual mappings for data subsets.",
+   "Set col or row to divide the data into subplot facets.",
+   "Use col_wrap when many column levels should flow across multiple rows.",
+   "The return value is always a FacetGrid, even when there is only one plot."
+  ],
+  "gotchas": [
+   "Using hue, size, and style together can make a plot difficult to read.",
+   "Line plots use bootstrapped confidence intervals by default, which can be slow for large data.",
+   "Wide-form data can be used, but it cannot be faceted."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "scatterplot": {
   "sourceUrl": "https://seaborn.pydata.org/generated/seaborn.scatterplot",
@@ -1443,5 +2714,137 @@
    "Do not assume the changes are limited to Seaborn-generated figures."
   ],
   "checkedAt": "2026-10-15"
+ },
+ "violinplot": {
+  "sourceUrl": "https://seaborn.pydata.org/generated/seaborn.violinplot.html",
+  "sourceTitle": "seaborn.violinplot — seaborn 0.13.2 documentation",
+  "summary": "Draw violin plots that show estimated data distributions for groups. Add inner summaries or observations, and control smoothing, width normalization, splitting, and axis scaling.",
+  "explanation": "The function groups observations using categorical variables, then estimates the distribution of a numeric variable with a KDE. It draws each estimate as a violin and can add an inner box, quartiles, points, or sticks. Width normalization, smoothing, splitting, orientation, and numeric axis handling are configurable.",
+  "syntax": "seaborn.violinplot(data=None, *, x=None, y=None, hue=None, order=None, hue_order=None, orient=None, color=None, palette=None, saturation=0.75, fill=True, inner='box', split=False, width=0.8, dodge='auto', gap=0, linewidth=None, linecolor='auto', cut=2, gridsize=100, bw_method='scott', bw_adjust=1, density_norm='area', common_norm=False, hue_norm=None, formatter=None, log_scale=None, native_scale=False, legend='auto', scale=<deprecated>, scale_hue=<deprecated>, bw=<deprecated>, inner_kws=None, ax=None, **kwargs)",
+  "parameters": [
+   {
+    "name": "data",
+    "type": "DataFrame, Series, dict, array, or list of arrays",
+    "description": "Dataset for plotting. Without x and y, data is treated as wide-form; otherwise it is expected to be long-form."
+   },
+   {
+    "name": "x",
+    "type": "names of variables in data or vector data",
+    "description": "Variable used for the horizontal coordinate or vector data."
+   },
+   {
+    "name": "y",
+    "type": "names of variables in data or vector data",
+    "description": "Variable used for the vertical coordinate or vector data."
+   },
+   {
+    "name": "hue",
+    "type": "names of variables in data or vector data",
+    "description": "Variable that creates additional groups within each category."
+   },
+   {
+    "name": "order",
+    "type": "list of strings",
+    "description": "Explicit order for categorical levels."
+   },
+   {
+    "name": "hue_order",
+    "type": "list of strings",
+    "description": "Explicit order for hue levels."
+   },
+   {
+    "name": "orient",
+    "type": "“v” | “h” | “x” | “y”",
+    "description": "Plot orientation: vertical or horizontal."
+   },
+   {
+    "name": "color / palette",
+    "type": "color / palette",
+    "description": "Color or palette used for the violins."
+   },
+   {
+    "name": "fill",
+    "type": "bool",
+    "description": "Whether violin bodies are filled."
+   },
+   {
+    "name": "split",
+    "type": "bool",
+    "description": "Whether to divide violins between hue groups."
+   },
+   {
+    "name": "width",
+    "type": "float",
+    "description": "Width of the violin elements."
+   },
+   {
+    "name": "gap",
+    "type": "float",
+    "description": "Gap between dodged violins."
+   }
+  ],
+  "returns": "A matplotlib Axes object containing the drawn plot.",
+  "example": {
+   "title": "Compare grouped distributions",
+   "code": "import seaborn as sns\nimport matplotlib.pyplot as plt\n\npenguins = sns.load_dataset(\"penguins\")\nsns.violinplot(\n    data=penguins,\n    x=\"species\",\n    y=\"body_mass_g\",\n    hue=\"sex\",\n    split=True,\n    inner=\"quart\",\n    cut=0,\n)\nplt.show()",
+   "language": "python",
+   "explanation": "This compares body mass across penguin species. Each violin is split by sex, shows quartiles, and does not extend beyond observed values."
+  },
+  "useCases": [
+   {
+    "title": "Compare group distributions",
+    "scenario": "Compare a numeric measurement across several categories."
+   },
+   {
+    "title": "Show hue groups with split violins",
+    "scenario": "Compare two subgroups within each category."
+   },
+   {
+    "title": "Reveal observations",
+    "scenario": "Show individual values inside a distribution."
+   },
+   {
+    "title": "Preserve native axis values",
+    "scenario": "Keep numeric or date category spacing."
+   }
+  ],
+  "related": [
+   "boxplot",
+   "stripplot",
+   "swarmplot",
+   "catplot"
+  ],
+  "since": "0.13.0",
+  "interview": [
+   {
+    "question": "What does violinplot show?",
+    "answer": "It groups the data and draws a kernel density estimate for each group. The violin can also contain box-plot statistics or observations.",
+    "followUp": "Why can a violin be misleading for a small group? Its KDE is affected by sample size and may look smoother than the data supports."
+   },
+   {
+    "question": "How do you compare two hue groups in one violin?",
+    "answer": "split=True divides a violin between hue levels, which lets two distributions share one category position. In current Seaborn versions, a single violin can also be split.",
+    "followUp": "How would you add group summaries? Use inner=\"quart\" or the default inner=\"box\", and adjust inner_kws when needed."
+   },
+   {
+    "question": "When should native_scale be used?",
+    "answer": "Use native_scale=True when the categorical-looking axis contains numeric or date values that should keep their original spacing. Otherwise Seaborn places categories at ordinal positions such as 0, 1, and 2.",
+    "followUp": "How can category labels be customized? Pass formatter with a function that defines how category values are displayed."
+   }
+  ],
+  "keyPoints": [
+   "Use a violin plot to compare distributions across groups in a form similar to a box plot.",
+   "The violin outline represents a KDE, so its width shows estimated density rather than individual values.",
+   "Set fill=False when you want outlines instead of filled violin shapes.",
+   "Use inner=\"stick\" or inner=\"point\" to display the observations inside each distribution.",
+   "Set density_norm=\"count\" when violin width should reflect the number of observations.",
+   "Increase or decrease bw_adjust to control KDE smoothing; smaller values produce less smoothing."
+  ],
+  "gotchas": [
+   "KDE shape depends on the sample size, so a smooth violin from a small dataset can give a misleading impression.",
+   "Set cut=0 when the density must stay within the observed minimum and maximum.",
+   "Categorical positions are used by default. Set native_scale=True to preserve numeric or date values on the categorical axis."
+  ],
+  "checkedAt": "2026-11-03"
  }
 }

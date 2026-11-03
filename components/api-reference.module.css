@@ -1570,3 +1570,16 @@
   margin-left: 0;
   margin-top: auto;
 }
+.entry[data-locked] { background: #f7f6f1; }
+.entry[data-locked] .entryLink { color: #73726c; cursor: not-allowed; text-decoration: none; }
+.entryArt { position: relative; display: grid; place-items: center; width: 100%; height: 100%; background-color: var(--art-bg); background-image: radial-gradient(circle at 1px 1px, var(--art-dot) 1.2px, transparent 0), linear-gradient(135deg, var(--art-bg), var(--art-bg-2)); background-size: 18px 18px, auto; }
+.entryArt[data-tone="0"] { --art-bg: #f4f1fb; --art-bg-2: #e6dff6; --art-dot: #cfc3ec; --art-ink: #5b4388; }
+.entryArt[data-tone="1"] { --art-bg: #eef6f1; --art-bg-2: #d9ecdf; --art-dot: #bcdcc7; --art-ink: #2f6b47; }
+.entryArt[data-tone="2"] { --art-bg: #fdf4e7; --art-bg-2: #f8e5c8; --art-dot: #efd5a8; --art-ink: #7d5a0f; }
+.entryArt[data-tone="3"] { --art-bg: #edf4fa; --art-bg-2: #d8e7f4; --art-dot: #bdd6ea; --art-ink: #2a5c84; }
+.entryArt[data-tone="4"] { --art-bg: #fdf1ee; --art-bg-2: #f8dfd7; --art-dot: #f0c9bc; --art-ink: #8f3f23; }
+.entryArt[data-tone="5"] { --art-bg: #eff8f8; --art-bg-2: #d8eeef; --art-dot: #bcdfe1; --art-ink: #17616a; }
+.entryArtMark { display: grid; place-items: center; width: 76px; height: 76px; border-radius: 20px; background: #fff; font-size: 34px; line-height: 1; box-shadow: 0 16px 30px -18px var(--art-ink); }
+.entryArtKind { position: absolute; top: 12px; left: 12px; padding: 3px 9px; border-radius: 999px; background: rgba(255, 255, 255, .8); color: var(--art-ink); font-size: 12px; }
+/* Cards in a row share a height, so one long summary would open a gap in every card beside it. */
+.entryCard .entrySummary { display: -webkit-box; overflow: hidden; -webkit-box-orient: vertical; -webkit-line-clamp: 3; line-clamp: 3; text-align: left; }

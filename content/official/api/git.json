@@ -1,4 +1,600 @@
 {
+ ".gitattributes": {
+  "sourceUrl": "https://git-scm.com/docs/gitattributes",
+  "sourceTitle": "Git - gitattributes Documentation",
+  "summary": "`.gitattributes` defines path-specific rules for Git. Rules can control line endings, filters, diffs, merges, and archive behavior.",
+  "explanation": "Git reads attribute rules from files such as .gitattributes and applies matching rules to paths. A rule contains a pattern and one or more attributes. An attribute can be enabled, disabled, assigned a string value, or reset to unspecified. Later matching rules override earlier ones for each attribute.",
+  "syntax": "pattern attr1 attr2 ...",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Set path attributes",
+   "code": "*.txt text\n*.sh text eol=lf\n*.jpg -text\n\nprintf 'hello\\n' > notes.txt\ngit add --renormalize .\ngit status",
+   "language": "bash",
+   "explanation": "This marks text files for line-ending normalization, keeps shell files with LF endings, and excludes JPG files. The renormalize command updates the index using the new rules."
+  },
+  "useCases": [
+   {
+    "title": "Normalize line endings",
+    "scenario": "A project is edited on systems with different line-ending conventions."
+   },
+   {
+    "title": "Run content filters",
+    "scenario": "A file needs a custom transformation when staged or checked out."
+   },
+   {
+    "title": "Mark special files",
+    "scenario": "A binary or machine-generated file should not receive normal text handling."
+   },
+   {
+    "title": "Control archives",
+    "scenario": "Generated files should be omitted from exported archives."
+   }
+  ],
+  "related": [
+   ".gitattributes",
+   "$GIT_DIR/info/attributes",
+   "core.attributesFile",
+   "text",
+   "eol",
+   "working-tree-encoding",
+   "filter",
+   "diff"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How are attributes represented and overridden?",
+    "answer": "Git reads a pattern followed by attributes. A name enables an attribute, `-name` disables it, `name=value` assigns a value, and `!name` resets it to unspecified. Later matching lines override earlier lines per attribute.",
+    "followUp": "Where should shared rules go? Put them in a versioned `.gitattributes` file; use `$GIT_DIR/info/attributes` for rules limited to one repository and one user's workflow."
+   },
+   {
+    "question": "What does the `text` attribute do?",
+    "answer": "The `text` attribute controls line-ending normalization. Git stores normalized text with LF in the repository, while `eol` can select the working-tree line-ending style for a path.",
+    "followUp": "How would you normalize an existing repository? Add the rule, run `git add --renormalize .`, inspect `git status`, and commit the result."
+   },
+   {
+    "question": "When are clean and smudge filters used?",
+    "answer": "A filter attribute selects a configured clean and smudge process. The clean process runs when content is staged, and the smudge process runs when content is checked out.",
+    "followUp": "What property should a clean filter have? Running it twice should produce the same result as running it once, so repeated staging does not keep changing content."
+   }
+  ],
+  "keyPoints": [
+   "`.gitattributes` assigns behavior to paths in a repository.",
+   "Each rule has a path pattern followed by one or more attributes.",
+   "Use `name=value` when an attribute needs a string value.",
+   "Rules later in the file take precedence for attributes they also set.",
+   "Repository-local rules in `$GIT_DIR/info/attributes` have the highest precedence.",
+   "The `text` attribute enables Git's line-ending conversion for a path."
+  ],
+  "gotchas": [
+   "Attribute files cannot use negative patterns.",
+   "A directory pattern does not automatically apply to files below it; use `path/**` when needed.",
+   "After changing a clean filter, run `git add --renormalize .`."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ ".gitconfig": {
+  "sourceUrl": "https://git-scm.com/docs/git-config/2.48.0",
+  "sourceTitle": "Git - git-config Documentation",
+  "summary": "git config reads and changes Git settings. Settings can apply to the system, one user, one repository, or one worktree.",
+  "explanation": "Git reads configuration from system, global, repository, and sometimes worktree files. Later files override earlier single values. Use a scope option to choose where Git reads or writes a setting.",
+  "syntax": "git config [<options>] [<action>] [<name> [<value> [<value-pattern>]]]\n git config [<options>] [<action>] --list",
+  "parameters": [
+   {
+    "name": "name",
+    "type": "string",
+    "description": "Configuration key, usually written as section.name, such as core.editor."
+   },
+   {
+    "name": "value",
+    "type": "string",
+    "description": "New value when setting a key. Some commands also accept a value pattern for matching."
+   },
+   {
+    "name": "scope",
+    "type": "option",
+    "description": "Configuration source selector, such as --global, --local, --system, --worktree, or --file."
+   }
+  ],
+  "returns": "Read operations return the requested value or an error if no value is found. Writing operations update the selected configuration file.",
+  "example": {
+   "title": "Set and read Git configuration",
+   "code": "git config --global user.name \"Ada Lovelace\"\ngit config --global user.email ada@example.com\n\ngit config --local core.editor \"code --wait\"\ngit config --local --get core.editor",
+   "language": "bash",
+   "explanation": "This sets user details in the global configuration, sets an editor in the repository configuration, and reads that local value."
+  },
+  "useCases": [
+   {
+    "title": "Configure user identity",
+    "scenario": "Set a name and email for all repositories on one machine."
+   },
+   {
+    "title": "Set repository behavior",
+    "scenario": "Keep a setting limited to one repository."
+   },
+   {
+    "title": "Configure a worktree",
+    "scenario": "Use different settings for linked worktrees."
+   },
+   {
+    "title": "Read or edit configuration",
+    "scenario": "Inspect or change a setting in a chosen configuration file."
+   }
+  ],
+  "related": [
+   "git config set",
+   "git config get",
+   "git config list",
+   "core.editor",
+   "user.name",
+   "user.email",
+   "extensions.worktreeConfig"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How does Git choose between configuration files?",
+    "answer": "Git normally reads system, global, repository, and, when enabled, worktree configuration. For a single-valued setting, a later value takes precedence over an earlier one.",
+    "followUp": "How can a script provide temporary configuration without editing files? Use git -c key=value for a command, or the GIT_CONFIG_COUNT, GIT_CONFIG_KEY_n, and GIT_CONFIG_VALUE_n environment variables for runtime pairs."
+   },
+   {
+    "question": "How do you select a configuration scope?",
+    "answer": "Use --global for the user configuration, --system for the system file, --local for the repository file, and --worktree for config.worktree when worktree configuration is enabled. --file selects a specific file.",
+    "followUp": "What happens with --global when both global paths exist? Git reads $XDG_CONFIG_HOME/git/config and ~/.gitconfig in that order."
+   },
+   {
+    "question": "How are configuration names structured?",
+    "answer": "A Git configuration file contains sections and variables. A variable name is the final dot-separated part, and a subsection is written in quotes in a header such as [remote \"origin\"].",
+    "followUp": "What is special about repeated variables? They are multivalued, so commands can read all values rather than only the last one."
+   }
+  ],
+  "keyPoints": [
+   "Git can read settings from system, global, repository, and optional worktree files.",
+   "For a single-valued setting, a value from a later source overrides an earlier value.",
+   "Without a scope option, writing targets the repository's .git/config file.",
+   "--global limits reads to the global configuration files and writes to the global location.",
+   "--worktree uses config.worktree only when worktree configuration is enabled; otherwise it acts like --local.",
+   "A variable may have several values, and Git can use all occurrences of that variable."
+  ],
+  "gotchas": [
+   "A command changes only one configuration file. Choose the target with --system, --global, --local, --worktree, or --file.",
+   "A missing or unreadable repository configuration file causes an error, unlike missing global or system files, which Git ignores.",
+   "Section names and variable names are case-insensitive, but subsection names preserve case and have different allowed characters."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ ".gitignore": {
+  "sourceUrl": "https://git-scm.com/docs/gitignore",
+  "sourceTitle": "Git - gitignore Documentation",
+  "summary": "A .gitignore file tells Git which untracked paths to ignore. Its patterns support directory-relative matching, wildcards, and exceptions with !.",
+  "explanation": "Git reads patterns from .gitignore files and other exclude files. Patterns can match files or directories, use shell-style wildcards, and be reversed with a leading !. A tracked file is not affected by a matching pattern; remove it from the index first with git rm --cached.",
+  "syntax": ".gitignore\n$XDG_CONFIG_HOME/git/ignore\n$GIT_COMMON_DIR/info/exclude",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "A .gitignore file",
+   "code": "# Ignore editor backups everywhere in this repository\n*.swp\n\n# Ignore only the root build directory\n/build/\n\n# Ignore generated HTML under Documentation, except one kept file\nDocumentation/*.html\n!Documentation/foo.html",
+   "language": "bash",
+   "explanation": "Save these patterns in a repository .gitignore file. Git ignores matching untracked paths. The later exception keeps foo.html visible."
+  },
+  "useCases": [
+   {
+    "title": "Share project ignore rules",
+    "scenario": "A build creates files that should not be committed by any developer."
+   },
+   {
+    "title": "Keep repository-local files private",
+    "scenario": "One repository needs local ignore rules that should not be committed."
+   },
+   {
+    "title": "Ignore user-wide temporary files",
+    "scenario": "An editor creates backup files in many repositories."
+   }
+  ],
+  "related": [
+   "git rm --cached",
+   "git-check-ignore",
+   "core.excludesFile",
+   "$GIT_COMMON_DIR/info/exclude"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is the purpose of .gitignore?",
+    "answer": "A .gitignore file contains patterns for intentionally untracked paths. Git checks patterns from the relevant directory and its parents, and a lower directory's file can override a higher one.",
+    "followUp": "What wins when several patterns match?"
+   },
+   {
+    "question": "How does a slash affect a pattern?",
+    "answer": "A pattern without a slash can match at any level below the .gitignore file. A slash at the start or middle makes the pattern relative to that file's directory.",
+    "followUp": "What does a trailing slash change?"
+   },
+   {
+    "question": "How do negation patterns work?",
+    "answer": "A leading ! reverses an earlier ignore rule. The exception works only when no parent directory of the target is excluded.",
+    "followUp": "How can a file inside an otherwise excluded tree be restored?"
+   }
+  ],
+  "keyPoints": [
+   "Use .gitignore to keep selected untracked files out of normal Git operations.",
+   "When rules at the same precedence match, the last matching rule wins.",
+   "Git can use a .gitignore beside the path, or one in a parent directory up to the worktree root.",
+   "Put shared project rules in .gitignore so cloned repositories receive them.",
+   "The * wildcard matches any sequence except a directory separator.",
+   "The ? wildcard matches exactly one non-separator character.",
+   "A pattern ending in /** matches all contents below that directory."
+  ],
+  "gotchas": [
+   "Adding a tracked file to .gitignore does not stop tracking it. Use git rm --cached, then add its name to .gitignore.",
+   "An exception cannot restore a file inside an excluded parent directory. Keep the parent directory reachable, then exclude its contents.",
+   "Blank lines do not create ignore rules. They only separate groups of patterns.",
+   "Do not end a pattern with an unescaped backslash. Such a pattern never matches."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "Commit graph": {
+  "sourceUrl": "https://git-scm.com/docs/git-commit-graph/2.26.0",
+  "sourceTitle": "Git - git-commit-graph Documentation",
+  "summary": "A commit graph is a supplemental file that stores commit relationships and metadata. Git uses it to speed up history walks and merge-base calculations.",
+  "explanation": "Git stores commit relationships and extra data in a commit-graph file. Git can use this data to speed up history walks and merge-base calculations. The file is stored in the object database, and Git can verify it against that database.",
+  "syntax": "git commit-graph <write|verify> [options]",
+  "parameters": [
+   {
+    "name": "command",
+    "type": "write | verify",
+    "description": "Selects a subcommand such as write or verify."
+   },
+   {
+    "name": "--reachable",
+    "type": "option",
+    "description": "Build from commits reachable from all references."
+   },
+   {
+    "name": "--append",
+    "type": "option",
+    "description": "Add commits already in the existing graph."
+   },
+   {
+    "name": "--split",
+    "type": "option",
+    "description": "Store the graph as a chain of files."
+   },
+   {
+    "name": "--shallow",
+    "type": "option for verify",
+    "description": "Check the graph against the object database."
+   }
+  ],
+  "returns": "The write command creates or updates a commit-graph file. The verify command checks its contents against the object database and exits successfully when the data is valid.",
+  "example": {
+   "title": "Create and check a commit graph",
+   "code": "git commit-graph write --reachable\ngit commit-graph verify",
+   "language": "bash",
+   "explanation": "Writes a graph from commits reachable from all references, then checks the graph against the object database."
+  },
+  "useCases": [
+   {
+    "title": "Speed up commit walks",
+    "scenario": "A repository has a large commit history and history commands are slow."
+   },
+   {
+    "title": "Update a graph incrementally",
+    "scenario": "A repository receives new commits regularly."
+   },
+   {
+    "title": "Check graph integrity",
+    "scenario": "You suspect the graph cache is damaged."
+   },
+   {
+    "title": "Choose graph input",
+    "scenario": "You need a graph from selected commits or references."
+   }
+  ],
+  "related": [
+   "generation number",
+   "core.commitGraph",
+   "commit-graph chain",
+   "object database",
+   "--stdin-packs",
+   "--stdin-commits",
+   "--expire-time"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is a commit graph and why does Git use it?",
+    "answer": "A commit graph is a supplemental structure that stores commit relationships and metadata outside commit objects. It helps Git walk history and compute merge bases faster.",
+    "followUp": "What data does it store? It can provide each commit's object ID, parents, date, root tree, and generation number."
+   },
+   {
+    "question": "How can git commit-graph write choose its input commits?",
+    "answer": "The write command creates a graph from packed commits by default. With --reachable, it starts from all references; with --stdin-commits or --stdin-packs, it uses the specified input instead.",
+    "followUp": "Which input modes cannot be combined? --reachable cannot be combined with either stdin mode, and the two stdin modes cannot be combined with each other."
+   },
+   {
+    "question": "How do split commit graphs work?",
+    "answer": "A split graph stores multiple files in the commit-graphs directory. New commits go into a tip file, which Git may merge with the previous tip based on size and maximum-commit rules.",
+    "followUp": "When are old split files removed? Git removes unused files older than the expiration time, which defaults to the current time after writing."
+   }
+  ],
+  "keyPoints": [
+   "It is an optional cache that makes commit-history walks faster.",
+   "Besides parent links, it stores metadata used during graph traversal.",
+   "A normal repository stores the file at .git/objects/info/commit-graph.",
+   "Git must have core.commitGraph enabled to read the graph.",
+   "The --reachable option builds the graph from commits reachable from every reference.",
+   "--append preserves commits already present in the current graph while adding new ones."
+  ],
+  "gotchas": [
+   "Shallow clones disable commit-graph reading and writing when shallow commits are present.",
+   "The object database remains sufficient if commit-graph use is disabled or Git is downgraded.",
+   "A commit graph from another source should be trusted carefully because verification can cost as much as rebuilding it."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "commit-msg hook": {
+  "sourceUrl": "https://git-scm.com/docs/githooks/2.54.0",
+  "sourceTitle": "Git - githooks Documentation",
+  "summary": "Git hooks are scripts that Git runs during commands such as commit, merge, rebase, checkout, and patch application. Some hooks can reject an operation; others run afterward for notification.",
+  "explanation": "Git calls hooks at defined points during commands. A hook can inspect or change some files, and a non-zero exit can stop operations for hooks that support rejection. Some hooks run after the operation and are for notifications only.",
+  "syntax": "Executable scripts in .git/hooks/; each hook uses its documented command-specific arguments.",
+  "parameters": [
+   {
+    "name": "message-file",
+    "type": "string",
+    "description": "Path to the proposed commit-message file."
+   },
+   {
+    "name": "upstream",
+    "type": "string",
+    "description": "For pre-rebase, the upstream from which the series was forked."
+   },
+   {
+    "name": "branch",
+    "type": "string",
+    "description": "For pre-rebase, the branch being rebased; omitted for the current branch."
+   },
+   {
+    "name": "checkout-data",
+    "type": "string",
+    "description": "For post-checkout, the previous HEAD ref, new HEAD ref, and checkout type flag."
+   }
+  ],
+  "returns": "A non-zero hook exit status aborts operations where the hook is allowed to reject them. Notification hooks such as post-commit cannot affect the completed operation.",
+  "example": {
+   "title": "Validate a commit message",
+   "code": "#!/bin/sh\n# .git/hooks/commit-msg\nmessage_file=\"$1\"\nif ! grep -q '^JIRA-[0-9][0-9]*: ' \"$message_file\"; then\n  echo \"Commit message must start with a JIRA key\" >&2\n  exit 1\nfi\n",
+   "language": "bash",
+   "explanation": "Save this executable script as .git/hooks/commit-msg. It checks the proposed message file and rejects messages without the required prefix."
+  },
+  "useCases": [
+   {
+    "title": "Validate changes before commit",
+    "scenario": "Run tests, lint, or whitespace checks before creating a commit."
+   },
+   {
+    "title": "Check commit messages",
+    "scenario": "Require a project format or ticket prefix in commit messages."
+   },
+   {
+    "title": "Notify after Git actions",
+    "scenario": "Send notifications after commits or patch application."
+   },
+   {
+    "title": "Control rebasing",
+    "scenario": "Prevent selected branches from being rebased."
+   }
+  ],
+  "related": [
+   "applypatch-msg",
+   "pre-applypatch",
+   "post-applypatch",
+   "pre-commit",
+   "pre-merge-commit",
+   "prepare-commit-msg",
+   "commit-msg",
+   "post-commit"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How does pre-commit work?",
+    "answer": "pre-commit runs before Git creates the commit and receives no parameters. A non-zero exit stops the commit, and git commit --no-verify can bypass it.",
+    "followUp": "Which hook validates the message instead? commit-msg receives the message-file path and can reject the commit with a non-zero exit."
+   },
+   {
+    "question": "What is the role of commit-msg?",
+    "answer": "commit-msg receives one parameter: the file containing the proposed commit message. It may edit that file or reject the operation by exiting non-zero.",
+    "followUp": "Can prepare-commit-msg replace it? No. The documentation says prepare-commit-msg edits the message before the editor and should not replace pre-commit."
+   },
+   {
+    "question": "What arguments does pre-rebase receive?",
+    "answer": "pre-rebase can prevent a branch from being rebased. Its first parameter is the upstream; its optional second parameter is the branch being rebased when that is not the current branch.",
+    "followUp": "What happens when the current branch is rebased? The second parameter is omitted, so the hook must handle one-parameter calls."
+   }
+  ],
+  "keyPoints": [
+   "pre-commit can inspect the worktree or run checks before a commit is created.",
+   "commit-msg can rewrite the proposed message before Git finishes the commit.",
+   "post-commit runs after success and cannot make the commit fail.",
+   "post-checkout receives the old ref, new ref, and a flag identifying branch or file checkout.",
+   "Git's sample pre-commit hook can reject non-ASCII filenames, depending on configuration."
+  ],
+  "gotchas": [
+   "prepare-commit-msg cannot be skipped with --no-verify, unlike several other commit hooks.",
+   "post-checkout cannot change whether checkout or switch succeeds, although its exit status is returned.",
+   "pre-rebase has no second parameter when the current branch is being rebased."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "Detached HEAD": {
+  "sourceUrl": "https://git-scm.com/docs/git-worktree/2.54.0.html",
+  "sourceTitle": "Git - git-worktree Documentation",
+  "summary": "Git worktree lets one repository have several working directories. Each worktree can check out a different branch or commit while sharing the repository's data.",
+  "explanation": "A worktree is another working directory connected to the same Git repository. Each worktree has its own checked-out commit, HEAD, index, and working files, while the repository data is shared. Use it to work on another branch without changing the files in the current directory.",
+  "syntax": "git worktree add <path> [<commit-ish>]\ngit worktree list\ngit worktree remove <worktree>",
+  "parameters": [
+   {
+    "name": "<path>",
+    "type": "path",
+    "description": "Directory where Git creates the additional working tree."
+   },
+   {
+    "name": "<commit-ish>",
+    "type": "commit-ish",
+    "description": "Commit, branch, or other commit-ish to check out. If omitted, Git uses the documented default behavior."
+   },
+   {
+    "name": "<new-branch>",
+    "type": "branch name",
+    "description": "New branch name used with -b or -B."
+   }
+  ],
+  "returns": "The commands create, inspect, lock, move, repair, prune, or remove linked working trees. The documentation does not define a programming return value.",
+  "example": {
+   "title": "Use a second working tree",
+   "code": "git worktree add ../feature feature-branch\ngit -C ../feature status\ngit worktree list",
+   "language": "bash",
+   "explanation": "This creates a second working tree for an existing branch, checks its status, and lists all worktrees."
+  },
+  "useCases": [
+   {
+    "title": "Parallel branch work",
+    "scenario": "Work on a second branch without stashing changes in the current directory."
+   },
+   {
+    "title": "Temporary experiment",
+    "scenario": "Run tests or inspect files at a specific commit without changing the main worktree."
+   },
+   {
+    "title": "Long-running branches",
+    "scenario": "Keep separate working directories for a main branch and a feature branch."
+   }
+  ],
+  "related": [
+   "git worktree add",
+   "git worktree list",
+   "git worktree lock",
+   "git worktree move",
+   "git worktree prune",
+   "git worktree remove",
+   "git worktree repair",
+   "detached HEAD"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does git worktree add do?",
+    "answer": "git worktree add creates another working directory linked to the current repository. It shares repository data but has separate files such as HEAD and the index.",
+    "followUp": "How do you create a temporary worktree without a branch? Use git worktree add -d <path>, which creates a detached HEAD worktree."
+   },
+   {
+    "question": "How do you inspect worktrees?",
+    "answer": "Use git worktree list to show the main and linked worktrees. The output includes their paths, checked-out revisions, and branches or detached HEAD states.",
+    "followUp": "How can a script parse the output safely? Use git worktree list --porcelain, optionally with -z for NUL-terminated records."
+   },
+   {
+    "question": "When can a worktree be removed?",
+    "answer": "git worktree remove deletes a linked worktree when it is clean. A worktree with changes or untracked files requires --force, and a locked worktree requires --force twice.",
+    "followUp": "What should you do after manually deleting a worktree? Run git worktree prune to remove stale administrative information."
+   }
+  ],
+  "keyPoints": [
+   "git worktree add creates a new directory and checks out the selected commit or branch there.",
+   "Worktrees share repository objects and configuration-related data, but each has its own HEAD and index.",
+   "Use -d when you want a temporary worktree for experiments without creating a branch.",
+   "git worktree list shows every worktree, including its current revision and branch state.",
+   "git worktree prune cleans up records for worktree directories that were deleted outside Git."
+  ],
+  "gotchas": [
+   "By default, remove only a clean worktree. Use --force for an unclean worktree.",
+   "git worktree remove cannot remove the main working tree.",
+   "A locked worktree needs two --force options before it can be removed."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "Fast-forward merge": {
+  "sourceUrl": "https://git-scm.com/docs/git-merge/2.54.0",
+  "sourceTitle": "Git - git-merge Documentation",
+  "summary": "Git merge combines another commit or branch with the current branch. It either fast-forwards the current branch or creates a merge commit; conflicts require manual resolution.",
+  "explanation": "A fast-forward merge moves the current branch to the other commit when the current commit is its ancestor. Otherwise, Git creates a merge commit with both branch tips as parents. Conflicts leave HEAD unchanged, record multiple index stages, and add conflict markers to affected working-tree files.",
+  "syntax": "git merge [<options>] [<commit>…​]",
+  "parameters": [
+   {
+    "name": "<commit>",
+    "type": "commit-ish",
+    "description": "The branch or commit to merge into the current branch."
+   },
+   {
+    "name": "[options]",
+    "type": "option",
+    "description": "Optional options such as --no-ff or --abort."
+   }
+  ],
+  "returns": "A fast-forward updates the current branch without a new commit. A true merge creates a merge commit, or leaves conflict state for resolution when paths cannot be reconciled.",
+  "example": {
+   "title": "Merge a feature branch",
+   "code": "git switch main\ngit merge feature/login\n# Resolve conflicts if Git reports them\ngit add <resolved-files>\ngit commit",
+   "language": "bash",
+   "explanation": "This merges the feature branch into main. Git may fast-forward or create a merge commit. If files conflict, resolve them, stage the results, and commit the merge."
+  },
+  "useCases": [
+   {
+    "title": "Integrate a feature branch",
+    "scenario": "A feature branch is complete and its changes must enter the main branch."
+   },
+   {
+    "title": "Update by fast-forwarding",
+    "scenario": "The current branch is behind a descendant commit."
+   },
+   {
+    "title": "Join diverged histories",
+    "scenario": "Two branches changed independently and their histories must be joined."
+   }
+  ],
+  "related": [
+   "git pull",
+   "git ls-files -u",
+   "git merge --abort",
+   "MERGE_HEAD",
+   "HEAD",
+   "--no-ff",
+   "--ff-only"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is a fast-forward merge?",
+    "answer": "Git fast-forwards when the current branch tip is an ancestor of the commit being merged. It moves HEAD and the index without creating a merge commit.",
+    "followUp": "How can you force a merge commit in that case? Use git merge --no-ff."
+   },
+   {
+    "question": "What happens during a true merge?",
+    "answer": "A true merge creates a commit with both branch tips as parents. Git updates HEAD, the index, and the working tree to the reconciled result.",
+    "followUp": "What happens when reconciliation fails? HEAD stays unchanged, MERGE_HEAD points to the other tip, and conflict stages are recorded."
+   },
+   {
+    "question": "How does Git represent a merge conflict?",
+    "answer": "For a conflict, the index can contain stage 1 for the common ancestor, stage 2 for HEAD, and stage 3 for MERGE_HEAD. The working tree contains three-way results with conflict markers.",
+    "followUp": "Which command displays those unmerged index stages? Run git ls-files -u."
+   }
+  ],
+  "keyPoints": [
+   "A fast-forward merge needs no new commit when the current tip already leads to the named commit.",
+   "Use --no-ff when you want Git to create a merge commit instead of fast-forwarding.",
+   "A non-fast-forward merge records both merged branch tips as parents of the new commit.",
+   "When conflicts stop a true merge, MERGE_HEAD identifies the other commit involved.",
+   "The unmerged index keeps the ancestor, current branch, and other branch versions in separate stages.",
+   "Conflicted files in the working tree contain the three-way result, including familiar conflict markers."
+  ],
+  "gotchas": [
+   "The merge normally stops when the index contains staged changes that differ from HEAD.",
+   "Uncommitted working-tree changes can remain only when they do not overlap with files that the merge updates.",
+   "Use git merge --abort to return from a difficult conflicted merge."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "git add": {
   "sourceUrl": "https://git-scm.com/docs/git-add",
   "sourceTitle": "Git - git-add Documentation",
@@ -5843,6 +6439,450 @@
   ],
   "checkedAt": "2026-11-02"
  },
+ "HEAD": {
+  "sourceUrl": "https://git-scm.com/docs/git/2.38.2",
+  "sourceTitle": "Git - git Documentation",
+  "summary": "Git's main options can select the repository and working tree, change the command directory, control paging, and show the Git program path. These options affect one command invocation.",
+  "explanation": "Git can use command-line options to select the repository and working tree, control output paging, and choose where its programs are installed. The `-C` option changes the directory for one command, while `--git-dir` and `--work-tree` set repository paths directly.",
+  "syntax": "git [-C <path>] [--git-dir=<path>] [--work-tree=<path>] [-p|--paginate|-P|--no-pager] [--exec-path[=<path>]] <command>",
+  "parameters": [
+   {
+    "name": "path",
+    "type": "string",
+    "description": "Path to the repository directory, normally `.git`."
+   },
+   {
+    "name": "path",
+    "type": "string",
+    "description": "Path to the working tree."
+   },
+   {
+    "name": "path",
+    "type": "string",
+    "description": "Directory containing Git's core programs."
+   }
+  ],
+  "returns": "`--exec-path` without a path prints the current setting and exits.",
+  "example": {
+   "title": "Run a command in another directory",
+   "code": "git -C /path/to/repository status",
+   "language": "bash",
+   "explanation": "Run Git as if it started in the given directory."
+  },
+  "useCases": [
+   {
+    "title": "Use a repository by path",
+    "scenario": "Run Git from a script while staying in the script's current directory."
+   },
+   {
+    "title": "Separate repository and working tree",
+    "scenario": "Work with a repository whose `.git` directory is separate from its files."
+   },
+   {
+    "title": "Control output paging",
+    "scenario": "Prevent long output from opening a pager or force paging for terminal output."
+   },
+   {
+    "title": "Check the Git program path",
+    "scenario": "Inspect or configure the directory containing Git's core programs."
+   }
+  ],
+  "related": [
+   "GIT_DIR",
+   "GIT_WORK_TREE",
+   "GIT_EXEC_PATH",
+   "GIT_INDEX_FILE"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What are `--git-dir` and `--work-tree` used for?",
+    "answer": "`--git-dir` tells Git where the repository directory is. `--work-tree` tells Git where the checked-out files are. These paths can be absolute or relative to the current directory.",
+    "followUp": "What does `git -C path command` do? It runs the command as though Git started in `path`, without changing the caller's directory."
+   },
+   {
+    "question": "How can you control Git's pager?",
+    "answer": "`-p` or `--paginate` sends terminal output through `less`, or through the configured pager. `-P` or `--no-pager` prevents this.",
+    "followUp": "Which option wins if both are supplied? The later command-line setting normally determines the final option state."
+   },
+   {
+    "question": "What does `--exec-path` do?",
+    "answer": "`--exec-path` identifies the directory containing Git's core programs. With a path, it sets that location for the command; without a path, Git prints the current location and exits.",
+    "followUp": "What environment variable provides another way to control it? `GIT_EXEC_PATH` can control the same setting."
+   }
+  ],
+  "keyPoints": [
+   "Use `git -C <path>` to run one Git command from another directory.",
+   "`--git-dir=<path>` selects the repository directory instead of the default `.git` directory.",
+   "`--work-tree=<path>` selects the directory that contains the checked-out files.",
+   "`--paginate` uses `less` or the configured `PAGER` when output goes to a terminal.",
+   "`--no-pager` keeps Git output out of a pager.",
+   "`--exec-path` refers to the directory containing Git's core programs."
+  ],
+  "gotchas": [
+   "Using `--git-dir` disables normal repository discovery. Git then treats the supplied location as the repository.",
+   "When the current directory is not the working-tree root, also set `--work-tree` to the correct path."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "Merge conflict": {
+  "sourceUrl": "https://git-scm.com/docs/git-merge",
+  "sourceTitle": "Git - git-merge Documentation",
+  "summary": "`git merge` combines another branch with the current branch. It can move the branch pointer directly or create a merge commit, depending on the history and selected options.",
+  "explanation": "Git combines another branch into the current branch. If the current branch already leads directly to the other branch, Git can move the branch pointer without creating a commit. Otherwise, Git creates a merge commit unless an option changes this behavior.",
+  "syntax": "git merge [<options>] [<commit>...]",
+  "parameters": [
+   {
+    "name": "<commit>...",
+    "type": "revisions",
+    "description": "Branches, tags, or other commits to merge into the current branch."
+   }
+  ],
+  "returns": "A successful merge updates the current branch, either by moving its pointer or by creating a merge commit. A refused `--ff-only` merge exits with a non-zero status.",
+  "example": {
+   "title": "Create a merge commit",
+   "code": "git switch main\ngit merge feature/login --no-ff",
+   "language": "bash",
+   "explanation": "This switches to `main` and merges `feature/login`. The merge commit is created even if a fast-forward would be possible."
+  },
+  "useCases": [
+   {
+    "title": "Always create a merge commit",
+    "scenario": "Keep a feature branch's history as a visible merge point."
+   },
+   {
+    "title": "Require fast-forward merges",
+    "scenario": "Allow only linear history updates."
+   },
+   {
+    "title": "Use a three-way merge",
+    "scenario": "Combine branches that have diverged."
+   }
+  ],
+  "related": [
+   "git-pull",
+   "git-commit",
+   "git-fmt-merge-msg",
+   "ort",
+   "recursive",
+   "--ff",
+   "--no-ff",
+   "--ff-only"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "When does `git merge` create a merge commit?",
+    "answer": "Git uses a fast-forward when the merged branch is already a descendant of the current branch. This only moves the current branch pointer, so no merge commit is made. If that relationship does not exist, Git creates a merge commit by default.",
+    "followUp": "How can a project require a merge commit? Use `git merge --no-ff`. This creates a merge commit even when a fast-forward could be used."
+   },
+   {
+    "question": "What does `--ff-only` do?",
+    "answer": "`--ff-only` permits only a fast-forward merge. If the histories have diverged, Git refuses to merge and returns a non-zero status.",
+    "followUp": "What option forces a merge commit in all cases? `--no-ff`."
+   },
+   {
+    "question": "What is the default merge strategy?",
+    "answer": "The default `ort` strategy handles a merge of two heads with a three-way merge. It can also handle renames, but it does not use detected copies.",
+    "followUp": "How can conflicting hunks be resolved in favor of the current branch? Pass `-X ours`; this does not discard all changes from the other tree."
+   }
+  ],
+  "keyPoints": [
+   "`--ff` is normally the default. Git assumes `--no-ff` for an annotated tag that is outside its natural `refs/tags/` location.",
+   "A normal merge fast-forwards only when the other history descends from the current history. Otherwise, Git makes a merge commit.",
+   "The default `ort` strategy detects and handles renames during the merge. It does not use detected copies."
+  ],
+  "gotchas": [
+   "`--ff-only` refuses the merge when a fast-forward is not possible. It exits with a non-zero status.",
+   "The `ours` strategy option resolves conflicting parts in favor of the current branch, but it still keeps non-conflicting changes from the other branch. It is different from the `ours` strategy."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "post-merge hook": {
+  "sourceUrl": "https://git-scm.com/docs/githooks/2.54.0",
+  "sourceTitle": "Git - githooks Documentation",
+  "summary": "The post-merge hook runs after a successful Git merge. Use it to restore untracked working-tree data or check external files needed by the project.",
+  "explanation": "A post-merge hook is a client-side script that Git runs after a successful merge. It can restore working-tree data that Git does not track, or check for files outside Git that should be copied when the working tree changes.",
+  "syntax": ".git/hooks/post-merge",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "A post-merge hook",
+   "code": "#!/bin/sh\n# .git/hooks/post-merge\nprintf '%s\\n' \"Merge completed; refresh generated files here.\"",
+   "language": "bash",
+   "explanation": "Save this executable script as .git/hooks/post-merge. Git runs it after a successful merge."
+  },
+  "useCases": [
+   {
+    "title": "Restore permission data",
+    "scenario": "A merge changes files and the project needs local permission settings restored."
+   },
+   {
+    "title": "Check external files",
+    "scenario": "A project depends on files that are kept outside the repository."
+   },
+   {
+    "title": "Update external project files",
+    "scenario": "A merge changes the working tree and local files must be copied into place."
+   }
+  ],
+  "related": [
+   "post-checkout hook",
+   "pre-merge-commit hook",
+   "post-rewrite hook",
+   "post-checkout"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "When does the post-merge hook run, and what is it useful for?",
+    "answer": "Git invokes post-merge after a merge command succeeds. It is useful for restoring untracked working-tree data or checking external files.",
+    "followUp": "Can it reject a completed merge? The documentation describes it as a post-merge action, not as a pre-merge validation hook; use an earlier validation mechanism when rejection is required."
+   },
+   {
+    "question": "What kinds of tasks can a post-merge hook perform?",
+    "answer": "A hook can restore data that Git cannot track, such as permissions data. It can also check for external files that may need to be copied into the working tree.",
+    "followUp": "Why is this needed? Git does not manage every property or file used by a project, so the hook can synchronize those external details after a merge."
+   },
+   {
+    "question": "How should a post-merge script be designed?",
+    "answer": "The hook is run after a successful merge, so its work happens after Git has changed the working tree. A script can then perform project-specific setup or validation.",
+    "followUp": "How would you avoid unnecessary work? Make the script check whether the external data or files actually need updating before changing them."
+   }
+  ],
+  "keyPoints": [
+   "Git runs this client-side hook only after a merge completes successfully.",
+   "It can restore working-tree information that Git does not track, including permission data.",
+   "It can check that required files outside Git control are present.",
+   "The hook can help copy external files when a merge changes the working tree."
+  ],
+  "gotchas": [
+   "It does not run when the merge fails."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "pre-commit hook": {
+  "sourceUrl": "https://git-scm.com/docs/githooks/2.54.0",
+  "sourceTitle": "Git - githooks Documentation",
+  "summary": "The pre-commit hook runs before Git creates a commit. It can inspect the staged snapshot and stop the commit by exiting with a nonzero status.",
+  "explanation": "Git runs the pre-commit hook during git commit, before it creates the commit. The hook receives no parameters. A nonzero exit status stops the commit, but git commit --no-verify can skip it.",
+  "syntax": ".git/hooks/pre-commit",
+  "parameters": [],
+  "returns": "A zero exit status allows the commit to continue; a nonzero exit status aborts git commit.",
+  "example": {
+   "title": "Run tests before a commit",
+   "code": "#!/bin/sh\n# .git/hooks/pre-commit\nnpm test || exit 1\n",
+   "language": "bash",
+   "explanation": "Save this executable file as .git/hooks/pre-commit. A failing test makes Git stop the commit."
+  },
+  "useCases": [
+   {
+    "title": "Check code quality",
+    "scenario": "Run tests or linters before a commit is created."
+   },
+   {
+    "title": "Check whitespace",
+    "scenario": "Reject staged files with formatting problems."
+   },
+   {
+    "title": "Validate the snapshot",
+    "scenario": "Apply project-specific checks to the staged snapshot."
+   }
+  ],
+  "related": [
+   "git-commit",
+   "commit-msg",
+   "prepare-commit-msg",
+   "pre-merge-commit",
+   "hooks.allownonascii",
+   "--no-verify"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "When does the pre-commit hook run, and what happens if it fails?",
+    "answer": "Git invokes pre-commit before it obtains the proposed commit message and creates the commit. The hook has no parameters, and a nonzero exit status aborts git commit.",
+    "followUp": "Can the hook always enforce a rule? No. git commit --no-verify can bypass it, so important rules should also be enforced on the server."
+   },
+   {
+    "question": "What is a suitable use for pre-commit?",
+    "answer": "The hook is called by git-commit. It can inspect the snapshot that is about to be committed, such as checking tests or formatting.",
+    "followUp": "How would you check the commit message instead? Use prepare-commit-msg to edit the message before the editor, or commit-msg to validate the finished message."
+   },
+   {
+    "question": "What checks does Git's default pre-commit hook perform?",
+    "answer": "The default enabled hook checks for non-ASCII filenames and trailing whitespace. The non-ASCII filename check can be enabled or disabled with hooks.allownonascii.",
+    "followUp": "Can this hook be used for a central repository policy? Not by itself, because client-side hooks are local and can be bypassed; use a server-side hook for enforcement."
+   }
+  ],
+  "keyPoints": [
+   "Git runs pre-commit during git commit.",
+   "The hook has no command-line parameters and runs before Git gets the proposed message.",
+   "Return a nonzero status to stop the commit before Git creates it.",
+   "Git's enabled sample hook rejects newly introduced filenames that contain non-ASCII characters.",
+   "The enabled sample hook also rejects lines that end with trailing whitespace.",
+   "Set hooks.allownonascii to true to disable the sample hook's non-ASCII filename check."
+  ],
+  "gotchas": [
+   "A user can skip this hook with git commit --no-verify, so it is not a reliable server-side policy.",
+   "When no editor will open, Git sets GIT_EDITOR to a colon for commit hooks."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "pre-push hook": {
+  "sourceUrl": "https://git-scm.com/docs/githooks",
+  "sourceTitle": "Git - githooks Documentation",
+  "summary": "The `pre-push` hook runs during `git push` before Git transfers objects. It can inspect proposed reference updates and stop the push by returning a non-zero status.",
+  "explanation": "Git runs a pre-push hook during `git push`, after it checks the remote references but before it sends objects. The hook receives the remote name and location as arguments, and receives the references that would change through standard input. A non-zero exit status cancels the push.",
+  "syntax": "$GIT_DIR/hooks/pre-push <remote-name> <remote-location>",
+  "parameters": [
+   {
+    "name": "remote-name",
+    "type": "argument",
+    "description": "The remote name used by the push."
+   },
+   {
+    "name": "remote-location",
+    "type": "argument",
+    "description": "The remote repository location."
+   },
+   {
+    "name": "to-be-updated-refs",
+    "type": "stdin",
+    "description": "References that Git plans to update, read from standard input."
+   }
+  ],
+  "returns": "A zero exit status allows the push to continue; a non-zero exit status aborts it.",
+  "example": {
+   "title": "Run tests before pushing",
+   "code": "#!/bin/sh\n# .git/hooks/pre-push\nset -eu\nnpm test",
+   "language": "bash",
+   "explanation": "Save this executable script as .git/hooks/pre-push. A failed test returns a non-zero status, so Git stops the push."
+  },
+  "useCases": [
+   {
+    "title": "Pre-push testing",
+    "scenario": "Run automated tests before code leaves the local repository."
+   },
+   {
+    "title": "Validate updates",
+    "scenario": "Check branch names, commit rules, or proposed reference changes."
+   },
+   {
+    "title": "Local policy checks",
+    "scenario": "Reject a push that violates local project rules."
+   }
+  ],
+  "related": [
+   "git push",
+   "pre-receive",
+   "update",
+   "pre-commit",
+   "post-merge",
+   "pre-auto-gc"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "When does the pre-push hook run, and how can it stop a push?",
+    "answer": "Git runs `pre-push` during `git push`, after remote references are updated and before objects are transferred. The hook can inspect the proposed reference updates and reject them by returning a non-zero exit status.",
+    "followUp": "What input does it receive? It gets the remote name and location as arguments, while the references to update arrive on standard input."
+   },
+   {
+    "question": "What data does a pre-push hook receive?",
+    "answer": "The hook receives the remote name and its location as parameters. Git sends the list of references that would be updated through standard input.",
+    "followUp": "Why use standard input for the references? A push can update several references, so the hook can validate the complete set before transfer."
+   },
+   {
+    "question": "What is a common use for pre-push?",
+    "answer": "A pre-push hook is a client-side hook used to validate reference updates before a push. For example, it can run tests or check branch rules and return failure when the proposed push is invalid.",
+    "followUp": "How can a server enforce policy for every pusher? Use server-side `pre-receive` or `update` hooks, which can reject pushes on the server."
+   }
+  ],
+  "keyPoints": [
+   "Git runs this hook as part of `git push`, before object transfer finishes.",
+   "The remote name and location are command-line arguments. Proposed reference updates are sent through standard input.",
+   "Use it to check the complete group of reference updates before Git sends the objects.",
+   "Return a non-zero status to cancel the push."
+  ],
+  "gotchas": [
+   "The hook runs during a push, before Git transfers objects. Its checks can stop the push by returning a non-zero status.",
+   "A failing hook aborts the push."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "Signed commits": {
+  "sourceUrl": "https://git-scm.com/book/en/v2/Git-Tools-Signing-Your-Work",
+  "sourceTitle": "Git - Signing Your Work",
+  "summary": "Git can verify trusted GPG signatures on commits during a merge. Use -S to sign the resulting merge commit.",
+  "explanation": "Git can check signatures while merging. With --verify-signatures, the merge stops if a commit lacks a trusted GPG signature. The -S option signs the merge commit that Git creates. The check and the new signature are separate actions.",
+  "syntax": "git merge [--verify-signatures] [-S] <branch>",
+  "parameters": [
+   {
+    "name": "branch",
+    "type": "Git revision",
+    "description": "Branch or other commit reference to merge."
+   }
+  ],
+  "returns": "The merge proceeds only when the required signatures are valid; otherwise Git reports an error and does not merge.",
+  "example": {
+   "title": "Verify and sign a merge",
+   "code": "git merge --verify-signatures -S signed-branch",
+   "language": "bash",
+   "explanation": "This checks that every commit being merged has a valid signature and signs the new merge commit."
+  },
+  "useCases": [
+   {
+    "title": "Reject unsigned commits",
+    "scenario": "A repository requires every incoming commit to have a trusted GPG signature."
+   },
+   {
+    "title": "Sign a merge commit",
+    "scenario": "A project wants the merge commit to record the integrator's signature."
+   },
+   {
+    "title": "Plan a signing policy",
+    "scenario": "A team is deciding whether signed commits should be part of its standard workflow."
+   }
+  ],
+  "related": [
+   "git merge",
+   "git pull",
+   "--verify-signatures",
+   "-S",
+   "GPG signature",
+   "signed commits"
+  ],
+  "since": "Git 1.8.3",
+  "interview": [
+   {
+    "question": "How can Git reject an unsigned commit during a merge?",
+    "answer": "Use git merge --verify-signatures branch-name. Git checks the commits in the branch and refuses the merge if one lacks a valid trusted GPG signature.",
+    "followUp": "How do you also sign the merge commit? Add -S, as in git merge --verify-signatures -S branch-name."
+   },
+   {
+    "question": "What is the difference between --verify-signatures and -S?",
+    "answer": "The --verify-signatures option checks the commits being merged. The -S option signs the merge commit created by the operation.",
+    "followUp": "Does -S alone check all commits in the source branch? No. Use --verify-signatures for that check."
+   },
+   {
+    "question": "What should a team consider before requiring signed work?",
+    "answer": "A team should understand GPG and agree on the workflow before requiring signed commits. Otherwise, developers may need to rewrite existing commits with signatures.",
+    "followUp": "What can happen when a branch contains one unsigned commit? A merge using --verify-signatures is rejected."
+   }
+  ],
+  "keyPoints": [
+   "Git 1.8.3 and later can check signatures during merge or pull.",
+   "Use --verify-signatures to require trusted GPG signatures on commits being merged.",
+   "The merge stops when the source branch contains an unsigned or invalid commit.",
+   "When all checked commits are valid, Git displays the signatures and continues.",
+   "Use -S to sign the merge commit produced by Git."
+  ],
+  "gotchas": [
+   "A team should agree on signing before making it part of its normal workflow. Otherwise, unsigned commits may need to be rewritten later."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "Staging area": {
   "sourceUrl": "https://git-scm.com/docs/gitdatamodel.html",
   "sourceTitle": "Git - gitdatamodel Documentation",
@@ -5914,6 +6954,84 @@
    "If you hand-edit a patch with git add -e, the change is applied only to the index. Your working tree can then look as if it undid the staged change."
   ],
   "checkedAt": "2026-11-02"
+ },
+ "Upstream branch": {
+  "sourceUrl": "https://git-scm.com/docs/git-push",
+  "sourceTitle": "Git - git-push Documentation",
+  "summary": "An upstream branch links a local branch to a remote-tracking branch. Git uses it as the default for several remote operations, including push, pull, and fetch without arguments.",
+  "explanation": "An upstream branch connects a local branch to a remote-tracking branch. Git uses this connection for commands such as git pull and for git push without arguments. The connection is stored in the repository configuration with the remote name and the remote branch reference.",
+  "syntax": "git push --set-upstream <remote> <branch>",
+  "parameters": [
+   {
+    "name": "<remote>",
+    "type": "remote",
+    "description": "The remote name or URL to use for the push."
+   },
+   {
+    "name": "<branch>",
+    "type": "branch",
+    "description": "The local branch to push and associate with the upstream."
+   }
+  ],
+  "returns": "The command pushes the branch and records its upstream branch; the documentation does not define a separate return value.",
+  "example": {
+   "title": "Push and set an upstream",
+   "code": "git push --set-upstream origin feature/login",
+   "language": "bash",
+   "explanation": "Pushes the local branch to the origin remote and records origin/feature/login as its upstream branch."
+  },
+  "useCases": [
+   {
+    "title": "Publish a branch",
+    "scenario": "A new local branch must be published and remembered for later pushes."
+   },
+   {
+    "title": "Set tracking information",
+    "scenario": "A local branch should track a specific remote branch."
+   },
+   {
+    "title": "Use default remote targets",
+    "scenario": "Commands without explicit remote arguments should use a known branch."
+   }
+  ],
+  "related": [
+   "git push",
+   "git pull",
+   "git fetch",
+   "push.default",
+   "branch.<name>.pushRemote",
+   "push.autoSetupRemote"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is an upstream branch?",
+    "answer": "An upstream branch is a remote branch associated with a local branch. Git uses it as the default for operations such as pull, fetch, and, in many cases, push without arguments. The association stores a remote name and a remote branch reference in the repository configuration.",
+    "followUp": "How do you create the association explicitly? Run git push --set-upstream <remote> <branch>; this pushes the branch and records its upstream."
+   },
+   {
+    "question": "How do you set an upstream branch?",
+    "answer": "Use git push --set-upstream origin <branch> to push the branch and set its upstream. After that, git push can usually run without naming the remote and branch.",
+    "followUp": "What can set an upstream automatically? Cloning sets one for the default branch, and push.autoSetupRemote can set one on a first push."
+   },
+   {
+    "question": "What does push.default=simple require?",
+    "answer": "With push.default=simple, git push without arguments uses the upstream branch only when its name matches the current branch. If no suitable upstream exists, the command can fail.",
+    "followUp": "Can the push destination differ from the pull destination? Yes. branch.<name>.pushRemote can select a different remote for pushing."
+   }
+  ],
+  "keyPoints": [
+   "A local branch may be linked to one remote branch as its upstream.",
+   "The upstream branch supplies the default target for pull or fetch when those commands have no arguments.",
+   "Git stores the upstream remote and branch reference in .git/config.",
+   "Use git push --set-upstream to create the upstream association explicitly.",
+   "Cloning normally creates an upstream for the local copy of the default branch."
+  ],
+  "gotchas": [
+   "With the default simple mode, a push without arguments expects the upstream branch to have the same name as the current local branch.",
+   "A push without arguments can fail when the current branch has no upstream, depending on push.default."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "Working tree": {
   "sourceUrl": "https://git-scm.com/docs/gitglossary",

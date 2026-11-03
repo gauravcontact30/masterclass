@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Field, FieldLabel, FieldDescription } from "./ui/field";
 import { AdminSelect } from "./super-admin-select";
 import { Textarea } from "@/components/ui/textarea";
-import {useCallback,useEffect,useState,useId} from 'react';
+import {useCallback,useEffect,useRef,useState,useId} from 'react';
 import styles from './super-admin-dashboard.module.css';
 import { AdminTable } from './super-admin-table';
 import { ToneTiles } from './super-admin-overview-live';
@@ -36,8 +36,9 @@ function Review({report,onSaved}:{report:Row;onSaved:()=>void}){
 }
 export function SuperAdminOperations({section,days,query}:{section:string;days:number;query:string}){
   const [data,setData]=useState<Operations|null>(null),[error,setError]=useState('');
-  const refresh=useCallback(async(signal?:AbortSignal)=>{try{const response=await fetch(`/api/super-admin/operations?days=${days}`,{cache:'no-store',signal});if(!response.ok){if(response.status===401||response.status===403)setData(null);throw new Error(response.status===401||response.status===403?'Super admin access is required.':'Operations data is unavailable. Apply migrations 0018 and 0019 to this application’s Supabase project.');}const result=await response.json();if(!signal?.aborted){setData(result);setError('');}}catch(error){if(!signal?.aborted)setError(error instanceof Error?error.message:'Unable to load operations.');}},[days]);
-  useEffect(()=>{const controller=new AbortController();void Promise.resolve().then(()=>{if(!controller.signal.aborted)void refresh(controller.signal);});const timer=setInterval(()=>{if(document.visibilityState==='visible')void refresh(controller.signal);},30000);return()=>{controller.abort();clearInterval(timer);};},[refresh]);
+  const denied=useRef(false);
+  const refresh=useCallback(async(signal?:AbortSignal)=>{try{const response=await fetch(`/api/super-admin/operations?days=${days}`,{cache:'no-store',signal});if(!response.ok){if(response.status===401||response.status===403){denied.current=true;setData(null);}throw new Error(response.status===401||response.status===403?'Super admin access is required.':'Operations data is unavailable. Apply migrations 0018 and 0019 to this application’s Supabase project.');}const result=await response.json();if(!signal?.aborted){setData(result);setError('');}}catch(error){if(!signal?.aborted)setError(error instanceof Error?error.message:'Unable to load operations.');}},[days]);
+  useEffect(()=>{const controller=new AbortController();void Promise.resolve().then(()=>{if(!controller.signal.aborted)void refresh(controller.signal);});const timer=setInterval(()=>{if(document.visibilityState==='visible')void (denied.current||refresh(controller.signal));},30000);return()=>{controller.abort();clearInterval(timer);};},[refresh]);
   const table=(title:string,rows:Row[],columns:string[])=><Records key={`${title}:${days}`} title={title} rows={rows} columns={columns} query={query}/>;
   if(!data)return error?<AdminError>{error}</AdminError>:<AdminLoading>Loading operations...</AdminLoading>;
   return <>{error&&<AdminError>{error} Showing the previous snapshot.</AdminError>}<div className={styles.toolbar}><span>Updated {new Date(data.generatedAt).toLocaleTimeString()} · refreshes every 30 seconds</span><Button variant="outline" className={styles.refresh} onClick={()=>void refresh()}>Refresh operations</Button></div>

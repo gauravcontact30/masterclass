@@ -25,6 +25,12 @@ export async function requireStudyBuddyAccess() {
   const result = await studyBuddyAccess();
   if (!result.access) throw new HttpError(result.reason === "signin_required" ? 401 : 402, result.reason);
 }
+/** For pages that show non-members a preview: sign-in is still required, and `member` decides what may be serialized. */
+export async function learningViewer(path="/learning") {
+  const user=await currentUser();
+  if (!user) redirect(signInFor(path));
+  return { user, member: isSuperAdminUser(user) || (await account(user.id)).tier !== "free" };
+}
 /** Gate on the server before any protected learning data is serialized to the browser. `path` is where sign-in returns. */
 export async function requireLearningUser(path="/learning") {
   const user=await currentUser();

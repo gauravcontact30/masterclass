@@ -125,13 +125,17 @@ export function SuperAdminDashboard({ userId = "admin", isOwner = false }: { use
   // `quiet`: the Overview's 5-second background re-read. No "Refreshing…" or spinner, a failure keeps the last figures,
   // and one at a time (user request 2026-11-01: live data updates silently).
   const quietBusy = useRef(false);
+  // A session that has ended cannot recover on its own (signing in reloads the page), so background reads stop until the
+  // Refresh button is pressed. They used to keep failing, about 39 refused calls a minute from one open tab.
+  const denied = useRef(false);
   const refresh = useCallback(async (signal?: AbortSignal, quiet = false) => {
-    if (quiet) { if (quietBusy.current) return; quietBusy.current = true; } else setBusy(true);
+    if (quiet) { if (quietBusy.current || denied.current) return; quietBusy.current = true; } else setBusy(true);
     try {
       const response = await fetch(`/api/super-admin?days=${days}`, { cache: "no-store", signal });
-      if (response.status === 401 || response.status === 403) setData(null);
-      if (!response.ok) throw new Error(response.status === 401 || response.status === 403 ? "Your session does not have super admin access. Sign in with the authorized account." : "Monitoring is unavailable. Check the database connection and apply migration 0018.");
+      if (response.status === 401 || response.status === 403) { denied.current = true; setData(null); setError("Your session does not have super admin access. Sign in with the authorized account."); return; }
+      if (!response.ok) throw new Error("Monitoring is unavailable. Check the database connection and apply migration 0018.");
       const snapshot: Snapshot = await response.json();
+      denied.current = false;
       if (!signal?.aborted) { setData(snapshot); setError(""); }
     } catch (e) { if (!signal?.aborted && !quiet) setError(e instanceof Error ? e.message : "Unable to load monitoring."); }
     finally { if (quiet) quietBusy.current = false; else if (!signal?.aborted) setBusy(false); }
@@ -139,7 +143,7 @@ export function SuperAdminDashboard({ userId = "admin", isOwner = false }: { use
   // A refresh button elsewhere (Users) shows its progress; the Overview live panels re-read silently every 5 seconds.
   const refreshQuietly = useCallback(() => { void refresh(); }, [refresh]);
   const refreshSilently = useCallback(() => { void refresh(undefined, true); }, [refresh]);
-  useEffect(() => { const controller = new AbortController(); queueMicrotask(() => { if (!controller.signal.aborted) void refresh(controller.signal); }); const interval = setInterval(() => { if (document.visibilityState === "visible") void refresh(controller.signal); }, 60000); return () => { controller.abort(); clearInterval(interval); }; }, [refresh]);
+  useEffect(() => { const controller = new AbortController(); queueMicrotask(() => { if (!controller.signal.aborted) void refresh(controller.signal); }); const interval = setInterval(() => { if (document.visibilityState === "visible" && !denied.current) void refresh(controller.signal); }, 60000); return () => { controller.abort(); clearInterval(interval); }; }, [refresh]);
   const table = (title: string, rows: Row[], columns: string[], note?: string) => <Table key={`${title}-${days}`} title={title} rows={rows} columns={columns} query={query} note={note} />;
   const mrr = data ? data.recurring.monthly * data.prices.monthly + data.recurring.yearly * data.prices.yearly / 12 : 0;
   const events = data?.events ?? [];

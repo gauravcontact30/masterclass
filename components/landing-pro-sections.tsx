@@ -3,13 +3,13 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import Image from "@/components/responsive-image";
 import Link from "@/components/site-link";
-import { ArrowRight, ArrowUpRight, Braces, Check, ChevronLeft, ChevronRight, Code2, FileCode2, Lightbulb, Pause, Play, Puzzle, Search, Server, Sparkles, X } from "lucide-react";
-import type { LandingProPreview } from "@/lib/landing-pro-preview";
-import type { LandingBuzz } from "@/lib/landing-buzz-types";
+import { ArrowRight, ArrowUpRight, Bot, Braces, BrainCircuit, Check, ChevronLeft, ChevronRight, Cloud, Code2, Database, FileCode2, FlaskConical, LayoutTemplate, Lightbulb, Lock, Pause, Play, Puzzle, Search, Server, ShieldCheck, Sparkles, Star, X, type LucideIcon } from "lucide-react";
+import type { LandingApiGuide, LandingApiTech, LandingProPreview } from "@/lib/landing-pro-preview";
 import { ExpandedText } from "./expanded-text";
 import { useLanguage } from "./language-provider";
 import { useVisiblePlayback } from "./use-visible-playback";
-import { BuzzStrip } from "./landing-buzz-strip";
+import { PillPager } from "./pill-pager";
+import { useStudyBuddyAccess } from "@/lib/study-buddy-access";
 import { CodeFiles } from "./code-files";
 import home from "./landing-home.module.css";
 import frame from "./landing-section.module.css";
@@ -28,15 +28,20 @@ const TONES = ["mint", "sky", "butter", "rose", "lavender", "peach", "sage", "sa
 const CARDS_PER_PAGE = 6;
 const AUTOPLAY_MS = 9000;
 const LANGUAGE_MS = 4500;
-const STATUS_TONE: Record<string, string> = { s: "#2f7d4f", p: "#2f6db5", x: "#b07a12", d: "#b23b2f" };
+/** Each API Docs tab keeps its own icon and light colour on every page of tabs. Labels are short so a tab stays on one line; the full name is its tooltip. */
+const API_TAB_LOOK: Record<string, { icon: LucideIcon; tone: string; short: string }> = {
+  popular: { icon: Star, tone: "butter", short: "Most popular" }, agentic: { icon: Bot, tone: "lavender", short: "Agentic AI" }, ai: { icon: BrainCircuit, tone: "sky", short: "AI & data" }, languages: { icon: Code2, tone: "mint", short: "Languages" },
+  frontend: { icon: LayoutTemplate, tone: "rose", short: "Frontend" }, backend: { icon: Server, tone: "peach", short: "Backend" }, auth: { icon: ShieldCheck, tone: "sage", short: "Security" }, data: { icon: Database, tone: "aqua", short: "Databases" },
+  testing: { icon: FlaskConical, tone: "lilac", short: "Testing" }, platform: { icon: Cloud, tone: "sand", short: "Cloud & tools" },
+};
+const API_TABS_PER_PAGE = 4;
+const API_MEMBER_FEATURES = ["Parameters and return values", "Worked code examples", "Common mistakes", "Interview practice"];
 
 function useText() {
   const { language } = useLanguage();
   return { locale: language === "hi" ? "hi-IN" : "en-IN", text: (en: string, hindi: string) => language === "hi" ? hindi : en };
 }
 
-/** File extensions for the API of the week's example, by the language API Docs records. */
-const EXTENSIONS: Record<string, string> = { tsx: "tsx", jsx: "jsx", typescript: "ts", javascript: "js", python: "py", bash: "sh", shell: "sh", json: "json", yaml: "yaml", sql: "sql", go: "go", rust: "rs", java: "java", css: "css", html: "html" };
 
 /**
  * Techy, laid out like the dashboard's Coffee & Code page: search and topic chips over a grid of tone-covered topic
@@ -44,7 +49,7 @@ const EXTENSIONS: Record<string, string> = { tsx: "tsx", jsx: "jsx", typescript:
  * of the week. Beside it, the week's "predict the output" puzzles and one everyday task written in five languages,
  * which cycle on their own until the visitor picks one. Fresh Tech Buzz stories on the same technologies close it.
  */
-export function LandingTechy({ data, buzz }: Readonly<{ data: LandingProPreview["techy"]; buzz?: LandingBuzz[] }>) {
+export function LandingTechy({ data }: Readonly<{ data: LandingProPreview["techy"] }>) {
   const { text, locale } = useText();
   const count = (value: number) => value.toLocaleString(locale);
   const section = useRef<HTMLElement>(null); const visible = useVisiblePlayback(section);
@@ -152,119 +157,155 @@ export function LandingTechy({ data, buzz }: Readonly<{ data: LandingProPreview[
       </div>
     </article>}
 
-    <BuzzStrip stories={buzz} label={text("the technologies in Techy", "Techy तकनीकें")} keywords={data.topics.map(item => TECH_PILLS[item.id]?.label ?? item.title)} />
     <div className={frame.actions}><Link className={frame.cta} href="/learning/techy">{text("Open Techy", "Techy खोलें")}<ArrowRight size={16} aria-hidden="true" /></Link><small>{text("Included with your account. Sign in to start practising.", "आपके खाते में शामिल। अभ्यास के लिए साइन इन करें।")}</small></div>
   </div></section>;
 }
 
 /**
- * API Docs, as the dashboard's API Docs page works: one field filters technologies and identifiers, then type and
- * status (stable, preview, experimental, deprecated) narrow a technology's identifiers. Every row is a real entry.
- * Under it, the API of the week in full (signature, parameters, return value, notes and example code) and fresh
- * Tech Buzz stories on the same technology.
+ * The locked part of API Docs, as a members' library: how many APIs wait behind the membership, and the page each one
+ * opens. The sheet's lines are drawn, never text, so no in-depth content is in this section's data. It pages through
+ * the locked names while on screen, and follows the name under the pointer.
  */
-export function LandingApiDocs({ data, buzz }: Readonly<{ data: LandingProPreview["api"]; buzz?: LandingBuzz[] }>) {
-  const { text, locale } = useText();
+function ApiVault({ guide, visible }: Readonly<{ guide: LandingApiGuide; visible: boolean }>) {
+  const [peek, setPeek] = useState(0);
+  const [held, setHeld] = useState(false);
+  const names = guide.locked;
+  const name = names[peek % Math.max(1, names.length)]?.name ?? guide.name;
+  const more = guide.count - guide.free.length;
+  useEffect(() => {
+    if (!visible || held || names.length < 2 || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const timer = setTimeout(() => setPeek(value => (value + 1) % names.length), 2600);
+    return () => clearTimeout(timer);
+  }, [peek, visible, held, names.length]);
+  return <div className={styles.vault}>
+    <div className={styles.vaultCopy}>
+      <p className={styles.vaultKicker}><Lock size={14} aria-hidden="true" />The members&apos; library</p>
+      <div className={styles.vaultCount}><b>{more.toLocaleString("en-IN")}</b><span>more {guide.name} APIs, in depth</span></div>
+      <p className={styles.vaultLine}>In-depth API docs are only for subscribers. Subscribe to open every API on this platform in full.</p>
+      <Link className={styles.vaultCta} href="/subscribe">Subscribe<ArrowRight size={16} aria-hidden="true" /></Link>
+    </div>
+    <div className={styles.vaultStage} role="img" aria-label={`A locked page for ${name}: ${API_MEMBER_FEATURES.join(", ")}`}>
+      <i className={styles.vaultBack} aria-hidden="true" /><i className={styles.vaultBack} aria-hidden="true" />
+      <div className={styles.vaultSheet}>
+        <div className={styles.vaultSheetHead} key={name}><code>{name}</code><span><Lock size={13} aria-hidden="true" /></span></div>
+        {API_MEMBER_FEATURES.map((feature, at) => <div className={styles.vaultRow} key={feature} data-code={at === 1 || undefined}>
+          <span>{feature}</span>
+          <i aria-hidden="true" /><i aria-hidden="true" />{at === 1 && <i aria-hidden="true" />}
+        </div>)}
+      </div>
+    </div>
+    <ul className={styles.vaultIndex} aria-label={`Locked ${guide.name} APIs`} onMouseLeave={() => setHeld(false)}>
+      {names.map((item, at) => <li key={item.name} title="Subscribers only" data-on={at === peek % names.length || undefined} onMouseEnter={() => { setHeld(true); setPeek(at); }}><Lock size={12} aria-hidden="true" /><code>{item.name}</code></li>)}
+      {more > names.length && <li className={styles.vaultMore}>+{(more - names.length).toLocaleString("en-IN")} more</li>}
+    </ul>
+  </div>;
+}
+
+/**
+ * API Docs as a field guide: choose any technology, read five short descriptions, and see the rest of its APIs locked
+ * in the members' library. The page is cached for everyone, so a member's rows open after the access check; the full
+ * pages are gated on the server either way, and no in-depth content is in this section's data.
+ */
+export function LandingApiDocs({ data }: Readonly<{ data: LandingProPreview["api"] }>) {
   const section = useRef<HTMLElement>(null); const visible = useVisiblePlayback(section);
-  const [query, setQuery] = useState("");
+  const [seen, setSeen] = useState(false);
+  if (visible && !seen) setSeen(true);
+  const member = useStudyBuddyAccess(seen) === "member";
+  const [category, setCategory] = useState("popular");
+  const [tabPage, setTabPage] = useState(0);
+  const tabs = useMemo(() => [{ id: "popular", label: "Most popular" }, ...data.categories], [data.categories]);
+  const tabPages = Math.max(1, Math.ceil(tabs.length / API_TABS_PER_PAGE));
   // The server puts this week's technology first (landingProPreview rotates them).
-  const [packageId, setPackageId] = useState(data.packages[0]?.id);
-  const [kind, setKind] = useState<string>("all");
-  const [status, setStatus] = useState<string>("all");
-  // A hint under the field cycles through real identifiers until the visitor types.
-  const hints = useMemo(() => data.packages.slice(0, 8).map(pkg => pkg.sample[0]?.name).filter((name): name is string => Boolean(name)), [data.packages]);
-  const [hint, setHint] = useState(0);
-  useEffect(() => { if (query || !visible || hints.length < 2) return; const timer = setTimeout(() => setHint(value => (value + 1) % hints.length), 3000); return () => clearTimeout(timer); }, [hint, query, visible, hints.length]);
-  const normalized = query.trim().toLowerCase();
-  const matches = data.packages.filter(pkg => !normalized || pkg.name.toLowerCase().includes(normalized) || pkg.sample.some(entry => entry.name.toLowerCase().includes(normalized)));
-  const selected = matches.find(pkg => pkg.id === packageId) ?? matches[0];
+  const [guideId, setGuideId] = useState(data.guides[0]?.id);
+  // Technologies without a field guide arrive together, the first time a visitor opens one.
+  const [extra, setExtra] = useState<Record<string, Pick<LandingApiGuide, "tagline" | "count" | "free" | "locked">> | null>(null);
+  const [failed, setFailed] = useState(false);
+  const loading = useRef(false);
+  const featured = useMemo(() => new Set(data.guides.map(item => item.id)), [data.guides]);
+  const rail = useMemo(() => category === "popular"
+    ? data.guides.map(item => data.technologies.find(tech => tech.id === item.id)).filter((tech): tech is LandingApiTech => Boolean(tech))
+    : data.technologies.filter(tech => tech.category === category), [category, data.guides, data.technologies]);
+  const tech = data.technologies.find(item => item.id === guideId);
+  const guide: LandingApiGuide | undefined = data.guides.find(item => item.id === guideId) ?? (tech && extra?.[tech.id] ? { id: tech.id, name: tech.name, logo: tech.logo ?? "", ...extra[tech.id] } : undefined);
+  const choose = (id: string) => {
+    setGuideId(id);
+    if (featured.has(id) || extra || loading.current) return;
+    loading.current = true;
+    setFailed(false);
+    fetch("/api/landing/api-guides").then(response => response.ok ? response.json() : Promise.reject(new Error("api guides"))).then(setExtra, () => setFailed(true)).finally(() => { loading.current = false; });
+  };
+  const chooseCategory = (id: string) => {
+    setCategory(id);
+    const first = id === "popular" ? data.guides[0]?.id : data.technologies.find(item => item.category === id)?.id;
+    if (first) choose(first);
+  };
   const typeOf = (k: string) => data.types.find(type => type.k === k);
-  const statusOf = (id: string) => data.statuses.find(item => item.id === id);
-  const usedKinds = data.types.filter(type => selected?.sample.some(entry => entry.kind === type.k));
-  const usedStatuses = data.statuses.filter(item => selected?.sample.some(entry => entry.status === item.id));
-  const activeKind = usedKinds.some(type => type.k === kind) ? kind : "all";
-  const activeStatus = usedStatuses.some(item => item.id === status) ? status : "all";
-  const nameMatches = !!selected && !!normalized && !selected.name.toLowerCase().includes(normalized);
-  const entries = (selected?.sample ?? []).filter(entry => (activeKind === "all" || entry.kind === activeKind) && (activeStatus === "all" || entry.status === activeStatus) && (!nameMatches || entry.name.toLowerCase().includes(normalized)));
-  const count = (value: number) => value.toLocaleString(locale);
-  const choose = (id: string) => { setPackageId(id); setKind("all"); setStatus("all"); };
-  const spot = data.spotlight;
-  // The API of the week as a small project: the example, and a README with the reference it was written from.
-  const spotFiles = useMemo(() => spot ? [
-    { path: `src/example.${EXTENSIONS[spot.language] ?? "txt"}`, code: spot.code, note: spot.description },
-    { path: "README.md", note: "Reference", code: [`# ${spot.name}`, "", spot.description, "", "## Signature", "", "```", spot.signature, "```",
-      ...(spot.parameters.length ? ["", "## Parameters", "", ...spot.parameters.map(param => `- \`${param.name}\` (${param.type}): ${param.description}`)] : []),
-      "", "## Returns", "", spot.returns, ...(spot.notes.length ? ["", "## Notes", "", ...spot.notes.map(note => `- ${note}`)] : [])].join("\n") },
-  ] : [], [spot]);
-  const points = [
-    { icon: Search, title: text("Search across every stack", "हर स्टैक में खोजें"), body: text("Filter by technology, identifier type and status in one place.", "तकनीक, पहचानकर्ता प्रकार और स्थिति से एक जगह फ़िल्टर करें।") },
-    { icon: Braces, title: text("Signatures you can read", "पढ़ने योग्य सिग्नेचर"), body: text("Parameters, return values, key points and focused usage code.", "पैरामीटर, रिटर्न वैल्यू, मुख्य बिंदु और केंद्रित उपयोग कोड।") },
-    { icon: Server, title: text("Status on every entry", "हर प्रविष्टि पर स्थिति"), body: text("Stable, preview, experimental or deprecated, so you know what is safe to ship.", "स्थिर, प्रीव्यू, प्रायोगिक या अप्रचलित।") },
-  ];
+  const entryHref = (name: string) => `/learning/api-docs/${encodeURIComponent(guideId ?? "")}/${encodeURIComponent(name)}`;
+  const count = (value: number) => value.toLocaleString("en-IN");
   return <section ref={section} id="api-docs" className={frame.section} data-ground="paper" aria-labelledby="landing-api-title"><div className={home.inner}>
     <header className={frame.head}>
       <div>
-        <p className={frame.kicker}><FileCode2 size={14} aria-hidden="true" />API Docs<span>{text(`${count(data.identifierCount)} identifiers · API of the week`, `${count(data.identifierCount)} पहचानकर्ता`)}</span></p>
-        <h3 data-h2="" id="landing-api-title">{text("Every identifier, ", "हर पहचानकर्ता, ")}<em>{text("one calm reference.", "एक शांत संदर्भ में।")}</em></h3>
+        <p className={frame.kicker}><FileCode2 size={14} aria-hidden="true" />API Docs<span>{count(data.identifierCount)} APIs · {count(data.technologyCount)} technologies</span></p>
+        <h3 data-h2="" id="landing-api-title">The APIs that matter, <em>without the noise.</em></h3>
       </div>
       <div>
-        <p className={frame.lede}>{text("Hooks, classes, functions and CLI commands, from AI tooling to databases, testing and cloud, organised so you find the right API in seconds. Search the real index below, filter it by type and status, and read this week's API in full.", "AI टूलिंग से डेटाबेस, टेस्टिंग और क्लाउड तक hooks, classes, functions और CLI कमांड। नीचे असली सूची खोजें।")}</p>
+        <p className={frame.lede}>A field guide to the tools you build with, written from each project&apos;s official documentation. Learn what an API does in one line, then go as deep as you need.</p>
         <dl className={frame.facts}>
-          <div><dt>{text("Technologies", "तकनीकें")}</dt><dd>{count(data.packages.length)}</dd></div>
-          <div><dt>{text("Identifier types", "प्रकार")}</dt><dd>{count(data.types.length)}</dd></div>
-          <div><dt>{text("Status labels", "स्थिति लेबल")}</dt><dd>{count(data.statusCount)}</dd></div>
+          <div><dt>Technologies</dt><dd>{count(data.technologyCount)}</dd></div>
+          <div><dt>Free per technology</dt><dd>5</dd></div>
+          <div><dt>APIs for members</dt><dd>{count(data.identifierCount)}</dd></div>
         </dl>
       </div>
     </header>
-    <article className={styles.palette} aria-label={text("API reference preview", "API संदर्भ पूर्वावलोकन")}>
-      <div className={styles.paletteSearch}>
-        <Search size={18} aria-hidden="true" />
-        <input type="search" value={query} onChange={event => setQuery(event.target.value)} placeholder={text("Filter technologies or identifiers", "तकनीक या पहचानकर्ता खोजें")} aria-label={text("Filter technologies or identifiers", "तकनीक खोजें")} />
-        {!query && hints.length > 0 && <button type="button" className={styles.hint} key={hint} onClick={() => setQuery(hints[hint])}>{text("Try", "आज़माएँ")} <code>{hints[hint]}</code></button>}
-        {query && <button type="button" onClick={() => setQuery("")} aria-label={text("Clear search", "खोज साफ़ करें")}><X size={15} /></button>}
+    <div className={styles.guideDock}>
+      <div id="api-docs-tabs" key={tabPage} className={styles.guideCats} role="group" aria-label="Technology categories">
+        {tabs.slice(tabPage * API_TABS_PER_PAGE, (tabPage + 1) * API_TABS_PER_PAGE).map(item => {
+          const look = API_TAB_LOOK[item.id];
+          const Icon = look?.icon ?? FileCode2;
+          const techCount = item.id === "popular" ? data.guides.length : data.technologies.filter(tech => tech.category === item.id).length;
+          return <button type="button" key={item.id} data-tone={look?.tone} title={item.label} aria-pressed={item.id === category} onClick={() => chooseCategory(item.id)}>
+            <span className={styles.guideCatIcon} aria-hidden="true"><Icon size={16} /></span>
+            <span className={styles.guideCatLabel}>{look?.short ?? item.label}</span>
+            <small aria-label={`${techCount} technologies`}>{techCount}</small>
+          </button>;
+        })}
       </div>
-      <div className={styles.paletteBody}>
-        <div className={styles.packages} role="group" aria-label={text("Technologies", "तकनीकें")}>
-          {matches.map(pkg => <button type="button" key={pkg.id} aria-pressed={pkg.id === selected?.id} onClick={() => choose(pkg.id)} style={{ "--accent": pkg.accent } as CSSProperties}><span aria-hidden="true">{pkg.icon}</span><b>{pkg.name}</b><small>{count(pkg.count)}</small></button>)}
-          {!matches.length && <p className={styles.noMatch} role="status">{text("No technology matches that search.", "इस खोज से कोई तकनीक नहीं मिली।")}</p>}
-        </div>
-        {selected && <div className={styles.entries}>
-          <div className={styles.entriesHead}>
-            <div className={styles.entriesTitle}><span aria-hidden="true">{selected.icon}</span>{selected.name}</div>
-            <span role="status">{text(`${count(entries.length)} of ${count(selected.sample.length)} shown · ${count(selected.count)} in the reference`, `${count(selected.count)} पहचानकर्ता`)}</span>
+      <PillPager className={styles.guideCatPager} page={tabPage} pages={tabPages} total={tabs.length} perPage={API_TABS_PER_PAGE} onPage={setTabPage} label="Technology categories" noun="categories" controls="api-docs-tabs" />
+    </div>
+    <article className={styles.guide} aria-label="API Docs preview">
+      <div className={styles.guideRail} role="group" aria-label="Technologies">
+        {rail.map(item => <button type="button" key={item.id} aria-pressed={item.id === guideId} onClick={() => choose(item.id)}>
+          {item.logo ? <Image src={item.logo} alt="" width={22} height={22} loading="lazy" unoptimized={item.logo.endsWith(".svg")} /> : <em aria-hidden="true">{item.icon}</em>}<span>{item.name}</span><small>{count(item.count)}</small>
+        </button>)}
+      </div>
+      <div className={styles.guideSheet}>
+        {!guide && <p className={styles.guideWait} role="status">{failed ? "This technology could not load. Choose it again to retry." : `Opening ${tech?.name ?? "this technology"}…`}</p>}
+        {guide && <>
+          <div className={styles.guideHead}>
+            <div className={styles.guideName}>{guide.name}{guide.version && <small>{guide.version}</small>}</div>
+            <p>{guide.tagline}</p>
+            {guide.install && <code>{guide.install}</code>}
           </div>
-          {usedKinds.length > 1 && <div className={styles.kinds} role="group" aria-label={text("Identifier type", "पहचानकर्ता प्रकार")}>
-            <button type="button" aria-pressed={activeKind === "all"} onClick={() => setKind("all")}>{text("All types", "सभी प्रकार")}</button>
-            {usedKinds.map(type => <button type="button" key={type.k} aria-pressed={activeKind === type.k} onClick={() => setKind(type.k)} style={{ "--badge": type.c } as CSSProperties}><i aria-hidden="true" />{type.label}</button>)}
-          </div>}
-          {usedStatuses.length > 0 && <div className={styles.kinds} role="group" aria-label={text("Status", "स्थिति")}>
-            <button type="button" aria-pressed={activeStatus === "all"} onClick={() => setStatus("all")}>{text("Any status", "कोई भी स्थिति")}</button>
-            {usedStatuses.map(item => <button type="button" key={item.id} aria-pressed={activeStatus === item.id} onClick={() => setStatus(item.id)} style={{ "--badge": STATUS_TONE[item.id] ?? "#87867f" } as CSSProperties}><i aria-hidden="true" />{item.label}</button>)}
-          </div>}
-          <ul className={styles.entryList}>{entries.map(entry => { const type = typeOf(entry.kind), state = statusOf(entry.status); return <li key={entry.name} style={{ "--badge": type?.c ?? "#87867f", "--status": STATUS_TONE[entry.status] ?? "#87867f" } as CSSProperties}><span className={styles.badge} title={type?.label}>{entry.kind}</span><code>{entry.name}</code><small><i className={styles.statusDot} aria-hidden="true" />{state?.label ?? type?.label}</small></li>; })}</ul>
-          {!entries.length && <p className={styles.noMatch} role="status">{text("No identifier in this sample matches. The full reference has the rest.", "इस नमूने में कोई पहचानकर्ता नहीं मिला।")}</p>}
-        </div>}
+          {guide.free.length > 0
+            ? <><p className={styles.guideLabel}><Sparkles size={14} aria-hidden="true" />Start with {guide.free.length === 5 ? "these five" : "these"}, free to read</p>
+              <ol className={styles.guideFree} key={guide.id}>{guide.free.map((item, index) => { const type = typeOf(item.kind); return <li key={item.name}>
+                <span className={styles.guideIndex} aria-hidden="true">{index + 1}</span>
+                <div>
+                  <p className={styles.guideApi}><code>{item.name}</code><small style={{ "--badge": type?.c ?? "#87867f" } as CSSProperties}>{type?.label}</small></p>
+                  <p>{item.summary}</p>
+                  {item.signature && <code className={styles.guideSignature}>{item.signature}</code>}
+                </div>
+              </li>; })}</ol></>
+            : <p className={styles.guideWait}>Short descriptions for {guide.name} are being written from its official documentation.</p>}
+          {member
+            ? <>
+              <p className={styles.guideLabel}><Sparkles size={14} aria-hidden="true" />All {count(guide.count)} {guide.name} APIs are open to you</p>
+              <ul className={styles.guideLocked}>{guide.locked.map(item => <li key={item.name}><Link href={entryHref(item.name)}><code>{item.name}</code><ArrowUpRight size={14} aria-hidden="true" /></Link></li>)}</ul>
+              <Link className={frame.cta} href={`/learning/api-docs/${guide.id}`}>Open {guide.name} in API Docs<ArrowRight size={16} aria-hidden="true" /></Link>
+            </>
+            : <ApiVault key={guide.id} guide={guide} visible={visible} />}
+        </>}
       </div>
-      <ul className={styles.points}>{points.map(point => <li key={point.title}><point.icon size={17} aria-hidden="true" /><div><div className={styles.pointTitle}>{point.title}</div><p>{point.body}</p></div></li>)}</ul>
     </article>
-
-    {spot && <article className={styles.spotlight} aria-labelledby="landing-api-spotlight">
-      <div className={styles.spotInfo}>
-        <p className={styles.labKicker}><Sparkles size={14} aria-hidden="true" />{text("API of the week", "इस सप्ताह का API")} · <code>{spot.packageName}</code></p>
-        <div id="landing-api-spotlight" className={styles.spotTitle}><code>{spot.name}</code></div>
-        <p className={styles.spotDesc}>{spot.description}</p>
-        <pre className={styles.signature}><code>{spot.signature}</code></pre>
-        {spot.parameters.length > 0 && <dl className={styles.params}>{spot.parameters.map(param => <div key={param.name}><dt><code>{param.name}</code><small>{param.type}</small></dt><dd>{param.description}</dd></div>)}</dl>}
-        <p className={styles.returns}><b>{text("Returns", "लौटाता है")}</b> {spot.returns}</p>
-        {spot.notes.length > 0 && <ul className={styles.notes}>{spot.notes.map(note => <li key={note}><Check size={14} aria-hidden="true" />{note}</li>)}</ul>}
-        {spot.related.length > 0 && <p className={styles.related}>{text("Related", "संबंधित")}: {spot.related.map(name => <button type="button" key={name} onClick={() => { setQuery(name); document.getElementById("api-docs")?.scrollIntoView({ behavior: "smooth", block: "start" }); }}><code>{name}</code></button>)}</p>}
-      </div>
-      <div className={styles.spotCode}>
-        <CodeFiles files={spotFiles} label={text(`${spot.name} example`, "उदाहरण")} skin="apple" annotate={false} explainFormatting={false} />
-      </div>
-    </article>}
-
-    <BuzzStrip stories={buzz} label={selected?.name ?? "API Docs"} keywords={[selected?.name ?? "", spot?.name ?? "", spot?.packageName ?? "", ...data.packages.slice(0, 6).map(pkg => pkg.name)]} />
-    <div className={frame.actions}><Link className={frame.cta} href="/learning/api-docs">{text("Browse the API reference", "API संदर्भ देखें")}<ArrowUpRight size={16} aria-hidden="true" /></Link><small>{text("Each entry is marked stable, preview, experimental or deprecated.", "हर प्रविष्टि स्थिर, प्रीव्यू, प्रायोगिक या अप्रचलित चिह्नित है।")}</small></div>
   </div></section>;
 }

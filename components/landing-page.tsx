@@ -22,7 +22,6 @@ import { useReveal } from "./use-reveal";
 import { LearningSlot } from "./learning-slot";
 import type { LandingProPreview } from "@/lib/landing-pro-preview";
 import type { LandingFresh } from "@/lib/landing-fresh-types";
-import type { LandingBuzz } from "@/lib/landing-buzz-types";
 import type { LandingLibrary } from "@/lib/landing-library";
 import type { DailyWord, LockedTeaser, PulseCard } from "@/lib/landing-daily-types";
 import home from "./landing-home.module.css";
@@ -98,7 +97,7 @@ function MembershipSection({ prices, priceState, onCurrency }: { prices: Landing
 /** `international`: other currencies are offered, so the page re-prices itself where the visitor is (it is cached in rupees). */
 export type LandingPrices = { monthly: number; yearly: number; enabled: boolean; currency?: Currency; currencies?: Currency[]; local?: Currency; inr?: { monthly: number; yearly: number }; international?: boolean; sale?: SaleInfo | null };
 /** `today`: the India-calendar week number (istWeek, lib/ist-week.ts); the sections that turn over weekly, on Monday at 00:00 IST, pick their content from it. */
-export function LandingPage({ features, answers, certifications, techBuzz, workflows, pro, library, prices: initialPrices, daily, techDocs, overrides, coffee, today = 0, fresh = null, buzz }: { buzz?: LandingBuzz[]; features?: ReactNode; answers?: ReactNode; certifications?: ReactNode; techBuzz?: ReactNode; workflows: WorkflowPreview; fresh?: LandingFresh | null; today?: number; featuredDoc?: string; overrides?: ContentOverrides; coffee?: BlogTeaser[]; pro?: LandingProPreview; library?: LandingLibrary; prices?: LandingPrices; techDocs?: OfficialTechDocs | null; daily?: { day: string; pulse: PulseCard[]; words: DailyWord[]; locked?: { pulse: LockedTeaser | null; word: LockedTeaser | null }; totals?: { pulse: number; words: number } } }) {
+export function LandingPage({ features, answers, certifications, techBuzz, workflows, pro, library, prices: initialPrices, daily, techDocs, overrides, coffee, today = 0, fresh = null }: { features?: ReactNode; answers?: ReactNode; certifications?: ReactNode; techBuzz?: ReactNode; workflows: WorkflowPreview; fresh?: LandingFresh | null; today?: number; featuredDoc?: string; overrides?: ContentOverrides; coffee?: BlogTeaser[]; pro?: LandingProPreview; library?: LandingLibrary; prices?: LandingPrices; techDocs?: OfficialTechDocs | null; daily?: { day: string; pulse: PulseCard[]; words: DailyWord[]; locked?: { pulse: LockedTeaser | null; word: LockedTeaser | null }; totals?: { pulse: number; words: number } } }) {
   const { language, t } = useLanguage(); const hi = language === "hi";
   // Prices rendered on the server arrive in the HTML, so the plan card never paints "—" and then shifts; the fetch is only the fallback.
   // A failed re-price (to the visitor's currency) keeps the server's rupee prices rather than blanking the card.
@@ -124,6 +123,8 @@ export function LandingPage({ features, answers, certifications, techBuzz, workf
   const beforePlans = useMemo(() => <>
     {/* Tech Buzz right under the sale (user request 2026-11-01): the newest stories and the way into /tech-buzz. */}
     <Part>{techBuzz}</Part>
+    {/* API Docs next, then Fresh in tech (user request 2026-11-03). */}
+    {pro && <LandingApiDocs data={pro.api} />}
     <LearningSlot surface="landing" page="home" section="after-slider" className={styles.learningSlot} />
     <Part><LandingNews /></Part>
     <Part><LandingPathFinder day={today} fresh={fresh?.goals} /></Part>
@@ -137,12 +138,12 @@ export function LandingPage({ features, answers, certifications, techBuzz, workf
     <Part>{features}</Part>
     {library && <Part><LibrarySection library={library} hi={hi} /></Part>}
     <Part><LandingComparisons preview official={techDocs} day={today} fresh={fresh?.difference} /></Part>
-    <LandingSearchDocs fresh={fresh?.doc} buzz={buzz} week={today} />
-    {pro && <><LandingTechy data={pro.techy} buzz={buzz} /><LandingApiDocs data={pro.api} buzz={buzz} /></>}
+    <LandingSearchDocs fresh={fresh?.doc} week={today} />
+    {pro && <LandingTechy data={pro.techy} />}
     {daily && <LandingVocabulary words={daily.words} total={daily.totals?.words} day={daily.day} locked={daily.locked?.word} preview />}
     <StudentReviews />
     <LearningSlot surface="landing" page="home" section="before-plans" className={styles.learningSlot} />
-  </>, [buzz, today, hi, fresh, library, daily, workflows, certifications, techBuzz, coffee, features, techDocs, pro]);
+  </>, [today, hi, fresh, library, daily, workflows, certifications, techBuzz, coffee, features, techDocs, pro]);
   return <ContentProvider overrides={overrides}><div className={`${styles.page} ${home.home} ${font.variable} ${font.className}`}><a className={styles.skip} href="#main-content">{t("skipToContent") || "Skip to content"}</a>
     <LandingNavbar links={navigation as [string, string, string][]} prices={priceState === "ready" ? prices : null} onCurrency={reprice} />
     <WelcomeModal prices={priceState === "ready" ? prices : null} onCurrency={reprice} />

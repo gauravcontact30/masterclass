@@ -3,8 +3,8 @@ import Link from "@/components/site-link";
 import type { CSSProperties } from "react";
 import { ArrowRight, BadgeCheck, CalendarSync, CheckCircle2, Clock3, Code2, Newspaper, Sparkles, Star, ThumbsDown, ThumbsUp } from "lucide-react";
 import { istWeek } from "@/lib/ist-week";
-import { isUnsplash, unoptimizedRemote, unsplashLoader } from "@/lib/image-loaders";
 import type { LandingBuzz, LandingTopic } from "@/lib/landing-buzz-types";
+import { RemoteCoverImage } from "./remote-cover-image";
 import { BuzzQueue } from "./landing-buzz-queue";
 import { BuzzTopics } from "./landing-buzz-topics";
 import { FeatureSection, type Copy, type Feature } from "./landing-features";
@@ -81,8 +81,7 @@ export function LandingTechBuzz({ stories = [], topics = [], week, hi = false }:
       head={<div className={styles.head}><div className={styles.headTitle}>{hi ? "पढ़ने की सूची" : "The reading list"}</div>{!hi && <p>{summary}</p>}</div>}
       covers={slides.map((story, at) => <article key={story.slug} id={`${idBase}-${at}`} className={`${carousel.slide} ${styles.slide}`} data-active={at === 0 || undefined} inert={at !== 0} aria-roledescription="slide" aria-label={`${at + 1} / ${slides.length}: ${story.title}`}>
         <div className={styles.cover}>
-          <Image src={story.cover!} alt={`Cover: ${story.title}`} fill style={{ objectFit: "cover" }} sizes={COVER_SIZES}
-            loader={isUnsplash(story.cover!) ? unsplashLoader : undefined} unoptimized={unoptimizedRemote(story.cover!)} loading={at === 0 ? undefined : "lazy"} />
+          <RemoteCoverImage src={story.cover!} alt={`Cover: ${story.title}`} fill style={{ objectFit: "cover" }} sizes={COVER_SIZES} loading={at === 0 ? undefined : "lazy"} />
           <div className={styles.tags}>
             {isNew(story) && <span className={`${styles.tag} ${styles.fresh}`}>{hi ? "नया" : "New"}</span>}
             <span className={styles.tag}>{story.topic}</span>
@@ -107,7 +106,7 @@ export function LandingTechBuzz({ stories = [], topics = [], week, hi = false }:
         <button type="button" data-at={at} aria-controls={`${idBase}-${at}`} aria-current={at === 0 || undefined}>
           {/* Same picture and sizes as the story's cover above, so this reuses that download. */}
           <span className={styles.cardPicture}>
-            <Image src={story.cover!} alt="" fill style={{ objectFit: "cover" }} sizes={COVER_SIZES} loader={isUnsplash(story.cover!) ? unsplashLoader : undefined} unoptimized={unoptimizedRemote(story.cover!)} loading="lazy" />
+            <RemoteCoverImage src={story.cover!} alt="" fill style={{ objectFit: "cover" }} sizes={COVER_SIZES} loading="lazy" />
             {slides.length > 1 && <i className={styles.progress} style={{ animationDuration: `${INTERVAL}ms` }} aria-hidden="true" />}
           </span>
           <span className={styles.cardLogo} aria-hidden="true">{story.logo ? <Image src={story.logo} alt="" width={20} height={20} /> : <Newspaper size={16} />}</span>

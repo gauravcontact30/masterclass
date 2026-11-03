@@ -11,13 +11,15 @@ import { apiQuestionBank } from "./api-question-bank";
 import { cachedCourseOutline } from "./course-generator";
 import { officialApiCard } from "./official-content";
 
+const LANGCHAIN_DOCS = new Set(["langchain", "langgraph", "langsmith"]);
+
 /** A pill under "Learn <package> in the app". */
 export type LearnTopic = { title: string; href: string; soon?: boolean };
 /**
  * What an API Docs page shows. `written`: a pre-generated page. `summary`: only the catalogue's facts, because this
  * identifier's page has not been written yet. Opening a page never generates anything (user rule 2026-10-30).
  */
-export type StoredApiPage = { detail: GeneratedApiDetail; language: CodeLanguage; status: "written" | "summary"; seeAlso: string[]; learn: LearnTopic[] };
+export type StoredApiPage = { detail: GeneratedApiDetail; language: CodeLanguage; status: "written" | "summary"; seeAlso: string[]; learn: LearnTopic[]; provenance: string };
 
 const isWritten = (pkg: ApiPackage, name: string) => !!API_DETAILS[`${pkg.id}:${name}`] || !!officialApiCard(pkg.id, name) || hasAuthoredReference(pkg.id, name);
 
@@ -61,5 +63,6 @@ export async function storedApiPage(pkg: ApiPackage, entry: ApiEntry): Promise<S
     status: curated || official || hasAuthoredReference(pkg.id, entry.name) ? "written" : "summary",
     seeAlso: seeAlsoFor(pkg, entry, base.related),
     learn: await learnTopicsFor(pkg),
+    provenance: official ? `Written from the official documentation (${official.sourceTitle || new URL(official.sourceUrl).hostname}), checked ${official.checkedAt}.${LANGCHAIN_DOCS.has(pkg.id) ? " Sourced from Docs by LangChain." : ""}` : curated ? "Written for study in MasterClass from the official documentation." : "Prepared inside MasterClass for study.",
   };
 }

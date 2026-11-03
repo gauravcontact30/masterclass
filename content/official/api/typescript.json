@@ -341,6 +341,83 @@
   ],
   "checkedAt": "2026-10-15"
  },
+ "ArrayLike": {
+  "sourceUrl": "https://www.typescriptlang.org/docs/handbook/2/objects.html",
+  "sourceTitle": "Object Types",
+  "summary": "ArrayLike<T> is an interface for values with a numeric length and numeric element access. It models array-shaped data without requiring the value to be an actual Array.",
+  "explanation": "An interface gives a name to an object shape. ArrayLike describes a value with a numeric length and number-based indexing. TypeScript checks whether a value has the required members, so different values can satisfy the same interface when their shapes match.",
+  "syntax": "interface ArrayLike<T> {\n  readonly length: number;\n  readonly [n: number]: T;\n}",
+  "parameters": [
+   {
+    "name": "T",
+    "type": "type parameter",
+    "description": "A type parameter representing the element type returned by numeric indexing."
+   },
+   {
+    "name": "arrayLike",
+    "type": "ArrayLike<T>",
+    "description": "A value with a numeric length and numeric indexed elements."
+   }
+  ],
+  "returns": "The example function returns the first element as T, or undefined when the value is empty.",
+  "example": {
+   "title": "Read from array-like values",
+   "code": "interface ArrayLike<T> {\n  readonly length: number;\n  readonly [n: number]: T;\n}\n\nfunction first<T>(items: ArrayLike<T>): T | undefined {\n  return items.length > 0 ? items[0] : undefined;\n}\n\nconsole.log(first([\"a\", \"b\"]));\nconsole.log(first(\"hello\"));",
+   "language": "typescript",
+   "explanation": "The interface describes values with a numeric length and numeric element access. Arrays and strings match this shape, so the same function can read their first item."
+  },
+  "useCases": [
+   {
+    "title": "Generic collection input",
+    "scenario": "Accept arrays, strings, or custom indexed collections through one function."
+   },
+   {
+    "title": "Array-like APIs",
+    "scenario": "Describe array-shaped data without depending on a concrete array class."
+   },
+   {
+    "title": "Read-only collection contracts",
+    "scenario": "Expose read-only length and indexed access in a public type."
+   }
+  ],
+  "related": [
+   "interface",
+   "type alias",
+   "object types",
+   "structural typing",
+   "optional properties",
+   "readonly properties"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does an interface describe in TypeScript?",
+    "answer": "An interface names an object type by listing its members. A value matches it when the required members have compatible types. This is structural typing, so the value does not need to explicitly declare the interface.",
+    "followUp": "How does an interface differ from a type alias? Both can describe object shapes. Interfaces support declaration merging, while type aliases can represent other type constructs such as unions."
+   },
+   {
+    "question": "What does ArrayLike<T> mean?",
+    "answer": "ArrayLike describes values with a numeric length and a numeric index signature that returns T. The generic parameter lets the same interface represent array-like values containing different element types.",
+    "followUp": "Why is the index signature numeric? JavaScript arrays and similar values are accessed with numeric indexes, so the interface models that access pattern."
+   },
+   {
+    "question": "How does structural typing affect interface compatibility?",
+    "answer": "TypeScript uses structural typing for object types. It checks whether the value has the required members with compatible types, rather than requiring a named relationship between the value and the interface.",
+    "followUp": "What happens when an object literal has an extra property? TypeScript may report an excess-property error in that direct assignment or call, even though extra properties can be accepted through a variable."
+   }
+  ],
+  "keyPoints": [
+   "An interface gives a reusable name to an object shape.",
+   "Compatibility depends on required members and their types, not only on the declared name.",
+   "An object type can also be named with a type alias.",
+   "Object properties can define their type and modifiers such as optional or readonly.",
+   "Optional properties may be absent from a value."
+  ],
+  "gotchas": [
+   "Object literals can receive stricter excess-property checks than variables. Extra properties are usually allowed when a variable already has the required shape."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "as": {
   "sourceUrl": "https://www.typescriptlang.org/docs/handbook/basic-types.html",
   "sourceTitle": "Handbook - Basic Types - TypeScript",
@@ -684,155 +761,207 @@
  "Awaited": {
   "sourceUrl": "https://www.typescriptlang.org/docs/handbook/utility-types.html",
   "sourceTitle": "TypeScript: Documentation - Utility Types",
-  "summary": "Awaited<Type> models the result of await and Promise.then by recursively unwrapping promises. It also distributes over unions, preserving non-promise members.",
-  "explanation": "Awaited<Type> models the value produced by await and Promise.then. It recursively removes promise layers, distributes across unions, and preserves non-promise members, making asynchronous API result types match their resolved values.",
-  "syntax": "type Awaited<Type> = ...",
+  "summary": "Awaited<Type> models the value produced by await or Promise.then(). It recursively unwraps Promise and promise-like types, including nested promises and union members.",
+  "explanation": "Awaited<Type> recursively unwraps promise-like types. It keeps null and undefined, and distributes across unions, so each union member is resolved separately.",
+  "syntax": "Awaited<Type>",
   "parameters": [
    {
     "name": "Type",
     "type": "type",
-    "description": "The type to transform by recursively modeling await or Promise.then unwrapping."
+    "description": "The type to resolve. Promise and promise-like layers are recursively removed; other values stay unchanged."
    }
   ],
-  "returns": "The recursively unwrapped type of Type; union members are handled individually.",
+  "returns": "The type produced after recursively unwrapping the input's Promise or promise-like layers.",
   "example": {
-   "title": "Recursively unwrap a promise",
-   "code": "type User = { name: string };\n\ntype UserResult = Awaited<Promise<Promise<User>>>;\n\nasync function loadUser(): Promise<Promise<User>> {\n  return Promise.resolve({ name: \"Ada\" });\n}\n\nasync function main(): Promise<void> {\n  const user: UserResult = await loadUser();\n  console.log(user.name);\n}\n\nvoid main();",
+   "title": "Unwrap a promise result",
+   "code": "type UserId = string | Promise<string>;\n\ntype ResolvedUserId = Awaited<UserId>;\n\nasync function getUserId(): Promise<ResolvedUserId> {\n  return \"user-42\";\n}\n\ngetUserId().then((id) => console.log(id));",
    "language": "typescript",
-   "explanation": "The nested promise is recursively unwrapped, so UserResult is User and the awaited value can be used as a User."
+   "explanation": "Awaited removes the Promise layer from the union, so ResolvedUserId is string."
   },
   "useCases": [
    {
-    "title": "Model async results",
-    "scenario": "Derive the resolved value type returned by an async API, including APIs with nested promises."
+    "title": "Describe an async result",
+    "scenario": "A function returns a Promise and another function needs its resolved value type."
    },
    {
-    "title": "Type promise utilities",
-    "scenario": "Describe the resolved element types of promise-oriented collection APIs."
+    "title": "Model promise-based APIs",
+    "scenario": "A library type models Promise.all, Promise.race, or another asynchronous API."
    },
    {
-    "title": "Resolve mixed unions",
-    "scenario": "Keep synchronous and asynchronous alternatives represented in one union type."
+    "title": "Resolve mixed or nested types",
+    "scenario": "A type may contain nested promises or a mix of values and promises."
    }
   ],
   "related": [
    "Promise",
-   "async",
-   "await"
+   "Promise.all",
+   "Promise.race",
+   "Partial",
+   "Required"
   ],
   "since": "4.5",
-  "keyPoints": [
-   "Use Awaited to describe the type of a value after an async function's await operation.",
-   "Promise nesting is unwrapped recursively rather than only removing one Promise layer.",
-   "Awaited<Promise<string>> resolves to string.",
-   "Nested promises resolve all the way to their underlying value type.",
-   "Awaited distributes over unions, retaining non-promise members alongside resolved promise values.",
-   "Awaited was introduced in TypeScript 4.5."
+  "interview": [
+   {
+    "question": "What does Awaited do?",
+    "answer": "Awaited<Type> models the type produced by await or a Promise .then() callback. For Promise<Promise<number>>, it produces number.",
+    "followUp": "What happens with a union? Awaited<boolean | Promise<number>> becomes boolean | number because each union member is handled separately."
+   },
+   {
+    "question": "Does Awaited unwrap only native Promise types?",
+    "answer": "It recursively removes promise or promise-like wrappers. A normal non-promise type remains unchanged.",
+    "followUp": "How does it treat null and undefined? They are preserved instead of being unwrapped."
+   },
+   {
+    "question": "How does Awaited handle promise-like values?",
+    "answer": "No. It also models thenable objects by inspecting a then method and its fulfillment callback. This matches how await and Promise.then resolve values.",
+    "followUp": "Why is this useful in library types? It helps APIs such as Promise.all and Promise.race describe resolved results more accurately."
+   }
   ],
-  "gotchas": [],
-  "checkedAt": "2026-10-15"
+  "keyPoints": [
+   "Use it when a type should represent the value returned after await.",
+   "It distributes over unions, producing a union of the resolved member types.",
+   "It is useful when defining or improving types for asynchronous APIs."
+  ],
+  "gotchas": [
+   "Its use can change inferred generic types in code that relies on await or updated library declarations."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "baseUrl": {
   "sourceUrl": "https://www.typescriptlang.org/tsconfig/baseUrl.html",
   "sourceTitle": "TypeScript: TSConfig Option: baseUrl",
-  "summary": "Sets the directory TypeScript uses to resolve bare module specifiers. It can make imports such as \"utils/date\" resolve from a configured project directory before node_modules.",
-  "explanation": "Set baseUrl in compilerOptions to establish a directory for resolving bare module specifiers such as \"utils/date\". TypeScript checks that directory before node_modules, but baseUrl affects compiler resolution only; the runtime or bundler must independently understand the same import mapping.",
-  "syntax": "{\"compilerOptions\":{\"baseUrl\":\"./src\"}}",
+  "summary": "baseUrl sets the directory TypeScript uses to resolve bare module names, such as \"app/utils\". These lookups have higher priority than node_modules; the option was designed mainly for AMD browser loaders.",
+  "explanation": "Set baseUrl to choose the directory TypeScript uses when resolving module imports without a relative prefix such as ./ or ../. TypeScript checks this location before node_modules. The option was made for AMD loaders in browser applications and is usually not recommended for other setups.",
+  "syntax": "{\n  \"compilerOptions\": {\n    \"baseUrl\": \"./\"\n  }\n}",
   "parameters": [
    {
     "name": "baseUrl",
     "type": "string",
-    "description": "Directory used as the starting point for resolving bare module specifiers; relative values are based on tsconfig.json."
+    "description": "A directory path used as the starting location for resolving bare module specifiers."
    }
   ],
-  "returns": "No runtime value; this tsconfig compiler option changes TypeScript's module-resolution behavior.",
+  "returns": "",
   "example": {
-   "title": "Resolve a bare import from a project directory",
-   "code": "// tsconfig.json\n// {\n//   \"compilerOptions\": { \"baseUrl\": \"./src\" }\n// }\n\nimport { formatDate } from \"utils/date\";\n\nconsole.log(formatDate(new Date()));",
+   "title": "Resolve a bare module name",
+   "code": "import { helloWorld } from \"hello/world\";\n\nconsole.log(helloWorld);",
    "language": "typescript",
-   "explanation": "With baseUrl set to ./src, the bare import resolves from the project's src directory."
+   "explanation": "With baseUrl set to the project folder, this bare import can resolve to a file under the hello directory."
   },
   "useCases": [
    {
-    "title": "Source-root imports",
-    "scenario": "A project wants short, non-relative imports rooted at its source directory."
+    "title": "Resolve AMD modules",
+    "scenario": "An AMD browser application loads modules from one deployed directory."
    },
    {
-    "title": "AMD module loading",
-    "scenario": "An AMD browser application loads modules from one deployment directory."
+    "title": "Set a project lookup root",
+    "scenario": "A project uses bare imports that should start from a chosen source or modules directory."
    },
    {
-    "title": "Alias mapping foundation",
-    "scenario": "A project uses paths mappings whose targets should be relative to a shared base directory."
+    "title": "Support path mappings",
+    "scenario": "paths entries need a base directory for their relative lookup targets."
    }
   ],
   "related": [
    "paths",
    "moduleResolution",
-   "rootDirs"
+   "rootDirs",
+   "module"
   ],
-  "since": "",
+  "since": "2.0",
+  "interview": [
+   {
+    "question": "What does baseUrl do?",
+    "answer": "baseUrl sets the directory used to resolve bare module names. For example, an import from \"hello/world\" can be searched for beneath the configured base directory.",
+    "followUp": "What happens if a matching package also exists in node_modules? A baseUrl match has higher resolution priority than node_modules lookup."
+   },
+   {
+    "question": "How is the base directory chosen?",
+    "answer": "The value is resolved from the directory containing tsconfig.json. Setting it to \"./\" makes that project directory the starting point for bare imports.",
+    "followUp": "How would you make the base directory a modules folder? Set baseUrl to \"./modules\" so an import such as \"moduleA\" is looked up there."
+   },
+   {
+    "question": "When should baseUrl be used?",
+    "answer": "baseUrl is primarily intended for AMD module loaders in browser applications. The current documentation says it is not recommended in other contexts.",
+    "followUp": "Is baseUrl required for paths? No. Since TypeScript 4.1, paths no longer requires baseUrl to be set."
+   }
+  ],
   "keyPoints": [
-   "baseUrl establishes the directory TypeScript uses when resolving non-relative imports.",
-   "A relative value is interpreted from the directory containing tsconfig.json.",
-   "A matching file under baseUrl takes precedence over a corresponding node_modules lookup.",
-   "paths can be used without baseUrl; its mappings otherwise resolve relative to the tsconfig file."
+   "It changes where TypeScript starts resolving imports such as \"app\" or \"hello/world\" that do not begin with ./ or ../.",
+   "A value of \"./\" makes the folder containing tsconfig.json the resolution starting point.",
+   "For baseUrl \"./modules\", the bare import \"moduleA\" maps to a lookup beginning at ./modules/moduleA.",
+   "Bare module names are treated as paths beneath baseUrl during TypeScript's resolution process.",
+   "paths entries use baseUrl as their relative lookup location when baseUrl is configured."
   ],
   "gotchas": [
-   "The option is primarily intended for AMD browser loaders and is discouraged as a general-purpose alias mechanism.",
-   "Do not add baseUrl solely to enable paths mappings in modern TypeScript."
+   "The documentation recommends baseUrl mainly for AMD browser loaders, not as a general solution for module resolution.",
+   "A matching module under baseUrl can take precedence over a package with the same bare import name in node_modules.",
+   "Do not add baseUrl only because paths is present; paths can work without it in current TypeScript."
   ],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-11-03"
  },
  "bigint": {
-  "sourceUrl": "https://www.typescriptlang.org/docs/handbook/release-notes/typescript-3-2.html",
-  "sourceTitle": "Documentation - TypeScript 3.2",
-  "summary": "`bigint` is TypeScript’s primitive type for arbitrarily large integers. Values come from `BigInt()` or integer literals with an `n` suffix, and bigint arithmetic cannot mix with `number` operands.",
-  "explanation": "`bigint` is TypeScript’s primitive type for arbitrarily large integers. Create values with the `BigInt()` function or an integer literal ending in `n`; arithmetic requires bigint operands rather than mixing them with `number` values.",
-  "syntax": "let value: bigint = BigInt(100);\nlet literal: bigint = 100n;",
+  "sourceUrl": "https://www.typescriptlang.org/docs/handbook/2/everyday-types",
+  "sourceTitle": "TypeScript: Documentation - Everyday Types",
+  "summary": "TypeScript uses bigint for JavaScript BigInt values. Create them with BigInt() or an integer literal ending in n, and do not mix them directly with number values.",
+  "explanation": "TypeScript models JavaScript BigInt values with the primitive type bigint. You can create them with BigInt() or an integer literal ending in n. bigint and number are separate types, so arithmetic must use matching values or an explicit conversion.",
+  "syntax": "let value: bigint = BigInt(100);\nlet other: bigint = 100n;",
   "parameters": [],
   "returns": "",
   "example": {
-   "title": "Using bigint values",
-   "code": "const accountId: bigint = 9007199254740993n;\nconst fromText: bigint = BigInt(\"9007199254740993\");\n\nfunction add(a: bigint, b: bigint): bigint {\n  return a + b;\n}\n\nconsole.log(add(accountId, fromText));",
+   "title": "Create and use bigint values",
+   "code": "const oneHundred: bigint = BigInt(100);\nconst anotherHundred: bigint = 100n;\n\nfunction add(a: bigint, b: bigint): bigint {\n  return a + b;\n}\n\nconsole.log(add(oneHundred, anotherHundred));",
    "language": "typescript",
-   "explanation": "This runnable example declares bigint values using both supported creation forms and adds two bigint operands."
+   "explanation": "This creates bigint values, declares a bigint function, and adds two bigint values."
   },
   "useCases": [
    {
-    "title": "Large integer values",
-    "scenario": "Representing integer identifiers or counters that can exceed JavaScript number precision."
+    "title": "Large integer calculations",
+    "scenario": "Calculations with integers larger than the safe range of ordinary JavaScript number values."
    },
    {
-    "title": "Precise arithmetic",
-    "scenario": "Performing exact integer arithmetic without floating-point rounding at large magnitudes."
+    "title": "Numeric type narrowing",
+    "scenario": "Code that accepts either ordinary numbers or BigInt values and branches by runtime type."
    },
    {
-    "title": "Type narrowing",
-    "scenario": "Using runtime type guards for values whose type may be bigint."
+    "title": "Native BigInt output",
+    "scenario": "Applications targeting a runtime with BigInt support and using an esnext target."
    }
   ],
   "related": [
-   "BigInt()",
    "number",
+   "BigInt()",
    "typeof",
    "esnext",
    "esnext.bigint"
   ],
   "since": "3.2",
+  "interview": [
+   {
+    "question": "How do you create and type a BigInt value in TypeScript?",
+    "answer": "Use the lowercase bigint type. A value can come from BigInt() or from an integer literal with n appended, such as 100n.",
+    "followUp": "How can code distinguish bigint from number at runtime? Use typeof; a bigint value produces the string \"bigint\"."
+   },
+   {
+    "question": "Can number and bigint values be assigned or used together?",
+    "answer": "number and bigint are separate types. Assigning one to the other is rejected, and arithmetic cannot mix them directly.",
+    "followUp": "How do you multiply a number value by a bigint? Convert the number explicitly with BigInt(), if that conversion is valid for the value."
+   },
+   {
+    "question": "What are the compiler-target limits for BigInt?",
+    "answer": "TypeScript can type-check BigInt and emit BigInt literals when the target is esnext. Older targets do not receive automatic downlevel support for BigInt operations.",
+    "followUp": "What compiler library setting may help when a target has a BigInt-like runtime object? Add esnext.bigint to the lib setting."
+   }
+  ],
   "keyPoints": [
-   "`bigint` is a distinct primitive type, written in lowercase, rather than the `BigInt` constructor name.",
-   "Values can be created with `BigInt()` or with an integer literal using the `n` suffix.",
-   "The literal form appends `n` directly to an integer numeric literal, such as `100n`.",
-   "A `typeof value === \"bigint\"` check can narrow a value to the bigint type.",
-   "Use `bigint` when integer values may exceed the safe precision range of ordinary JavaScript numbers."
+   "BigInt represents integers that can be much larger than ordinary number values.",
+   "The type name is lowercase bigint.",
+   "Create values with BigInt(value) or an integer literal followed by n.",
+   "number and bigint do not substitute for each other."
   ],
   "gotchas": [
-   "Do not mix `number` and `bigint` operands in arithmetic; convert explicitly first.",
-   "The documented release initially requires an `esnext` compilation target for BigInt support.",
-   "A compiler target or polyfill can provide a BigInt-like runtime object, but runtime support still matters."
+   "BigInt code is not rewritten for older JavaScript targets. Use a runtime that supports BigInt or another suitable runtime solution."
   ],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-11-03"
  },
  "boolean": {
   "sourceUrl": "https://www.typescriptlang.org/docs/handbook/2/everyday-types.html",
@@ -970,58 +1099,82 @@
   "checkedAt": "2026-10-15"
  },
  "ClassDecorator": {
-  "sourceUrl": "https://www.typescriptlang.org/docs/handbook/decorators.html",
-  "sourceTitle": "Documentation - Decorators - TypeScript",
-  "summary": "A class decorator is a function applied to a class declaration at runtime. It receives the class constructor and can observe, modify, or replace the class by returning another constructor.",
-  "explanation": "A class decorator is written immediately before a class and receives that class's constructor when the program runs. It may inspect or modify the class, or return another constructor; returning a value replaces the decorated class. Class decorators are not allowed in declaration files or other ambient contexts.",
-  "syntax": "@decoratorExpression\nclass ClassName { }",
+  "sourceUrl": "https://www.typescriptlang.org/docs/handbook/release-notes/typescript-5-0.html",
+  "sourceTitle": "TypeScript: Documentation - TypeScript 5.0",
+  "summary": "TypeScript 5.0 supports the newer decorators proposal. Decorators let reusable functions customize classes and class members, including wrapping methods with extra behavior.",
+  "explanation": "A TypeScript 5.0 decorator can customize a class or class member. A method decorator receives the original method and a context object, then can return a replacement method that adds behavior while still calling the original.",
+  "syntax": "@decoratorExpression\nclass Example {\n  @methodDecorator\n  method() {}\n}",
   "parameters": [
    {
-    "name": "constructor",
+    "name": "originalMethod",
     "type": "Function",
-    "description": "The constructor of the class being decorated; it is the decorator's sole runtime argument."
+    "description": "The original method being decorated."
+   },
+   {
+    "name": "context",
+    "type": "ClassMethodDecoratorContext",
+    "description": "Metadata and information about the decorated class element."
    }
   ],
-  "returns": "A replacement constructor function, if the decorator returns a value; otherwise the original class remains in use.",
+  "returns": "A replacement method function, or no value when the original method should remain unchanged.",
   "example": {
-   "title": "Replacing a class with a decorator",
-   "code": "function ReplaceWith<T extends new (...args: any[]) => any>(replacement: T) {\n  return (_target: Function): T => replacement;\n}\n\nclass Replacement {\n  value = \"replacement\";\n}\n\n@ReplaceWith(Replacement)\nclass Original {\n  value = \"original\";\n}\n\nconsole.log(new Original().value); // replacement",
+   "title": "Logging a method",
+   "code": "function loggedMethod(originalMethod: Function, context: ClassMethodDecoratorContext) {\n  const methodName = String(context.name);\n  return function (this: unknown, ...args: unknown[]) {\n    console.log(`LOG: Entering ${methodName}.`);\n    const result = originalMethod.apply(this, args);\n    console.log(`LOG: Exiting ${methodName}.`);\n    return result;\n  };\n}\n\nclass Person {\n  constructor(public name: string) {}\n\n  @loggedMethod\n  greet() {\n    console.log(`Hello, my name is ${this.name}.`);\n  }\n}\n\nnew Person(\"Ray\").greet();",
    "language": "typescript",
-   "explanation": "The decorator returns a constructor, so that constructor replaces the original class at runtime."
+   "explanation": "The decorator wraps greet and logs before and after the original method runs."
   },
   "useCases": [
    {
-    "title": "Runtime registration",
-    "scenario": "Register classes in a framework or dependency-injection container during module initialization."
+    "title": "Method logging",
+    "scenario": "Several methods need the same entry and exit logging."
    },
    {
-    "title": "Class customization",
-    "scenario": "Attach or configure behavior shared by instances through the class definition."
+    "title": "Reusable method customization",
+    "scenario": "A class member needs reusable behavior added without editing its body."
    },
    {
-    "title": "Constructor replacement",
-    "scenario": "Return a derived or alternative constructor to substitute the original implementation."
+    "title": "Method interception",
+    "scenario": "A method needs to be observed or replaced during class definition."
    }
   ],
   "related": [
-   "Decorator",
-   "experimentalDecorators",
-   "Decorators"
+   "Decorators",
+   "loggedMethod",
+   "ClassMethodDecoratorContext",
+   "method decorator",
+   "class members"
   ],
-  "since": "",
+  "since": "TypeScript 5.0",
+  "interview": [
+   {
+    "question": "What is a decorator?",
+    "answer": "A decorator is a reusable function that customizes a class or one of its members. It is written with an at-sign before the declaration, such as @loggedMethod.",
+    "followUp": "How can a method decorator change behavior? It can return a replacement function that calls the original method and adds logic before or after that call."
+   },
+   {
+    "question": "What does a method decorator receive?",
+    "answer": "A method decorator receives the original method and a context object. The context provides information about the decorated class element, such as its name.",
+    "followUp": "Why use the context name? Converting it to a string lets logging work for names whose type is not already a string."
+   },
+   {
+    "question": "How can decorators add logging?",
+    "answer": "A method decorator can wrap the original method. The wrapper can log, run other logic, call the original with the same this value and arguments, and return its result.",
+    "followUp": "What must a wrapper preserve? It should forward this, arguments, and the original return value so callers keep the method's expected behavior."
+   }
+  ],
   "keyPoints": [
-   "Place the decorator directly before the class declaration it decorates.",
-   "The decorator works with the class constructor rather than an instance.",
-   "Use a class decorator to inspect, alter, or substitute a class.",
-   "The decorator expression is evaluated and invoked while the program runs.",
-   "A legacy class decorator receives exactly the decorated class constructor.",
-   "In decorator evaluation order, class decorators run after the listed member and constructor decorators."
+   "Decorators let you apply reusable customization to classes and their members.",
+   "A decorator can replace repeated manual edits, such as adding logging to many methods.",
+   "A logging decorator is commonly implemented as a function named loggedMethod.",
+   "The decorator expression runs at runtime when the decorated method is processed.",
+   "Put a method decorator directly before the method declaration it modifies.",
+   "A method decorator can inspect, modify, or replace the method definition."
   ],
   "gotchas": [
-   "Do not apply a class decorator to a declaration file or an ambient class such as a declare class.",
-   "Returning a constructor changes which class definition the decorated binding uses."
+   "The older decorators page describes a different experimental implementation. For the newer decorator model, use the TypeScript 5.0 documentation.",
+   "Decorators are still described as an upcoming ECMAScript feature, so their surrounding JavaScript support can matter when choosing a compilation target."
   ],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-11-03"
  },
  "composite": {
   "sourceUrl": "https://www.typescriptlang.org/tsconfig/composite.html",
@@ -2645,67 +2798,85 @@
   "checkedAt": "2026-10-15"
  },
  "interface": {
-  "sourceUrl": "https://www.typescriptlang.org/docs/handbook/2/everyday-types.html",
-  "sourceTitle": "TypeScript: Documentation - Everyday Types",
-  "summary": "An interface names an object type and describes its required or optional members. TypeScript checks interface compatibility structurally, and interfaces can be extended or reopened.",
-  "explanation": "An interface gives a reusable name to an object’s required and optional members. TypeScript checks values structurally, so an object is accepted when it has the required properties with compatible types; interfaces can also be extended, implemented by classes, and reopened for declaration merging.",
-  "syntax": "interface InterfaceName extends BaseInterface {\n  property: Type;\n  optionalProperty?: Type;\n  readonly readOnlyProperty: Type;\n}",
+  "sourceUrl": "https://www.typescriptlang.org/docs/handbook/interfaces.html",
+  "sourceTitle": "TypeScript: Handbook - Interfaces",
+  "summary": "An interface names the shape an object must have. TypeScript checks required properties by structure, so a value can match an interface without explicitly declaring that it implements it.",
+  "explanation": "An interface gives a name to an object shape. TypeScript checks that a value has the required properties with compatible types. The value does not need to explicitly declare that it implements the interface, and it may contain additional properties in many assignments.",
+  "syntax": "interface Name {\n  property: Type;\n}",
   "parameters": [
    {
-    "name": "members",
-    "type": "object properties and/or call signatures",
-    "description": "The interface declaration itself has no runtime parameters; its members describe the properties and callable signatures expected by the object shape."
+    "name": "user",
+    "type": "User",
+    "description": "An object value whose properties must satisfy the interface shape."
    }
   ],
-  "returns": "An interface declaration produces a compile-time object type and no runtime value.",
+  "returns": "The example function returns a string made from the user's name and id.",
   "example": {
-   "title": "Describing and using an object shape",
-   "code": "interface User {\n  readonly id: number;\n  name: string;\n  email?: string;\n}\n\nfunction greet(user: User): string {\n  return `Hello, ${user.name}`;\n}\n\nconst user: User = { id: 1, name: \"Ada\" };\nconsole.log(greet(user));",
+   "title": "A typed object parameter",
+   "code": "interface User {\n  name: string;\n  id: number;\n}\n\nfunction showUser(user: User): string {\n  return `${user.name} (${user.id})`;\n}\n\nconst result = showUser({ name: \"Ada\", id: 1 });\nconsole.log(result);",
    "language": "typescript",
-   "explanation": "This runnable example declares an object shape, uses an optional property, prevents reassignment of an identifier, and applies the interface to a function parameter."
+   "explanation": "The object passed to showUser has the properties required by User, so TypeScript accepts the call."
   },
   "useCases": [
    {
-    "title": "Shared object contracts",
-    "scenario": "Define shared request, response, configuration, or domain-object shapes across modules."
+    "title": "Describe object data",
+    "scenario": "Define the required fields for objects passed between functions or modules."
    },
    {
-    "title": "Function boundaries",
-    "scenario": "Annotate function parameters and return values with a stable object shape."
+    "title": "Model option objects",
+    "scenario": "Mark configuration fields as optional while still checking their names and types."
    },
    {
-    "title": "Class contracts",
-    "scenario": "Require classes to provide a defined public API."
+    "title": "Check class contracts",
+    "scenario": "Require classes to provide particular properties or methods."
    },
    {
-    "title": "Extensible APIs",
-    "scenario": "Extend or augment an existing object shape across declarations."
+    "title": "Type functions and indexed objects",
+    "scenario": "Describe callable values or values accessed with indexes."
    }
   ],
   "related": [
-   "type alias",
-   "extends",
-   "implements",
-   "declaration merging",
-   "structural typing",
-   "call signature",
-   "readonly",
-   "optional properties"
+   "Optional properties",
+   "readonly properties",
+   "Excess property checks",
+   "Function types",
+   "Indexable types",
+   "Class types implementing an interface",
+   "Structural type system",
+   "Type-only imports and exports"
   ],
   "since": "",
+  "interview": [
+   {
+    "question": "How does TypeScript decide whether an object matches an interface?",
+    "answer": "TypeScript uses structural typing for interfaces. A value is accepted when it has the required members with compatible types, even when it was not declared with the interface name.",
+    "followUp": "What happens when the value is an object literal with an extra property? TypeScript performs excess property checking and can reject the literal if the property is not known."
+   },
+   {
+    "question": "How do optional interface properties work?",
+    "answer": "Put a question mark after a property name, such as color?: string. The property may be absent, but code still cannot use unrelated property names through that interface.",
+    "followUp": "How can an interface allow extra named properties? Add a suitable index signature, such as [key: string]: unknown, when that behavior is intentional."
+   },
+   {
+    "question": "What is an index signature?",
+    "answer": "An index signature describes the type used to index an object and the value returned by that index. For example, [index: number]: string means numeric indexing produces a string.",
+    "followUp": "Can an index signature be read-only? Yes. A readonly index signature prevents assignments through that index."
+   }
+  ],
   "keyPoints": [
-   "Interfaces participate in structural typing: compatibility depends on the required shape rather than the declared name.",
-   "Use an interface to give a reusable name to an object contract.",
-   "Extra properties are generally allowed when values come from variables, while required properties must exist with compatible types.",
-   "An interface can describe properties, optional members, readonly members, index signatures, and callable shapes.",
-   "A call signature lets an interface describe a callable function shape."
+   "Interfaces describe shapes. TypeScript compares required members instead of requiring explicit interface declarations.",
+   "Add ? to a property name when callers may omit that property.",
+   "Prefix a property with readonly when later assignments should be rejected.",
+   "An interface can describe object members, function signatures, indexable objects, and class contracts.",
+   "Use an interface in a function parameter or return type to check the data crossing that boundary.",
+   "Interfaces can be exported from a module and imported with standard named imports."
   ],
   "gotchas": [
-   "Unlike a type alias, an interface can be reopened and augmented with additional properties.",
-   "An interface is for object shapes; use a type alias when you need to name a primitive or another non-object type.",
-   "Property declaration order does not affect compatibility."
+   "A fresh object literal is checked for unknown properties. A misspelled option such as colour instead of color can cause an error.",
+   "Use const to stop reassignment of a variable. Use readonly to stop assignment to an interface property.",
+   "If an interface has both number and string index signatures, the number result type must fit within the string result type."
   ],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-11-03"
  },
  "is": {
   "sourceUrl": "https://www.typescriptlang.org/docs/handbook/2/narrowing.html",
@@ -2925,125 +3096,170 @@
   "checkedAt": "2026-10-15"
  },
  "IterableIterator": {
-  "sourceUrl": "https://www.typescriptlang.org/docs/handbook/iterators-and-generators.html",
-  "sourceTitle": "Iterators and Generators",
-  "summary": "IterableIterator represents an object that is both iterable and an iterator. It can participate in for-of and similar iteration constructs while producing values through the iterator protocol.",
-  "explanation": "IterableIterator describes an object that combines the iterable and iterator protocols. It can provide its own iterator through Symbol.iterator and advance through values with next(), allowing it to work with constructs such as for-of.",
+  "sourceUrl": "https://www.typescriptlang.org/docs/handbook/iterators-and-generators",
+  "sourceTitle": "TypeScript: Documentation - Iterators and Generators",
+  "summary": "IterableIterator describes an object that combines iterable and iterator behavior. It can be used by iteration features such as for...of and spread.",
+  "explanation": "IterableIterator is a TypeScript type for an object that supports both sides of iteration: it can provide an iterator and also produce values through next(). It works with language features such as for...of and spread. Generators commonly produce objects with this combined behavior.",
   "syntax": "interface IterableIterator<T> extends Iterator<T> {\n  [Symbol.iterator](): IterableIterator<T>;\n}",
-  "parameters": [],
-  "returns": "An IterableIterator is an object usable as both an iterable and an iterator; its next method produces iterator results.",
+  "parameters": [
+   {
+    "name": "xs",
+    "type": "Iterable<X>",
+    "description": "The iterable input whose values will be copied into an array."
+   }
+  ],
+  "returns": "An array containing the iterable's values.",
   "example": {
-   "title": "A generator as an IterableIterator",
-   "code": "function* values(): IterableIterator<number> {\n  yield 1;\n  yield 2;\n}\n\nfor (const value of values()) {\n  console.log(value);\n}",
+   "title": "Convert an iterable to an array",
+   "code": "function toArray<X>(xs: Iterable<X>): X[] {\n  return [...xs];\n}\n\nconst values = toArray(new Set([1, 2, 3]));\nconsole.log(values);",
    "language": "typescript",
-   "explanation": "The generator returns an object that can both produce iterator results and be consumed directly by a for-of loop."
+   "explanation": "The function accepts any iterable and makes a new array from its values."
   },
   "useCases": [
    {
-    "title": "Typed generators",
-    "scenario": "A generator function yields a sequence that callers consume with for-of."
+    "title": "Accept many collection types",
+    "scenario": "Write a function that accepts arrays, sets, strings, or other iterable inputs."
    },
    {
-    "title": "Lazy traversal",
-    "scenario": "An API exposes a lazy sequence without allocating an array of all values."
+    "title": "Build a custom iterable",
+    "scenario": "Pass a custom sequence to for...of or spread."
    },
    {
-    "title": "Custom iterator protocols",
-    "scenario": "A custom object supports both direct iteration and explicit next() calls."
+    "title": "Use generators",
+    "scenario": "Produce values one at a time instead of creating the whole collection immediately."
    }
   ],
   "related": [
    "Iterable",
    "Iterator",
-   "Generator",
-   "IteratorResult",
-   "Symbol.iterator"
+   "IterableIterator",
+   "Symbol.iterator",
+   "for...of",
+   "for...in",
+   "Generators",
+   "yield"
   ],
   "since": "",
-  "keyPoints": [
-   "IterableIterator combines the roles of Iterable and Iterator.",
-   "It represents the protocol members needed by constructs such as for-of.",
-   "Its iterable side is based on providing Symbol.iterator.",
-   "Calling Symbol.iterator supplies the iterator used to obtain iteration values.",
-   "A for-of loop starts iteration by invoking Symbol.iterator.",
-   "Use for-of when consuming yielded values rather than property keys."
-  ],
-  "gotchas": [
-   "The type describes a protocol rather than guaranteeing every convenience method associated with iteration.",
-   "With an ES5 target, non-array iterator usage in for-of requires appropriate compiler support such as downlevelIteration."
-  ],
-  "checkedAt": "2026-10-15"
- },
- "Iterator": {
-  "sourceUrl": "https://www.typescriptlang.org/docs/handbook/release-notes/typescript-3-6.html",
-  "sourceTitle": "Documentation - TypeScript 3.6",
-  "summary": "Iterator describes a stateful producer whose next method yields values until completion. Its generic parameters separately model yielded values, the final return value, and inputs passed to next.",
-  "explanation": "Iterator models a stepwise producer: next optionally receives a value and returns an IteratorResult containing either a yielded value or a completion value. Optional return and throw methods let an implementation handle early completion or exceptions.",
-  "syntax": "interface Iterator<T, TReturn = any, TNext = undefined> {\n  next(...args: [] | [TNext]): IteratorResult<T, TReturn>;\n  return?(value?: TReturn): IteratorResult<T, TReturn>;\n  throw?(e?: any): IteratorResult<T, TReturn>;\n}",
-  "parameters": [
+  "interview": [
    {
-    "name": "T",
-    "type": "unknown",
-    "description": "Type produced while iteration continues."
+    "question": "What is the difference between an iterable and an iterator?",
+    "answer": "An iterable has a Symbol.iterator method that returns an iterator. An iterator has a next method for obtaining the next result. IterableIterator combines both roles.",
+    "followUp": "How can an object become iterable? Implement Symbol.iterator so it returns an object with next()."
    },
    {
-    "name": "TReturn",
-    "type": "unknown",
-    "description": "Type produced when iteration completes."
+    "question": "How does for...of use an iterable?",
+    "answer": "for...of calls the object's Symbol.iterator method and then reads values from the returned iterator. It therefore works with arrays, strings, maps, sets, and other iterable objects.",
+    "followUp": "Why does spread work on the same objects? Spread also uses the iterable protocol to obtain values."
    },
    {
-    "name": "TNext",
-    "type": "unknown",
-    "description": "Type accepted by next when advancing the iterator."
+    "question": "What does a generator provide?",
+    "answer": "A generator is a function that can yield partial results through the iterator interface. The yield* expression lets it delegate iteration to another iterable.",
+    "followUp": "What does a generator return? It returns an iterator object that can produce the yielded values over time."
    }
   ],
-  "returns": "next, return, and throw return IteratorResult<T, TReturn>.",
+  "keyPoints": [
+   "An object is iterable when it implements Symbol.iterator.",
+   "Use Iterable<T> for a function parameter that accepts iterable values of type T.",
+   "A for...of loop starts iteration by calling Symbol.iterator.",
+   "for...of gives values, while for...in gives property keys.",
+   "The iterable protocol connects Symbol.iterator with an iterator object."
+  ],
+  "gotchas": [
+   "Do not use for...in when you need values. It iterates property keys, while for...of iterates values."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "Iterator": {
+  "sourceUrl": "https://www.typescriptlang.org/docs/handbook/release-notes/typescript-5-6.html",
+  "sourceTitle": "TypeScript: Documentation - TypeScript 5.6",
+  "summary": "Iterators produce values one at a time through next(). Iterables provide Symbol.iterator so constructs such as for...of can obtain an iterator.",
+  "explanation": "An Iterator exposes next() to produce iteration results. An Iterable exposes Symbol.iterator, which returns an iterator. TypeScript also models native iterator objects and supports helper methods such as map and take on iterator objects in modern JavaScript.",
+  "syntax": "interface Iterator<T, TReturn = any, TNext = any> {\n  next(value?: TNext): IteratorResult<T, TReturn>;\n  return?(value?: TReturn): IteratorResult<T, TReturn>;\n  throw?(e?: any): IteratorResult<T, TReturn>;\n}\n\ninterface Iterable<T> {\n  [Symbol.iterator](): Iterator<T>;\n}",
+  "parameters": [
+   {
+    "name": "value",
+    "type": "any",
+    "description": "Optional value sent to the iterator's next method."
+   },
+   {
+    "name": "value",
+    "type": "T or TReturn",
+    "description": "The value produced when an iterator yields or finishes."
+   },
+   {
+    "name": "done",
+    "type": "boolean",
+    "description": "Whether iteration has finished."
+   }
+  ],
+  "returns": "Iterator methods return IteratorResult<T, TReturn>. Async iterator methods return Promise<IteratorResult<T, TReturn>>.",
   "example": {
-   "title": "Consume an iterator",
-   "code": "function drain<T>(iterator: Iterator<T>): T[] {\n  const values: T[] = [];\n  for (let result = iterator.next(); !result.done; result = iterator.next()) {\n    values.push(result.value);\n  }\n  return values;\n}\n\nconst values = drain([\"a\", \"b\", \"c\"][Symbol.iterator]());\nconsole.log(values);",
+   "title": "Transform an iterator",
+   "code": "function* positiveIntegers() {\n  let i = 1;\n  while (true) yield i++;\n}\n\nconst firstEven = positiveIntegers()\n  .map(x => x * 2)\n  .take(3);\n\nfor (const value of firstEven) {\n  console.log(value);\n}",
    "language": "typescript",
-   "explanation": "Consumes an iterator by repeatedly calling next() and collecting values until the result is marked done."
+   "explanation": "The generator produces values on demand. Iterator helper methods transform the stream and limit the output."
   },
   "useCases": [
    {
-    "title": "Model stepwise value generation",
-    "scenario": "Typing custom lazy producers"
+    "title": "Lazy data processing",
+    "scenario": "Process values without creating a complete array first."
    },
    {
-    "title": "Describe yield, return, and next types",
-    "scenario": "Typing generator functions"
+    "title": "Iterator pipelines",
+    "scenario": "Transform and limit generator output with map and take."
    },
    {
-    "title": "Consume values with next()",
-    "scenario": "Manual iteration"
+    "title": "Async streams",
+    "scenario": "Read asynchronous values with for await...of."
    },
    {
-    "title": "Accept iterator implementations",
-    "scenario": "Protocol-compatible APIs"
+    "title": "Generic iterable inputs",
+    "scenario": "Write APIs that accept arrays, sets, maps, and other iterable values."
    }
   ],
   "related": [
    "Iterable",
+   "Iterator",
    "IterableIterator",
-   "IteratorResult",
-   "IteratorYieldResult",
-   "IteratorReturnResult",
-   "Generator"
+   "IteratorObject",
+   "AsyncIterator",
+   "AsyncIteratorObject",
+   "Symbol.iterator",
+   "Symbol.asyncIterator"
   ],
-  "since": "TypeScript 3.6",
+  "since": "5.6",
+  "interview": [
+   {
+    "question": "What is the difference between an Iterable and an Iterator?",
+    "answer": "An Iterable has a Symbol.iterator method that returns an Iterator. An Iterator has next(), and may also have return() and throw().",
+    "followUp": "What does for...of use? It calls the object's Symbol.iterator method and reads values from the returned iterator."
+   },
+   {
+    "question": "How do for...of and for...in differ?",
+    "answer": "for...of reads values from an iterable. for...in reads property keys from an object, so for...in on an array produces indexes.",
+    "followUp": "Why can for...of work with Set? Set implements Symbol.iterator, so it supplies its stored values through the iterator protocol."
+   },
+   {
+    "question": "How does async iteration differ from normal iteration?",
+    "answer": "An async iterator has next(), return(), and throw() methods that return Promises of iteration results. for await...of consumes an async iterable inside an async function or async generator.",
+    "followUp": "What runtime support is needed? Async iteration needs Symbol.asyncIterator, and async generators also need a global Promise implementation."
+   }
+  ],
   "keyPoints": [
-   "An iterable creates an iterator through Symbol.iterator, while an iterator advances through values with next().",
-   "Use Iterator<T, TReturn, TNext> to model yielded values, the completion value, and values supplied to next.",
-   "next accepts either no argument or one value of TNext and produces an IteratorResult.",
-   "return is optional and can complete iteration with a value of TReturn.",
-   "throw is optional and allows an error to be injected into the iterator.",
-   "IteratorResult distinguishes yielded and completed results using the done property."
+   "An object is iterable when it provides Symbol.iterator.",
+   "Symbol.iterator supplies the iterator used to obtain values.",
+   "for...of starts iteration by calling Symbol.iterator.",
+   "for...in visits property keys, while for...of visits iterable values.",
+   "A generator can pass iteration to another iterable with yield*.",
+   "Iterator helper methods let generator results be transformed and limited.",
+   "IteratorObject describes native iterable iterator objects, separate from the type-checking Iterator interface."
   ],
   "gotchas": [
-   "Iterator has separate generic parameters for yielded values, the final returned value, and the input accepted by next; do not assume they are identical.",
-   "Always inspect done before treating value as a yielded T, because the final result may represent the iterator's return value."
+   "When compiling iterator code for older targets with downlevelIteration, non-array values need Symbol.iterator at runtime.",
+   "Do not use an iterator result's value before checking done; otherwise the value may have an unsafe type.",
+   "Async generators need a global Promise and Symbol.asyncIterator at runtime."
   ],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-11-03"
  },
  "jsx": {
   "sourceUrl": "https://www.typescriptlang.org/docs/handbook/jsx.html",
@@ -3924,55 +4140,72 @@
  },
  "NonNullable": {
   "sourceUrl": "https://www.typescriptlang.org/docs/handbook/utility-types.html",
-  "sourceTitle": "Documentation - Utility Types - TypeScript",
-  "summary": "NonNullable<Type> removes null and undefined from a type. It is useful for describing values that remain after nullish cases have been ruled out.",
-  "explanation": "NonNullable<Type> transforms a type by removing null and undefined from it. Applied to a union, it preserves the remaining members, making it useful for representing values after validation or other checks.",
-  "syntax": "type NonNullable<Type> = Type & {};",
+  "sourceTitle": "TypeScript: Documentation - Utility Types",
+  "summary": "NonNullable<T> removes null and undefined from a type. It is a global TypeScript utility type.",
+  "explanation": "NonNullable<T> creates a type that excludes null and undefined from T. TypeScript 4.8 defines it as T & {}, which also lets control-flow narrowing produce the same type after null checks.",
+  "syntax": "type NonNullable<T> = T & {};",
   "parameters": [
    {
-    "name": "Type",
+    "name": "T",
     "type": "type",
     "description": "The input type from which null and undefined are excluded."
    }
   ],
-  "returns": "A type derived from Type with null and undefined excluded.",
+  "returns": "A type equivalent to T with null and undefined excluded.",
   "example": {
-   "title": "Removing null and undefined from a value",
-   "code": "type Present<T> = NonNullable<T>;\n\nfunction requireValue<T>(value: T): NonNullable<T> {\n  if (value == null) throw new Error(\"Missing value\");\n  return value as NonNullable<T>;\n}\n\nconst name: string | undefined = \"Ada\";\nconst presentName = requireValue(name);\nconsole.log(presentName.toUpperCase());",
+   "title": "Remove nullable values",
+   "code": "type Present = NonNullable<string | null | undefined>;\n\nfunction requireValue<T>(value: T): NonNullable<T> {\n  if (value == null) {\n    throw new Error(\"Missing value\");\n  }\n  return value;\n}\n\nconst name = requireValue<string | undefined>(\"Ada\");\nconsole.log(name);",
    "language": "typescript",
-   "explanation": "This runnable example removes nullish possibilities from a generic result after a runtime check."
+   "explanation": "The utility removes null and undefined from the type. The function checks the value before returning it."
   },
   "useCases": [
    {
-    "title": "Validated values",
-    "scenario": "Define a field or result that must contain a concrete value after validation."
+    "title": "Require a present value",
+    "scenario": "Define a function result that is safe after a null or undefined check."
    },
    {
-    "title": "API and configuration modeling",
-    "scenario": "Derive a non-nullable type from an API or configuration union."
+    "title": "Make a field non-nullable",
+    "scenario": "Create a property type that cannot contain nullish values."
    },
    {
-    "title": "Generic helpers",
-    "scenario": "Express generic return types after rejecting nullish inputs."
+    "title": "Prepare an API type",
+    "scenario": "Derive a clean union for APIs that reject missing values."
    }
   ],
   "related": [
-   "Exclude",
-   "Required",
-   "strictNullChecks",
-   "Utility Types"
+   "Exclude<T, U>",
+   "Extract<T, U>",
+   "Awaited<Type>",
+   "Parameters<Type>"
   ],
   "since": "2.8",
+  "interview": [
+   {
+    "question": "What does NonNullable<T> do?",
+    "answer": "NonNullable<T> removes null and undefined from T. For example, NonNullable<string | null> becomes string.",
+    "followUp": "How is it represented in current TypeScript? It is defined as T & {}, which supports simpler intersection reduction and narrowing."
+   },
+   {
+    "question": "When would you use NonNullable<T>?",
+    "answer": "It is a global utility type. It is useful when a value may be absent but a later API requires a definitely present value.",
+    "followUp": "How should code prove the value is present? Use a runtime check, such as value === null or value === undefined, before returning or using it."
+   },
+   {
+    "question": "Why did TypeScript 4.8 change the definition?",
+    "answer": "A conditional type can remove null and undefined by testing assignability, but current TypeScript defines NonNullable<T> as an intersection with {}. This representation can simplify and be assigned to more readily.",
+    "followUp": "What happens after a generic null check? TypeScript narrows the generic value to T & {}, which is the same as NonNullable<T>."
+   }
+  ],
   "keyPoints": [
-   "NonNullable<Type> creates a version of Type without null or undefined.",
-   "For string | number | undefined, the resulting type is string | number.",
-   "For string[] | null | undefined, the resulting type is string[]."
+   "It transforms a type by removing the two nullish types.",
+   "In TypeScript 4.8, the utility is represented as an intersection with the empty object type.",
+   "A generic value checked against null and undefined is narrowed using the same intersection form."
   ],
   "gotchas": [
-   "NonNullable is built into TypeScript and does not need to be imported.",
-   "It only excludes null and undefined; other union members remain unchanged."
+   "It removes only null and undefined. Other types remain unchanged.",
+   "This rule belongs to Parameters<T>, not NonNullable<T>; do not confuse the two utility types."
   ],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-11-03"
  },
  "noUncheckedIndexedAccess": {
   "sourceUrl": "https://www.typescriptlang.org/tsconfig/noUncheckedIndexedAccess.html",
@@ -4106,50 +4339,75 @@
   "checkedAt": "2026-10-15"
  },
  "object": {
-  "sourceUrl": "https://www.typescriptlang.org/docs/handbook/2/objects.html",
-  "sourceTitle": "TypeScript: Documentation - Object Types",
-  "summary": "A type alias names a TypeScript type, commonly an object shape with typed properties. It improves reuse and readability without creating a distinct runtime or nominal type.",
-  "explanation": "A type alias gives a name to a type, including an object type described by named properties and their types. The alias is only another name for that type, so using it is equivalent to writing the underlying structure directly; aliases can also be generic and can represent unions, primitives, and other types.",
-  "syntax": "type Name = {\n  property: Type;\n  optionalProperty?: Type;\n};",
-  "parameters": [],
+  "sourceUrl": "https://www.typescriptlang.org/docs/handbook/2/everyday-types",
+  "sourceTitle": "TypeScript: Documentation - Everyday Types",
+  "summary": "A type alias gives a reusable name to any TypeScript type. It does not create a new distinct type.",
+  "explanation": "A type alias gives another name to an existing type. It can describe primitives, unions, tuples, objects, and generic or recursive types. It does not create a new distinct type. Use an interface when an object shape should be open to extension; use a type alias when the type needs a union or tuple.",
+  "syntax": "type Name = Type;",
+  "parameters": [
+   {
+    "name": "Type",
+    "type": "type expression",
+    "description": "The type expression that receives the alias name. It can be an object, primitive, union, tuple, generic, or recursive type."
+   }
+  ],
   "returns": "",
   "example": {
-   "title": "Reusable object shape",
-   "code": "type User = {\n  id: number;\n  name: string;\n  email?: string;\n};\n\nfunction greet(user: User): string {\n  return `Hello, ${user.name}`;\n}\n\nconsole.log(greet({ id: 1, name: \"Ada\" }));",
+   "title": "A union type alias",
+   "code": "type UserId = number | string;\n\nfunction formatUserId(id: UserId): string {\n  return typeof id === \"number\" ? `#${id}` : id;\n}\n\nconsole.log(formatUserId(42));\nconsole.log(formatUserId(\"admin\"));",
    "language": "typescript",
-   "explanation": "Defines a reusable object shape with a required numeric id, required name, and optional email, then uses it as a function parameter."
+   "explanation": "The alias gives a name to a union. The function narrows the union with a typeof check."
   },
   "useCases": [
    {
-    "title": "Reusable data contracts",
-    "scenario": "Share one object shape across function parameters, return values, and variables."
+    "title": "Reusable object shapes",
+    "scenario": "Give a repeated object shape one clear name for function parameters and variables."
    },
    {
-    "title": "Generic object shapes",
-    "scenario": "Model containers whose contents vary while preserving their specific type."
+    "title": "Union types",
+    "scenario": "Represent a value that may have one of several allowed types."
    },
    {
-    "title": "Composite type definitions",
-    "scenario": "Describe unions, tuples, primitives, or helper types that interfaces cannot express directly."
+    "title": "Generic and recursive types",
+    "scenario": "Describe lists or tree-like structures with reusable type parameters."
    }
   ],
   "related": [
-   "interface",
+   "interfaces",
+   "union types",
    "generic types",
-   "object types",
-   "union types"
+   "recursive types",
+   "intersection types"
   ],
   "since": "",
+  "interview": [
+   {
+    "question": "What is a type alias?",
+    "answer": "A type alias assigns a name to any type. It can name an object, primitive, union, tuple, generic type, or recursive type.",
+    "followUp": "How would you model a value that is either a number or a string? Use `type ID = number | string`."
+   },
+   {
+    "question": "Does a type alias create a new type?",
+    "answer": "No. An alias is only another name for the same type, so it does not create a nominal or distinct type.",
+    "followUp": "How could you create stronger separation between similar primitive values? Use a branded or otherwise structured type pattern; the page itself only states that aliases do not create distinct types."
+   },
+   {
+    "question": "How do interfaces and type aliases differ?",
+    "answer": "Interfaces are suited to object shapes that may be extended or merged. Type aliases are useful when the type is a union, tuple, primitive, or another form that an interface cannot express.",
+    "followUp": "When should an interface usually be preferred? Prefer it for an extendable object shape when no type-alias-only feature is needed."
+   }
+  ],
   "keyPoints": [
-   "Use the type declaration to assign a reusable name to an object shape or any other TypeScript type.",
-   "Object aliases describe properties inline, using either commas or semicolons between members.",
-   "Choose an alias when the reusable abstraction may need to express non-object types or generic helper types."
+   "Declare an alias with `type Name = Type`. The name can then be reused in annotations.",
+   "Add type parameters after the alias name to make reusable generic types, such as `type Container<T> = { value: T }`.",
+   "Aliases may be recursive. A tree alias can contain optional child properties whose types refer back to the alias.",
+   "Unlike an interface, an existing type alias cannot be reopened later to add properties."
   ],
   "gotchas": [
-   "A type alias does not create a nominal or distinct type; it only names the existing type.",
-   "Omitting a property type causes it to be inferred as any, so explicit property types are generally safer."
+   "A type alias does not create a distinct type. Values remain compatible with the original type.",
+   "You cannot declare the same type alias again to add fields. Interfaces support declaration merging instead."
   ],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-11-03"
  },
  "Omit": {
   "sourceUrl": "https://www.typescriptlang.org/docs/handbook/utility-types.html",
@@ -4295,6 +4553,69 @@
    "Applying this utility to a generic or overloaded function type loses its generic parameters and preserves only the last overload."
   ],
   "checkedAt": "2026-10-15"
+ },
+ "out": {
+  "sourceUrl": "https://www.typescriptlang.org/docs/handbook/compiler-options",
+  "sourceTitle": "TypeScript: Documentation - tsc CLI Options",
+  "summary": "out is a deprecated TypeScript compiler option that accepts a string. The documentation says to use outFile instead.",
+  "explanation": "The out option is an old compiler setting for choosing output behavior. TypeScript marks it as deprecated and directs you to use outFile instead. outFile controls bundling of emitted output into one JavaScript file, while outDir places emitted files in a directory.",
+  "syntax": "tsc --out <file>",
+  "parameters": [
+   {
+    "name": "out",
+    "type": "string",
+    "description": "A string value for the deprecated output setting."
+   }
+  ],
+  "returns": "No value is returned; the compiler uses the setting when producing output.",
+  "example": {
+   "title": "Compile into an output directory",
+   "code": "tsc --outDir dist src/index.ts",
+   "language": "bash",
+   "explanation": "This compiles index.ts and writes the generated files under the dist directory."
+  },
+  "useCases": [
+   {
+    "title": "Understand legacy configuration",
+    "scenario": "Maintaining an older TypeScript configuration that still contains out."
+   },
+   {
+    "title": "Replace deprecated output settings",
+    "scenario": "Choosing a supported output option for a new build."
+   }
+  ],
+  "related": [
+   "outFile",
+   "outDir"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is the status of the out compiler option?",
+    "answer": "out is a deprecated TypeScript compiler option. The documentation says to use outFile instead.",
+    "followUp": "What does outFile do? It puts emitted output into one JavaScript file, subject to the module and output rules."
+   },
+   {
+    "question": "How is the out option represented?",
+    "answer": "The option is named out and takes a string value. It is a command-line compiler option and can also be set in compiler configuration.",
+    "followUp": "Which option should replace it? Use outFile, as the documentation directs."
+   },
+   {
+    "question": "What should new projects use instead of out?",
+    "answer": "out should not be chosen for new projects because it is deprecated. Use a supported output option instead.",
+    "followUp": "When should outDir be used? Use it when emitted files should go into a directory rather than one bundled file."
+   }
+  ],
+  "keyPoints": [
+   "The command-line flag is --out. Its value is a string, and the option is deprecated.",
+   "Use outFile when the goal is to bundle all emitted output into one JavaScript file.",
+   "Use outDir when emitted files should be placed in an output folder.",
+   "The full configuration details are in the TSConfig Reference."
+  ],
+  "gotchas": [
+   "Do not use out. It is deprecated. Use outFile instead."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "override": {
   "sourceUrl": "https://www.typescriptlang.org/docs/handbook/release-notes/typescript-4-3.html",
@@ -4707,67 +5028,172 @@
   ],
   "checkedAt": "2026-10-15"
  },
- "PropertyDecorator": {
-  "sourceUrl": "https://www.typescriptlang.org/docs/handbook/decorators.html",
-  "sourceTitle": "Documentation - Decorators - TypeScript",
-  "summary": "A legacy property decorator is a runtime callback attached immediately before a class property. It receives the class constructor or prototype and the property name, so it can observe the declaration but cannot directly modify its descriptor.",
-  "explanation": "A legacy property decorator is placed immediately before a class property. At runtime, TypeScript calls it with the class constructor for a static property or the class prototype for an instance property, plus the property name. It can observe the declaration, but it cannot directly replace or redefine the property because no descriptor is provided.",
-  "syntax": "function propertyDecorator(target: Function | Object, propertyKey: string | symbol): void",
+ "PromiseLike": {
+  "sourceUrl": "https://www.typescriptlang.org/docs/handbook/jsdoc-supported-types.html",
+  "sourceTitle": "TypeScript: Documentation - JSDoc Reference",
+  "summary": "TypeScript supports many JSDoc tags for adding type information to JavaScript. You can describe variables, function inputs and outputs, reusable object types, and callback types.",
+  "explanation": "TypeScript can read many JSDoc annotations in JavaScript files. Use tags such as @type, @param, @returns, @typedef, and @callback to describe values, function inputs, outputs, and reusable types. The type inside braces can use JSDoc syntax or TypeScript syntax.",
+  "syntax": "/** @type {Type} */\n/** @param {Type} name */\n/** @returns {Type} */\n/** @typedef {object} Name */\n/** @callback Name */",
   "parameters": [
    {
-    "name": "target",
-    "type": "Function | Object",
-    "description": "The class constructor for a static property, or the class prototype for an instance property."
+    "name": "type",
+    "type": "JSDoc or TypeScript type",
+    "description": "The type expression inside braces, such as `string`, `User`, or `(value: string) => number`."
    },
    {
-    "name": "propertyKey",
-    "type": "string | symbol",
-    "description": "The declared property name."
+    "name": "parameter",
+    "type": "function parameter",
+    "description": "The documented function input and its type. Optional inputs may use `=` or square brackets."
+   },
+   {
+    "name": "return value",
+    "type": "JSDoc or TypeScript type",
+    "description": "The documented function output type."
    }
   ],
-  "returns": "The decorator callback returns void; the documented legacy property-decorator protocol does not provide a property descriptor to replace.",
+  "returns": "@returns or @return describes the function's return type, such as `PromiseLike<string>` or an object type.",
   "example": {
-   "title": "Observing a property declaration",
-   "code": "function logProperty(target: object, propertyKey: string | symbol): void {\n  console.log(String(propertyKey));\n}\n\nclass User {\n  @logProperty\n  name = \"Ada\";\n}\n\nnew User();",
-   "language": "typescript",
-   "explanation": "The decorator observes the declared property name when the class is evaluated."
+   "title": "Define and use a JSDoc object type",
+   "code": "/**\n * @typedef {object} User\n * @property {string} name\n * @property {number} age\n */\n\n/** @type {User} */\nconst user = { name: \"Ada\", age: 36 };\n\n/**\n * @param {User} value\n * @returns {string}\n */\nfunction describe(value) {\n  return `${value.name}: ${value.age}`;\n}\n\nconsole.log(describe(user));",
+   "language": "javascript",
+   "explanation": "This JavaScript code defines a reusable object type with @typedef, applies it with @type, and checks a function parameter and return value with JSDoc."
   },
   "useCases": [
    {
-    "title": "Registration metadata",
-    "scenario": "Record property names for a registration or metadata system during class evaluation."
+    "title": "Type JavaScript variables",
+    "scenario": "Add static type checking to JavaScript without changing the file to TypeScript."
    },
    {
-    "title": "Declaration observation",
-    "scenario": "Inspect whether specific instance or static properties are declared."
+    "title": "Document function contracts",
+    "scenario": "Describe function inputs, optional arguments, and return values."
    },
    {
-    "title": "Framework integration",
-    "scenario": "Build lightweight framework conventions around decorated class members."
+    "title": "Create reusable object types",
+    "scenario": "Share one object shape across several declarations."
+   },
+   {
+    "title": "Describe callbacks",
+    "scenario": "Name and reuse a function signature."
    }
   ],
   "related": [
-   "Decorator",
-   "MethodDecorator",
-   "ParameterDecorator",
-   "experimentalDecorators",
-   "Class Decorators"
+   "@type",
+   "@param",
+   "@returns",
+   "@typedef",
+   "@callback",
+   "@property",
+   "@template",
+   "@satisfies"
   ],
   "since": "",
+  "interview": [
+   {
+    "question": "What does the JSDoc @type tag do?",
+    "answer": "@type describes a variable or value. Its braces can contain primitive, declared, typedef-based, JSDoc, or TypeScript types, including unions, arrays, objects, and functions.",
+    "followUp": "How would you describe a value that may be a string or boolean? Use `@type {string | boolean}`."
+   },
+   {
+    "question": "How are function parameters and return values documented?",
+    "answer": "Use @param for function inputs and @returns or @return for the output. Optional parameters can use `=` after the type or square brackets around the parameter name.",
+    "followUp": "How do you document an optional parameter with a default? Use a form such as `@param {string} [name = \"test\"]`."
+   },
+   {
+    "question": "What is the purpose of @typedef?",
+    "answer": "@typedef creates a named reusable type. Add @property or @prop entries for its fields, then refer to the name from another annotation such as `@type {User}`.",
+    "followUp": "When should a callback type be used instead? Use @callback when the named type represents a function rather than an object."
+   }
+  ],
   "keyPoints": [
-   "Write the decorator directly before the property it decorates.",
-   "The decorator expression runs at runtime when the decorated class is evaluated.",
-   "The legacy callback receives two arguments: the target object and the property name.",
-   "Static properties use the class constructor as the target; instance properties use the prototype.",
-   "The second callback argument identifies the decorated property by name.",
-   "This legacy decorator is observational rather than a mechanism for replacing the property."
+   "Use @type to attach a type to a JavaScript variable or value.",
+   "Arrays may use forms such as `number[]`, `Array.<number>`, or `Array<number>`.",
+   "Describe a small object inline with its property names and types, such as `{ a: string, b: number }`.",
+   "Function types can use TypeScript arrow syntax or Google Closure syntax.",
+   "Use @typedef to give a reusable name to a complex object shape.",
+   "Use @callback for a named function type with documented parameters and a return type."
   ],
   "gotchas": [
-   "Property decorators are unavailable in declaration files and other ambient contexts, including declare classes.",
-   "This decorator form observes a named property declaration; it cannot directly alter the property's descriptor or implementation.",
-   "The first argument differs for static and instance properties: it is the constructor for static members and the prototype for instance members."
+   "Tags not listed in the reference, such as @async, are not supported.",
+   "Type-related JSDoc tags are for JavaScript files; only documentation tags work in TypeScript files.",
+   "For object properties described directly with @param, prefix each nested property with the parameter name."
   ],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-11-03"
+ },
+ "PropertyDecorator": {
+  "sourceUrl": "https://www.typescriptlang.org/docs/handbook/release-notes/typescript-5-0.html",
+  "sourceTitle": "TypeScript: Documentation - TypeScript 5.0",
+  "summary": "Decorators are reusable functions for customizing classes and their members. TypeScript 5.0 added support for the newer Stage 3 decorator model.",
+  "explanation": "A decorator is a reusable function that customizes a class or one of its members. In the current decorator model, a method decorator receives the original method and a context object, then can return a replacement method.",
+  "syntax": "@expression",
+  "parameters": [
+   {
+    "name": "originalMethod",
+    "type": "Function",
+    "description": "The original class element, such as a method, that the decorator customizes."
+   },
+   {
+    "name": "context",
+    "type": "ClassMethodDecoratorContext",
+    "description": "Information about the decorated class element, including its name."
+   }
+  ],
+  "returns": "A decorator may return a replacement method or another customized class element.",
+  "example": {
+   "title": "Logging a method",
+   "code": "class Person {\n  name: string;\n  constructor(name: string) { this.name = name; }\n\n  @loggedMethod\n  greet() { console.log(`Hello, ${this.name}`); }\n}\n\nfunction loggedMethod(originalMethod: Function, context: ClassMethodDecoratorContext) {\n  function replacement(this: any, ...args: any[]) {\n    console.log(`LOG: Entering ${String(context.name)}`);\n    const result = originalMethod.call(this, ...args);\n    console.log(`LOG: Exiting ${String(context.name)}`);\n    return result;\n  }\n  return replacement;\n}\n\nnew Person(\"Ada\").greet();",
+   "language": "typescript",
+   "explanation": "The decorator replaces greet with a wrapper that logs before and after the original method."
+  },
+  "useCases": [
+   {
+    "title": "Method logging",
+    "scenario": "Add logging around method calls without editing every method body."
+   },
+   {
+    "title": "Shared member behavior",
+    "scenario": "Apply the same reusable customization to multiple class members."
+   },
+   {
+    "title": "Class element customization",
+    "scenario": "Use metadata-like context about a class element while creating a replacement."
+   }
+  ],
+  "related": [
+   "ClassMethodDecoratorContext",
+   "experimentalDecorators",
+   "classes",
+   "members"
+  ],
+  "since": "5.0",
+  "interview": [
+   {
+    "question": "What is a decorator?",
+    "answer": "A decorator is a function used to customize a class or one of its members. It can be applied to declarations such as classes, methods, accessors, fields, or parameters in the documented decorator model.",
+    "followUp": "How can a method decorator change behavior? It can return a replacement method that wraps or otherwise changes calls to the original method."
+   },
+   {
+    "question": "How does a method decorator work?",
+    "answer": "A method decorator receives the original method and a context object. The decorator can use the context, create a wrapper, and return that wrapper.",
+    "followUp": "What must a wrapper preserve? It should call the original method with the correct this value and pass through arguments and the return value."
+   },
+   {
+    "question": "What compiler or version detail matters when using decorators?",
+    "answer": "The older handbook model requires the experimentalDecorators compiler option. TypeScript 5.0 added support for the newer Stage 3 decorator model, so the model used by the code must be checked before configuring a project.",
+    "followUp": "Why should the two models not be mixed casually? Their signatures and compiler behavior differ, so code written for one model may not work as code for the other."
+   }
+  ],
+  "keyPoints": [
+   "Decorators let you customize classes and their members with reusable logic.",
+   "The decorator is written with an at sign followed by an expression.",
+   "The expression after @ must produce a function.",
+   "A decorator can centralize repeated behavior, such as logging around many methods.",
+   "Decorators are useful when the same method-related behavior would otherwise be repeated."
+  ],
+  "gotchas": [
+   "The older handbook page describes an experimental stage 2 model. Use the TypeScript 5.0 decorator model for current code.",
+   "Stage 3 decorators are available starting with TypeScript 5.0."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "PropertyDescriptor": {
   "sourceUrl": "https://www.typescriptlang.org/tsconfig/emitDecoratorMetadata.html",
@@ -5984,66 +6410,81 @@
   "checkedAt": "2026-10-15"
  },
  "tsc": {
-  "sourceUrl": "https://www.typescriptlang.org/docs/handbook/compiler-options.html",
-  "sourceTitle": "Documentation - tsc CLI Options",
-  "summary": "`tsc` is the TypeScript compiler command. Run it with no inputs to build the nearest configured project, or provide files and compiler options for a direct compilation.",
-  "explanation": "The `tsc` command invokes the TypeScript compiler. With no input files, it uses the nearest project configuration; with file paths supplied, it compiles those inputs directly and ignores `tsconfig.json` files.",
-  "syntax": "tsc [options] [file ...]",
+  "sourceUrl": "https://www.typescriptlang.org/docs/handbook/project-references",
+  "sourceTitle": "TypeScript: Documentation - Project References",
+  "summary": "Project references split a TypeScript program into smaller projects. The tsc --build command builds referenced projects in dependency order and skips projects that are already up to date.",
+  "explanation": "Project references let you divide a TypeScript program into smaller projects. Each referenced project uses a tsconfig.json file, and tsc --build finds references, checks which projects are current, and builds outdated projects in the needed order.",
+  "syntax": "tsc --build [configFile ...]",
   "parameters": [
    {
-    "name": "files",
+    "name": "project paths",
     "type": "string[]",
-    "description": "Optional source files or glob patterns to compile."
-   },
-   {
-    "name": "--project, -p",
-    "type": "string",
-    "description": "Path to a tsconfig.json file or a directory containing one."
+    "description": "Paths to tsconfig.json files or directories containing them."
    }
   ],
-  "returns": "Emits JavaScript and related output according to the selected compiler options, or reports diagnostics; some options instead inspect configuration or file membership and stop without a normal build.",
+  "returns": "Builds referenced projects, or performs the requested build-mode operation.",
   "example": {
-   "title": "Compile a file with strict checking",
-   "code": "tsc --strict --outDir dist src/index.ts",
+   "title": "Build referenced projects",
+   "code": "tsc --build src test",
    "language": "bash",
-   "explanation": "Compiles the specified TypeScript file with strict checking and writes emitted output under dist."
+   "explanation": "Builds the referenced projects in dependency order."
   },
   "useCases": [
    {
-    "title": "Compile a configured project",
-    "scenario": "Build a repository using its nearest tsconfig.json."
+    "title": "Separate project areas",
+    "scenario": "A repository contains separate library, application, and test projects."
    },
    {
-    "title": "Perform a focused build",
-    "scenario": "Compile selected files with command-line options."
+    "title": "Speed up incremental builds",
+    "scenario": "Only a few projects changed in a large dependency graph."
    },
    {
-    "title": "Manage compiler configuration",
-    "scenario": "Inspect or initialize project configuration."
+    "title": "Enforce project boundaries",
+    "scenario": "A team wants imports between project areas to follow clear boundaries."
    }
   ],
   "related": [
-   "tsconfig.json",
-   "--project",
-   "--init",
-   "--showConfig",
-   "--listFilesOnly",
-   "--all"
+   "composite",
+   "declaration",
+   "declarationMap",
+   "references",
+   "--build",
+   "--verbose",
+   "--dry",
+   "--clean"
   ],
-  "since": "",
+  "since": "3.0",
+  "interview": [
+   {
+    "question": "What are TypeScript project references?",
+    "answer": "Project references connect separate tsconfig.json projects through a references array. They help enforce boundaries and can improve build and editor performance.",
+    "followUp": "What must a referenced project enable? It must enable composite, and declaration output must also be enabled."
+   },
+   {
+    "question": "How does build mode use project references?",
+    "answer": "Use tsc --build, also written tsc -b. It finds referenced projects, checks which are up to date, and builds outdated projects in dependency order.",
+    "followUp": "Which flag previews the work? Use --dry; it shows the planned actions without building."
+   },
+   {
+    "question": "What does composite change?",
+    "answer": "A referenced project must enable composite. This allows TypeScript to locate its outputs efficiently; it also requires implementation files to be included and declaration output to be enabled.",
+    "followUp": "What happens if a source file is not included? tsc reports which file was not specified, so the project configuration can be fixed."
+   }
+  ],
   "keyPoints": [
-   "Running `tsc` without input files compiles the nearest configured project.",
-   "File paths or globs can be supplied to compile explicit inputs.",
-   "The `--init` option creates a starter project configuration.",
-   "Use `--showConfig` to inspect the resolved configuration without compiling.",
-   "Use `--listFilesOnly` to inspect which files belong to the compilation.",
-   "Use `--all` to display the complete CLI option list."
+   "Use project references to split a large TypeScript program into smaller projects.",
+   "Add a references array to tsconfig.json to list dependent projects.",
+   "Build mode discovers references, skips current projects, and builds outdated ones in dependency order.",
+   "One build command can accept several project configuration paths.",
+   "Use --verbose to see why build mode takes each action.",
+   "Use --clean to remove outputs from the selected projects."
   ],
   "gotchas": [
-   "Passing source files directly bypasses project configuration, so compiler settings from tsconfig.json do not apply.",
-   "Use `--project` or `-p` when you need to select a specific configured project."
+   "Every referenced project must enable composite.",
+   "A normal tsc command does not build referenced dependencies automatically.",
+   "Build mode does not keep emitting outputs after project errors."
   ],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-11-03"
  },
  "tsc --build": {
   "sourceUrl": "https://www.typescriptlang.org/docs/handbook/project-references",
@@ -6863,55 +7304,73 @@
   "checkedAt": "2026-10-15"
  },
  "Uppercase": {
-  "sourceUrl": "https://www.typescriptlang.org/docs/handbook/2/template-literal-types.html",
-  "sourceTitle": "Documentation - Template Literal Types",
-  "summary": "Uppercase<StringType> converts every character in a string type to its uppercase form. It is an intrinsic compiler type commonly used with template literal types to derive uppercase string formats.",
-  "explanation": "Uppercase is an intrinsic string manipulation type that transforms every character in a string type to its uppercase version. It is evaluated by the compiler and is useful inside template literal types for deriving consistently capitalized string formats.",
+  "sourceUrl": "https://www.typescriptlang.org/docs/handbook/utility-types.html",
+  "sourceTitle": "TypeScript: Documentation - Utility Types",
+  "summary": "Uppercase<StringType> converts every character in a string type to uppercase. It is a built-in TypeScript utility for changing string literal types.",
+  "explanation": "Uppercase<StringType> is a built-in type that changes every character in a string type to uppercase. It is useful with template literal types when a type must build or validate names with a specific case.",
   "syntax": "Uppercase<StringType>",
   "parameters": [
    {
     "name": "StringType",
-    "type": "string type",
-    "description": "The string type whose characters should be converted to uppercase."
+    "type": "string",
+    "description": "A string type whose characters should be converted to uppercase."
    }
   ],
-  "returns": "A string type with every character converted to its uppercase version.",
+  "returns": "A string type with every character converted to uppercase.",
   "example": {
-   "title": "Uppercase a string literal type",
-   "code": "type Greeting = \"Hello, world\";\ntype ShoutyGreeting = Uppercase<Greeting>;\n\nconst greeting: ShoutyGreeting = \"HELLO, WORLD\";\nconsole.log(greeting);",
+   "title": "Convert a string literal to uppercase",
+   "code": "type Greeting = \"hello, world\";\ntype LoudGreeting = Uppercase<Greeting>;\n\nconst message: LoudGreeting = \"HELLO, WORLD\";\nconsole.log(message);",
    "language": "typescript",
-   "explanation": "This compiles because Uppercase transforms every character in the literal type to its uppercase form."
+   "explanation": "The type changes every character in Greeting to uppercase. The variable must use the resulting literal type."
   },
   "useCases": [
    {
-    "title": "Compile-time casing",
-    "scenario": "Derive uppercase labels or messages from string literal types."
+    "title": "Build formatted identifiers",
+    "scenario": "Create identifier types with a required uppercase section."
    },
    {
-    "title": "Formatted cache keys",
-    "scenario": "Create normalized identifiers such as ID-MY_APP from generic input."
+    "title": "Validate casing",
+    "scenario": "Check that string literal types use uppercase characters."
    },
    {
-    "title": "Typed key generation",
-    "scenario": "Build APIs whose string keys follow an uppercase convention."
+    "title": "Compose string types",
+    "scenario": "Transform names generated by template literal types."
    }
   ],
   "related": [
-   "Lowercase",
-   "Capitalize",
-   "Uncapitalize",
-   "Template Literal Types"
+   "Lowercase<StringType>",
+   "Capitalize<StringType>",
+   "Uncapitalize<StringType>",
+   "Template literal types"
   ],
   "since": "4.1",
+  "interview": [
+   {
+    "question": "What does Uppercase<StringType> do?",
+    "answer": "Uppercase<StringType> converts every character in a string type to uppercase. It is one of TypeScript's intrinsic string manipulation types.",
+    "followUp": "How would you uppercase only the first character? Use Capitalize<StringType>, which changes only the first character."
+   },
+   {
+    "question": "How is Uppercase different from String.prototype.toUpperCase()?",
+    "answer": "It works in a type position, not as a runtime function. For a literal such as \"hello\", Uppercase<\"hello\"> becomes \"HELLO\".",
+    "followUp": "Can it process a union? Yes. When used inside a template literal type, it can transform each resulting string literal."
+   },
+   {
+    "question": "How can Uppercase be combined with template literal types?",
+    "answer": "You can place it inside a template literal type to build a new string type. For example, `ID-${Uppercase<Part>}` creates an uppercase identifier form.",
+    "followUp": "What other built-in casing helpers are documented? Lowercase, Capitalize, and Uncapitalize are also available."
+   }
+  ],
   "keyPoints": [
-   "Uppercase changes every character in the supplied string type, not only its first character.",
-   "For the literal \"Hello, world\", the resulting type is the exact literal \"HELLO, WORLD\".",
-   "Uppercase belongs to a group of four built-in casing aliases."
+   "Uppercase is provided by TypeScript for string manipulation in the type system.",
+   "It changes every character, not only the first character.",
+   "The type is built into the compiler rather than declared in the usual .d.ts library files.",
+   "For a concrete input, the compiler can produce a specific uppercase string literal type."
   ],
   "gotchas": [
-   "Uppercase is compiler-provided rather than a user-visible declaration in the standard .d.ts files."
+   "The conversion follows JavaScript string methods and is not locale aware."
   ],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-11-03"
  },
  "using": {
   "sourceUrl": "https://www.typescriptlang.org/docs/handbook/release-notes/typescript-5-2.html",

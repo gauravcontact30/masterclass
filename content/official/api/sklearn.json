@@ -3689,6 +3689,134 @@
   ],
   "checkedAt": "2026-10-15"
  },
+ "GaussianMixture": {
+  "sourceUrl": "https://scikit-learn.org/stable/modules/generated/sklearn.mixture.GaussianMixture.html",
+  "sourceTitle": "GaussianMixture — scikit-learn 1.9.1 documentation",
+  "summary": "GaussianMixture fits a probability model made from several Gaussian distributions. It uses expectation-maximization and can classify samples, score likelihoods, compare models, and generate new samples.",
+  "explanation": "GaussianMixture models data as a finite mixture of Gaussian distributions. It estimates the component parameters with the expectation-maximization algorithm, then can assign samples, calculate likelihoods, compare models, and generate samples.",
+  "syntax": "GaussianMixture(n_components=1, *, covariance_type='full', tol=0.001, reg_covar=1e-6, max_iter=100, n_init=1, init_params='kmeans', weights_init=None, means_init=None, precisions_init=None, random_state=None, warm_start=False, verbose=0, verbose_interval=10)",
+  "parameters": [
+   {
+    "name": "n_components",
+    "type": "int, default=1",
+    "description": "Number of Gaussian mixture components."
+   },
+   {
+    "name": "covariance_type",
+    "type": "string, default='full'",
+    "description": "Covariance form: `full`, `tied`, `diag`, or `spherical`."
+   },
+   {
+    "name": "tol",
+    "type": "float, default=0.001",
+    "description": "Convergence threshold for the average lower-bound gain."
+   },
+   {
+    "name": "reg_covar",
+    "type": "float, default=0.000001",
+    "description": "Non-negative diagonal covariance regularization."
+   },
+   {
+    "name": "max_iter",
+    "type": "int, default=100",
+    "description": "Maximum number of EM iterations."
+   },
+   {
+    "name": "n_init",
+    "type": "int, default=1",
+    "description": "Number of initializations; the best result is kept."
+   },
+   {
+    "name": "init_params",
+    "type": "string, default='kmeans'",
+    "description": "Initialization method: `kmeans`, `k-means++`, `random`, or `random_from_data`."
+   },
+   {
+    "name": "weights_init",
+    "type": "array-like or None",
+    "description": "Initial component weights, or `None`."
+   },
+   {
+    "name": "means_init",
+    "type": "array-like or None",
+    "description": "Initial component means, or `None`."
+   },
+   {
+    "name": "precisions_init",
+    "type": "array-like or None",
+    "description": "Initial component precisions, or `None`."
+   },
+   {
+    "name": "random_state",
+    "type": "int, RandomState, Generator, or None",
+    "description": "Controls random-number generation, or `None`."
+   },
+   {
+    "name": "warm_start",
+    "type": "bool, default=False",
+    "description": "Reuse the previous solution when fitting again."
+   }
+  ],
+  "returns": "`fit` returns the fitted estimator. `predict` returns component labels. `predict_proba` returns component density values for each sample. `score` returns the average per-sample log-likelihood. `score_samples` returns one log-likelihood per sample. `aic` and `bic` return scalar information criteria; lower values are better.",
+  "example": {
+   "title": "Fit and predict with a Gaussian mixture",
+   "code": "import numpy as np\nfrom sklearn.mixture import GaussianMixture\n\nX = np.array([[1, 2], [1, 4], [1, 0],\n              [10, 2], [10, 4], [10, 0]])\nmodel = GaussianMixture(n_components=2, random_state=0)\nmodel.fit(X)\nprint(model.predict([[0, 0], [12, 3]]))\nprint(model.predict_proba([[0, 0]]))",
+   "language": "python",
+   "explanation": "This fits two Gaussian components, assigns labels to new samples, and shows the component probabilities for one sample."
+  },
+  "useCases": [
+   {
+    "title": "Probabilistic clustering",
+    "scenario": "Group data when clusters may have different shapes or spreads."
+   },
+   {
+    "title": "Density estimation",
+    "scenario": "Estimate the probability density of multivariate observations."
+   },
+   {
+    "title": "Model selection",
+    "scenario": "Compare candidate mixture sizes or covariance structures."
+   },
+   {
+    "title": "Sampling",
+    "scenario": "Create synthetic observations from a fitted distribution."
+   }
+  ],
+  "related": [
+   "BayesianGaussianMixture"
+  ],
+  "since": "0.18",
+  "interview": [
+   {
+    "question": "What does GaussianMixture model, and how does it fit the data?",
+    "answer": "GaussianMixture represents a probability distribution made from several Gaussian components. It fits the component parameters with expectation-maximization, alternating between assigning probabilities and updating the components.",
+    "followUp": "How can the number of components be compared? Fit candidate models and compare their BIC or AIC values; the documentation states that lower values are better."
+   },
+   {
+    "question": "What does `covariance_type` control?",
+    "answer": "`covariance_type` controls the covariance structure. `full` gives every component its own general matrix, `tied` shares one matrix, `diag` gives each component its own diagonal matrix, and `spherical` gives each component one variance.",
+    "followUp": "Why might this choice matter? It constrains the shape and number of covariance parameters that the model can estimate."
+   },
+   {
+    "question": "How do `predict` and `predict_proba` differ?",
+    "answer": "`predict` returns the most likely component label for each sample. `predict_proba` returns the density or responsibility values for every component for each sample.",
+    "followUp": "How can model quality be scored? `score` gives the average per-sample log-likelihood, while `score_samples` gives one log-likelihood per sample."
+   }
+  ],
+  "keyPoints": [
+   "The class represents a probability distribution formed from multiple Gaussian components.",
+   "`n_components` sets how many Gaussian components the model uses.",
+   "`fit` can try several initializations and keeps the fit with the highest likelihood or lower bound.",
+   "`covariance_type` selects how component covariance values are represented: full, tied, diagonal, or spherical.",
+   "After fitting, `sample` can create random observations from the learned mixture."
+  ],
+  "gotchas": [
+   "Too few samples per component can make covariance estimation unstable and can cause the algorithm to diverge. Use regularization or review the number of components.",
+   "When warm_start is enabled, the estimator uses one initialization instead of the configured number of initializations.",
+   "For both AIC and BIC, smaller scores indicate a better model among the models being compared."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "GaussianNB": {
   "sourceUrl": "https://scikit-learn.org/stable/modules/generated/sklearn.naive_bayes.GaussianNB.html",
   "sourceTitle": "GaussianNB — scikit-learn 1.9.1 documentation",
@@ -10172,6 +10300,106 @@
   ],
   "checkedAt": "2026-10-15"
  },
+ "predict_proba": {
+  "sourceUrl": "https://scikit-learn.org/stable/modules/tree.html",
+  "sourceTitle": "1.10. Decision Trees — scikit-learn 1.9.1 documentation",
+  "summary": "Decision trees learn if-then rules from features for classification or regression. They split data into regions and make a constant prediction in each final leaf.",
+  "explanation": "A decision tree repeatedly splits training data with if-then rules based on feature values. Each final leaf stores a prediction: a class or class probabilities for classification, and a numeric value for regression. Tree depth and other stopping settings control how complex the model becomes.",
+  "syntax": "DecisionTreeClassifier(...)\nDecisionTreeRegressor(...)\nmodel.fit(X, y)\nmodel.predict(X)\nmodel.predict_proba(X)",
+  "parameters": [
+   {
+    "name": "X",
+    "type": "array-like of shape (n_samples, n_features)",
+    "description": "Training feature matrix."
+   },
+   {
+    "name": "y",
+    "type": "array-like of shape (n_samples,) or (n_samples, n_outputs)",
+    "description": "Target values used for fitting."
+   },
+   {
+    "name": "max_depth",
+    "type": "int or None",
+    "description": "Maximum allowed tree depth; the documentation lists it as a stopping condition."
+   },
+   {
+    "name": "min_samples_split",
+    "type": "int or float",
+    "description": "Minimum number of samples required to split a node."
+   },
+   {
+    "name": "min_impurity_decrease",
+    "type": "float",
+    "description": "Minimum impurity decrease required for a split."
+   }
+  ],
+  "returns": "For classification, predict returns class labels and predict_proba returns one probability array per sample. For multi-output trees, predict returns multiple output values and predict_proba returns a list of probability arrays.",
+  "example": {
+   "title": "Train and inspect a decision tree",
+   "code": "from sklearn.datasets import load_iris\nfrom sklearn.tree import DecisionTreeClassifier, plot_tree\nimport matplotlib.pyplot as plt\n\niris = load_iris()\nmodel = DecisionTreeClassifier(max_depth=3, random_state=0)\nmodel.fit(iris.data, iris.target)\n\nprint(model.predict([[5.1, 3.5, 1.4, 0.2]]))\nprint(model.predict_proba([[5.1, 3.5, 1.4, 0.2]]))\nplot_tree(model)\nplt.show()",
+   "language": "python",
+   "explanation": "This trains a tree on the Iris data, predicts a class and its class probabilities, and displays the tree."
+  },
+  "useCases": [
+   {
+    "title": "Class prediction",
+    "scenario": "Use classification trees when the target is a class label, such as an Iris species."
+   },
+   {
+    "title": "Numeric prediction",
+    "scenario": "Use regression trees when the target is a continuous value."
+   },
+   {
+    "title": "Multiple targets",
+    "scenario": "Use multi-output trees when one input must predict several target values."
+   },
+   {
+    "title": "Model visualization",
+    "scenario": "Use plot_tree or export_graphviz to inspect a trained model."
+   }
+  ],
+  "related": [
+   "DecisionTreeClassifier",
+   "DecisionTreeRegressor",
+   "plot_tree",
+   "export_graphviz",
+   "predict",
+   "predict_proba",
+   "Gini impurity",
+   "Shannon entropy"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does a decision tree learn?",
+    "answer": "A decision tree learns simple decision rules from features. It divides the feature space into regions and gives each region a constant prediction.",
+    "followUp": "How can tree complexity be limited? Use settings such as max_depth, min_samples_split, or min_impurity_decrease."
+   },
+   {
+    "question": "How does a classification tree produce predictions?",
+    "answer": "For classification, predict_proba returns the fraction of training samples from each class that reached the leaf. predict returns the selected class label.",
+    "followUp": "What happens on a probability tie? The class with the lowest index is selected."
+   },
+   {
+    "question": "Which criteria can a tree use?",
+    "answer": "Common classification criteria include Gini impurity and log loss, also called entropy. For regression, supported criteria include squared error, Poisson deviance, and absolute error.",
+    "followUp": "How do squared error and absolute error differ at leaves? Squared error uses the node mean, while absolute error uses the node median."
+   }
+  ],
+  "keyPoints": [
+   "Decision trees support both classification and regression without assuming a fixed parametric form.",
+   "Training finds feature-based rules that predict the target.",
+   "Trees are readable and can be displayed as a diagram.",
+   "Feature scaling and normalization are usually not required.",
+   "Classification probabilities are calculated from class frequencies in the reached leaf.",
+   "The tree estimators can predict multiple target outputs."
+  ],
+  "gotchas": [
+   "If several classes have the highest probability, prediction chooses the class with the lowest class index.",
+   "A probability score and a class label are different outputs; changing a classification threshold changes labels, not the probability estimates."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "QuantileTransformer": {
   "sourceUrl": "https://scikit-learn.org/stable/modules/generated/sklearn.preprocessing.QuantileTransformer.html",
   "sourceTitle": "QuantileTransformer — scikit-learn 1.9.1 documentation",
@@ -12986,6 +13214,90 @@
    "Use an integer random_state when repeatable splits are required."
   ],
   "checkedAt": "2026-10-15"
+ },
+ "transform": {
+  "sourceUrl": "https://scikit-learn.org/stable/data_transforms.html",
+  "sourceTitle": "Pipeline — scikit-learn 1.9.1 documentation",
+  "summary": "Pipeline chains data transformers and an optional final estimator. It fits each step in order, transforms data between steps, and lets the final estimator make predictions.",
+  "explanation": "A Pipeline runs named steps in order. Each step before the last must provide fit and transform; the last step only needs fit. During fitting, each transformer changes the data for the next step, and the final estimator learns from the result. The pipeline can also expose final-estimator operations such as predict and score.",
+  "syntax": "Pipeline(steps, *, memory=None, verbose=False)",
+  "parameters": [
+   {
+    "name": "steps",
+    "type": "list of tuples",
+    "description": "Ordered (name, estimator) pairs. Non-final steps need fit and transform; the final step needs fit."
+   },
+   {
+    "name": "memory",
+    "type": "str or object",
+    "description": "Cache location or a joblib.Memory-like object for fitted transformers. Default: None."
+   },
+   {
+    "name": "verbose",
+    "type": "bool",
+    "description": "Print elapsed fitting time for each step when true. Default: False."
+   }
+  ],
+  "returns": "A fitted Pipeline from fit; transformed samples from fit_transform; predictions from predict.",
+  "example": {
+   "title": "Scale data before classification",
+   "code": "from sklearn.pipeline import Pipeline\nfrom sklearn.preprocessing import StandardScaler\nfrom sklearn.svm import SVC\n\nmodel = Pipeline([\n    (\"scale\", StandardScaler()),\n    (\"classify\", SVC())\n])\nmodel.fit(X_train, y_train)\npredictions = model.predict(X_test)",
+   "language": "python",
+   "explanation": "The pipeline scales the training data, fits the classifier, and applies the same steps before prediction."
+  },
+  "useCases": [
+   {
+    "title": "Preprocess and predict",
+    "scenario": "Apply scaling before a classifier or regressor."
+   },
+   {
+    "title": "Cross-validate a complete workflow",
+    "scenario": "Tune preprocessing and model settings together."
+   },
+   {
+    "title": "Cache fitted transformers",
+    "scenario": "Avoid repeating expensive transformer fitting."
+   }
+  ],
+  "related": [
+   "make_pipeline",
+   "FeatureUnion",
+   "ColumnTransformer",
+   "GridSearchCV",
+   "StandardScaler"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does Pipeline do?",
+    "answer": "A Pipeline chains estimators in a fixed order. Intermediate steps transform the data, and the final estimator fits or predicts from the transformed data.",
+    "followUp": "Why use a pipeline during model selection? Its steps can be cross-validated together, and their parameters can be changed with names such as scale__with_mean."
+   },
+   {
+    "question": "What interface must pipeline steps provide?",
+    "answer": "The final step may be a predictor, while earlier steps must implement fit and transform. A pipeline can also end with a transformer if that transformer supports the required operation.",
+    "followUp": "What happens if an earlier step lacks transform? Pipeline construction or use cannot satisfy the intermediate-step contract."
+   },
+   {
+    "question": "How are nested parameters changed?",
+    "answer": "Use the step name, two underscores, and the parameter name, such as classify__C. set_params can also replace a step or set it to passthrough or None.",
+    "followUp": "How could you disable preprocessing in a parameter search? Set the transformer step to passthrough or None as a candidate parameter value."
+   }
+  ],
+  "keyPoints": [
+   "Pipeline represents an ordered sequence of transformations followed by an optional predictor.",
+   "fit trains each transformer in order, transforms the data, and then fits the final estimator.",
+   "After fitting, the pipeline can provide estimator operations such as predict and score.",
+   "A named step can be replaced by assigning another estimator to its parameter.",
+   "A transformer can be disabled with passthrough or None.",
+   "The memory option can cache fitted transformers to avoid repeated expensive fitting."
+  ],
+  "gotchas": [
+   "Every step except the last must implement both fit and transform.",
+   "Caching does not cache the final step.",
+   "inverse_transform works only when every pipeline step supports it."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "TruncatedSVD": {
   "sourceUrl": "https://scikit-learn.org/stable/modules/generated/sklearn.decomposition.TruncatedSVD.html",

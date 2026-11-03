@@ -1,4 +1,81 @@
 {
+ "app.all": {
+  "sourceUrl": "https://expressjs.com/en/api/application/index",
+  "sourceTitle": "Application Object · Express.js",
+  "summary": "app.all() runs callback functions for every HTTP method that matches a path. It is useful for shared checks and middleware-like logic.",
+  "explanation": "app.all() attaches callback functions to a path for every HTTP method. The callbacks can run shared checks or other middleware, then call next() to continue processing.",
+  "syntax": "app.all(path, callback [, callback ...])",
+  "parameters": [
+   {
+    "name": "path",
+    "type": "String | RegExp | Array",
+    "description": "A string, regular expression, or array of either used to match the request path."
+   },
+   {
+    "name": "callback",
+    "type": "Function | Function[]",
+    "description": "One or more middleware-style callback functions. They may be separate functions, arrays, or a combination."
+   }
+  ],
+  "returns": "Application",
+  "example": {
+   "title": "Handle every HTTP method",
+   "code": "import express from 'express'\n\nconst app = express()\n\napp.all('/secret', (req, res, next) => {\n  console.log('Checking access')\n  next()\n})\n\napp.get('/secret', (req, res) => {\n  res.send('Secret page')\n})\n\napp.listen(3000)",
+   "language": "typescript",
+   "explanation": "This middleware runs for requests using any HTTP method at /secret. It calls next() so the next matching handler can send the response."
+  },
+  "useCases": [
+   {
+    "title": "Protect a group of routes",
+    "scenario": "Run authentication before protected endpoints under a path prefix."
+   },
+   {
+    "title": "Share route preparation logic",
+    "scenario": "Run logging, loading, or validation logic before later handlers."
+   },
+   {
+    "title": "Match every HTTP method",
+    "scenario": "Handle requests regardless of whether they use GET, POST, PUT, or another method."
+   }
+  ],
+  "related": [
+   "app.use()",
+   "app.METHOD()",
+   "app.get()",
+   "express.Router",
+   "next()",
+   "next('route')"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does app.all() do?",
+    "answer": "app.all() runs its callbacks for every HTTP method supported by the application at the matching path. It is useful for shared path-specific logic such as authentication.",
+    "followUp": "How can the callback allow another handler to run? Call next() to continue middleware processing, or next('route') to skip the rest of the current route callbacks."
+   },
+   {
+    "question": "What arguments can app.all() accept?",
+    "answer": "The path is the first argument, and one or more callback functions follow it. Callbacks may be individual functions, arrays, or combinations of both.",
+    "followUp": "What must a callback do when it does not send a response? It should call next() so processing does not stop at that callback."
+   },
+   {
+    "question": "Why use app.all() for middleware-like logic?",
+    "answer": "app.all() is not limited to one endpoint response. Its callbacks can perform work and pass control onward, so it can apply logic to a path prefix or other match.",
+    "followUp": "How would you protect API routes? Register app.all('/api/{*splat}', requireAuthentication) before the protected route definitions."
+   }
+  ],
+  "keyPoints": [
+   "It matches all HTTP verbs instead of only one method such as GET or POST.",
+   "Use it to check conditions before later route handlers run.",
+   "An app or router can be supplied as middleware in the same way as other middleware functions.",
+   "It can apply shared logic to a path prefix or another supported path match."
+  ],
+  "gotchas": [
+   "A string path must match the whole request path.",
+   "A route callback can call next('route') to skip the remaining callbacks for the current route and try another matching route."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "app.delete": {
   "sourceUrl": "https://expressjs.com/en/4x/api/application/",
   "sourceTitle": "Application Object · Express.js 4.x",
@@ -442,6 +519,156 @@
    "Use app.listen() for the normal HTTP case; use http.createServer(app) or https.createServer(options, app) when you need a specific server type such as HTTPS."
   ],
   "checkedAt": "2026-10-15"
+ },
+ "app.locals": {
+  "sourceUrl": "https://expressjs.com/en/api/application/index",
+  "sourceTitle": "Application Object · Express.js",
+  "summary": "`app.locals` stores values shared by an Express application. Templates rendered with `res.render()` can use these values, which remain available for the application's lifetime.",
+  "explanation": "`app.locals` stores application-level values that Express makes available to templates rendered with `res.render()`. These values stay available for the lifetime of the application. Use it for shared data or helper functions, and use `res.locals` for values that belong to one request.",
+  "syntax": "app.locals.name = value",
+  "parameters": [
+   {
+    "name": "properties",
+    "type": "Object properties",
+    "description": "The property name and value to store for application-wide use. The documentation describes properties on the `app.locals` object rather than a standalone method signature."
+   }
+  ],
+  "returns": "An application-local object. Its properties are available to templates rendered by the application.",
+  "example": {
+   "title": "Set an application local",
+   "code": "const express = require('express')\nconst app = express()\n\napp.locals.title = 'My App'\n\napp.get('/', (req, res) => {\n  res.render('home')\n})",
+   "language": "javascript",
+   "explanation": "This stores an application-wide value that a view can use when Express renders it."
+  },
+  "useCases": [
+   {
+    "title": "Shared view data",
+    "scenario": "A view needs the same application title on many requests."
+   },
+   {
+    "title": "Template helper functions",
+    "scenario": "Several templates need the same formatting helper."
+   },
+   {
+    "title": "Application data in middleware",
+    "scenario": "Middleware needs to read application-wide configuration."
+   }
+  ],
+  "related": [
+   "res.locals",
+   "res.render",
+   "req.app"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is `app.locals` used for?",
+    "answer": "`app.locals` contains values shared by the application and available in rendered templates. Its values remain for the application's lifetime.",
+    "followUp": "How would you store the current authenticated user for a template? Use `res.locals`, because it is limited to the current request-response cycle."
+   },
+   {
+    "question": "How do you add a shared template value?",
+    "answer": "Set a property such as `app.locals.title = 'My App'`. A template rendered with `res.render()` can then access `title`.",
+    "followUp": "How can middleware read the same value? It can use `req.app.locals.title`."
+   },
+   {
+    "question": "How does `app.locals` differ from `res.locals`?",
+    "answer": "Use `app.locals` for application-wide values and `res.locals` for request-specific values. `res.locals` is not shared between requests.",
+    "followUp": "Give one request-specific example. An authenticated user or request path can be assigned to `res.locals` before rendering."
+   }
+  ],
+  "keyPoints": [
+   "It is an object whose properties act as application-level local variables.",
+   "Rendered views can use values stored in `app.locals`.",
+   "Use it for shared template helpers and data such as a title or formatting function.",
+   "Middleware can read application locals through `req.app.locals`."
+  ],
+  "gotchas": [
+   "Do not put user-controlled keys in `app.locals`. View engines use these keys, so unsafe input can affect rendering or create a cross-site scripting risk.",
+   "Values remain available across requests. Do not use `app.locals` for data that belongs to only one request."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "app.patch": {
+  "sourceUrl": "https://expressjs.com/en/5x/api/application/",
+  "sourceTitle": "Application Object · Express.js 5.x",
+  "summary": "The Express application object is created with express(). Use it to define HTTP routes, configure middleware, render views, register template engines, and control application settings.",
+  "explanation": "The Express application object is created by calling express(). It provides methods for defining routes, adding middleware, rendering views, registering template engines, and changing application settings. A route can use a string, regular expression, or array as its path.",
+  "syntax": "const app = express();\napp.METHOD(path, handler);",
+  "parameters": [
+   {
+    "name": "path",
+    "type": "String | RegExp | Array",
+    "description": "A route path. The documentation permits a string, regular expression, or array of either."
+   }
+  ],
+  "returns": "The page does not specify a return value for the application routing methods.",
+  "example": {
+   "title": "Create routes with the application object",
+   "code": "import express, { type Request, type Response } from 'express';\n\nconst app = express();\n\napp.get('/', (req: Request, res: Response) => {\n  res.send('GET request to homepage');\n});\n\napp.post('/', (req: Request, res: Response) => {\n  res.send('POST request to homepage');\n});\n\napp['m-search']('/', (req: Request, res: Response) => {\n  res.send('M-SEARCH request to homepage');\n});\n\napp.listen(3000);",
+   "language": "typescript",
+   "explanation": "This creates an Express application, adds handlers for three HTTP methods, and listens on port 3000."
+  },
+  "useCases": [
+   {
+    "title": "HTTP routing",
+    "scenario": "Define endpoints for browser or API requests."
+   },
+   {
+    "title": "Middleware configuration",
+    "scenario": "Apply request-processing functions at application routes."
+   },
+   {
+    "title": "View rendering",
+    "scenario": "Return generated HTML from a server-side view."
+   },
+   {
+    "title": "Template engine registration",
+    "scenario": "Connect a view file type to its rendering function."
+   }
+  ],
+  "related": [
+   "app.METHOD",
+   "app.param",
+   "app.route",
+   "app.render",
+   "app.engine",
+   "app.all",
+   "app.listen"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you create an Express application and add a route?",
+    "answer": "Call the exported express function to create the application object. Then use methods such as app.get or app.post to define routes, and call app.listen to accept connections.",
+    "followUp": "How can a route path match part of a URL? Use a regular expression, such as /apple/. To require the entire path, anchor it with ^ and $."
+   },
+   {
+    "question": "What happens to HEAD requests when you define app.get?",
+    "answer": "app.get defines a handler for GET requests. If app.head has not already been defined for the same path, the GET handler also handles HEAD requests.",
+    "followUp": "How do you prevent the GET handler from handling HEAD? Define an app.head route for that path before defining app.get."
+   },
+   {
+    "question": "How do you route an HTTP method such as M-SEARCH?",
+    "answer": "Express routing methods correspond to HTTP methods. Methods with names that are invalid JavaScript identifiers use bracket notation, for example app['m-search']('/' ...).",
+    "followUp": "How can one handler support every HTTP method? Use app.all with the desired path; it loads middleware for all HTTP request methods."
+   }
+  ],
+  "keyPoints": [
+   "The application object is the main object used to define how HTTP requests are routed.",
+   "It also provides APIs for configuring middleware.",
+   "The application object can render HTML views.",
+   "You can register a template engine through the application object.",
+   "Regular-expression paths can match only part of a request path.",
+   "Add ^ at the start and $ at the end of a regular expression when the complete path must match.",
+   "Express supplies routing methods named after supported HTTP methods."
+  ],
+  "gotchas": [
+   "A GET route also handles HEAD requests unless app.head() was defined for that path first.",
+   "A string route path matches the complete request path, not just its beginning.",
+   "HTTP method names that are not valid JavaScript property names must use bracket notation, such as app['m-search']()."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "app.path": {
   "sourceUrl": "https://expressjs.com/en/4x/api/application/",
@@ -1038,6 +1265,158 @@
   ],
   "checkedAt": "2026-10-15"
  },
+ "bodyParser": {
+  "sourceUrl": "https://expressjs.com/en/api/express/",
+  "sourceTitle": "Express Object",
+  "summary": "express.json() returns middleware that parses matching JSON request bodies and stores the result in req.body. Use its options to control size, compression, media type matching, and raw-body verification.",
+  "explanation": "express.json() creates middleware that parses matching JSON request bodies and places the result in req.body. The parser can limit body size, accept compressed bodies, and use a custom media type rule.",
+  "syntax": "express.json([options])",
+  "parameters": [
+   {
+    "name": "options",
+    "type": "object | undefined",
+    "description": "Optional parser settings, including defaultCharset, inflate, limit, type, and verify."
+   }
+  ],
+  "returns": "Middleware that parses matching JSON request bodies and assigns the parsed value to req.body.",
+  "example": {
+   "title": "Parse JSON for one route",
+   "code": "const express = require('express');\n\nconst app = express();\n\napp.post('/users', express.json(), (req, res) => {\n  const name = req.body?.name;\n  if (typeof name !== 'string') return res.sendStatus(400);\n  res.json({name});\n});\n\napp.listen(3000);",
+   "language": "javascript",
+   "explanation": "This route parses JSON request bodies, checks the untrusted name value, and returns it."
+  },
+  "useCases": [
+   {
+    "title": "Parse API JSON",
+    "scenario": "An API accepts JSON data for a route."
+   },
+   {
+    "title": "Set a body-size limit",
+    "scenario": "An application must reject oversized request bodies."
+   },
+   {
+    "title": "Verify the raw body",
+    "scenario": "A webhook needs access to raw bytes before parsing."
+   }
+  ],
+  "related": [
+   "express()",
+   "express.raw()",
+   "express.text()",
+   "express.urlencoded()",
+   "req.body"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does express.json() do?",
+    "answer": "express.json() returns middleware that parses requests whose Content-Type matches its type option. It places the parsed value in req.body.",
+    "followUp": "What happens when the content type does not match? The middleware does not parse that request, so req.body may remain undefined."
+   },
+   {
+    "question": "How can you limit JSON request sizes?",
+    "answer": "The limit option sets the maximum request body size. It accepts a byte number or a string understood by the bytes library, and its default is 100kb.",
+    "followUp": "Why avoid a very high limit? Larger payloads need more memory and may take longer to process."
+   },
+   {
+    "question": "How does express.json() decide whether to parse a request?",
+    "answer": "The type option decides which requests are parsed. It can be a media type, an extension, a wildcard, or a function that receives req and returns a truthy value.",
+    "followUp": "How can raw request bytes be checked before parsing? Supply verify(req, res, buf, encoding); throwing an error aborts parsing."
+   }
+  ],
+  "keyPoints": [
+   "It parses JSON only when the request content type matches the configured type.",
+   "After successful parsing, the decoded value is available as req.body.",
+   "The JSON parser accepts any Unicode encoding.",
+   "Compressed request bodies are accepted and decompressed by default.",
+   "The type option can be a string, an array of strings, or a function."
+  ],
+  "gotchas": [
+   "Treat req.body as untrusted input. Validate its properties and values before using them.",
+   "req.body can be undefined when the request has no parsable body, so do not assume it is always an object.",
+   "The default maximum JSON body size is 100 KB. Raising the limit can increase memory use and response time."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "case sensitive routing": {
+  "sourceUrl": "https://expressjs.com/en/4x/api/application/",
+  "sourceTitle": "Application Object · Express.js",
+  "summary": "`express()` creates an Express application object. Use the object to define routes, configure middleware and settings, render views, and register template engines.",
+  "explanation": "Call the top-level `express()` function to create an application object. Use that object to define routes and middleware, configure application settings, render views, and start the HTTP server.",
+  "syntax": "express()",
+  "parameters": [
+   {
+    "name": "",
+    "type": "",
+    "description": "None. The documented `express()` call creates the application without arguments."
+   }
+  ],
+  "returns": "An Express application object.",
+  "example": {
+   "title": "Create an Express application",
+   "code": "const express = require('express');\nconst app = express();\n\napp.get('/users', (req, res) => {\n  res.json([{ id: 1, name: 'Ada' }]);\n});\n\napp.listen(3000);",
+   "language": "javascript",
+   "explanation": "Creates an Express app, adds a GET route, and starts a server on port 3000."
+  },
+  "useCases": [
+   {
+    "title": "Route requests",
+    "scenario": "Build HTTP endpoints that respond to client requests."
+   },
+   {
+    "title": "Configure middleware",
+    "scenario": "Add functions that process requests before route handlers."
+   },
+   {
+    "title": "Render views",
+    "scenario": "Return server-rendered HTML from templates."
+   },
+   {
+    "title": "Register a template engine",
+    "scenario": "Select and configure a view template engine."
+   }
+  ],
+  "related": [
+   "app.METHOD",
+   "app.param",
+   "app.route",
+   "app.render",
+   "app.engine",
+   "app.use",
+   "app.all"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you create an Express application?",
+    "answer": "Call the exported `express()` function. It returns the application object used to define routes, middleware, and settings.",
+    "followUp": "How can the application handle every HTTP method? Use `app.all()` for a route that should match all HTTP methods."
+   },
+   {
+    "question": "How are routes defined on an Express application?",
+    "answer": "Use methods on the app object that match HTTP methods, such as `app.get()` and `app.post()`. Express runs the handler when both the route and method match the request.",
+    "followUp": "How can middleware be attached? Use `app.use()` and provide the middleware function as its callback."
+   },
+   {
+    "question": "What are application settings used for?",
+    "answer": "Application settings control how the app behaves. For example, `case sensitive routing` can make `/Foo` and `/foo` different routes, while `env` uses `NODE_ENV` or defaults to `development`.",
+    "followUp": "What does the `query parser` setting control? It can disable parsing, select `simple` or `extended`, or use a custom parser function."
+   }
+  ],
+  "keyPoints": [
+   "The value returned by `express()` is conventionally called `app` and represents the Express application.",
+   "Create the application by calling the top-level function exported by the Express package.",
+   "The app object provides methods for routing HTTP requests.",
+   "The application object also supports middleware configuration.",
+   "It can render HTML views through its view-rendering methods.",
+   "It can register a template engine for rendering views."
+  ],
+  "gotchas": [
+   "A sub-application inherits `trust proxy` despite that setting normally having a default value.",
+   "In production, a sub-application does not inherit the parent application's `view cache` setting."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "compression": {
   "sourceUrl": "https://expressjs.com/en/resources/middleware/compression/",
   "sourceTitle": "compression middleware - Express.js",
@@ -1112,73 +1491,75 @@
   "checkedAt": "2026-10-15"
  },
  "CookieOptions": {
-  "sourceUrl": "https://expressjs.com/en/api/response.html",
-  "sourceTitle": "Response · Express.js",
-  "summary": "CookieOptions is the options object used with Express's cookie-setting API. It configures attributes such as lifetime, scope, HTTPS-only delivery, client-side access, SameSite behavior, signing, and partitioned storage.",
-  "explanation": "CookieOptions is the options object accepted by Express's cookie-setting API. Its properties control cookie scope, lifetime, transport security, browser access, signing, encoding, and related Set-Cookie attributes.",
-  "syntax": "res.cookie(name, value, [options])",
+  "sourceUrl": "https://expressjs.com/en/resources/middleware/session/",
+  "sourceTitle": "session middleware · Express.js",
+  "summary": "express-session stores session data on the server and puts only a session ID in the client cookie. Use it when routes need session state without placing that state in the cookie.",
+  "explanation": "The middleware gives each client a session ID in a cookie. The session data stays on the server, usually in a session store. Routes can read and change values through req.session.",
+  "syntax": "session(options)",
   "parameters": [
    {
-    "name": "name",
-    "type": "String",
-    "description": "Cookie name."
-   },
-   {
-    "name": "value",
-    "type": "String | Object",
-    "description": "Cookie value; an object is serialized as JSON."
-   },
-   {
     "name": "options",
-    "type": "Object | undefined",
-    "description": "Options for the Set-Cookie header."
+    "type": "object",
+    "description": "Options used to configure the session middleware, including session and cookie settings."
    }
   ],
-  "returns": "Sets cookie `name` to `value`.",
+  "returns": "Middleware function",
   "example": {
-   "title": "Set a secure cookie",
-   "code": "const express = require('express');\nconst app = express();\n\napp.get('/login', (req, res) => {\n  res.cookie('session', 'abc123', {\n    httpOnly: true,\n    secure: true,\n    sameSite: 'lax',\n    maxAge: 60 * 60 * 1000\n  });\n  res.sendStatus(204);\n});\n\napp.listen(3000);",
+   "title": "Store a value in a server-side session",
+   "code": "const session = require('express-session');\nconst express = require('express');\n\nconst app = express();\napp.use(session({\n  secret: 'replace-with-a-long-random-secret',\n  resave: false,\n  saveUninitialized: false\n}));\n\napp.get('/login', (req, res) => {\n  req.session.userId = 42;\n  res.send('Session created');\n});\n\napp.get('/me', (req, res) => {\n  res.json({ userId: req.session.userId ?? null });\n});\n\napp.listen(3000);",
    "language": "javascript",
-   "explanation": "This route sets a one-hour cookie that is restricted from client-side JavaScript, sent over HTTPS, and subject to SameSite=Lax behavior."
+   "explanation": "This creates session middleware and stores a user ID in the server-side session."
   },
   "useCases": [
    {
-    "title": "Secure authentication cookies",
-    "scenario": "Set a session or authentication cookie with browser-access restrictions."
+    "title": "Authentication sessions",
+    "scenario": "A login flow needs to remember the authenticated user between requests."
    },
    {
-    "title": "Cookie expiration",
-    "scenario": "Define how long a cookie remains valid."
+    "title": "Multi-request state",
+    "scenario": "A multi-step form needs temporary state across several requests."
    },
    {
-    "title": "Scope and SameSite controls",
-    "scenario": "Limit where and when a browser sends a cookie."
+    "title": "Server-side session data",
+    "scenario": "The application needs session data that is larger or more private than a client cookie should hold."
    }
   ],
   "related": [
-   "res.cookie()",
-   "res.clearCookie()",
-   "httpOnly",
-   "secure",
-   "sameSite",
-   "signed",
-   "partitioned"
+   "cookie-session",
+   "cookie-parser",
+   "MemoryStore",
+   "req.session"
   ],
   "since": "",
+  "interview": [
+   {
+    "question": "Where is session data stored?",
+    "answer": "express-session keeps session data on the server and sends only a session ID in the client cookie. The server uses that ID to find the session data.",
+    "followUp": "How can the session data be kept across multiple application servers? Use a shared session store, such as a database-backed store, instead of the default in-memory store."
+   },
+   {
+    "question": "How do you add express-session to an Express app?",
+    "answer": "The middleware is created by calling session(options). The options object configures values such as the secret and cookie behavior, and the returned middleware is passed to app.use.",
+    "followUp": "What must a TypeScript project add? Install the community-maintained @types/express-session package as a development dependency."
+   },
+   {
+    "question": "Why should the default session store not be used in production?",
+    "answer": "The default MemoryStore is intended for development and debugging, not production. It does not scale beyond a single process and can cause memory problems.",
+    "followUp": "What should replace it in production? Configure a persistent, shared session store that suits the application's deployment and data needs."
+   }
+  ],
   "keyPoints": [
-   "The options object controls attributes written to the response's Set-Cookie header.",
-   "Use maxAge for an expiration interval measured in milliseconds from the current time.",
-   "httpOnly prevents browser client-side code from accessing the cookie.",
-   "secure restricts the cookie to HTTPS requests.",
-   "sameSite controls the cookie's SameSite attribute and accepts a Boolean or String.",
-   "signed requests cookie signing when the application has the required signing configuration.",
-   "partitioned enables partitioned cookie storage for supported browser behavior."
+   "Install the package from npm before using it.",
+   "Call session(options) to create the middleware.",
+   "The server, rather than the browser cookie, holds the session values.",
+   "Choose another store for a production application."
   ],
   "gotchas": [
-   "Setting options only creates the response header; the browser enforces the resulting cookie behavior.",
-   "Unspecified properties use the relevant RFC 6265 defaults, so do not assume application-specific defaults."
+   "The cookie does not contain the session data. It contains only the session ID.",
+   "TypeScript users must install the community-maintained type package separately.",
+   "Do not use the default memory store in production."
   ],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-11-03"
  },
  "cookieParser": {
   "sourceUrl": "https://expressjs.com/en/resources/middleware/cookie-parser/",
@@ -1339,67 +1720,213 @@
   ],
   "checkedAt": "2026-10-15"
  },
- "Express": {
-  "sourceUrl": "https://expressjs.com/en/4x/api/application/",
-  "sourceTitle": "Application Object · Express.js 4.x",
-  "summary": "The Express application object is created with `express()` and conventionally stored in `app`. It registers middleware and HTTP-method routes and can handle incoming requests.",
-  "explanation": "Calling the top-level `express()` function creates an application object. The returned app can register middleware and HTTP-method routes, then listen for incoming connections; it is also available as `req.app` and `res.app` during request handling.",
-  "syntax": "const app = express();",
-  "parameters": [
-   {
-    "name": "",
-    "type": "",
-    "description": "No parameters are documented for the application interface itself; individual application methods define their own arguments."
-   }
-  ],
-  "returns": "The `express()` function returns an Express application instance.",
+ "ErrorRequestHandler": {
+  "sourceUrl": "https://expressjs.com/en/5x/guide/error-handling/",
+  "sourceTitle": "Error Handling · Express.js 5.x",
+  "summary": "Express catches synchronous errors thrown in route handlers and middleware. It also provides a default error handler, so a custom one is not required to begin.",
+  "explanation": "Express catches errors thrown by synchronous route handlers and middleware automatically. Asynchronous code needs a pattern that passes errors to Express, such as calling the next function with an error or using supported promise handling.",
+  "syntax": "app.get(path, callback)",
+  "parameters": [],
+  "returns": "",
   "example": {
-   "title": "Minimal Express application",
-   "code": "import express from \"express\";\n\nconst app = express();\napp.get(\"/\", (_req, res) => {\n  res.send(\"Hello World!\");\n});\napp.listen(3000);",
-   "language": "typescript",
-   "explanation": "Creates an Express application, registers a GET route, and starts listening on port 3000."
+   "title": "Synchronous route error",
+   "code": "app.get('/', (req, res) => {\n  throw new Error('BROKEN')\n})",
+   "language": "javascript",
+   "explanation": "A synchronous error in this route is caught by Express."
   },
   "useCases": [
    {
-    "title": "Define application routes",
-    "scenario": "Build an HTTP server with route handlers."
+    "title": "Handle a synchronous route failure",
+    "scenario": "A route contains code that can throw immediately."
    },
    {
-    "title": "Configure middleware",
-    "scenario": "Apply shared processing such as authentication or parsing."
+    "title": "Process middleware errors",
+    "scenario": "Middleware performs a synchronous operation that fails."
+   }
+  ],
+  "related": [
+   "route handlers",
+   "middleware",
+   "default error handler",
+   "asynchronous code"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How does Express handle synchronous errors?",
+    "answer": "Express catches an error thrown by synchronous code in a route handler or middleware and sends it through its error-processing flow. No extra wrapper is needed for that case.",
+    "followUp": "What is different for asynchronous code? The code must ensure the error reaches Express, for example by passing it to the next function or using the documented promise behavior."
    },
    {
-    "title": "Start listening for requests",
-    "scenario": "Expose the app to the Node.js HTTP server."
+    "question": "Does an Express application need its own error handler?",
+    "answer": "Express includes a default error handler. This lets an application process errors without first defining a custom error-handling middleware.",
+    "followUp": "Why add custom error middleware? To choose the application's error response and handling behavior instead of relying on the default response."
    },
    {
-    "title": "Inspect the current app",
-    "scenario": "Access application configuration from handlers."
+    "question": "What must an application do for asynchronous errors?",
+    "answer": "Errors can occur in both synchronous and asynchronous route handlers or middleware. The application must make sure asynchronous errors are forwarded to Express rather than left unhandled.",
+    "followUp": "What should be checked when an asynchronous failure is not handled? Check that the route or middleware passes the error to Express through the supported error flow."
+   }
+  ],
+  "keyPoints": [
+   "Express error handling covers failures from synchronous and asynchronous route or middleware code.",
+   "Express catches and processes errors thrown by synchronous code.",
+   "Express provides a default error handler for basic applications."
+  ],
+  "gotchas": [
+   "Do not add special error-catching code for errors thrown synchronously in a route or middleware.",
+   "A custom error handler is optional when starting an Express application."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "express": {
+  "sourceUrl": "https://expressjs.com/en/api/",
+  "sourceTitle": "5.x API Reference · Express.js",
+  "summary": "express() creates an Express application instance. Use it to define routes, add middleware, and handle HTTP requests.",
+  "explanation": "Calling express() creates an application object. Use that object to define routes, configure middleware, and handle HTTP requests. A route connects an HTTP method and path to a handler, where the response object can send data back to the client.",
+  "syntax": "express()",
+  "parameters": [],
+  "returns": "A new Express application instance.",
+  "example": {
+   "title": "Basic Express application",
+   "code": "const express = require('express');\nconst app = express();\n\napp.get('/', (req, res) => {\n  res.send('hello world');\n});\n\napp.listen(3000);",
+   "language": "javascript",
+   "explanation": "This creates an Express application, adds a route for the root path, sends text in the response, and listens on port 3000."
+  },
+  "useCases": [
+   {
+    "title": "Build a web server",
+    "scenario": "Create a small HTTP server with one or more routes."
+   },
+   {
+    "title": "Configure request handling",
+    "scenario": "Attach middleware and route handlers to a shared application object."
+   },
+   {
+    "title": "Serve HTTP requests",
+    "scenario": "Start an application that listens for client connections."
+   }
+  ],
+  "related": [
+   "Application Object",
+   "Request Object",
+   "Response Object",
+   "Router"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does express() do?",
+    "answer": "The express() function creates an Express application object. The object is then used to define routes, configure middleware, and handle requests.",
+    "followUp": "What does a route handler receive? It receives request and response objects, which provide access to the incoming request and let the handler send a response."
+   },
+   {
+    "question": "How are routes defined?",
+    "answer": "A route maps an HTTP method and path to a handler function. In the example, GET requests for / call the handler that sends hello world.",
+    "followUp": "How would you add another endpoint? Call an application method such as app.post() or app.get() with another path and handler."
+   },
+   {
+    "question": "What does app.listen() do?",
+    "answer": "app.listen(3000) starts the application so it can handle HTTP requests on port 3000. The route must be registered before the server starts handling traffic.",
+    "followUp": "What can be configured before listening? Routes and middleware can be added to the application instance before calling listen."
+   }
+  ],
+  "keyPoints": [
+   "Calling express() creates and returns an application instance.",
+   "The application instance is used for routes, middleware, and HTTP request handling.",
+   "Use app.get() to attach a handler to GET requests for a path.",
+   "The response object's send method can send text to the client.",
+   "Call app.listen() with a port to start the application."
+  ],
+  "gotchas": [],
+  "checkedAt": "2026-11-03"
+ },
+ "Express": {
+  "sourceUrl": "https://expressjs.com/en/4x/api/",
+  "sourceTitle": "4.x API Reference · Express.js",
+  "summary": "Express 4.x provides an application object for defining routes, adding middleware, and handling HTTP requests. Its built-in functions include JSON parsing, raw and text body parsing, routers, and static-file serving.",
+  "explanation": "The top-level express function creates an application instance. Built-in middleware such as express.json parses matching JSON requests and places the result in req.body. Routers organize middleware and routes, while express.static serves files from a directory. The application can then define HTTP handlers and listen for requests.",
+  "syntax": "const express = require('express');\nconst app = express();\napp.use(express.json());\nconst router = express.Router();\napp.use(express.static('public'));",
+  "parameters": [
+   {
+    "name": "options",
+    "type": "Object | undefined",
+    "description": "The options object for express.json(), including parsing limits, accepted content types, and verification behavior."
+   },
+   {
+    "name": "root",
+    "type": "String",
+    "description": "The root directory from which express.static() serves files."
+   },
+   {
+    "name": "options",
+    "type": "Object | undefined",
+    "description": "The options object for express.static(), including caching, indexing, dotfiles, and headers."
+   }
+  ],
+  "returns": "express() returns an Express application. The middleware factory methods return middleware functions. express.Router() returns a Router.",
+  "example": {
+   "title": "Parse and validate a JSON request",
+   "code": "const express = require('express');\n\nconst app = express();\napp.use(express.json({ limit: '10kb' }));\n\napp.post('/profile', (req, res) => {\n  const name = req.body?.name;\n  if (typeof name !== 'string') {\n    return res.status(400).send('Invalid name');\n  }\n  res.json({ name });\n});\n\napp.listen(3000);",
+   "language": "javascript",
+   "explanation": "This app creates an Express application, parses JSON request bodies up to 10 KB, validates the user-controlled name, and returns it as JSON."
+  },
+  "useCases": [
+   {
+    "title": "Parse JSON API bodies",
+    "scenario": "An API receives JSON requests and needs the parsed fields in route handlers."
+   },
+   {
+    "title": "Serve static assets",
+    "scenario": "A service exposes images, stylesheets, or other files from a directory."
+   },
+   {
+    "title": "Organize routes with a router",
+    "scenario": "A larger application groups routes for one feature or URL area."
    }
   ],
   "related": [
    "express()",
-   "app.all()",
-   "app.METHOD()",
-   "app.get()",
-   "app.post()",
-   "app.put()",
-   "app.delete()",
-   "app.use()"
+   "express.json()",
+   "express.raw()",
+   "express.text()",
+   "express.static()",
+   "express.Router()",
+   "Application Object",
+   "Request Object"
   ],
   "since": "",
+  "interview": [
+   {
+    "question": "What does express() do?",
+    "answer": "express() creates and returns an Express application instance. The instance is used to define routes, configure middleware, and handle HTTP requests.",
+    "followUp": "How can an application parse JSON bodies? Add express.json() with app.use(), then read the parsed value from req.body."
+   },
+   {
+    "question": "How does Express parse JSON request bodies?",
+    "answer": "express.json() returns built-in middleware that parses requests whose Content-Type matches its type option. It stores the parsed body in req.body.",
+    "followUp": "How can the parser keep the raw body? Supply a verify function and save the buf argument before parsing finishes."
+   },
+   {
+    "question": "Why use express.Router()?",
+    "answer": "express.Router() creates a router that accepts middleware and HTTP method routes. Options can enable case-sensitive routes, strict trailing-slash handling, or inherited parent parameters.",
+    "followUp": "How does a child router read a parent route parameter? Create it with mergeParams: true; child parameters with the same name take precedence."
+   }
+  ],
   "keyPoints": [
-   "The application instance is conventionally named `app` and represents the Express application.",
-   "Import Express and call `express()` to create the application instance.",
-   "Route handlers can access the current application through `req.app` or `res.app`.",
-   "Application routing methods are named after HTTP verbs, including `get`, `post`, and `put`.",
-   "The reference documents common routing methods explicitly, while Express supports additional HTTP-method route methods."
+   "Call express() to create the application object used by an Express server.",
+   "Use express.json() as middleware when routes need parsed JSON request data.",
+   "After successful JSON parsing, the parsed value is available as req.body.",
+   "Use express.raw() when a matching request body must remain a Buffer.",
+   "Use express.Router() to create a separate router that can contain middleware and HTTP method routes.",
+   "Use express.static(root) to serve files from the selected directory."
   ],
   "gotchas": [
-   "Use `app.all()` only when middleware should run for every HTTP method at the selected path; it is not an ordinary HTTP-method route.",
-   "Use lowercase method names such as `app.get()` and `app.post()` when defining routes."
+   "Treat req.body as untrusted input. Validate its properties and values before using them.",
+   "express.static does not end a missing-file request with a 404 by itself. Later middleware can handle it.",
+   "The documented minimum Node.js version for Express 4.x is 0.10.0."
   ],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-11-03"
  },
  "express.json": {
   "sourceUrl": "https://expressjs.com/en/4x/api/express/",
@@ -1475,6 +2002,79 @@
    "Setting inflate to false rejects compressed request bodies instead of transparently decompressing them."
   ],
   "checkedAt": "2026-10-15"
+ },
+ "express.raw": {
+  "sourceUrl": "https://expressjs.com/en/5x/api/express/",
+  "sourceTitle": "Express Object · Express.js 5.x",
+  "summary": "`express.json()` returns middleware that parses matching JSON request bodies and puts the result in `req.body`. Validate that user-controlled body data has the expected shape before using it.",
+  "explanation": "`express.json()` creates middleware that reads request bodies whose content type matches its configured type, then places the parsed value in `req.body`. It returns `undefined` when there is no matching body or when parsing does not produce a body. The middleware supports compressed bodies and can limit the accepted body size.",
+  "syntax": "express.json(options)",
+  "parameters": [
+   {
+    "name": "options",
+    "type": "Object | undefined",
+    "description": "Optional settings for JSON body parsing, including `limit`, `type`, `inflate`, `verify`, and character-set behavior."
+   }
+  ],
+  "returns": "A middleware function that parses matching JSON request bodies and assigns the parsed value to `req.body`.",
+  "example": {
+   "title": "Parse JSON request bodies",
+   "code": "app.use(express.json());\n\napp.post('/profile', (req, res) => {\n  const name = req.body?.name;\n  if (typeof name !== 'string') {\n    return res.status(400).send('Invalid name');\n  }\n  res.json({ name });\n});",
+   "language": "javascript",
+   "explanation": "This middleware parses matching JSON requests before the route runs. The route checks the user-controlled value before using it."
+  },
+  "useCases": [
+   {
+    "title": "Read JSON API bodies",
+    "scenario": "An API receives JSON data in a POST request and needs the parsed fields in a route handler."
+   },
+   {
+    "title": "Limit request size",
+    "scenario": "An application must reject requests above a selected body size."
+   },
+   {
+    "title": "Capture raw body bytes",
+    "scenario": "A signed request requires access to the original body bytes before JSON parsing."
+   }
+  ],
+  "related": [
+   "express()",
+   "express.raw()",
+   "express.text()",
+   "express.urlencoded()",
+   "req.body",
+   "app.use()"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does `express.json()` do?",
+    "answer": "`express.json()` returns built-in middleware. It parses requests with a matching JSON content type and stores the parsed result in `req.body`. If no matching body exists, `req.body` can be undefined.",
+    "followUp": "How would you preserve the original bytes? Pass a `verify` function and save its `buf` argument before parsing completes."
+   },
+   {
+    "question": "How does Express decide whether to parse a request?",
+    "answer": "The `type` option decides which requests are parsed. It can be a media type, an extension, a wildcard, an array, or a function that receives `req` and returns a truthy value.",
+    "followUp": "How can you reject large JSON requests? Set the `limit` option to a byte count or a size string such as `\"20kb\"`."
+   },
+   {
+    "question": "Why must `req.body` be validated?",
+    "answer": "The parsed body comes from client input, so its structure and values cannot be trusted. Validate required fields and their types before accessing methods or using the values.",
+    "followUp": "Why can a direct call such as `req.body.foo.toString()` fail? `foo` may be absent, may not be a string, or may be replaced by another user-provided value."
+   }
+  ],
+  "keyPoints": [
+   "The function is included with Express, so no separate body-parser installation is needed.",
+   "Use it when request bodies contain JSON data.",
+   "Parsing is limited by the request `Content-Type` and the configured `type` option.",
+   "Compressed gzip and deflate request bodies can be expanded automatically.",
+   "Use `limit` to cap body size and reduce exposure to oversized requests."
+  ],
+  "gotchas": [
+   "Treat every value in `req.body` as untrusted. Validate its type and contents before using it.",
+   "A route can read `req.body` only after this middleware has run."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "express.Router": {
   "sourceUrl": "https://expressjs.com/en/4x/api/express/",
@@ -2588,6 +3188,79 @@
   ],
   "checkedAt": "2026-10-15"
  },
+ "rateLimit": {
+  "sourceUrl": "https://expressjs.com/en/api/express/",
+  "sourceTitle": "Express Object · Express.js",
+  "summary": "The express() function creates an Express application. The resulting object supports routes, middleware, and built-in helpers such as express.json().",
+  "explanation": "Calling the exported express function returns an application object. The object provides methods for defining routes, starting the server, and adding middleware. The page also documents built-in middleware methods such as express.json(), which parses incoming JSON request bodies.",
+  "syntax": "const app = express();",
+  "parameters": [
+   {
+    "name": "options",
+    "type": "Object | undefined",
+    "description": "Optional settings for JSON body parsing, including defaultCharset, inflate, and limit."
+   }
+  ],
+  "returns": "An Express application object.",
+  "example": {
+   "title": "Create an Express application",
+   "code": "const express = require('express');\nconst app = express();\n\napp.get('/', (req, res) => {\n  res.send('Hello World!');\n});\n\napp.listen(3000, () => {\n  console.log('Example app listening on port 3000');\n});",
+   "language": "javascript",
+   "explanation": "This creates an Express application, adds a route, and starts a server on port 3000."
+  },
+  "useCases": [
+   {
+    "title": "Create an application",
+    "scenario": "Start a Node.js web server with routes."
+   },
+   {
+    "title": "Parse JSON request bodies",
+    "scenario": "Accept JSON data in HTTP requests."
+   },
+   {
+    "title": "Set parser options",
+    "scenario": "Configure request-body parsing limits and compression handling."
+   }
+  ],
+  "related": [
+   "express.json()",
+   "Express application",
+   "middleware",
+   "routers"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does calling express() do?",
+    "answer": "The express function is the top-level function exported by the Express module. Calling it creates an Express application object.",
+    "followUp": "How can TypeScript describe the returned object? Import the Express type and assign the result of express() to a variable typed as Express."
+   },
+   {
+    "question": "What is express.json() used for?",
+    "answer": "express.json() creates middleware that parses JSON request bodies. It accepts an options object, or it can be called without options.",
+    "followUp": "What option limits parsed request size? The limit option, whose default is 100kb, controls the maximum body size."
+   },
+   {
+    "question": "How does express.json() handle compressed bodies?",
+    "answer": "The inflate option controls compressed request bodies. It defaults to true; when disabled, deflated bodies are rejected.",
+    "followUp": "What related option handles missing charset information? defaultCharset sets the character set used when Content-Type does not specify one."
+   }
+  ],
+  "keyPoints": [
+   "The express() call creates the application that you configure with routes and middleware.",
+   "The module exports express as its main function, so CommonJS, ESM, and TypeScript code can import it directly.",
+   "The returned Express object includes methods for middleware, routers, and built-in middleware.",
+   "express.json() uses UTF-8 by default when the request does not provide a charset.",
+   "Compressed JSON bodies are accepted by default, unless inflate is set to false.",
+   "JSON parsing allows request bodies up to 100kb by default."
+  ],
+  "gotchas": [
+   "Import the function from the express module before calling it. Do not assume it is a method on an existing application.",
+   "express.json() is for parsing JSON request bodies. Its options control parsing behavior.",
+   "Set the limit deliberately for your application. The default body-size limit is 100kb."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "req.accepts": {
   "sourceUrl": "https://expressjs.com/en/4x/api/request/",
   "sourceTitle": "Request Object - Express.js 4.x",
@@ -3069,49 +3742,64 @@
   "checkedAt": "2026-10-15"
  },
  "req.cookies": {
-  "sourceUrl": "https://expressjs.com/en/4x/api/request/",
-  "sourceTitle": "Request Object - Express.js",
-  "summary": "req.cookies is an object populated by cookie-parser with cookies sent by the request. It is empty when no cookies are present; signed cookies belong in req.signedCookies.",
-  "explanation": "After cookie-parser runs, Express exposes incoming cookie name-value pairs through req.cookies. Read a cookie by property name; when the request has no cookies, the object is empty. Cookies signed with a secret are exposed separately through req.signedCookies.",
+  "sourceUrl": "https://expressjs.com/en/api/request/",
+  "sourceTitle": "Request Object · Express.js",
+  "summary": "req.cookies is an object containing cookies sent with an Express request. It requires cookie-parser and is empty when the request has no cookies.",
+  "explanation": "Express adds req.cookies when cookie-parser runs before the route. The value is an object containing cookies sent by the client. If the request has no cookies, the object is empty. Signed cookies are kept separately in req.signedCookies.",
   "syntax": "req.cookies",
   "parameters": [],
-  "returns": "An object containing cookies sent by the request, or {} when none are present.",
+  "returns": "Object containing cookies sent by the request; it defaults to {} when no cookies are present.",
   "example": {
    "title": "Read a request cookie",
-   "code": "const express = require('express');\nconst cookieParser = require('cookie-parser');\n\nconst app = express();\napp.use(cookieParser());\n\napp.get('/theme', (req, res) => {\n  res.json({ theme: req.cookies.theme ?? 'default' });\n});\n\napp.listen(3000);",
-   "language": "javascript",
-   "explanation": "This app parses incoming cookies and returns the requested theme, falling back when the cookie is absent."
+   "code": "import express from \"express\";\nimport cookieParser from \"cookie-parser\";\n\nconst app = express();\napp.use(cookieParser());\n\napp.get(\"/\", (req, res) => {\n  res.json({ theme: req.cookies.theme ?? \"default\" });\n});\n\napp.listen(3000);",
+   "language": "typescript",
+   "explanation": "This route reads the cookie named theme from the request."
   },
   "useCases": [
    {
-    "title": "Request preferences",
-    "scenario": "Read a preference such as a theme or locale from an incoming request cookie."
+    "title": "Read a cookie",
+    "scenario": "Read a preference or identifier sent by a browser cookie."
    },
    {
-    "title": "Request validation",
-    "scenario": "Inspect an authentication-related cookie before applying application-specific validation."
-   },
-   {
-    "title": "Middleware processing",
-    "scenario": "Pass parsed cookie values to middleware that validates or uses them."
+    "title": "Inspect request cookies",
+    "scenario": "Check whether the client sent any cookies."
    }
   ],
   "related": [
    "req.signedCookies",
    "cookie-parser",
-   "req"
+   "req.body",
+   "req.query"
   ],
   "since": "",
+  "interview": [
+   {
+    "question": "What is req.cookies in Express?",
+    "answer": "req.cookies is an object created by cookie-parser. It contains cookies sent with the request, or an empty object when none were sent.",
+    "followUp": "How do you read a signed cookie? Read it from req.signedCookies, which contains signed cookies after verification."
+   },
+   {
+    "question": "How do you enable req.cookies?",
+    "answer": "Add cookie-parser as middleware before the route that reads cookies. Then access a cookie by its name, such as req.cookies.theme.",
+    "followUp": "What happens if the middleware is registered after the route? That route will not have the parsed cookie object available."
+   },
+   {
+    "question": "Where are signed cookies stored?",
+    "answer": "Signed cookies do not belong in req.cookies. Express puts them in req.signedCookies after cookie-parser verifies the signature.",
+    "followUp": "Does signing hide the cookie value? No. Signing helps detect tampering, but it does not encrypt or hide the value."
+   }
+  ],
   "keyPoints": [
-   "req.cookies is populated by cookie-parser with cookies received in the HTTP request.",
-   "The property is an empty object when the request contains no cookies.",
-   "Use req.signedCookies for signed cookies rather than reading them from req.cookies."
+   "The property is an object, and its keys are cookie names.",
+   "A request without cookies gives you an empty object.",
+   "Read one cookie with bracket or dot notation, such as req.cookies.name.",
+   "Signed cookies use a separate property."
   ],
   "gotchas": [
-   "Signed cookies are not read from req.cookies; use req.signedCookies instead.",
-   "Handle the empty object when a client sends no cookies."
+   "Use req.signedCookies for signed cookies instead of req.cookies.",
+   "req.cookies is available only when cookie-parser middleware is in use."
   ],
-  "checkedAt": "2026-10-15"
+  "checkedAt": "2026-11-03"
  },
  "req.fresh": {
   "sourceUrl": "https://expressjs.com/en/4x/api/request/",
@@ -3227,6 +3915,80 @@
    "`req` includes Node’s built-in request capabilities, so use `req.get()` specifically when you want Express’s header lookup helper."
   ],
   "checkedAt": "2026-10-15"
+ },
+ "req.headers": {
+  "sourceUrl": "https://expressjs.com/en/4x/api/request/",
+  "sourceTitle": "Request Object · Express.js 4.x",
+  "summary": "The Express `req` object represents an incoming HTTP request. It provides request data such as route parameters, query values, body data, headers, and access to the Express app.",
+  "explanation": "Express passes an enhanced Node.js request object to route handlers and middleware. Use its properties to read request data such as route parameters, query values, the parsed body, headers, and the application instance. The handler may use another parameter name, but `req` is the usual convention.",
+  "syntax": "app.METHOD(path, (req, res) => { /* use req */ });",
+  "parameters": [
+   {
+    "name": "req",
+    "type": "Express request object",
+    "description": "The incoming HTTP request passed to the handler or middleware."
+   },
+   {
+    "name": "route",
+    "type": "string",
+    "description": "The route pattern used by the handler, such as `/user/:id`."
+   }
+  ],
+  "returns": "The page describes the request object and its properties; it does not define a return value for `req` itself.",
+  "example": {
+   "title": "Read a route parameter",
+   "code": "app.get('/user/:id', (req, res) => {\n  res.send(`User ${req.params.id}`);\n});",
+   "language": "javascript",
+   "explanation": "The route reads the value matched by the `:id` path parameter from `req.params`."
+  },
+  "useCases": [
+   {
+    "title": "Read route parameters",
+    "scenario": "A route needs an ID or other value from its URL path."
+   },
+   {
+    "title": "Read parsed request data",
+    "scenario": "A handler needs data submitted by a client."
+   },
+   {
+    "title": "Access the application instance",
+    "scenario": "Middleware needs access to application-level Express features."
+   }
+  ],
+  "related": [
+   "req.app",
+   "req.body",
+   "req.files",
+   "req.params"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is the Express `req` object?",
+    "answer": "`req` is the request object passed to an Express handler. It extends Node's request object and adds Express properties such as route parameters and parsed request data.",
+    "followUp": "How can middleware access the Express application? Use `req.app`, which refers to the application instance using that middleware."
+   },
+   {
+    "question": "How do you read a route parameter?",
+    "answer": "`req.params` contains values captured from named route segments. For a route such as `/user/:id`, the value is available as `req.params.id`.",
+    "followUp": "What should a handler do if it needs request body data? It must use body-parsing middleware that populates `req.body`."
+   },
+   {
+    "question": "Must handlers name the request argument `req`?",
+    "answer": "The parameter name is a convention, not a requirement. A handler can call the arguments `request` and `response`, then read `request.params` in the same way.",
+    "followUp": "How does TypeScript describe these arguments? Import the `Request` and `Response` types from Express and use them as parameter types."
+   }
+  ],
+  "keyPoints": [
+   "Use `req` to access information sent with an HTTP request, including query data, route parameters, body data, and headers.",
+   "Express keeps the built-in Node.js request fields and methods and adds Express-specific request properties.",
+   "`req.app` gives middleware access to the Express application instance that is handling the request.",
+   "Request properties expose different parts of the incoming request, so choose the property that matches the data you need."
+  ],
+  "gotchas": [
+   "Do not expect `req.files` to exist automatically in Express 4. Use multipart-handling middleware when your route accepts uploaded files."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "req.hostname": {
   "sourceUrl": "https://expressjs.com/en/4x/api/request/",
@@ -3744,6 +4506,65 @@
   ],
   "checkedAt": "2026-10-15"
  },
+ "req.query": {
+  "sourceUrl": "https://expressjs.com/en/4x/api/request/",
+  "sourceTitle": "Request Object · Express.js",
+  "summary": "req.query contains values parsed from the request URL query string. Validate its keys and values because they come from the user and their shape depends on the configured query parser.",
+  "explanation": "Express exposes query-string values through req.query. The object is created by the configured query parser, or it is empty when query parsing is disabled. Because users control its contents and shape, validate values before using them.",
+  "syntax": "req.query",
+  "parameters": [],
+  "returns": "An object containing parsed query-string parameters, or an empty object when query parsing is disabled.",
+  "example": {
+   "title": "Read and validate query values",
+   "code": "app.get('/search', (req, res) => {\n  const page = req.query.page\n  const term = req.query.q\n\n  if (typeof page !== 'string' || typeof term !== 'string') {\n    return res.status(400).send('Invalid query')\n  }\n\n  res.json({ page: Number(page), term })\n})",
+   "language": "javascript",
+   "explanation": "This route reads q and page from the query string, checks their types, and returns parsed data."
+  },
+  "useCases": [
+   {
+    "title": "Handle query options",
+    "scenario": "Read filters, search terms, sorting options, or pagination values from a URL."
+   },
+   {
+    "title": "Validate URL input",
+    "scenario": "Apply type and presence checks before passing request values to application logic."
+   }
+  ],
+  "related": [
+   "req.params",
+   "req.body",
+   "query parser application setting"
+  ],
+  "since": "Express 4.x",
+  "interview": [
+   {
+    "question": "What is req.query used for?",
+    "answer": "req.query is an object containing the parsed query-string parameters. For example, a request to /search?q=test exposes the value through req.query.q.",
+    "followUp": "What happens if query parsing is disabled? req.query is an empty object."
+   },
+   {
+    "question": "Why must req.query be validated?",
+    "answer": "Its contents come from user-controlled input, so both keys and values must be validated before use. A value may be absent, have an unexpected type, or contain another user-provided value.",
+    "followUp": "Why can req.query.foo.toString() be unsafe? foo may be missing, non-string, or have a toString property that is not a function."
+   },
+   {
+    "question": "How is req.query created in Express 5?",
+    "answer": "Express uses the configured query parser to create req.query. In Express 5, the default parser changed from extended to simple, and req.query is exposed as a getter rather than a writable property.",
+    "followUp": "How can an application change parsing behavior? Set the query parser application setting to a function or another supported configuration."
+   }
+  ],
+  "keyPoints": [
+   "Each query-string parameter is represented as a property on req.query.",
+   "Disabling the query parser makes req.query an empty object.",
+   "With parsing enabled, Express returns the configured parser's result.",
+   "Express 5 uses the simple parser by default instead of the extended parser used before."
+  ],
+  "gotchas": [
+   "Treat every key and value as untrusted input. Check its type and presence before using it.",
+   "The exact object shape depends on the query parser setting, so do not assume one fixed parsing behavior."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "req.range": {
   "sourceUrl": "https://expressjs.com/en/4x/api/request/",
   "sourceTitle": "Request Object - Express.js 4.x",
@@ -3825,6 +4646,82 @@
    "A -1 result means the requested range cannot be satisfied and commonly needs a 416 response."
   ],
   "checkedAt": "2026-10-15"
+ },
+ "req.secure": {
+  "sourceUrl": "https://expressjs.com/en/resources/middleware/session/",
+  "sourceTitle": "session middleware · Express.js",
+  "summary": "express-session adds server-side sessions to an Express app. The browser receives a cookie containing the session ID, while the session data stays on the server.",
+  "explanation": "The middleware reads a session ID from a cookie and uses it to access session data stored on the server. Changes to req.session can be saved by the configured session store. The cookie holds the ID, not the session data.",
+  "syntax": "session(options)",
+  "parameters": [
+   {
+    "name": "options",
+    "type": "object",
+    "description": "An options object that configures the session middleware, including cookie, secret, name, proxy, resave, and session ID generation settings."
+   }
+  ],
+  "returns": "A session middleware function.",
+  "example": {
+   "title": "Count visits with a session",
+   "code": "const express = require('express');\nconst session = require('express-session');\n\nconst app = express();\napp.use(session({\n  secret: process.env.SESSION_SECRET || 'development-secret',\n  resave: false,\n  saveUninitialized: false,\n  cookie: { httpOnly: true, secure: false, maxAge: 60000 }\n}));\n\napp.get('/visit', (req, res) => {\n  req.session.views = (req.session.views || 0) + 1;\n  res.json({ views: req.session.views });\n});\n\napp.listen(3000);",
+   "language": "javascript",
+   "explanation": "This middleware creates a server-side session. The route stores a visit count in the session and returns it."
+  },
+  "useCases": [
+   {
+    "title": "User sessions",
+    "scenario": "Keep a signed-in user's server-side state between requests."
+   },
+   {
+    "title": "Temporary request state",
+    "scenario": "Store a short-lived visit count or cart identifier for one browser."
+   },
+   {
+    "title": "Multi-process applications",
+    "scenario": "Share session state across several application processes with a compatible external store."
+   }
+  ],
+  "related": [
+   "cookie",
+   "cookie.maxAge",
+   "cookie.httpOnly",
+   "cookie.secure",
+   "cookie.sameSite",
+   "genid",
+   "name",
+   "proxy"
+  ],
+  "since": "1.5.0",
+  "interview": [
+   {
+    "question": "Where is session data stored?",
+    "answer": "express-session creates middleware that manages a session for each request. The session data stays on the server, while the cookie contains only the session ID.",
+    "followUp": "What should store the session data in production? Use a compatible external session store instead of the default MemoryStore."
+   },
+   {
+    "question": "What does resave do?",
+    "answer": "resave controls whether the session is saved again when it was not changed during the request. Its effect depends on the session store.",
+    "followUp": "Why can resave cause problems? Repeated saves can create unnecessary store writes and may cause races when parallel requests update one session."
+   },
+   {
+    "question": "When should cookie.secure be enabled?",
+    "answer": "cookie.secure adds the Secure cookie attribute. Browsers then send the cookie only over HTTPS, so the cookie is not set or returned over plain HTTP.",
+    "followUp": "What is needed behind a reverse proxy? Configure the Express trust proxy setting so secure connection information from the proxy can be used."
+   }
+  ],
+  "keyPoints": [
+   "The browser stores only the session ID. The session data remains on the server.",
+   "The default session cookie name is connect.sid. Use name to avoid collisions between apps on one hostname.",
+   "The default cookie settings use the root path, enable HttpOnly, disable Secure, and set no maximum age.",
+   "The proxy option is undefined by default. In that state, Express's trust proxy setting determines proxy trust.",
+   "Setting sameSite to true produces a Strict cookie policy. Other supported values include lax, none, strict, and auto."
+  ],
+  "gotchas": [
+   "Do not use the default MemoryStore in production. It can leak memory and does not work across multiple processes.",
+   "Secure cookies require HTTPS. If the app is behind a proxy, configure Express trust proxy so the connection is detected correctly.",
+   "A custom genid function must return unique session IDs."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "req.signedCookies": {
   "sourceUrl": "https://expressjs.com/en/4x/api/request/",
@@ -4157,6 +5054,78 @@
   ],
   "checkedAt": "2026-10-15"
  },
+ "RequestHandler": {
+  "sourceUrl": "https://expressjs.com/en/api/express/",
+  "sourceTitle": "Express Object · Express.js",
+  "summary": "express.json() creates middleware that parses JSON request bodies. The parsed data is available as req.body for later handlers.",
+  "explanation": "express.json() returns middleware that parses requests containing JSON data. After parsing, the resulting object is available through req.body. The options can set the character encoding, compressed-body handling, and maximum body size.",
+  "syntax": "express.json(options)",
+  "parameters": [
+   {
+    "name": "options",
+    "type": "Object | undefined",
+    "description": "Optional settings for JSON parsing, including defaultCharset, inflate, and limit."
+   }
+  ],
+  "returns": "Middleware function that parses JSON request bodies.",
+  "example": {
+   "title": "Parse JSON request bodies",
+   "code": "import express from \"express\";\n\nconst app = express();\napp.use(express.json({ limit: \"1mb\" }));\n\napp.post(\"/users\", (req, res) => {\n  res.json({ received: req.body });\n});\n\napp.listen(3000);",
+   "language": "typescript",
+   "explanation": "This server parses JSON request bodies up to 1 MB, then reads the parsed value from req.body."
+  },
+  "useCases": [
+   {
+    "title": "Parse API input",
+    "scenario": "An API receives JSON data in POST or PUT requests."
+   },
+   {
+    "title": "Limit request size",
+    "scenario": "A service must reject unusually large JSON payloads."
+   },
+   {
+    "title": "Handle compressed bodies",
+    "scenario": "A server accepts compressed JSON requests."
+   }
+  ],
+  "related": [
+   "express()",
+   "req.body",
+   "express.urlencoded()",
+   "express.raw()",
+   "express.text()"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does express.json() do?",
+    "answer": "express.json() creates middleware for parsing JSON request bodies. The parsed value is then available as req.body in later handlers.",
+    "followUp": "What option limits input size? The limit option controls the maximum request body size, and its default is 100kb."
+   },
+   {
+    "question": "How can you restrict JSON request size?",
+    "answer": "The limit option sets the largest request body that the parser accepts. It can be a number or a size string, such as \"1mb\".",
+    "followUp": "What happens when a request exceeds the limit? The parser rejects the request instead of passing the oversized body to the route handler."
+   },
+   {
+    "question": "What does the inflate option control?",
+    "answer": "The inflate option controls compressed request bodies. It defaults to true, so deflated bodies are handled unless this behavior is disabled.",
+    "followUp": "How can the default character set be changed? Set defaultCharset to the desired character set when the Content-Type header does not specify one."
+   }
+  ],
+  "keyPoints": [
+   "Pass an options object to control JSON parsing behavior.",
+   "The default character set is UTF-8 when the request does not specify a charset.",
+   "inflate defaults to true and controls whether compressed bodies are accepted.",
+   "limit accepts a number or string and defaults to 100kb."
+  ],
+  "gotchas": [
+   "req.body depends on a body parser middleware. Without suitable middleware, the body is not parsed into req.body.",
+   "The default size limit is 100kb. Increase it only when larger JSON requests are expected.",
+   "If inflate is disabled, compressed request bodies are rejected."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "res.app": {
   "sourceUrl": "https://expressjs.com/en/api/response/",
   "sourceTitle": "Response",
@@ -4294,6 +5263,70 @@
    "Do not call res.set() afterward if you need to preserve the values appended by this method."
   ],
   "checkedAt": "2026-10-15"
+ },
+ "res.attachment": {
+  "sourceUrl": "https://expressjs.com/en/5x/api/response/",
+  "sourceTitle": "Response · Express.js 5.x",
+  "summary": "res.attachment() marks an HTTP response as a file attachment. An optional filename sets the download name and the Content-Type from its extension.",
+  "explanation": "Call res.attachment() to mark the response for download. If you provide a filename, Express uses its extension to set Content-Type and includes the filename in Content-Disposition.",
+  "syntax": "res.attachment([filename])",
+  "parameters": [
+   {
+    "name": "filename",
+    "type": "String | undefined",
+    "description": "Optional filename used for the Content-Disposition filename and the Content-Type."
+   }
+  ],
+  "returns": "Response",
+  "example": {
+   "title": "Send a PDF attachment",
+   "code": "app.get('/download', (req, res) => {\n  res.attachment('report.pdf')\n  res.send('The report is ready')\n})",
+   "language": "javascript",
+   "explanation": "This route marks the response as a file attachment and sets the type from the .pdf extension."
+  },
+  "useCases": [
+   {
+    "title": "Download a report",
+    "scenario": "A route returns a generated report that the browser should download."
+   },
+   {
+    "title": "Set a download filename",
+    "scenario": "An endpoint sends an image or document as an attachment with a chosen name."
+   }
+  ],
+  "related": [
+   "res.type()",
+   "res.download()",
+   "res.set()"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does res.attachment() do?",
+    "answer": "res.attachment() sets Content-Disposition to attachment. With a filename, it also sets the filename parameter and chooses Content-Type from the filename extension.",
+    "followUp": "What happens without a filename? It still sets Content-Disposition to attachment, but it does not have a filename parameter supplied by this call."
+   },
+   {
+    "question": "How does the filename affect the response?",
+    "answer": "The filename argument is a string or undefined. Express uses the filename extension through res.type() to determine the Content-Type.",
+    "followUp": "Why can the extension matter? The extension controls the media type Express assigns to the response."
+   },
+   {
+    "question": "What headers can this method set?",
+    "answer": "Calling res.attachment('path/to/logo.png') produces an attachment disposition with logo.png as the filename and image/png as the Content-Type.",
+    "followUp": "What header tells the browser to treat the response as a download? Content-Disposition with the attachment value."
+   }
+  ],
+  "keyPoints": [
+   "It tells the client to handle the response as an attachment.",
+   "A supplied filename becomes the download name.",
+   "The filename extension is used to choose the media type.",
+   "A path can be used as the filename input; the final name is logo.png."
+  ],
+  "gotchas": [
+   "A filename affects both the download name and the response Content-Type."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "res.clearCookie": {
   "sourceUrl": "https://expressjs.com/en/4x/api/response/",
@@ -4621,6 +5654,78 @@
    "Its behavior is provided by Node.js’s HTTP response implementation, so its lower-level semantics apply."
   ],
   "checkedAt": "2026-10-15"
+ },
+ "res.format": {
+  "sourceUrl": "https://expressjs.com/en/5x/api/response/",
+  "sourceTitle": "Response · Express.js",
+  "summary": "res.format() selects a response handler by comparing the request's Accept header with the formats you provide. It sends 406 for no match unless you define a default handler.",
+  "explanation": "res.format() checks the request's Accept header and runs the handler for the best matching type. It sets Content-Type for the selected handler. If there is no match, it sends 406 unless a default handler is provided.",
+  "syntax": "res.format(object)",
+  "parameters": [
+   {
+    "name": "object",
+    "type": "Object",
+    "description": "An object mapping MIME types or extension names to handler functions. It may also include a default handler."
+   }
+  ],
+  "returns": "Response",
+  "example": {
+   "title": "Choose a response format",
+   "code": "app.get('/data', (req, res) => {\n  res.format({\n    'text/plain'() {\n      res.send('hey')\n    },\n    'application/json'() {\n      res.json({ message: 'hey' })\n    },\n    default() {\n      res.status(406).send('Not Acceptable')\n    }\n  })\n})",
+   "language": "javascript",
+   "explanation": "The handler chooses a response format from the request's Accept header."
+  },
+  "useCases": [
+   {
+    "title": "Offer multiple response formats",
+    "scenario": "An endpoint supports both JSON and plain text."
+   },
+   {
+    "title": "Return a controlled fallback",
+    "scenario": "A client requests an unsupported media type."
+   },
+   {
+    "title": "Use extension aliases",
+    "scenario": "An API uses short format names instead of full MIME types."
+   }
+  ],
+  "related": [
+   "req.accepts()",
+   "res.send()",
+   "res.json()",
+   "res.set()",
+   "res.type()"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does res.format() do?",
+    "answer": "It performs content negotiation using the request's Accept header. The object maps MIME types or extension names to handler functions.",
+    "followUp": "What happens when the client sends an unsupported type? Express sends 406, unless the object has a default handler."
+   },
+   {
+    "question": "How is the response sent after a format is selected?",
+    "answer": "The selected handler receives no special format argument. It sends the response, such as with res.send() or res.json(). Express sets Content-Type when it selects the handler.",
+    "followUp": "Can the handler override Content-Type? Yes. It can call methods such as res.set() or res.type()."
+   },
+   {
+    "question": "What happens when Accept is missing or has no match?",
+    "answer": "If the Accept header is missing, Express invokes the first callback. If no handler matches, Express sends 406 or runs default().",
+    "followUp": "Why use default()? It lets the application log the request or return a custom response for unsupported formats."
+   }
+  ],
+  "keyPoints": [
+   "The method uses the request's Accept header to choose a response handler.",
+   "Acceptable types are considered in quality-value order.",
+   "Pass an object that maps MIME types or extensions to functions.",
+   "When the client sends no Accept header, the first handler runs.",
+   "Short extension names such as text, html, and json are supported."
+  ],
+  "gotchas": [
+   "Without a default handler, an unmatched Accept header produces a 406 response.",
+   "Express sets Content-Type for the selected handler, but the handler can change it."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "res.get": {
   "sourceUrl": "https://expressjs.com/en/4x/api/response/",
@@ -5111,6 +6216,81 @@
    "The back value depends on the incoming Referer header and therefore may resolve differently for different requests."
   ],
   "checkedAt": "2026-10-15"
+ },
+ "res.redirect": {
+  "sourceUrl": "https://expressjs.com/en/4x/api/response/",
+  "sourceTitle": "Response · Express.js 4.x",
+  "summary": "res.redirect() sends the client to another URL. It uses 302 Found by default, or a status code that you provide.",
+  "explanation": "Call res.redirect() to send the client to another URL. You can provide an HTTP status first; when you omit it, Express uses 302 Found. The destination may be an absolute URL or a path relative to the host or current URL.",
+  "syntax": "res.redirect([status], path)",
+  "parameters": [
+   {
+    "name": "status",
+    "type": "Number | undefined",
+    "description": "HTTP status code. It defaults to 302 Found when omitted."
+   },
+   {
+    "name": "path",
+    "type": "String",
+    "description": "The URL or path to which the client is redirected."
+   }
+  ],
+  "returns": "Response",
+  "example": {
+   "title": "Redirect a request",
+   "code": "app.get('/login', (req, res) => {\n  res.redirect(302, '/dashboard');\n});",
+   "language": "javascript",
+   "explanation": "This sends a temporary redirect to the dashboard."
+  },
+  "useCases": [
+   {
+    "title": "Permanent route redirect",
+    "scenario": "A route has moved permanently to a new path."
+   },
+   {
+    "title": "Post-submit navigation",
+    "scenario": "A user must move from a form submission to a result page."
+   },
+   {
+    "title": "External-site redirect",
+    "scenario": "The application sends a client to a different site."
+   }
+  ],
+  "related": [
+   "res.location()",
+   "res.send()",
+   "req.get()"
+  ],
+  "since": "4.6.0",
+  "interview": [
+   {
+    "question": "What does res.redirect() do, and what status does it use by default?",
+    "answer": "res.redirect() sends a redirect response. Its default status is 302 Found, and you can pass a status code followed by the destination path.",
+    "followUp": "How would you send a permanent redirect to another site? Use res.redirect(301, 'https://example.com')."
+   },
+   {
+    "question": "How do absolute, root-relative, and path-relative destinations differ?",
+    "answer": "A destination beginning with / is relative to the host root. A destination such as ../login is relative to the current URL path.",
+    "followUp": "What should be checked before redirecting to a user-provided URL? Validate or restrict the destination to prevent an open redirect."
+   },
+   {
+    "question": "What argument order should new code use?",
+    "answer": "The supported argument order is res.redirect(status, path). The path-first form is deprecated.",
+    "followUp": "What status is used when the status argument is omitted? Express uses 302 Found."
+   }
+  ],
+  "keyPoints": [
+   "The method derives the destination URL from the path and sends the chosen positive HTTP status code.",
+   "If you omit the status, the response uses 302 Found.",
+   "A fully qualified URL can send the client to a different site.",
+   "A path starting with / is resolved from the host name root.",
+   "A path without a leading slash can be resolved relative to the current URL."
+  ],
+  "gotchas": [
+   "Put the status code before the destination. The older order, with the path first, is deprecated.",
+   "Do not use untrusted input as a redirect destination without validating it. An attacker may create an open redirect."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "res.send": {
   "sourceUrl": "https://expressjs.com/en/4x/api/response/",
@@ -5683,6 +6863,160 @@
   "gotchas": [],
   "checkedAt": "2026-10-15"
  },
+ "res.vary": {
+  "sourceUrl": "https://expressjs.com/en/5x/api/response/",
+  "sourceTitle": "Response · Express.js 5.x",
+  "summary": "res.vary(field) adds a field to the HTTP Vary response header when it is not already present. It returns the response object.",
+  "explanation": "Call res.vary(field) to add a field to the response's Vary header. If the field is already present, Express does not add it again. The method returns the response object, so another response method can follow it.",
+  "syntax": "res.vary(field)",
+  "parameters": [
+   {
+    "name": "field",
+    "type": "String",
+    "description": "The name of the header field to add to the Vary response header."
+   }
+  ],
+  "returns": "The Response object.",
+  "example": {
+   "title": "Add a response variation",
+   "code": "app.get('/profile', (req, res) => {\n  res.vary('User-Agent')\n  res.render('profile')\n})",
+   "language": "javascript",
+   "explanation": "This adds User-Agent to the Vary response header when needed, then renders the profile view."
+  },
+  "useCases": [
+   {
+    "title": "Describe response variation",
+    "scenario": "A response changes based on a request header, such as User-Agent."
+   },
+   {
+    "title": "Set Vary before rendering",
+    "scenario": "A route renders a view after setting cache variation information."
+   }
+  ],
+  "related": [
+   "res.render()",
+   "Vary response header",
+   "Response"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does res.vary() do?",
+    "answer": "res.vary(field) adds the given field to the Vary response header. It avoids adding the field when that field is already present.",
+    "followUp": "Why might a response use Vary? It tells caches that the response can differ based on the named request header."
+   },
+   {
+    "question": "What are the argument and return value of res.vary()?",
+    "answer": "The method takes one string argument: the response-header field name to add. It returns the Response object.",
+    "followUp": "What does the returned object allow? It allows another response method to be called in the same expression."
+   },
+   {
+    "question": "How can res.vary() be used before rendering a view?",
+    "answer": "This example adds User-Agent to Vary and then calls res.render('docs'). The field name is passed as a string.",
+    "followUp": "How would you add another field? Call res.vary() again with that field name, unless it is already present."
+   }
+  ],
+  "keyPoints": [
+   "Pass the name of the request-header field that can affect the response.",
+   "Express keeps the Vary header from containing the same field more than once.",
+   "You can call another response method after res.vary()."
+  ],
+  "gotchas": [
+   "The field is not added again when it already appears in the Vary header."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "Response": {
+  "sourceUrl": "https://expressjs.com/en/4x/api/response/",
+  "sourceTitle": "Response · Express.js 4.x",
+  "summary": "The Express res object represents the HTTP response sent by an app. It extends Node's response object and provides methods for headers, cookies, status codes, response bodies, files, redirects, and templates.",
+  "explanation": "Express provides res to a route handler. It extends Node's response object and lets the handler set headers, cookies, status codes, and response bodies. Methods such as send, json, end, and redirect finish or control the response. The object name can be changed; request and response are also valid names.",
+  "syntax": "app.METHOD(path, (req, res) => { /* use res */ });",
+  "parameters": [
+   {
+    "name": "res",
+    "type": "Response",
+    "description": "Route callback parameters include the incoming request and Express response object."
+   },
+   {
+    "name": "field",
+    "type": "String",
+    "description": "For res.append, the response header name."
+   },
+   {
+    "name": "value",
+    "type": "String | String[] | undefined",
+    "description": "For res.append, the value or values to add."
+   }
+  ],
+  "returns": "Most documented response methods return Response for chaining. res.end() ends the response and does not return a response body.",
+  "example": {
+   "title": "Send a response",
+   "code": "app.get('/hello', (req, res) => {\n  res.status(200).send('Hello');\n});",
+   "language": "javascript",
+   "explanation": "This route sends a text response with status code 200."
+  },
+  "useCases": [
+   {
+    "title": "Send response data",
+    "scenario": "Return text, JSON, or a buffer from a route."
+   },
+   {
+    "title": "Control response metadata",
+    "scenario": "Set cookies or response headers before sending data."
+   },
+   {
+    "title": "Negotiate a format",
+    "scenario": "Choose HTML, plain text, or JSON from the client's Accept header."
+   },
+   {
+    "title": "Transfer or redirect",
+    "scenario": "Send a file or redirect the client to another URL."
+   }
+  ],
+  "related": [
+   "res.app",
+   "res.headersSent",
+   "res.locals",
+   "res.req",
+   "res.append()",
+   "res.cookie()",
+   "res.end()",
+   "res.format()"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is res in an Express route?",
+    "answer": "res is Express's enhanced HTTP response object. It includes Node response features and Express methods for sending data, setting headers, and controlling status codes.",
+    "followUp": "How can you tell whether headers were already sent? Check res.headersSent before attempting another response."
+   },
+   {
+    "question": "How do res.locals and app.locals differ?",
+    "answer": "res.locals stores values for templates during one request-response cycle. Those values are not shared between requests; use app.locals for values kept across requests.",
+    "followUp": "What is a safe use for res.locals? Store request-specific values such as an authenticated user, while avoiding user-controlled object keys."
+   },
+   {
+    "question": "How does res.format choose a response?",
+    "answer": "res.format selects a handler using the request's Accept header. It sets Content-Type for the selected handler; without a match it sends 406 or runs default.",
+    "followUp": "What happens when Accept is missing? Express calls the first handler in the format object."
+   }
+  ],
+  "keyPoints": [
+   "res contains Express features plus Node's built-in response fields and methods.",
+   "res.app points to the Express application that handles the request.",
+   "res.headersSent tells you whether response headers have already been sent.",
+   "Values in res.locals are available to templates only during the current request.",
+   "res.append adds a value to a response header and creates the header if needed.",
+   "res.format chooses a response handler based on the client's Accept header."
+  ],
+  "gotchas": [
+   "Do not put user-controlled keys in res.locals. A view engine may treat them as code or expose a cross-site scripting risk.",
+   "When res.download uses a callback, handle errors yourself. The response may already be partly sent, so check res.headersSent.",
+   "Use the same cookie options when clearing a cookie, except for expires and maxAge. Avoid passing those two options to res.clearCookie."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "Router": {
   "sourceUrl": "https://expressjs.com/en/4x/api/router/",
   "sourceTitle": "Router - Express.js",
@@ -5919,6 +7253,107 @@
   ],
   "checkedAt": "2026-10-15"
  },
+ "session": {
+  "sourceUrl": "https://expressjs.com/en/resources/middleware/session/",
+  "sourceTitle": "session middleware · Express.js",
+  "summary": "express-session adds server-side sessions to Express. The browser stores only a signed session ID; session data stays in a server-side store.",
+  "explanation": "express-session adds session support to Express. It stores session data on the server and uses a signed session ID cookie to find that data. The middleware can create, load, save, regenerate, reload, and destroy sessions through req.session.",
+  "syntax": "session(options)",
+  "parameters": [
+   {
+    "name": "options",
+    "type": "object",
+    "description": "Middleware configuration object. Important options include cookie, genid, name, resave, rolling, saveUninitialized, secret, store, and unset."
+   },
+   {
+    "name": "options.cookie",
+    "type": "object",
+    "description": "Cookie settings such as path, secure, maxAge, httpOnly, sameSite, and priority."
+   },
+   {
+    "name": "options.secret",
+    "type": "string | Buffer | Array<string | Buffer>",
+    "description": "Secret or ordered array of secrets used to sign and verify the session ID cookie."
+   },
+   {
+    "name": "options.store",
+    "type": "object",
+    "description": "Session store instance. The default is MemoryStore, intended for debugging and development."
+   },
+   {
+    "name": "callback",
+    "type": "function",
+    "description": "Callback invoked after a session is regenerated, destroyed, reloaded, or saved."
+   }
+  ],
+  "returns": "A session middleware function for Express.",
+  "example": {
+   "title": "Server-side session counter",
+   "code": "const express = require('express');\nconst session = require('express-session');\n\nconst app = express();\napp.use(session({\n  name: 'sessionId',\n  secret: process.env.SESSION_SECRET,\n  resave: false,\n  saveUninitialized: false,\n  cookie: { secure: false, maxAge: 60000 }\n}));\n\napp.get('/', (req, res) => {\n  req.session.views = (req.session.views || 0) + 1;\n  res.send(`Views: ${req.session.views}`);\n});\n\napp.listen(3000);",
+   "language": "javascript",
+   "explanation": "This middleware stores session data on the server and sends the session ID in a cookie. The route updates a per-user counter."
+  },
+  "useCases": [
+   {
+    "title": "Per-user request state",
+    "scenario": "Track data for one user across requests, such as a view count or login state."
+   },
+   {
+    "title": "Session regeneration",
+    "scenario": "Create a fresh session after authentication to replace the old session ID."
+   },
+   {
+    "title": "Session destruction",
+    "scenario": "Expire or remove a user's stored session during logout."
+   },
+   {
+    "title": "Scalable session storage",
+    "scenario": "Support multiple application instances with shared session data."
+   }
+  ],
+  "related": [
+   "req.session",
+   "req.session.id",
+   "req.session.regenerate()",
+   "req.session.destroy()",
+   "req.session.reload()",
+   "req.session.save()",
+   "req.session.touch()",
+   "cookie-session"
+  ],
+  "since": "1.5.0",
+  "interview": [
+   {
+    "question": "Where is session data stored?",
+    "answer": "express-session keeps the session data on the server. The browser receives only a signed session ID cookie, which the middleware uses to load the data for later requests.",
+    "followUp": "What is the main alternative? cookie-session stores the complete session in the cookie, so the data is visible to the client and must stay small."
+   },
+   {
+    "question": "What does resave control?",
+    "answer": "resave saves a session even when the request did not change it. false is usually preferred, but a store without touch support may require true when it manages expiration dates.",
+    "followUp": "Why can resave cause problems? Parallel requests can overwrite changes made by another request, depending on the store."
+   },
+   {
+    "question": "What does saveUninitialized do?",
+    "answer": "saveUninitialized controls whether a new, unchanged session is saved. false can reduce storage, avoid unnecessary cookies, and help when consent is required before setting a cookie.",
+    "followUp": "When can a session still be saved with false? Middleware such as Passport may modify a new session, making it initialized."
+   }
+  ],
+  "keyPoints": [
+   "The cookie contains the session ID, while the session data remains on the server.",
+   "Read and write application data through req.session. Stores generally serialize it as JSON, so nested objects usually work.",
+   "secret signs the session ID cookie. Use a hard-to-guess value with at least 32 bytes of entropy.",
+   "An array supports rotation: the first secret signs new cookies, while all listed secrets can verify incoming cookies.",
+   "Sessions normally save automatically when changed. Explicit save is mainly useful before redirects, for long requests, or with WebSockets.",
+   "regenerate creates a new session ID and session object, which is useful when changing authentication state."
+  ],
+  "gotchas": [
+   "Do not use the default MemoryStore in production. It can leak memory and does not work across multiple processes. Choose a compatible session store.",
+   "A secure cookie requires HTTPS. When Express runs behind a proxy, configure trust proxy so the connection security is detected correctly.",
+   "Changing one secret logs out every existing session. To rotate secrets without doing that, put the new secret first and old secrets after it."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "static": {
   "sourceUrl": "https://expressjs.com/en/4x/api/express/",
   "sourceTitle": "Express Object · Express.js 4.x",
@@ -6148,6 +7583,77 @@
   ],
   "checkedAt": "2026-10-15"
  },
+ "urlencoded": {
+  "sourceUrl": "https://expressjs.com/en/api/express/",
+  "sourceTitle": "Express Object · Express.js",
+  "summary": "express.urlencoded() creates middleware that parses matching URL-encoded request bodies and puts the result in req.body. Use extended: true for nested objects and arrays; validate all parsed values.",
+  "explanation": "Call express.urlencoded() to create middleware for URL-encoded request bodies. The middleware checks the Content-Type header, parses matching UTF-8 data, and assigns the result to req.body. Set extended to true for nested objects and arrays; validate the resulting values because clients control them.",
+  "syntax": "express.urlencoded([options])",
+  "parameters": [
+   {
+    "name": "options",
+    "type": "Object | undefined",
+    "description": "Optional settings for parsing URL-encoded request bodies, including extended, inflate, limit, parameterLimit, type, verify, charset, and depth."
+   }
+  ],
+  "returns": "Function. Built-in middleware that parses matching URL-encoded request bodies and populates req.body.",
+  "example": {
+   "title": "Parse URL-encoded form data",
+   "code": "const express = require('express');\nconst app = express();\n\napp.use(express.urlencoded({ extended: true }));\n\napp.post('/profile', (req, res) => {\n  const name = req.body?.user?.name;\n  if (typeof name !== 'string') {\n    return res.status(400).send('Invalid name');\n  }\n  res.json({ name });\n});\n\napp.listen(3000);",
+   "language": "javascript",
+   "explanation": "This parses URL-encoded form data and lets nested fields such as user[name] become objects."
+  },
+  "useCases": [
+   {
+    "title": "Parse standard form submissions",
+    "scenario": "An HTML form submits fields with application/x-www-form-urlencoded."
+   },
+   {
+    "title": "Read nested form fields",
+    "scenario": "A form encodes fields such as user[name] and needs nested data."
+   }
+  ],
+  "related": [
+   "express",
+   "express.json()",
+   "express.text()",
+   "req.body",
+   "body-parser",
+   "qs"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does express.urlencoded() do?",
+    "answer": "express.urlencoded() returns built-in middleware for URL-encoded request bodies. It only parses requests whose Content-Type matches the configured type, then places the parsed result in req.body.",
+    "followUp": "How would you restrict parsing to one route? Add express.urlencoded({ extended: true }) as middleware on that route instead of registering it globally."
+   },
+   {
+    "question": "What is the effect of the extended option?",
+    "answer": "extended: false uses the querystring parser, so fields such as user[name] remain a flat key. extended: true uses qs and can create nested objects and arrays.",
+    "followUp": "What should guide the choice? Use false for simple forms and true only when nested form data is required; also keep depth limited."
+   },
+   {
+    "question": "Which options help limit URL-encoded input?",
+    "answer": "limit sets the maximum body size and defaults to 100kb. parameterLimit sets the maximum number of URL-encoded parameters and defaults to 1000.",
+    "followUp": "What happens when parameterLimit is exceeded? The parser raises an error, typically resulting in an HTTP 413 response."
+   }
+  ],
+  "keyPoints": [
+   "The returned middleware parses only URL-encoded requests whose Content-Type matches type.",
+   "Set extended to true when forms need nested objects or arrays.",
+   "Parsed form data is available as req.body after the middleware runs.",
+   "Use limit to cap the request body size; its default is 100kb.",
+   "Use parameterLimit to cap how many form parameters a request may contain.",
+   "The type option can be a media-type string, an array of strings, or a request-based function."
+  ],
+  "gotchas": [
+   "Treat every property in req.body as untrusted input. Validate its type and value before using it.",
+   "The Express parser accepts UTF-8 form data and automatically inflates gzip and deflate bodies.",
+   "Requests with more parameters than parameterLimit fail. Keep the limit appropriate for the application."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "use": {
   "sourceUrl": "https://expressjs.com/en/4x/guide/using-middleware/",
   "sourceTitle": "Using middleware",
@@ -6218,6 +7724,90 @@
   ],
   "gotchas": [],
   "checkedAt": "2026-10-15"
+ },
+ "view engine": {
+  "sourceUrl": "https://expressjs.com/en/5x/guide/using-template-engines/",
+  "sourceTitle": "Using template engines with Express · Express.js 5.x",
+  "summary": "Configure a view directory and template engine, then use res.render() to turn a template and local values into an HTML response. Express can infer the template extension when the engine is configured.",
+  "explanation": "Express uses the configured view engine to find and render a template. Set the views directory and engine, then call res.render() with the view name and local values. The rendered HTML is sent to the client unless you provide a callback.",
+  "syntax": "res.render(view [, locals] [, callback])",
+  "parameters": [
+   {
+    "name": "view",
+    "type": "string",
+    "description": "The view file path or name. It may be absolute or relative to the views setting; the engine supplies the extension when omitted."
+   },
+   {
+    "name": "locals",
+    "type": "object",
+    "description": "Values exposed to the template during rendering."
+   },
+   {
+    "name": "callback",
+    "type": "function",
+    "description": "Optional callback receiving an error and rendered HTML. When used, the HTML must be sent explicitly."
+   }
+  ],
+  "returns": "Normally sends the rendered HTML response. With a callback, returns the rendering result through the callback and does not send it automatically.",
+  "example": {
+   "title": "Render a template",
+   "code": "app.set('view engine', 'pug');\napp.get('/', (req, res) => {\n  res.render('index', {\n    title: 'Home',\n    message: 'Hello there!'\n  });\n});",
+   "language": "javascript",
+   "explanation": "This selects Pug and renders index.pug from the views directory with two template values."
+  },
+  "useCases": [
+   {
+    "title": "Server-rendered pages",
+    "scenario": "Render HTML pages with dynamic titles, messages, or user data."
+   },
+   {
+    "title": "Request-level template data",
+    "scenario": "Share request-specific values, such as an authenticated user, with templates."
+   },
+   {
+    "title": "Manual response handling",
+    "scenario": "Return rendered HTML to custom response logic instead of sending it immediately."
+   }
+  ],
+  "related": [
+   "app.set()",
+   "res.locals",
+   "app.locals",
+   "res.send()",
+   "app.engine()"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you configure a template engine in Express?",
+    "answer": "Set the views directory with app.set('views', directory) and choose an engine with app.set('view engine', engine). Install the matching Express-compatible package. Express can then load the engine when res.render() is called.",
+    "followUp": "What happens if the view engine is not set? The view name must include the file extension so Express knows which engine to load."
+   },
+   {
+    "question": "What does res.render() do?",
+    "answer": "res.render(view, locals) renders the named view and sends the resulting HTML response. The view can be an absolute path or a path relative to the configured views directory.",
+    "followUp": "How can you obtain the HTML without an automatic response? Pass a callback; it receives the error and rendered HTML, which you must send explicitly."
+   },
+   {
+    "question": "What is the difference between res.locals and app.locals?",
+    "answer": "res.locals stores values available to templates during one request-response cycle. Those values are not shared between requests, so request-specific data such as the authenticated user can be exposed safely through it.",
+    "followUp": "How do you keep values for later requests? Use app.locals instead of res.locals."
+   }
+  ],
+  "keyPoints": [
+   "Set views to the directory containing your template files. By default, Express uses a views directory in the application root.",
+   "Set view engine to the engine name, such as pug.",
+   "With a configured engine, res.render('index') can find index.pug without the extension.",
+   "Use res.locals for values that templates need during the current request.",
+   "A render callback returns HTML to your code; it does not send the response automatically.",
+   "Express response methods, including res.render(), extend Node's response object."
+  ],
+  "gotchas": [
+   "Do not build the view name from user input. Express reads the file and can evaluate the template engine module.",
+   "Keep local variable keys under application control because view engines use them while rendering.",
+   "Do not assume development and production have the same view-cache behavior."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "views": {
   "sourceUrl": "https://expressjs.com/en/4x/api/application/",

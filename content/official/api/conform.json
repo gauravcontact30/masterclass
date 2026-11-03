@@ -67,6 +67,81 @@
   ],
   "checkedAt": "2026-10-15"
  },
+ "allErrors": {
+  "sourceUrl": "https://conform.guide/file-upload",
+  "sourceTitle": "Conform / File Upload",
+  "summary": "Conform file uploads use a POST form with multipart/form-data. Use a file input with field metadata, and add multiple for multiple files.",
+  "explanation": "File uploads use the normal useForm hook with a file input. The form must submit with POST and multipart/form-data. Validate the received File with the schema parser.",
+  "syntax": "const [form, fields] = useForm(options);",
+  "parameters": [
+   {
+    "name": "options",
+    "type": "object",
+    "description": "Options for configuring the form hook. All listed options are optional."
+   }
+  ],
+  "returns": "useForm returns form and fields metadata. The form metadata includes ids, errors, validity, dirty state, status, and form operation helpers.",
+  "example": {
+   "title": "Basic file upload",
+   "code": "const [form, fields] = useForm({\n  onValidate({ formData }) {\n    return parseWithZod(formData, { schema });\n  },\n});\n\nreturn (\n  <form method=\"POST\" encType=\"multipart/form-data\" id={form.id}>\n    <input type=\"file\" name={fields.profile.name} />\n    <div>{fields.profile.error}</div>\n    <button>Upload</button>\n  </form>\n);",
+   "language": "tsx",
+   "explanation": "This form sends a file as multipart data and uses the field metadata returned by useForm."
+  },
+  "useCases": [
+   {
+    "title": "Single file upload",
+    "scenario": "A profile page needs one uploaded profile file."
+   },
+   {
+    "title": "Multiple file upload",
+    "scenario": "A form accepts several files at once."
+   },
+   {
+    "title": "File validation",
+    "scenario": "Each selected file needs size or type validation."
+   }
+  ],
+  "related": [
+   "useForm",
+   "parseWithZod",
+   "allErrors",
+   "onValidate",
+   "fields.profile.name",
+   "fields.files.allErrors",
+   "multipart/form-data"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you configure a Conform file upload?",
+    "answer": "Set the form method to POST and encType to multipart/form-data. Give the file input the name from the field metadata.",
+    "followUp": "How would you validate the uploaded value? Use parseWithZod with a schema that checks the value as a File."
+   },
+   {
+    "question": "How do you support multiple files?",
+    "answer": "Add the multiple attribute to the file input. Define the schema value as an array of File values and add array-level or per-file checks.",
+    "followUp": "How can you show errors for every selected file? Read and flatten the field metadata's allErrors value."
+   },
+   {
+    "question": "What metadata does useForm provide for a file form?",
+    "answer": "The input name should come from fields.profile.name, and the validation result should be displayed from the field metadata. The form id comes from form.id.",
+    "followUp": "What does useForm provide besides ids and names? It also provides validation state, errors, submission state, and form operation intents."
+   }
+  ],
+  "keyPoints": [
+   "Create the file input like other Conform-controlled inputs, using the field metadata for its name.",
+   "Add multiple to the input when users can choose more than one file.",
+   "The allErrors metadata maps field names to arrays of validation messages.",
+   "Use onValidate to connect form data to a schema parser.",
+   "useForm disables the browser's default validation unless configured otherwise."
+  ],
+  "gotchas": [
+   "A file upload form needs both POST and multipart/form-data.",
+   "For multiple files, a field's error value may not contain every file error.",
+   "Use allErrors when the interface must show every error from every file."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "array fields": {
   "sourceUrl": "https://conform.guide/complex-structures",
   "sourceTitle": "Nested object and Array",
@@ -197,6 +272,175 @@
    "Use VALIDATION_UNDEFINED when the validation is not defined and should be handled by server validation."
   ],
   "checkedAt": "2026-10-15"
+ },
+ "constraint": {
+  "sourceUrl": "https://conform.guide/accessibility",
+  "sourceTitle": "Conform / Accessibility",
+  "summary": "Conform helps make forms accessible by generating IDs and providing helpers for native HTML elements. A schema can also supply browser validation attributes such as required, length limits, and patterns.",
+  "explanation": "The `constraint` option supplies browser validation attributes from a schema. With `getZodConstraint`, Conform derives values such as required, minLength, maxLength, and pattern for each field. The field metadata also provides generated IDs for labels, descriptions, and errors. Accessibility helpers can apply these attributes with less manual code.",
+  "syntax": "const [form, fields] = useForm(options);\ngetInputProps(field, options);\ngetZodConstraint(schema);\nparseWithZod(formData, { schema });",
+  "parameters": [
+   {
+    "name": "options",
+    "type": "UseFormOptions",
+    "description": "Form configuration, including an optional `constraint` and an `onValidate` callback."
+   },
+   {
+    "name": "schema",
+    "type": "Zod schema",
+    "description": "A Zod schema used to derive browser constraints."
+   },
+   {
+    "name": "field",
+    "type": "FieldMetadata",
+    "description": "Field metadata used by accessibility and input-property helpers."
+   }
+  ],
+  "returns": "useForm returns form metadata and field metadata. Accessibility helpers return props for native form elements. parseWithZod returns a submission result, whose reply method creates a response for invalid data.",
+  "example": {
+   "title": "Generate input attributes",
+   "code": "import { useForm } from \"@conform-to/react\";\nimport { getInputProps } from \"@conform-to/react\";\n\nexport function MessageForm() {\n  const [form, fields] = useForm();\n\n  return (\n    <form id={form.id}>\n      <input\n        {...getInputProps(fields.message, {\n          type: \"text\",\n          ariaDescribedBy: fields.message.descriptionId,\n        })}\n      />\n      <div id={fields.message.descriptionId}>\n        Enter a message\n      </div>\n      <button>Send</button>\n    </form>\n  );\n}",
+   "language": "tsx",
+   "explanation": "Use the field metadata with getInputProps to add the input attributes. The helper includes the field identity and accessibility-related attributes."
+  },
+  "useCases": [
+   {
+    "title": "Connect accessible field text",
+    "scenario": "A field has a label, help text, and an error message."
+   },
+   {
+    "title": "Derive native constraints",
+    "scenario": "A form uses Zod or Yup rules that should also appear in browser validation."
+   },
+   {
+    "title": "Build progressively enhanced lists",
+    "scenario": "A form contains dynamic task rows that users can add or remove."
+   },
+   {
+    "title": "Reduce attribute boilerplate",
+    "scenario": "A native form has many repeated accessibility attributes."
+   }
+  ],
+  "related": [
+   "useForm",
+   "getZodConstraint",
+   "parseWithZod",
+   "getFormProps",
+   "getFieldsetProps",
+   "getInputProps",
+   "getSelectProps",
+   "getTextareaProps"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How does Conform derive validation attributes?",
+    "answer": "The `constraint` option passes browser validation rules into the form. With `getZodConstraint(schema)`, field metadata can expose attributes such as `required`, `minLength`, `maxLength`, and `pattern`.",
+    "followUp": "How can a field expose server errors accessibly? Use the field metadata IDs with `aria-invalid` and `aria-describedby`, including the error ID when the field is invalid."
+   },
+   {
+    "question": "How does Conform support accessible field relationships?",
+    "answer": "Conform generates stable IDs in form and field metadata. These IDs can connect a label to an input and connect descriptions or errors through `aria-describedby`.",
+    "followUp": "What reduces the amount of manual attribute code? Use helpers such as `getInputProps`, passing options such as the input type and description ID."
+   },
+   {
+    "question": "How does server validation work?",
+    "answer": "Server validation reads `request.formData()`, parses it with `parseWithZod`, and returns `submission.reply()` when validation fails. This keeps validation logic on the server and works beyond only final submission.",
+    "followUp": "What is the trade-off for validating while typing? The server can validate that interaction, but network latency may affect responsiveness."
+   }
+  ],
+  "keyPoints": [
+   "Form and field metadata generate IDs that you can use for labels, descriptions, and error messages.",
+   "Native validation attributes give browsers and assistive technology more information about field requirements.",
+   "A Zod or Yup schema can provide field constraints instead of repeating those rules by hand in the markup.",
+   "Conform includes helpers for forms, fieldsets, inputs, selects, textareas, and collections.",
+   "Conform is designed so forms can continue to work with progressive enhancement.",
+   "Form values come from the DOM through the standard FormData API, rather than requiring a separate form state model."
+  ],
+  "gotchas": [
+   "The helpers target native HTML elements. Custom component libraries may already provide their own accessibility attributes, so avoid adding duplicate behavior without checking their APIs.",
+   "Server-side validation can run during typing, but round trips may make that mode slow. Choose a validation timing that fits the user experience."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "Constraint": {
+  "sourceUrl": "https://conform.guide/api/react/useForm",
+  "sourceTitle": "Conform / useForm",
+  "summary": "useForm is a React hook for enhancing HTML forms with Conform. It returns form and field metadata for values, validation, accessibility, and submission state.",
+  "explanation": "useForm returns form metadata and field metadata for a native HTML form. It can use initial values, server submission results, validation rules, and callbacks to manage validation and progressive enhancement. The form state includes values, errors, validity, dirtiness, and submission status.",
+  "syntax": "const [form, fields] = useForm(options);",
+  "parameters": [
+   {
+    "name": "options",
+    "type": "object",
+    "description": "Options used to configure the hook, including id, lastResult, defaultValue, constraint, validation triggers, callbacks, and defaultNoValidate."
+   }
+  ],
+  "returns": "A tuple containing form metadata and field metadata: [form, fields].",
+  "example": {
+   "title": "Use useForm with Zod validation",
+   "code": "const [form, fields] = useForm({\n  constraint: getZodConstraint(schema),\n  onValidate({ formData }) {\n    return parseWithZod(formData, { schema });\n  },\n});\n\nreturn (\n  <form id={form.id}>\n    <input\n      {...getInputProps(fields.message, { type: 'text' })}\n    />\n    <button>Send</button>\n  </form>\n);",
+   "language": "tsx",
+   "explanation": "This creates form and field metadata, validates submitted data with a Zod schema, and adds suitable input attributes."
+  },
+  "useCases": [
+   {
+    "title": "Server-backed forms",
+    "scenario": "Build a progressively enhanced form that works with server actions and can preserve submission results."
+   },
+   {
+    "title": "Accessible validation",
+    "scenario": "Connect schema validation to browser inputs and show errors with generated IDs and ARIA attributes."
+   },
+   {
+    "title": "Form state management",
+    "scenario": "Track values, validity, dirty state, and submission status in a React form."
+   }
+  ],
+  "related": [
+   "getInputProps",
+   "getZodConstraint",
+   "parseWithZod",
+   "onValidate",
+   "shouldValidate",
+   "shouldRevalidate",
+   "lastResult"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does useForm return?",
+    "answer": "useForm is a React hook that returns form metadata and field metadata. The form metadata supports state and form operations, while field metadata supplies names, IDs, values, and validation information.",
+    "followUp": "How can server results support progressive enhancement? Pass the last submission result through lastResult so it becomes the form's initial state."
+   },
+   {
+    "question": "How does custom validation work?",
+    "answer": "onValidate runs when the form needs client validation or revalidation. It receives FormData, which can be parsed with a validation library such as Zod.",
+    "followUp": "When does onValidate run relative to onSubmit? If onValidate is configured, onSubmit runs only after client validation succeeds."
+   },
+   {
+    "question": "How does useForm help accessibility?",
+    "answer": "The hook can generate or use a form ID and derive field IDs from it. This metadata supports labels, descriptions, errors, and ARIA attributes without requiring manually created identifiers.",
+    "followUp": "How can validation constraints reach native inputs? Supply constraint metadata, such as getZodConstraint(schema), then use the field constraint properties or an input helper."
+   }
+  ],
+  "keyPoints": [
+   "Call useForm in a React component to receive the metadata needed to connect a native HTML form to Conform.",
+   "The id option sets the form ID. Without it, Conform creates one and uses it when generating field IDs.",
+   "defaultValue supplies the form's starting data.",
+   "lastResult lets server submission results initialize the form state.",
+   "constraint provides native validation attributes for fields.",
+   "shouldValidate supports onSubmit, onBlur, and onInput as validation triggers.",
+   "form.value exposes the current complete form value.",
+   "form.dirty reports whether a field has received focus."
+  ],
+  "gotchas": [
+   "Validation starts on submission unless shouldValidate changes it to onBlur or onInput.",
+   "Revalidation uses the same trigger as initial validation unless shouldRevalidate is explicitly set.",
+   "The defaultNoValidate option controls browser constraint validation before React hydration.",
+   "Native-element helpers may be unnecessary when a custom component library already supplies the needed attributes."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "controlled inputs": {
   "sourceUrl": "https://conform.guide/api/react/useInputControl",
@@ -335,6 +579,77 @@
   ],
   "checkedAt": "2026-10-15"
  },
+ "defaultValue": {
+  "sourceUrl": "https://conform.guide/api/react/future/useForm",
+  "sourceTitle": "Conform / useForm",
+  "summary": "`defaultValue` sets the starting values for a Conform form. It accepts a partial form-shaped object or `URLSearchParams`.",
+  "explanation": "The `defaultValue` option supplies the form's starting values. It can be a partial object that matches the form structure or a URLSearchParams object. Field metadata exposes the starting value through `fields.<name>.defaultValue`, which you can pass to an input.",
+  "syntax": "useForm({ defaultValue: value })",
+  "parameters": [
+   {
+    "name": "defaultValue",
+    "type": "DefaultValue<FormShape> | URLSearchParams",
+    "description": "Initial form values. Accepts a partial object matching the form shape or a URLSearchParams object."
+   }
+  ],
+  "returns": "The option initializes form state; field metadata provides each field's default value.",
+  "example": {
+   "title": "Read a field's default value",
+   "code": "const [form, fields] = useForm({\n  defaultValue: { email: \"\" },\n});\n\nreturn (\n  <form id={form.id}>\n    <label htmlFor={fields.email.id}>Email</label>\n    <input\n      id={fields.email.id}\n      name={fields.email.name}\n      defaultValue={fields.email.defaultValue}\n    />\n  </form>\n);",
+   "language": "tsx",
+   "explanation": "Create a form and read the email field metadata from the returned fields object."
+  },
+  "useCases": [
+   {
+    "title": "Pre-fill fields with existing data",
+    "scenario": "Edit form"
+   },
+   {
+    "title": "Initialize values from URLSearchParams",
+    "scenario": "Search form"
+   },
+   {
+    "title": "Start a repeated field with initial items",
+    "scenario": "Dynamic list"
+   }
+  ],
+  "related": [
+   "useForm",
+   "fields.<name>.defaultValue",
+   "lastResult",
+   "key"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does `defaultValue` do in `useForm`?",
+    "answer": "`defaultValue` defines the form's initial values. It accepts either a partial object matching the form structure or a `URLSearchParams` object.",
+    "followUp": "How can a field use the configured initial value? Read `fields.<name>.defaultValue` and pass it to the field's `defaultValue` prop."
+   },
+   {
+    "question": "Does `defaultValue` represent the server's latest submission result?",
+    "answer": "No. The option is for initial form values. It is separate from `lastResult`, which synchronizes server-side submission results with form state.",
+    "followUp": "When would `lastResult` be useful? Use it when the server returns validation or submission state that the form should display."
+   },
+   {
+    "question": "What forms can the initial value take?",
+    "answer": "It may be a partial object, so you can provide only the initial values that matter for the form. It may also be supplied as `URLSearchParams`.",
+    "followUp": "What should be passed for nested or repeated data? Use a value structure that matches the form shape, then read the generated field metadata for each field."
+   }
+  ],
+  "keyPoints": [
+   "Use `defaultValue` to provide the form's starting data.",
+   "A partial object is valid, so you do not need to initialize every field.",
+   "`URLSearchParams` is another supported input for initial values.",
+   "Initial values can include structured data such as an array.",
+   "Pass a field's generated `defaultValue` to the matching HTML input."
+  ],
+  "gotchas": [
+   "The option sets initial values. It does not describe values submitted later.",
+   "Changing the form key resets the form, so avoid changing it unless a reset is intended."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "DefaultValue": {
   "sourceUrl": "https://conform.guide/api/react/future/useForm",
   "sourceTitle": "useForm",
@@ -464,6 +779,74 @@
    "File-level validation errors are associated with indexed paths such as `files[0]`, so inspect all error entries rather than only the array-level field."
   ],
   "checkedAt": "2026-10-15"
+ },
+ "field.allValid": {
+  "sourceUrl": "https://conform.guide/accessibility",
+  "sourceTitle": "Conform / Accessibility",
+  "summary": "Conform provides generated IDs and field state to connect form controls with labels, descriptions, and errors. Use these values with ARIA attributes to make fields accessible.",
+  "explanation": "The documentation shows that the `field.allValid` pipe reports whether all fields are valid, but the provided page text does not show its declaration or usage. The card therefore describes the documented field-validation state used by Conform forms, with evidence limited to the official accessibility example.",
+  "syntax": "const [form, fields] = useForm();",
+  "parameters": [],
+  "returns": "Field metadata used to build accessible form markup, including IDs, names, validity, and errors.",
+  "example": {
+   "title": "Accessible field identifiers",
+   "code": "const [form, fields] = useForm();\n\nreturn (\n  <form id={form.id}>\n    <label htmlFor={fields.message.id}>Message</label>\n    <input\n      id={fields.message.id}\n      name={fields.message.name}\n      aria-invalid={!fields.message.valid || undefined}\n      aria-describedby={\n        !fields.message.valid\n          ? `${fields.message.errorId} ${fields.message.descriptionId}`\n          : fields.message.descriptionId\n      }\n    />\n    <div id={fields.message.descriptionId}>Enter a message</div>\n    <div id={fields.message.errorId}>{fields.message.errors}</div>\n    <button>Send</button>\n  </form>\n);",
+   "language": "tsx",
+   "explanation": "This creates form and field identifiers, then connects the input to its label, description, and errors."
+  },
+  "useCases": [
+   {
+    "title": "Connect labels and descriptions",
+    "scenario": "A text field needs a matching label and help text."
+   },
+   {
+    "title": "Announce validation errors",
+    "scenario": "A field must expose its validation error to assistive technology."
+   },
+   {
+    "title": "Manage field relationships",
+    "scenario": "A form should use generated identifiers instead of manually coordinated IDs."
+   }
+  ],
+  "related": [
+   "useForm",
+   "fields.message.id",
+   "fields.message.name",
+   "fields.message.valid",
+   "fields.message.errorId",
+   "fields.message.descriptionId",
+   "aria-invalid",
+   "aria-describedby"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does `useForm()` provide?",
+    "answer": "Conform exposes form state through `useForm()` and supports validation based on data captured from the form. Its examples use field properties such as `valid`, `id`, `name`, `errorId`, and `descriptionId`.",
+    "followUp": "How can a field expose an error accessibly? Use `aria-invalid` when the field is invalid and include the error and description IDs in `aria-describedby`."
+   },
+   {
+    "question": "How does the documented server-validation flow work?",
+    "answer": "The server can parse submitted `FormData` with a schema. If parsing does not succeed, return the submission reply instead of continuing to the application operation.",
+    "followUp": "Why might server validation be avoided on every keystroke? Each validation can require a network request, which can add latency."
+   },
+   {
+    "question": "How does Conform support accessible form fields?",
+    "answer": "Conform generates IDs that connect a label with its control and connect descriptions and errors with `aria-describedby`. The field's `valid` state controls whether the invalid attribute and error ID are included.",
+    "followUp": "What should remain available when the field is valid? Keep the description ID so the normal field help remains associated with the control."
+   }
+  ],
+  "keyPoints": [
+   "The field metadata includes IDs for the form, field, description, and error elements.",
+   "Set `aria-invalid` only when the field is not valid.",
+   "Reference both error and description IDs for invalid fields; reference only the description ID otherwise.",
+   "Form values are read from the DOM through the standard `FormData` API."
+  ],
+  "gotchas": [
+   "Use Conform-generated identifiers when linking labels, descriptions, and errors. Do not replace these relationships with unrelated IDs.",
+   "Server validation can run during typing or field changes, but frequent network requests may make this feel slow."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "field.descriptionId": {
   "sourceUrl": "https://conform.guide/api/react/future/useField",
@@ -660,6 +1043,68 @@
    "Associate the input with its rendered error through the generated `errorId`; otherwise screen readers may not connect the two."
   ],
   "checkedAt": "2026-10-15"
+ },
+ "field.formId": {
+  "sourceUrl": "https://conform.guide/",
+  "sourceTitle": "Conform / Overview",
+  "summary": "`field.formId` identifies a field together with its form. Conform manages this form state with `useForm()` and reads values through the `FormData` Web API.",
+  "explanation": "`field.formId` identifies a field together with the form that owns it. Conform uses form state and field metadata through `useForm()`, while form values come from the DOM through the `FormData` API.",
+  "syntax": "field.formId",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Create a field.formId identifier",
+   "code": "const field = \"email\";\nconst formId = \"signup\";\nconst identifier = `${field}.${formId}`;",
+   "language": "typescript",
+   "explanation": "Build the identifier by joining the field name and form ID with a dot."
+  },
+  "useCases": [
+   {
+    "title": "Avoid field-name collisions",
+    "scenario": "A page contains multiple forms with fields that share names."
+   },
+   {
+    "title": "Handle submission intent",
+    "scenario": "A form needs to know which submit button was used."
+   },
+   {
+    "title": "Use standard form data",
+    "scenario": "Form state must stay connected to native HTML controls."
+   }
+  ],
+  "related": [
+   "useForm()",
+   "FormData Web API",
+   "Submission Intent",
+   "Intent button"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does `field.formId` represent?",
+    "answer": "A field form ID combines a field name with its form ID. The dot separates the two parts so the identifier can distinguish the same field name in different forms.",
+    "followUp": "Why is the form ID needed? It prevents identifiers from colliding when multiple forms contain fields with the same name."
+   },
+   {
+    "question": "How does Conform obtain form values?",
+    "answer": "Conform exposes form state through `useForm()`. The form value is captured from the DOM with the `FormData` Web API.",
+    "followUp": "How does Conform keep the value synchronized? It uses event delegation to sync form data."
+   },
+   {
+    "question": "How can a form identify which submit action was chosen?",
+    "answer": "A submit button can add data when it submits the form as the submitter. Its name and value can indicate the requested submission intent.",
+    "followUp": "How can different buttons trigger different behavior? Read the intent value from `formData`, then branch on values such as `add-to-cart` or `buy-now`."
+   }
+  ],
+  "keyPoints": [
+   "Use `useForm()` to access form state and field information.",
+   "Form values are read from the DOM with the `FormData` Web API.",
+   "Conform synchronizes form values through event delegation.",
+   "A submit button contributes its name and value when it submits the form.",
+   "Use the submitter to choose different behavior for one form."
+  ],
+  "gotchas": [],
+  "checkedAt": "2026-11-03"
  },
  "field.getFieldList": {
   "sourceUrl": "https://conform.guide/api/react/future/useField",
@@ -917,6 +1362,490 @@
   ],
   "checkedAt": "2026-10-15"
  },
+ "field.max": {
+  "sourceUrl": "https://conform.guide/validation",
+  "sourceTitle": "Conform / Validation",
+  "summary": "`field.max` is a field constraint for the largest allowed value. Conform can derive it from a validation schema and expose it through field metadata.",
+  "explanation": "The `field.max` identifier represents the maximum allowed value for a field. In Conform, maximum constraints can come from a Zod schema and appear in field metadata, such as `maxLength` for text inputs. The metadata can then populate native HTML validation attributes or be passed to helpers such as `getInputProps`.",
+  "syntax": "fields.<field>.max",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Client validation with a Zod schema",
+   "code": "const schema = z.object({\n  message: z.string().min(10).max(100),\n});\n\nfunction Example() {\n  const [form, fields] = useForm({\n    constraint: getZodConstraint(schema),\n    onValidate({ formData }) {\n      return parseWithZod(formData, { schema });\n    },\n  });\n\n  return (\n    <form id={form.id}>\n      <input\n        {...getInputProps(fields.message, {\n          type: 'text',\n          ariaDescribedBy: fields.message.descriptionId,\n        })}\n      />\n      <button>Send</button>\n    </form>\n  );\n}",
+   "language": "tsx",
+   "explanation": "This example creates a Zod schema, validates form data in the browser, derives native constraints, and adds input attributes with a helper."
+  },
+  "useCases": [
+   {
+    "title": "Limit text length",
+    "scenario": "Set a maximum text length from a Zod schema and pass it to an HTML input."
+   },
+   {
+    "title": "Create input constraints",
+    "scenario": "Generate native browser constraints from a shared schema."
+   },
+   {
+    "title": "Reduce form markup",
+    "scenario": "Use field metadata with Conform input helpers."
+   }
+  ],
+  "related": [
+   "Conform",
+   "useForm",
+   "parseWithZod",
+   "getZodConstraint",
+   "getInputProps",
+   "field.max",
+   "maxLength"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does `field.max` represent?",
+    "answer": "`field.max` is a maximum field constraint. For a text field, a schema such as `z.string().max(100)` can produce metadata used as the HTML `maxLength` attribute.",
+    "followUp": "How can the constraint reach the input? Use `getZodConstraint(schema)` in `useForm`, then read the field metadata or pass it to `getInputProps`."
+   },
+   {
+    "question": "How does server validation work with Conform?",
+    "answer": "Conform can validate on the server with `parseWithZod`. The form can use `lastResult` to synchronize the server response, and `shouldValidate` and `shouldRevalidate` control validation timing.",
+    "followUp": "Why might client validation still be useful? It gives instant feedback, while server validation keeps the authoritative check outside the client bundle."
+   },
+   {
+    "question": "How does client validation differ from server validation?",
+    "answer": "Client validation moves the schema outside the server action. The form supplies `onValidate`, which calls `parseWithZod` with the submitted `FormData`, while the action can reuse the same schema.",
+    "followUp": "How should asynchronous validation be handled? Fall back to server validation when needed instead of sending a separate request to another endpoint."
+   }
+  ],
+  "keyPoints": [
+   "A Zod or Yup schema can generate validation attributes for each field's metadata.",
+   "Field metadata can provide whether an input is required.",
+   "For text inputs, metadata can provide the minimum length.",
+   "For text inputs, metadata can provide the maximum length, which is relevant to `field.max`.",
+   "A schema pattern can become the input's native `pattern` attribute.",
+   "Conform includes helpers for applying related attributes to common native form controls."
+  ],
+  "gotchas": [
+   "Client validation improves feedback speed, but the validation logic is also needed on the server when submissions are processed.",
+   "Server validation can react to input events, but network delay can make validation while typing feel slow.",
+   "Async checks should use a schema creator so server-only values, such as an email uniqueness function, can be supplied when needed."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "field.maxLength": {
+  "sourceUrl": "https://conform.guide/accessibility",
+  "sourceTitle": "Conform / Accessibility",
+  "summary": "`field.maxLength` exposes a field's maximum-length constraint. Use it as the native HTML `maxLength` attribute or let `getInputProps` apply related attributes.",
+  "explanation": "`field.maxLength` is the field metadata value that represents the maximum allowed length. With a schema constraint, Conform can use it to set the native `maxLength` attribute on the related input.",
+  "syntax": "fields.<field>.maxLength",
+  "parameters": [
+   {
+    "name": "maxLength",
+    "type": "number | undefined",
+    "description": "Maximum number of characters accepted by the related HTML input."
+   }
+  ],
+  "returns": "The maximum-length constraint for the field, or undefined when no such constraint is available.",
+  "example": {
+   "title": "Create input attributes from field metadata",
+   "code": "import { useForm } from '@conform-to/react';\n\nexport function Example() {\n  const [form, fields] = useForm();\n\n  return (\n    <form id={form.id}>\n      <input\n        {...getInputProps(fields.message, {\n          type: 'text',\n          ariaDescribedBy: fields.message.descriptionId,\n        })}\n      />\n    </form>\n  );\n}",
+   "language": "tsx",
+   "explanation": "Use the field metadata with `getInputProps` to create the input attributes, including the field name, ID, validation attributes, and accessibility attributes."
+  },
+  "useCases": [
+   {
+    "title": "Set a native maximum length",
+    "scenario": "Schema-driven HTML validation"
+   },
+   {
+    "title": "Derive input attributes with a helper",
+    "scenario": "Less repetitive form markup"
+   }
+  ],
+  "related": [
+   "useForm",
+   "getZodConstraint",
+   "getInputProps",
+   "minLength",
+   "required",
+   "pattern"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does `field.maxLength` represent?",
+    "answer": "`field.maxLength` is field metadata for the maximum permitted input length. When constraints are passed to `useForm`, the value can be used as the input's native `maxLength` attribute.",
+    "followUp": "What other native constraint can be derived? `required`, `minLength`, and `pattern` are also shown as field metadata values used on an input."
+   },
+   {
+    "question": "How can Conform obtain a maximum-length constraint?",
+    "answer": "The field metadata is connected to the schema through `getZodConstraint(schema)`. Conform then exposes the resulting constraint through the field object.",
+    "followUp": "Why use a schema constraint? It lets the form markup reflect the validation rules without manually duplicating every rule."
+   },
+   {
+    "question": "How is the maximum length applied to an input?",
+    "answer": "A native input can receive the value with `maxLength={fields.message.maxLength}`. The example also uses `required`, `minLength`, and `pattern` from the same field metadata.",
+    "followUp": "How can boilerplate be reduced? Pass the field metadata to `getInputProps` and provide only options such as the input type and description ID."
+   }
+  ],
+  "keyPoints": [
+   "Conform supports schema-driven constraints, including a maximum input length when the schema defines one.",
+   "The input helper can derive related native input attributes from field metadata.",
+   "Pass a generated schema constraint to `useForm` so field metadata can include validation rules."
+  ],
+  "gotchas": [
+   "Do not manually repeat related attributes when a helper can derive them from the field metadata.",
+   "The helper is intended for native HTML elements. Custom component libraries may need their own accessibility APIs."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "field.min": {
+  "sourceUrl": "https://conform.guide/validation",
+  "sourceTitle": "Conform / Validation",
+  "summary": "Conform supports server-side form validation and can also validate during user interaction. It can reuse prior results when expensive checks do not apply to the current validation intent.",
+  "explanation": "Conform can validate form data on the server and, when configured, while a user interacts with the form. The server can return the validation result through lastResult. Client validation can use the same schema, while expensive checks can be skipped unless the current intent targets that field.",
+  "syntax": "parseWithZod(formData, { schema });",
+  "parameters": [
+   {
+    "name": "formData",
+    "type": "FormData",
+    "description": "The submitted form data, usually a FormData object."
+   },
+   {
+    "name": "schema",
+    "type": "Zod schema | (intent) => Zod schema",
+    "description": "A Zod schema, or a function that receives the validation intent and returns a schema."
+   },
+   {
+    "name": "lastResult",
+    "type": "Action result",
+    "description": "The last server result returned by the framework action."
+   }
+  ],
+  "returns": "parseWithZod returns a submission result. On failure, submission.reply() returns a response suitable for the server action.",
+  "example": {
+   "title": "Validate form data with Zod",
+   "code": "const schema = z.object({\n  email: z.string().email(),\n  message: z.string().max(100),\n});\n\nconst [form] = useForm({\n  lastResult,\n  onValidate({ formData }) {\n    return parseWithZod(formData, { schema });\n  },\n});",
+   "language": "tsx",
+   "explanation": "This validates the form data with the same Zod schema used by the server."
+  },
+  "useCases": [
+   {
+    "title": "Server-only validation",
+    "scenario": "Keep validation rules out of the browser bundle."
+   },
+   {
+    "title": "Interactive validation",
+    "scenario": "Validate fields while users type or leave them."
+   },
+   {
+    "title": "Intent-based validation",
+    "scenario": "Avoid repeating slow asynchronous checks."
+   }
+  ],
+  "related": [
+   "useForm",
+   "parseWithZod",
+   "conformZodMessage",
+   "VALIDATION_SKIPPED",
+   "VALIDATION_UNDEFINED",
+   "useActionData"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How does server validation work?",
+    "answer": "Server validation runs in the action after reading FormData. The action calls parseWithZod and returns submission.reply() when the result is not successful.",
+    "followUp": "How can client and server validation share rules? Use the same Zod schema for the server parser and the form's onValidate callback, while leaving server-only checks out of the client schema."
+   },
+   {
+    "question": "How does the form receive server errors?",
+    "answer": "Pass lastResult from useActionData to useForm. The server's reply then becomes available to the form state after submission.",
+    "followUp": "What should happen when validation fails? Return the parser submission instead of calling the application operation, so invalid data does not reach signup or another mutation."
+   },
+   {
+    "question": "How can expensive validation be reduced?",
+    "answer": "Use the parseWithZod schema callback to receive intent. For an expensive field check, add VALIDATION_SKIPPED when the current intent does not validate that field.",
+    "followUp": "Why is VALIDATION_UNDEFINED useful? It can report that the required validation function was not supplied, and the example marks that issue as fatal."
+   }
+  ],
+  "keyPoints": [
+   "A form may be validated entirely on the server.",
+   "The server validation mode can also support validation during typing or when focus leaves a field.",
+   "Keeping validation on the server prevents that validation code from being included in the client bundle.",
+   "A schema factory can receive the current intent from parseWithZod.",
+   "Use the intent to decide whether an asynchronous check applies to the current validation request.",
+   "The VALIDATION_SKIPPED message tells Conform to use an earlier result for a skipped rule."
+  ],
+  "gotchas": [
+   "Server validation during typing can feel slow because every validation may require a network request.",
+   "A complete schema check can be costly when it includes asynchronous rules.",
+   "When a rule is not relevant to the current intent, mark it as skipped so Conform can reuse the previous result."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "field.minLength": {
+  "sourceUrl": "https://conform.guide/validation",
+  "sourceTitle": "Validation",
+  "summary": "Conform supports server-side form validation with schemas such as Zod. It can validate on submit, while typing, or when a field loses focus.",
+  "explanation": "Server validation reads the submitted FormData and checks it with a schema such as Zod. If validation fails, return the submission reply so the form can show errors. If it succeeds, use the validated value. The same approach can also validate while a user types or leaves a field, but each check may add network delay.",
+  "syntax": "parseWithZod(formData, { schema })",
+  "parameters": [
+   {
+    "name": "formData",
+    "type": "FormData",
+    "description": "The submitted form values from the request."
+   },
+   {
+    "name": "schema",
+    "type": "Zod schema",
+    "description": "The validation rules used by parseWithZod."
+   }
+  ],
+  "returns": "A submission result. On failure, submission.reply() returns the validation response; on success, the validated value can be used.",
+  "example": {
+   "title": "Validate form data on the server",
+   "code": "import { z } from \"zod\";\nimport { parseWithZod } from \"@conform-to/zod\";\n\nconst schema = z.object({\n  email: z.string().email(),\n  message: z.string().max(100),\n});\n\nexport async function action({ request }) {\n  const formData = await request.formData();\n  const submission = parseWithZod(formData, { schema });\n\n  if (submission.status !== \"success\") {\n    return submission.reply();\n  }\n\n  return signup(submission.value);\n}",
+   "language": "typescript",
+   "explanation": "The server reads form data, validates it with a Zod schema, returns validation errors when needed, and continues with valid data."
+  },
+  "useCases": [
+   {
+    "title": "Validate submitted data",
+    "scenario": "A form needs trusted checks before an account or other server operation runs."
+   },
+   {
+    "title": "Keep rules on the server",
+    "scenario": "Validation rules should not be included in browser JavaScript."
+   },
+   {
+    "title": "Check fields during input",
+    "scenario": "A form should report errors before final submission."
+   }
+  ],
+  "related": [
+   "parseWithZod",
+   "useForm",
+   "Zod",
+   "FormData",
+   "submission.reply"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How does server-side validation work?",
+    "answer": "The server receives FormData and passes it to parseWithZod with a Zod schema. A non-success submission returns submission.reply(); successful validation allows the application to continue with the validated value.",
+    "followUp": "Why can server validation reduce client bundle size? The validation rules can stay on the server instead of being shipped to the browser."
+   },
+   {
+    "question": "When can server validation run?",
+    "answer": "It is not limited to form submission. The documentation says it can also run while the user types or when the user leaves a field.",
+    "followUp": "What trade-off comes with validating on every input? Network latency can make the interaction feel slow."
+   },
+   {
+    "question": "How are submitted fields checked?",
+    "answer": "The example defines an object schema with an email format rule and a maximum length rule for the message. parseWithZod checks the submitted FormData against those constraints.",
+    "followUp": "What should the action do after a successful result? It should pass the validated data to the next application operation, such as signup."
+   }
+  ],
+  "keyPoints": [
+   "Validation can happen entirely on the server.",
+   "The server can validate on submit, during typing, or when a field loses focus.",
+   "Keeping rules on the server can keep validation code out of the client bundle.",
+   "With Conform's Zod adapter, pass FormData and a schema to parseWithZod.",
+   "Check the submission status before using the result as valid data.",
+   "Return submission.reply() when validation fails so the server can send the validation result back."
+  ],
+  "gotchas": [
+   "Typing-time server checks can feel slow because every check depends on the network."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "field.name": {
+  "sourceUrl": "https://conform.guide/api/react/useForm",
+  "sourceTitle": "Conform / useForm",
+  "summary": "`useForm` is a React hook for connecting form and field metadata to an HTML form. It can validate on submit, blur, or input, and it can use client or server validation.",
+  "explanation": "`useForm` returns metadata and handlers that connect a React form to standard HTML. It can validate on submit, blur, or input. Client validation is optional, so server validation can handle the checks instead.",
+  "syntax": "const [form, fields] = useForm(options);",
+  "parameters": [
+   {
+    "name": "options",
+    "type": "UseFormOptions",
+    "description": "Configuration object. Supported options include `id`, `lastResult`, `defaultValue`, `constraint`, `shouldValidate`, `shouldRevalidate`, `shouldDirtyConsider`, `onValidate`, `onSubmit`, and `defaultNoValidate`."
+   },
+   {
+    "name": "options.id",
+    "type": "string",
+    "description": "The initial form identifier. If omitted, Conform generates one."
+   },
+   {
+    "name": "options.shouldValidate",
+    "type": "'onSubmit' | 'onBlur' | 'onInput'",
+    "description": "When validation begins: `onSubmit`, `onBlur`, or `onInput`."
+   },
+   {
+    "name": "options.onValidate",
+    "type": "function",
+    "description": "Function called when the form needs validation."
+   },
+   {
+    "name": "options.lastResult",
+    "type": "SubmissionResult",
+    "description": "The previous submission result, usually returned by the server."
+   }
+  ],
+  "returns": "A tuple containing form metadata and field metadata: `[form, fields]`. The form object includes identifiers, values, errors, validity, status, and form handlers.",
+  "example": {
+   "title": "Validate a form with useForm",
+   "code": "const [form, fields] = useForm({\n  shouldValidate: 'onBlur',\n  onValidate({ formData }) {\n    return parseWithZod(formData, { schema });\n  },\n});\n\nreturn (\n  <form id={form.id} onSubmit={form.onSubmit}>\n    <input name={fields.email.name} />\n    <button type=\"submit\">Send</button>\n  </form>\n);",
+   "language": "tsx",
+   "explanation": "This creates form and field metadata, validates after a field loses focus, and connects the generated form handlers to HTML."
+  },
+  "useCases": [
+   {
+    "title": "Validate fields after editing",
+    "scenario": "Use `onBlur` to show errors after a user leaves a field."
+   },
+   {
+    "title": "Keep validation out of the client bundle",
+    "scenario": "Omit `onValidate` when validation should stay on the server."
+   },
+   {
+    "title": "Show server submission errors",
+    "scenario": "Pass a server action result through `lastResult` to restore errors after submission."
+   }
+  ],
+  "related": [
+   "parseWithZod",
+   "shouldRevalidate",
+   "onValidate",
+   "lastResult",
+   "form.onSubmit",
+   "form.allErrors",
+   "form.valid"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does `useForm` return?",
+    "answer": "`useForm` returns form metadata and field metadata. The form metadata includes values, errors, status, and handlers such as `onSubmit`.",
+    "followUp": "How can the form use server results? Pass the latest action result through `lastResult`; it becomes part of the form's initial state for progressive enhancement."
+   },
+   {
+    "question": "When does Conform validate fields?",
+    "answer": "Set `shouldValidate` to `onSubmit`, `onBlur`, or `onInput`. The default is `onSubmit`.",
+    "followUp": "How does revalidation differ? `shouldRevalidate` controls when a field is checked again after its first validation, and defaults to `shouldValidate`."
+   },
+   {
+    "question": "Is client validation required?",
+    "answer": "Client validation is optional. Set `onValidate` to run a client-side validator, or omit it and use server validation, which keeps validation code out of the client bundle.",
+    "followUp": "What trade-off does server validation have for live checks? Frequent checks can increase network traffic and make latency noticeable, especially on input."
+   }
+  ],
+  "keyPoints": [
+   "Call `useForm(options)` to get metadata that connects a React component to an HTML form.",
+   "Choose validation timing with `shouldValidate`: submit, blur, or input.",
+   "Use `onValidate` to provide the function that checks form data.",
+   "Pass the latest server submission through `lastResult` so the form can restore server errors and state.",
+   "Read `form.valid` to know whether the current form passed validation."
+  ],
+  "gotchas": [
+   "Server validation during typing can feel slow because every validation may require a network request.",
+   "If you do not set `shouldValidate`, validation starts on submit.",
+   "Browser constraint validation is disabled by default, so JavaScript handles validation."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "field.required": {
+  "sourceUrl": "https://conform.guide/api/react/future/useField",
+  "sourceTitle": "Conform / useField",
+  "summary": "useField is a React hook for reading metadata for a form field from a FormProvider. It helps reusable components render inputs, validation attributes, errors, and accessibility connections.",
+  "explanation": "useField reads metadata for a named field from the nearest FormProvider. It supplies identifiers, values, errors, accessibility values, and validation attributes. Use getFieldset for object fields and getFieldList for array fields.",
+  "syntax": "const field = useField(name, options);",
+  "parameters": [
+   {
+    "name": "name",
+    "type": "FieldName<FieldShape>",
+    "description": "The input field name. Its type is FieldName<FieldShape>."
+   },
+   {
+    "name": "options",
+    "type": "object",
+    "description": "Optional settings. formId selects a specific form when multiple forms exist; otherwise the nearest form context is used."
+   },
+   {
+    "name": "options.formId",
+    "type": "string",
+    "description": "The form identifier to target."
+   }
+  ],
+  "returns": "A Field object containing field metadata and state, including id, name, formId, descriptionId, errorId, validation attributes, errors, and accessibility values.",
+  "example": {
+   "title": "Read field metadata in a reusable component",
+   "code": "import { useField } from '@conform-to/react/future';\n\nfunction EmailField() {\n  const field = useField('email');\n\n  return (\n    <div>\n      <label htmlFor={field.id}>Email</label>\n      <input\n        id={field.id}\n        name={field.name}\n        defaultValue={field.defaultValue}\n        required={field.required}\n        aria-invalid={field.ariaInvalid}\n        aria-describedby={field.ariaDescribedBy}\n      />\n      {field.errors && (\n        <div id={field.errorId}>\n          {field.errors.map((error) => <p key={error}>{error}</p>)}\n        </div>\n      )}\n    </div>\n  );\n}",
+   "language": "tsx",
+   "explanation": "This component reads metadata for the email field and applies it to the input and error message."
+  },
+  "useCases": [
+   {
+    "title": "Reusable field components",
+    "scenario": "A shared input component needs field names, IDs, defaults, and validation attributes without prop drilling."
+   },
+   {
+    "title": "Nested object fields",
+    "scenario": "A form contains an object such as an address with street and city fields."
+   },
+   {
+    "title": "Array fields",
+    "scenario": "A form contains a list such as tags that can have several entries."
+   },
+   {
+    "title": "Accessible validation UI",
+    "scenario": "A field needs labels and error messages connected for assistive technology."
+   }
+  ],
+  "related": [
+   "FormProvider",
+   "useForm",
+   "Fieldset",
+   "ariaDescribedBy",
+   "getFieldset",
+   "getFieldList"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does useField do?",
+    "answer": "useField takes a field name and optional options. It returns metadata from the nearest FormProvider, or from the form selected by options.formId.",
+    "followUp": "How would you use it with several forms? Pass the target form's identifier through the formId option."
+   },
+   {
+    "question": "How does useField support accessibility?",
+    "answer": "Use the returned id for the input and the label's htmlFor. Use errorId for the error container and ariaDescribedBy on the input so assistive technology can connect the field and its errors.",
+    "followUp": "How do you also connect help text? Add descriptionId to the aria-describedby value together with ariaDescribedBy."
+   },
+   {
+    "question": "How are nested fields handled?",
+    "answer": "For an object field, call getFieldset to access child fields. For an array field, call getFieldList to obtain the child field metadata and render each item.",
+    "followUp": "What should identify each rendered array item in React? Use the returned field's key as the React key."
+   }
+  ],
+  "keyPoints": [
+   "Call useField inside a component under FormProvider to read metadata without passing field props through every component.",
+   "The name argument identifies the input and preserves its field-name path.",
+   "Set options.formId when the component must read metadata from a particular form.",
+   "Use the generated id to connect a label to its input.",
+   "Schema constraints can produce attributes such as required, minLength, maxLength, pattern, min, max, step, and multiple.",
+   "Call getFieldset to work with the child fields of an object value.",
+   "Call getFieldList to render metadata for each item in an array field."
+  ],
+  "gotchas": [
+   "The hook is experimental, so its API may change in minor versions.",
+   "When several forms are present, pass formId to target the intended form.",
+   "ariaDescribedBy does not include help text automatically; combine the description and error IDs when both are needed."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "field.step": {
   "sourceUrl": "https://conform.guide/api/react/getInputProps",
   "sourceTitle": "getInputProps",
@@ -1044,6 +1973,167 @@
   ],
   "checkedAt": "2026-10-15"
  },
+ "field.value": {
+  "sourceUrl": "https://conform.guide/api/react/future/getFieldValue",
+  "sourceTitle": "Conform / getFieldValue",
+  "summary": "getFieldValue reads a named value from FormData or URLSearchParams. It supports runtime type checks, arrays, optional fields, and nested object names.",
+  "explanation": "getFieldValue reads a named field from FormData or URLSearchParams. It can validate the runtime type, read arrays, allow missing values, and build nested objects from field names.",
+  "syntax": "getFieldValue(formData, name, options)",
+  "parameters": [
+   {
+    "name": "formData",
+    "type": "FormData | URLSearchParams",
+    "description": "FormData or URLSearchParams containing the values to read."
+   },
+   {
+    "name": "name",
+    "type": "string | FieldName<T>",
+    "description": "The field name. It may use dot notation or array indexes."
+   },
+   {
+    "name": "options",
+    "type": "{ type?: 'string' | 'file' | 'object'; array?: boolean; optional?: boolean }",
+    "description": "Optional runtime type and shape settings."
+   }
+  ],
+  "returns": "The result depends on the options: unknown by default, string, File, object, or an array of those types. With optional enabled, a missing field returns undefined.",
+  "example": {
+   "title": "Read typed form values",
+   "code": "import { getFieldValue } from '@conform-to/react/future';\n\nconst data = new FormData();\ndata.append('email', 'user@example.com');\ndata.append('tags', 'react');\ndata.append('tags', 'typescript');\n\nconst email = getFieldValue(data, 'email', { type: 'string' });\nconst tags = getFieldValue(data, 'tags', { type: 'string', array: true });\n\nconsole.log(email, tags);",
+   "language": "typescript",
+   "explanation": "This reads one string field and all values for a repeated field."
+  },
+  "useCases": [
+   {
+    "title": "Read repeated values",
+    "scenario": "A form sends the same field more than once, such as tags or selected items."
+   },
+   {
+    "title": "Build nested data",
+    "scenario": "A form uses names such as address.city or items[0].name."
+   },
+   {
+    "title": "Check value types",
+    "scenario": "A handler needs to reject values with an unexpected runtime shape."
+   },
+   {
+    "title": "Read optional fields",
+    "scenario": "A field is allowed to be absent."
+   }
+  ],
+  "related": [
+   "useForm",
+   "useFormData",
+   "FieldName<T>",
+   "@conform-to/react/future"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does getFieldValue do?",
+    "answer": "It extracts a field from FormData or URLSearchParams. The result is unknown unless options provide a type or array shape.",
+    "followUp": "How would you read repeated string values? Use { type: 'string', array: true }, which returns string[]."
+   },
+   {
+    "question": "How does runtime type validation work?",
+    "answer": "The type option checks the value at runtime and narrows the returned type. Supported types are string, file, and object.",
+    "followUp": "What happens if the value has the wrong type? The function throws an error."
+   },
+   {
+    "question": "How are nested field names handled?",
+    "answer": "Use dot notation for nested objects and bracket indices for arrays. For example, address.city and items[0].name are parsed into structured values.",
+    "followUp": "How do you read an array of objects? Request the parent field with { type: 'object', array: true }."
+   }
+  ],
+  "keyPoints": [
+   "Use it to read and validate values from FormData or URLSearchParams.",
+   "Field names can describe nested data with dots and array indexes.",
+   "The string type expects a string value and returns a string.",
+   "The file type expects a File object and returns a File.",
+   "The object type expects a plain object for structured fields.",
+   "Set array to true when the field should contain multiple values."
+  ],
+  "gotchas": [
+   "The function is under Conform's future export, so its API may change in a minor release.",
+   "With optional enabled, a missing field returns undefined, but an existing value is still checked.",
+   "The type option is a runtime check; a mismatched value causes an error."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "FieldMetadata": {
+  "sourceUrl": "https://conform.guide/accessibility",
+  "sourceTitle": "Conform / Accessibility",
+  "summary": "FieldMetadata contains the identifiers and validation state needed to connect a form field with its label, description, and errors. Use it with normal HTML attributes and ARIA attributes.",
+  "explanation": "FieldMetadata describes a form field through metadata such as its ID, name, validity, error ID, and description ID. The metadata connects labels and inputs and helps set ARIA attributes without manually creating matching identifiers.",
+  "syntax": "const [form, fields] = useForm(); fields.message",
+  "parameters": [
+   {
+    "name": "fields.message",
+    "type": "FieldMetadata",
+    "description": "The field metadata object is produced by useForm and contains identifiers and validation state for a field."
+   }
+  ],
+  "returns": "FieldMetadata provides field identifiers, the submitted name, validity state, and IDs for descriptions and errors.",
+  "example": {
+   "title": "Use FieldMetadata in a form",
+   "code": "const [form, fields] = useForm();\n\nreturn (\n  <form id={form.id}>\n    <label htmlFor={fields.message.id}>Message</label>\n    <input\n      id={fields.message.id}\n      name={fields.message.name}\n      aria-invalid={!fields.message.valid || undefined}\n      aria-describedby={fields.message.descriptionId}\n    />\n    <div id={fields.message.descriptionId}>Enter a message.</div>\n    <button type=\"submit\">Send</button>\n  </form>\n);",
+   "language": "tsx",
+   "explanation": "useForm returns form and field metadata used to connect HTML elements and accessibility attributes."
+  },
+  "useCases": [
+   {
+    "title": "Connect a label to its input",
+    "scenario": "Build accessible text inputs"
+   },
+   {
+    "title": "Link errors and descriptions",
+    "scenario": "Show validation feedback"
+   },
+   {
+    "title": "Configure ordinary HTML elements",
+    "scenario": "Keep form markup standard"
+   }
+  ],
+  "related": [
+   "useForm",
+   "form.id",
+   "fields.message.id",
+   "fields.message.name",
+   "fields.message.valid",
+   "fields.message.errorId",
+   "fields.message.descriptionId"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does FieldMetadata represent?",
+    "answer": "FieldMetadata is metadata for one form field. It provides values such as the field ID, name, validity, error ID, and description ID, which can be applied to HTML and ARIA attributes.",
+    "followUp": "How can it support accessible validation feedback? Use the field ID for the label and input, set aria-invalid when invalid, and reference the description and error IDs with aria-describedby."
+   },
+   {
+    "question": "What are the main FieldMetadata properties used in the example?",
+    "answer": "The field's id identifies the control and label target. Its name is used for form submission, while valid, errorId, and descriptionId support validation state and accessible messages.",
+    "followUp": "Why should the name come from metadata? It keeps the submitted field name aligned with Conform's form state, including nested field structures."
+   },
+   {
+    "question": "How is FieldMetadata used with HTML?",
+    "answer": "A form can use the metadata returned by useForm to configure ordinary HTML elements. The example keeps the markup standard and adds generated identifiers and ARIA attributes.",
+    "followUp": "Does this require a special input component? No. The documentation example uses normal label, input, div, and button elements."
+   }
+  ],
+  "keyPoints": [
+   "Conform generates the IDs needed to connect a field with its label, description, and error message.",
+   "Set aria-invalid only when the field is not valid.",
+   "Use descriptionId to identify the element that explains the field.",
+   "Use errorId to identify the element that contains field errors.",
+   "Use the metadata name on the control so the field has the expected submitted name."
+  ],
+  "gotchas": [
+   "ARIA attributes alone are not enough; each form element still needs the correct related attributes.",
+   "Use the generated IDs consistently. Do not replace one field's ID with an unrelated ID."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "FieldName": {
   "sourceUrl": "https://conform.guide/api/react/useField",
   "sourceTitle": "useField",
@@ -1115,6 +2205,89 @@
   ],
   "checkedAt": "2026-10-15"
  },
+ "fields": {
+  "sourceUrl": "https://conform.guide/validation",
+  "sourceTitle": "Conform / Validation",
+  "summary": "Conform can validate forms on the server, in the browser, or in both places. Use parseWithZod with a Zod schema, and enable async parsing for server checks that return promises.",
+  "explanation": "A pipe connects validation steps so a value can pass an initial check and then receive more validation. In Conform, a Zod schema is parsed from FormData with parseWithZod. Validation may run on the server, in the client, or both. For asynchronous checks, the server parser must be awaited and marked async.",
+  "syntax": "parseWithZod(formData, { schema, async: true })",
+  "parameters": [
+   {
+    "name": "formData",
+    "type": "FormData",
+    "description": "FormData containing the submitted form values."
+   },
+   {
+    "name": "schema",
+    "type": "Zod schema | (intent) => Zod schema",
+    "description": "A Zod schema, or a function that creates one from the validation intent."
+   },
+   {
+    "name": "async",
+    "type": "boolean",
+    "description": "Enables asynchronous server validation."
+   }
+  ],
+  "returns": "A submission result. On failure, submission.reply() returns a response for the form.",
+  "example": {
+   "title": "Client validation with Zod",
+   "code": "import { useForm } from '@conform-to/react';\nimport { parseWithZod } from '@conform-to/zod';\nimport { z } from 'zod';\n\nconst schema = z.object({\n  email: z.string().email(),\n});\n\nexport function Signup() {\n  const [form, fields] = useForm({\n    onValidate({ formData }) {\n      return parseWithZod(formData, { schema });\n    },\n  });\n\n  return (\n    <form id={form.id} onSubmit={form.onSubmit}>\n      <input name={fields.email.name} type=\"email\" />\n      <div>{fields.email.errors}</div>\n      <button>Sign up</button>\n    </form>\n  );\n}",
+   "language": "tsx",
+   "explanation": "This validates the email with Zod when the form is checked and displays field errors."
+  },
+  "useCases": [
+   {
+    "title": "Server-only validation",
+    "scenario": "Keep validation rules out of browser code."
+   },
+   {
+    "title": "Mixed validation",
+    "scenario": "Give fast feedback for simple rules while keeping database checks on the server."
+   },
+   {
+    "title": "Intent-based validation",
+    "scenario": "Avoid repeating expensive checks when only one field needs validation."
+   }
+  ],
+  "related": [
+   "useForm",
+   "parseWithZod",
+   "conformZodMessage",
+   "VALIDATION_SKIPPED",
+   "VALIDATION_UNDEFINED",
+   "getZodConstraint"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you validate a Conform form on the server?",
+    "answer": "Use parseWithZod with a Zod schema. On the server, parse the submitted FormData and return submission.reply() when the status is not success.",
+    "followUp": "How can server validation work before submission? Configure Conform to validate on events such as blur or typing, but account for request latency."
+   },
+   {
+    "question": "What is the difference between client and server validation?",
+    "answer": "Client validation uses onValidate and must return a synchronous result. The client can use a simpler schema when a server-only asynchronous rule exists.",
+    "followUp": "How should an email uniqueness check be handled? Run it on the server with async: true, and avoid putting that asynchronous check in the client schema."
+   },
+   {
+    "question": "How can expensive validation be skipped?",
+    "answer": "Use the intent supplied to parseWithZod to decide whether a costly rule should run. If it does not apply, add the VALIDATION_SKIPPED message so Conform can reuse the previous result.",
+    "followUp": "What if the asynchronous validation function is missing? Add VALIDATION_UNDEFINED with fatal: true so the schema reports that the required validator is unavailable."
+   }
+  ],
+  "keyPoints": [
+   "A form can be validated entirely on the server.",
+   "Server-only validation keeps its rules out of the client bundle.",
+   "parseWithZod can provide an intent to the schema factory.",
+   "A skipped result tells Conform to use the previous validation result."
+  ],
+  "gotchas": [
+   "Server validation can add network delay during typing, so use it carefully for live checks.",
+   "Client validation cannot use asynchronous checks.",
+   "A complete schema check may be costly, especially when it includes asynchronous validation."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "form.allErrors": {
   "sourceUrl": "https://conform.guide/api/react/useForm",
   "sourceTitle": "useForm",
@@ -1179,6 +2352,78 @@
    "The record is keyed by field name, and each value is an array rather than one standalone message."
   ],
   "checkedAt": "2026-10-15"
+ },
+ "form.context": {
+  "sourceUrl": "https://conform.guide/api/react/FormProvider",
+  "sourceTitle": "FormProvider",
+  "summary": "FormProvider makes a useForm context available to child components. It is needed for useField and useFormMetadata, and it supports fields outside the form element and nested form contexts.",
+  "explanation": "FormProvider supplies a React context for a form created by useForm. It enables useField and useFormMetadata to access that form state. The provider can wrap fields that are outside the form element, and fields can connect to the form with the HTML form attribute. Providers can also be nested for separate forms.",
+  "syntax": "<FormProvider context={form.context}>{children}</FormProvider>",
+  "parameters": [
+   {
+    "name": "context",
+    "type": "FormContext",
+    "description": "Form context created by useForm and read from form.context."
+   }
+  ],
+  "returns": "A React context provider that renders its children.",
+  "example": {
+   "title": "Provide form context to child fields",
+   "code": "import { FormProvider, useForm, useField } from '@conform-to/react';\n\nfunction Field({ name, formId }: { name: string; formId?: string }) {\n  const [meta] = useField(name, { formId });\n  return <input name={meta.name} form={meta.form} />;\n}\n\nexport default function Example() {\n  const [form, fields] = useForm({ id: 'profile' });\n  return (\n    <FormProvider context={form.context}>\n      <form id={form.id} />\n      <Field name={fields.title.name} />\n    </FormProvider>\n  );\n}",
+   "language": "tsx",
+   "explanation": "Create form state with useForm, then pass its context to FormProvider. Child field components can use useField to read the nearest form context."
+  },
+  "useCases": [
+   {
+    "title": "Share form state with fields",
+    "scenario": "A child component needs field metadata without receiving it through every prop."
+   },
+   {
+    "title": "Connect fields outside the form",
+    "scenario": "Inputs must be rendered in a different layout area from the form element."
+   },
+   {
+    "title": "Nest form providers",
+    "scenario": "A page contains separate parent and child form contexts."
+   }
+  ],
+  "related": [
+   "useForm",
+   "useField",
+   "useFormMetadata",
+   "form.context"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does FormProvider do?",
+    "answer": "FormProvider renders the context provider for a form. Pass the context property from the object returned by useForm.",
+    "followUp": "How can a field use a different nested form? Pass that form's id as the formId option to useField."
+   },
+   {
+    "question": "When is FormProvider required?",
+    "answer": "It is needed when using useField or useFormMetadata. The component receives form.context from useForm.",
+    "followUp": "Can the provider be placed away from the form element? Yes. Inputs can be elsewhere when their form attribute points to the form id."
+   },
+   {
+    "question": "How does FormProvider behave when nested?",
+    "answer": "Providers can be nested. A field without formId finds the closest form context, while formId can select an outer form by id.",
+    "followUp": "Why might nested providers help? They allow separate forms when layout constraints require one form inside another."
+   }
+  ],
+  "keyPoints": [
+   "FormProvider exposes a React context containing form state.",
+   "Use it when descendant code needs useField or useFormMetadata.",
+   "Set the context prop to form.context from useForm.",
+   "The provider can wrap more than the form element itself.",
+   "Nested providers support multiple form contexts."
+  ],
+  "gotchas": [
+   "You need FormProvider when a child uses useField or useFormMetadata.",
+   "The provider does not need to be the direct parent of the form, but inputs outside it must use the form attribute.",
+   "With nested providers, useField uses the closest form unless you pass formId."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "form.dirty": {
   "sourceUrl": "https://conform.guide/api/react/useForm",
@@ -1561,6 +2806,81 @@
    "The helper relies on a reserved button name and serialized intent value, so avoid replacing the generated button props."
   ],
   "checkedAt": "2026-10-15"
+ },
+ "form.remove": {
+  "sourceUrl": "https://conform.guide/intent-button",
+  "sourceTitle": "Conform / Intent button",
+  "summary": "form.remove creates button props for removing an item from a Conform field list. Pass the list name and the item's index, then spread the props onto a button.",
+  "explanation": "form.remove is an intent pipe for removing an item from a Conform field list. Get button props with the list field name and item index, then spread them onto a button. Conform reads the intent during form handling and updates the list.",
+  "syntax": "form.remove.getButtonProps({ name, index })",
+  "parameters": [
+   {
+    "name": "name",
+    "type": "string",
+    "description": "The field-list name that identifies the list to modify."
+   },
+   {
+    "name": "index",
+    "type": "number",
+    "description": "The zero-based index of the item to remove."
+   }
+  ],
+  "returns": "Button properties for a submit control that requests removal of the selected field-list item.",
+  "example": {
+   "title": "Add and remove list items",
+   "code": "import { useForm } from \"@conform-to/react\";\n\nexport function Tasks() {\n  const [form, fields] = useForm();\n  const tasks = fields.tasks.getFieldList();\n\n  return (\n    <form id={form.id} onSubmit={form.onSubmit}>\n      {tasks.map((task, index) => (\n        <div key={task.key}>\n          <input name={task.name} />\n          <button {...form.remove.getButtonProps({\n            name: fields.tasks.name,\n            index,\n          })}>\n            Delete\n          </button>\n        </div>\n      ))}\n      <button {...form.insert.getButtonProps({ name: fields.tasks.name })}>\n        Add task\n      </button>\n      <button>Save</button>\n    </form>\n  );\n}",
+   "language": "tsx",
+   "explanation": "The buttons create intents that add or remove items in the task list."
+  },
+  "useCases": [
+   {
+    "title": "Delete a list item",
+    "scenario": "A form lets users delete one row from a dynamic list."
+   },
+   {
+    "title": "Manage repeated fields",
+    "scenario": "A form has several editable entries and each row needs its own delete action."
+   },
+   {
+    "title": "Handle list intents",
+    "scenario": "A form uses one submit flow for save and list changes."
+   }
+  ],
+  "related": [
+   "form.insert",
+   "form.reorder",
+   "getFieldList",
+   "useInputControl"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you remove an item from a Conform field list?",
+    "answer": "Use form.remove.getButtonProps with the field-list name and the item index. Spread the returned props onto a button so the submission carries the remove intent.",
+    "followUp": "How can a user add an item instead? Use form.insert.getButtonProps with the field-list name and spread those props onto an Add button."
+   },
+   {
+    "question": "Why must list inputs use the field metadata key?",
+    "answer": "First get the list with fields.tasks.getFieldList(). Render each item with its name and key. The key lets Conform notify React when an input must be remounted.",
+    "followUp": "Why is the key more than a normal React list key? Conform uses it to apply a changed initialValue after an intent."
+   },
+   {
+    "question": "How are field-list operations expressed in the form?",
+    "answer": "Conform represents list operations as submission intents. The remove button identifies the list and index, while the insert button identifies the list; the form handler can then process that operation.",
+    "followUp": "How would you move an item instead of deleting it? Use form.reorder.getButtonProps with the list name, from index, and destination to index."
+   }
+  ],
+  "keyPoints": [
+   "Use the remove intent to delete an item from a field list.",
+   "Pass the field list's metadata name to identify which list should change.",
+   "Call getButtonProps on form.remove and spread the result onto the operation button.",
+   "Use each item's metadata key when rendering the input row."
+  ],
+  "gotchas": [
+   "List inputs need the metadata key as their React key. This lets Conform remount an input with its updated initial value.",
+   "A controlled input using useInputControl is the exception because it resets its value when the key changes."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "form.reorder": {
   "sourceUrl": "https://conform.guide/intent-button",
@@ -1987,6 +3307,284 @@
   ],
   "checkedAt": "2026-10-15"
  },
+ "form.value": {
+  "sourceUrl": "https://conform.guide/",
+  "sourceTitle": "Conform / Overview",
+  "summary": "`form.value` is the current value in Conform's form state. Conform reads it from the DOM with the `FormData` Web API and synchronizes it through event delegation.",
+  "explanation": "`form.value` exposes the current form value from Conform's form state. Conform captures values from the DOM with the `FormData` Web API and keeps them synchronized through event delegation.",
+  "syntax": "form.value",
+  "parameters": [],
+  "returns": "The current form value from Conform's form state.",
+  "example": {
+   "title": "Read the form value",
+   "code": "const value = form.value;\nconsole.log(value);",
+   "language": "typescript",
+   "explanation": "Reads the current value captured by the form."
+  },
+  "useCases": [
+   {
+    "title": "Inspect form state",
+    "scenario": "Read the current form data while rendering or handling an event."
+   },
+   {
+    "title": "Use standard form markup",
+    "scenario": "Build a form with normal HTML controls and progressive enhancement."
+   },
+   {
+    "title": "Track control changes",
+    "scenario": "Keep form values synchronized without manually reading every input."
+   }
+  ],
+  "related": [
+   "useForm",
+   "FormData Web API",
+   "form state",
+   "event delegation",
+   "HTML Forms"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does `form.value` represent?",
+    "answer": "`form.value` is the current value exposed by Conform's form state. Conform obtains form values from the DOM through the FormData Web API.",
+    "followUp": "Why use FormData instead of reading each input manually? It lets Conform work with standard HTML forms and avoid control-specific value-reading code."
+   },
+   {
+    "question": "How does Conform keep the form value synchronized?",
+    "answer": "Conform synchronizes form state through event delegation. This lets the form state follow changes in the underlying HTML controls.",
+    "followUp": "What is a practical benefit? A form can keep its normal HTML structure while Conform observes and manages its state."
+   },
+   {
+    "question": "What should you check when a value is missing?",
+    "answer": "The form value is captured from the DOM, so the source of truth is the rendered form controls. The form must therefore expose the values through normal HTML form data.",
+    "followUp": "How would you debug a missing value? Check that the control has a `name`, is successful for form submission, and contains the expected value."
+   }
+  ],
+  "keyPoints": [
+   "The current value is collected from the rendered form with the browser's `FormData` API.",
+   "Conform updates its form state by listening through event delegation.",
+   "You can keep your preferred valid HTML form structure.",
+   "The feature applies to any valid HTML form, not only a special component structure.",
+   "Use `useForm()` to access the form state, including the form value.",
+   "The design supports progressively enhanced forms instead of requiring a client-only workflow."
+  ],
+  "gotchas": [
+   "The value comes from the DOM, so the form controls must have valid names and values.",
+   "Do not assume special markup is required; standard HTML form controls are supported."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "FormControl": {
+  "sourceUrl": "https://conform.guide/intent-button",
+  "sourceTitle": "Conform / Intent button",
+  "summary": "A submit button that triggers a form submission is included in the submitted form data. Use its name and value to identify the user's intended action and run different behavior from one form.",
+  "explanation": "A submit button is included in form data when it causes the submission. Give each button the same name and a different value, then read that value from FormData. This lets one form perform different actions, such as adding an item to a cart or buying it now.",
+  "syntax": "<button type=\"submit\" name=\"intent\" value=\"action\">Action</button>",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Handle different submit intents",
+   "code": "import { useForm } from \"@conform-to/react\";\n\nexport function Product() {\n  const [form] = useForm({\n    onSubmit(event, { formData }) {\n      event.preventDefault();\n      if (formData.get(\"intent\") === \"add-to-cart\") {\n        // Add the product to the cart.\n      }\n    },\n  });\n\n  return (\n    <form id={form.id}>\n      <input type=\"hidden\" name=\"productId\" value=\"rf23g43\" />\n      <button name=\"intent\" value=\"add-to-cart\">Add to cart</button>\n      <button name=\"intent\" value=\"buy-now\">Buy now</button>\n    </form>\n  );\n}",
+   "language": "tsx",
+   "explanation": "Use a submit button with a name and value to tell the form which action the user chose. Read that value from FormData in the submit handler."
+  },
+  "useCases": [
+   {
+    "title": "Choose a product action",
+    "scenario": "A product form offers both “Add to cart” and “Buy now” actions."
+   },
+   {
+    "title": "Run different form operations",
+    "scenario": "A form needs separate buttons for saving, removing, or validating data."
+   },
+   {
+    "title": "Send an action identifier",
+    "scenario": "A server action must identify which button submitted the form."
+   }
+  ],
+  "related": [
+   "useForm",
+   "FormData",
+   "submitter",
+   "submission intent",
+   "form controls"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is a submission intent?",
+    "answer": "The submitter is the submit button that caused the form submission. Its name and value are added to FormData, so the handler can branch on the selected action.",
+    "followUp": "What happens if the user submits the form without one of these buttons? The intent value may be missing, so the handler should handle that case explicitly."
+   },
+   {
+    "question": "How do you implement different actions in one form?",
+    "answer": "Give multiple submit buttons the same name, such as intent, and assign each a different value. In the submit handler, read formData.get(\"intent\") and choose the matching behavior.",
+    "followUp": "How can the server use this pattern? Read the intent from the request FormData and validate it before running the selected server action."
+   },
+   {
+    "question": "How does the selected action receive the rest of the form data?",
+    "answer": "The form can include other fields, such as a hidden productId. The selected submitter contributes its intent field along with those form values.",
+    "followUp": "Why use FormData here? Conform captures form values from the DOM through the FormData Web API, which keeps the approach aligned with standard HTML forms."
+   }
+  ],
+  "keyPoints": [
+   "Use the submitter when one form needs different behavior based on the user's chosen action.",
+   "Represent an intent by giving the button a reserved name and putting the action identifier in its value.",
+   "Read the intent from FormData and branch on its value, for example with a switch statement.",
+   "Each intent value can map to a separate operation, such as adding a product to a cart."
+  ],
+  "gotchas": [
+   "Only the button that triggers submission is included in the form data. Do not assume every submit button is sent.",
+   "Conform also uses submission intent for built-in form-control actions, so reserve the intended button name and value format when using those features."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "FormMetadata": {
+  "sourceUrl": "https://conform.guide/api/react/future/useFormMetadata",
+  "sourceTitle": "Conform / useFormMetadata",
+  "summary": "useFormMetadata is a React hook for reading form-level state inside a FormProvider. It supports error summaries, conditional submit buttons, form accessibility IDs, and access to field metadata.",
+  "explanation": "The hook reads form-level state from a FormProvider. It can target a form by ID or use the nearest form context. The returned object also provides IDs, default values, custom state, field access methods, and props for the form element.",
+  "syntax": "const form = useFormMetadata(options);",
+  "parameters": [
+   {
+    "name": "formId",
+    "type": "string",
+    "description": "Optional form ID. If omitted, the nearest form context is used."
+   }
+  ],
+  "returns": "A FormMetadata object containing the form ID, intent name, reset key, accessibility IDs, validation state, errors, field errors, default values, custom state, form props, and field access methods.",
+  "example": {
+   "title": "Show a form error summary",
+   "code": "import { FormProvider, useForm, useFormMetadata } from '@conform-to/react/future';\n\nfunction ErrorSummary() {\n  const form = useFormMetadata();\n  if (Object.keys(form.fieldErrors).length === 0) return null;\n  return <ul>{Object.entries(form.fieldErrors).map(([name, errors]) =>\n    <li key={name}>{name}: {errors.join(', ')}</li>\n  )}</ul>;\n}\n\nexport default function App() {\n  const { form } = useForm({\n    onValidate({ payload, error }) {\n      if (!payload.email) error.fieldErrors.email = ['Email is required'];\n      return error;\n    },\n  });\n  return <FormProvider context={form.context}>\n    <form {...form.props}><ErrorSummary /></form>\n  </FormProvider>;\n}",
+   "language": "tsx",
+   "explanation": "This component reads errors for the nearest form and displays errors for touched fields."
+  },
+  "useCases": [
+   {
+    "title": "Global error summary",
+    "scenario": "A page shows all touched-field errors in one place."
+   },
+   {
+    "title": "Conditional form styling",
+    "scenario": "A custom form wrapper changes its class based on validation state."
+   },
+   {
+    "title": "Child component form access",
+    "scenario": "A form has nested components that need field metadata."
+   }
+  ],
+  "related": [
+   "FormMetadata",
+   "useForm",
+   "useField",
+   "FormProvider",
+   "defineCustomState",
+   "configureForms"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does useFormMetadata provide?",
+    "answer": "useFormMetadata reads form-level state from the nearest form context by default. It returns values such as touched, valid, errors, and fieldErrors.",
+    "followUp": "How can a component select another form? Pass that form's identifier in the formId option."
+   },
+   {
+    "question": "How is the returned form metadata used in JSX?",
+    "answer": "Use form.props on the form element. This supplies the form ID and event handlers needed by Conform.",
+    "followUp": "Why use form.props instead of only reading valid? The props connect the rendered HTML form to Conform's event handling."
+   },
+   {
+    "question": "What is the difference between errors and fieldErrors?",
+    "answer": "fieldErrors contains validation errors for touched fields, while errors contains a form-level validation error. A summary can iterate over fieldErrors and render each field name with its messages.",
+    "followUp": "How can a form-level error be exposed to assistive technology? Use the returned errorId with aria-describedby on the form or its relevant error element."
+   }
+  ],
+  "keyPoints": [
+   "Read overall validation state from any component inside the form context.",
+   "Pass formId when the component must read a particular form instead of the nearest one.",
+   "touched becomes true after validation through intent.validate() or the configured validation setting.",
+   "valid is true only when the form has no validation errors.",
+   "Use errorId to connect form-level error content to the form for accessibility.",
+   "Use getFieldList(name) when you need metadata for an array field."
+  ],
+  "gotchas": [
+   "This hook is in the future export, so its API can change in minor releases.",
+   "A child component must be inside a FormProvider with the form context."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "FormProvider": {
+  "sourceUrl": "https://conform.guide/api/react/FormProvider",
+  "sourceTitle": "FormProvider",
+  "summary": "FormProvider makes a useForm context available to child components. It is needed for useField and useFormMetadata, and providers can be nested.",
+  "explanation": "FormProvider supplies the context created by useForm to its descendants. This enables useField and useFormMetadata to find the active form, including when fields are placed outside the form element but connected with the form attribute.",
+  "syntax": "<FormProvider context={form.context}>{children}</FormProvider>",
+  "parameters": [
+   {
+    "name": "context",
+    "type": "Form context",
+    "description": "The context returned by useForm through form.context."
+   }
+  ],
+  "returns": "A React context provider that makes the supplied form context available to child components.",
+  "example": {
+   "title": "Provide form context to child components",
+   "code": "import { FormProvider, useForm, useField } from '@conform-to/react';\n\nfunction Search() {\n  const [form, fields] = useForm({ id: 'search' });\n\n  return (\n    <FormProvider context={form.context}>\n      <form {...form.props}>\n        <input name={fields.title.name} />\n      </form>\n    </FormProvider>\n  );\n}",
+   "language": "tsx",
+   "explanation": "Create a form with useForm, then pass its context to FormProvider. Child components can then use form-related hooks."
+  },
+  "useCases": [
+   {
+    "title": "Share form state with fields",
+    "scenario": "A child component needs form field metadata without receiving the form object through every prop."
+   },
+   {
+    "title": "Support split layouts",
+    "scenario": "Inputs and the form element must be placed in different layout regions."
+   },
+   {
+    "title": "Nest separate forms",
+    "scenario": "A page contains independent forms, such as search and login."
+   }
+  ],
+  "related": [
+   "useForm",
+   "useField",
+   "useFormMetadata",
+   "form.context",
+   "form attribute"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How do you use FormProvider?",
+    "answer": "Pass form.context from useForm to the context prop of FormProvider. Descendant components can then use useField or useFormMetadata to access that form.",
+    "followUp": "What happens with nested providers? The nearest form context is used unless useField receives an explicit formId."
+   },
+   {
+    "question": "Must FormProvider directly contain the form element?",
+    "answer": "FormProvider can wrap elements that are not direct children of the form element. An input outside the form can still belong to it by setting its form attribute to the form's id.",
+    "followUp": "Why is this useful? It supports layouts where controls and the form element must be rendered in different parts of the page."
+   },
+   {
+    "question": "Can FormProvider be nested?",
+    "answer": "Yes. A provider can be placed inside another provider to support separate forms. Each provider receives the context from its own useForm call.",
+    "followUp": "How can a field select an outer form? Give useField the outer form's formId instead of relying on the closest context."
+   }
+  ],
+  "keyPoints": [
+   "Use FormProvider when descendant code needs the useField or useFormMetadata hooks.",
+   "Set context to the form.context value returned by useForm.",
+   "The component makes the form context available to descendants through React context.",
+   "Inputs can live outside the form element when their form attribute points to the form id.",
+   "Use nested providers when separate forms need to appear within one layout."
+  ],
+  "gotchas": [
+   "The provider may wrap other elements before or around the form. Inputs outside the form must still use the form attribute to connect to it.",
+   "Nested providers change which form useField finds by default. Pass formId when a field must use a different form."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "FormStateInput": {
   "sourceUrl": "https://conform.guide/api/react/FormStateInput",
   "sourceTitle": "FormStateInput",
@@ -2125,6 +3723,85 @@
    "The relevant inputs must use names from field metadata; otherwise Conform cannot reliably associate the intent with the intended field."
   ],
   "checkedAt": "2026-10-15"
+ },
+ "getCollectionProps": {
+  "sourceUrl": "https://conform.guide/api/react/getCollectionProps",
+  "sourceTitle": "Conform / getCollectionProps",
+  "summary": "getCollectionProps creates the props for a group of native checkbox or radio inputs. It returns one props object for each option, including identifiers and accessibility attributes.",
+  "explanation": "Pass field metadata and collection options to getCollectionProps. It returns one props object per option. Spread each object onto a native checkbox or radio input. The helper creates values and identifiers, adds the field attributes, and can add validation and description ARIA attributes.",
+  "syntax": "const collectionProps = getCollectionProps(meta, options);",
+  "parameters": [
+   {
+    "name": "meta",
+    "type": "FieldMetadata",
+    "description": "Field metadata for the collection."
+   },
+   {
+    "name": "options",
+    "type": "object",
+    "description": "Configuration for the collection, including type, options, and ARIA behavior."
+   }
+  ],
+  "returns": "An array of props objects, one for each collection option.",
+  "example": {
+   "title": "Radio button collection",
+   "code": "import { useForm, getCollectionProps } from \"@conform-to/react\";\n\nexport default function Example() {\n  const [, fields] = useForm();\n\n  return (\n    <fieldset>\n      <legend>Color</legend>\n      {getCollectionProps(fields.color, {\n        type: \"radio\",\n        options: [\"red\", \"green\", \"blue\"],\n      }).map((props) => (\n        <label key={props.id} htmlFor={props.id}>\n          <input {...props} />\n          {props.value}\n        </label>\n      ))}\n    </fieldset>\n  );\n}",
+   "language": "tsx",
+   "explanation": "This creates one accessible radio input for each color option and supplies the props needed by each input."
+  },
+  "useCases": [
+   {
+    "title": "Checkbox groups",
+    "scenario": "Render several values for one field."
+   },
+   {
+    "title": "Radio groups",
+    "scenario": "Allow exactly one value from several choices."
+   },
+   {
+    "title": "Accessible validation",
+    "scenario": "Connect inputs with descriptions and validation messages."
+   }
+  ],
+  "related": [
+   "getInputProps",
+   "getSelectProps",
+   "getTextareaProps",
+   "getFieldsetProps",
+   "getFormProps"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does getCollectionProps return?",
+    "answer": "It accepts field metadata and options. The options include the input type and the collection values. It returns an array, so the caller maps over it and spreads each props object onto an input.",
+    "followUp": "How would you render a custom checkbox component? Use the field metadata directly or write a helper that converts the metadata into the custom component's required props."
+   },
+   {
+    "question": "How do you configure a collection?",
+    "answer": "Set type to checkbox or radio. Pass the option values in the options array. Each option becomes the value of one input and helps derive its key and id.",
+    "followUp": "Why are the generated ids useful? They let labels target their matching inputs and support the relationships needed for accessible form markup."
+   },
+   {
+    "question": "How does the helper support accessibility?",
+    "answer": "ARIA attributes are included by default. aria-invalid and aria-describedby can be disabled with ariaAttributes, and ariaDescribedBy can append another description element id.",
+    "followUp": "When might the helper be unnecessary? A custom UI library may already provide its own accessibility attributes, so direct field metadata or the library API may be better."
+   }
+  ],
+  "keyPoints": [
+   "It generates the props needed to make a checkbox or radio collection accessible.",
+   "Every option becomes an input value and contributes to that input's key and id.",
+   "Choose checkbox or radio with the type option.",
+   "ariaAttributes controls whether validation-related ARIA attributes appear in the returned props.",
+   "ariaDescribedBy adds another element id to aria-describedby, such as a field description id.",
+   "The helper is optional; field metadata can be used directly when building the input props."
+  ],
+  "gotchas": [
+   "Use this helper with native checkbox or radio elements. For a custom component, create a helper that matches that component's API.",
+   "Set value to false when using controlled inputs so the helper does not return a default value.",
+   "ariaInvalid selects whether validation ARIA attributes use errors or allErrors; its default is errors."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "getFieldset": {
   "sourceUrl": "https://conform.guide/complex-structures",
@@ -2421,6 +4098,87 @@
   ],
   "checkedAt": "2026-10-15"
  },
+ "getSelectProps": {
+  "sourceUrl": "https://conform.guide/api/react/getSelectProps",
+  "sourceTitle": "Conform / getSelectProps",
+  "summary": "getSelectProps creates the props for an accessible native select from Conform field metadata. It reduces the need to set IDs, names, values, validation attributes, and select attributes by hand.",
+  "explanation": "getSelectProps builds the props needed for an accessible native select from Conform field metadata. It reduces manual wiring for identifiers, form data, default value, validation state, and select attributes.",
+  "syntax": "getSelectProps(meta, options)",
+  "parameters": [
+   {
+    "name": "meta",
+    "type": "FieldMetadata",
+    "description": "Field metadata for the select, such as the metadata returned by useForm."
+   },
+   {
+    "name": "options",
+    "type": "object",
+    "description": "Options controlling defaultValue and ARIA output. Supported options include value, ariaAttributes, ariaInvalid, and ariaDescribedBy."
+   }
+  ],
+  "returns": "An object containing props for an accessible native select element.",
+  "example": {
+   "title": "Use getSelectProps with a native select",
+   "code": "import { useForm, getSelectProps } from '@conform-to/react';\n\nexport function Example() {\n  const [form, fields] = useForm();\n\n  return (\n    <form id={form.id}>\n      <select {...getSelectProps(fields.category)}>\n        <option value=\"books\">Books</option>\n        <option value=\"tools\">Tools</option>\n      </select>\n    </form>\n  );\n}",
+   "language": "tsx",
+   "explanation": "Spread the returned props onto a native select element. Conform supplies the field identifiers, form connection, initial value, validation state, and select-related attributes."
+  },
+  "useCases": [
+   {
+    "title": "Reduce form wiring",
+    "scenario": "You render a native HTML select from Conform field metadata and want less repetitive JSX."
+   },
+   {
+    "title": "Add validation accessibility",
+    "scenario": "You need to connect a select to validation errors and descriptive text."
+   },
+   {
+    "title": "Configure controlled input behavior",
+    "scenario": "You use a controlled select and must avoid an automatically supplied defaultValue."
+   }
+  ],
+  "related": [
+   "useForm",
+   "getFormProps",
+   "getFieldsetProps",
+   "getInputProps",
+   "getTextareaProps",
+   "getCollectionProps",
+   "meta.descriptionId"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What problem does getSelectProps solve?",
+    "answer": "getSelectProps accepts field metadata and returns the props needed by a native select. It replaces repeated manual assignments for IDs, names, form association, value setup, validation ARIA attributes, and select attributes.",
+    "followUp": "What should you do for a custom select component? Use the component's own accessibility API or write a helper that maps Conform metadata to that component."
+   },
+   {
+    "question": "How do you use getSelectProps with a controlled select?",
+    "answer": "The helper adds defaultValue unless the value option is false. Set value to false for a controlled select so the helper does not provide that default value.",
+    "followUp": "Why is this distinction useful? Controlled elements receive their value from React state, so an additional default value can conflict with the control model."
+   },
+   {
+    "question": "How can the helper's ARIA output be configured?",
+    "answer": "ariaAttributes defaults to true. ariaInvalid chooses whether ARIA validity uses meta.errors or meta.allErrors, and ariaDescribedBy can append another ID such as meta.descriptionId.",
+    "followUp": "When would ariaDescribedBy be useful? Use it to connect the select to extra descriptive text while retaining the relevant error description."
+   }
+  ],
+  "keyPoints": [
+   "It returns the props needed to make a native select accessible.",
+   "The value option can disable the generated defaultValue for controlled inputs.",
+   "ariaAttributes is enabled by default, so validation ARIA attributes are included unless disabled.",
+   "ariaInvalid uses meta.errors by default when deciding the invalid state.",
+   "ariaDescribedBy accepts an additional description ID, including the field metadata's descriptionId.",
+   "The helper is optional; field metadata can be assigned manually when more control is needed."
+  ],
+  "gotchas": [
+   "Use this helper with a native HTML select. A custom select component may need its own accessibility API.",
+   "By default, the helper adds defaultValue. Set value to false when using a controlled select.",
+   "ariaAttributes controls whether the helper adds the validation ARIA attributes."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "getTextareaProps": {
   "sourceUrl": "https://conform.guide/api/react/getTextareaProps",
   "sourceTitle": "getTextareaProps",
@@ -2641,6 +4399,76 @@
   ],
   "checkedAt": "2026-10-15"
  },
+ "Intent": {
+  "sourceUrl": "https://conform.guide/intent-button",
+  "sourceTitle": "Conform / Intent button",
+  "summary": "Conform uses the clicked submit button to carry an intent in form data. Built-in helpers use intents for validation, reset, update, and list operations.",
+  "explanation": "Conform represents an action as form data. Submit buttons can add an intent field, and Conform uses that intent to choose behavior such as validation, reset, update, insert, remove, or reorder. Helpers create the needed button properties. Field metadata keys let React remount inputs when their initial values change.",
+  "syntax": "form.validate.getButtonProps({ name: fields.email.name })",
+  "parameters": [],
+  "returns": "The documentation describes intent-driven form actions and does not specify a standalone return value.",
+  "example": {
+   "title": "Validate one field",
+   "code": "const [form, fields] = useForm();\n\nreturn (\n  <form id={form.id}>\n    <input name={fields.email.name} />\n    <button {...form.validate.getButtonProps({ name: fields.email.name })}>\n      Validate email\n    </button>\n  </form>\n);",
+   "language": "tsx",
+   "explanation": "This button asks Conform to validate the email field."
+  },
+  "useCases": [
+   {
+    "title": "Choose between submit actions",
+    "scenario": "A form has several submit actions, such as adding an item or buying it immediately."
+   },
+   {
+    "title": "Validate on blur",
+    "scenario": "A field should be checked after the user leaves it."
+   },
+   {
+    "title": "Edit a field list",
+    "scenario": "A form contains a list of tasks or other repeated fields."
+   }
+  ],
+  "related": [
+   "useForm",
+   "form.validate",
+   "form.reset",
+   "form.update",
+   "form.insert",
+   "form.remove",
+   "form.reorder",
+   "parseWithZod"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "How does a submit button communicate intent?",
+    "answer": "A submitter contributes its name and value to FormData when it triggers the submission. Conform reads that value as an intent, so different buttons can run different actions.",
+    "followUp": "How can a form support add-to-cart and buy-now? Add two submit buttons with the same name, such as intent, and different values. Handle the selected value from formData."
+   },
+   {
+    "question": "How do you trigger field validation?",
+    "answer": "Use form.validate.getButtonProps with a field name to create a validation button. You can also call form.validate from an input's onBlur handler to validate when focus leaves the field.",
+    "followUp": "How would you validate only an email field? Pass fields.email.name to getButtonProps or to form.validate, then let the schema report the email error."
+   },
+   {
+    "question": "How can expensive validation be reduced?",
+    "answer": "For async checks, pass a schema function that receives the intent and set async to true when using parseWithZod. If the intent targets another field, add the skipped-validation message so Conform can reuse the earlier result.",
+    "followUp": "Why skip unrelated async checks? It avoids repeating expensive work when the schema validates all fields together, which reduces unnecessary server and client validation cost."
+   }
+  ],
+  "keyPoints": [
+   "The clicked submit button can add its name and value to the submitted FormData.",
+   "Conform uses intent for form controls, including validation, reset, update, and list changes.",
+   "A validate intent can mark a field as validated and return an error message when the field is invalid.",
+   "Call form.validate from an input event, such as onBlur, when validation should happen after leaving the field.",
+   "Use insert, remove, and reorder intents to change the contents or order of a field list."
+  ],
+  "gotchas": [
+   "Server validation can add network delay during typing. Use it when that delay is acceptable.",
+   "Reset and update need the field metadata key so React can remount the input with the new initial value.",
+   "A schema may validate every field even when only one field changed. Use the submission intent to skip unrelated checks."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "intent.insert": {
   "sourceUrl": "https://conform.guide/api/react/future/useIntent",
   "sourceTitle": "useIntent",
@@ -2735,6 +4563,102 @@
   ],
   "checkedAt": "2026-10-15"
  },
+ "intent.remove": {
+  "sourceUrl": "https://conform.guide/api/react/future/useIntent",
+  "sourceTitle": "Conform / useIntent",
+  "summary": "useIntent returns an intent dispatcher for changing form state without submitting it. It supports validation, reset, update, array insertion, removal, and reordering.",
+  "explanation": "useIntent returns an intent dispatcher for changing form state without submitting the form. It can validate, reset, update, insert, remove, or reorder fields, and it can target a form through a React ref or form ID.",
+  "syntax": "const intent = useIntent(formRef)",
+  "parameters": [
+   {
+    "name": "formRef",
+    "type": "FormRef",
+    "description": "React ref pointing to a form, button, or input, or a form ID string."
+   },
+   {
+    "name": "name",
+    "type": "string",
+    "description": "Optional field name. Without it, validate the entire form; nested names cover their fieldset."
+   },
+   {
+    "name": "options",
+    "type": "object",
+    "description": "Optional reset settings, including defaultValue and null behavior as documented on the page."
+   },
+   {
+    "name": "options",
+    "type": "object",
+    "description": "Array intent settings, including name, index or position data, source fields, and optional invalid handling."
+   }
+  ],
+  "returns": "An IntentDispatcher containing built-in intent methods. A configured dispatcher also contains that factory's custom intents. Each method has serialize() with the same arguments.",
+  "example": {
+   "title": "Reset a form",
+   "code": "import { useRef } from 'react';\nimport { useIntent, useForm } from '@conform-to/react/future';\n\nfunction ResetButton() {\n  const ref = useRef<HTMLButtonElement>(null);\n  const intent = useIntent(ref);\n\n  return (\n    <button type=\"button\" ref={ref} onClick={() => intent.reset()}>\n      Reset form\n    </button>\n  );\n}\n\nexport default function Example() {\n  const { form } = useForm({});\n  return (\n    <form {...form.props}>\n      <input name=\"email\" type=\"email\" />\n      <button type=\"submit\">Submit</button>\n      <ResetButton />\n    </form>\n  );\n}",
+   "language": "tsx",
+   "explanation": "This button resets the form without submitting it."
+  },
+  "useCases": [
+   {
+    "title": "Reset without submit",
+    "scenario": "Add a reusable reset button that acts on a nearby or associated form."
+   },
+   {
+    "title": "Trigger validation",
+    "scenario": "Validate one field or a nested field group from a custom control."
+   },
+   {
+    "title": "Edit field lists",
+    "scenario": "Add, remove, or move items in an array field."
+   },
+   {
+    "title": "Progressive enhancement",
+    "scenario": "Create a native submit button that carries an intent value."
+   }
+  ],
+  "related": [
+   "useForm",
+   "configureForms",
+   "FormRef",
+   "IntentDispatcher",
+   "validate",
+   "reset",
+   "update",
+   "insert"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does useIntent provide?",
+    "answer": "useIntent returns methods for form actions such as validate, reset, update, insert, remove, and reorder. These methods change form state without submitting the form.",
+    "followUp": "How can a button outside the form target it? Give the button a form attribute containing the form ID, and pass its ref to useIntent."
+   },
+   {
+    "question": "What can formRef contain?",
+    "answer": "formRef can be a React ref for a form-related element, such as a form, button, or input. It can also be a form ID string.",
+    "followUp": "Why might a button ref be useful? It lets a reusable control find its associated form, including when the control is rendered outside the form."
+   },
+   {
+    "question": "What is serialize() used for?",
+    "answer": "Each intent method also has serialize(), which returns the intent value without dispatching it. A native submit button can use that value, so the same action can work when JavaScript is unavailable.",
+    "followUp": "What is the difference between dispatching and serializing? Dispatching performs the action through JavaScript; serialization only creates the value for form submission."
+   }
+  ],
+  "keyPoints": [
+   "The hook returns an object used to trigger form actions from controls.",
+   "Intent methods change form state without submitting the form.",
+   "The target may be selected with a React ref or a form ID string.",
+   "validate() checks the whole form when no name is given, or checks the named field and its nested fields.",
+   "reset() can restore the form defaults or reset to a supplied default value.",
+   "remove() takes an array field name and item index, with optional invalid-state behavior.",
+   "reorder() moves an array item from one index to another."
+  ],
+  "gotchas": [
+   "The hook is in Conform's future export, so its API may change in minor releases.",
+   "Array insert and remove decisions that use onInvalid need synchronous validation errors; asynchronous validation cannot make those decisions immediately."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "intent.reorder": {
   "sourceUrl": "https://conform.guide/intent-button",
   "sourceTitle": "Intent button",
@@ -2814,6 +4738,157 @@
    "Use reorder for field lists; it is not presented as a general-purpose object-update operation."
   ],
   "checkedAt": "2026-10-15"
+ },
+ "intent.replace": {
+  "sourceUrl": "https://conform.guide/intent-button",
+  "sourceTitle": "Conform / Intent button",
+  "summary": "Use a submit button's intent value to choose different behavior in one Conform form. Read the value from FormData in the submit handler.",
+  "explanation": "A submit button can tell Conform which operation the user requested. Give the button the reserved intent name and store the operation in its value. During submission, read that value from FormData and branch to the matching behavior.",
+  "syntax": "<button type=\"submit\" name=\"intent\" value=\"operation\">Operation</button>",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Handle a replace intent",
+   "code": "import { useForm } from '@conform-to/react';\n\nfunction Product() {\n  const [form] = useForm({\n    onSubmit(event, { formData }) {\n      event.preventDefault();\n\n      if (formData.get('intent') === 'replace') {\n        // Replace the current item.\n      }\n    },\n  });\n\n  return (\n    <form id={form.id}>\n      <input name=\"itemId\" value=\"item-1\" readOnly />\n      <button type=\"submit\" name=\"intent\" value=\"replace\">\n        Replace\n      </button>\n    </form>\n  );\n}",
+   "language": "tsx",
+   "explanation": "The button adds intent=replace to FormData. The submit handler reads that value and chooses the matching action."
+  },
+  "useCases": [
+   {
+    "title": "Choose between product actions",
+    "scenario": "A product form has Add to Cart and Buy Now buttons."
+   },
+   {
+    "title": "Run form-control operations",
+    "scenario": "A form must validate or remove a field through a control button."
+   },
+   {
+    "title": "Dispatch one of several intents",
+    "scenario": "A single submit handler needs to dispatch several commands."
+   }
+  ],
+  "related": [
+   "useForm",
+   "FormData",
+   "submission intent",
+   "submitter",
+   "Form controls"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is a submission intent?",
+    "answer": "A submitter is the button that triggered the form submission. If it has a name and value, that pair is included in FormData, so the handler can choose the requested operation.",
+    "followUp": "How would you distinguish two operations? Give each submit button the same name, such as intent, and use different values. Read the submitted value and switch on it."
+   },
+   {
+    "question": "How do you implement multiple actions in one form?",
+    "answer": "Set each submit button's name to intent and its value to the operation name, such as add-to-cart or buy-now. In the submit handler, read formData.get('intent') and branch on the result.",
+    "followUp": "Why use one field name? A shared name gives the handler one predictable field while the value identifies the selected operation."
+   },
+   {
+    "question": "What other form operations can use intents?",
+    "answer": "The intent mechanism is not limited to application actions. Conform uses it for form-control operations, including validation and removing a field.",
+    "followUp": "How can the operation be represented in markup? Use submit buttons with the reserved name and serialize the desired intent in each button's value."
+   }
+  ],
+  "keyPoints": [
+   "Use an intent when one form needs different behavior for different submit buttons.",
+   "Read the submitted intent from FormData with formData.get('intent').",
+   "The button value can identify an add-to-cart operation.",
+   "A different button value can identify a buy-now operation.",
+   "Set the reserved button name to intent and serialize the operation in its value."
+  ],
+  "gotchas": [
+   "Only the button that triggers submission contributes its name and value to the submitted form data.",
+   "Conform also uses intents for form-control operations such as validation and removing a field."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "intent.reset": {
+  "sourceUrl": "https://conform.guide/api/react/future/useIntent",
+  "sourceTitle": "useIntent",
+  "summary": "`intent.reset()` resets a Conform form without submitting it. It can restore the configured default or a supplied default value.",
+  "explanation": "`intent.reset()` resets the form to its default value without submitting the form. The dispatcher can target a form through a React ref or a form ID. The `useIntent` API is currently experimental, so minor releases may change it.",
+  "syntax": "const intent = useIntent(formRef);\nintent.reset(options?);",
+  "parameters": [
+   {
+    "name": "formRef",
+    "type": "FormRef",
+    "description": "A React ref object for a form, button, or input, or a form ID string."
+   },
+   {
+    "name": "options",
+    "type": "object",
+    "description": "Optional reset settings. `defaultValue` supplies the value to reset to."
+   },
+   {
+    "name": "options.defaultValue",
+    "type": "unknown",
+    "description": "The value used as the new reset value."
+   }
+  ],
+  "returns": "`useIntent` returns an IntentDispatcher. `reset()` returns void.",
+  "example": {
+   "title": "Reset a form with an intent button",
+   "code": "import { useRef } from 'react';\nimport { useIntent, useForm } from '@conform-to/react/future';\n\nfunction ResetButton() {\n  const buttonRef = useRef<HTMLButtonElement>(null);\n  const intent = useIntent(buttonRef);\n\n  return (\n    <button\n      type=\"button\"\n      ref={buttonRef}\n      onClick={() => intent.reset()}\n    >\n      Reset form\n    </button>\n  );\n}\n\nexport default function MyForm() {\n  const { form } = useForm();\n  return (\n    <form {...form.props}>\n      <input name=\"email\" type=\"email\" />\n      <ResetButton />\n      <button type=\"submit\">Submit</button>\n    </form>\n  );\n}",
+   "language": "tsx",
+   "explanation": "The button gets an intent dispatcher linked to itself. Clicking it resets the form without submitting it."
+  },
+  "useCases": [
+   {
+    "title": "Reusable reset control",
+    "scenario": "A form has a separate Reset button that should clear its fields without submitting."
+   },
+   {
+    "title": "Reset to supplied defaults",
+    "scenario": "A form must return to a new set of initial values after a user action."
+   },
+   {
+    "title": "External form control",
+    "scenario": "A control outside the form needs to operate on that form."
+   }
+  ],
+  "related": [
+   "useForm",
+   "useIntent",
+   "intent.validate",
+   "intent.update",
+   "intent.insert",
+   "intent.remove",
+   "intent.reorder"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does `intent.reset()` do?",
+    "answer": "`intent.reset()` sends a reset intent through the form instead of submitting it. With no options, it restores the form's default value.",
+    "followUp": "How can a reset button work outside the form? Pass the form's ID to the button's `form` attribute and use a ref on that button with `useIntent`."
+   },
+   {
+    "question": "How does `useIntent` find its target form?",
+    "answer": "`useIntent` accepts a React ref object or a form ID string. The ref can point to a form, button, or input element.",
+    "followUp": "Why use a button ref for a reusable reset control? It lets the dispatcher find the associated form when the control is separate from the form component."
+   },
+   {
+    "question": "How can you reset to a specific value?",
+    "answer": "The reset method accepts an optional options object. Its `defaultValue` sets the value that the form should reset to.",
+    "followUp": "How would you reset to the original default instead? Omit `defaultValue`; the form returns to its configured default value."
+   }
+  ],
+  "keyPoints": [
+   "`useIntent` returns a dispatcher for form actions such as reset, validate, update, insert, remove, and reorder.",
+   "Intent actions change form state without causing a normal form submission.",
+   "The target can be a React ref object pointing to a form-related HTML element.",
+   "A form ID string can target a particular form.",
+   "`reset(options)` can restore the form to a supplied default value.",
+   "Every intent method also has `serialize()`, which produces the intent value without dispatching it."
+  ],
+  "gotchas": [
+   "`useIntent` is a future API. Its behavior or signature may change in a minor release.",
+   "The ref must point to a form-related element, such as a form, button, or input."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "intent.update": {
   "sourceUrl": "https://conform.guide/intent-button",
@@ -3640,6 +5715,72 @@
   ],
   "checkedAt": "2026-10-15"
  },
+ "requestIntent": {
+  "sourceUrl": "https://conform.guide/intent-button",
+  "sourceTitle": "Conform / Intent button",
+  "summary": "Conform lets a form detect which submit button triggered submission. Put an intent value on each button, then read it from FormData to choose the behavior.",
+  "explanation": "A submit button adds its name and value to the submitted form data. Read that value to select different behavior, such as adding an item to a cart or buying it now. Conform also uses a reserved intent field for form-control actions such as validation or removing a field.",
+  "syntax": "<button type=\"submit\" name=\"intent\" value=\"action\">Action</button>",
+  "parameters": [],
+  "returns": "",
+  "example": {
+   "title": "Handle two submit intents",
+   "code": "const [form] = useForm({\n  onSubmit(event, { formData }) {\n    event.preventDefault();\n    const intent = formData.get(\"intent\");\n    if (intent === \"add-to-cart\") addToCart();\n    if (intent === \"buy-now\") buyNow();\n  },\n});\n\nreturn (\n  <form id={form.id}>\n    <button type=\"submit\" name=\"intent\" value=\"add-to-cart\">\n      Add to Cart\n    </button>\n    <button type=\"submit\" name=\"intent\" value=\"buy-now\">\n      Buy now\n    </button>\n  </form>\n);",
+   "language": "tsx",
+   "explanation": "Use the clicked submit button to choose the form action."
+  },
+  "useCases": [
+   {
+    "title": "Choose a product action",
+    "scenario": "A product form needs separate Add to Cart and Buy Now actions."
+   },
+   {
+    "title": "Handle multiple submit paths",
+    "scenario": "One form saves data in different ways based on the clicked button."
+   },
+   {
+    "title": "Run form-control actions",
+    "scenario": "A form needs buttons that request validation or remove a field."
+   }
+  ],
+  "related": [
+   "useForm",
+   "FormData",
+   "submission intent",
+   "submitter",
+   "form controls"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What is a submission intent?",
+    "answer": "The submitter is the submit button that triggered the form submission. Its name and value are included in the submitted form data, so code can inspect the intent and choose the required behavior.",
+    "followUp": "How can a form support different actions? Use separate submit buttons with the same name and different values, then branch on the submitted value."
+   },
+   {
+    "question": "How do you implement multiple submit actions?",
+    "answer": "In the example, the form reads the intent field from FormData. It runs the add-to-cart path for one value and the buy-now path for the other.",
+    "followUp": "What should the handler do when the value is unknown? Reject it or handle it explicitly rather than silently selecting an action."
+   },
+   {
+    "question": "How does Conform use intent beyond custom actions?",
+    "answer": "Conform uses submission intent for form controls, including validation and removing a field. The button uses a reserved name, and the intent is encoded in its value.",
+    "followUp": "Why use a reserved name? It gives Conform a consistent way to recognize control operations during submission."
+   }
+  ],
+  "keyPoints": [
+   "The clicked submit button can add its name and value to FormData.",
+   "Use the submitter when one form needs several behaviors.",
+   "A value such as add-to-cart can identify one requested action.",
+   "A value such as buy-now can identify another requested action.",
+   "Conform uses intent for built-in form-control operations as well as application actions."
+  ],
+  "gotchas": [
+   "Only the button that triggers the submission contributes its name and value to the form data.",
+   "For Conform form-control actions, use the reserved intent field format instead of an unrelated button name."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "schema integration": {
   "sourceUrl": "https://conform.guide/api/react/future/useForm",
   "sourceTitle": "useForm",
@@ -3719,6 +5860,228 @@
   ],
   "checkedAt": "2026-10-15"
  },
+ "shouldRevalidate": {
+  "sourceUrl": "https://conform.guide/api/react/useForm",
+  "sourceTitle": "Conform / useForm",
+  "summary": "`shouldRevalidate` sets when Conform validates a field again after its first validation. It can run on submit, blur, or input, and defaults to `shouldValidate` when omitted.",
+  "explanation": "Set `shouldRevalidate` to choose when Conform checks a field again after its first validation. For example, `onInput` gives feedback as the user types after the field was first checked. If omitted, it uses the value of `shouldValidate`.",
+  "syntax": "useForm({ shouldRevalidate: 'onInput' })",
+  "parameters": [
+   {
+    "name": "shouldRevalidate",
+    "type": "'onSubmit' | 'onBlur' | 'onInput'",
+    "description": "When to validate a field again after its first validation: `onSubmit`, `onBlur`, or `onInput`."
+   }
+  ],
+  "returns": "No separate value. It is an option passed to `useForm`; the hook returns form and field metadata.",
+  "example": {
+   "title": "Set validation timing",
+   "code": "const [form] = useForm({\n  shouldValidate: 'onBlur',\n  shouldRevalidate: 'onInput',\n});",
+   "language": "tsx",
+   "explanation": "This validates a field after the user leaves it, then checks it again while the user edits it."
+  },
+  "useCases": [
+   {
+    "title": "Progressive field feedback",
+    "scenario": "Show an error after a user leaves a field, then update that error while the user edits it."
+   },
+   {
+    "title": "Reuse the initial timing",
+    "scenario": "Keep validation timing consistent without adding another option."
+   }
+  ],
+  "related": [
+   "useForm",
+   "shouldValidate",
+   "onValidate",
+   "lastResult"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does `shouldRevalidate` do?",
+    "answer": "`shouldRevalidate` controls when Conform validates a field again after it has already been validated. It accepts `onSubmit`, `onBlur`, or `onInput`.",
+    "followUp": "What happens when it is omitted? It uses the value configured in `shouldValidate`."
+   },
+   {
+    "question": "How can you validate after leaving a field and then while editing?",
+    "answer": "Use `shouldValidate: 'onBlur'` to validate when the user leaves a field, then use `shouldRevalidate: 'onInput'` to check changes while the user types. This gives early feedback without checking every keystroke from the start.",
+    "followUp": "How can validation become instant? Add `onValidate` with a client-side parser such as `parseWithZod`."
+   },
+   {
+    "question": "Where is `shouldRevalidate` configured?",
+    "answer": "The option is part of the object passed to `useForm`. Its value is one of `onSubmit`, `onBlur`, or `onInput`.",
+    "followUp": "How can you avoid a server round trip for ordinary checks? Configure `onValidate` to run the validation schema on the client."
+   }
+  ],
+  "keyPoints": [
+   "It chooses when Conform checks each field again after the field has already been validated.",
+   "Its supported timing values are `onSubmit`, `onBlur`, and `onInput`.",
+   "When unset, it uses the same timing as `shouldValidate`.",
+   "Pairing `shouldValidate: 'onBlur'` with `shouldRevalidate: 'onInput'` starts checks on blur and continues them during later input."
+  ],
+  "gotchas": [
+   "If you do not set `shouldRevalidate`, it follows `shouldValidate` instead of using a separate default."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "shouldValidate": {
+  "sourceUrl": "https://conform.guide/api/react/useForm",
+  "sourceTitle": "Conform / useForm",
+  "summary": "`shouldValidate` chooses when Conform first validates each field. `shouldRevalidate` chooses when it checks the field again after validation.",
+  "explanation": "Pass `shouldValidate` to `useForm` to choose when field validation starts. Use `shouldRevalidate` to choose when Conform checks a field again after its first validation. Both settings accept `onSubmit`, `onBlur`, or `onInput`.",
+  "syntax": "const [form, fields] = useForm({ shouldValidate, shouldRevalidate });",
+  "parameters": [
+   {
+    "name": "shouldValidate",
+    "type": "'onSubmit' | 'onBlur' | 'onInput'",
+    "description": "Sets the event that starts validation for each field. Accepted values are `onSubmit`, `onBlur`, and `onInput`. Defaults to `onSubmit`."
+   },
+   {
+    "name": "shouldRevalidate",
+    "type": "'onSubmit' | 'onBlur' | 'onInput'",
+    "description": "Sets the event for validating a field again after its first validation. Defaults to `shouldValidate`."
+   },
+   {
+    "name": "onValidate",
+    "type": "function",
+    "description": "A function called when the form needs validation again."
+   }
+  ],
+  "returns": "`useForm` returns form and field metadata. The form metadata includes the form `id`, error identifiers, current value, validation errors, validity, dirty state, submission status, and event handlers.",
+  "example": {
+   "title": "Validate on blur, then on input",
+   "code": "const [form] = useForm({\n  shouldValidate: 'onBlur',\n  shouldRevalidate: 'onInput',\n});\n\nreturn (\n  <form id={form.id} onSubmit={form.onSubmit}>\n    <input name=\"email\" />\n    <button type=\"submit\">Save</button>\n  </form>\n);",
+   "language": "tsx",
+   "explanation": "This starts validation when a field loses focus and checks it again while the user types after that."
+  },
+  "useCases": [
+   {
+    "title": "Blur-based validation",
+    "scenario": "Show field errors after the user leaves a field instead of waiting for submission."
+   },
+   {
+    "title": "Input-based revalidation",
+    "scenario": "Give instant feedback after an initial validation has run."
+   },
+   {
+    "title": "Submit-only validation",
+    "scenario": "Validate only when the user submits the form."
+   }
+  ],
+  "related": [
+   "useForm",
+   "onValidate",
+   "shouldRevalidate",
+   "lastResult"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does `shouldValidate` control?",
+    "answer": "`shouldValidate` selects the event that begins field validation. Its choices are `onSubmit`, `onBlur`, and `onInput`; the default is `onSubmit`.",
+    "followUp": "How do you use a different event for later checks? Set `shouldRevalidate` separately, such as `onInput` after initial `onBlur` validation."
+   },
+   {
+    "question": "What does `shouldRevalidate` control?",
+    "answer": "`shouldRevalidate` selects the event used after a field has already been validated. It also accepts `onSubmit`, `onBlur`, and `onInput`.",
+    "followUp": "What happens when it is not provided? Conform uses the value of `shouldValidate`."
+   },
+   {
+    "question": "How do you connect the returned form metadata to a form element?",
+    "answer": "The hook returns form metadata, including `id` and `onSubmit`. Attach these to the HTML form so Conform can manage the form lifecycle.",
+    "followUp": "Can the form use custom markup? Yes. The documentation says Conform works with any valid HTML form."
+   }
+  ],
+  "keyPoints": [
+   "`shouldValidate` controls when validation begins for each field.",
+   "The supported validation events are `onSubmit`, `onBlur`, and `onInput`.",
+   "`shouldRevalidate` controls checks after a field has already been validated.",
+   "Use `onValidate` to provide the function that performs client-side validation."
+  ],
+  "gotchas": [
+   "If you omit `shouldValidate`, validation starts on form submission.",
+   "If you omit `shouldRevalidate`, it uses the same event as `shouldValidate`."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "Submission": {
+  "sourceUrl": "https://conform.guide/",
+  "sourceTitle": "Overview",
+  "summary": "Submission is the result of parsing form data with a validation schema. Check its status before using its parsed value, and return reply() when validation fails.",
+  "explanation": "Submission is the parsed result of form data. Conform creates it when a schema parser processes the form data. Check its status before using the parsed value. If validation fails, send the result back with reply().",
+  "syntax": "const submission = parseWithZod(formData, { schema });",
+  "parameters": [
+   {
+    "name": "formData",
+    "type": "FormData",
+    "description": "The submitted form data captured through the FormData Web API."
+   },
+   {
+    "name": "schema",
+    "type": "schema",
+    "description": "The schema used to validate and parse the form data."
+   }
+  ],
+  "returns": "A Submission result with a status. On success, it provides the parsed value; on failure, reply() returns the result for the client.",
+  "example": {
+   "title": "Parse a form submission",
+   "code": "const submission = parseWithZod(formData, { schema });\n\nif (submission.status !== \"success\") {\n  return submission.reply();\n}\n\nreturn saveUser(submission.value);",
+   "language": "typescript",
+   "explanation": "Parse the submitted FormData with a Zod schema. Return validation errors when parsing fails. Use the parsed value when it succeeds."
+  },
+  "useCases": [
+   {
+    "title": "Server-side form validation",
+    "scenario": "Validate form input in a server action before saving or processing it."
+   },
+   {
+    "title": "Form-level operation errors",
+    "scenario": "Return a useful error when a valid form cannot complete an operation."
+   },
+   {
+    "title": "Successful form workflow",
+    "scenario": "Redirect after the submitted data passes validation and application checks."
+   }
+  ],
+  "related": [
+   "parseWithZod",
+   "useForm",
+   "reply",
+   "formErrors",
+   "FormData"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does Submission represent?",
+    "answer": "Submission is the result produced after Conform parses form data with a schema. It contains the validation status and, when valid, the parsed value.",
+    "followUp": "What should happen when validation fails? Return submission.reply() so the client receives the validation result."
+   },
+   {
+    "question": "How should a server action handle a submission?",
+    "answer": "Check submission.status before using submission.value. If the status is not success, return submission.reply().",
+    "followUp": "Why is this check needed? The value is only safe to use after the schema accepts the submitted data."
+   },
+   {
+    "question": "How are server operation errors returned?",
+    "answer": "A submission can carry form-level errors returned with submission.reply({ formErrors: [...] }). This lets the server report errors that are not tied to one field.",
+    "followUp": "When is a form-level error useful? Use it when an operation fails after field validation, such as invalid login credentials."
+   }
+  ],
+  "keyPoints": [
+   "A parser creates the submission from FormData and a validation schema.",
+   "The status tells you whether validation completed successfully.",
+   "Use reply() to return validation errors to the client.",
+   "After a successful submission, the server can continue with application logic, such as redirecting.",
+   "Form-level errors can describe failures that do not belong to one field."
+  ],
+  "gotchas": [
+   "Do not use the parsed value unless the submission status is success.",
+   "Submission data comes from the form DOM through FormData, so controls must be named and submitted."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "SubmissionResult": {
   "sourceUrl": "https://conform.guide/api/react/future/report",
   "sourceTitle": "report - conform.guide",
@@ -3782,6 +6145,152 @@
    "Use SubmissionResult with useForm's lastResult option to synchronize state from a server response."
   ],
   "checkedAt": "2026-10-15"
+ },
+ "type coercion": {
+  "sourceUrl": "https://conform.guide/api/valibot/future/coerceStructure",
+  "sourceTitle": "Conform / coerceStructure",
+  "summary": "coerceStructure builds a Valibot schema that converts form strings into schema-defined types without running validation. It is useful for reading typed current form values.",
+  "explanation": "coerceStructure creates a Valibot schema that changes form strings into schema-shaped values while skipping validation, defaults, and transforms. It keeps empty strings and returns sentinel values when conversion fails, such as NaN for numbers or false for booleans.",
+  "syntax": "coerceStructure(schema)",
+  "parameters": [
+   {
+    "name": "schema",
+    "type": "Valibot schema",
+    "description": "The Valibot schema used to define the target structure and conversion types."
+   }
+  ],
+  "returns": "A schema that structurally coerces form string values into the types described by the input schema, without validation, defaults, or transforms.",
+  "example": {
+   "title": "Coerce form values without validation",
+   "code": "import { coerceStructure } from '@conform-to/valibot/future';\nimport * as v from 'valibot';\n\nconst schema = v.object({\n  age: v.pipe(v.number(), v.minValue(0)),\n  subscribe: v.boolean(),\n});\n\nconst typedSchema = coerceStructure(schema);\nconst value = v.parse(typedSchema, {\n  age: '42',\n  subscribe: 'true',\n});\n\nconsole.log(value.age); // 42\nconsole.log(value.subscribe); // true",
+   "language": "typescript",
+   "explanation": "This converts form-like string values into the types defined by the Valibot schema without applying validation rules."
+  },
+  "useCases": [
+   {
+    "title": "Read typed form state",
+    "scenario": "A form UI needs current values as numbers, booleans, dates, or bigints while the user edits them."
+   },
+   {
+    "title": "Separate coercion from validation",
+    "scenario": "An application must inspect form structure before applying validation rules."
+   },
+   {
+    "title": "Customize coercion",
+    "scenario": "A project needs custom conversion behavior for form values."
+   }
+  ],
+  "related": [
+   "coerceFormValue",
+   "configureCoercion",
+   "useFormData",
+   "parseSubmission",
+   "@conform-to/valibot/future"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does coerceStructure do?",
+    "answer": "coerceStructure takes a Valibot schema and returns a schema for structural coercion. It converts strings to types such as numbers, booleans, dates, and bigints, but it does not run validation.",
+    "followUp": "What happens when conversion fails? The result uses a type-specific sentinel, such as NaN for a number, false for a boolean, Invalid Date for a date, or 0n for a bigint."
+   },
+   {
+    "question": "How does coerceStructure differ from normal schema parsing?",
+    "answer": "It skips validation rules, default wrappers, and transforms. It also keeps empty strings instead of removing them as undefined.",
+    "followUp": "Why might this be useful? It lets an application read current form values in typed form before deciding whether the values are valid."
+   },
+   {
+    "question": "How is coerceStructure used with form data?",
+    "answer": "Pass the Valibot schema to coerceStructure, then parse the form payload with the returned schema. In Conform's example, parseSubmission first provides the payload and Valibot parses it with the structural schema.",
+    "followUp": "How can the coercion rules be changed? Use configureCoercion to customize the coercion behavior."
+   }
+  ],
+  "keyPoints": [
+   "It turns form strings into values matching the schema's types without checking validation rules.",
+   "Use it when code needs typed values from the current form before validation.",
+   "The schema controls conversion for numbers, booleans, dates, and bigints.",
+   "Failed conversions produce a sentinel value for the target type rather than a validation error.",
+   "Use configureCoercion when the default conversion behavior does not fit the application."
+  ],
+  "gotchas": [
+   "The function is exported from Conform's future API, so its behavior or name may change in a minor release.",
+   "Do not use this function alone to validate user input. Validation constraints are ignored.",
+   "Default values are not applied during structural coercion.",
+   "An empty string remains an empty string instead of becoming undefined."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "unstable_coerceFormValue": {
+  "sourceUrl": "https://conform.guide/api/valibot/future/coerceFormValue",
+  "sourceTitle": "Conform / coerceFormValue",
+  "summary": "coerceFormValue adds preprocessing to a Valibot schema for HTML form data. It removes empty values and converts supported form strings to numbers, booleans, dates, or bigints.",
+  "explanation": "Wraps a Valibot schema with preprocessing for empty values and common form types. Empty strings and files become undefined; supported number, boolean, date, and bigint schemas receive type-specific conversion.",
+  "syntax": "coerceFormValue(schema)",
+  "parameters": [
+   {
+    "name": "schema",
+    "type": "Valibot schema",
+    "description": "The Valibot schema to enhance."
+   }
+  ],
+  "returns": "An enhanced Valibot schema.",
+  "example": {
+   "title": "Coerce form values with Valibot",
+   "code": "import { coerceFormValue } from '@conform-to/valibot/future';\nimport * as v from 'valibot';\n\nconst schema = coerceFormValue(v.object({\n  amount: v.number(),\n  enabled: v.boolean(),\n  date: v.date(),\n}));\n\nconst result = v.parse(schema, {\n  amount: ' 42 ',\n  enabled: 'on',\n  date: '2026-01-01',\n});\n\nconsole.log(result);",
+   "language": "typescript",
+   "explanation": "Wrap a Valibot schema to convert common form strings before validation."
+  },
+  "useCases": [
+   {
+    "title": "Convert numeric form fields",
+    "scenario": "A form sends numeric fields as strings, but the schema expects numbers."
+   },
+   {
+    "title": "Parse checkbox values",
+    "scenario": "Checkbox values arrive as the browser's on value."
+   },
+   {
+    "title": "Parse date fields",
+    "scenario": "A form sends date text that the schema must validate as a date."
+   }
+  ],
+  "related": [
+   "configureCoercion",
+   "parseWithValibot",
+   "@conform-to/valibot/future"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does coerceFormValue do?",
+    "answer": "It takes a Valibot schema and adds preprocessing for values submitted by HTML forms. Empty strings or files become undefined, while supported number, boolean, date, and bigint schemas receive conversions.",
+    "followUp": "What happens to a checkbox value of on? It becomes true when the target schema is v.boolean()."
+   },
+   {
+    "question": "How are common schema types coerced?",
+    "answer": "For v.number(), it trims the input and passes it to Number. For v.boolean(), the value is true when it equals on. Dates use Date, and bigints use trimmed input with BigInt.",
+    "followUp": "Why is trimming relevant for numbers and bigints? It removes surrounding whitespace before numeric conversion."
+   },
+   {
+    "question": "How do you use the helper?",
+    "answer": "Call coerceFormValue(schema) and use the returned enhanced schema for parsing form data. The function accepts the Valibot schema to enhance.",
+    "followUp": "How can coercion rules be customized? Use configureCoercion from the future export."
+   }
+  ],
+  "keyPoints": [
+   "It prepares a schema for values commonly produced by HTML forms.",
+   "Number inputs are trimmed before conversion with Number.",
+   "Boolean inputs become true only when their value is on.",
+   "Date inputs are converted with the Date constructor.",
+   "Bigint inputs are trimmed and converted with BigInt.",
+   "Datetime text without a timezone is normalized to UTC before date parsing."
+  ],
+  "gotchas": [
+   "The future export is experimental, so its behavior or API may change in a minor release.",
+   "Empty strings and files do not remain empty values; the schema receives undefined.",
+   "Timezone-free datetime strings are changed to UTC by adding Z before parsing."
+  ],
+  "checkedAt": "2026-11-03"
  },
  "unstable_useControl": {
   "sourceUrl": "https://conform.guide/api/react/future/useControl",
@@ -3942,6 +6451,205 @@
   ],
   "checkedAt": "2026-10-15"
  },
+ "useFieldList": {
+  "sourceUrl": "https://conform.guide/upgrading-v1",
+  "sourceTitle": "Upgrading to v1",
+  "summary": "In Conform v1, use field metadata to work with field lists. Call getFieldList() for the list and getFieldset() for each nested item.",
+  "explanation": "In current Conform, list metadata is available through the field metadata returned by useForm. Call getFieldList() on a list field, then call getFieldset() on each list item to access its nested fields. This replaces the removed useFieldList and useFieldset hooks.",
+  "syntax": "fields.<listField>.getFieldList()",
+  "parameters": [
+   {
+    "name": "",
+    "type": "",
+    "description": "No named parameters are documented for this method in the supplied page."
+   }
+  ],
+  "returns": "A list of field metadata items; each item can expose nested fields with getFieldset().",
+  "example": {
+   "title": "Read fields from a list",
+   "code": "const [form, fields] = useForm();\nconst tasks = fields.tasks.getFieldList();\n\nreturn tasks.map((task) => {\n  const taskFields = task.getFieldset();\n  return <input key={task.key} name={taskFields.title.name} />;\n});",
+   "language": "tsx",
+   "explanation": "Use the field metadata to get a list, then read each item's fieldset."
+  },
+  "useCases": [
+   {
+    "title": "Render dynamic field lists",
+    "scenario": "Render repeated form sections such as tasks, addresses, or contacts."
+   },
+   {
+    "title": "Access item fieldsets",
+    "scenario": "Read nested inputs inside each repeated item."
+   },
+   {
+    "title": "Modify list items",
+    "scenario": "Build list controls with Conform's form metadata."
+   }
+  ],
+  "related": [
+   "useForm",
+   "getFieldList",
+   "getFieldset",
+   "form.insert",
+   "form.remove",
+   "form.reorder",
+   "form.update"
+  ],
+  "since": "v1",
+  "interview": [
+   {
+    "question": "How do you read a list field in current Conform?",
+    "answer": "useFieldList was removed in v1. Get the list with fields.tasks.getFieldList(), using the field metadata returned by useForm().",
+    "followUp": "How do you access nested fields in one list item? Call getFieldset() on that item, such as task.getFieldset()."
+   },
+   {
+    "question": "How do you access nested fields for a list item?",
+    "answer": "Each list item provides metadata, including a key and methods for its nested fields. Call task.getFieldset() to access those fields.",
+    "followUp": "Why is the key useful? It can provide a stable React key when rendering each item."
+   },
+   {
+    "question": "What changed when upgrading to Conform v1?",
+    "answer": "The old useFieldList and useFieldset hooks are no longer used. List and nested-field access now comes directly from field metadata through getFieldList() and getFieldset().",
+    "followUp": "What other list operations are exposed on the form metadata? Insert, remove, reorder, and update are available on the form object."
+   }
+  ],
+  "keyPoints": [
+   "Current Conform does not use separate useFieldList or useFieldset hooks.",
+   "Use getFieldList() on list metadata and getFieldset() on nested item metadata.",
+   "A list field can be converted into item metadata with fields.tasks.getFieldList().",
+   "Each list item exposes its nested fields through task.getFieldset()."
+  ],
+  "gotchas": [
+   "Do not use the old useFieldList or useFieldset hooks. Use getFieldList() and getFieldset() on field metadata instead."
+  ],
+  "checkedAt": "2026-11-03"
+ },
+ "useForm": {
+  "sourceUrl": "https://conform.guide/api/react/useForm",
+  "sourceTitle": "Conform / useForm",
+  "summary": "useForm is a React hook that returns metadata for a form and its fields. It supports server results, initial values, constraints, validation timing, and submission callbacks.",
+  "explanation": "useForm returns metadata for a form and its fields. It can use server results, default values, constraints, and validation callbacks while keeping the form based on standard HTML.",
+  "syntax": "const [form, fields] = useForm(options);",
+  "parameters": [
+   {
+    "name": "id",
+    "type": "string",
+    "description": "The id used for the form and generated field ids."
+   },
+   {
+    "name": "lastResult",
+    "type": "Submission result",
+    "description": "The latest submission result, usually returned by the server."
+   },
+   {
+    "name": "defaultValue",
+    "type": "Form value",
+    "description": "The form's initial data."
+   },
+   {
+    "name": "constraint",
+    "type": "Constraint",
+    "description": "Validation attributes applied to fields."
+   },
+   {
+    "name": "shouldValidate",
+    "type": "onSubmit | onBlur | onInput",
+    "description": "When initial field validation starts: onSubmit, onBlur, or onInput."
+   },
+   {
+    "name": "shouldRevalidate",
+    "type": "onSubmit | onBlur | onInput",
+    "description": "When fields are validated again after initial validation."
+   },
+   {
+    "name": "shouldDirtyConsider",
+    "type": "function",
+    "description": "Whether a field counts toward dirty state."
+   },
+   {
+    "name": "onValidate",
+    "type": "function",
+    "description": "Callback used when the form needs validation."
+   },
+   {
+    "name": "onSubmit",
+    "type": "function",
+    "description": "Callback called before form submission."
+   },
+   {
+    "name": "defaultNoValidate",
+    "type": "boolean",
+    "description": "Enables constraint validation before hydration; defaults to true."
+   }
+  ],
+  "returns": "A tuple: [form, fields]. form contains form metadata such as id, errorId, descriptionId, name, initialValue, value, and allErrors; fields contains field metadata.",
+  "example": {
+   "title": "Create a validated form",
+   "code": "import { useForm } from '@conform-to/react';\n\nexport function LoginForm() {\n  const [form, fields] = useForm({\n    id: 'login',\n    shouldValidate: 'onBlur',\n    shouldRevalidate: 'onInput',\n  });\n\n  return (\n    <form id={form.id} onSubmit={form.onSubmit} noValidate>\n      <input name={fields.email.name} />\n      <button>Sign in</button>\n    </form>\n  );\n}",
+   "language": "tsx",
+   "explanation": "This creates form and field metadata, validates fields after blur, and checks them again while typing."
+  },
+  "useCases": [
+   {
+    "title": "Enhance an HTML form",
+    "scenario": "Build forms with standard HTML controls and progressive enhancement."
+   },
+   {
+    "title": "Control validation timing",
+    "scenario": "Show validation feedback after a blur or while typing."
+   },
+   {
+    "title": "Sync server submission state",
+    "scenario": "Restore errors and values returned by a server action."
+   },
+   {
+    "title": "Reset by changing the form id",
+    "scenario": "Clear or replace a form when moving between records."
+   }
+  ],
+  "related": [
+   "parseWithZod",
+   "lastResult",
+   "onValidate",
+   "shouldValidate",
+   "shouldRevalidate",
+   "defaultValue",
+   "constraint"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does useForm return?",
+    "answer": "useForm accepts optional settings such as id, lastResult, defaultValue, constraint, validation timing, and callbacks. It returns a tuple containing form metadata and field metadata.",
+    "followUp": "How can a form be reset during navigation? Change the id passed to useForm; Conform treats the new id as a new form instance."
+   },
+   {
+    "question": "How do validation timing options work?",
+    "answer": "shouldValidate controls when initial field validation starts. Its choices are onSubmit, onBlur, and onInput, and onSubmit is the default.",
+    "followUp": "How does later validation differ? shouldRevalidate controls revalidation after a field has already been validated, and defaults to shouldValidate."
+   },
+   {
+    "question": "Why would a form use lastResult?",
+    "answer": "lastResult carries the latest server submission result into the form. This lets progressive enhancement restore the server's initial form state on the client.",
+    "followUp": "How can client validation be avoided? Leave onValidate unset and use server validation, while considering latency for live checks."
+   }
+  ],
+  "keyPoints": [
+   "Call useForm in a React component to get metadata for the form and its fields.",
+   "If id is omitted, Conform generates one and uses it when creating field ids.",
+   "Pass the latest server submission result as lastResult to restore submission state.",
+   "Use defaultValue to provide the form's starting data.",
+   "Use constraint to add validation attributes to fields.",
+   "Choose onSubmit, onBlur, or onInput for the first field validation.",
+   "Use onValidate to connect custom or schema-based client validation.",
+   "Use onSubmit for work that must run before submission."
+  ],
+  "gotchas": [
+   "Server-side live validation can add delay and increase the number of requests, especially when checking on every input.",
+   "The default browser constraint behavior is enabled before hydration unless you change defaultNoValidate.",
+   "Changing the form id resets the form, so use an id that represents the current form instance."
+  ],
+  "checkedAt": "2026-11-03"
+ },
  "useFormMetadata": {
   "sourceUrl": "https://conform.guide/api/react/useFormMetadata",
   "sourceTitle": "useFormMetadata",
@@ -4087,5 +6795,126 @@
    "Automatic focusing of the first invalid input may fail for custom inputs."
   ],
   "checkedAt": "2026-10-15"
+ },
+ "validateConstraint": {
+  "sourceUrl": "https://conform.guide/api/react/useForm",
+  "sourceTitle": "Conform / useForm",
+  "summary": "useForm returns metadata for an HTML form and its fields. Use that metadata to set IDs, names, accessibility attributes, defaults, and validation behavior.",
+  "explanation": "useForm returns form and field metadata for improving an HTML form. The metadata includes generated IDs and validation state, so labels, descriptions, and errors can be connected to the right controls.",
+  "syntax": "const [form, fields] = useForm(options);",
+  "parameters": [
+   {
+    "name": "id",
+    "type": "string",
+    "description": "Sets the form ID and helps generate field IDs."
+   },
+   {
+    "name": "lastResult",
+    "type": "submission result",
+    "description": "Initial state from the most recent submission."
+   },
+   {
+    "name": "defaultValue",
+    "type": "form value",
+    "description": "Initial form data."
+   },
+   {
+    "name": "constraint",
+    "type": "validation constraint",
+    "description": "Validation attributes for each field."
+   },
+   {
+    "name": "shouldValidate",
+    "type": "onSubmit | onBlur | onInput",
+    "description": "When field validation begins: onSubmit, onBlur, or onInput."
+   },
+   {
+    "name": "shouldRevalidate",
+    "type": "onSubmit | onBlur | onInput",
+    "description": "When to validate a field again after validation."
+   },
+   {
+    "name": "shouldDirtyConsider",
+    "type": "function or configuration",
+    "description": "Controls whether a field contributes to dirty-state tracking."
+   },
+   {
+    "name": "onValidate",
+    "type": "function",
+    "description": "Runs when the form should be validated."
+   },
+   {
+    "name": "onSubmit",
+    "type": "function",
+    "description": "Runs before the form is submitted."
+   }
+  ],
+  "returns": "A tuple containing form metadata and field metadata: [form, fields].",
+  "example": {
+   "title": "Accessible form field",
+   "code": "import { useForm } from \"@conform-to/react\";\n\nexport default function MessageForm() {\n  const [form, fields] = useForm();\n\n  return (\n    <form id={form.id}>\n      <label htmlFor={fields.message.id}>Message</label>\n      <input\n        id={fields.message.id}\n        name={fields.message.name}\n        aria-invalid={!fields.message.valid || undefined}\n        aria-describedby={fields.message.descriptionId}\n      />\n      <div id={fields.message.descriptionId}>Enter a message.</div>\n      <button type=\"submit\">Send</button>\n    </form>\n  );\n}",
+   "language": "tsx",
+   "explanation": "This connects the label and input with generated IDs and marks the input invalid when needed."
+  },
+  "useCases": [
+   {
+    "title": "Connect form controls",
+    "scenario": "Build a form with generated IDs and field names."
+   },
+   {
+    "title": "Expose validation feedback",
+    "scenario": "Show validation state to users and assistive technology."
+   },
+   {
+    "title": "Progressive enhancement",
+    "scenario": "Restore data after a server submission."
+   },
+   {
+    "title": "Control dirty state",
+    "scenario": "Track only relevant fields as dirty."
+   }
+  ],
+  "related": [
+   "form.id",
+   "fields.message.id",
+   "fields.message.name",
+   "fields.message.valid",
+   "fields.message.errorId",
+   "fields.message.descriptionId",
+   "aria-invalid",
+   "aria-describedby"
+  ],
+  "since": "",
+  "interview": [
+   {
+    "question": "What does useForm return?",
+    "answer": "useForm returns a form metadata object and field metadata. You use them to set form and field attributes, names, IDs, and validation-related values.",
+    "followUp": "How can the metadata help accessibility? Generated IDs can connect labels, descriptions, and errors through htmlFor and aria-describedby."
+   },
+   {
+    "question": "What is the purpose of the id option?",
+    "answer": "The id option sets the form element's ID. Conform also uses it to create IDs for individual fields; without it, a random form ID is generated.",
+    "followUp": "Why use a stable custom ID? It can make generated identifiers predictable across rendering and testing."
+   },
+   {
+    "question": "How do shouldValidate and shouldRevalidate differ?",
+    "answer": "shouldValidate controls when field validation begins. It accepts onSubmit, onBlur, or onInput, and defaults to onSubmit.",
+    "followUp": "How is later validation controlled? shouldRevalidate determines when a field is checked again and defaults to shouldValidate."
+   }
+  ],
+  "keyPoints": [
+   "Call useForm to get metadata for the form and its fields.",
+   "Pass id when the form needs a chosen identifier.",
+   "Use lastResult to restore the form's initial state after a server submission.",
+   "Use defaultValue to provide starting form data.",
+   "Use constraint to add validation attributes to fields.",
+   "Use shouldDirtyConsider to exclude fields that should not affect dirty state."
+  ],
+  "gotchas": [
+   "If you do not pass an id, Conform creates a random form ID.",
+   "Validation starts on submit unless you choose another trigger, such as onBlur or onInput.",
+   "Revalidation uses the same trigger as initial validation unless you set shouldRevalidate."
+  ],
+  "checkedAt": "2026-11-03"
  }
 }
