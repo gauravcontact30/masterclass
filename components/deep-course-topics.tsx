@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import Link from "@/components/site-link";
 import { ArrowRight } from "lucide-react";
 import { deepCourseHref, deepCourseMeta, isCourseId } from "@/lib/deep-courses";
 import TOPIC_INDEX from "@/lib/deep-courses/topic-index.json";

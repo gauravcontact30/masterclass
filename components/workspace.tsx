@@ -9,7 +9,7 @@ import referenceStyles from "./reference-workspace.module.css";
 import { ExpandedText } from "@/components/expanded-text";
 
 import { startTransition,useCallback,useEffect,useMemo,useRef,useState } from "react";
-import Link from "next/link";
+import Link from "@/components/site-link";
 import { useRouter } from "next/navigation";
 import { DASHBOARD_ROUTES, type WorkspaceTab } from "@/lib/dashboard-routes";
 import { toast } from "sonner";

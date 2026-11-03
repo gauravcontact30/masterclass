@@ -4,7 +4,7 @@ import { RouteH1 } from "@/components/route-heading";
 import { TECH_BUZZ_TRACKED, shortTech } from "@/lib/tech-buzz-sections";
 import { useEffect, useMemo, useState, useSyncExternalStore, type CSSProperties } from "react";
 import Image from "@/components/responsive-image";
-import Link from "next/link";
+import Link from "@/components/site-link";
 import {
   ArrowRight, Binary, Bookmark, BookmarkCheck, BookOpen, Bot, Building2, CheckCircle2, ChevronDown, ChevronLeft, ChevronRight, Cloud, Clock,
   Compass, FlaskConical, Flame, Hash, Heart, Layers, LayoutGrid, LayoutList, Maximize2, MessageCircle, Minimize2, Network,

@@ -1,5 +1,5 @@
 import Image from "@/components/responsive-image";
-import Link from "next/link";
+import Link from "@/components/site-link";
 import { ArrowRight } from "lucide-react";
 import { ListenButton } from "./listen-button";
 import { CarouselShell } from "./carousel-shell";

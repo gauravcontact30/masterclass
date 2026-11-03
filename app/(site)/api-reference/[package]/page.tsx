@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import Link from "@/components/site-link";
 import { notFound } from "next/navigation";
 import { apiPackage, apiPackageEntries, apiPackages, apiTypes } from "@/lib/public-learning";
 import { learningMetadata } from "@/lib/seo";

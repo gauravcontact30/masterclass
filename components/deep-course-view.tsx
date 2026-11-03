@@ -1,5 +1,5 @@
 import { RouteH1 } from "@/components/route-heading";
-import Link from "next/link";
+import Link from "@/components/site-link";
 import { ArrowLeft, ArrowRight, BookOpenText, Braces, ChevronRight, BadgeCheck, ClipboardList, Clock3, Crosshair, GraduationCap, Sparkles, FlaskConical, Footprints, GitFork, Lightbulb, ListChecks, MessageSquareText, Wrench } from "lucide-react";
 import type { ReactNode } from "react";
 import { CodeFiles } from "./code-files";

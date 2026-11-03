@@ -1,6 +1,6 @@
 "use client";
 import { useDeferredValue, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import Link from "next/link";
+import Link from "@/components/site-link";
 import Image from "@/components/responsive-image";
 import { ArrowRight, ArrowUpRight, BookOpenCheck, Gauge, Layers, Lightbulb, Search, Sparkles, TrendingUp, X } from "lucide-react";
 import type { LandingSearchIndex } from "@/lib/landing-search-types";

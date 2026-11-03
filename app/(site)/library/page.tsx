@@ -2,7 +2,7 @@ import { PageAnswers } from "@/components/page-answers";
 import { HUB_ANSWERS } from "@/lib/page-answers";
 import Image from "@/components/responsive-image";
 import { HINDI_ENABLED } from "@/lib/i18n";
-import Link from "next/link";
+import Link from "@/components/site-link";
 import type { CSSProperties } from "react";
 import { ArrowRight, BookOpenText, Braces, GitCompareArrows, GraduationCap, Languages, MessagesSquare, Newspaper, Sparkles, Workflow, type LucideIcon } from "lucide-react";
 import { apiPackages, handbookName, handbookSlug, handbooks, interviewTechs, vocabularyGroups, workflows } from "@/lib/public-learning";

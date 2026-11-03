@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Fragment, useEffect, useRef, useState, type FormEvent, type ReactNode } from "react";
-import Link from "next/link";
+import Link from "@/components/site-link";
 import { usePathname } from "next/navigation";
 import { ArrowUp, BookOpen, Check, Code2, Copy, GraduationCap, Lock, Moon, Play, RefreshCw, RotateCcw, Square, Sun, X } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "./ui/dialog";

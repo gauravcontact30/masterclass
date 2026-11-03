@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/site-link";
 import { BookOpen, Brain, ChevronRight, Code2, Compass, GraduationCap, Layers, Lightbulb, Rocket, Sparkles, Star, type LucideIcon } from "lucide-react";
 import { LEARNING_CHANGED } from "./learning-slot";
 

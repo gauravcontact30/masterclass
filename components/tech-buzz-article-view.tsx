@@ -4,7 +4,7 @@ import { RouteH1 } from "@/components/route-heading";
 import { TECH_BUZZ_TRACKED, shortTech } from "@/lib/tech-buzz-sections";
 import { useState, useEffect, useCallback, useMemo, useRef, useSyncExternalStore } from "react";
 import Image from "@/components/responsive-image";
-import Link from "next/link";
+import Link from "@/components/site-link";
 import {
   ArrowLeft,
   ArrowRight,

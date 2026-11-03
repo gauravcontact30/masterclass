@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useId, useRef, useState, type KeyboardEvent } from "react";
-import Link from "next/link";
+import Link from "@/components/site-link";
 import { ArrowRight, Check, Crown } from "lucide-react";
 import { useLanguage } from "./language-provider";
 import { HINDI_ENABLED } from "@/lib/i18n";

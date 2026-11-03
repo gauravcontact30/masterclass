@@ -1,7 +1,7 @@
 "use client";
 import { useCallback, useEffect, useId, useRef, useState } from "react";
 import Image from "@/components/responsive-image";
-import Link from "next/link";
+import Link from "@/components/site-link";
 import { ArrowRight, ChevronDown, ChevronLeft, ChevronRight, Gift, Sparkles } from "lucide-react";
 import { formatPrice, salePrice, type Currency, type Cycle, type SaleInfo } from "@/lib/pricing";
 import { useLanguage } from "./language-provider";

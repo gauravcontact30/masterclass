@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, type RefObject } from "react";
-import Link from "next/link";
+import Link from "@/components/site-link";
 import {
   ArrowLeft, Bookmark, BookmarkCheck, Check, ChevronRight, CirclePause, CirclePlay, EyeOff, Flag, Highlighter, Link2, MessageCircle, MoreHorizontal, Plus, Printer, Repeat2, Share, ThumbsDown, UserCheck, UserPlus, UserX, VolumeX,
 } from "lucide-react";

@@ -6,7 +6,7 @@ import { NativeSelect, NativeSelectOptGroup, NativeSelectOption } from "@/compon
 import { Button } from "@/components/ui/button";
 import { Badge as UiBadge } from "@/components/ui/badge";
 import { memo, useDeferredValue, useEffect, useId, useMemo, useState, type CSSProperties, type ReactNode } from "react";
-import Link from "next/link";
+import Link from "@/components/site-link";
 import Image from "@/components/responsive-image";
 import { vocabularyIcon } from "@/lib/vocabulary-icons";
 import { BrandMark, BrandOrGlyph } from "./topic-media";

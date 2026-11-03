@@ -1,7 +1,7 @@
 "use client";
 import { ExpandedText } from "@/components/expanded-text";
 
-import Link from "next/link";
+import Link from "@/components/site-link";
 import { ArrowUp, Globe2 } from "lucide-react";
 import { Wordmark } from "./brand-mark";
 import { FooterLinks } from "./footer-links";

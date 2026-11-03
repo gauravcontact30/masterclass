@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/site-link";
 import { KeyRound } from "lucide-react";
 import { supabaseBrowser } from "@/lib/supabase-browser";
 import { ExpandedText } from "./expanded-text";

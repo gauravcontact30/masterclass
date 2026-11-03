@@ -2,7 +2,7 @@
 import { AccordionChevron } from "@/components/ui/accordion-chevron";
 
 import { useState } from "react";
-import Link from "next/link";
+import Link from "@/components/site-link";
 import { GraduationCap, Landmark, Rocket, Languages, Code2, BookOpen, PanelTopOpen, PanelTopClose } from "lucide-react";
 import { PREPARATION_GROUPS, PREPARATIONS, CATEGORY_LABELS, type PreparationAccess } from "@/lib/study/preparations";
 import { SYSTEM_DESIGN_COURSES } from "@/lib/study/system-design-catalog";

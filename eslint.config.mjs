@@ -16,6 +16,12 @@ const eslintConfig = defineConfig([
     files: ["__tests__/**"],
     rules: { "@next/next/no-html-link-for-pages": "off" },
   },
+  // Links go through components/site-link.tsx, which turns off automatic prefetching (Chrome's preload warnings).
+  {
+    files: ["app/**/*.tsx", "components/**/*.tsx"],
+    ignores: ["components/site-link.tsx"],
+    rules: { "no-restricted-imports": ["error", { paths: [{ name: "next/link", message: "Import Link from @/components/site-link." }] }] },
+  },
   // Override default ignores of eslint-config-next.
   globalIgnores([
     // Default ignores of eslint-config-next:

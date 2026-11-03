@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useMemo, useState, type CSSProperties, type ReactNode } from "react";
 import Image from "@/components/responsive-image";
-import Link from "next/link";
+import Link from "@/components/site-link";
 import { BookOpen, CalendarCheck, CheckCircle2, Clock, Eye, Flame, Heart, Layers, LockKeyhole, MousePointerClick, Newspaper, RefreshCw, Sparkles, Star, Sunrise, Timer, Trophy, ThumbsDown, Users, UserPlus, UserRoundCheck } from "lucide-react";
 import { Alert, AlertDescription } from "./ui/alert";
 import { Button } from "./ui/button";

@@ -1,6 +1,6 @@
 "use client";
 import { useId, useState, type FormEvent } from "react";
-import Link from "next/link";
+import Link from "@/components/site-link";
 import { ArrowUp, GraduationCap, Lock, Sparkles } from "lucide-react";
 import { askStudyBuddy, type StudyBuddyMode } from "@/lib/study-buddy-bridge";
 import { studyBuddyUnlockHref, useStudyBuddyAccess } from "@/lib/study-buddy-access";

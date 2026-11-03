@@ -9,7 +9,7 @@ import { uniqueLearningPoints, conciseStudyNote } from "@/lib/concise-learning";
 import { ExpandedText } from "@/components/expanded-text";
 
 
-import Link from "next/link";
+import Link from "@/components/site-link";
 import { BookmarkButton, BookmarkPoint, BookmarkScope } from "./bookmarks";
 import { LearningRegion, LearningTools } from "./learning-marks";
 import { learningContentKey } from "@/lib/learning-marks";

@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import Link from "@/components/site-link";
 import { useId, useMemo, useState, useSyncExternalStore, type MouseEvent, type ReactNode } from "react";
 import { ArrowRight, ChevronDown, ChevronsDownUp, ChevronsUpDown, PanelLeftClose, PanelLeftOpen, PlayCircle, Search, X } from "lucide-react";
 import { useDeepProgress } from "./deep-progress-store";

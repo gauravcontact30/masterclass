@@ -1,7 +1,7 @@
 "use client";
 import { AccordionSummary } from "@/components/ui/accordion-chevron";
 import { Fragment, useState, type ReactNode } from "react";
-import Link from "next/link";
+import Link from "@/components/site-link";
 import { ArrowRight, Building2, CircleCheck, ListChecks, MessageSquareText } from "lucide-react";
 import { arrangeOptions, byStars, type CompanyReport, type QuestionSet, type Stars } from "@/lib/interview-questions";
 import styles from "./interview-accordion.module.css";

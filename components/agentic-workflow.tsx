@@ -3,7 +3,7 @@ import { RouteH1 } from "@/components/route-heading";
 import { AccordionChevron, AccordionSummary } from "@/components/ui/accordion-chevron";
 
 import { useState, useMemo, useCallback, type CSSProperties } from "react";
-import Link from "next/link";
+import Link from "@/components/site-link";
 import { Sparkles, ShieldCheck, ChevronLeft, ChevronRight, ChevronDown, Search, X, SlidersHorizontal, RotateCcw, Code2, Terminal, ArrowRight, Check, Copy, Layers, Bot, Workflow, Binary, Database, CheckCircle2, FileCode2, ArrowUpRight,  } from "lucide-react";
 import { WORKFLOW_USECASES, WORKFLOW_CATEGORIES, getWorkflowFrameworkLearnings, workflowFolder, type WorkflowUsecase } from "@/lib/workflow-usecases";
 import type { AnswerFile } from "@/lib/pro-learn/types";

@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/site-link";
 import { ArrowRight, Menu } from "lucide-react";
 import { Wordmark } from "@/components/brand-mark";
 import { PageBack } from "@/components/page-back";

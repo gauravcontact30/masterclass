@@ -26,6 +26,22 @@
 .button:focus-visible, .filters button:focus-visible { outline: 2px solid #b5573a; outline-offset: 2px; }
 .warn { padding: 9px 12px; border: 1px dashed #e6cb6c; border-radius: 10px; background: #fff8de; color: #6b5200; font-size: 13px; }
 
+/* The figures' verification: one line, with each check behind it. */
+.verify { border: 1px solid #e6cb6c; border-radius: 12px; background: #fff8de; color: #6b5200; font-size: 13px; }
+.verify[data-ok] { border-color: #c8e8d5; background: #eff9f3; color: #1f5a37; }
+.verify summary { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; min-height: 40px; padding: 8px 12px; cursor: pointer; list-style: none; }
+.verify summary::-webkit-details-marker { display: none; }
+.verify summary svg { flex: none; }
+.verify summary small { margin-left: auto; font-size: 12px; text-decoration: underline; text-underline-offset: 3px; }
+.verify summary:focus-visible { outline: 2px solid currentColor; outline-offset: -2px; border-radius: 12px; }
+.verify ul { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr)); gap: 10px 18px; margin: 0; padding: 10px 12px 12px; border-top: 1px solid rgb(0 0 0 / .08); list-style: none; }
+.verify li { display: flex; gap: 8px; min-width: 0; color: #6b5200; }
+.verify li[data-ok] { color: #1f5a37; }
+.verify li svg { flex: none; margin-top: 2px; }
+.verify li div { display: grid; align-content: start; gap: 1px; min-width: 0; }
+.verify li b { font-weight: 500; }
+.verify li span { color: #4d4c48; line-height: 1.45; }
+
 .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 236px), 1fr)); gap: 12px; }
 .kpi { position: relative; display: grid; grid-template-columns: auto minmax(0, 1fr); align-content: start; align-items: center; column-gap: 10px; row-gap: 4px; padding: 14px 16px; border: 1px solid color-mix(in srgb, var(--c) 18%, var(--rule)); border-radius: 16px; background: linear-gradient(140deg, #fff 0%, var(--c-wash) 55%, var(--c-soft) 140%); box-shadow: 0 14px 30px -28px rgba(20, 20, 19, .45); }
 .kpiIcon { position: relative; display: grid; place-items: center; width: 32px; height: 32px; border-radius: 10px; background: var(--c-soft); color: var(--c); }

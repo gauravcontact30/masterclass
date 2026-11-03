@@ -1,5 +1,5 @@
 import Image from "@/components/responsive-image";
-import Link from "next/link";
+import Link from "@/components/site-link";
 import { COMPARISONS } from "@/lib/comparisons";
 import { apiPackages, handbookName, handbookSlug, handbooks, interviewTechs, vocabularyGroups, workflows } from "@/lib/public-learning";
 import { listPublishedTechBuzzArticles } from "@/lib/server/tech-buzz-storage";

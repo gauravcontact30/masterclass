@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { ExpandedText } from "@/components/expanded-text";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/site-link";
 import { ArrowLeft, ArrowUpRight, Eye, EyeOff, KeyRound } from "lucide-react";
 import { setAuthNotice } from "@/lib/auth-notice";
 import { browserAuth } from "@/lib/supabase-browser-lazy";

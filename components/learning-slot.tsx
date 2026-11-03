@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useMemo, useState, type CSSProperties, type ReactNode } from "react";
-import Link from "next/link";
+import Link from "@/components/site-link";
 import dynamic from "next/dynamic";
 import { ArrowUpRight, Pin } from "lucide-react";
 import { sanitizeNotepadHtml } from "@/lib/notepad";

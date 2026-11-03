@@ -1,6 +1,6 @@
 "use client";
 import { createContext, useContext } from "react";
-import Link from "next/link";
+import Link from "@/components/site-link";
 import { ArrowRight, LayoutDashboard, Lock } from "lucide-react";
 import styles from "./dashboard-more.module.css";
 

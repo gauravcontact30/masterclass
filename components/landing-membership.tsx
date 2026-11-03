@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import Link from "@/components/site-link";
 import { ArrowRight, Bookmark, BookMarked, BookA, BookOpenText, CircleHelp, Code2, Coffee, FileCode2, GraduationCap, ListOrdered, MessagesSquare, NotebookPen, Search, Sparkles, Workflow, type LucideIcon } from "lucide-react";
 import { ExpandedText } from "./expanded-text";
 import { useLanguage } from "./language-provider";

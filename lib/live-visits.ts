@@ -465,6 +465,8 @@ function summarizeVisit(sessionId: string, times: { view: StreamVisit; time: Ret
  */
 export type PeriodSummary = {
   people: number; signedIn: number; newVisitors: number; sessions: number; views: number;
+  /** Guests seen before this period: their first view in it did not start their history. */
+  returning: number;
   bounceRate: number | null; avgStayMs: number | null; readingPerPersonMs: number | null; pagesPerSession: number | null;
   /** Page views by IST hour, 0–23. */
   hours: number[];
@@ -495,7 +497,7 @@ export function periodSummary(visitors: StreamVisitor[], from: number, to = Infi
   const browsers = new Map<string, Set<string>>(), systems = new Map<string, Set<string>>();
   const days = new Map<string, { views: number; people: Set<string>; fresh: Set<string>; signed: Set<string> }>();
   const istDay = (ms: number) => new Date(ms + 19_800_000).toISOString().slice(0, 10);
-  let people = 0, signedIn = 0, newVisitors = 0, sessions = 0, views = 0, bounced = 0, stayMs = 0, readingMs = 0;
+  let people = 0, signedIn = 0, newVisitors = 0, returning = 0, sessions = 0, views = 0, bounced = 0, stayMs = 0, readingMs = 0;
   for (const v of visitors) {
     const visits = v.visits.filter(visit => visit.steps.some(step => inPeriod(step.at)));
     if (!visits.length) continue;
@@ -503,6 +505,7 @@ export function periodSummary(visitors: StreamVisitor[], from: number, to = Infi
     if (v.signedIn) signedIn++;
     // New: their first page view ever (the browser had no visitor cookie) was opened in this period.
     else if (v.first.new_visitor && inPeriod(Date.parse(v.first.created_at))) newVisitors++;
+    else returning++;
     tally(countries, v.current.country ?? v.first.country ?? "Unknown", v.key);
     tally(devices, (v.current.device || "desktop").toLowerCase(), v.key);
     tally(browsers, v.current.browser || "Unknown", v.key);
@@ -531,7 +534,7 @@ export function periodSummary(visitors: StreamVisitor[], from: number, to = Infi
     }
   }
   return {
-    people, signedIn, newVisitors, sessions, views, hours, hourPeople: hourSets.map(set => set.size),
+    people, signedIn, newVisitors, returning, sessions, views, hours, hourPeople: hourSets.map(set => set.size),
     bounceRate: sessions ? Math.round((1000 * bounced) / sessions) / 10 : null,
     avgStayMs: sessions ? stayMs / sessions : null,
     readingPerPersonMs: people ? readingMs / people : null,

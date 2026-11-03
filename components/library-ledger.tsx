@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useDeferredValue, useId, useMemo, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
-import Link from "next/link";
+import Link from "@/components/site-link";
 import { ArrowUpRight, BookA, Code2, FileCode2, LayoutDashboard, Lock, RotateCcw, Search, SlidersHorizontal, X, type LucideIcon } from "lucide-react";
 import type { LandingLibrary, LibraryEntry, LibraryKind } from "@/lib/landing-library";
 import { useLanguage } from "./language-provider";

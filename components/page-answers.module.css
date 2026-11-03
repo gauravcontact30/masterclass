@@ -4,6 +4,7 @@
 .how { display: grid; gap: 12px; }
 .how h3, .item h3 { margin: 0; font-size: 17px; font-weight: 600; line-height: 1.35; color: #141413; text-align: start; }
 .how ol { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 200px), 1fr)); gap: 12px; margin: 0; padding: 0; list-style: none; counter-reset: step; }
+.icon { display: none; }
 .how li { counter-increment: step; display: grid; gap: 8px; align-content: start; padding: 14px; border: 1px solid #e8e6dc; border-radius: 14px; background: #fff; font-size: 14.5px; line-height: 1.5; color: #3d3d3a; }
 .how li::before { content: counter(step); display: grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; background: #141413; color: #fff; font-size: 13px; font-weight: 700; }
 .list { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr)); gap: 12px; }
@@ -20,7 +21,49 @@
 .head { display: grid; gap: 14px; justify-items: start; margin-bottom: 28px; }
 .landing { display: grid; gap: 24px; }
 .updated { margin: 0; font-size: 13.5px; color: #5f5e5a; }
-.references { margin: 20px 0 0; font-size: 13.5px; line-height: 1.6; color: #5f5e5a; text-align: start; -webkit-hyphens: manual; hyphens: manual; }
+.references { margin: 0; padding-top: 20px; font-size: 13.5px; line-height: 1.6; color: #5f5e5a; text-align: start; -webkit-hyphens: manual; hyphens: manual; }
 .references a { color: #8f3f23; text-decoration: underline; text-underline-offset: 3px; }
 /* Cards this narrow leave wide gaps between words when justified. */
 .item p { text-align: start; -webkit-hyphens: manual; hyphens: manual; }
+
+/* The landing page's version. The four steps are a journey: each step's picture sits on a dashed line that joins them,
+   with its number on the tile's corner. The nine cards each have a light colour of their own, with the question beside
+   a picture on a white tile and the answer under both. Three columns, then two, then one. */
+.head p { text-align: start; -webkit-hyphens: manual; hyphens: manual; }
+.landing .icon { display: block; flex: none; box-sizing: content-box; width: 52px; height: 52px; padding: 5px; border: 1px solid var(--tone-edge, #e8e6dc); border-radius: 16px; background: #fff; }
+.landing .how { gap: 16px; padding: clamp(16px, 2.4vw, 24px); border: 1px solid #f1d9cc; border-radius: 20px; background: #fff8f3; }
+.landing .how h3 { font-size: 18px; color: #8f3f23; }
+.landing .how ol { position: relative; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 18px; }
+.landing .how ol::before { content: ""; position: absolute; top: 31px; left: 31px; right: 12%; border-top: 2px dashed #e7bfa9; }
+.landing .how li { position: relative; gap: 10px; padding: 0; border: 0; background: none; color: #3d3d3a; font-size: 15px; }
+.landing .how li::before { position: absolute; z-index: 1; top: -5px; left: 50px; width: 22px; height: 22px; background: #8f3f23; font-size: 12px; font-weight: 500; }
+.landing .how .icon { position: relative; border-color: #f1d9cc; }
+.landing .list { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+.landing .item { --tone-edge: #e2daf3; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 12px 14px; padding: 20px; border-radius: 18px; transition: border-color .18s ease; }
+.landing .item:hover { border-color: var(--tone-ink, #8f3f23); }
+.landing .item > h3, .askTitle { font-size: 17px; font-weight: 600; line-height: 1.3; letter-spacing: -.01em; color: var(--tone-ink); text-align: start; }
+.landing .item > p, .askLink { grid-column: 1 / -1; align-self: start; }
+.landing .item > p { font-size: 15px; line-height: 1.6; overflow-wrap: normal; text-wrap: pretty; }
+.landing .item:nth-child(9n + 1) { --tone-edge: #e2daf3; --tone-ink: #4b3c86; border-color: #e2daf3; background: #f7f4fd; }
+.landing .item:nth-child(9n + 2) { --tone-edge: #cfe9d9; --tone-ink: #1f5a37; border-color: #cfe9d9; background: #f0f9f3; }
+.landing .item:nth-child(9n + 3) { --tone-edge: #f1e3a8; --tone-ink: #6e4f00; border-color: #f1e3a8; background: #fefaea; }
+.landing .item:nth-child(9n + 4) { --tone-edge: #cfe1f6; --tone-ink: #1d4f7a; border-color: #cfe1f6; background: #f1f7fe; }
+.landing .item:nth-child(9n + 5) { --tone-edge: #f4d3da; --tone-ink: #8a2c44; border-color: #f4d3da; background: #fdf3f5; }
+.landing .item:nth-child(9n + 6) { --tone-edge: #c5e6e9; --tone-ink: #17595f; border-color: #c5e6e9; background: #eaf7f8; }
+.landing .item:nth-child(9n + 7) { --tone-edge: #f3d6c9; --tone-ink: #8f3f23; border-color: #f3d6c9; background: #fdf1ec; }
+.landing .item:nth-child(9n + 8) { --tone-edge: #dbe6bf; --tone-ink: #47591a; border-color: #dbe6bf; background: #f6f9ea; }
+.landing .item:nth-child(9n) { --tone-edge: #e6d7ee; --tone-ink: #6a2f7d; border-color: #e6d7ee; background: #faf4fc; }
+.askLink.askLink { display: inline-flex; align-items: center; gap: 7px; width: fit-content; min-height: 40px; padding: 0 14px; border: 1px solid var(--tone-ink); border-radius: 10px; color: var(--tone-ink); font-size: 14px; font-weight: 500; text-decoration: none; }
+.askLink.askLink:hover { background: #fff; }
+.askLink:focus-visible { outline: 3px solid var(--tone-ink); outline-offset: 2px; }
+@media (max-width: 1020px) {
+  .landing .list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .landing .how ol { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .landing .how ol::before { display: none; }
+}
+@media (max-width: 620px) {
+  .landing .list { grid-template-columns: minmax(0, 1fr); }
+  .landing .item { padding: 16px; }
+}
+@media (max-width: 420px) { .landing .how ol { grid-template-columns: minmax(0, 1fr); } }
+@media (prefers-reduced-motion: reduce) { .landing .item { transition: none; } }

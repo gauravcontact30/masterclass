@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/site-link";
 import { Wordmark } from "@/components/brand-mark";
 import { PageBack } from "@/components/page-back";
 import { PUBLIC_PAGES } from "@/lib/seo";

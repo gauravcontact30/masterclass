@@ -2,7 +2,7 @@
 import { AccordionChevron } from "@/components/ui/accordion-chevron";
 
 import { useMemo, useRef, useState, type KeyboardEvent } from "react";
-import Link from "next/link";
+import Link from "@/components/site-link";
 import {
   ArrowRight,
   ArrowUpRight,

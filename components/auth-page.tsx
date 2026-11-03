@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { ExpandedText } from "@/components/expanded-text";
 
 import { useEffect, useState, useSyncExternalStore } from "react";
-import Link from "next/link";
+import Link from "@/components/site-link";
 import { toast } from "sonner";
 import { setAuthNotice } from "@/lib/auth-notice";
 import { ArrowLeft, ArrowUpRight, Eye, EyeOff, MailCheck, Settings2 } from "lucide-react";

@@ -4,7 +4,7 @@ import type { FreshDifference } from "@/lib/landing-fresh-types";
 import { pickDaily } from "@/lib/daily-rotation";
 import { DailyCard } from "./landing-daily-card";
 import { useEffect, useState, type ReactNode } from "react";
-import Link from "next/link";
+import Link from "@/components/site-link";
 import { Bot, Boxes, Cloud, Database, FlaskConical, GitCompareArrows, Layers, Monitor, Server, type LucideIcon } from "lucide-react";
 import { COMPARISONS, loadComparisonBank, techPicture, type Comparison, type ComparisonGroup } from "@/lib/comparisons";
 import { COMPARISON_DOCS } from "@/lib/comparisons-official";

@@ -3,7 +3,7 @@
 import { RouteH1 } from "@/components/route-heading";
 import { usePriceRefresh } from "./use-price-refresh";
 import { useState } from "react";
-import Link from "next/link";
+import Link from "@/components/site-link";
 import { useEffect, useRef } from "react";
 import { ArrowLeft, ArrowRight, Check, CircleAlert, LockKeyhole, MailCheck, PartyPopper } from "lucide-react";
 import { Wordmark } from "./brand-mark";

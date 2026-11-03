@@ -2,7 +2,7 @@
 
 import { useMemo, useState, type KeyboardEvent } from "react";
 import Image from "@/components/responsive-image";
-import Link from "next/link";
+import Link from "@/components/site-link";
 import { Check, Circle, Eye, FileText, Loader2, Pencil, Plus, Search, Trash2, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";

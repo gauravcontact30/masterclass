@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useId, useMemo, useRef, useState, useSyncExternalStore, type CSSProperties, type FormEvent, type RefObject } from "react";
 import Image from "@/components/responsive-image";
-import Link from "next/link";
+import Link from "@/components/site-link";
 import { Check, ChevronLeft, ChevronRight, Flag, Hammer, Layers, Loader2, RotateCcw, Sparkles, type LucideIcon } from "lucide-react";
 import type { LearningPath, PathStage } from "@/lib/learning-path";
 import { PLAN_LENGTHS, stageSpans } from "@/lib/learning-path-stages";

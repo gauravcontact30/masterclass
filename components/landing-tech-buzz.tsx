@@ -1,5 +1,5 @@
 import Image from "@/components/responsive-image";
-import Link from "next/link";
+import Link from "@/components/site-link";
 import type { CSSProperties } from "react";
 import { ArrowRight, BadgeCheck, CalendarSync, CheckCircle2, Clock3, Code2, Newspaper, Sparkles, Star, ThumbsDown, ThumbsUp } from "lucide-react";
 import { istWeek } from "@/lib/ist-week";

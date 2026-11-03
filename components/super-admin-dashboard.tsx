@@ -13,7 +13,7 @@ import { Label } from "@/components/ui/label";
 import { AdminSelect } from "./super-admin-select";
 import { Input } from "@/components/ui/input";
 import { useCallback, useEffect, useState, useRef } from "react";
-import Link from "next/link";
+import Link from "@/components/site-link";
 import { useRouter } from "next/navigation";
 import { MessageSquarePlus, Newspaper, Radar, Activity, HeartPulse, ArrowLeft, Bot, Layers, Receipt, LifeBuoy, Megaphone, MousePointerClick, TrendingUp, ChevronDown, ChevronRight, CreditCard, Database, ExternalLink, LogOut, RefreshCw, PanelLeftClose, PanelLeftOpen, Server, ShieldCheck, UploadCloud, UserRound, Users } from "lucide-react";
 import { SidebarTooltips } from "./sidebar-tooltips";

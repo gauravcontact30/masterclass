@@ -1,5 +1,5 @@
 "use client";
-import Link from "next/link";
+import Link from "@/components/site-link";
 import { ArrowUpRight, CheckCircle2 } from "lucide-react";
 import type { LearningPath, PathStage } from "@/lib/learning-path";
 import styles from "./learning-path.module.css";

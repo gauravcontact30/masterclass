@@ -1,5 +1,5 @@
 import { AccordionSummary } from "@/components/ui/accordion-chevron";
-import Link from "next/link";
+import Link from "@/components/site-link";
 import { EmailLink } from "@/components/email-link";
 import { SiteContactLinks } from "@/components/site-contact-links";
 import { ADDRESS_LINE, SUPPORT } from "@/lib/site-contact";

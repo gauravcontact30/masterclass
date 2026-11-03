@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/site-link";
 import { Volume2, BookOpen, Quote, Plus, Minus, Bookmark, BookmarkCheck, ArrowUpRight, X, Loader2, Sparkles, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import type { WordLookup, EnglishWord } from "@/lib/english-word";

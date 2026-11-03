@@ -1,6 +1,6 @@
 import { PageAnswers } from "@/components/page-answers";
 import { HUB_ANSWERS } from "@/lib/page-answers";
-import Link from "next/link";
+import Link from "@/components/site-link";
 import { apiPackages, apiTypes } from "@/lib/public-learning";
 import { learningMetadata, siteUrl } from "@/lib/seo";
 import { LibraryIntro } from "@/components/public-learning/library-intro";

@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { NativeSelect } from "@/components/ui/native-select";
 import { NativeSelectOption } from "@/components/ui/native-select";
 import { useMemo, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/site-link";
 import { ArrowUpRight, Bookmark, Copy, Download, Search, Trash2, Library, Layers3 } from "lucide-react";
 import { toast } from "sonner";
 import { bookmarkText, type SavedBookmark } from "@/lib/bookmarks";

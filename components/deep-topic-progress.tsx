@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import Link from "@/components/site-link";
 import { useRouter } from "next/navigation";
 import type { CSSProperties } from "react";
 import { ArrowRight, CheckCircle2, Clock3, Gauge, Sparkles, SquareTerminal } from "lucide-react";

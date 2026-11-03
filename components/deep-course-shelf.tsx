@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/site-link";
 import { ArrowRight, ChevronDown, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Search, X } from "lucide-react";
 import { deepCourseHref } from "@/lib/deep-courses";
 import { COURSE_CATALOG } from "@/lib/deep-courses/catalog";

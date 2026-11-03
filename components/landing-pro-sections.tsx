@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import Image from "@/components/responsive-image";
-import Link from "next/link";
+import Link from "@/components/site-link";
 import { ArrowRight, ArrowUpRight, Braces, Check, ChevronLeft, ChevronRight, Code2, FileCode2, Lightbulb, Pause, Play, Puzzle, Search, Server, Sparkles, X } from "lucide-react";
 import type { LandingProPreview } from "@/lib/landing-pro-preview";
 import type { LandingBuzz } from "@/lib/landing-buzz-types";

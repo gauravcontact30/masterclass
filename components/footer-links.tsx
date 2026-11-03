@@ -1,6 +1,6 @@
 "use client";
 import { useCallback, useRef, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/site-link";
 import styles from "./footer-links.module.css";
 import navigationStyles from "./navigation-link.module.css";
 

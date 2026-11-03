@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import Link from "@/components/site-link";
 import { ArrowRight, BookOpen, Brain, Layers, MessageCircle, Target, type LucideIcon } from "lucide-react";
 import type { ProLesson } from "@/lib/pro-learn/types";
 import { FlashcardDeck, type StudyCard } from "./study-cards";

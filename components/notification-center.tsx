@@ -1,6 +1,6 @@
 "use client";
 import { useCallback, useEffect, useRef, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/site-link";
 import { toast } from "sonner";
 import { Bell, BellRing, CheckCheck, CreditCard, GraduationCap, LogIn, Megaphone, MailCheck, ShieldAlert, UserPlus, type LucideIcon } from "lucide-react";
 import { useLanguage } from "./language-provider";

@@ -1,7 +1,7 @@
 "use client";
 import { RouteH1 } from "@/components/route-heading";
 import { useEffect, useMemo, useRef, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/site-link";
 import { ArrowUpRight, Clock, Coffee, Search, X } from "lucide-react";
 import type { BlogPost } from "@/lib/coffee-and-code";
 import { contentKey } from "@/lib/content-overrides";

@@ -1,7 +1,7 @@
 import { PageAnswers } from "@/components/page-answers";
 import { vocabularyAnswers } from "@/lib/page-answers";
 import type { Metadata } from "next";
-import Link from "next/link";
+import Link from "@/components/site-link";
 import { notFound } from "next/navigation";
 import { slugify, vocabularyGroup, vocabularyGroups } from "@/lib/public-learning";
 import { learningMetadata, siteUrl } from "@/lib/seo";

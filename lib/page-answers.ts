@@ -5,27 +5,31 @@ import { ADDRESS_LINE, SUPPORT } from "./site-contact";
  * structured data. Answers run 30-70 words, the length answer engines quote, and state only what the site really does:
  * keep them true when plans, pages or schedules change.
  */
-export type PageAnswers = { faqs: readonly { question: string; answer: string }[]; howTo?: { name: string; steps: readonly string[] } };
+export type PageAnswers = {
+  /** `icon` and `icons` are pictures for the card and each step; only the landing page has them. */
+  faqs: readonly { question: string; answer: string; icon?: string }[];
+  howTo?: { name: string; steps: readonly string[]; icons?: readonly string[] };
+};
 
 const money = (value: number) => `₹${value.toLocaleString("en-IN")}`;
 
 export function landingAnswers(prices: { monthly: number; yearly: number }): PageAnswers {
   return {
-    howTo: { name: "How to start learning on MasterClass Buddy", steps: [
+    howTo: { name: "How to start learning on MasterClass Buddy", icons: ["step-read", "step-account", "step-dashboard", "step-membership"].map(name => `/images/landing/answers/${name}.png`), steps: [
       "Read a free handbook, interview question set or Tech Buzz preview",
       "Create your account and choose the paths you are preparing for",
       "Open your dashboard, where those paths are ready to follow",
       "Take a membership when you want every course and practice test",
     ] },
     faqs: [
-      { question: "What is MasterClass Buddy?", answer: "MasterClass Buddy is an online learning platform for software engineers and students. It combines weekly Tech Buzz blogs, interview questions with model answers, system design blueprints, technology handbooks, an API reference and a signed-in dashboard with courses, certification paths and practice tests." },
-      { question: "Which technologies can I learn here?", answer: "You can learn Agentic AI, LangChain, LangGraph, LangSmith, LangFlow, n8n, Next.js, React, TypeScript, Python, Node.js, AWS, Docker, Kubernetes, system design and data structures. Handbooks, interview questions and comparisons cover these areas, and new Tech Buzz stories add to them every Monday." },
-      { question: "What can I read for free?", answer: "Without an account you can read interview questions for 31 technologies, system design and AI agent blueprints, an API reference for 60 technologies, technology handbooks, side-by-side comparisons and English vocabulary with Hindi meanings. Tech Buzz story previews are free too; the full stories are for members." },
-      { question: "How much does membership cost?", answer: `Membership is one plan covering every category: ${money(prices.monthly)} a month or ${money(prices.yearly)} a year, charged in Indian rupees. This page can show the price converted to your currency, and a running festive sale may lower it before you pay.` },
-      { question: "Can I cancel my membership?", answer: "Yes. You can cancel renewal from the Membership page at any time and keep access until the end of the period you have paid for. The cancellation and refund policy explains when payments are refunded, including duplicate and failed charges." },
-      { question: "What is Tech Buzz?", answer: "Tech Buzz is the weekly technology blog on MasterClass Buddy. Five new stories go live every Monday at 00:00 IST, one per track: Agentic AI, System Design, AWS and DevOps, Kubernetes and Docker, and Next.js and React. Developers review, rate and clap for each story." },
-      { question: "How does it help me prepare for interviews?", answer: "Preparation starts with the most-asked subjective and objective questions for each technology, each with a model answer. System design blueprints then add diagrams, design decisions and more interview questions, and members practise further with timed mock exams and quizzes in the dashboard." },
-      { question: "Where is MasterClass Buddy based, and how do I contact support?", answer: `MasterClass Buddy is based at ${ADDRESS_LINE}. You can call support on ${SUPPORT.phone}, message us on Instagram or use the Contact page, which also answers common questions about accounts, membership and billing.` },
+      { icon: "/images/landing/answers/platform.png", question: "What is MasterClass Buddy?", answer: "An online learning platform for software engineers and students. It brings together weekly Tech Buzz blogs, interview questions with model answers, system design blueprints, technology handbooks, an API reference and guided courses." },
+      { icon: "/images/landing/answers/technologies.png", question: "Which technologies can I learn here?", answer: "Agentic AI, LangChain, LangGraph, LangSmith, LangFlow, n8n, Next.js, React, TypeScript, Python, Node.js, AWS, Docker, Kubernetes, system design and data structures, through handbooks, interview questions, comparisons and new Tech Buzz stories every Monday." },
+      { icon: "/images/landing/answers/free.png", question: "What can I read for free?", answer: "Without an account: interview questions for 31 technologies, system design and AI agent blueprints, an API reference for 60 technologies, handbooks, comparisons, English vocabulary with Hindi meanings and Tech Buzz story previews." },
+      { icon: "/images/landing/answers/cost.png", question: "How much does membership cost?", answer: `One plan covers every category: ${money(prices.monthly)} a month or ${money(prices.yearly)} a year, charged in Indian rupees. This page can show the price in your currency, and a running festive sale may lower it.` },
+      { icon: "/images/landing/answers/cancel.png", question: "Can I cancel my membership?", answer: "Yes. Cancel renewal from the Membership page at any time and keep access until your paid period ends. The cancellation and refund policy covers refunds, including duplicate and failed charges." },
+      { icon: "/images/landing/answers/buzz.png", question: "What is Tech Buzz?", answer: "The weekly technology blog here. Five new stories go live every Monday at 00:00 IST, one each for Agentic AI, System Design, AWS and DevOps, Kubernetes and Docker, and Next.js and React." },
+      { icon: "/images/landing/answers/interview.png", question: "How does it help me prepare for interviews?", answer: "Start with the most-asked subjective and objective questions for each technology, each with a model answer. System design blueprints add diagrams and decisions, and members practise with timed mock exams and quizzes." },
+      { icon: "/images/landing/answers/contact.png", question: "Where is MasterClass Buddy based, and how do I contact support?", answer: `We are based at ${ADDRESS_LINE}. Call support on ${SUPPORT.phone}, message us on Instagram or use the Contact page for any other question.` },
     ],
   };
 }

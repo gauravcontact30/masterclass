@@ -8,7 +8,7 @@ import { NEWS_BASICS, NEWS_PER_SLIDE, NEWS_PRACTICE, NEWS_SLIDES, QUESTIONS_PER_
 import { DEFAULT_LANDING_NEWS } from "@/lib/landing-news-fallback";
 import { NEWS_MORE_BASICS, NEWS_QUICK_CHECKS } from "@/lib/landing-news-study";
 import Image from "@/components/responsive-image";
-import Link from "next/link";
+import Link from "@/components/site-link";
 import { ListenButton } from "./listen-button";
 import { useLanguage } from "./language-provider";
 import styles from "./landing-news.module.css";

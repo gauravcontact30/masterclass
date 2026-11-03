@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import Link from "@/components/site-link";
 import { notFound } from "next/navigation";
 import { workflow, workflowPrep, workflowQuestions, workflows } from "@/lib/public-learning";
 import { learningMetadata, siteUrl } from "@/lib/seo";

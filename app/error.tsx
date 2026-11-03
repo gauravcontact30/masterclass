@@ -1,5 +1,5 @@
 "use client";
-import Link from "next/link";
+import Link from "@/components/site-link";
 import { useEffect } from "react";
 
 /** Free library sections that render from prerendered HTML, so they stay readable even when a live service fails. */

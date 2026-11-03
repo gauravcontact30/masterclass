@@ -1,5 +1,5 @@
 import { RouteH1 } from "@/components/route-heading";
-import Link from "next/link";
+import Link from "@/components/site-link";
 import { JsonLd } from "@/components/json-ld";
 import { breadcrumbSchema, CONTENT_UPDATED, learningPageSchema, readableDate } from "@/lib/seo";
 import styles from "./library.module.css";

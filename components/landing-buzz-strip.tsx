@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/site-link";
 import { ArrowUpRight, Newspaper } from "lucide-react";
 import { relatedBuzz, type LandingBuzz } from "@/lib/landing-buzz-types";
 import styles from "./landing-buzz-strip.module.css";

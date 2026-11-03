@@ -15,6 +15,17 @@ import { isUntrackedEmail } from "@/lib/server/tracking-exclusions";
  * (lib/live-visits.ts), because an incremental read does not see a visitor's older rows.
  */
 const LIMIT = 20_000, PAGE = 1000;
+/** Reads page by page: one Supabase response stops at 1,000 rows whatever `.limit()` asks for, which would drop rows silently. */
+async function readAll<T>(read: (from: number, to: number) => PromiseLike<{ data: T[] | null; error: unknown }>, max: number) {
+  const rows: T[] = [];
+  for (let from = 0; from < max; from += PAGE) {
+    const { data, error } = await read(from, Math.min(from + PAGE, max) - 1);
+    if (error) return { rows, failed: true, full: false };
+    rows.push(...(data ?? []));
+    if ((data?.length ?? 0) < PAGE) return { rows, failed: false, full: false };
+  }
+  return { rows, failed: false, full: true };
+}
 /** Read only to judge a row (lib/visit-quality.ts); never sent to the browser. The browser's language and time zone are
  *  sent: the stream's "Learner origin" shows them (it said "not reported" for every visitor while they were held back). */
 const PRIVATE = new Set(["ip_masked"]);
@@ -40,7 +51,8 @@ export async function GET(request: Request) {
       .eq("is_bot", false).in("event", ["page_view", "page_leave"]).gte("created_at", since)
       .order("created_at", { ascending: false }).order("id", { ascending: false }).range(offset, offset + PAGE - 1);
     // The first page also says how many rows there are; the rest are read four at a time instead of one by one.
-    const [first, presence, clickRows, apiRows] = await Promise.all([page(0, true), readPresence(since), readClicks(since), readApiCalls(since)]);
+    const [first, presenceRead, clickRead, apiRead] = await Promise.all([page(0, true), readPresence(since), readClicks(since), readApiCalls(since)]);
+    const presence = presenceRead.rows, clickRows = clickRead.rows, apiRows = apiRead.rows;
     let head = first;
     if (head.error?.code === "42703") { columns = BASE_COLUMNS; head = await page(0, true); }
     if (head.error) adminError(head.error);
@@ -77,15 +89,14 @@ export async function GET(request: Request) {
     const clicks = clickRows.filter(click => !automated.has(click.session_id));
     const apiCalls = apiRows.filter(call => !automated.has(call.session_id));
     return Response.json({ days: VISIT_RETENTION_DAYS, since, incremental: Boolean(asked), visits, emails, presence, clicks, apiCalls, automated: [...automated], hidden: rows.length - genuine.length,
-      capped: (head.count ?? 0) > LIMIT, generatedAt: new Date().toISOString() }, { headers: { "Cache-Control": "private, no-store" } });
+      capped: (head.count ?? 0) > LIMIT || presenceRead.full, generatedAt: new Date().toISOString() }, { headers: { "Cache-Control": "private, no-store" } });
   }, request);
 }
 
 /** Heartbeats seen since `since`; null before migration 0034, so the panel keeps its older rule for open pages. */
 async function readPresence(since: string) {
-  const { data, error } = await db().from("site_presence").select("session_id,path,started_at,seen_at").gte("seen_at", since).order("seen_at", { ascending: false }).limit(5000);
-  if (error) return null;
-  return data ?? [];
+  const { rows, failed, full } = await readAll((from, to) => db().from("site_presence").select("session_id,path,started_at,seen_at").gte("seen_at", since).order("seen_at", { ascending: false }).range(from, to), LIMIT);
+  return { rows: failed ? null : rows, full };
 }
 
 /**
@@ -94,25 +105,23 @@ async function readPresence(since: string) {
  * routes the visitor used, so they are left out.
  */
 async function readApiCalls(since: string) {
-  const { data, error } = await db().from("monitor_events").select("id,created_at,resource,action,status,duration_ms,details").eq("kind", "request")
-    .not("details->>session_id", "is", null).gte("created_at", since).order("created_at", { ascending: false }).limit(10_000);
-  if (error) return [];
-  return (data ?? []).flatMap(row => {
+  const { rows: data } = await readAll((from, to) => db().from("monitor_events").select("id,created_at,resource,action,status,duration_ms,details").eq("kind", "request")
+    .not("details->>session_id", "is", null).gte("created_at", since).order("created_at", { ascending: false }).range(from, to), LIMIT);
+  return { rows: data.flatMap(row => {
     const details = (row.details ?? {}) as Record<string, unknown>, path = String(row.resource ?? "");
     if (typeof details.session_id !== "string" || !path || path === "/api/track" || path.startsWith("/api/monitoring")) return [];
     return [{ id: String(row.id), created_at: String(row.created_at), session_id: details.session_id, path, method: String(row.action ?? "GET"), status: Number(row.status) || 0, duration_ms: Number(row.duration_ms) || 0 }];
-  });
+  }) };
 }
 
 /** Tracked clicks since `since` (components/visit-tracker.tsx: UI labels and paths only), for the visitor journeys. */
 async function readClicks(since: string) {
-  const { data, error } = await db().from("monitor_events").select("created_at,resource,details").eq("kind", "site_interaction").gte("created_at", since)
-    .order("created_at", { ascending: false }).limit(5000);
-  if (error) return [];
-  return (data ?? []).flatMap(row => {
+  const { rows: data } = await readAll((from, to) => db().from("monitor_events").select("created_at,resource,details").eq("kind", "site_interaction").gte("created_at", since)
+    .order("created_at", { ascending: false }).range(from, to), LIMIT);
+  return { rows: data.flatMap(row => {
     const details = (row.details ?? {}) as Record<string, unknown>;
     const text = (value: unknown, max: number) => typeof value === "string" && value ? value.slice(0, max) : null;
     const session = text(details.session_id, 64), option = text(details.option, 100);
     return session && option ? [{ created_at: String(row.created_at), session_id: session, path: text(row.resource, 300) ?? "/", topic: text(details.topic, 120), option, target_path: text(details.target_path, 300) }] : [];
-  });
+  }) };
 }

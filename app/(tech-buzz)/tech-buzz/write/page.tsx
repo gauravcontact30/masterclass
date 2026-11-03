@@ -1,6 +1,6 @@
 import { RouteH1 } from "@/components/route-heading";
 import type { Metadata } from "next";
-import Link from "next/link";
+import Link from "@/components/site-link";
 import { notFound, redirect } from "next/navigation";
 import { PenLine } from "lucide-react";
 import { currentUser } from "@/lib/server/auth";

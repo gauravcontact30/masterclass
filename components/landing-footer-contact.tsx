@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/site-link";
 import { ArrowRight, ArrowUpRight, CalendarSync, Check, ChevronDown, Copy, CreditCard, Mail, MapPin, MessageCircleHeart, Phone, ReceiptText, ShieldCheck, Undo2 } from "lucide-react";
 import { ADDRESS, ADDRESS_LINE, SOCIAL_PROFILES, SUPPORT } from "@/lib/site-contact";
 import { EmailLink } from "./email-link";

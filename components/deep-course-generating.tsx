@@ -1,5 +1,5 @@
 import { RouteH1 } from "@/components/route-heading";
-import Link from "next/link";
+import Link from "@/components/site-link";
 import { Clock3 } from "lucide-react";
 import styles from "./deep-course.module.css";
 

@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, useCallback } from "react";
 import Image from "@/components/responsive-image";
-import Link from "next/link";
+import Link from "@/components/site-link";
 import { ArrowRight, Check, CheckCircle2, Copy, HelpCircle, Sparkles, Terminal, X } from "lucide-react";
 import type { TechnologyInfo } from "@/lib/technology-catalog";
 import { useLanguage } from "./language-provider";

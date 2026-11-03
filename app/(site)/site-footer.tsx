@@ -1,5 +1,5 @@
 import { Suspense } from "react";
-import Link from "next/link";
+import Link from "@/components/site-link";
 import { cacheLife } from "next/cache";
 import { ArrowRight, CalendarSync, ChevronDown, Flame, Sparkles } from "lucide-react";
 import { Wordmark } from "@/components/brand-mark";

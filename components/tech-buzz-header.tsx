@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, useSyncExternalStore, type FormEvent, type MouseEvent } from "react";
-import Link from "next/link";
+import Link from "@/components/site-link";
 import { useRouter } from "next/navigation";
 import { ArrowRight, Bookmark, Flame, GraduationCap, Menu, PenLine, Search, X } from "lucide-react";
 import { Wordmark } from "@/components/brand-mark";

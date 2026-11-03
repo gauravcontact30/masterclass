@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useCallback } from "react";
 import Image from "@/components/responsive-image";
-import Link from "next/link";
+import Link from "@/components/site-link";
 import {
   Star,
   Search,

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useSyncExternalStore, type MouseEvent } from "react";
-import Link from "next/link";
+import Link from "@/components/site-link";
 import { Bookmark, CheckCircle2, Lock, PenLine, Repeat2, Sparkles, UserCheck } from "lucide-react";
 import { useMarks } from "@/lib/tech-buzz-marks";
 import { useOutline, type OutlineItem } from "@/lib/tech-buzz-outline";

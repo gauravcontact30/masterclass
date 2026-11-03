@@ -1,5 +1,5 @@
 import { RouteH1 } from "@/components/route-heading";
-import Link from "next/link";
+import Link from "@/components/site-link";
 import { JsonLd } from "@/components/json-ld";
 import { CONTENT_UPDATED, publicPage, readableDate, webPageSchema, type PublicPage } from "@/lib/seo";
 import styles from "./site.module.css";

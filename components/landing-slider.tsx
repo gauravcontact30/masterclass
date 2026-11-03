@@ -5,7 +5,7 @@ import { preload } from "react-dom";
 import { getImageProps } from "next/image";
 import Image from "@/components/responsive-image";
 import { losslessImageLoader } from "@/lib/responsive-image-loader";
-import Link from "next/link";
+import Link from "@/components/site-link";
 import { Bell, ChevronLeft, ChevronRight, Flame, Pause, Play } from "lucide-react";
 import { useLanguage } from "./language-provider";
 import styles from "./landing-home.module.css";

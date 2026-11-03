@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useId, useState } from "react";
-import Link from "next/link";
+import Link from "@/components/site-link";
 import {
   ArrowUpRight,
   Check,

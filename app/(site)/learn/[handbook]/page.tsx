@@ -2,7 +2,7 @@ import { PageAnswers } from "@/components/page-answers";
 import { handbookAnswers } from "@/lib/page-answers";
 import { AccordionSummary } from "@/components/ui/accordion-chevron";
 import type { Metadata } from "next";
-import Link from "next/link";
+import Link from "@/components/site-link";
 import { notFound } from "next/navigation";
 import { handbook, handbookName, handbookSlug, handbooks, slugify } from "@/lib/public-learning";
 import { learningMetadata, siteUrl } from "@/lib/seo";

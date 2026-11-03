@@ -1,6 +1,6 @@
 import { PageAnswers } from "@/components/page-answers";
 import { HUB_ANSWERS } from "@/lib/page-answers";
-import Link from "next/link";
+import Link from "@/components/site-link";
 import { HINDI_ENABLED } from "@/lib/i18n";
 import { pageMetadata } from "@/lib/seo";
 import { PageIntro } from "../page-intro";

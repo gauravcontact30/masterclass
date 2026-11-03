@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/site-link";
 import { pageMetadata } from "@/lib/seo";
 import { PageIntro } from "../page-intro";
 import styles from "../site.module.css";
