@@ -53,6 +53,9 @@
 .columns a[href] { text-transform: none; } /* [href] outranks FooterLinks' `.links .link` capitalize. */
 
 .bottom { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 14px 24px; padding: 22px 0 28px; border-top: 1px solid #2a2a28; color: #a3a198; }
+.nap { padding: 16px 0; border-top: 1px solid #2a2a28; color: #a3a198; font-size: 13px; font-style: normal; line-height: 1.5; }
+.nap a { color: #d8d5cb; white-space: nowrap; }
+.nap a:hover { color: #fff; text-decoration: underline; text-underline-offset: 3px; }
 .bottom small { font-size: 12px; }
 .note { display: inline-flex; align-items: center; gap: 7px; font-size: 12px; }
 .note svg { flex: none; color: #e9a383; }

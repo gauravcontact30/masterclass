@@ -69,65 +69,70 @@ export function OgCard({ eyebrow, title, subtitle, chips, footer, accent = P.ter
   </div>;
 }
 
-/** The technologies on the home page's link preview, each with its logo from public/images/tech/<icon>.png. */
-export const HOME_OG_TECHNOLOGIES = [
-  { name: "LangChain", icon: "langchain" }, { name: "Next.js", icon: "nextjs" }, { name: "Zustand", icon: "zustand" },
-  { name: "TanStack", icon: "tanstack" }, { name: "AWS", icon: "aws" }, { name: "Docker", icon: "docker" },
-  { name: "Kubernetes", icon: "kubernetes" }, { name: "System Design", icon: "system-design" }, { name: "n8n", icon: "n8n" },
-  { name: "FastAPI", icon: "fastapi" }, { name: "Playwright", icon: "playwright" },
+/**
+ * The technologies on the home page's link preview, each with its logo from public/images/tech/<icon>.png, by row of the
+ * wall. The panel's slanted edge leaves the top rows narrower, so they hold five tiles and the lower rows six.
+ */
+export const HOME_OG_WALL = [
+  [{ name: "Agentic AI", icon: "agentic-ai" }, { name: "LangChain", icon: "langchain" }, { name: "LangGraph", icon: "langgraph" }, { name: "LangSmith", icon: "langsmith" }, { name: "LangFlow", icon: "langflow" }],
+  [{ name: "Claude", icon: "claude" }, { name: "OpenAI", icon: "openai" }, { name: "Google AI", icon: "google" }, { name: "Microsoft AI", icon: "microsoft" }, { name: "n8n", icon: "n8n" }],
+  [{ name: "Next.js", icon: "nextjs" }, { name: "React", icon: "react" }, { name: "TypeScript", icon: "typescript" }, { name: "JavaScript", icon: "javascript" }, { name: "TanStack", icon: "tanstack" }],
+  [{ name: "AWS", icon: "aws" }, { name: "Docker", icon: "docker" }, { name: "Kubernetes", icon: "kubernetes" }, { name: "Linux", icon: "linux" }, { name: "Git", icon: "git" }, { name: "Zustand", icon: "zustand" }],
+  [{ name: "System Design", icon: "system-design" }, { name: "Python", icon: "python" }, { name: "FastAPI", icon: "fastapi" }, { name: "Django", icon: "django" }, { name: "Node.js", icon: "nodejs" }, { name: "NestJS", icon: "nestjs" }],
+  [{ name: "PostgreSQL", icon: "postgresql" }, { name: "Redis", icon: "redis" }, { name: "Supabase", icon: "supabase" }, { name: "GraphQL", icon: "graphql" }, { name: "Express", icon: "express" }, { name: "Playwright", icon: "playwright" }],
+  [{ name: "Vitest", icon: "vitest" }, { name: "Vue", icon: "vue" }, { name: "Angular", icon: "angular" }, { name: "Flutter", icon: "flutter" }, { name: "Go", icon: "go" }, { name: "Rust", icon: "rust" }],
 ] as const;
+export const HOME_OG_TECHNOLOGIES = HOME_OG_WALL.flat();
 export type OgTechnology = { name: string; logo: string };
 
+/** The site's light tones, each with an ink that reads on it. */
+const WALL_TONES = [["#eaf3fb", "#1d4f7a"], ["#ecf7ef", "#1f5a37"], ["#fdf6dc", "#6e4f00"], ["#f1ecfb", "#4b3c86"], ["#fdeee7", "#8f3f23"], ["#e6f5f6", "#17595f"]] as const;
+
 /**
- * The home page's link preview (1200×630): the lockup, one line on what the site is for, and the headline
- * technologies as logo tiles, four to a row, named large enough to read in a chat or feed thumbnail. `logo` is a
- * data URI (app/opengraph-image.tsx reads the PNGs). Satori rules as for OgCard.
+ * The home page's link preview (1200×630): what the site is for and a way in at the left, and at the right a clay panel
+ * holding a wall of every technology, named, in light tones. The headline carries the card at thumbnail size;
+ * the wall reads as breadth there and as a list of names at full size. `logo` is a data URI (app/opengraph-image.tsx
+ * reads the PNGs). Satori rules as for OgCard; the Inter cuts it uses are loaded by the route.
  */
-export function HomeOgCard({ headline, technologies, footer }: { headline: string; technologies: readonly OgTechnology[]; footer: string }) {
-  return <div style={{ width: "100%", height: "100%", display: "flex", flexDirection: "column", background: "#ffffff", position: "relative", fontFamily: "system-ui, sans-serif", color: INK }}>
-    <div style={{ position: "absolute", top: -240, right: -180, width: 660, height: 660, borderRadius: 660, background: "radial-gradient(circle, rgba(217,119,87,0.18) 0%, rgba(217,119,87,0) 70%)", display: "flex" }} />
-    <div style={{ position: "absolute", bottom: -280, left: -220, width: 660, height: 660, borderRadius: 660, background: "radial-gradient(circle, rgba(242,184,75,0.16) 0%, rgba(242,184,75,0) 70%)", display: "flex" }} />
-    <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 12, background: `linear-gradient(90deg, ${P.terracotta}, ${P.gold})`, display: "flex" }} />
-
-    <div style={{ display: "flex", flexDirection: "column", flex: 1, padding: "40px 64px 0", position: "relative" }}>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <div style={{ display: "flex", alignItems: "center" }}>
-          <Mark size={92} />
-          <div style={{ display: "flex", flexDirection: "column", marginLeft: 20 }}>
-            <div style={{ display: "flex", fontSize: 54, lineHeight: 1, letterSpacing: -2.2 }}>
-              <span style={{ fontWeight: 500, color: INK }}>master</span>
-              <span style={{ fontWeight: 800, color: P.terracotta }}>class</span>
-            </div>
-            <div style={{ display: "flex", alignItems: "center", marginTop: 10 }}>
-              <div style={{ width: 46, height: 2.5, background: "#d6d2c6", display: "flex" }} />
-              <span style={{ margin: "0 12px", fontSize: 19, fontWeight: 700, letterSpacing: 9, color: P.terracotta }}>BUDDY</span>
-              <div style={{ width: 46, height: 2.5, background: "#d6d2c6", display: "flex" }} />
-            </div>
-          </div>
+export function HomeOgCard({ wall, footer }: { wall: readonly (readonly OgTechnology[])[]; footer: string }) {
+  return <div style={{ width: "100%", height: "100%", display: "flex", background: "#fbf8f3", position: "relative", overflow: "hidden", fontFamily: "Inter", color: INK }}>
+    <div style={{ position: "absolute", top: -120, left: 648, width: 900, height: 900, background: `linear-gradient(160deg, ${P.terracotta}, #9a4a2e)`, transform: "rotate(7deg)", display: "flex" }} />
+    {/* The tiles stay upright: Satori clips images inside a rotated parent. Each row starts where the slanted edge lets it. */}
+    {wall.map((row, r) => <div key={row[0].name} style={{ position: "absolute", top: 8 + r * 88, left: 714 - r * 11, right: 14, display: "flex" }}>
+      {row.map((tech, t) => { const [background, ink] = WALL_TONES[(r * 2 + t) % WALL_TONES.length]; return <div key={tech.name} style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", flex: 1, height: 82, marginLeft: t ? 7 : 0, borderRadius: 14, background }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 38, height: 38, borderRadius: 10, background: "#ffffff" }}>
+          {/* eslint-disable-next-line @next/next/no-img-element -- Satori renders plain <img> */}
+          <img src={tech.logo} width={28} height={28} alt="" />
         </div>
-        <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end" }}>
-          <div style={{ display: "flex", padding: "10px 22px", borderRadius: 999, background: INK, color: "#ffffff", fontSize: 22, fontWeight: 700 }}>Daily Tech Buzz blogs</div>
-          <div style={{ display: "flex", marginTop: 10, fontSize: 21, fontWeight: 600, color: SOFT }}>Interview prep · System design</div>
+        <span style={{ marginTop: 5, fontSize: tech.name.length > 10 ? 11 : 12.5, fontWeight: 500, color: ink, whiteSpace: "nowrap" }}>{tech.name}</span>
+      </div>; })}
+    </div>)}
+
+    <div style={{ display: "flex", flexDirection: "column", width: 640, padding: "44px 0 40px 60px", position: "relative" }}>
+      <div style={{ display: "flex", alignItems: "center" }}>
+        <Mark size={68} />
+        <div style={{ display: "flex", flexDirection: "column", marginLeft: 14 }}>
+          <div style={{ display: "flex", fontSize: 38, lineHeight: 1, letterSpacing: -1.4 }}>
+            <span style={{ fontWeight: 500, color: INK }}>master</span>
+            <span style={{ fontWeight: 800, color: P.terracotta }}>class</span>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", marginTop: 7 }}>
+            <div style={{ width: 34, height: 2, background: "#d6d2c6", display: "flex" }} />
+            <span style={{ margin: "0 9px", fontSize: 14, fontWeight: 800, letterSpacing: 6, color: P.terracotta }}>BUDDY</span>
+            <div style={{ width: 34, height: 2, background: "#d6d2c6", display: "flex" }} />
+          </div>
         </div>
       </div>
 
-      <div style={{ display: "flex", marginTop: 22, fontSize: 38, fontWeight: 800, letterSpacing: -1.2, color: INK }}>{headline}</div>
-
-      <div style={{ display: "flex", flexWrap: "wrap", marginTop: 20 }}>
-        {technologies.slice(0, 12).map((tech, i) => <div key={tech.name} style={{ display: "flex", alignItems: "center", width: 254, height: 90, marginRight: i % 4 === 3 ? 0 : 14, marginBottom: 12, padding: "0 16px", borderRadius: 18, background: "#faf8f2", border: `2px solid ${RULE}` }}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 54, height: 54, borderRadius: 14, background: "#ffffff", border: `1.5px solid ${RULE}` }}>
-            {/* eslint-disable-next-line @next/next/no-img-element -- Satori renders plain <img> */}
-            <img src={tech.logo} width={38} height={38} alt="" />
-          </div>
-          <span style={{ marginLeft: 14, whiteSpace: "nowrap", fontSize: tech.name.length > 10 ? 24 : 29, fontWeight: 800, letterSpacing: -0.6, color: INK }}>{tech.name}</span>
-        </div>)}
-        {technologies.length === 11 && <div style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 254, height: 90, marginBottom: 12, borderRadius: 18, border: `2px dashed ${P.terracotta}`, color: P.terracotta, fontSize: 26, fontWeight: 800 }}>and many more →</div>}
+      <div style={{ display: "flex", flexDirection: "column", marginTop: 38, fontSize: 62, fontWeight: 800, lineHeight: 1.06, letterSpacing: -2.4, color: INK }}>
+        <span>From AI agents</span><span>to production.</span><span style={{ color: P.terracotta }}>Learn it all here.</span>
       </div>
-    </div>
+      <div style={{ display: "flex", marginTop: 22, width: 500, fontSize: 25, fontWeight: 500, lineHeight: 1.36, color: SOFT }}>Courses, interview prep and new Tech Buzz stories every week, across 35+ technologies.</div>
 
-    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0 64px 24px", position: "relative" }}>
-      <span style={{ fontSize: 22, fontWeight: 700, color: SOFT }}>{footer}</span>
-      <span style={{ fontSize: 22, fontWeight: 800, color: P.terracotta }}>Start learning free →</span>
+      <div style={{ display: "flex", alignItems: "center", marginTop: "auto" }}>
+        <div style={{ display: "flex", alignItems: "center", padding: "15px 26px", borderRadius: 14, background: INK, color: "#ffffff", fontSize: 24, fontWeight: 800 }}>Start learning free →</div>
+        <span style={{ marginLeft: 20, fontSize: 19, fontWeight: 500, color: SOFT }}>{footer}</span>
+      </div>
     </div>
   </div>;
 }

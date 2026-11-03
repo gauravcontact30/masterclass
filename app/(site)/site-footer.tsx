@@ -6,6 +6,7 @@ import { Wordmark } from "@/components/brand-mark";
 import { FooterLinks } from "@/components/footer-links";
 import { FooterVisibility } from "@/components/footer-visibility";
 import { LandingFooterContact, LandingFooterFacts } from "@/components/landing-footer-contact";
+import { ADDRESS_LINE, SUPPORT } from "@/lib/site-contact";
 import { DAILY_TRACKS } from "@/lib/tech-buzz-sections";
 import styles from "./site-footer.module.css";
 
@@ -67,6 +68,7 @@ export function SiteFooter() {
           <FooterLinks links={column.links} column={index} prefetch={false} />
         </nav>)}
       </div>
+      <address className={styles.nap}>MasterClass Buddy, {ADDRESS_LINE}. Phone: <a href={SUPPORT.phoneHref}>{SUPPORT.phone}</a></address>
       <div className={styles.bottom}>
         <small>© <Suspense fallback={null}><CopyrightYear /></Suspense> MasterClass Buddy. All rights reserved.</small>
         <span className={styles.note}><Sparkles size={13} aria-hidden="true" />Members also get Study Buddy, the AI study assistant, on every page.</span>

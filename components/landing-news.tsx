@@ -3,7 +3,7 @@
 import { useEffect, useLayoutEffect, useRef, useState, type FocusEvent, type ReactNode } from "react";
 import { useNearViewport } from "./use-near-viewport";
 import { useVisiblePlayback } from "./use-visible-playback";
-import { ArrowUpRight, Bot, CircleHelp, Hammer, GraduationCap, Lightbulb, ListChecks, Boxes, BrainCircuit, ChevronLeft, ChevronRight, Cloud, Code2, MessagesSquare, Newspaper, Pause, Play, Rocket, ShoppingCart, Sparkles, Star, TrendingUp, type LucideIcon } from "lucide-react";
+import { ArrowUpRight, Bot, Building2, CalendarDays, CircleHelp, Hammer, GraduationCap, Lightbulb, ListChecks, Boxes, BrainCircuit, ChevronLeft, ChevronRight, Cloud, Code2, MessagesSquare, Newspaper, Pause, Play, Rocket, ShoppingCart, Sparkles, Star, TrendingUp, type LucideIcon } from "lucide-react";
 import { NEWS_BASICS, NEWS_PER_SLIDE, NEWS_PRACTICE, NEWS_SLIDES, QUESTIONS_PER_SLIDE, type InterviewAsk, type LandingNews as LandingNewsData, type NewsLogo, type NewsSlideData, type NewsSlideId, type NewsSlideMeta, type NewsStory } from "@/lib/landing-news";
 import { DEFAULT_LANDING_NEWS } from "@/lib/landing-news-fallback";
 import { NEWS_MORE_BASICS, NEWS_QUICK_CHECKS } from "@/lib/landing-news-study";
@@ -153,12 +153,18 @@ function Cover({ meta, hi, eager, data }: { meta: NewsSlideMeta; hi: boolean; ea
   const sources = [...new Set(items.flatMap(item => item.source ? [item.source] : []))];
   const dates = items.flatMap(item => item.date ? [item.date] : []).sort();
   const companies = data?.kind === "questions" ? [...new Set(data.questions.flatMap(ask => ask.companies.map(company => company.name)))] : [];
-  const glance: [string, string][] = items.length ? [
-    [String(items.length), meta.kind === "questions" ? (hi ? "प्रश्न" : "questions") : (hi ? "खबरें" : "stories")],
-    meta.kind === "questions" ? [String(companies.length || "—"), hi ? "कंपनियाँ" : "companies"] : [String(sources.length), hi ? "स्रोत" : "sources"],
-    dates.length ? [dates[0] === dates.at(-1) ? shortDate(dates[0]) : `${shortDate(dates[0])} – ${shortDate(dates.at(-1)!)}`, hi ? "तारीख़ें" : "dates"]
-      : [String(data?.kind === "questions" ? Math.round(data.questions.reduce((sum, ask) => sum + ask.rating, 0) / Math.max(1, data.questions.length) * 10) / 10 : "—"), hi ? "औसत रेटिंग" : "avg. asked"],
-  ] : [];
+  const facts = data?.kind === "news" ? data.stories.slice(0, NEWS_PER_SLIDE).reduce((sum, story) => sum + story.points.length, 0) : 0;
+  // Up to two names, then how many more: "Anthropic News, OpenAI News +2".
+  const named = (names: string[]) => names.length > 2 ? `${names.slice(0, 2).join(", ")} +${names.length - 2}` : names.join(", ");
+  const glance: { icon: LucideIcon; label: string; value: string; note: string }[] = !items.length ? [] : data?.kind === "questions" ? [
+    { icon: MessagesSquare, label: hi ? "प्रश्न" : "Questions", value: String(items.length), note: hi ? "हर एक का उत्तर" : "Each with an answer" },
+    { icon: Building2, label: hi ? "कंपनियाँ" : "Companies", value: String(companies.length || "—"), note: named(companies) || (hi ? "नाम उपलब्ध नहीं" : "None named") },
+    { icon: Star, label: hi ? "कितना पूछा गया" : "How often asked", value: `${(data.questions.reduce((sum, ask) => sum + ask.rating, 0) / data.questions.length).toFixed(1)} / 5`, note: hi ? `${data.questions.filter(ask => ask.rating === 5).length} बहुत बार` : `${data.questions.filter(ask => ask.rating === 5).length} asked very often` },
+  ] : [
+    { icon: Newspaper, label: hi ? "खबरें" : "Stories", value: String(items.length), note: hi ? `${facts} मुख्य बातें` : `${facts} key ${facts === 1 ? "fact" : "facts"}` },
+    { icon: Building2, label: hi ? "स्रोत" : "Sources", value: String(sources.length), note: named(sources) },
+    { icon: CalendarDays, label: hi ? "ताज़ा खबर" : "Latest story", value: dates.length ? shortDate(dates.at(-1)!) : "—", note: !dates.length ? "" : dates[0] === dates.at(-1) ? (hi ? "सब इसी दिन की" : "All from this day") : (hi ? `${shortDate(dates[0])} से` : `Going back to ${shortDate(dates[0])}`) },
+  ];
   const Icon = ICONS[meta.id];
   const [failed, setFailed] = useState(false);
   return <div className={styles.cover}>
@@ -173,7 +179,7 @@ function Cover({ meta, hi, eager, data }: { meta: NewsSlideMeta; hi: boolean; ea
     <p>{hi ? meta.hiBlurb : meta.blurb}</p>
     <ul className={styles.topics}>{meta.topics.map(topic => <li key={topic}>{topic}</li>)}</ul>
     {items.length > 0 && <div className={styles.index}>
-      <dl className={styles.glance} aria-label={hi ? "एक नज़र में" : "At a glance"}>{glance.map(([value, label]) => <div key={label}><dd>{value}</dd><dt>{label}</dt></div>)}</dl>
+      <dl className={styles.glance} aria-label={hi ? "एक नज़र में" : "At a glance"}>{glance.map(({ icon: TileIcon, label, value, note }) => <div key={label}><dt><TileIcon size={13} aria-hidden="true" />{label}</dt><dd>{value}</dd>{note && <dd className={styles.glanceNote}>{note}</dd>}</div>)}</dl>
       <div className={styles.subhead}>{hi ? "इस स्लाइड में" : "In this slide"}</div>
       <ol>{items.map(item => <li key={item.title}>
         <span>{item.title}</span>

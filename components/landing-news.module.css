@@ -74,11 +74,16 @@
 .index li a:hover { color: var(--nw-clay-deep); text-decoration: underline; text-underline-offset: 3px; }
 .index li small { display: flex; align-items: center; gap: 6px; margin-top: 3px; font-size: 12px; color: var(--nw-muted); }
 .index li small .logo { width: 16px; height: 16px; }
-/* At a glance: three figures across the top of the index. */
-.glance { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin: 0 0 16px; }
-.glance > div { display: flex; flex-direction: column-reverse; gap: 2px; padding: 10px 8px; border-radius: 10px; background: color-mix(in srgb, #fff 55%, transparent); text-align: center; }
-.glance dd { margin: 0; font-size: 17px; font-weight: 700; line-height: 1.15; color: var(--cover-ink, var(--nw-graphite)); font-variant-numeric: tabular-nums; }
-.glance dt { font-size: 11px; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--nw-muted); }
+/* At a glance: three tiles across the top of the index, each in its own light tone, whatever the slide's tone is. A
+   tile too narrow for its names drops to its own line. */
+.glance { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 124px), 1fr)); gap: 8px; margin: 0 0 16px; }
+.glance > div { --tile: #eaf3fb; --tile-edge: #cfe1f6; --tile-ink: #1d4f7a; display: flex; flex-direction: column; gap: 3px; min-width: 0; padding: 10px 11px; border: 1px solid var(--tile-edge); border-radius: 12px; background: var(--tile); text-align: left; }
+.glance > div:nth-child(2) { --tile: #eef8f1; --tile-edge: #c8e8d5; --tile-ink: #1f5a37; }
+.glance > div:nth-child(3) { --tile: #f4f0fc; --tile-edge: #ddd4f5; --tile-ink: #4b3c86; }
+.glance dt { display: flex; align-items: center; gap: 5px; font-size: 12.5px; line-height: 1.25; color: var(--tile-ink); }
+.glance dt svg { flex: none; }
+.glance dd { margin: 0; font-size: 21px; font-weight: 500; line-height: 1.15; letter-spacing: -.01em; color: var(--tile-ink); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.glance .glanceNote { font-size: 12px; font-weight: 400; line-height: 1.35; letter-spacing: 0; color: #4d4c48; white-space: normal; overflow-wrap: anywhere; }
 /* Read more at, and Keep learning: the second sits at the foot of the cover, so the card always ends filled. */
 .extra { margin: 18px 8px 0; padding-top: 16px; border-top: 1px solid color-mix(in srgb, var(--cover-ink, #000) 16%, transparent); }
 .news .extra .subhead { display: flex; align-items: center; gap: 6px; margin: 0 0 10px; font-size: 12.5px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; }

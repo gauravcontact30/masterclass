@@ -81,7 +81,9 @@ export function publicPage(path: PublicPage["path"]): PublicPage {
   return page;
 }
 
-const ogImage = { url: "/opengraph-image", width: 1200, height: 630, alt: `${siteName} — Agentic AI, LangChain, LangGraph, LangSmith, LangFlow, n8n, Next.js, TanStack Start and Zustand` };
+/** Bump the version when the picture changes: social networks cache a preview by its URL. */
+export const ogImagePath = "/opengraph-image?v=2026-11-03";
+const ogImage = { url: ogImagePath, width: 1200, height: 630, alt: `${siteName}: from AI agents to production. Agentic AI, LangChain, Next.js, AWS, Kubernetes and 35+ technologies` };
 
 /**
  * Complete metadata for a public page. Next.js replaces (not merges) nested
@@ -191,7 +193,7 @@ export function organizationSchema(prices?: { monthly:number; yearly:number; end
     "@context": "https://schema.org", "@type": ["Organization", "EducationalOrganization", "LocalBusiness"], "@id": `${url}#organization`, name: siteName, alternateName: ["Master Class Buddy", "masterclassbuddy.com"], url,
     // A raster logo (Google's logo guidance asks for a crawlable image of at least 112×112); the SVG stays the favicon.
     logo: { "@type": "ImageObject", url: new URL("/brand/masterclass-mark-512.png", url).href, width: 512, height: 512 },
-    image: new URL("/opengraph-image", url).href,
+    image: new URL(ogImagePath, url).href,
     description: siteDescription, slogan: "Your buddy for mastering Agentic AI and the modern web stack.", areaServed: "IN", knowsLanguage: ["en"],
     // Support contact, postal address and social profiles (lib/site-contact.ts); the address makes it a LocalBusiness.
     // No email: it would put a plaintext address in every page's HTML for harvesters (and SEO checkers' plaintext-email

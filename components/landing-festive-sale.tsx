@@ -10,26 +10,27 @@ import styles from "./landing-festive-sale.module.css";
 type Prices = { monthly: number; yearly: number; currency?: Currency; sale?: SaleInfo | null };
 const pad = (value: number) => String(Math.max(0, value)).padStart(2, "0");
 
+/** Painted scenes with a real poster composited on the wall (scripts/generate-festive-poster-images.tsx). */
 const FESTIVE_SLIDES = [
   {
-    src: "/images/landing/diwali-sale-1.webp",
-    altEn: "A young professional learning on her laptop beside a vibrant rangoli and glowing diyas on Diwali night, fireworks outside the window",
-    altHi: "दिवाली की रात रंगोली और जलते दीयों के पास लैपटॉप पर सीखती एक युवा प्रोफ़ेशनल, खिड़की के बाहर आतिशबाज़ी",
+    src: "/images/landing/diwali-poster-langgraph.webp",
+    altEn: "A young professional learning on her laptop beside a marigold rangoli and glowing diyas on Diwali night, under a Master Class Buddy poster for LangGraph on the wall",
+    altHi: "दिवाली की रात रंगोली और दीयों के पास लैपटॉप पर सीखती एक युवा प्रोफ़ेशनल, दीवार पर LangGraph का Master Class Buddy पोस्टर",
   },
   {
-    src: "/images/landing/diwali-sale-2.webp",
-    altEn: "Two software engineers collaborating happily over a laptop on Diwali evening surrounded by warm lights and brass lamps",
-    altHi: "दिवाली की शाम दीयों और रोशनी के बीच लैपटॉप पर मिलकर काम करते दो सॉफ़्टवेयर इंजीनियर",
+    src: "/images/landing/diwali-poster-zustand.webp",
+    altEn: "Two software engineers laughing over a laptop among paper lanterns, a brass lamp and sweets, under a Master Class Buddy poster for Zustand on the wall",
+    altHi: "कंदीलों, पीतल के दीपक और मिठाइयों के बीच लैपटॉप पर हँसते दो सॉफ़्टवेयर इंजीनियर, दीवार पर Zustand का Master Class Buddy पोस्टर",
   },
   {
-    src: "/images/landing/diwali-sale-3.webp",
-    altEn: "A software engineer coding on a modern workstation decorated with clay diyas and marigold flowers under a starry festive sky",
-    altHi: "तारों भरी त्योहारी रात में मिट्टी के दीयों और गेंदे के फूलों से सजे आधुनिक वर्कस्टेशन पर कोडिंग करता सॉफ़्टवेयर इंजीनियर",
+    src: "/images/landing/diwali-poster-python.webp",
+    altEn: "A developer working on a laptop on a courtyard terrace lined with clay diyas, fireworks in the night sky, beside a Master Class Buddy poster for Python on the wall",
+    altHi: "दीयों से सजे आँगन में लैपटॉप पर काम करता एक डेवलपर, आकाश में आतिशबाज़ी, दीवार पर Python का Master Class Buddy पोस्टर",
   },
   {
-    src: "/images/landing/diwali-sale-4.webp",
-    altEn: "An Indian developer smiling proudly with his laptop in a room glowing with Diwali lanterns and traditional lamps",
-    altHi: "दिवाली के कंदील और पारंपरिक दीयों से जगमगाते कमरे में लैपटॉप के साथ गर्व से मुस्कुराता एक भारतीय डेवलपर",
+    src: "/images/landing/diwali-poster-nestjs.webp",
+    altEn: "A team in festive kurtas and sarees sharing sweets at the office under marigold torans, beside a Master Class Buddy poster for Nest.js on the wall",
+    altHi: "गेंदे के तोरण के नीचे दफ़्तर में मिठाई बाँटती त्योहारी पोशाक में एक टीम, दीवार पर Nest.js का Master Class Buddy पोस्टर",
   },
 ];
 const AUTOPLAY_MS = 8000;
@@ -73,7 +74,7 @@ function SaleCountdown({ endsAt, ends, hi, onDone }: { endsAt: string; ends: str
 /**
  * The festive sale on the landing page (Diwali 2026: 25% off the every payment of either plan). Shown only while a sale
  * is in force for at least one plan (lib/server/festive-sale.ts) and hidden in the browser the moment it ends. Its right-hand
- * side features a 4-image autoplay carousel (8s) of warm learning moments, surrounded by fireworks, flickering diyas and a turning rangoli.
+ * side features a 4-image autoplay carousel (8s) of festive scenes, each with a technology's poster on the wall, surrounded by fireworks, flickering diyas and a turning rangoli.
  */
 export function LandingFestiveSale({ prices }: { prices: Prices }) {
   const { language } = useLanguage(); const hi = language === "hi";

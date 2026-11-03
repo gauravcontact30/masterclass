@@ -149,7 +149,7 @@
 .briefBody { display: flex; flex-direction: column; gap: 8px; padding: 16px 18px 18px; }
 .industry { align-self: flex-start; margin: 0; padding: 3px 10px; border-radius: 999px; background: var(--tint); color: var(--deep); font-size: 12px; font-weight: 700; letter-spacing: .03em; }
 .briefBody .briefTitle { margin: 2px 0 0; font-family: var(--nb-font); font-size: clamp(20px, 1.9vw, 25px); font-weight: 600; line-height: 1.15; letter-spacing: -0.01em; color: var(--nb-graphite); text-wrap: balance; }
-.summary { margin: 0; font-size: 14.5px; line-height: 1.5; color: var(--nb-text); }
+.summary { text-align: start; -webkit-hyphens: manual; hyphens: manual; margin: 0; font-size: 14.5px; line-height: 1.5; color: var(--nb-text); }
 .facts { display: grid; gap: 8px; margin: 6px 0 0; }
 .facts div { padding: 10px 12px; border-radius: 12px; border: 1px solid; }
 .facts [data-fact="problem"] { background: #fdf0ef; border-color: #f2d3cf; }

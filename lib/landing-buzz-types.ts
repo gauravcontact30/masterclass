@@ -8,6 +8,9 @@ export type LandingBuzz = {
   rating?: { average: number; count: number }; stars?: number | null;
 };
 
+/** A technology Tech Buzz has published stories on, with its logo (lib/server/landing-buzz.ts landingBuzzTopics). */
+export type LandingTopic = { name: string; logo: string; stories: number };
+
 /**
  * The stories most related to a set of keywords (technology names, identifiers), newest first among equals; with no
  * match the newest stories stand in, so a section always has something fresh to offer.

@@ -1,60 +1,166 @@
-/* The Tech Buzz story cards in the landing carousel (landing-tech-buzz.tsx). The frame, fade, controls and Read story
-   button come from landing-carousel.module.css; this adds the cover badges, rating, reactions and the entrance motion
-   that replays each time a card becomes active (data-active, flipped by CarouselShell). */
-.slide { --rise: cubic-bezier(.2, .8, .2, 1); }
+/* The Tech Buzz reading list on the landing page (landing-tech-buzz.tsx, landing-buzz-queue.tsx): a sheet on a small
+   stack of paper with a coffee ring, holding a summary line, the current story's cover and a row per story. The fade
+   between covers and the Read story button come from landing-carousel.module.css. */
 .srOnly { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
-.cover { position: relative; aspect-ratio: 3 / 1.7; overflow: hidden; background: linear-gradient(135deg, #2a2148, #e2774c); }
+/* The text column as an article, in the anatomy of the story pages (tech-buzz-article.module.css). Spacing is by gap:
+   landing-section.module.css zeroes the margins of p, h2, blockquote and lists in a section. */
+.article { display: grid; gap: 18px; justify-items: start; min-width: 0; color: #242424; }
+.headline { font-size: clamp(30px, 3.2vw, 44px); font-weight: 600; line-height: 1.12; letter-spacing: -.02em; color: #242424; text-wrap: balance; }
+.standfirst { max-width: 60ch; font-size: clamp(16.5px, 1.35vw, 18.5px); line-height: 1.55; color: #6b6b6b; text-align: left; hyphens: manual; text-wrap: pretty; }
+
+.byline { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 12px; width: 100%; padding-block: 14px; border-block: 1px solid #ecebe6; }
+.avatar { flex: none; width: 44px; height: 44px; border-radius: 50%; }
+.bylineText { display: grid; gap: 2px; flex: 1 1 150px; min-width: 0; }
+.bylineText p { font-size: 13px; line-height: 1.4; color: #6b6b6b; }
+.author { display: inline-flex; align-items: center; gap: 5px; font-size: 15px; font-weight: 500; line-height: 1.3; color: #242424; }
+.author svg { flex: none; color: #b5573a; }
+.bylineActions { display: inline-flex; align-items: center; gap: 8px; }
+.starBadge { display: inline-flex; align-items: center; gap: 5px; min-height: 30px; padding: 0 10px; border: 1px solid #f1e3a8; border-radius: 999px; background: #fefaea; font-size: 13px; color: #6e4f00; font-variant-numeric: tabular-nums; }
+
+.prose { display: grid; gap: 18px; width: 100%; }
+.prose section { display: grid; gap: 4px; }
+.subhead { font-size: 17px; font-weight: 600; line-height: 1.3; letter-spacing: -.01em; color: #242424; }
+.prose p { max-width: 62ch; font-size: 16px; line-height: 1.65; color: #3d3d3a; text-align: left; hyphens: manual; text-wrap: pretty; }
+/* A drop cap opens the body, as a printed feature does. */
+.lead::first-letter { float: left; margin: 5px 6px 0 0; font-size: 3.35em; font-weight: 600; line-height: .82; color: #b5573a; }
+.pull { display: grid; gap: 6px; padding-left: 20px; border-left: 3px solid #242424; }
+.prose .pull p { font-size: clamp(17px, 1.4vw, 19px); font-style: italic; line-height: 1.5; color: #242424; }
+.pull cite { font-size: 13px; font-style: normal; color: #6b6b6b; }
+
+.takeaways { display: grid; gap: 10px; width: 100%; padding: 15px 18px 16px; border: 1px solid #f1d9cc; border-radius: 14px; background: #fff8f3; }
+.takeawaysHead { display: flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 600; color: #96452c; }
+.takeaways ol { display: grid; gap: 5px; padding-left: 20px; list-style: decimal; font-size: 15px; line-height: 1.5; color: #3d3d3a; }
+.takeaways li::marker { color: #96452c; font-variant-numeric: tabular-nums; }
+
+/* Technologies: four pills in one row at every width, each in its own light tone with its logo on a white chip so dark
+   marks stay legible. The sets share one grid cell and cross-fade. Too narrow for logo and name side by side, a pill
+   stands the logo above the name, so the row never wraps or scrolls. */
+.topics { container-type: inline-size; display: grid; gap: 8px; width: 100%; }
+.topicsHead { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 28px; font-size: 13px; color: #6b6b6b; }
+.topicsHead button { display: grid; place-items: center; flex: none; width: 28px; height: 28px; border: 0; border-radius: 8px; background: transparent; color: #3d3d3a; cursor: pointer; }
+.topicsHead button:hover { background: #f0eee6; }
+.topicsHead button:focus-visible { outline: 3px solid #b5573a; outline-offset: 1px; }
+.topicSets { display: grid; }
+.topicSet { grid-area: 1 / 1; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; padding: 0; list-style: none; opacity: 0; visibility: hidden; transition: opacity .45s ease, visibility 0s linear .45s; }
+.topicSet[data-active] { opacity: 1; visibility: visible; transition: opacity .45s ease, visibility 0s; }
+.topicSet li { display: flex; align-items: center; gap: 6px; min-width: 0; min-height: 34px; padding: 4px 8px 4px 4px; border: 1px solid var(--pill-edge); border-radius: 999px; background: var(--pill); font-size: 13px; line-height: 1.25; color: var(--pill-ink); }
+.topicSet span { min-width: 0; overflow-wrap: anywhere; }
+.topicSet img { flex: none; box-sizing: content-box; width: 16px; height: 16px; padding: 4px; border-radius: 50%; background: #fff; }
+.tone0 { --pill: #f1f7fe; --pill-edge: #cfe1f6; --pill-ink: #1d4f7a; }
+.tone1 { --pill: #eff9f3; --pill-edge: #c8e8d5; --pill-ink: #1f5a37; }
+.tone2 { --pill: #fefaea; --pill-edge: #f1e3a8; --pill-ink: #6e4f00; }
+.tone3 { --pill: #f5f2fd; --pill-edge: #ddd4f5; --pill-ink: #4b3c86; }
+.tone4 { --pill: #fdf1ec; --pill-edge: #f3d6c9; --pill-ink: #8f3f23; }
+.tone5 { --pill: #eaf7f8; --pill-edge: #c5e6e9; --pill-ink: #17595f; }
+@container (max-width: 540px) {
+  .topicSet li { flex-direction: column; justify-content: flex-start; gap: 4px; padding: 7px 3px 8px; border-radius: 14px; font-size: 12px; text-align: center; }
+}
+@container (max-width: 300px) {
+  .topicSet { gap: 4px; }
+  .topicSet li { padding-inline: 2px; font-size: 11px; }
+}
+.closing { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; }
+.closing small { font-size: 14px; color: #6b6b6b; }
+
+/* The stack: two pastel sheets slightly askew behind the board, and the ring a cup left on the top one. */
+.stack { position: relative; isolation: isolate; min-width: 0; padding: 14px 10px 16px; }
+.stack::before, .stack::after { content: ""; position: absolute; z-index: -2; inset: 14px 10px 16px; border-radius: 22px; }
+.stack::before { background: #f5f2fd; border: 1px solid #ddd4f5; transform: rotate(-2.2deg); }
+.stack::after { background: #eff9f3; border: 1px solid #c8e8d5; transform: rotate(1.6deg); }
+.ring { position: absolute; z-index: -1; top: -14px; right: -22px; width: 116px; height: 116px; border: 5px solid rgb(122 74 42 / .2); border-radius: 49% 51% 52% 48%; box-shadow: inset 0 0 0 1px rgb(122 74 42 / .12), 0 0 0 1px rgb(122 74 42 / .08); transform: rotate(-14deg); }
+
+.board { container-type: inline-size; display: grid; gap: 14px; padding: 16px; border: 1px solid var(--nb-rule); border-radius: 20px; background: var(--nb-sheet, #fff); box-shadow: 0 28px 56px -38px rgb(20 20 19 / .5); color: #141413; }
+
+.head { display: grid; gap: 3px; }
+.headTitle { font-size: 18px; font-weight: 600; line-height: 1.25; letter-spacing: -.01em; color: #141413; }
+.head p { margin: 0; font-size: 13px; line-height: 1.5; color: #5e5d59; text-align: left; hyphens: manual; }
+
+/* The current story: its headline on its cover. */
+.cover { position: relative; aspect-ratio: 2.3 / 1; overflow: hidden; border-radius: 14px; background: linear-gradient(135deg, #cfe1f6, #ddd4f5 55%, #f5dac6); }
 .cover img:first-child { transition: transform 7s linear; }
-.slide[data-active] .cover img:first-child { transform: scale(1.07); }
-.cover::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(to top, rgb(20 18 30 / .55), transparent 45%); }
-.topic, .time, .fresh { position: absolute; z-index: 1; display: inline-flex; align-items: center; gap: 6px; border-radius: 999px; font-size: 11.5px; font-weight: 600; line-height: 1; }
-.topic { left: 10px; bottom: 10px; max-width: calc(100% - 96px); padding: 5px 10px 5px 6px; overflow: hidden; background: rgb(31 30 29 / .82); backdrop-filter: blur(4px); color: #f5f4ee; white-space: nowrap; text-overflow: ellipsis; }
-.topic img { flex: none; border-radius: 4px; background: #fff; }
-.time { right: 10px; bottom: 10px; padding: 5px 9px; background: rgb(255 255 255 / .9); color: #1f1e1d; }
-.fresh { left: 10px; top: 10px; padding: 5px 10px; background: #e2774c; color: #1b1410; letter-spacing: .04em; text-transform: uppercase; }
-.slide[data-active] .fresh { animation: pulse 2.4s ease-in-out infinite; }
-/* Autoplay progress along the cover's foot: runs for the carousel interval, held while the card is hovered or focused. */
-.progress { position: absolute; z-index: 2; left: 0; bottom: 0; width: 100%; height: 3px; background: #e2774c; transform: scaleX(0); transform-origin: left; }
-.slide[data-active] .progress { animation: fill linear forwards; }
-.slide:hover .progress, .slide:focus-within .progress { animation-play-state: paused; }
+.slide[data-active] .cover img:first-child { transform: scale(1.05); }
+.cover::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(to top, rgb(20 18 30 / .9), rgb(20 18 30 / .62) 45%, rgb(20 18 30 / .08) 80%); }
+.tags { position: absolute; z-index: 1; inset: 10px 10px auto; display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.tag { display: inline-flex; align-items: center; gap: 6px; max-width: 100%; min-height: 24px; padding: 0 9px; overflow: hidden; border-radius: 999px; background: rgb(255 255 255 / .92); color: #1f1e1d; font-size: 12px; line-height: 1; white-space: nowrap; text-overflow: ellipsis; }
+.tag img { flex: none; border-radius: 4px; }
+.fresh { background: #fbe9e1; color: #8f3f23; }
+.when { margin-left: auto; }
+.title { position: absolute; z-index: 1; inset: auto 14px 12px; display: -webkit-box; overflow: hidden; -webkit-box-orient: vertical; -webkit-line-clamp: 3; font-size: clamp(18px, 2.2cqi + 12px, 23px); font-weight: 600; line-height: 1.22; letter-spacing: -.012em; color: #fff; text-wrap: balance; }
 
-.body { position: relative; display: grid; gap: 7px; padding: 12px 4px 4px; }
-.title { display: -webkit-box; overflow: hidden; -webkit-box-orient: vertical; -webkit-line-clamp: 2; margin: 0; font-size: 16px; font-weight: 650; line-height: 1.3; letter-spacing: -.01em; color: #141413; }
-.text { display: -webkit-box; overflow: hidden; -webkit-box-orient: vertical; -webkit-line-clamp: 2; margin: 0; font-size: 13px; line-height: 1.5; color: #5e5d59; text-align: left; -webkit-hyphens: manual; hyphens: manual; }
-
-.rating { display: inline-flex; align-items: center; gap: 6px; margin: 0; font-size: 12.5px; color: #3d3d3a; }
-.rating b { font-weight: 700; font-variant-numeric: tabular-nums; }
-.rating small { color: #6b6a65; }
-.stars { position: relative; display: inline-block; font-size: 14px; letter-spacing: 1px; line-height: 1; color: #e3ded1; }
-.stars span { position: absolute; inset: 0 auto 0 0; width: 0; overflow: hidden; color: #e0a526; white-space: nowrap; }
-.slide[data-active] .stars span { animation: stars 1s var(--rise) .35s forwards; }
-
-.foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; margin-top: 2px; }
-.reactions { display: flex; flex-wrap: wrap; gap: 6px; margin: 0; padding: 0; list-style: none; }
-.reactions li { display: inline-flex; align-items: center; gap: 5px; min-height: 28px; padding: 0 9px; border: 1px solid #ebe7dc; border-radius: 999px; background: #faf8f2; font-size: 12px; font-weight: 600; color: #3d3d3a; font-variant-numeric: tabular-nums; }
+.body { display: grid; gap: 9px; padding-top: 10px; }
+.text { display: -webkit-box; overflow: hidden; -webkit-box-orient: vertical; -webkit-line-clamp: 2; margin: 0; font-size: 13.5px; line-height: 1.5; color: #4d4c48; text-align: left; hyphens: manual; }
+.foot { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
+.foot > a { margin-left: auto; }
+.rating { display: inline-flex; align-items: center; gap: 5px; margin: 0; font-size: 12.5px; color: #3d3d3a; }
+.rating b { font-weight: 500; font-variant-numeric: tabular-nums; }
+.stars { position: relative; display: inline-block; font-size: 13px; letter-spacing: 1px; line-height: 1; color: #e3ded1; }
+.stars span { position: absolute; inset: 0 auto 0 0; overflow: hidden; color: #c98a0e; white-space: nowrap; }
+.reactions { display: flex; flex-wrap: wrap; gap: 10px; margin: 0; padding: 0; list-style: none; }
+.reactions li { display: inline-flex; align-items: center; gap: 4px; font-size: 12.5px; color: #3d3d3a; font-variant-numeric: tabular-nums; }
 .reactions li:nth-child(1) svg { color: #2f7d55; }
 .reactions li:nth-child(2) svg { color: #b4472e; }
-.date { position: absolute; top: 14px; right: 4px; font-size: 11px; color: #8a887f; }
-.slide:has(.date) .title { padding-right: 46px; }
 
-/* Entrance: the text rises in, then the reactions pop, each time the card becomes current. */
-.slide[data-active] :is(.title, .text, .rating) { animation: rise .6s var(--rise) both; }
-.slide[data-active] .text { animation-delay: .08s; }
-.slide[data-active] .rating { animation-delay: .16s; }
-.slide[data-active] .reactions li { animation: pop .45s var(--rise) both; }
-.slide[data-active] .reactions li:nth-child(1) { animation-delay: .3s; }
-.slide[data-active] .reactions li:nth-child(2) { animation-delay: .38s; }
-.slide[data-active] .reactions li:nth-child(3) { animation-delay: .46s; }
+/* Every story as a row in its own light tone; the current one gets its ink and a line that fills over the interval. */
+.queueHead { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; padding-top: 12px; border-top: 1px solid var(--nb-rule); font-size: 13px; color: #5e5d59; }
+.queueControls { display: inline-flex; gap: 2px; }
+.queueControls button { display: grid; place-items: center; width: 32px; height: 32px; border: 0; border-radius: 9px; background: transparent; color: #3d3d3a; cursor: pointer; }
+.queueControls button:hover { background: #f0eee6; }
+.queueControls button:focus-visible, .row button:focus-visible { outline: 3px solid #b5573a; outline-offset: 1px; }
 
-@keyframes rise { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
-@keyframes pop { 0% { opacity: 0; transform: scale(.8); } 70% { opacity: 1; transform: scale(1.06); } 100% { opacity: 1; transform: none; } }
-@keyframes stars { to { width: var(--fill); } }
+.queuePages { display: inline-flex; gap: 4px; margin-left: auto; }
+.queuePages button { min-width: 30px; height: 30px; padding: 0 8px; border: 1px solid var(--nb-rule); border-radius: 9px; background: transparent; color: #3d3d3a; font-size: 13px; font-variant-numeric: tabular-nums; cursor: pointer; }
+.queuePages button:hover { background: #f0eee6; }
+.queuePages button[aria-current="true"] { border-color: #96452c; background: #fbe9e1; color: #8f3f23; }
+.queuePages button:focus-visible { outline: 3px solid #b5573a; outline-offset: 1px; }
+
+/* Story cards, four to a page: the story's picture as a band, its technology's logo straddling the band's edge, then
+   the whole headline in the card's light tone. The current card takes its tone's ink and a line that fills over the
+   interval. A narrow board lays them on their side, picture at the left. */
+.queue { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin: -4px 0 0; padding: 0; list-style: none; }
+.row { --tone-bg: #f1f7fe; --tone-edge: #cfe1f6; --tone-ink: #1d4f7a; min-width: 0; }
+.row:nth-child(4n + 2) { --tone-bg: #eff9f3; --tone-edge: #c8e8d5; --tone-ink: #1f5a37; }
+.row:nth-child(4n + 3) { --tone-bg: #fefaea; --tone-edge: #f1e3a8; --tone-ink: #6e4f00; }
+.row:nth-child(4n + 4) { --tone-bg: #f5f2fd; --tone-edge: #ddd4f5; --tone-ink: #4b3c86; }
+.row:not([data-near]) { display: none; }
+.row button { position: relative; display: flex; flex-direction: column; width: 100%; height: 100%; padding: 0; overflow: hidden; border: 1px solid var(--tone-edge); border-radius: 14px; background: var(--tone-bg); color: #2b2a27; font: inherit; text-align: left; cursor: pointer; transition: border-color .18s ease; }
+.row button:hover, .row[data-active] button { border-color: var(--tone-ink); }
+.cardPicture { position: relative; display: block; flex: none; aspect-ratio: 2.6 / 1; overflow: hidden; background: var(--tone-edge); }
+.cardPicture img { transition: transform .35s ease; }
+.row button:hover .cardPicture img { transform: scale(1.05); }
+.cardLogo { position: absolute; z-index: 1; top: 0; right: 10px; display: grid; place-items: center; width: 34px; height: 34px; margin-top: calc((100cqi - 10px) / 2 / 2.6 - 17px); border: 1px solid var(--tone-edge); border-radius: 10px; background: #fff; color: var(--tone-ink); box-shadow: 0 6px 14px -8px rgb(20 20 19 / .45); }
+.cardBody { display: flex; flex: 1; flex-direction: column; gap: 4px; min-width: 0; padding: 9px 11px 10px; }
+.cardTopic { padding-right: 34px; overflow: hidden; font-size: 12px; line-height: 1.35; color: var(--tone-ink); white-space: nowrap; text-overflow: ellipsis; }
+.cardTitle { display: -webkit-box; overflow: hidden; -webkit-box-orient: vertical; -webkit-line-clamp: 4; font-size: 13.5px; font-weight: 500; line-height: 1.35; color: #242424; text-wrap: pretty; }
+.cardFoot { display: flex; flex-wrap: wrap; gap: 3px 10px; margin-top: auto; padding-top: 4px; font-size: 12px; line-height: 1.3; color: var(--tone-ink); font-variant-numeric: tabular-nums; }
+.cardFoot span { display: inline-flex; align-items: center; gap: 4px; }
+.progress { position: absolute; left: 0; right: 0; bottom: 0; height: 3px; background: var(--tone-ink); transform: scaleX(0); transform-origin: left; }
+.row[data-active] .progress { animation: fill linear forwards; }
+.board[data-held] .row .progress { animation: none; }
+@container (max-width: 400px) {
+  .queue { grid-template-columns: minmax(0, 1fr); }
+  .row button { flex-direction: row; }
+  .cardPicture { width: 86px; aspect-ratio: auto; }
+  .cardLogo { top: 8px; right: auto; left: 67px; width: 30px; height: 30px; margin-top: 0; }
+  .cardBody { padding-left: 22px; }
+  .cardTopic { padding-right: 0; }
+}
 @keyframes fill { to { transform: scaleX(1); } }
-@keyframes pulse { 0%, 100% { box-shadow: 0 0 0 0 rgb(226 119 76 / .55); } 50% { box-shadow: 0 0 0 6px rgb(226 119 76 / 0); } }
 
+@media (max-width: 900px) { .stack { width: min(100%, 620px); justify-self: center; } }
+@media (max-width: 560px) {
+  .stack { padding: 8px 4px 10px; }
+  .stack::before, .stack::after { inset: 8px 4px 10px; }
+  .ring { right: -10px; width: 92px; height: 92px; }
+  .board { padding: 12px; }
+  /* Tall enough that three lines of headline clear the tags above them. */
+  .cover { aspect-ratio: 4 / 3; }
+  .foot > a { margin-left: 0; }
+}
 @media (prefers-reduced-motion: reduce) {
   .cover img:first-child, .slide[data-active] .cover img:first-child { transition: none; transform: none; }
-  .slide[data-active] :is(.title, .text, .rating, .fresh), .slide[data-active] .reactions li, .slide[data-active] .progress { animation: none; }
-  .stars span, .slide[data-active] .stars span { width: var(--fill); animation: none; }
+  .topicSet, .topicSet[data-active] { transition: none; }
+  .row button, .cardPicture img { transition: none; }
+  .row button:hover .cardPicture img { transform: none; }
+  .row[data-active] .progress { animation: none; }
 }

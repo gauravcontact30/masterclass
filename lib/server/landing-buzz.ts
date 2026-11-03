@@ -2,7 +2,7 @@ import { cacheLife, cacheTag } from "next/cache";
 import { listTechBuzzArticles, TECH_BUZZ_TAG } from "@/lib/server/tech-buzz-storage";
 import { meetsReviewBar, withReview } from "@/lib/tech-buzz-reviews";
 import { techIdOf, techLogo, topicLabel } from "@/lib/tech-buzz-public";
-import type { LandingBuzz } from "@/lib/landing-buzz-types";
+import type { LandingBuzz, LandingTopic } from "@/lib/landing-buzz-types";
 
 /**
  * The newest published Tech Buzz stories, as the few fields a landing section links with: title, technology, read time
@@ -28,6 +28,29 @@ export async function landingBuzz(limit = 24): Promise<LandingBuzz[]> {
     });
   } catch {
     // A landing section without fresh stories still renders; a failed read must never break the home page.
+    return [];
+  }
+}
+
+/** Every technology with a published story and a logo, the most written about first, for the landing page's pills. */
+export async function landingBuzzTopics(): Promise<LandingTopic[]> {
+  "use cache";
+  cacheLife("hours");
+  cacheTag("landing", TECH_BUZZ_TAG);
+  try {
+    const topics = new Map<string, LandingTopic>();
+    for (const story of (await listTechBuzzArticles(false, true)).filter(meetsReviewBar)) {
+      const techId = techIdOf(story), logo = techLogo(techId ?? undefined);
+      if (!logo) continue;
+      const name = topicLabel({ techId, technology: story.technology, category: story.category });
+      // A subject filed under a technology ("API Design" under Node.js) has no logo of its own, so it gets no pill.
+      if (!name.toLowerCase().replace(/[^a-z0-9]/g, "").includes((techId ?? "").replace(/-/g, ""))) continue;
+      const known = topics.get(name);
+      if (known) known.stories += 1;
+      else topics.set(name, { name, logo, stories: 1 });
+    }
+    return [...topics.values()].sort((a, b) => b.stories - a.stories || a.name.localeCompare(b.name));
+  } catch {
     return [];
   }
 }

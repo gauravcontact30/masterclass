@@ -15,7 +15,7 @@ import "./globals.css";
 import { Inter } from "next/font/google";
 import { APP_FONT_SCRIPT, DEFAULT_APP_FONT_ID } from "@/lib/app-font";
 import { EARLY_TRACK_SCRIPT } from "@/lib/early-track";
-import { isIndexable, siteDescription, siteKeywords, siteName, siteTitle, siteUrl } from "@/lib/seo";
+import { isIndexable, siteDescription, siteKeywords, siteName, siteTitle, siteUrl, ogImagePath } from "@/lib/seo";
 export const metadata: Metadata = {
   metadataBase: siteUrl(),
   title: { default: siteTitle, template: `%s | ${siteName}` },
@@ -29,8 +29,8 @@ export const metadata: Metadata = {
   formatDetection: { telephone: false, email: false, address: false },
   robots: { index: isIndexable(), follow: true, googleBot: { index: isIndexable(), follow: true, "max-image-preview": "large", "max-snippet": -1, "max-video-preview": -1 } },
   // Fallbacks for any route that doesn't define its own; public pages override with full sets.
-  openGraph: { type: "website", siteName, title: siteTitle, description: siteDescription, locale: "en_IN", images: ["/opengraph-image"] },
-  twitter: { card: "summary_large_image", title: siteTitle, description: siteDescription, images: ["/opengraph-image"] },
+  openGraph: { type: "website", siteName, title: siteTitle, description: siteDescription, locale: "en_IN", images: [ogImagePath] },
+  twitter: { card: "summary_large_image", title: siteTitle, description: siteDescription, images: [ogImagePath] },
   appleWebApp: { capable: true, title: siteName, statusBarStyle: "default" },
   // Search-console ownership tags, each emitted only when its environment variable is set.
   verification: { google: process.env.GOOGLE_SITE_VERIFICATION || undefined, yandex: process.env.YANDEX_VERIFICATION || undefined, other: process.env.BING_SITE_VERIFICATION ? { "msvalidate.01": process.env.BING_SITE_VERIFICATION } : undefined },

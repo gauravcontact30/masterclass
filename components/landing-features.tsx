@@ -114,13 +114,15 @@ const NOTES: Card[] = ([
 /**
  * One feature section: copy, details, how it works and a way in, beside its picture with `float` on it. The title is
  * an h3 styled as a section heading (the landing page keeps 9 real h2s); `topLevel` makes it a real h2 (Tech Buzz).
+ * `visual` replaces the picture altogether and `copy` the text column (Tech Buzz's reading list and article); a `copy`
+ * must title itself with the id `${feature.id}-title`, which the section is labelled by.
  */
-export function FeatureSection({ feature, index, total, float, section, hi = false, topLevel = false }: Readonly<{ feature: Feature; index: number; total: number; float?: ReactNode; section?: { props?: object; toolbar?: ReactNode }; hi?: boolean; topLevel?: boolean }>) {
+export function FeatureSection({ feature, index, total, float, visual, copy, section, hi = false, topLevel = false }: Readonly<{ feature: Feature; index: number; total: number; float?: ReactNode; visual?: ReactNode; copy?: ReactNode; section?: { props?: object; toolbar?: ReactNode }; hi?: boolean; topLevel?: boolean }>) {
   const pick = ([en, hindi]: Copy) => hi ? hindi : en;
   const Icon = feature.icon, Badge = feature.badge.icon;
   return <section id={feature.id} className={`${frame.section} ${styles.feature}`} data-ground={index % 2 ? "wash" : "paper"} aria-labelledby={`${feature.id}-title`} {...section?.props}>{section?.toolbar}
     <div className={`${home.inner} ${styles.layout}`} data-flip={index % 2 ? "" : undefined}>
-      <div className={styles.copy}>
+      {copy ?? <div className={styles.copy}>
         <p className={frame.kicker}><Icon size={14} aria-hidden="true" />{pick(feature.kicker)}{total > 1 && <span>{String(index + 1).padStart(2, "0")} / {String(total).padStart(2, "0")}</span>}</p>
         {topLevel
           ? <h2 id={`${feature.id}-title`} className={styles.title}>{pick(feature.title)}<em>{pick(feature.emphasis)}</em></h2>
@@ -135,12 +137,12 @@ export function FeatureSection({ feature, index, total, float, section, hi = fal
           <ol className={styles.howSteps}>{feature.steps.map((step, at) => <li key={step[0]}><span aria-hidden="true">{at + 1}</span>{pick(step)}</li>)}</ol>
         </div>
         <div className={frame.actions}><Link className={frame.cta} href={feature.cta.href}>{pick(feature.cta.label)}<ArrowRight size={16} aria-hidden="true" /></Link><ListenButton id={`feature:${feature.id}`} title={pick(feature.kicker)} text={[pick(feature.title) + pick(feature.emphasis), pick(feature.lede), ...feature.details.map(detail => `${pick(detail.title)}. ${pick(detail.body)}`)].join(" ")} /><small>{pick(feature.note)}</small></div>
-      </div>
-      <div className={styles.visual}>
+      </div>}
+      {visual ?? <div className={styles.visual}>
         <div className={styles.photo}><Image src={feature.image.src} alt={`${pick(feature.kicker)}: ${pick(feature.title)}${pick(feature.emphasis)}`} fill sizes="(max-width: 900px) 92vw, 560px" style={{ objectFit: "cover", objectPosition: feature.image.focus }} /></div>
         <span className={styles.badge} aria-hidden="true"><Badge size={14} />{pick(feature.badge.label)}</span>
         {float && <div className={styles.float}>{float}</div>}
-      </div>
+      </div>}
     </div>
   </section>;
 }
