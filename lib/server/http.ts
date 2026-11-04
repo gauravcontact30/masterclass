@@ -1,7 +1,7 @@
 import "server-only";
 import { ZodError } from "zod";
 import { authConfigured } from "./config";
-import { authUser } from "./auth";
+import { authUser, sessionUserId } from "./auth";
 import { after } from "next/server";
 import { recordEvent } from "./monitoring";
 import { UNTRACKED_COOKIE } from "./tracking-exclusions";
@@ -12,6 +12,13 @@ export async function userId() {
   const user = await requestOnce(AUTH_USER, authUser);
   if (!user) throw new HttpError(401, "signin_required");
   return user.id;
+}
+/** userId for GET routes that only read the caller's own data (see sessionUserId). Anything that changes data uses userId. */
+export async function readerId() {
+  if (!authConfigured()) throw new HttpError(503, "setup_required");
+  const id = await sessionUserId();
+  if (!id) throw new HttpError(401, "signin_required");
+  return id;
 }
 export async function jsonBody(request: Request, max = 30000) {
   if (Number(request.headers.get("content-length")) > max) throw new HttpError(413, "request_too_large");

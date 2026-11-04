@@ -1,6 +1,6 @@
 import { requireSuperAdmin } from "@/lib/server/super-admin";
 import { HttpError, sameOrigin } from "@/lib/server/http";
-import { redis, cacheSet } from "@/lib/redis";
+import { redis, redisConfigured, cacheSet } from "@/lib/redis";
 import { inngest } from "@/lib/inngest/client";
 import { env } from "@/lib/env";
 import { z } from "zod";
@@ -23,7 +23,7 @@ export async function GET() {
     const status = {
       timestamp: new Date().toISOString(),
       redis: {
-        provider: env.UPSTASH_REDIS_REST_URL ? "Upstash Redis" : "In-Memory Fallback Redis",
+        provider: redisConfigured ? "Upstash Redis" : "In-Memory Fallback Redis",
         status: "connected",
         ratelimitEnabled: true,
       },
@@ -41,7 +41,7 @@ export async function GET() {
         configuredKeys: [
           env.DATABASE_URL ? "DATABASE_URL" : null,
           env.SUPABASE_URL ? "SUPABASE_URL" : null,
-          env.UPSTASH_REDIS_REST_URL ? "UPSTASH_REDIS" : null,
+          redisConfigured ? "UPSTASH_REDIS" : null,
           env.INNGEST_EVENT_KEY ? "INNGEST" : null,
           env.ARCJET_KEY ? "ARCJET" : null,
         ].filter(Boolean),

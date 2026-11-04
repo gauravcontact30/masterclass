@@ -1,6 +1,6 @@
 import "server-only";
 import { after } from "next/server";
-import { cacheGet, cacheSet } from "@/lib/redis";
+import { readStored, writeStored } from "./site-store";
 import { NEWS_COVER_SCENES, NEWS_COVER_STYLE } from "@/lib/news-covers";
 import {
   siAccenture, siAirbnb, siAnthropic, siApple, siAtlassian, siCisco, siClaude, siCloudflare, siDatabricks, siDeepmind, siGithub, siGoldmansachs,
@@ -15,8 +15,8 @@ import { DEFAULT_LANDING_NEWS } from "@/lib/landing-news-fallback";
  * Fills the landing page's "Fresh in tech" slides with this week's stories, searched live by Perplexity (sonar).
  * Every story must link to a page Perplexity actually searched: an item whose URL is not among the search results
  * is dropped rather than shown with a link that may not exist.
- * The finished set is kept in Redis, shared by every server instance and surviving deploys and restarts, so a visitor
- * never waits for the searches. The set is rebuilt every 21 days by app/api/cron/news-refresh (refreshNews), which also
+ * The finished set is kept in Supabase Storage (lib/server/site-store.ts), shared by every server instance and surviving
+ * deploys and restarts, so a visitor never waits for the searches. The set is rebuilt every 21 days by app/api/cron/news-refresh (refreshNews), which also
  * paints each slide a new cover from its lead story; a slide whose new search comes back empty keeps its previous
  * stories and cover.
  */
@@ -224,7 +224,9 @@ async function searchSlide(id: NewsSlideId): Promise<NewsSlideData> {
 const STORE_KEY = "landing:news:v2";
 /** How long a set counts as fresh (the refresh cycle), and how long Redis keeps one at all. */
 export const NEWS_REFRESH_DAYS = 21;
-const FRESH_MS = NEWS_REFRESH_DAYS * 86_400_000, KEEP_SECONDS = 45 * 86_400;
+const FRESH_MS = NEWS_REFRESH_DAYS * 86_400_000;
+/** A rebuild started by a visit claims this long, across all instances, so a burst of visits pays for one set of searches. */
+const CLAIM_KEY = "landing-news-rebuild", CLAIM_MS = 30 * 60_000;
 type StoredNews = LandingNews & { builtAt: number };
 let building: Promise<StoredNews> | null = null;
 
@@ -236,20 +238,42 @@ function rebuild(previous: StoredNews | null): Promise<StoredNews> {
     const slides = searched.map(slide => slide.fresh ? { ...slide, cover: null } : previous?.slides.find(old => old.id === slide.id) ?? slide);
     const fresh = searched.some(slide => slide.fresh);
     const set: StoredNews = { slides, updatedAt: fresh ? new Date().toISOString() : previous?.updatedAt ?? null, builtAt: fresh ? Date.now() : previous?.builtAt ?? 0 };
-    if (fresh) await cacheSet(STORE_KEY, set, KEEP_SECONDS);
+    if (fresh) await writeStored(STORE_KEY, set);
     return set;
   })().finally(() => { building = null; });
   return building;
 }
 
-/** Every slide of the carousel: the stored set at once (refreshed in the background when stale), or a first build. */
+/** Rebuilds after the response, unless another instance claimed the work a moment ago. */
+function rebuildLater(previous: StoredNews | null) {
+  after(async () => {
+    try {
+      const claim = await readStored<{ at: number }>(CLAIM_KEY);
+      if (claim && Date.now() - claim.at < CLAIM_MS) return;
+      await writeStored(CLAIM_KEY, { at: Date.now() });
+      await rebuild(previous);
+    } catch (error) { console.warn(`landing news rebuild failed: ${String(error).slice(0, 200)}`); }
+  });
+}
+
+/**
+ * Every slide of the carousel, without ever waiting for a search: the stored set (refreshed in the background when
+ * stale), or the built-in stories while the first set is being searched or Storage cannot answer.
+ */
 export async function landingNews(): Promise<LandingNews> {
-  const stored = await cacheGet<StoredNews>(STORE_KEY);
-  const shown = ({ slides, updatedAt }: StoredNews): LandingNews => ({ slides, updatedAt });
-  if (!stored?.slides?.length) return shown(await rebuild(null));
+  let stored: StoredNews | null;
+  try { stored = await readStored<StoredNews>(STORE_KEY); }
+  catch (error) {
+    console.warn(`landing news read failed: ${String(error).slice(0, 200)}`);
+    return DEFAULT_LANDING_NEWS;
+  }
+  if (!stored?.slides?.length) {
+    rebuildLater(null);
+    return DEFAULT_LANDING_NEWS;
+  }
   // The cron refreshes on schedule; this only catches a set the cron missed by more than a day, or empty slides.
-  if (Date.now() - stored.builtAt > FRESH_MS + 86_400_000 || stored.slides.some(slide => !slide.fresh)) after(() => rebuild(stored).then(() => undefined));
-  return shown(stored);
+  if (Date.now() - stored.builtAt > FRESH_MS + 86_400_000 || stored.slides.some(slide => !slide.fresh)) rebuildLater(stored);
+  return { slides: stored.slides, updatedAt: stored.updatedAt };
 }
 
 /** A cover for one slide: its standing scene, steered toward the lead story (shown with objects, never words). */
@@ -268,7 +292,7 @@ function coverPrompt(slide: NewsSlideData) {
  */
 export async function refreshNews({ force = false, budgetMs = 200_000 }: { force?: boolean; budgetMs?: number } = {}) {
   const started = Date.now();
-  let set = await cacheGet<StoredNews>(STORE_KEY);
+  let set = await readStored<StoredNews>(STORE_KEY);
   // The check runs weekly (Monday 00:00 IST), so a set built a few minutes after one run is due at the third run on.
   const due = force || !set?.slides?.length || Date.now() - set.builtAt > FRESH_MS - 3_600_000;
   if (due) set = await rebuild(set);
@@ -290,6 +314,6 @@ export async function refreshNews({ force = false, budgetMs = 200_000 }: { force
       } catch (error) { console.warn(`news cover "${slide.id}" failed: ${String(error).slice(0, 200)}`); }
     }
   }));
-  if (covers) await cacheSet(STORE_KEY, set, KEEP_SECONDS);
+  if (covers) await writeStored(STORE_KEY, set);
   return { rebuilt: due, covers, pending: set.slides.filter(slide => slide.fresh && !slide.cover).length };
 }

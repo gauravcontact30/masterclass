@@ -96,13 +96,14 @@ async function writeDocumentation(id: string, record: DocumentationRecord) {
 // One in-flight operation per technology in this process. Content hashes also
 // protect imports from accepting a different revision than the one reviewed.
 const operations = new Map<string, Promise<DocumentationUpdate>>();
-export function checkDocumentation(id: string): Promise<DocumentationUpdate> {
+/** `minAgeMs`: a record checked more recently than this is answered as it is, with no request to the official site. */
+export function checkDocumentation(id: string, minAgeMs = 60000): Promise<DocumentationUpdate> {
   const existing = operations.get(id);
   if (existing) return existing;
   const operation = (async () => {
     const doc = technology(id);
     const record = await readDocumentation(id);
-    if (record && Date.now() - Date.parse(record.checkedAt) < 60000) return documentationStatus(id, record);
+    if (record && Date.now() - Date.parse(record.checkedAt) < minAgeMs) return documentationStatus(id, record);
     const [source] = await fetchDocumentation([doc.officialUrl]);
     const hash = createHash("sha256").update(source.text.replace(/\s+/g, " ").trim()).digest("hex");
     // Re-read after the network request to preserve an import from another request.

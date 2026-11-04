@@ -5,7 +5,7 @@ import { adminError } from "@/lib/server/admin-rpc";
 import { runtimeHealth } from "@/lib/server/runtime-health";
 import { billingConfigured, razorpayConfigured } from "@/lib/server/config";
 import { availableProviders, providerConfigured } from "@/lib/server/ai-providers";
-import { redis } from "@/lib/redis";
+import { redis, redisConfigured } from "@/lib/redis";
 import { analyse, detectIssues, healthScore, toLog, type MonitorRow } from "@/lib/logs-health";
 
 /*
@@ -33,7 +33,7 @@ export async function GET(request: Request) {
     const hours = [1, 6, 24, 72, 168].includes(asked) ? asked : 24;
     const since = new Date(Date.now() - hours * 3_600_000).toISOString();
     const client = db();
-    const upstash = Boolean(process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN);
+    const upstash = redisConfigured;
 
     const checks = Promise.all([
       timed("Database", "database", async () => { const { error } = await client.from("profiles").select("id", { head: true, count: "exact" }).limit(1); return { ok: !error, note: error ? `Query failed (${error.code})` : "Postgres answers queries." }; }),

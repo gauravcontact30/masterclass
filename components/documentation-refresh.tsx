@@ -47,7 +47,7 @@ export function DocumentationRefresh() {
     try {
       for (let index = 0; index < ids.length && mounted.current; index += 3) {
         const response = await requestJson<{ results: { id: string; update?: DocumentationUpdate; error?: string }[] }>(endpoint, {
-          method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "check", ids: ids.slice(index, index + 3) }),
+          method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "check", ids: ids.slice(index, index + 3), ...(background ? { background: true } : {}) }),
         });
         if (!mounted.current) return;
         changed += response.results.filter(result => result.update?.status === "changed").length;

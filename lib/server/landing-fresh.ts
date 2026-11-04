@@ -1,7 +1,6 @@
 import "server-only";
 import { generateText, gateway, Output } from "ai";
 import { z } from "zod";
-import { cacheGet, cacheSet } from "@/lib/redis";
 import { pickDaily, takeDaily } from "@/lib/daily-rotation";
 import { INTERVIEW_TECHS } from "@/lib/interview-bank";
 import { COMPARISONS } from "@/lib/comparisons";
@@ -10,6 +9,7 @@ import { learningScenePrompt } from "@/lib/learning-image";
 import type { LandingFresh } from "@/lib/landing-fresh-types";
 import { providerModel } from "./ai-providers";
 import { paint, store } from "./learning-study-pack";
+import { readStored, writeStored } from "./site-store";
 import { weekStartDate } from "@/lib/ist-week";
 
 /*
@@ -17,14 +17,13 @@ import { weekStartDate } from "@/lib/ist-week";
  * through the Vercel AI Gateway (weekly since 2026-10-31; daily before): twelve "Or try" goals named by technology,
  * an interview question of the week for the technology the Interview prep preview leads with, a difference of the
  * week for the featured Tech Topics comparison, and a docs tip for the featured Technology docs platform, the last
- * three each with a painted picture. Kept in Redis by India week (`day` below is the week number, lib/ist-week.ts);
+ * three each with a painted picture. Kept in Supabase Storage (lib/server/site-store.ts) by India week (`day` below is the week number, lib/ist-week.ts);
  * the landing page reads this week's set (or last week's while this week's is being written) and falls back to its
  * built-in content when there is none.
  */
 const KEY = (week: number) => `landing:fresh:week:${week}`;
 const HISTORY = "landing:fresh:history";
 // This week's set and last week's fallback.
-const KEEP_SECONDS = 15 * 86_400;
 const dayLabel = weekStartDate;
 
 /** What each section leads with on `day`, the same picks the landing page makes (lib/daily-rotation.ts). */
@@ -65,10 +64,10 @@ const schema = z.object({
 
 /** Writes `day`'s set (unless it exists and `force` is off), paints its three pictures and stores it. */
 export async function generateLandingFresh(day: number, force = false): Promise<LandingFresh> {
-  const existing = await cacheGet<LandingFresh>(KEY(day));
+  const existing = await readStored<LandingFresh>(KEY(day));
   if (existing && !force) return existing;
   const { tech, comparison, doc } = freshTopics(day);
-  const history = (await cacheGet<string[]>(HISTORY)) ?? [];
+  const history = (await readStored<string[]>(HISTORY)) ?? [];
   const { output } = await generateText({
     model: gateway(providerModel("gateway")),
     system: "You write daily learning snippets for MasterClass Buddy, an Indian e-learning platform for developers preparing for jobs and interviews. Be accurate and current as of 2026; never invent APIs or version numbers. Plain, clear English.",
@@ -106,14 +105,14 @@ export async function generateLandingFresh(day: number, force = false): Promise<
     difference: { day: dayLabel(day), comparisonId: comparison.id, title: output.difference.title, answer: output.difference.answer, points: output.difference.points.slice(0, 3), image: differenceImage },
     doc: { day: dayLabel(day), docId: doc.id, doc: `${doc.name} ${doc.version}`, title: output.doc.title, summary: output.doc.summary, steps: output.doc.steps.slice(0, 5), code: output.doc.code, image: docImage },
   };
-  await cacheSet(KEY(day), fresh, KEEP_SECONDS);
-  await cacheSet(HISTORY, [output.interview.question, output.difference.title, output.doc.title, ...history].slice(0, 90), 60 * 86_400);
+  await writeStored(KEY(day), fresh);
+  await writeStored(HISTORY, [output.interview.question, output.difference.title, output.doc.title, ...history].slice(0, 90));
   return fresh;
 }
 
 /** This week's set for the landing page, or last week's while this week's is still being written; null when there is none. */
 export async function landingFresh(day: number): Promise<LandingFresh | null> {
   try {
-    return (await cacheGet<LandingFresh>(KEY(day))) ?? (await cacheGet<LandingFresh>(KEY(day - 1)));
+    return (await readStored<LandingFresh>(KEY(day))) ?? (await readStored<LandingFresh>(KEY(day - 1)));
   } catch { return null; }
 }

@@ -13,23 +13,26 @@ import { CURRENCIES, currencyForCountry, isCurrency, type Currency, type SaleInf
 export const internationalBilling = () => process.env.INTERNATIONAL_BILLING === "true";
 
 type Rates = { rates: Partial<Record<Currency, number>>; date: string | null };
-/** Units of each currency per rupee, fetched at most once a day per server cache. */
+/**
+ * Units of each currency per rupee, fetched at most once a day per server cache. /api/billing waits on this, so each
+ * source gets a short limit. Both failing throws: a cached empty answer would show rupees to everyone for hours.
+ */
 export async function inrRates(): Promise<Rates> {
   "use cache";
   cacheLife("hours");
   cacheTag("fx-rates");
   const pick = (source: Record<string, unknown>) => Object.fromEntries(CURRENCIES.flatMap(code => typeof source[code] === "number" && source[code] > 0 ? [[code, source[code] as number]] : [])) as Rates["rates"];
   try {
-    const response = await fetch("https://open.er-api.com/v6/latest/INR", { signal: AbortSignal.timeout(6_000) });
+    const response = await fetch("https://open.er-api.com/v6/latest/INR", { signal: AbortSignal.timeout(2_000) });
     const body = await response.json() as { result?: string; rates?: Record<string, unknown>; time_last_update_utc?: string };
     if (response.ok && body.result === "success" && body.rates) return { rates: pick(body.rates), date: body.time_last_update_utc ? new Date(body.time_last_update_utc).toISOString().slice(0, 10) : null };
   } catch { /* try the fallback */ }
   try {
-    const response = await fetch("https://api.frankfurter.app/latest?from=INR", { signal: AbortSignal.timeout(6_000) });
+    const response = await fetch("https://api.frankfurter.app/latest?from=INR", { signal: AbortSignal.timeout(2_000) });
     const body = await response.json() as { rates?: Record<string, unknown>; date?: string };
     if (response.ok && body.rates) return { rates: pick(body.rates), date: body.date ?? null };
-  } catch { /* no rates today */ }
-  return { rates: {}, date: null };
+  } catch { /* no rates from either source */ }
+  throw new Error("exchange_rates_unavailable");
 }
 
 /** The country Vercel (or a CDN in front of it) located the request in, if any. */

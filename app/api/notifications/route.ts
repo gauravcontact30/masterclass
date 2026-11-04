@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { api, jsonBody, sameOrigin, userId } from "@/lib/server/http";
+import { api, jsonBody, readerId, sameOrigin, userId } from "@/lib/server/http";
 import { db } from "@/lib/server/db";
 
 /*
@@ -12,7 +12,7 @@ const headers = { "Cache-Control": "private, no-store" };
 
 export async function GET(request: Request) {
   return api(async () => {
-    const owner = await userId();
+    const owner = await readerId();
     const [list, unread] = await Promise.all([
       db().from("notifications").select("id,kind,title,body,link,created_at,read_at").eq("user_id", owner).order("created_at", { ascending: false }).limit(LIMIT),
       db().from("notifications").select("id", { count: "exact", head: true }).eq("user_id", owner).is("read_at", null),

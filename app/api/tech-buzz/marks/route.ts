@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { api, HttpError, jsonBody, sameOrigin } from "@/lib/server/http";
-import { currentUser } from "@/lib/server/auth";
+import { currentUser, sessionUserId } from "@/lib/server/auth";
 import { rateLimit } from "@/lib/server/rate-limit";
 import { listMarks, setMarks } from "@/lib/server/tech-buzz-marks";
 import { listPublishedTechBuzzSummaries } from "@/lib/server/tech-buzz-storage";
@@ -19,9 +19,9 @@ const bodySchema = z.object({
 
 export async function GET(request: Request) {
   return api(async () => {
-    const user = await currentUser();
-    if (!user) return Response.json({ signedIn: false, available: false });
-    const marks = await listMarks(user.id);
+    const reader = await sessionUserId();
+    if (!reader) return Response.json({ signedIn: false, available: false });
+    const marks = await listMarks(reader);
     return Response.json({ signedIn: true, available: !!marks, marks: marks ?? undefined });
   }, request);
 }

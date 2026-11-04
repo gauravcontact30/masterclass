@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { api, HttpError, jsonBody, sameOrigin } from "@/lib/server/http";
-import { currentUser } from "@/lib/server/auth";
+import { currentUser, sessionUserId } from "@/lib/server/auth";
 import { rateLimit } from "@/lib/server/rate-limit";
 import { getPublishedTechBuzzArticle } from "@/lib/server/tech-buzz-storage";
 import { clapState, giveClaps, MAX_CLAPS } from "@/lib/server/tech-buzz-claps";
@@ -22,8 +22,8 @@ async function story(params: Params["params"]) {
 export async function GET(request: Request, { params }: Params) {
   return api(async () => {
     const article = await story(params);
-    const user = await currentUser();
-    return Response.json({ ...(await clapState(article, user?.id ?? null)), max: MAX_CLAPS, signedIn: !!user });
+    const reader = await sessionUserId();
+    return Response.json({ ...(await clapState(article, reader)), max: MAX_CLAPS, signedIn: !!reader });
   }, request);
 }
 

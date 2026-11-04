@@ -29,6 +29,17 @@ export async function authUser() {
   await new Promise(done => setTimeout(done, 250));
   return (await client.auth.getUser()).data.user;
 }
+/**
+ * The signed-in user's id for read-only requests about their own data: the session token's signature is verified here
+ * against the project's signing keys, with no call to the Auth server. A session ended elsewhere therefore keeps reading
+ * until its token expires (about an hour). Changes, payments, paid content and admin routes use currentUser/userId.
+ * A token that does not verify gets the Auth server's answer, so a brief failure is not a sign-out.
+ */
+export async function sessionUserId() {
+  const { data, error } = await (await supabaseServer()).auth.getClaims();
+  if (error) return (await requestOnce(AUTH_USER, authUser))?.id ?? null;
+  return typeof data?.claims?.sub === "string" ? data.claims.sub : null;
+}
 // Deduplicate repeated authorization reads within one server render only.
 // React resets this cache for each request; users never share cached sessions.
 export const currentUser = cache(async function currentUser() {

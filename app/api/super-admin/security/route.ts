@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { api } from "@/lib/server/http";
 import { db } from "@/lib/server/db";
+import { redisConfigured } from "@/lib/redis";
 import { requireSuperAdmin } from "@/lib/server/super-admin";
 
 /*
@@ -68,7 +69,7 @@ export async function GET(request: Request) {
       recent: blocked.slice(0, 500).map(r => ({ at: r.created_at, method: r.action, path: r.resource, status: r.status, reason: label(r.details?.code ?? String(r.status)), ip: r.details?.ip ?? null, ua: r.details?.ua ?? null, requestId: r.details?.request_id ?? null })),
       logs: securityLogs(blocked, feed),
       implementations: {
-        arcjet: !!process.env.ARCJET_KEY, rateLimitStore: !!(process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN),
+        arcjet: !!process.env.ARCJET_KEY, rateLimitStore: redisConfigured,
         webhookSignatures: !!process.env.RAZORPAY_WEBHOOK_SECRET, encryption: !!process.env.INTEGRATION_ENCRYPTION_KEY, visitorHashing: !!process.env.VISIT_HASH_SECRET,
       },
       posture: SECRETS.map(([name, what]) => ({ name, what, configured: !!process.env[name] })),

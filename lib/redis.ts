@@ -47,14 +47,19 @@ class MemoryRedisStore {
 
 const memoryStore = new MemoryRedisStore();
 
+// The Vercel Marketplace install names these KV_REST_API_*; a database connected by hand uses UPSTASH_REDIS_REST_*.
+const redisUrl = env.UPSTASH_REDIS_REST_URL ?? env.KV_REST_API_URL;
+const redisToken = env.UPSTASH_REDIS_REST_TOKEN ?? env.KV_REST_API_TOKEN;
+export const redisConfigured = Boolean(redisUrl && redisToken);
+
 /**
  * Primary Redis client (Upstash or in-memory fallback)
  */
 export const redis =
-  env.UPSTASH_REDIS_REST_URL && env.UPSTASH_REDIS_REST_TOKEN
+  redisUrl && redisToken
     ? new Redis({
-        url: env.UPSTASH_REDIS_REST_URL,
-        token: env.UPSTASH_REDIS_REST_TOKEN,
+        url: redisUrl,
+        token: redisToken,
         retry: false,
         signal: () => AbortSignal.timeout(1500),
       })
@@ -64,7 +69,7 @@ export const redis =
  * Primary Upstash Ratelimit instance
  */
 export const ratelimiter =
-  env.UPSTASH_REDIS_REST_URL && env.UPSTASH_REDIS_REST_TOKEN
+  redisUrl && redisToken
     ? new Ratelimit({
         redis: redis,
         limiter: Ratelimit.slidingWindow(20, "10 s"),

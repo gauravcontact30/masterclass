@@ -466,6 +466,9 @@ export async function generateTopic(trackId: string, topicId: string, budget: Bu
 
 /** Topic ids and status of every generated course, for the catalogue's progress bars and badges. */
 export async function generatedCatalog(): Promise<Record<string, { status: string; topicIds: string[] }>> {
+  // The same for every reader, and it reads each course's whole topic list: a new course shows within minutes.
+  "use cache";
+  cacheLife("minutes");
   const result = await db().from("generated_courses").select("track_id,status,topics");
   if (result.error) return {};
   return Object.fromEntries((result.data as Pick<CourseRow, "track_id" | "status" | "topics">[]).map(withPlan).map(row => [row.track_id, { status: row.status, topicIds: row.status === "ready" ? row.topics.map(topic => topic.id) : [] }]));

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { api, HttpError, jsonBody, sameOrigin } from "@/lib/server/http";
+import { api, HttpError, jsonBody, readerId, sameOrigin } from "@/lib/server/http";
 import { currentUser } from "@/lib/server/auth";
 import { rateLimit } from "@/lib/server/rate-limit";
 import { readDeepProgress, writeDeepProgress } from "@/lib/server/deep-progress";
@@ -25,7 +25,7 @@ async function learner() {
 }
 
 export async function GET(request: Request) {
-  return api(async () => Response.json({ progress: await readDeepProgress(await learner()) }, { headers: { "Cache-Control": "no-store" } }), request);
+  return api(async () => Response.json({ progress: await readDeepProgress(await readerId()) }, { headers: { "Cache-Control": "no-store" } }), request);
 }
 
 export async function POST(request: Request) {

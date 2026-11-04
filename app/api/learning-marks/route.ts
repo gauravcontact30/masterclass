@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { api, HttpError, jsonBody, sameOrigin, userId } from "@/lib/server/http";
+import { api, HttpError, jsonBody, readerId, sameOrigin, userId } from "@/lib/server/http";
 import { listLearningMarks, removeLearningMark, saveLearningMark } from "@/lib/server/learning-marks";
 import { MARKER_COLORS } from "@/lib/learning-marks";
 
@@ -17,7 +17,7 @@ function draft(value: z.infer<typeof markSchema>) {
 }
 export async function GET(request: Request) {
   return api(async () => {
-    const owner = await userId();
+    const owner = await readerId();
     const offset = z.coerce.number().int().min(0).max(10000000).parse(new URL(request.url).searchParams.get("after") ?? 0);
     return Response.json({ userId: owner, ...await listLearningMarks(owner, offset) });
   }, request);
