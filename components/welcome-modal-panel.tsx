@@ -32,10 +32,10 @@ const API_POINTS: { icon: LucideIcon; text: string }[] = [
 ];
 
 const FEATURES: { icon: LucideIcon; title: string; text: string; tone: string }[] = [
-  { icon: Layers, title: "Structured courses", text: "Complete lessons across modern stacks, start to finish.", tone: "clay" },
+  { icon: Layers, title: "Structured courses", text: "Full lessons on modern stacks.", tone: "clay" },
   { icon: Terminal, title: "Techy code lab", text: "Write and run code beside the lesson.", tone: "sky" },
-  { icon: Award, title: "Mock exams", text: "Timed certification practice with worked answers.", tone: "sage" },
-  { icon: MessagesSquare, title: "Interview prep", text: "Real questions, comparisons and model answers.", tone: "violet" },
+  { icon: Award, title: "Mock exams", text: "Timed practice, worked answers.", tone: "sage" },
+  { icon: MessagesSquare, title: "Interview prep", text: "Real questions, model answers.", tone: "violet" },
   { icon: Workflow, title: "Workflows", text: "Step-by-step blueprints of real systems.", tone: "honey" },
   { icon: Bot, title: "Study Buddy", text: "An AI tutor that answers while you read.", tone: "rose" },
 ];
@@ -55,42 +55,42 @@ export default function WelcomeModalPanel({ open, onOpenChange }: { open: boolea
       <DialogContent initialFocus={start} className={`${styles.popup} p-0 gap-0 sm:max-w-240`}>
         <div ref={start} tabIndex={-1} className={styles.body}>
           <header className={styles.hero}>
-            <span className={styles.orbit} aria-hidden="true"><i /><i /><BrandMark size={44} className={styles.orbitMark} /></span>
-            <p className={styles.brand}>
-              <BrandMark size={22} />
-              <span>Master Class <b>-</b> Buddy</span>
-            </p>
-            <p className={styles.kicker}><Hand size={15} className={styles.wave} aria-hidden="true" />{hello}, and welcome to Master Class - Buddy</p>
+            <span className={styles.orbit} aria-hidden="true"><i /><i /><BrandMark size={34} className={styles.orbitMark} /></span>
+            <div className={styles.heroTop}>
+              <p className={styles.brand}><BrandMark size={20} /><span>Master Class <b>-</b> Buddy</span></p>
+              <p className={styles.kicker}><Hand size={14} className={styles.wave} aria-hidden="true" />{hello}, and welcome</p>
+            </div>
             <DialogTitle className={styles.title}>Glad you&apos;re here. <em>Here&apos;s what&apos;s waiting for you.</em></DialogTitle>
             <DialogDescription className={styles.lede}>
-              A learning home for developers, architects and the curious: fresh writing on what changed in tech,
-              a clear guide to the APIs you build with, and courses that take you all the way through.
+              Fresh writing on what changed in tech, a clear guide to the APIs you build with, and courses that take you all the way through.
             </DialogDescription>
           </header>
 
           <div className={styles.spotlights}>
             <article className={styles.buzz} aria-labelledby="welcome-buzz">
               <div className={styles.spotHead}>
-                <span className={styles.spotIcon}><Flame size={18} aria-hidden="true" /></span>
+                <span className={styles.spotIcon}><Flame size={17} aria-hidden="true" /></span>
                 <div>
                   <p className={styles.spotKicker}>The blog</p>
                   <h3 id="welcome-buzz">Tech Buzz</h3>
                 </div>
                 <span className={styles.live} aria-hidden="true"><i />New this week</span>
               </div>
-              <p className={styles.spotLede}>Reader-rated stories on what moved in tech this week, written to be finished in one sitting.</p>
+              <p className={styles.spotLede}>Reader-rated stories on what moved in tech, written to be finished in one sitting.</p>
               <ul className={styles.points}>
-                {BUZZ_POINTS.map(item => <li key={item.text}><item.icon size={14} aria-hidden="true" />{item.text}</li>)}
+                {BUZZ_POINTS.map(item => <li key={item.text}><item.icon size={13} aria-hidden="true" />{item.text}</li>)}
               </ul>
-              <div className={styles.topics} aria-label="Topics">
-                {BUZZ_TOPICS.map(topic => <span key={topic}>{topic}</span>)}
+              <div className={styles.spotFoot}>
+                <div className={styles.topics} aria-label="Topics">
+                  {BUZZ_TOPICS.map(topic => <span key={topic}>{topic}</span>)}
+                </div>
+                <Link href="/tech-buzz" className={styles.spotCta} onClick={close}>Read stories<ArrowRight size={14} aria-hidden="true" /></Link>
               </div>
-              <Link href="/tech-buzz" className={styles.spotCta} onClick={close}>Read this week&apos;s stories<ArrowRight size={15} aria-hidden="true" /></Link>
             </article>
 
             <article className={styles.api} aria-labelledby="welcome-api">
               <div className={styles.spotHead}>
-                <span className={styles.spotIcon}><FileCode2 size={18} aria-hidden="true" /></span>
+                <span className={styles.spotIcon}><FileCode2 size={17} aria-hidden="true" /></span>
                 <div>
                   <p className={styles.spotKicker}>The field guide</p>
                   <h3 id="welcome-api">API Docs</h3>
@@ -98,17 +98,15 @@ export default function WelcomeModalPanel({ open, onOpenChange }: { open: boolea
               </div>
               <p className={styles.spotLede}>The APIs that matter, without the noise. Pick a technology and learn its building blocks.</p>
               <div className={styles.snippet} aria-hidden="true">
-                <span className={styles.snippetBar}><i /><i /><i /><b>useEffect</b></span>
-                <code><span className={styles.cmt}>{"// Sync a component with an outside system"}</span></code>
-                <code><span className={styles.fn}>useEffect</span>{"(() => {"}</code>
-                <code>{"  "}<span className={styles.kw}>const</span>{" off = subscribe();"}</code>
-                <code>{"  "}<span className={styles.kw}>return</span>{" off;"}</code>
-                <code>{"}, [id]);"}</code>
+                <span className={styles.snippetBar}><i /><i /><i /><b>useEffect</b><em>Sync with an outside system</em></span>
+                <code><span className={styles.fn}>useEffect</span>{"(() => "}<span className={styles.kw}>subscribe</span>{"(id), [id]);"}</code>
               </div>
               <ul className={styles.points}>
-                {API_POINTS.map(item => <li key={item.text}><item.icon size={14} aria-hidden="true" />{item.text}</li>)}
+                {API_POINTS.map(item => <li key={item.text}><item.icon size={13} aria-hidden="true" />{item.text}</li>)}
               </ul>
-              <Link href="/api-reference" className={styles.spotCta} onClick={close}>Browse API Docs<ArrowRight size={15} aria-hidden="true" /></Link>
+              <div className={styles.spotFoot}>
+                <Link href="/api-reference" className={styles.spotCta} onClick={close}>Browse API Docs<ArrowRight size={14} aria-hidden="true" /></Link>
+              </div>
             </article>
           </div>
 
@@ -117,7 +115,7 @@ export default function WelcomeModalPanel({ open, onOpenChange }: { open: boolea
             <ul className={styles.featureGrid}>
               {FEATURES.map(item => (
                 <li key={item.title} data-tone={item.tone}>
-                  <span className={styles.featureIcon}><item.icon size={16} aria-hidden="true" /></span>
+                  <span className={styles.featureIcon}><item.icon size={15} aria-hidden="true" /></span>
                   <span><strong>{item.title}</strong><small>{item.text}</small></span>
                 </li>
               ))}
@@ -125,7 +123,7 @@ export default function WelcomeModalPanel({ open, onOpenChange }: { open: boolea
           </section>
 
           <footer className={styles.actions}>
-            <button type="button" className={styles.primary} onClick={close}>Start exploring<ArrowRight size={16} aria-hidden="true" /></button>
+            <button type="button" className={styles.primary} onClick={close}>Start exploring<ArrowRight size={15} aria-hidden="true" /></button>
             <Link href="/#tech-docs" className={styles.secondary} onClick={close}>See the courses</Link>
           </footer>
         </div>
