@@ -33,7 +33,10 @@ export function useCarouselHeight(ref: RefObject<HTMLElement | null>) {
     const visibility = typeof IntersectionObserver === "undefined" ? null : new IntersectionObserver(entries => {
       visible = entries.some(entry => entry.isIntersecting);
       if (visible) schedule();
-    }, { rootMargin: "300px 0px" });
+    // Well ahead of the screen (2026-11-06): with 300px, a phone fling (one jump of 700px or more) brought the track into
+    // view before it was measured, so it changed height on screen (field CLS 0.24 on /learning). A height change below
+    // the viewport is not a layout shift, and scroll anchoring absorbs one above it.
+    }, { rootMargin: "1500px 0px" });
     visibility?.observe(track);
     const resize = typeof ResizeObserver === "undefined" ? null : new ResizeObserver(schedule);
     const observe = () => {
@@ -45,11 +48,14 @@ export function useCarouselHeight(ref: RefObject<HTMLElement | null>) {
     const mutations = new MutationObserver(observe);
     mutations.observe(track, { childList: true });
     observe();
+    // One measurement once the page is idle, wherever the track is, so the first fit never waits for a scroll.
+    const idle = typeof requestIdleCallback === "function" ? requestIdleCallback(() => { const was = visible; visible = true; measure(); visible = was; }, { timeout: 4000 }) : 0;
     track.addEventListener("scroll", schedule, { passive: true });
     track.addEventListener("load", schedule, true);
     window.addEventListener("resize", schedule);
     return () => {
       cancelAnimationFrame(frame);
+      if (idle) cancelIdleCallback(idle);
       resize?.disconnect();
       mutations.disconnect();
       visibility?.disconnect();

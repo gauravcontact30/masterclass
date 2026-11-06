@@ -6,7 +6,6 @@ import { COURSE_SUMMARIES as SUMMARIES } from "@/lib/study/course-summaries";
 import { pageMetadata, siteUrl } from "@/lib/seo";
 import { PageIntro } from "../page-intro";
 
-import { Suspense } from "react";
 import { CoursesFeed } from "@/components/courses-feed";
 
 export const metadata = pageMetadata("/courses");
@@ -29,9 +28,7 @@ export default function CoursesPage() {
   };
   return <>
     <PageIntro path="/courses" eyebrow="Learning paths" extraSchema={itemList} />
-    <Suspense fallback={null}>
-      <CoursesFeed />
-    </Suspense>
+    <CoursesFeed />
     <PageAnswers answers={HUB_ANSWERS["/courses"]} />
   </>;
 }

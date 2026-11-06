@@ -34,4 +34,6 @@
 /* Below-the-fold sections skip style, layout and paint until they near the viewport: on a mid-range phone most of
    the first-load main-thread time was rendering ~4,000 nodes nobody had scrolled to yet. The intrinsic size keeps
    the scrollbar and #anchor jumps steady; `auto` remembers each section's real height once it has rendered. */
-.page main > section:nth-of-type(n+4) { content-visibility: auto; contain-intrinsic-size: auto 900px; }
+/* From the second section on (2026-11-06; it was the fourth): the hero fills the first screen on every device, so the
+   festive sale and Tech Buzz (≈800 nodes, the largest section) were laid out on load with nobody looking at them. */
+.page main > section:nth-of-type(n+2) { content-visibility: auto; contain-intrinsic-size: auto 900px; }

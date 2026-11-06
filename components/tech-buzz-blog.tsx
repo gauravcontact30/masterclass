@@ -182,7 +182,9 @@ function Thumb({ card, size }: { card: TechBuzzCard; size: "list" | "grid" | "he
   const logo = logoOf(card);
   return <span className={styles.thumb} data-size={size} style={{ "--tone": toneOf(card.technology) } as CSSProperties} title={card.photoCredit}>
     <Image src={card.coverImage} loader={loaderFor(card.coverImage)} alt="" fill sizes={size === "hero" ? "(max-width: 1140px) 94vw, 80vw" : size === "grid" ? "(max-width: 640px) 100vw, 360px" : "140px"}
-      unoptimized={remote(card.coverImage)} className={styles.thumbImage}/>
+      unoptimized={remote(card.coverImage)} className={styles.thumbImage}
+      // The featured cover is the page's LCP element: lazy-loading it delayed LCP (Next.js console warning, 2026-11-06).
+      {...(size === "hero" ? { loading: "eager" as const, fetchPriority: "high" as const } : {})}/>
     {logo && <span className={styles.thumbLogo} title={card.technology}><Image src={logo} alt={card.technology} width={size === "hero" ? 34 : 26} height={size === "hero" ? 34 : 26} /></span>}
     {size === "grid" && <span className={styles.thumbReadTime}><Clock size={11} aria-hidden="true" />{card.readTimeMinutes} min</span>}
     {size === "hero" && card.photoCredit && <small className={styles.credit}>{card.photoCredit}</small>}
