@@ -1,13 +1,12 @@
 "use client";
 import { lazy, Suspense, useEffect, useState } from "react";
-import type { LandingPrices } from "./landing-page";
-import type { Currency } from "@/lib/pricing";
 
-// The dialog, carousel and plans load only for a first-time visitor, after the page has settled.
+// The dialog's code loads only when it is about to open, ten seconds after the landing page loads.
 const loadPanel = () => import("./welcome-modal-panel");
 const WelcomePanel = lazy(loadPanel);
-const SEEN_KEY = "mc:welcome:v1";
-const DELAY_MS = 3000;
+// v2: the redesigned welcome (2026-11-06) shows once to visitors who saw the old one too.
+const SEEN_KEY = "mc:welcome:v2";
+const DELAY_MS = 10_000;
 const RETRY_MS = 4000;
 
 const seen = () => { try { return window.localStorage.getItem(SEEN_KEY) === "1"; } catch { return false; } };
@@ -16,12 +15,11 @@ const remember = () => { try { window.localStorage.setItem(SEEN_KEY, "1"); } cat
 const busy = () => !!document.querySelector("[role=dialog]:not([hidden]), dialog[open], [aria-modal=true]");
 
 /**
- * First-visit welcome: opens once, three seconds after the visitor first scrolls, taps or types. Waiting for that
- * first input keeps its large photo from becoming the page's Largest Contentful Paint, which browsers stop measuring
- * at the first input. If the tab is hidden or another dialog is open at that moment it waits and tries again,
- * instead of giving up. `?welcome` always shows it, three seconds after load.
+ * The welcome window: opens by itself ten seconds after a visitor lands, once per browser. If the tab is hidden or
+ * another dialog is open at that moment it waits and tries again instead of giving up. `?welcome` always shows it;
+ * `?nowelcome` never does. It shows no prices or plans.
  */
-export function WelcomeModal({ prices, onCurrency }: { prices: LandingPrices | null; onCurrency?: (currency: Currency) => void }) {
+export function WelcomeModal() {
   const [open, setOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   useEffect(() => {
@@ -32,11 +30,8 @@ export function WelcomeModal({ prices, onCurrency }: { prices: LandingPrices | n
       if (document.visibilityState !== "visible" || busy()) { timer = window.setTimeout(attempt, RETRY_MS); return; }
       void loadPanel().then(() => { remember(); setMounted(true); setOpen(true); });
     };
-    if (params.has("welcome")) { timer = window.setTimeout(attempt, DELAY_MS); return () => window.clearTimeout(timer); }
-    const inputs = ["pointerdown", "keydown", "scroll", "wheel", "touchstart"] as const;
-    const arm = () => { inputs.forEach(type => window.removeEventListener(type, arm)); timer = window.setTimeout(attempt, DELAY_MS); };
-    inputs.forEach(type => window.addEventListener(type, arm, { once: true, passive: true }));
-    return () => { inputs.forEach(type => window.removeEventListener(type, arm)); window.clearTimeout(timer); };
+    timer = window.setTimeout(attempt, DELAY_MS);
+    return () => window.clearTimeout(timer);
   }, []);
-  return mounted ? <Suspense fallback={null}><WelcomePanel open={open} onOpenChange={setOpen} prices={prices} onCurrency={onCurrency} /></Suspense> : null;
+  return mounted ? <Suspense fallback={null}><WelcomePanel open={open} onOpenChange={setOpen} /></Suspense> : null;
 }

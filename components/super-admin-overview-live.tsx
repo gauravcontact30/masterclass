@@ -141,8 +141,9 @@ export function OverviewLive({ snapshot, onRefreshSnapshot }: { snapshot: Overvi
     try {
       const prior = feed.current, startedAt = Date.now();
       const incremental = prior && startedAt - prior.loadedAt < FULL_RELOAD_MS;
-      // A minute of overlap: a row stamped just before the last read can land just after it.
-      const query = incremental ? `?since=${encodeURIComponent(new Date(Date.parse(prior.generatedAt) - 60_000).toISOString())}` : "";
+      // Five minutes of overlap: /api/track stamps a row on receipt but writes it after responding, so a slow write can land
+      // after a read that already passed its stamp. Rows merge by id, so the overlap never double-counts (2026-11-06).
+      const query = incremental ? `?since=${encodeURIComponent(new Date(Date.parse(prior.generatedAt) - 5 * 60_000).toISOString())}` : "";
       const response = await fetch(`/api/super-admin/activity/stream${query}`, { cache: "no-store", signal: withTimeout(signal) });
       if (response.status === 401 || response.status === 403) refused.current = true;
       const body = await response.json().catch(() => ({}));

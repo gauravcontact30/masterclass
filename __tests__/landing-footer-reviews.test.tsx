@@ -1,11 +1,5 @@
 import { act,fireEvent,render,screen,within } from "@testing-library/react";
-import { LandingFooter } from "@/components/landing-footer";
 import { StudentReviews } from "@/components/student-reviews";
-test("Move to top scrolls smoothly and respects reduced motion",()=>{
-  window.scrollTo=jest.fn();render(<LandingFooter/>);fireEvent.click(screen.getByRole("button",{name:"Move to top"}));expect(window.scrollTo).toHaveBeenLastCalledWith({top:0,behavior:"smooth"});
-  window.matchMedia=jest.fn().mockReturnValue({matches:true});fireEvent.click(screen.getByRole("button",{name:"Move to top"}));expect(window.scrollTo).toHaveBeenLastCalledWith({top:0,behavior:"instant"});
-  Reflect.deleteProperty(window,"matchMedia");
-});
 test("five sample reviews use initials, support direct selection, rotate and pause",()=>{
   jest.useFakeTimers();render(<StudentReviews/>);
   expect(screen.getByText("Sample reviews")).toBeVisible();

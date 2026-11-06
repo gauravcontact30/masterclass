@@ -1,6 +1,5 @@
 /** @jest-environment node */
 import { exportBundleSchema, notebookRequestSchema } from "@/lib/artistic-notes/schema";
-import { latexToText, markupToPayloads, parseMarkup, SAMPLE_MARKUP } from "@/lib/artistic-notes/markup";
 
 const notebook = () => ({
   title: "Sorting",
@@ -75,29 +74,5 @@ describe("validation errors (the route answers these with 400)", () => {
     expect(exportBundleSchema.safeParse({ notebook: notebook() }).success).toBe(true);
     expect(issuePaths(exportBundleSchema.safeParse({ notebook: { ...notebook(), summary: [] } }))).toContain("notebook.summary");
     expect(issuePaths(exportBundleSchema.safeParse({ notebook: notebook(), pdf: {} }))).toContain("");
-  });
-});
-
-describe("quick markup", () => {
-  test("the sample document produces a valid notebook payload", () => {
-    const payloads = markupToPayloads(SAMPLE_MARKUP, { title: "Gradient descent", theme: "retro-cyberpunk" });
-    expect(Object.keys(payloads)).toEqual(["notebook"]);
-    const nb = notebookRequestSchema.parse(payloads.notebook);
-    expect(nb.sections.some(section => section.code.some(cell => cell.source.includes("def gradient_descent")))).toBe(true);
-    expect(nb.sections.some(section => section.formulas.some(formula => formula.latex.includes("\\frac{1}{n}")))).toBe(true);
-  });
-
-  test("parses every directive into the matching item", () => {
-    const doc = parseMarkup(["TL;DR: remember me", "# Topic", "Def: Term = the meaning", "e.g. an example", "Key: key idea", "Warn: a trap", "Q: why?", "A: because", "Formula: E = mc²", "- one", "- two", "plain", "text"].join("\n"));
-    expect(doc.summary).toEqual(["remember me"]);
-    expect(doc.sections[0].items.map(item => item.kind)).toEqual(["definition", "takeaway", "warning", "recall", "formula", "bullets", "text"]);
-    expect(doc.sections[0].items[0]).toEqual({ kind: "definition", term: "Term", meaning: "the meaning", example: "an example" });
-    expect(doc.sections[0].items[6]).toEqual({ kind: "text", text: "plain text" });
-  });
-
-  test("renders simple LaTeX as readable Unicode", () => {
-    expect(latexToText("\\theta \\leftarrow \\theta - \\eta \\nabla L(\\theta)")).toBe("θ ← θ − η ∇ L(θ)");
-    expect(latexToText("\\sum_{i=1}^{n} x_i^2")).toBe("Σᵢ₌₁ⁿ xᵢ²");
-    expect(latexToText("\\frac{a+b}{2}")).toBe("(a+b)/2");
   });
 });

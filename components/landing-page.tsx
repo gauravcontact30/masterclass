@@ -105,7 +105,7 @@ export function LandingPage({ features, answers, certifications, techBuzz, workf
   usePriceRefresh(prices, setPrices);
   // A transition, so a price answer arriving mid-hydration cannot force the page to hydrate or re-render urgently.
   useEffect(() => { if (initialPrices && !initialPrices.international) return; let active = true; loadPrices().then(data => { if (active) startTransition(() => { setPrices(current => mergePrices(current, data)); setPriceState("ready"); }); }).catch(() => { if (active && !initialPrices) setPriceState("error"); }); return () => { active = false; }; }, [initialPrices]);
-  // The picker's choice re-prices every price on the page (membership, Plans menu, welcome window) at once.
+  // The picker's choice re-prices every price on the page (membership, Plans menu) at once.
   const reprice = (currency: Currency) => { void loadPrices(currency).then(data => setPrices(current => ({ ...current, ...data }))).catch(() => {}); };
   // [section on this page, label, the section's own crawlable page]: links are real URLs for search engines and
   // new tabs, and smooth-scroll to the section here without a #fragment.
@@ -117,7 +117,7 @@ export function LandingPage({ features, answers, certifications, techBuzz, workf
     ["#pricing", t("membership") || "Membership", "/subscribe"]
   ];
   const font = landingFont(hi);
-  // Prices change on this component, and only the navbar, welcome window, sale and plans show them. Everything else is
+  // Prices change on this component, and only the navbar, sale and plans show them. Everything else is
   // one stable element, so React skips it: a re-price used to re-render about 6,000 DOM nodes' worth of components.
   const hero = useMemo(() => <LandingSlider technologies={library?.counts.technology} />, [library?.counts.technology]);
   const beforePlans = useMemo(() => <>
@@ -146,7 +146,7 @@ export function LandingPage({ features, answers, certifications, techBuzz, workf
   </>, [today, hi, fresh, library, daily, workflows, certifications, techBuzz, coffee, features, techDocs, pro]);
   return <ContentProvider overrides={overrides}><div className={`${styles.page} ${home.home} ${font.variable} ${font.className}`}><a className={styles.skip} href="#main-content">{t("skipToContent") || "Skip to content"}</a>
     <LandingNavbar links={navigation as [string, string, string][]} prices={priceState === "ready" ? prices : null} onCurrency={reprice} />
-    <WelcomeModal prices={priceState === "ready" ? prices : null} onCurrency={reprice} />
+    <WelcomeModal />
     <main id="main-content" tabIndex={-1}>
     <RouteH1 className={home.srOnly}>{t("siteHeadline") || "MasterClass Buddy: read, code and learn Agentic AI, LangChain, LangGraph, n8n and Next.js with courses, Tech Buzz, system design and interview questions"}</RouteH1>
     {/* Order (2026-10-20): the promise (slider, what you get), something to try at once (Study Buddy), the highest-intent

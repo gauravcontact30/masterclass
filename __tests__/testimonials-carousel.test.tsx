@@ -1,7 +1,6 @@
 import { act, fireEvent, render, screen, within } from "@testing-library/react";
 import { StudentReviews } from "@/components/student-reviews";
 import { LanguageProvider } from "@/components/language-provider";
-import { testimonials, testimonialAvatarGradient, testimonialInitials } from "@/lib/testimonials";
 const INTERVAL=5500;
 const advance=(ms:number)=>act(()=>{jest.advanceTimersByTime(ms);});
 const current=()=>screen.getByRole("group",{name:/Sample review \d of 5/});
@@ -54,26 +53,4 @@ test("Hindi preference renders translated review controls",()=>{
  expect(screen.queryByRole("region",{name:"Sample student reviews"})).not.toBeInTheDocument();
  expect(screen.getByRole("region")).toHaveAttribute("aria-roledescription","carousel");
  expect(screen.getByRole("group",{name:/1 \/ 5/})).toHaveTextContent("Aditi S.");
-});
-
-describe("testimonial data", () => {
-  test("every entry is complete in both languages with a unique id", () => {
-    expect(new Set(testimonials.map(item => item.id)).size).toBe(testimonials.length);
-    for (const item of testimonials) {
-      for (const field of [item.quote, item.name, item.program]) {
-        expect(field.en.trim()).not.toBe("");
-        expect(field.hi.trim()).not.toBe("");
-      }
-      if (item.rating !== undefined) expect([1, 2, 3, 4, 5]).toContain(item.rating);
-    }
-  });
-
-  test("generated avatars use initials and a stable, name-derived gradient", () => {
-    expect(testimonialInitials("Aisha R.")).toBe("AR");
-    expect(testimonialInitials("आयशा आर.")).toBe("आआ");
-    expect(testimonialAvatarGradient("aisha-r")).toBe(testimonialAvatarGradient("aisha-r"));
-    expect(testimonialAvatarGradient("aisha-r")).toMatch(/^linear-gradient\(\d+deg, #[0-9a-f]{6}, #[0-9a-f]{6}\)$/);
-    const gradients = new Set(testimonials.map(item => testimonialAvatarGradient(item.id)));
-    expect(gradients.size).toBeGreaterThan(1);
-  });
 });

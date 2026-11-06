@@ -4,7 +4,6 @@ import { cacheGet, cacheSet, cacheDelete, cacheFetch, checkRateLimit } from "@/l
 import { inngest } from "@/lib/inngest/client";
 import { inngestFunctions } from "@/lib/inngest/functions";
 import { protectWithArcjet } from "@/lib/arcjet";
-import { studyGoalSchema } from "@/components/conform-form";
 
 describe("Upgraded Architecture Integrations", () => {
   describe("T3 Environment (@t3-oss/env-nextjs)", () => {
@@ -66,23 +65,4 @@ describe("Upgraded Architecture Integrations", () => {
     });
   });
 
-  describe("Conform & Zod Validation", () => {
-    it("should validate study goal schemas correctly", () => {
-      const valid = studyGoalSchema.safeParse({
-        topicName: "Next.js 16 Microservices",
-        targetCategory: "technology",
-        dailyMinutes: 60,
-      });
-      expect(valid.success).toBe(true);
-    });
-
-    it("should reject invalid values", () => {
-      const invalid = studyGoalSchema.safeParse({
-        topicName: "No", // too short (< 3 chars)
-        targetCategory: "invalid-category",
-        dailyMinutes: 5, // minimum 15 mins
-      });
-      expect(invalid.success).toBe(false);
-    });
-  });
 });

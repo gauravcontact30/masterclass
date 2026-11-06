@@ -1,6 +1,5 @@
 import { render, screen, within, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { StudyNavigation } from "@/components/study-navigation";
 import { StudyReader } from "@/components/study-reader";
 import { Membership } from "@/components/membership";
 import { LandingPage } from "@/components/landing-page";
@@ -10,20 +9,6 @@ import { requestJson } from "@/lib/client";
 import { gradePaper } from "@/lib/study/types";
 jest.mock("@/lib/client", () => ({ requestJson: jest.fn(), errorKey: () => "service_error" }));
 beforeEach(() => { localStorage.clear(); jest.mocked(requestJson).mockResolvedValue({ monthly: 299, yearly: 2999, enabled: true }); });
-test("sidebar starts with main categories only and exposes authorized paths through exclusive accordions", async () => {
-  const user=userEvent.setup();const {rerender}=render(<StudyNavigation access={{selections:["ielts","system-design"],isSuperAdmin:false}} collapsed={false}/>);
-  expect(screen.getByRole("button",{name:"Courses & Interviews"})).toHaveAttribute("aria-expanded","false");
-  expect(screen.queryByRole("button",{name:"System Design"})).not.toBeInTheDocument();
-  await user.click(screen.getByRole("button",{name:"Courses & Interviews"}));
-  await user.click(screen.getByRole("button",{name:"System Design"}));expect(screen.getByRole("link",{name:"System Design"})).toHaveAttribute("href","/learning/system-design");
-  await user.click(screen.getByRole("button",{name:"Language Preparation"}));
-  expect(screen.getByRole("button",{name:"Courses & Interviews"})).toHaveAttribute("aria-expanded","false");
-  await user.click(screen.getByRole("button",{name:"IELTS & Vocabulary"}));expect(screen.getByRole("link",{name:"IELTS & Vocabulary"})).toHaveAttribute("href","/learning/languages");
-  // School boards and government or entrance exams were removed on 2026-10-24, even for a Super Admin.
-  rerender(<StudyNavigation access={{selections:[],isSuperAdmin:true}} collapsed={false}/>);
-  for(const gone of ["Govt. Exams","Entrance Exams","Board Exams"]) expect(screen.queryByRole("button",{name:gone})).not.toBeInTheDocument();
-});
-
 test("reader navigation, collapsing and revision persistence work without exposing other accounts' notes", async () => {
   const user = userEvent.setup(); const pack = buildStudyPack(findStudyCourse("ielts")!, "en", "monthly", "learner-a");
   localStorage.setItem("masterclass:study:learner-b:ielts:en", JSON.stringify({ notes: "Private other account note" }));

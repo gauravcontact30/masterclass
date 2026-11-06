@@ -1,308 +1,133 @@
 "use client";
-import { useEffect, useRef, useState } from "react";
-import Image from "@/components/responsive-image";
+import { useRef, useState } from "react";
+import { BrandMark } from "@/components/brand-mark";
 import Link from "@/components/site-link";
-import { ArrowRight, BookOpenCheck, ChevronLeft, ChevronRight, Compass, Cpu, GraduationCap, Languages, Layers, Pause, Play, Sparkles, Timer, Workflow, CheckCircle2, type LucideIcon } from "lucide-react";
+import {
+  ArrowRight, Award, Bookmark, BookOpenCheck, Bot, CalendarClock, Code2, FileCode2, Flame, Hand, Headphones, Layers,
+  MessagesSquare, Sparkles, Star, Terminal, Workflow, type LucideIcon,
+} from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from "./ui/dialog";
-import { useLanguage } from "./language-provider";
 import styles from "./welcome-modal.module.css";
 
-const SLIDE_MS = 5000;
-type Pair = [string, string];
-type Slide = { src: string; focus: string; icon: LucideIcon; tone: string; title: Pair; text: Pair; points: Pair[] };
+/** Greets by the visitor's own clock. Computed after mount, so it never differs between server and client. */
+function greeting(hour: number) {
+  if (hour < 5) return "Hello, night owl";
+  if (hour < 12) return "Good morning";
+  if (hour < 17) return "Good afternoon";
+  return "Good evening";
+}
 
-const SLIDES: Slide[] = [
-  {
-    src: "/images/landing/hero-build.webp",
-    focus: "70% 45%",
-    icon: GraduationCap,
-    tone: "clay",
-    title: ["Every technology, one library", "हर तकनीक, एक संपूर्ण लाइब्रेरी"],
-    text: ["AI agents, cloud systems, system design and full-stack engineering courses written as clear, complete lessons you can finish.", "AI एजेंट, क्लाउड सिस्टम, सिस्टम डिज़ाइन और फ़ुल-स्टैक इंजीनियरिंग के स्पष्ट, सम्पूर्ण पाठ।"],
-    points: [["Structured lessons", "क्रमबद्ध पाठ"], ["Diagrams & code labs", "चित्र और कोड लैब"]],
-  },
-  {
-    src: "/images/landing/slide-exams.webp",
-    focus: "48% 40%",
-    icon: Timer,
-    tone: "sage",
-    title: ["Practise like the real interview", "असली इंटरव्यू जैसा अभ्यास"],
-    text: ["Timed quizzes and certification mock exams with objective and subjective questions, full solutions and answer reviews.", "वस्तुनिष्ठ व विषयनिष्ठ प्रश्नों वाले समयबद्ध क्विज़ और सर्टिफ़िकेशन मॉक परीक्षाएँ, पूर्ण हल सहित।"],
-    points: [["Timed practice", "समयबद्ध अभ्यास"], ["Worked solutions", "हल सहित समीक्षा"]],
-  },
-  {
-    src: "/images/landing/slide-interview.webp",
-    focus: "55% 40%",
-    icon: Compass,
-    tone: "violet",
-    title: ["Interview-ready, topic by topic", "इंटरव्यू की तैयारी, विषयवार"],
-    text: ["Curated interview questions, tech comparisons and real-world workflows for developers, analysts and architects.", "डेवलपर्स और आर्किटेक्ट्स के लिए इंटरव्यू प्रश्न, तकनीकी तुलना और वास्तविक वर्कफ़्लो।"],
-    points: [["Tech comparisons", "तकनीकी तुलना"], ["Workflow prep", "वर्कफ़्लो तैयारी"]],
-  },
-  {
-    src: "/images/landing/path-tech.webp",
-    focus: "50% 45%",
-    icon: BookOpenCheck,
-    tone: "sky",
-    title: ["Official docs, clearly explained", "आधिकारिक डॉक्स, सरल भाषा में"],
-    text: ["Modern API guides, interactive code labs and step-by-step blueprints aligned with the newest ecosystem releases.", "नवीनतम तकनीकों के साथ संरेखित API गाइड, हैंड्स-ऑन कोड लैब और चरणबद्ध ब्लूप्रिंट।"],
-    points: [["Production blueprints", "प्रोडक्शन ब्लूप्रिंट"], ["Step-by-step build", "चरणबद्ध निर्माण"]],
-  },
-  {
-    src: "/images/landing/slide-onthego.webp",
-    focus: "68% 40%",
-    icon: Languages,
-    tone: "honey",
-    title: ["Learn anywhere", "Learn anywhere"],
-    text: ["Smart bookmarks and revision notes keep your place across devices.", "Smart bookmarks and revision notes keep your place across devices."],
-    points: [["Works on every device", "Works on every device"], ["Notes & bookmarks", "नोट्स और बुकमार्क"]],
-  },
+const BUZZ_TOPICS = ["Agentic AI", "LangGraph", "Next.js 16", "React 19", "System Design", "Cloud"];
+const BUZZ_POINTS: { icon: LucideIcon; text: string }[] = [
+  { icon: CalendarClock, text: "Five fresh blogs every Monday, 00:00 IST" },
+  { icon: Star, text: "Every story rated by developers before it runs" },
+  { icon: Headphones, text: "Read it or listen to it, with a choice of voices" },
+  { icon: Bookmark, text: "Follow topics, save stories and join the comments" },
 ];
 
-type FeatureCard = {
-  icon: LucideIcon;
-  badge: Pair;
-  title: Pair;
-  desc: Pair;
-  tone: string;
-};
-
-const CORE_FEATURES: FeatureCard[] = [
-  {
-    icon: Workflow,
-    badge: ["System Architecture", "सिस्टम आर्किटेक्चर"],
-    title: ["Agentic AI & System Design", "एजेंटिक AI और सिस्टम डिज़ाइन"],
-    desc: ["Production blueprints, LLM agents, event-driven pipelines, and distributed architectures.", "प्रोडक्शन ब्लूप्रिंट, LLM एजेंट, इवेंट-ड्रिवन पाइपलाइन और डिस्ट्रीब्यूटेड आर्किटेक्चर।"],
-    tone: "clay",
-  },
-  {
-    icon: Compass,
-    badge: ["Career & Coding", "करियर व कोडिंग"],
-    title: ["300+ Tech Interview Question Bank", "300+ टेक इंटरव्यू प्रश्न बैंक"],
-    desc: ["Real-world subjective and objective challenges with comprehensive step-by-step solutions.", "विस्तृत चरण-दर-चरण समाधानों के साथ वास्तविक दुनिया की वस्तुनिष्ठ व विषयगत चुनौतियाँ।"],
-    tone: "violet",
-  },
-  {
-    icon: Cpu,
-    badge: ["Hands-On Labs", "प्रैक्टिकल लैब"],
-    title: ["Full-Stack Guides & Tech Docs", "फ़ुल-स्टैक गाइड और टेक डॉक्स"],
-    desc: ["Deep dives across 33+ modern technologies with copy-paste runnable commands and code.", "33+ आधुनिक तकनीकों में सीधे चलने योग्य कोड और कमांड्स के साथ संपूर्ण व्यावहारिक अध्ययन।"],
-    tone: "sky",
-  },
-  {
-    icon: Timer,
-    badge: ["Certification Prep", "सर्टिफ़िकेशन तैयारी"],
-    title: ["Timed Mock Exams & Quizzes", "समयबद्ध मॉक परीक्षाएँ और क्विज़"],
-    desc: ["Simulate authentic exam environments with instant score analytics and rationale breakdowns.", "तत्काल स्कोर विश्लेषण और विस्तृत व्याख्याओं के साथ वास्तविक परीक्षा जैसा अनुभव।"],
-    tone: "sage",
-  },
+const API_POINTS: { icon: LucideIcon; text: string }[] = [
+  { icon: BookOpenCheck, text: "Written from each project's official documentation" },
+  { icon: Sparkles, text: "What an API does, in one line, before the detail" },
+  { icon: Code2, text: "Code tabs, examples and a Python runner in the page" },
 ];
 
-const HIGHLIGHTS: Pair[] = [
-  ["33+ Modern Tech Stacks", "33+ आधुनिक टेक स्टैक"],
-  ["Coffee & Code Daily Insights", "कॉफ़ी और कोड दैनिक इनसाइट्स"],
-  ["Interactive Revision Notes", "इंटरैक्टिव रिवीज़न नोट्स"],
+const FEATURES: { icon: LucideIcon; title: string; text: string; tone: string }[] = [
+  { icon: Layers, title: "Structured courses", text: "Complete lessons across modern stacks, start to finish.", tone: "clay" },
+  { icon: Terminal, title: "Techy code lab", text: "Write and run code beside the lesson.", tone: "sky" },
+  { icon: Award, title: "Mock exams", text: "Timed certification practice with worked answers.", tone: "sage" },
+  { icon: MessagesSquare, title: "Interview prep", text: "Real questions, comparisons and model answers.", tone: "violet" },
+  { icon: Workflow, title: "Workflows", text: "Step-by-step blueprints of real systems.", tone: "honey" },
+  { icon: Bot, title: "Study Buddy", text: "An AI tutor that answers while you read.", tone: "rose" },
 ];
 
 /**
- * The first-visit welcome: an autoplay visual tour on the left, beside a creative and professional
- * showcase of MasterClass's core superpowers and learning ecosystem on the right.
- * No plan or pricing information is displayed.
+ * The welcome window: a greeting, then two spotlights (Tech Buzz and API Docs) and a grid of the core features.
+ * No prices, plans or sales copy. Plain shapes only, no photos, so it stays light when it opens on its own.
  */
-export default function WelcomeModalPanel({
-  open,
-  onOpenChange,
-}: {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  prices?: unknown;
-  onCurrency?: unknown;
-}) {
-  const { language } = useLanguage();
-  const hi = language === "hi";
-  const say = (pair: Pair) => pair[hi ? 1 : 0];
-  const [index, setIndex] = useState(0);
-  const [paused, setPaused] = useState(() => !!window.matchMedia?.("(prefers-reduced-motion: reduce)").matches);
-  const [hold, setHold] = useState(false);
-  const running = open && !paused && !hold;
-
-  useEffect(() => {
-    if (!running) return;
-    const timer = window.setTimeout(() => setIndex(i => (i + 1) % SLIDES.length), SLIDE_MS);
-    return () => window.clearTimeout(timer);
-  }, [running, index]);
-
-  const go = (step: number) => setIndex(i => (i + step + SLIDES.length) % SLIDES.length);
-  const slide = SLIDES[index];
+export default function WelcomeModalPanel({ open, onOpenChange }: { open: boolean; onOpenChange: (open: boolean) => void }) {
+  // This panel only ever renders in the browser (it is lazy-loaded after the page settles), so the clock is safe here.
+  const [hello] = useState(() => greeting(new Date().getHours()));
   const close = () => onOpenChange(false);
   const start = useRef<HTMLDivElement>(null);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent initialFocus={start} className={`${styles.popup} p-0 gap-0 sm:max-w-240`}>
-        <div ref={start} tabIndex={-1} className={styles.layout}>
-          {/* Left Column: Visual Interactive Tour */}
-          <section
-            className={styles.tour}
-            aria-roledescription="carousel"
-            aria-label={hi ? "मुख्य सुविधाएँ" : "Core features"}
-            onPointerEnter={() => setHold(true)}
-            onPointerLeave={() => setHold(false)}
-            onFocus={() => setHold(true)}
-            onBlur={() => setHold(false)}
-          >
-            {SLIDES.map((item, i) => (
-              <div key={item.src} className={styles.slide} data-active={i === index || undefined} aria-hidden="true">
-                <Image
-                  src={item.src}
-                  alt=""
-                  fill
-                  sizes="(max-width: 760px) 100vw, 520px"
-                  className={styles.photo}
-                  style={{ objectFit: "cover", objectPosition: item.focus }}
-                  priority={i === 0}
-                />
-              </div>
-            ))}
-            <div className={styles.shade} aria-hidden="true" />
-            <div
-              className={styles.copy}
-              key={index}
-              data-tone={slide.tone}
-              role="group"
-              aria-roledescription="slide"
-              aria-label={`${index + 1} / ${SLIDES.length}`}
-              aria-live={running ? "off" : "polite"}
-            >
-              <span className={styles.badge}>
-                <slide.icon size={15} aria-hidden="true" />
-                {`${index + 1} / ${SLIDES.length}`}
-              </span>
-              <div className={styles.slideTitle}>{say(slide.title)}</div>
-              <p>{say(slide.text)}</p>
-              <ul>
-                {slide.points.map(point => (
-                  <li key={point[0]}>
-                    <Sparkles size={12} aria-hidden="true" />
-                    {say(point)}
-                  </li>
-                ))}
-              </ul>
-            </div>
-            <div className={styles.controls}>
-              <button
-                type="button"
-                className={styles.round}
-                onClick={() => go(-1)}
-                aria-label={hi ? "पिछली स्लाइड" : "Previous slide"}
-              >
-                <ChevronLeft size={16} aria-hidden="true" />
-              </button>
-              <div className={styles.dots}>
-                {SLIDES.map((item, i) => (
-                  <button
-                    key={item.src}
-                    type="button"
-                    aria-current={i === index || undefined}
-                    aria-label={say(item.title)}
-                    className={styles.dot}
-                    data-active={i === index || undefined}
-                    onClick={() => setIndex(i)}
-                  >
-                    {i === index && (
-                      <i
-                        key={index}
-                        style={{
-                          animationDuration: `${SLIDE_MS}ms`,
-                          animationPlayState: running ? "running" : "paused",
-                        }}
-                      />
-                    )}
-                  </button>
-                ))}
-              </div>
-              <button
-                type="button"
-                className={styles.round}
-                onClick={() => setPaused(p => !p)}
-                aria-label={paused ? (hi ? "स्लाइड चलाएँ" : "Play slides") : (hi ? "स्लाइड रोकें" : "Pause slides")}
-              >
-                {paused ? <Play size={14} aria-hidden="true" /> : <Pause size={14} aria-hidden="true" />}
-              </button>
-              <button
-                type="button"
-                className={styles.round}
-                onClick={() => go(1)}
-                aria-label={hi ? "अगली स्लाइड" : "Next slide"}
-              >
-                <ChevronRight size={16} aria-hidden="true" />
-              </button>
-            </div>
-          </section>
+        <div ref={start} tabIndex={-1} className={styles.body}>
+          <header className={styles.hero}>
+            <span className={styles.orbit} aria-hidden="true"><i /><i /><BrandMark size={44} className={styles.orbitMark} /></span>
+            <p className={styles.brand}>
+              <BrandMark size={22} />
+              <span>Master Class <b>-</b> Buddy</span>
+            </p>
+            <p className={styles.kicker}><Hand size={15} className={styles.wave} aria-hidden="true" />{hello}, and welcome to Master Class - Buddy</p>
+            <DialogTitle className={styles.title}>Glad you&apos;re here. <em>Here&apos;s what&apos;s waiting for you.</em></DialogTitle>
+            <DialogDescription className={styles.lede}>
+              A learning home for developers, architects and the curious: fresh writing on what changed in tech,
+              a clear guide to the APIs you build with, and courses that take you all the way through.
+            </DialogDescription>
+          </header>
 
-          {/* Right Column: Creative & Professional Core Features Showcase */}
-          <section className={styles.showcase} aria-labelledby="welcome-modal-title">
-            <div className={styles.header}>
-              <p className={styles.kicker}>
-                <Sparkles size={14} aria-hidden="true" />
-                {hi ? "MasterClass में आपका स्वागत है" : "Welcome to MasterClass"}
-              </p>
-              <DialogTitle id="welcome-modal-title" className={styles.title}>
-                {hi ? (
-                  <>आधुनिक तकनीक में <em>महारत हासिल करें।</em></>
-                ) : (
-                  <>Everything you need to <em>master modern tech.</em></>
-                )}
-              </DialogTitle>
-              <DialogDescription className={styles.lede}>
-                {hi
-                  ? "सॉफ़्टवेयर डेवलपर्स, आर्किटेक्ट्स और टेक लीडर्स के लिए तैयार किया गया उच्च-गुणवत्ता वाला संपूर्ण लर्निंग इकोसिस्टम।"
-                  : "A unified, production-grade learning platform built specifically for software engineers, systems architects, and modern developers."}
-              </DialogDescription>
-            </div>
-
-            {/* Core Features Grid */}
-            <div className={styles.featureGrid}>
-              {CORE_FEATURES.map(feat => (
-                <div key={feat.title[0]} className={styles.featureCard} data-tone={feat.tone}>
-                  <div className={styles.cardHeader}>
-                    <span className={styles.cardIcon}>
-                      <feat.icon size={17} aria-hidden="true" />
-                    </span>
-                    <span className={styles.cardBadge}>{say(feat.badge)}</span>
-                  </div>
-                  <div className={styles.featureTitle}>{say(feat.title)}</div>
-                  <p>{say(feat.desc)}</p>
+          <div className={styles.spotlights}>
+            <article className={styles.buzz} aria-labelledby="welcome-buzz">
+              <div className={styles.spotHead}>
+                <span className={styles.spotIcon}><Flame size={18} aria-hidden="true" /></span>
+                <div>
+                  <p className={styles.spotKicker}>The blog</p>
+                  <h3 id="welcome-buzz">Tech Buzz</h3>
                 </div>
+                <span className={styles.live} aria-hidden="true"><i />New this week</span>
+              </div>
+              <p className={styles.spotLede}>Reader-rated stories on what moved in tech this week, written to be finished in one sitting.</p>
+              <ul className={styles.points}>
+                {BUZZ_POINTS.map(item => <li key={item.text}><item.icon size={14} aria-hidden="true" />{item.text}</li>)}
+              </ul>
+              <div className={styles.topics} aria-label="Topics">
+                {BUZZ_TOPICS.map(topic => <span key={topic}>{topic}</span>)}
+              </div>
+              <Link href="/tech-buzz" className={styles.spotCta} onClick={close}>Read this week&apos;s stories<ArrowRight size={15} aria-hidden="true" /></Link>
+            </article>
+
+            <article className={styles.api} aria-labelledby="welcome-api">
+              <div className={styles.spotHead}>
+                <span className={styles.spotIcon}><FileCode2 size={18} aria-hidden="true" /></span>
+                <div>
+                  <p className={styles.spotKicker}>The field guide</p>
+                  <h3 id="welcome-api">API Docs</h3>
+                </div>
+              </div>
+              <p className={styles.spotLede}>The APIs that matter, without the noise. Pick a technology and learn its building blocks.</p>
+              <div className={styles.snippet} aria-hidden="true">
+                <span className={styles.snippetBar}><i /><i /><i /><b>useEffect</b></span>
+                <code><span className={styles.cmt}>{"// Sync a component with an outside system"}</span></code>
+                <code><span className={styles.fn}>useEffect</span>{"(() => {"}</code>
+                <code>{"  "}<span className={styles.kw}>const</span>{" off = subscribe();"}</code>
+                <code>{"  "}<span className={styles.kw}>return</span>{" off;"}</code>
+                <code>{"}, [id]);"}</code>
+              </div>
+              <ul className={styles.points}>
+                {API_POINTS.map(item => <li key={item.text}><item.icon size={14} aria-hidden="true" />{item.text}</li>)}
+              </ul>
+              <Link href="/api-reference" className={styles.spotCta} onClick={close}>Browse API Docs<ArrowRight size={15} aria-hidden="true" /></Link>
+            </article>
+          </div>
+
+          <section className={styles.features} aria-labelledby="welcome-features">
+            <h3 id="welcome-features" className={styles.featuresTitle}>Everything else you can do here</h3>
+            <ul className={styles.featureGrid}>
+              {FEATURES.map(item => (
+                <li key={item.title} data-tone={item.tone}>
+                  <span className={styles.featureIcon}><item.icon size={16} aria-hidden="true" /></span>
+                  <span><strong>{item.title}</strong><small>{item.text}</small></span>
+                </li>
               ))}
-            </div>
-
-            {/* Highlights Chips Bar */}
-            <div className={styles.highlightsBar} aria-label={hi ? "प्लेटफ़ॉर्म विशेषताएँ" : "Platform highlights"}>
-              {HIGHLIGHTS.map(item => (
-                <span key={item[0]} className={styles.chip}>
-                  <CheckCircle2 size={13} aria-hidden="true" />
-                  {say(item)}
-                </span>
-              ))}
-            </div>
-
-            {/* Action Buttons */}
-            <div className={styles.actions}>
-              <Link href="/sign-up" className={styles.primary} onClick={close}>
-                {hi ? "सीखना शुरू करें" : "Start Learning Now"}
-                <ArrowRight size={16} aria-hidden="true" />
-              </Link>
-              <Link href="/#tech-docs" className={styles.secondary} onClick={close}>
-                <Layers size={16} aria-hidden="true" />
-                {hi ? "पाठ्यक्रम देखें" : "Explore Curriculum"}
-              </Link>
-            </div>
-
-            <button type="button" className={styles.later} onClick={close}>
-              {hi ? "बंद करें और ब्राउज़ करें" : "Dismiss and browse"}
-            </button>
+            </ul>
           </section>
+
+          <footer className={styles.actions}>
+            <button type="button" className={styles.primary} onClick={close}>Start exploring<ArrowRight size={16} aria-hidden="true" /></button>
+            <Link href="/#tech-docs" className={styles.secondary} onClick={close}>See the courses</Link>
+          </footer>
         </div>
       </DialogContent>
     </Dialog>

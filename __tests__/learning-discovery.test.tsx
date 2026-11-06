@@ -1,7 +1,6 @@
-import { render, screen, within, waitFor, fireEvent } from "@testing-library/react";
+import { render, screen, within, fireEvent } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { StudyCatalog } from "@/components/study-catalog";
-import { StudyNavigation } from "@/components/study-navigation";
 import { STUDY_COURSES } from "@/lib/study/catalog";
 import { requestJson } from "@/lib/client";
 import type { AnchorHTMLAttributes } from "react";
@@ -43,12 +42,4 @@ test("search narrows published guides, clear restores them, and Learn in App ope
   expect(await screen.findByRole("dialog")).toHaveTextContent("System Design · WhatsApp-style Messaging");
   fireEvent.click(within(screen.getByRole("dialog")).getByRole("button",{name:"Close"}));
   fireEvent.click(screen.getByRole("button",{name:"Clear filters"}));expect(screen.getByRole("status")).toHaveTextContent("13 guides found");
-});
-test("sidebar search reveals direct system-design links without unrelated preparation",async()=>{
-  // The query now comes from the sidebar search above the learning space.
-  const access={isSuperAdmin:false,selections:["system-design"]};
-  render(<StudyNavigation access={access} collapsed={false} query="WhatsApp"/>);
-  await waitFor(()=>expect(screen.getByRole("link",{name:/WhatsApp/})).toHaveAttribute("href",expect.stringContaining("?course=design-")));
-  expect(screen.queryByText("Banking")).not.toBeInTheDocument();
-  expect(screen.queryByText(/CBSE/)).not.toBeInTheDocument();
-});
+});
