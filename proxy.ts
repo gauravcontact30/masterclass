@@ -1,5 +1,6 @@
 import { createServerClient } from "@supabase/ssr";
-import { NextResponse, type NextRequest } from "next/server";
+import { NextResponse, type NextFetchEvent, type NextRequest } from "next/server";
+import { trackAICrawlerRequest } from "@datafast/ai-crawl";
 import { redirectFor } from "@/lib/auth-routes";
 import { protectWithArcjet } from "@/lib/arcjet";
 import { checkRateLimit } from "@/lib/redis";
@@ -14,9 +15,16 @@ import { isUntrackedEmail, UNTRACKED_COOKIE } from "@/lib/server/tracking-exclus
  *  checks below spares each request three network round trips and lets the CDN keep the route's own Cache-Control. */
 const PUBLIC_DATA = new Set(["/api/landing/news", "/api/landing/library", "/api/landing/workflows", "/api/landing/search-index", "/api/landing/api-guides"]);
 
-export default async function proxy(request: NextRequest) {
+/** The routes this proxy guards (Arcjet, rate limit, session, headers). The matcher below is wider so AI crawler
+ *  visits to every public page, robots.txt, llms.txt and sitemaps are tracked; those pass straight through. */
+const GUARDED = /^\/(?:$|learning(?:\/|$)|super-admin(?:\/|$)|sign-in(?:\/|$)|sign-up(?:\/|$)|api(?:\/|$))/;
+
+export default async function proxy(request: NextRequest, event: NextFetchEvent) {
   const startTime = Date.now();
   const { pathname } = request.nextUrl;
+  // DataFast AI crawler tracking (2026-11-07), server side: not awaited, the package keeps the work alive through event.waitUntil.
+  trackAICrawlerRequest(request, event, { websiteId: "dfid_4mXzOZawCzXn52pceXN2q" });
+  if (!GUARDED.test(pathname)) return NextResponse.next();
   if (PUBLIC_DATA.has(pathname) && request.method === "GET") return NextResponse.next();
   // Supabase sends an emailed link to the Site URL ("/") instead of /auth/callback when the link's redirect address is
   // not on its Redirect URLs list, with ?code= on success or ?error_code= (e.g. otp_expired) on failure. The landing
@@ -160,12 +168,6 @@ export default async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: [
-    "/",
-    "/learning/:path*",
-    "/super-admin/:path*",
-    "/sign-in/:path*",
-    "/sign-up/:path*",
-    "/api/:path*",
-  ],
+  // Everything except API-free static assets: crawler-facing files (robots.txt, llms.txt, sitemaps) stay trackable.
+  matcher: ["/((?!_next/static|_next/image|favicon.ico|.*\.(?:png|jpe?g|gif|webp|avif|svg|ico|css|js|map|woff2?|mp3|mp4|webm)$).*)"],
 };

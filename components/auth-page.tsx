@@ -1,4 +1,5 @@
 "use client";
+import { GOALS, trackGoal } from "@/lib/goals";
 import { RouteH1 } from "@/components/route-heading";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -134,6 +135,7 @@ export function AuthPage({ mode, enabled, initialEmail = "", redirectTo, linkErr
   function continueWithGoogle() {
     setBusy(true); setError(null);
     try { sessionStorage.removeItem("masterclass:sidebar-collapsed"); } catch {}
+    trackGoal(GOALS.googleSignIn, { mode });
     hardNavigate(`/api/auth/google${redirectTo ? `?next=${encodeURIComponent(safeRedirect(redirectTo))}` : ""}`);
   }
 
@@ -148,6 +150,7 @@ export function AuthPage({ mode, enabled, initialEmail = "", redirectTo, linkErr
         if (error) { setError(authErrorKey(error)); return; }
         // Only a confirmed email may enter, even if the project ever issues a session before confirmation.
         if (!data.user?.email_confirmed_at) { await auth.signOut(); setError("email_not_confirmed"); return; }
+        trackGoal(GOALS.signIn, { method: "password" });
         setAuthNotice("signed_in");
         // Dashboards open with the sidebar collapsed on every sign-in.
         try { sessionStorage.removeItem("masterclass:sidebar-collapsed"); } catch {}
@@ -167,6 +170,7 @@ export function AuthPage({ mode, enabled, initialEmail = "", redirectTo, linkErr
           return;
         }
         // With email confirmation on, Supabase returns no session until the link is opened.
+        trackGoal(GOALS.signUp, { method: "password" });
         if (data.session && data.user?.email_confirmed_at) { setAuthNotice("created"); leaving = true; enterApp(safeRedirect(redirectTo)); return; }
         if (data.session) await auth.signOut();
         setSent(true); setResendIn(RESEND_WAIT);

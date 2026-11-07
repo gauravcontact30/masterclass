@@ -10,6 +10,7 @@ import { logoOf, techLogo, type TechBuzzCard } from "@/lib/tech-buzz-public";
 import { TechIcon } from "./tech-icon";
 import { FAVOURITE_TOPICS } from "@/lib/tech-buzz-favourites";
 import { LEARNING_PATHS, PICK_STARS, type PathId } from "@/lib/tech-buzz-paths";
+import { GOALS, trackGoal } from "@/lib/goals";
 import styles from "./tech-buzz-showcase.module.css";
 import { ReviewStars } from "./tech-buzz-review-stars";
 import Image from "@/components/responsive-image";
@@ -367,7 +368,7 @@ function LearningPaths({ cards }: { cards: TechBuzzCard[] }) {
   const homePage = Math.floor(Math.max(0, pills.findIndex(pill => pill.id === group)) / TECH_TABS_PER_PAGE);
   const pillPage = Math.min(pillPages - 1, manualPills?.key === `${active.id}|${group}` ? manualPills.page : homePage);
   const goPills = (page: number) => setManualPills({ key: `${active.id}|${group}`, page: Math.max(0, Math.min(pillPages - 1, page)) });
-  const pickTab = (id: string) => { setTabId(id); setGroup("all"); paged.setPage(0); };
+  const pickTab = (id: string) => { trackGoal(GOALS.pathOpen, { path: id }); setTabId(id); setGroup("all"); paged.setPage(0); };
   const onKey = (event: KeyboardEvent<HTMLButtonElement>, index: number) => {
     const next = event.key === "ArrowRight" || event.key === "ArrowDown" ? index + 1 : event.key === "ArrowLeft" || event.key === "ArrowUp" ? index - 1 : event.key === "Home" ? 0 : event.key === "End" ? tabs.length - 1 : null;
     if (next == null) return;
@@ -406,7 +407,7 @@ function LearningPaths({ cards }: { cards: TechBuzzCard[] }) {
       </div>}
       <ul className={styles.groupGrid}>
         {paged.rows.map(card => <li key={card.id}>
-          <Link href={`/tech-buzz/${card.slug}`} className={styles.groupCard}>
+          <Link href={`/tech-buzz/${card.slug}`} className={styles.groupCard} onClick={() => trackGoal(GOALS.techBuzzOpen, { from: "learning_path", tech: card.techId })}>
             <Cover card={card} className={styles.groupCover} sizes="(max-width: 640px) 80vw, (max-width: 1100px) 320px, 280px" />
             <span className={styles.groupBody}>
               <span className={styles.groupTech}><TechIcon item={card} /><span className={styles.groupTechName} title={card.technology}>{shortTech(card.technology)}</span><RatingBadge card={card} /></span>

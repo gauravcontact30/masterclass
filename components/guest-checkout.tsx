@@ -1,5 +1,6 @@
 "use client";
 
+import { GOALS, trackGoal } from "@/lib/goals";
 import { RouteH1 } from "@/components/route-heading";
 import { usePriceRefresh } from "./use-price-refresh";
 import { useState } from "react";
@@ -55,6 +56,7 @@ export function GuestCheckout({ initialTier, enabled, prices: located }: { initi
 
   async function verify(checkoutId: string, payment: SubscriptionPayment) {
     const result = await requestJson<Outcome>("/api/billing/guest", json({ action: "verify", checkoutId, ...payment }));
+    if ((result as { active?: boolean }).active) trackGoal(GOALS.paymentCompleted, { tier, currency: prices.currency, source: "guest" });
     setOutcome(current => ({ ...result, newAccount: result.newAccount || Boolean(current?.newAccount) }));
   }
 
@@ -63,6 +65,7 @@ export function GuestCheckout({ initialTier, enabled, prices: located }: { initi
     setBusy(true); setError(null); setNotice(null);
     try {
       const checkout = await requestJson<Checkout>("/api/billing/guest", json({ action: "checkout", tier, currency: prices.currency, expectedAmountPaise: Math.round((prices.sale?.inr[tier] ?? prices.inr[tier]) * 100), expectedSale: salePrice(prices.sale, tier) != null ? prices.sale?.slug : null, email, name }));
+      trackGoal(GOALS.checkoutStarted, { tier, currency: prices.currency, source: "guest" });
       const payment = await openSubscriptionCheckout({ key: checkout.keyId, subscription_id: checkout.subscriptionId, name: "MasterClass", description: tier === "yearly" ? t("yearly") : t("monthly"), prefill: checkout.prefill });
       if (!payment) { setNotice("checkout_closed"); return; }
       setPaid({ checkoutId: checkout.checkoutId, payment });

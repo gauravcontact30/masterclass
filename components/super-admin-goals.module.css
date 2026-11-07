@@ -1,0 +1,27 @@
+/* Overview → Goals: a list of goal rows, each with seven daily bars and its counts. Tokens match the Live command centre. */
+.goals { --ink: #141413; --text: #3d3d3a; --soft: #6c6b63; --rule: #e8e6dc; display: grid; gap: 12px; padding: 16px 18px; border: 1px solid #e3dff5; border-top: 3px solid #4b4594; border-radius: 16px; background: linear-gradient(180deg, #f7f6fd, #fff 140px); }
+.goals header { display: flex; align-items: center; gap: 10px; }
+.goals header > span { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 10px; background: #ebe8f8; color: #4b4594; }
+.goals h3 { margin: 0; font-family: Georgia, "Times New Roman", serif; font-size: 17px; font-weight: 500; color: var(--ink); }
+.goals header p { margin: 1px 0 0; font-size: 12px; color: var(--soft); }
+.list { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.list li { display: grid; grid-template-columns: minmax(0, 1.2fr) 96px auto; align-items: center; gap: 8px 16px; padding: 9px 12px; border: 1px solid var(--rule); border-radius: 12px; background: #fff; }
+.list li > div:first-child { display: grid; min-width: 0; }
+.list b { overflow: hidden; font-size: 13.5px; font-weight: 650; color: var(--ink); text-overflow: ellipsis; white-space: nowrap; }
+.list code { overflow: hidden; font-size: 11px; color: var(--soft); text-overflow: ellipsis; white-space: nowrap; }
+.bars { display: flex; align-items: flex-end; gap: 3px; height: 30px; }
+.bars i { flex: 1 1 0; min-width: 0; border-radius: 3px 3px 0 0; background: #9a97d6; }
+.bars i:last-child { background: #4b4594; }
+.list dl { display: flex; gap: 14px; margin: 0; }
+.list dl div { display: grid; min-width: 44px; text-align: right; }
+.list dt { font-size: 10.5px; color: var(--soft); }
+.list dd { margin: 0; font-family: Georgia, "Times New Roman", serif; font-size: 18px; color: var(--ink); font-variant-numeric: tabular-nums; }
+.recent { font-size: 12.5px; color: var(--text); }
+.recent summary { width: fit-content; min-height: 24px; cursor: pointer; font-weight: 600; color: var(--ink); }
+.recent ol { display: grid; gap: 4px; margin: 6px 0 0; padding: 0; list-style: none; }
+.recent li { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) auto auto; gap: 4px 12px; }
+.recent li span { overflow: hidden; color: var(--soft); text-overflow: ellipsis; white-space: nowrap; }
+.recent time { color: var(--soft); font-variant-numeric: tabular-nums; }
+.warn { display: flex; align-items: center; gap: 8px; margin: 0; padding: 9px 12px; border: 1px dashed #e6cb6c; border-radius: 10px; background: #fff8de; color: #6b5200; font-size: 13px; }
+.empty, .note { margin: 0; font-size: 13px; color: var(--soft); }
+@media (max-width: 640px) { .list li { grid-template-columns: minmax(0, 1fr) 90px; } .list dl { grid-column: 1 / -1; justify-content: space-between; } .recent li { grid-template-columns: minmax(0, 1fr) auto; } .recent li span:nth-of-type(1) { display: none; } }

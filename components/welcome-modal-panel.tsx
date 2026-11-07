@@ -1,4 +1,5 @@
 "use client";
+import { GOALS, trackGoal } from "@/lib/goals";
 import { useRef, useState } from "react";
 import { BrandMark } from "@/components/brand-mark";
 import Link from "@/components/site-link";
@@ -123,8 +124,8 @@ export default function WelcomeModalPanel({ open, onOpenChange }: { open: boolea
           </section>
 
           <footer className={styles.actions}>
-            <button type="button" className={styles.primary} onClick={close}>Start exploring<ArrowRight size={15} aria-hidden="true" /></button>
-            <Link href="/#tech-docs" className={styles.secondary} onClick={close}>See the courses</Link>
+            <button type="button" className={styles.primary} onClick={() => { trackGoal(GOALS.welcomeStart); close(); }}>Start exploring<ArrowRight size={15} aria-hidden="true" /></button>
+            <Link href="/#tech-docs" className={styles.secondary} onClick={() => { trackGoal(GOALS.welcomeCourses); close(); }}>See the courses</Link>
           </footer>
         </div>
       </DialogContent>

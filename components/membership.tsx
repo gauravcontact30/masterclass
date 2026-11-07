@@ -1,4 +1,5 @@
 "use client";
+import { GOALS, trackGoal } from "@/lib/goals";
 import { usePriceRefresh } from "./use-price-refresh";
 import { AccordionSummary } from "@/components/ui/accordion-chevron";
 import { ExpandedText } from "@/components/expanded-text";
@@ -29,9 +30,11 @@ export function Membership({enabled,data,onRefresh,selections=[]}:{selections?:s
     const result=await requestJson<{subscriptionId?:string;keyId?:string}>("/api/billing",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action,...(tier?{tier,currency:prices.currency,expectedAmountPaise:prices.inr?Math.round((prices.sale?.inr[tier]??prices.inr[tier])*100):undefined,expectedSale:prices.sale?.[tier]!=null?prices.sale.slug:null}:{})})});
     if(action==="checkout"){
       if(!result.subscriptionId||!result.keyId)throw new Error("payment_unavailable");
+      trackGoal(GOALS.checkoutStarted,{tier,currency:prices.currency,source:"membership"});
       const payment=await openSubscriptionCheckout({key:result.keyId,subscription_id:result.subscriptionId,name:"MasterClass",description:tier==="yearly"?t("yearly"):t("monthly")});
       if(payment){
         const verified=await requestJson<{active:boolean}>("/api/billing",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({action:"verify",...payment})});
+        if(verified.active)trackGoal(GOALS.paymentCompleted,{tier,currency:prices.currency,source:"membership"});
         setNotice(verified.active?"payment_success":"payment_processing");
       }else setNotice("checkout_closed");
     }

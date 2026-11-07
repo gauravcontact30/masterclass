@@ -12,6 +12,7 @@ import { VisitorRoutes } from "./super-admin-visitor-routes";
 import { FirstLookVisitors } from "./super-admin-first-look";
 import { PrivateVisitors } from "./super-admin-private-visitors";
 import { SectionHead } from "./super-admin-section-head";
+import { SuperAdminGoals } from "./super-admin-goals";
 import { SuperAdminGlance, type GlanceProps } from "./super-admin-glance";
 
 type Row = Record<string, unknown>;
@@ -363,6 +364,7 @@ export function OverviewLive({ snapshot, onRefreshSnapshot, visitorsOnly = false
 
     <SectionHead id="ov-glance" index={1} title="At a glance" question="How many people are here now, and how is today going?" icon={Gauge} tone="mint" live />
     <SuperAdminGlance {...glance} />
+    <SuperAdminGoals />
     <details className={styles.howCounted}>
       <summary>How these numbers are counted</summary>
       <ul>
