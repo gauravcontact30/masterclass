@@ -29,12 +29,13 @@ function flushVitals() {
  * - NEXT_PUBLIC_GA_MEASUREMENT_ID (G-…): Google Analytics 4, plus LCP/INP/CLS/FCP/TTFB sent as GA4 events.
  * - NEXT_PUBLIC_GTM_ID (GTM-…): Google Tag Manager.
  * Scripts load with `lazyOnload` (browser idle time), so they never compete with the page's LCP or first input.
- * With neither set, this renders nothing and loads nothing.
+ * DataFast is always on. With neither GA nor GTM set, nothing else loads.
  */
 export function SiteAnalytics() {
   useReportWebVitals(reportVital);
-  if (!gaOn && !gtmOn) return null;
   return <>
+    {/* DataFast (2026-11-07): loads on every page because SiteAnalytics sits in the root layout. */}
+    <Script src="https://datafa.st/js/script.js" data-website-id="dfid_4mXzOZawCzXn52pceXN2q" data-domain="www.masterclassbuddy.com" strategy="afterInteractive" />
     {gaOn && <>
       <Script id="ga4" src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`} strategy="lazyOnload" />
       <Script id="ga4-init" strategy="lazyOnload" onReady={flushVitals}>{`window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}window.gtag=gtag;gtag('js',new Date());gtag('config','${GA_ID}',{anonymize_ip:true});`}</Script>

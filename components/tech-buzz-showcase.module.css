@@ -161,6 +161,21 @@ a:hover .cover > img, a:focus-visible .cover > img { transform: scale(1.05); }
 .nodeLink strong { font-size: 15px; line-height: 1.4; }
 .n8n .reactions button { background: rgba(255,255,255,.06); border-color: #46415a; color: #f5f4ed; }
 
+/* ── Learning paths: tabs and the panel reuse the technology section's look (.groupTabs, .group, .groupGrid) ── */
+.paths { display: grid; grid-template-columns: minmax(0, 1fr); gap: clamp(14px, 2vw, 20px); min-width: 0; }
+.paths > .head { margin-bottom: 0; }
+.paths .groupTabs button svg { flex: none; }
+.pathFocus { display: flex; flex-wrap: wrap; gap: 8px; margin: -4px 0 14px; padding: 0; list-style: none; }
+.pathFocus li { padding: 4px 11px; border-radius: 999px; background: #fff; border: 1px solid color-mix(in srgb, var(--tone) 28%, #ece9df); color: var(--tone); font-size: 12px; font-weight: 650; }
+.pathFilters { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+.pathFilters button { display: inline-flex; align-items: center; gap: 7px; min-height: 32px; padding: 0 12px; border: 1px solid #e0ddd2; border-radius: 999px; background: #fff; color: #3d3d3a; font: inherit; font-size: 12.5px; font-weight: 650; cursor: pointer; }
+.pathFilters button:hover { border-color: var(--tone); }
+.pathFilters button[aria-pressed="true"] { border-color: var(--tone); background: var(--tone); color: #fff; }
+.pathFilters button span { display: inline-grid; place-items: center; min-width: 20px; height: 20px; padding: 0 5px; border-radius: 999px; background: color-mix(in srgb, var(--tone) 12%, #fff); color: var(--tone); font-size: 11px; }
+.pathFilters button[aria-pressed="true"] span { background: #fff; }
+.verdict { display: -webkit-box; overflow: hidden; -webkit-box-orient: vertical; -webkit-line-clamp: 3; font-size: 12.5px; line-height: 1.5; color: #55544d; }
+.pathFilters button:focus-visible, .paths .groupTabs button:focus-visible { outline: 2px solid #b5573a; outline-offset: 2px; }
+
 /* ── 6. Technology sections ── */
 .groups { display: grid; grid-template-columns: minmax(0, 1fr); gap: clamp(18px, 2.6vw, 26px); min-width: 0; }
 .groups > .head { margin-bottom: 0; }

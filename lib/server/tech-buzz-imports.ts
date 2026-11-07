@@ -2,7 +2,7 @@ import "server-only";
 import { generateText, gateway, Output } from "ai";
 import { z } from "zod";
 import { DAILY_TRACKS, importTag } from "@/lib/tech-buzz-sections";
-import { MIN_PUBLISHED_STARS } from "@/lib/tech-buzz-reviews";
+import { PICK_STARS, LEARNING_PATHS, purposeTag, isPathId } from "@/lib/tech-buzz-paths";
 import { providerModel } from "./ai-providers";
 import { db } from "./db";
 import { writeInspiredStory, type Inspiration } from "./tech-buzz-daily";
@@ -14,10 +14,12 @@ import { writeInspiredStory, type Inspiration } from "./tech-buzz-daily";
  * 1. Candidates come from each platform's public interface: the dev.to API, Medium's tag RSS feeds, daily.dev's public
  *    GraphQL feed (its own TL;DR of each post) and, because indiehackers.com answers bots with a Cloudflare challenge,
  *    Perplexity search restricted to indiehackers.com.
- * 2. A senior full-stack review rates each post 1-5 in half stars; only posts above 2.5 that fit a Tech Buzz track go on.
+ * 2. A senior full-stack review rates each post 1-5 in half stars; only posts at or above PICK_STARS (4.5, user request
+ *    2026-11-07) that fit a Tech Buzz track go on, and each is tagged with the learning path it serves (big-tech interview
+ *    prep, exam and certification prep, or deep learning: lib/tech-buzz-paths.ts).
  * 3. The post is a brief, not text to reuse: the daily edition's writer researches the topic from official documentation
  *    and writes a fresh, deeper lesson with its own painted thumbnail, and the editor's score becomes its star review,
- *    which must also be above 2.5. The post is credited on the story as plain text (title, author, platform), never linked.
+ *    which must also reach the same bar. The post is credited on the story as plain text (title, author, platform), never linked.
  * Each story is tagged import:<platform>:<post id>, so a post is never imported twice.
  */
 
@@ -169,6 +171,7 @@ const rateSchema = z.object({
   verdict: z.string().describe("One sentence on the post's strengths and gaps, under 160 characters."),
   track: z.enum([...TRACK_IDS, "none"]).describe("The learning track the post's topic belongs to, or none."),
   angle: z.string().describe("One sentence: the lesson a deeper, clearer rewrite of this post should teach a working engineer."),
+  purpose: z.enum(["interview", "exam", "learn", "none"]).describe("What a reader would use the rewrite for: interview = system design, coding or debugging rounds at big tech companies; exam = cloud, DevOps or platform certification and campus exams; learn = deepening day-to-day skills; none = none of these."),
 });
 export type SourceReview = z.infer<typeof rateSchema>;
 
@@ -179,6 +182,8 @@ async function rate(candidate: Candidate, text: string): Promise<SourceReview> {
       "You are a senior full-stack engineer choosing community posts for an engineering learning blog.",
       "Rate the post 1 to 5 in half stars for technical accuracy, depth, whether its code and versions are current, and how much a working developer takes away.",
       "Marketing, link roundups, listicles without substance, career advice, product announcements and opinion without engineering detail score at most 2.5.",
+      `Reader purposes: ${LEARNING_PATHS.map(path => `${path.id} (${path.label}: ${path.blurb})`).join("; ")}. Pick the one the post would serve best.`,
+      `Be strict: ${PICK_STARS} stars means a post a senior engineer would send a colleague preparing for an interview or exam without caveats.`,
       `Tracks: ${DAILY_TRACKS.map(track => `${track.id} (${track.label})`).join("; ")}. Choose none when the topic fits no track.`,
     ].join("\n"),
     prompt: `Title: ${candidate.title}\nTags: ${candidate.tags.join(", ")}\n\n${text.slice(0, BRIEF_CHARS)}`,
@@ -196,14 +201,14 @@ async function alreadyImported(tags: string[]): Promise<Set<string>> {
 }
 
 export type ImportLog = { platform: ImportPlatform; title: string; stars?: number; track?: string; result: string };
-export type ImportOptions = { platforms?: ImportPlatform[]; perPlatform?: number; maxReviewed?: number; dryRun?: boolean; log?: (entry: ImportLog) => void };
+export type ImportOptions = { platforms?: ImportPlatform[]; perPlatform?: number; maxReviewed?: number; minStars?: number; dryRun?: boolean; log?: (entry: ImportLog) => void };
 
 /**
- * Writes up to perPlatform new stories per platform from its best posts above 2.5 stars, reviewing at most
+ * Writes up to perPlatform new stories per platform from its best posts at or above minStars (default PICK_STARS), reviewing at most
  * maxReviewed candidates per platform. dryRun reviews and reports without writing. Run from a script: each story
  * takes several minutes of research, writing, review and painting.
  */
-export async function importTechBuzzStories({ platforms = IMPORT_PLATFORMS, perPlatform = 3, maxReviewed = 10, dryRun = false, log = () => undefined }: ImportOptions = {}) {
+export async function importTechBuzzStories({ platforms = IMPORT_PLATFORMS, perPlatform = 3, maxReviewed = 20, minStars = PICK_STARS, dryRun = false, log = () => undefined }: ImportOptions = {}) {
   const written: string[] = [];
   for (const platform of platforms) {
     const candidates = await FETCHERS[platform]().catch(error => { log({ platform, title: "(feed)", result: `fetch failed: ${String(error).slice(0, 120)}` }); return []; });
@@ -216,15 +221,16 @@ export async function importTechBuzzStories({ platforms = IMPORT_PLATFORMS, perP
         const verdict = await rate(candidate, text);
         const track = DAILY_TRACKS.find(item => item.id === verdict.track);
         const entry = { platform, title: candidate.title, stars: verdict.stars, track: verdict.track };
-        if (verdict.stars <= MIN_PUBLISHED_STARS || !track) { log({ ...entry, result: `skipped: ${verdict.verdict}` }); continue; }
-        if (dryRun) { accepted++; log({ ...entry, result: `would write: ${verdict.angle}` }); continue; }
+        if (verdict.stars < minStars || !track) { log({ ...entry, result: `skipped: ${verdict.verdict}` }); continue; }
+        if (dryRun) { accepted++; log({ ...entry, result: `would write (${verdict.purpose}): ${verdict.angle}` }); continue; }
         const info = PLATFORM_INFO[platform];
         const inspiration: Inspiration = {
           brief: `Title: ${candidate.title}\n\n${text.slice(0, BRIEF_CHARS)}`, tag: importTag(platform, candidate.id), platformKey: info.key,
+          extraTags: isPathId(verdict.purpose) ? [purposeTag(verdict.purpose)] : [],
           credit: { title: candidate.title.slice(0, 200), author: candidate.author.slice(0, 80) || info.name, platform: info.name },
         };
-        // The story's star review is its editor score in half stars, so it must round to more than 2.5.
-        const story = await writeInspiredStory(track, verdict.angle, inspiration, MIN_PUBLISHED_STARS + 0.25);
+        // The story's star review is its editor score in half stars; a score of minStars - 0.25 or more rounds up to minStars.
+        const story = await writeInspiredStory(track, verdict.angle, inspiration, minStars - 0.25);
         accepted++;
         written.push(story.slug);
         log({ ...entry, result: `written: ${story.slug} (${story.source.review?.stars ?? "?"} stars)` });

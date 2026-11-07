@@ -136,7 +136,7 @@ async function research(track: DailyTrack, angle: string): Promise<Research> {
 }
 
 /** A community post a story is written from (lib/server/tech-buzz-imports.ts): a brief, never text to reuse. */
-export type Inspiration = { brief: string; tag: string; credit: { title: string; author: string; platform: string };
+export type Inspiration = { brief: string; tag: string; extraTags?: string[]; credit: { title: string; author: string; platform: string };
   platformKey: NonNullable<TechBuzzArticle["source"]["platformKey"]> };
 
 const inspirationPrompt = (inspiration: Inspiration) => `Community post this story is inspired by (${inspiration.credit.platform}). Use it only as a brief: its topic, the problem it solves and its key points. Do not copy its sentences, headings, title or code: write every paragraph, heading and example fresh, explain the ideas more clearly than it does for a learner, go deeper, and correct anything the official notes contradict. Never mention the post, its author or any platform in the story.
@@ -221,7 +221,7 @@ async function writeStory(track: DailyTrack, date: string, runStarted = Date.now
     rating: { average: 5, count: 0, breakdown: { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 } },
     author: { name: "MCB Editorial", role: inspiration ? "Tech Buzz Community Desk" : "Tech Buzz Daily Desk", avatar: "/images/brand/mcb-avatar.svg", handle: "@mcb", verified: true },
     coverImage: coverUrl,
-    tags: [...output.tags.slice(0, 6), ...(daily ? [DAILY_TAG, dailyDateTag(date), dailyTrackTag(track.id)] : []), ...(inspiration ? [inspiration.tag] : []), ...tags],
+    tags: [...output.tags.slice(0, 6), ...(daily ? [DAILY_TAG, dailyDateTag(date), dailyTrackTag(track.id)] : []), ...(inspiration ? [inspiration.tag, ...(inspiration.extraTags ?? [])] : []), ...tags],
     rankingScore: 95,
     source: {
       name: "MasterClass Buddy", domain: "masterclass", trustScore: "", editorScore: Math.round(verdict.score * 10) / 10, ...(sources.length ? { basedOn: sources } : {}),

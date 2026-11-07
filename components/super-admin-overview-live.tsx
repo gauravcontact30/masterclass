@@ -1,6 +1,6 @@
 "use client";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Activity, AlertTriangle, BookOpen, BookOpenText, Bot, CalendarClock, CheckCircle2, Clock, Cpu, Database, EyeOff, Flame, Gauge, Globe2, Hourglass, Languages, Laptop, Link2, LogIn, LogOut, MapPin, Monitor, MousePointerClick, Network, Pause, Play, Radio, RefreshCw, Route, Server, Smartphone, Sparkles, Tablet, Target, Timer, TrendingDown, UserPlus, UserRound, Users, Zap, type LucideIcon } from "lucide-react";
+import { Activity, AlertTriangle, BookOpen, BookOpenText, Bot, CheckCircle2, Clock, Cpu, Database, EyeOff, Flame, Gauge, Globe2, Languages, Laptop, Link2, LogIn, LogOut, MapPin, Monitor, MousePointerClick, Network, Pause, Play, Radio, RefreshCw, Route, Server, Smartphone, Sparkles, Tablet, Target, Timer, UserRound, Users, Zap, type LucideIcon } from "lucide-react";
 import { Flag, countryName } from "./super-admin-audience";
 import { Pager } from "./super-admin-table";
 import styles from "./super-admin-overview-live.module.css";
@@ -12,6 +12,7 @@ import { VisitorRoutes } from "./super-admin-visitor-routes";
 import { FirstLookVisitors } from "./super-admin-first-look";
 import { PrivateVisitors } from "./super-admin-private-visitors";
 import { SectionHead } from "./super-admin-section-head";
+import { SuperAdminGlance, type GlanceProps } from "./super-admin-glance";
 
 type Row = Record<string, unknown>;
 type Visit = { id?: number; created_at: string; event: string; utm_medium?: string | null; utm_campaign?: string | null; person?: string; email?: string | null; user_id?: string | null; visitor_id: string; session_id: string; new_visitor?: boolean; path: string; title?: string | null; country?: string | null; city?: string | null; region?: string | null; postal_code?: string | null; device?: string | null; browser?: string | null; os?: string | null; duration_ms?: number | null; referrer_host?: string | null; utm_source?: string | null; screen?: string | null; timezone?: string | null; language?: string | null; ip_masked?: string | null; private_mode?: boolean | null };
@@ -278,7 +279,6 @@ export function OverviewLive({ snapshot, onRefreshSnapshot, visitorsOnly = false
   const t = report?.totals;
   // New accounts and bots filtered come from the database report, so they take its window, not the stream's: before
   // migration 0045 that report is the rolling 24 h even while the stream covers today.
-  const sqlDay = live?.window === "24h" ? "24 h" : "today";
   const fig = exact ? {
     views: todaySum.views, people: todaySum.people, sessions: todaySum.sessions, signedIn: todaySum.signedIn, newVisitors: todaySum.newVisitors,
     bounceRate: todaySum.bounceRate, avgSessionSeconds: todaySum.avgStayMs == null ? null : todaySum.avgStayMs / 1000, pagesPerSession: todaySum.pagesPerSession,
@@ -326,21 +326,22 @@ export function OverviewLive({ snapshot, onRefreshSnapshot, visitorsOnly = false
   const peak = Math.max(1, ...hours);
   const h = snapshot?.health;
 
-  // Visitor figures only (user request 2026-11-01). API volume, errors and latency are in Request tracing and System
-  // health below: their 15-minute counts here came from the loaded request sample, not every request.
-  const kpis: { label: string; value: string; note: string; icon: LucideIcon; tone: string; pulse?: boolean }[] = [
-    heartbeats
-      ? { label: "On the site now", value: n(counts.live), note: `${n(counts.liveSigned)} signed in · page open now`, icon: Radio, tone: "mint", pulse: true }
-      : { label: "On the site now", value: n(report?.totals.liveNow), note: `${n(report?.totals.liveSignedIn)} signed in · page open now`, icon: Radio, tone: "mint", pulse: true },
-    { label: "Page views, last hour", value: n(hourSum.views), note: `by ${n(hourSum.people)} ${hourSum.people === 1 ? "person" : "people"}`, icon: MousePointerClick, tone: "sky" },
-    { label: `Visitors, ${day}`, value: n(fig.people), note: `${day === "today" ? "since 00:00 IST · " : ""}${n(fig.views)} page views · ${n(fig.signedIn)} signed in · ${n(fig.newVisitors)} ${exact ? "new guests" : "new"}${exact ? ` · ${n(todaySum.returning)} returning` : ""}`, icon: Users, tone: "lavender" },
-    ...(exact ? [{ label: "Visitors, last 24 hours", value: n(daySum.people), note: `rolling, since ${clockMinute(clockNow - 86_400_000)} IST yesterday · ${n(daySum.views)} page views · ${n(daySum.sessions)} visits`, icon: CalendarClock, tone: "sky" }] : []),
-    { label: "Active, last 30 min", value: n(counts.recent), note: `${n(counts.recentSigned)} of them signed in`, icon: Flame, tone: "rose" },
-    { label: `New accounts, ${sqlDay}`, value: n(t?.newAccounts), note: sqlDay === "today" ? "sign-ups since 00:00 IST" : "sign-ups in the last 24 h", icon: UserPlus, tone: "mint" },
-    { label: `Reading time per visitor, ${day}`, value: fig.readingPerPerson == null ? "—" : spent(fig.readingPerPerson / 1000), note: fig.people ? `pages on screen · ${Math.round(((fig.views ?? 0) / fig.people) * 10) / 10} pages each` : "pages on screen", icon: Hourglass, tone: "sky" },
-    { label: `Bounce rate, ${day}`, value: fig.bounceRate == null ? "—" : `${fig.bounceRate}%`, note: `visits that opened one page${fig.avgSessionSeconds == null ? "" : ` · avg visit ${spent(fig.avgSessionSeconds)}`}`, icon: TrendingDown, tone: "lavender" },
-    { label: `Bot sessions filtered, ${sqlDay}`, value: n(live?.totals.bots), note: "crawlers and automated browsers, excluded from every figure", icon: Bot, tone: "sage" },
-  ];
+  // Today against the same stretch of yesterday (00:00 IST to this time of day), so the two are the same length.
+  const sameTimeYesterday = useMemo(() => periodSummary(everyone, dayStart - 86_400_000, clockNow - 86_400_000, ownHosts), [everyone, dayStart, clockNow, ownHosts]);
+  const glance: GlanceProps = {
+    day, exact,
+    live: heartbeats ? { now: counts.live, signed: counts.liveSigned, last30: counts.recent, last30Signed: counts.recentSigned, viewsLastHour: hourSum.views, peopleLastHour: hourSum.people }
+      : { now: report?.totals.liveNow ?? 0, signed: report?.totals.liveSignedIn ?? 0, last30: counts.recent, last30Signed: counts.recentSigned, viewsLastHour: hourSum.views, peopleLastHour: hourSum.people },
+    today: { people: fig.people, views: fig.views, sessions: fig.sessions, signedIn: fig.signedIn, newVisitors: fig.newVisitors, returning: exact ? todaySum.returning : null, bounceRate: fig.bounceRate, avgVisitSeconds: fig.avgSessionSeconds, pagesPerVisit: fig.pagesPerSession, readingPerPersonSeconds: fig.readingPerPerson == null ? null : fig.readingPerPerson / 1000 },
+    yesterday: exact && dayStart - 86_400_000 >= clockNow - (stream?.days ?? 1) * 86_400_000 ? { people: sameTimeYesterday.people, views: sameTimeYesterday.views, sessions: sameTimeYesterday.sessions } : null,
+    hours, hourNow: istHour(clockNow),
+    devices: fig.devices.map(d => ({ device: d.device, people: d.people })),
+    topSource: fig.topSource, topPage: fig.topPage ? { path: fig.topPage.path, views: fig.topPage.views, people: fig.topPage.people } : null,
+    topCountry: fig.topCountry ? { country: countryName(fig.topCountry.country) || fig.topCountry.country, people: fig.topCountry.people } : null,
+    newAccounts: t?.newAccounts, bots: live?.totals.bots,
+    verified: checks ? { passed: checks.length - failed.length, total: checks.length } : null,
+    paused, updatedAt: readAt ? clockMinute(readAt + offset) : null,
+  };
 
   return <section className={styles.live} aria-label="Live command centre">
     <header className={styles.head}>
@@ -361,12 +362,7 @@ export function OverviewLive({ snapshot, onRefreshSnapshot, visitorsOnly = false
     </details>}
 
     <SectionHead id="ov-glance" index={1} title="At a glance" question="How many people are here now, and how is today going?" icon={Gauge} tone="mint" live />
-    <div className={styles.kpis}>
-      {kpis.map(({ label, value, note, icon: Icon, tone, pulse }) => <div key={label} className={styles.kpi} data-tone={tone}>
-        <span className={styles.kpiIcon} aria-hidden="true">{pulse && <i className={styles.ring} />}<Icon size={16} /></span>
-        <span className={styles.kpiLabel} title={label}>{label}</span><strong>{value}</strong><small>{note}</small>
-      </div>)}
-    </div>
+    <SuperAdminGlance {...glance} />
     <details className={styles.howCounted}>
       <summary>How these numbers are counted</summary>
       <ul>

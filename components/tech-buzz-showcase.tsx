@@ -2,13 +2,14 @@
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, useSyncExternalStore, type CSSProperties, type KeyboardEvent, type ReactNode } from "react";
 import Link from "@/components/site-link";
-import { ArrowRight, CalendarDays, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Clock, Crown, Flame, Heart, Sparkles, Star, Sunrise, ThumbsDown, ThumbsUp, Workflow, Zap } from "lucide-react";
+import { ArrowRight, Award, Briefcase, CalendarDays, ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight, Clock, Crown, Flame, GraduationCap, Heart, Sparkles, Star, Sunrise, ThumbsDown, ThumbsUp, Workflow, Zap } from "lucide-react";
 import { BrandMark } from "./brand-mark";
 import { pageWindow } from "./pager";
 import { DAILY_TRACKS, OTHER_GROUP, TECH_BUZZ_TRACKED, TECH_GROUPS, dailyTrackTechIds, shortTech, techGroupOf, type DailyTrack, type TechGroup } from "@/lib/tech-buzz-sections";
 import { logoOf, techLogo, type TechBuzzCard } from "@/lib/tech-buzz-public";
 import { TechIcon } from "./tech-icon";
 import { FAVOURITE_TOPICS } from "@/lib/tech-buzz-favourites";
+import { LEARNING_PATHS, PICK_STARS, type PathId } from "@/lib/tech-buzz-paths";
 import styles from "./tech-buzz-showcase.module.css";
 import { ReviewStars } from "./tech-buzz-review-stars";
 import Image from "@/components/responsive-image";
@@ -333,6 +334,80 @@ function StarRated({ cards }: { cards: TechBuzzCard[] }) {
   </section>;
 }
 
+/* ── 3b. Learning paths: only stories reviewed at PICK_STARS (4.5) and above, sorted by what the reader is preparing for
+   (lib/tech-buzz-paths.ts): big-tech interviews, exams and certifications, learning a tool properly. A tab per path
+   (WAI-ARIA tabs: arrow keys, Home and End), technology pills inside it, and each card says why it earned its stars. ── */
+const ALL_PICKS = "picks";
+const PATH_ICON: Record<string, ReactNode> = {
+  picks: <Award size={15} aria-hidden="true" />, interview: <Briefcase size={15} aria-hidden="true" />, exam: <GraduationCap size={15} aria-hidden="true" />, learn: <Sparkles size={15} aria-hidden="true" />,
+};
+type PathTab = { id: PathId | typeof ALL_PICKS; label: string; blurb: string; focus: string[]; color: string; tint: string; items: TechBuzzCard[] };
+function LearningPaths({ cards }: { cards: TechBuzzCard[] }) {
+  const picks = useMemo(() => cards.filter(card => (card.review?.stars ?? 0) >= PICK_STARS)
+    .sort((a, b) => (b.review?.stars ?? 0) - (a.review?.stars ?? 0) || b.publishedAt.localeCompare(a.publishedAt)), [cards]);
+  const tabs = useMemo(() => ([
+    { id: ALL_PICKS, label: "All top picks", blurb: `Every story our senior reviewer rated ${PICK_STARS} stars or more, best first.`, focus: ["Most useful first", "Reviewed for accuracy", "Runnable examples"], color: "#b45309", tint: "#fdf3e3", items: picks },
+    ...LEARNING_PATHS.map(path => ({ id: path.id, label: path.label, blurb: path.blurb, focus: path.focus, color: path.color, tint: path.tint, items: picks.filter(card => card.paths.includes(path.id)) })),
+  ] as PathTab[]).filter(tab => tab.items.length), [picks]);
+  const [tabId, setTabId] = useState<string>(ALL_PICKS);
+  const [group, setGroup] = useState("all");
+  const active = tabs.find(tab => tab.id === tabId) ?? tabs[0];
+  const groups = useMemo(() => {
+    const counts = new Map<string, { group: TechGroup; count: number }>();
+    for (const card of active?.items ?? []) { const entry = counts.get(techGroupOf(card).id) ?? { group: techGroupOf(card), count: 0 }; entry.count++; counts.set(entry.group.id, entry); }
+    return [...counts.values()].sort((a, b) => b.count - a.count);
+  }, [active]);
+  const shown = useMemo(() => group === "all" ? active?.items ?? [] : (active?.items ?? []).filter(card => techGroupOf(card).id === group), [active, group]);
+  const paged = usePaged(shown, 6);
+  if (!active) return null;
+  const pickTab = (id: string) => { setTabId(id); setGroup("all"); paged.setPage(0); };
+  const onKey = (event: KeyboardEvent<HTMLButtonElement>, index: number) => {
+    const next = event.key === "ArrowRight" || event.key === "ArrowDown" ? index + 1 : event.key === "ArrowLeft" || event.key === "ArrowUp" ? index - 1 : event.key === "Home" ? 0 : event.key === "End" ? tabs.length - 1 : null;
+    if (next == null) return;
+    event.preventDefault();
+    const target = tabs[(next + tabs.length) % tabs.length];
+    pickTab(target.id);
+    document.getElementById(`tb-path-tab-${target.id}`)?.focus();
+  };
+  const heading = "tb-paths";
+  return <section data-track-topic={TECH_BUZZ_TRACKED.paths} className={styles.paths} aria-labelledby={heading}>
+    <SectionHead id={heading} icon={<GraduationCap size={16} aria-hidden="true" />} kicker={`Handpicked · ${PICK_STARS} stars and above`} title="Learning Paths: Interviews, Exams & Deep Learning"
+      lede="Only stories our senior reviewer rated 4.5 stars or more, sorted by what you are preparing for. Pick a path, then a technology." />
+    <div className={styles.groupTabs} role="tablist" aria-label="Learning paths">
+      {tabs.map((tab, index) => <button key={tab.id} id={`tb-path-tab-${tab.id}`} type="button" role="tab" aria-selected={tab.id === active.id} aria-controls="tb-path-panel" tabIndex={tab.id === active.id ? 0 : -1}
+        style={{ "--tone": tab.color, "--tint": tab.tint } as CSSProperties} onClick={() => pickTab(tab.id)} onKeyDown={event => onKey(event, index)}>
+        {PATH_ICON[tab.id]}{tab.label}<span>{tab.items.length}</span>
+      </button>)}
+    </div>
+    <div id="tb-path-panel" role="tabpanel" aria-labelledby={`tb-path-tab-${active.id}`} className={styles.group} style={{ "--tone": active.color, "--tint": active.tint } as CSSProperties}>
+      <header className={styles.groupHead}>
+        <h3 id="tb-paths-active" tabIndex={-1}>{active.label}<span>{shown.length} {shown.length === 1 ? "story" : "stories"}</span></h3>
+        <p>{active.blurb}</p>
+      </header>
+      <ul className={styles.pathFocus} aria-label="What you practise">{active.focus.map(item => <li key={item}>{item}</li>)}</ul>
+      {groups.length > 1 && <div className={styles.pathFilters} role="group" aria-label="Filter by technology">
+        <button type="button" aria-pressed={group === "all"} onClick={() => { setGroup("all"); paged.setPage(0); }}>All technologies<span>{active.items.length}</span></button>
+        {groups.map(entry => <button key={entry.group.id} type="button" aria-pressed={group === entry.group.id} onClick={() => { setGroup(entry.group.id); paged.setPage(0); }}>{entry.group.label}<span>{entry.count}</span></button>)}
+      </div>}
+      <ul className={styles.groupGrid}>
+        {paged.rows.map(card => <li key={card.id}>
+          <Link href={`/tech-buzz/${card.slug}`} className={styles.groupCard}>
+            <Cover card={card} className={styles.groupCover} sizes="(max-width: 640px) 80vw, (max-width: 1100px) 320px, 280px" />
+            <span className={styles.groupBody}>
+              <span className={styles.groupTech}><TechIcon item={card} /><span className={styles.groupTechName} title={card.technology}>{shortTech(card.technology)}</span><RatingBadge card={card} /></span>
+              <strong className={styles.cardTitle}>{card.title}</strong>
+              {card.review && <span className={styles.verdict}>{card.review.verdict}</span>}
+              <span className={styles.meta}><CalendarDays size={12} aria-hidden="true" />{formatDate(card.publishedAt)}<Clock size={12} aria-hidden="true" />{card.readTimeMinutes} min</span>
+            </span>
+          </Link>
+          <ReactionBar card={card} />
+        </li>)}
+      </ul>
+      <Pagination paged={paged} label={active.label} anchor="tb-paths-active" sizes={[6, 9, 12]} />
+    </div>
+  </section>;
+}
+
 /* ── 4. n8n Workflow Blogs (nodes joined like an n8n canvas) ───────────────────────────────────────────────────── */
 function N8nWorkflows({ cards }: { cards: TechBuzzCard[] }) {
   const flows = useMemo(() => cards.filter(card => card.techId === "n8n" || /n8n/i.test(`${card.technology} ${card.tags.join(" ")}`)).sort((a, b) => b.publishedAt.localeCompare(a.publishedAt)), [cards]);
@@ -556,6 +631,7 @@ export function TechBuzzShowcase({ cards }: { cards: TechBuzzCard[] }) {
       <div className={styles.duo}>
         <StarRated cards={cards} />
       </div>
+      <LearningPaths cards={cards} />
       <CommunityFavourites cards={cards} />
       <N8nWorkflows cards={cards} />
       <TechnologySections cards={cards} />

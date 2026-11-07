@@ -1,6 +1,7 @@
 import type { ArticleComment, TechBuzzArticle } from "./tech-buzz-data";
 import { DAILY_TAG, isInternalTag } from "./tech-buzz-sections";
 import { topicsOf } from "./tech-buzz-favourites";
+import { pathsOf, type PathId } from "./tech-buzz-paths";
 import { countCodeBlocks, withoutCode } from "./prose-markup";
 import type { ExpertReview } from "./tech-buzz-reviews";
 
@@ -66,6 +67,8 @@ export type TechBuzzCard = {
   daily?: { date: string; track: string };
   /** The "Community favourites" topics it belongs to (lib/tech-buzz-favourites.ts). */
   topics: string[];
+  /** The learning paths it serves (lib/tech-buzz-paths.ts): big-tech interviews, exams and certifications, deep learning. */
+  paths: PathId[];
   /** The editor's pre-publish score out of 5, when it had one. */
   editorScore?: number;
   /** The senior full-stack star review (lib/tech-buzz-reviews.ts), attached on the server by withReview. */
@@ -86,6 +89,7 @@ export function toCard(article: TechBuzzArticle): TechBuzzCard {
       ? { label: article.builderMetrics.metricLabel, value: article.builderMetrics.metricValue } : undefined,
     daily: dailyOf(article.tags ?? []),
     topics: topicsOf({ title: article.title, technology: article.technology, tags: article.tags ?? [] }),
+    paths: pathsOf({ title: article.title, subtitle: article.subtitle, technology: article.technology, category: article.category, tags: article.tags ?? [] }),
     editorScore: article.source?.editorScore,
     review: article.source?.review,
   };
