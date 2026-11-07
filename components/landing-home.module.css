@@ -337,7 +337,7 @@
   display: flex;
   align-items: center;
   gap: 4px;
-  animation: floatPulse 4s ease-in-out infinite;
+  animation: floatPulse 4s ease-in-out 5;
 }
 
 .floatingTechBuzz {
@@ -389,7 +389,7 @@
   border-radius: 50%;
   border: 2px solid currentColor;
   opacity: 0;
-  animation: buzzRing 2.4s ease-out infinite;
+  animation: buzzRing 2.4s ease-out 8;
 }
 .floatingTechBuzz:hover .buzzFace::before, .floatingTechBuzz:focus-visible .buzzFace::before { animation: none; }
 
@@ -494,7 +494,7 @@
 
 .floatingTechBuzzBell {
   flex: none;
-  animation: bellRingAnimation 2.2s cubic-bezier(0.36, 0.07, 0.19, 0.97) infinite;
+  animation: bellRingAnimation 2.2s cubic-bezier(0.36, 0.07, 0.19, 0.97) 6;
   transform-origin: top center;
   display: block;
 }
@@ -516,7 +516,7 @@
   height: 7px;
   border-radius: 50%;
   border: 1.5px solid #fff;
-  animation: bellDotPulse 1.8s ease-in-out infinite alternate;
+  animation: bellDotPulse 1.8s ease-in-out 6 alternate;
 }
 
 @keyframes bellDotPulse {
@@ -527,7 +527,7 @@
 .floatingTechBuzzFlame {
   color: #fff;
   filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
-  animation: flameFlicker 2s ease-in-out infinite alternate;
+  animation: flameFlicker 2s ease-in-out 6 alternate;
 }
 
 .floatingTechBuzzRating {
@@ -624,7 +624,7 @@
 
 /* ---------- Subject ribbon: index tabs ---------- */
 .ribbon { overflow: hidden; padding: 14px 0; background: var(--nb-sheet); border-bottom: 1px solid var(--nb-rule); -webkit-mask-image: linear-gradient(90deg, transparent, #000 48px, #000 calc(100% - 48px), transparent); mask-image: linear-gradient(90deg, transparent, #000 48px, #000 calc(100% - 48px), transparent); }
-.ribbonTrack { display: flex; width: max-content; animation: ribbon 55s linear infinite; }
+.ribbonTrack { display: flex; width: max-content; animation: ribbon 55s linear 3; }
 .ribbon:hover .ribbonTrack, .ribbon:focus-within .ribbonTrack { animation-play-state: paused; }
 .ribbonSet { display: flex; gap: 8px; margin: 0; padding: 0 8px 0 0; list-style: none; }
 .ribbonSet li { --chip-bg: #fbf0ea; --chip-line: #f1d6c8; --chip-ink: #9c4a2d; flex: none; display: inline-flex; align-items: center; border: 1px solid var(--chip-line); background: var(--chip-bg); color: var(--chip-ink); border-radius: 999px; padding: 0; font-size: 13px; font-weight: 600; letter-spacing: 0.01em; line-height: 1; white-space: nowrap; transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease; }

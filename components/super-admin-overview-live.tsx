@@ -11,6 +11,7 @@ import { localityPin } from "@/lib/new-user-locations";
 import { VisitorRoutes } from "./super-admin-visitor-routes";
 import { FirstLookVisitors } from "./super-admin-first-look";
 import { PrivateVisitors } from "./super-admin-private-visitors";
+import { SectionHead } from "./super-admin-section-head";
 
 type Row = Record<string, unknown>;
 type Visit = { id?: number; created_at: string; event: string; utm_medium?: string | null; utm_campaign?: string | null; person?: string; email?: string | null; user_id?: string | null; visitor_id: string; session_id: string; new_visitor?: boolean; path: string; title?: string | null; country?: string | null; city?: string | null; region?: string | null; postal_code?: string | null; device?: string | null; browser?: string | null; os?: string | null; duration_ms?: number | null; referrer_host?: string | null; utm_source?: string | null; screen?: string | null; timezone?: string | null; language?: string | null; ip_masked?: string | null; private_mode?: boolean | null };
@@ -108,7 +109,8 @@ const statusTone = (status: number | null) => status == null ? "info" : status >
  * from the application event log, the last 24 hours at a glance and system health. Refreshes every 5 seconds while
  * the tab is visible (pausable), re-checks the figures each time (lib/live-verify.ts); every panel has its own light tone.
  */
-export function OverviewLive({ snapshot, onRefreshSnapshot }: { snapshot: OverviewSnapshot | null; onRefreshSnapshot: () => void }) {
+/** `visitorsOnly` (the Overview): visitor sections only, so request tracing and system health (Logs & Health) are left out. */
+export function OverviewLive({ snapshot, onRefreshSnapshot, visitorsOnly = false }: { snapshot: OverviewSnapshot | null; onRefreshSnapshot: () => void; visitorsOnly?: boolean }) {
   const [live, setLive] = useState<Live | null>(null);
   const [error, setError] = useState("");
   const [paused, setPaused] = useState(false);
@@ -358,6 +360,7 @@ export function OverviewLive({ snapshot, onRefreshSnapshot }: { snapshot: Overvi
       <ul>{checks.map(check => <li key={check.id} data-ok={check.ok ? "" : undefined}>{check.ok ? <CheckCircle2 size={14} aria-hidden="true" /> : <AlertTriangle size={14} aria-hidden="true" />}<div><b>{check.label}</b><span>{check.detail}</span></div></li>)}</ul>
     </details>}
 
+    <SectionHead id="ov-glance" index={1} title="At a glance" question="How many people are here now, and how is today going?" icon={Gauge} tone="mint" live />
     <div className={styles.kpis}>
       {kpis.map(({ label, value, note, icon: Icon, tone, pulse }) => <div key={label} className={styles.kpi} data-tone={tone}>
         <span className={styles.kpiIcon} aria-hidden="true">{pulse && <i className={styles.ring} />}<Icon size={16} /></span>
@@ -377,6 +380,7 @@ export function OverviewLive({ snapshot, onRefreshSnapshot }: { snapshot: Overvi
     </details>
 
     <div className={styles.grid}>
+      <SectionHead id="ov-stream" index={2} title="Live visitor stream" question="Who is on the site, where they came from and what they are reading, newest first." icon={Radio} tone="sky" live />
       <article className={`${styles.panel} ${styles.full}`} data-tone="mint">
         <h3><Radio size={16} aria-hidden="true" />Live visitor stream<span>{everyone.length ? `${n(everyone.length)} ${everyone.length === 1 ? "visitor" : "visitors"} · ${n(counts.views)} views in ${stream ? `the last ${streamDays} ${streamDays === 1 ? "day" : "days"}` : "the 24 h report's newest events (full stream loading)"} · newest first` : ""}</span></h3>
         {everyone.length > 0 && <div className={styles.streamBar}>
@@ -736,12 +740,13 @@ export function OverviewLive({ snapshot, onRefreshSnapshot }: { snapshot: Overvi
       </article>
 
       {/* Anonymous visitors whose whole stay is one page view, from the same visitor list as the stream above. */}
+      <SectionHead id="ov-first" index={3} title="First visits & private windows" question="Who is new, what they opened first, and who browses in a private window." icon={Sparkles} tone="lavender" />
       <FirstLookVisitors everyone={everyone} now={clockNow} days={streamDays} />
 
       {/* Visitors in a private (incognito) window: reported by the browser, or inferred from a fresh cookie on a known device. */}
       <PrivateVisitors everyone={everyone} now={clockNow} days={streamDays} />
 
-      <article className={`${styles.panel} ${styles.wide}`} data-tone="lavender">
+      {!visitorsOnly && <article className={`${styles.panel} ${styles.wide}`} data-tone="lavender">
         <h3><Route size={16} aria-hidden="true" />Request tracing
           <span className={styles.filters} role="group" aria-label="Trace filter">{TRACE_FILTERS.map(f => <button key={f.id} type="button" aria-pressed={traceFilter === f.id} onClick={() => { setTraceFilter(f.id); setTracePage(1); }}><f.icon size={12} aria-hidden="true" />{f.label}</button>)}</span>
         </h3>
@@ -763,7 +768,9 @@ export function OverviewLive({ snapshot, onRefreshSnapshot }: { snapshot: Overvi
           <time dateTime={String(e.created_at)} title={`${new Date(String(e.created_at)).toLocaleString("en-IN", { timeZone: "Asia/Kolkata" })} IST${id ? ` · request ${id}` : ""}${code ? ` · ${code}` : ""}`}>{since(e.created_at, now)}{(id || code) && <small>{code ?? `#${String(id).slice(0, 8)}`}</small>}</time>
         </li>; })}</ol></> : <p className={styles.empty}>{requests.length ? "No requests match this filter." : "No API requests recorded in this window."}</p>}
         <Pager page={Math.min(tracePage, pagesOf(traces, TRACE_PAGE))} pages={pagesOf(traces, TRACE_PAGE)} total={traces.length} size={TRACE_PAGE} onPage={setTracePage} />
-      </article>
+      </article>}
+
+      <SectionHead id="ov-today" index={4} title="Today's pattern" question="When visitors arrive, which pages they read and what they use." icon={Zap} tone="peach" />
 
       <article className={styles.panel} data-tone="peach">
         <h3><Zap size={16} aria-hidden="true" />{day === "today" ? "Today" : "Last 24 hours"}<span>page views by hour (IST){day === "today" ? " since midnight" : ""}, bots excluded{exact ? "" : " · from the database report until the visitor stream loads"}</span></h3>
@@ -799,7 +806,7 @@ export function OverviewLive({ snapshot, onRefreshSnapshot }: { snapshot: Overvi
         {devices.length > 0 && <div className={styles.devices}>{devices.map(({ device, people }) => { const Icon = DEVICE_ICON[device] ?? Laptop; return <span key={device}><Icon size={13} aria-hidden="true" />{device} <b>{people}</b></span>; })}<small>visitors in the last hour</small></div>}
       </article>
 
-      <article className={styles.panel} data-tone="butter">
+      {!visitorsOnly && <article className={styles.panel} data-tone="butter">
         <h3><Server size={16} aria-hidden="true" />System health<span>{h?.environment ?? ""}</span></h3>
         {h ? <dl className={styles.health}>
           <div><dt><Database size={13} aria-hidden="true" />Database</dt><dd data-tone={h.databaseMs > 800 ? "warn" : "ok"}>{n(h.databaseMs)} ms</dd></div>
@@ -809,9 +816,10 @@ export function OverviewLive({ snapshot, onRefreshSnapshot }: { snapshot: Overvi
           <div><dt><Clock size={13} aria-hidden="true" />Uptime</dt><dd>{uptime(h.processUptime)}</dd></div>
           <div><dt><LogIn size={13} aria-hidden="true" />Runtime</dt><dd>{h.nodeVersion ?? "—"}</dd></div>
         </dl> : <p className={styles.empty}>Health appears once the monitoring snapshot loads.</p>}
-      </article>
+      </article>}
     </div>
-    <p className={styles.note}><Globe2 size={13} aria-hidden="true" /> Request figures marked “shown” and the busiest routes come from the latest {n(requests.length)} logged requests; totals, error rate and p95 cover the whole window. Visits come from the first-party page beacon (bots excluded, IPs masked); traces come from the API request log, which never stores query strings, bodies or credentials. <UserRound size={13} aria-hidden="true" /> Emails show only for signed-in learners.</p>
+    {!visitorsOnly && <p className={styles.note}><Globe2 size={13} aria-hidden="true" /> Request figures marked “shown” and the busiest routes come from the latest {n(requests.length)} logged requests; totals, error rate and p95 cover the whole window. Visits come from the first-party page beacon (bots excluded, IPs masked); traces come from the API request log, which never stores query strings, bodies or credentials. <UserRound size={13} aria-hidden="true" /> Emails show only for signed-in learners.</p>}
+    {visitorsOnly && <p className={styles.note}><UserRound size={13} aria-hidden="true" /> Visits come from the first-party page beacon in your Supabase database (bots excluded, IPs masked). Emails show only for signed-in learners.</p>}
   </section>;
 }
 

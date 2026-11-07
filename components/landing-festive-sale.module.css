@@ -59,7 +59,7 @@
   width: 140px;
   height: 140px;
   filter: drop-shadow(0 8px 18px rgba(0, 0, 0, 0.5));
-  animation: turnFlower 14s linear infinite !important;
+  animation: turnFlower 14s linear 8 !important;
   transform-origin: 50% 50% !important;
   transform-box: fill-box !important;
   will-change: transform;
@@ -74,14 +74,14 @@
 .diya { position: relative; width: 34px; height: 16px; border-radius: 0 0 20px 20px; background: linear-gradient(180deg, #c2410c, #7c2d12); box-shadow: 0 4px 10px #0007; }
 .diya i { position: absolute; left: 50%; bottom: 12px; width: 10px; height: 18px; border-radius: 50% 50% 50% 50% / 65% 65% 35% 35%; transform: translateX(-50%);
   background: radial-gradient(circle at 50% 70%, #fff7ed 0 20%, #fde68a 35%, #f59e0b 65%, transparent 70%); box-shadow: 0 0 18px 6px #f59e0b88;
-  animation: flicker 1.6s ease-in-out infinite alternate; animation-delay: calc(var(--i) * -.37s); transform-origin: 50% 100%; will-change: transform, opacity; }
+  animation: flicker 1.6s ease-in-out 10 alternate; animation-delay: calc(var(--i) * -.37s); transform-origin: 50% 100%; will-change: transform, opacity; }
 @keyframes flicker { 0% { transform: translateX(-50%) scale(1, 1) rotate(-2deg); opacity: .95; } 50% { transform: translateX(-50%) scale(.92, 1.08) rotate(2deg); } 100% { transform: translateX(-50%) scale(1.05, .96) rotate(-1deg); opacity: 1; } }
 
 /* Fireworks: five bursts at fixed points of the sky, each twelve sparks flying out and fading, staggered. */
 .sky { position: absolute; inset: 0; z-index: 0; pointer-events: none; }
 .burst { position: absolute; top: calc(10% + var(--i) * 7%); left: calc(8% + var(--i) * 19%); width: 2px; height: 2px; }
 .burst i { position: absolute; left: 0; top: 0; width: 3px; height: 3px; border-radius: 50%; background: var(--marigold); box-shadow: 0 0 6px 1px #fbbf24;
-  transform: rotate(calc(var(--k) * 30deg)) translateY(0); opacity: 0; animation: spark 3.2s ease-out infinite; animation-delay: calc(var(--i) * .7s); will-change: transform, opacity; }
+  transform: rotate(calc(var(--k) * 30deg)) translateY(0); opacity: 0; animation: spark 3.2s ease-out 6; animation-delay: calc(var(--i) * .7s); will-change: transform, opacity; }
 .burst:nth-child(2n) i { background: #fb7185; box-shadow: 0 0 6px 1px #fb7185; }
 .burst:nth-child(3n) i { background: #c4b5fd; box-shadow: 0 0 6px 1px #c4b5fd; }
 @keyframes spark { 0% { transform: rotate(calc(var(--k) * 30deg)) translateY(0); opacity: 0; } 8% { opacity: 1; } 55% { opacity: .9; } 100% { transform: rotate(calc(var(--k) * 30deg)) translateY(-46px); opacity: 0; } }

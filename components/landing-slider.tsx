@@ -113,12 +113,32 @@ type ImageSlide = SlideBase & { imageOnly: true; portrait: string };
 type Slide = StorySlide | ImageSlide;
 
 /**
- * Two supplied interview scenes lead the hero, followed by the four Tech Buzz scenes and the four study scenes.
+ * Two supplied poster scenes (metro station, airport) lead the hero, then the two interview scenes, two Tech Buzz scenes and four study scenes.
  * Each slide stays for 15 seconds. Playback pauses for keyboard focus, the pause button, hidden tabs, and reduced motion.
  */
 function slidesFor(technologies: number | undefined): Slide[] {
   const count = technologies ? String(technologies) : "60+";
   return [
+    {
+      id: "metro-station-ads",
+      src: "/images/landing/hero-interviews-subway.webp",
+      portrait: "/images/landing/hero-interviews-subway-portrait.webp",
+      imageOnly: true,
+      focus: "50% 50%",
+      tone: "sky",
+      tool: { en: "Metro station", hi: "Metro station", es: "Metro station", ja: "Metro station", de: "Metro station", fr: "Metro station", zh: "Metro station" },
+      alt: "Master Class Buddy posters for LangChain, LangGraph, Next.js, AWS, Docker, Kubernetes, Python, FastAPI and more along a festive metro station platform as commuters walk past"
+    },
+    {
+      id: "airport-terminal-ads",
+      src: "/images/landing/hero-interviews-airport.webp",
+      portrait: "/images/landing/hero-interviews-airport-portrait.webp",
+      imageOnly: true,
+      focus: "50% 50%",
+      tone: "sky",
+      tool: { en: "Airport", hi: "Airport", es: "Airport", ja: "Airport", de: "Airport", fr: "Airport", zh: "Airport" },
+      alt: "Master Class Buddy technology posters for LangChain, LangGraph, Docker, Kubernetes, Next.js, AWS and Neon lining a Diwali-decorated airport concourse with travellers walking towards the gates"
+    },
     {
       id: "technology-interviews",
       src: "/images/landing/hero-interviews-ads9.webp",
@@ -138,52 +158,6 @@ function slidesFor(technologies: number | undefined): Slide[] {
       tone: "clay",
       tool: { en: "Interview preparation", hi: "इंटरव्यू की तैयारी", es: "Preparación de entrevistas", ja: "面接準備", de: "Interviewvorbereitung", fr: "Préparation aux entretiens", zh: "面试准备" },
       alt: "Master Class Buddy interview preparation centre with a glass meeting room, candidates studying, and technology posters for LangChain, LangGraph, Python, Docker, Kubernetes, FastAPI and Playwright"
-    },
-    {
-      id: "buzz-team",
-      src: "/images/landing/hero-buzz-team.webp",
-      focus: "50% 50%",
-      tone: "clay",
-      tool: {
-        en: "Tech Buzz",
-        hi: "Tech Buzz",
-        es: "Tech Buzz",
-        ja: "Tech Buzz",
-        de: "Tech Buzz",
-        fr: "Tech Buzz",
-        zh: "Tech Buzz"
-      },
-      title: {
-        en: "The tech news your team talks about, every week.",
-        hi: "वह टेक न्यूज़, जिस पर आपकी टीम हर हफ़्ते बात करती है।",
-        es: "Las noticias tecnológicas de las que habla tu equipo, cada semana.",
-        ja: "チームで話題になるテックニュースを、毎週。",
-        de: "Die Tech-News, über die Ihr Team jede Woche spricht.",
-        fr: "L'actualité tech dont parle votre équipe, chaque semaine.",
-        zh: "每周团队热议的技术新闻。"
-      },
-      body: {
-        en: "A fresh Tech Buzz edition every week on System Design, LangGraph, Docker, Kubernetes and Redis, written for engineers.",
-        hi: "हर हफ़्ते Tech Buzz का नया संस्करण: System Design, LangGraph, Docker, Kubernetes और Redis पर, इंजीनियरों के लिए लिखा गया।",
-        es: "Una nueva edición de Tech Buzz cada semana sobre System Design, LangGraph, Docker, Kubernetes y Redis, escrita para ingenieros.",
-        ja: "System Design、LangGraph、Docker、Kubernetes、Redis を扱う Tech Buzz の最新号を、エンジニアのために毎週お届け。",
-        de: "Jede Woche eine neue Tech-Buzz-Ausgabe zu System Design, LangGraph, Docker, Kubernetes und Redis, geschrieben für Engineers.",
-        fr: "Une nouvelle édition de Tech Buzz chaque semaine sur System Design, LangGraph, Docker, Kubernetes et Redis, écrite pour les ingénieurs.",
-        zh: "每天早晨推出新一期 Tech Buzz，涵盖系统设计、LangGraph、Docker、Kubernetes 与 Redis，专为工程师而写。"
-      },
-      link: {
-        label: {
-          en: "Read Tech Buzz",
-          hi: "Tech Buzz पढ़ें",
-          es: "Leer Tech Buzz",
-          ja: "Tech Buzz を読む",
-          de: "Tech Buzz lesen",
-          fr: "Lire Tech Buzz",
-          zh: "阅读 Tech Buzz"
-        },
-        href: "/tech-buzz"
-      },
-      alt: "An engineering team around a boardroom table with Master Class Buddy mugs for LangChain, LangGraph, n8n, System Design, Redis, Playwright, Docker, Kubernetes and FastAPI, and a laptop open on the Tech Buzz landing page"
     },
     {
       id: "buzz-cafe",
@@ -276,52 +250,6 @@ function slidesFor(technologies: number | undefined): Slide[] {
         href: "/courses#technology"
       },
       alt: "Students chatting in a busy campus café behind three Master Class Buddy coffee cups for Next.js, TanStack and Zustand, next to a laptop open on the Tech Buzz blog"
-    },
-    {
-      id: "buzz-campus",
-      src: "/images/landing/hero-buzz-campus.webp",
-      focus: "62% 50%",
-      tone: "violet",
-      tool: {
-        en: "DSA, Python & AWS",
-        hi: "DSA, Python और AWS",
-        es: "DSA, Python y AWS",
-        ja: "DSA・Python・AWS",
-        de: "DSA, Python & AWS",
-        fr: "DSA, Python et AWS",
-        zh: "DSA、Python 与 AWS"
-      },
-      title: {
-        en: "Crack DSA, AI with Python and AWS Cloud.",
-        hi: "DSA, Python के साथ AI और AWS Cloud में महारत पाएँ।",
-        es: "Domina DSA, IA con Python y AWS Cloud.",
-        ja: "DSA、Python による AI、AWS クラウドを攻略。",
-        de: "DSA, KI mit Python und AWS Cloud meistern.",
-        fr: "Maîtrisez les DSA, l'IA avec Python et AWS Cloud.",
-        zh: "攻克数据结构与算法、Python AI 与 AWS 云。"
-      },
-      body: {
-        en: "Practise DSA, build AI projects in Python and learn AWS with guided paths, interview questions and daily Tech Buzz reads.",
-        hi: "DSA का अभ्यास करें, Python में AI प्रोजेक्ट बनाएँ और गाइडेड रास्तों, इंटरव्यू प्रश्नों और रोज़ के Tech Buzz से AWS सीखें।",
-        es: "Practica DSA, crea proyectos de IA en Python y aprende AWS con rutas guiadas, preguntas de entrevista y Tech Buzz cada día.",
-        ja: "DSA を練習し、Python で AI プロジェクトを作り、ガイド付きパス、面接質問、毎日の Tech Buzz で AWS を学ぶ。",
-        de: "DSA üben, KI-Projekte in Python bauen und AWS lernen, mit geführten Pfaden, Interviewfragen und täglichem Tech Buzz.",
-        fr: "Entraînez-vous au DSA, créez des projets d'IA en Python et apprenez AWS avec des parcours guidés, des questions d'entretien et Tech Buzz.",
-        zh: "练习 DSA，用 Python 构建 AI 项目，并通过引导式路径、面试题与每日 Tech Buzz 学习 AWS。"
-      },
-      link: {
-        label: {
-          en: "Start learning",
-          hi: "सीखना शुरू करें",
-          es: "Empezar a aprender",
-          ja: "学習を始める",
-          de: "Jetzt lernen",
-          fr: "Commencer à apprendre",
-          zh: "开始学习"
-        },
-        href: "/courses#technology"
-      },
-      alt: "A laptop showing the Tech Buzz blog on a college canteen table beside three red Master Class Buddy cups for AI with Python, DSA and AWS Cloud, with students eating and talking behind"
     },
     {
       id: "campus",

@@ -37,7 +37,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const latestStory = buzz.reduce<Date | undefined>((latest, story) => !latest || story.lastModified > latest ? story.lastModified : latest, undefined);
   return [
     ...PUBLIC_PAGES.map(({ path, changeFrequency, priority }) => ({ url: url(path), changeFrequency, priority,
-      ...(path === "/" ? { images: [url("/images/landing/hero-interviews-ads9.webp"), url("/images/landing/hero-interviews-ads17.webp")] } : {}),
+      ...(path === "/" ? { images: [url("/images/landing/hero-interviews-subway.webp"), url("/images/landing/hero-interviews-airport.webp")] } : {}),
       ...((path === "/tech-buzz" || path === "/library") && latestStory ? { lastModified: latestStory } : {}) })),
     library("/interview-questions", 0.9, "weekly"), ...interviewTechs().map(tech => technology(`/interview-questions/${tech.id}`, 0.8, tech.id, tech.title)),
     library("/workflows", 0.9, "weekly"), ...workflows().map(item => library(`/workflows/${item.id}`, 0.8)),

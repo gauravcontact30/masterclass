@@ -11,12 +11,18 @@ import { SuperAdminNewUserLocations } from "./super-admin-new-user-locations";
 import { locationLabel } from "@/lib/visitor-location";
 import { VISIT_RETENTION_DAYS } from "@/lib/visit-retention";
 import { AudienceExplorer } from "./super-admin-audience";
+import { SectionHead, SectionNav } from "./super-admin-section-head";
 import { periodSummary } from "@/lib/live-visits";
 import { useStreamVisitors } from "./use-stream-visitors";
 import { siAndroid, siApple, siBrave, siFacebook, siFirefoxbrowser, siGoogle, siGooglechrome, siInstagram, siIos, siLinux, siMacos, siOpera, siSafari, siSamsung, siUbuntu, siWhatsapp, siYoutube, type SimpleIcon } from "simple-icons";
 import shell from "./super-admin-dashboard.module.css";
 import styles from "./super-admin-activity.module.css";
 
+/** Page order; every section is about visitors only. */
+const NAV = [
+  { id: "ac-now", label: "Right now", icon: Radio }, { id: "ac-audience", label: "Audience", icon: Users }, { id: "ac-traffic", label: "Traffic", icon: Activity },
+  { id: "ac-places", label: "Places", icon: MapPin }, { id: "ac-tech", label: "Devices & sources", icon: MonitorSmartphone }, { id: "ac-people", label: "People & visits", icon: UserRound },
+];
 const LIGHT_TONES = ["sky", "mint", "lavender", "peach", "butter", "rose", "sage", "aqua"] as const;
 
 type Row = Record<string, unknown>;
@@ -52,7 +58,7 @@ export function SuperAdminActivity({ days, query }: { days: number; query: strin
   // Headline figures, daily traffic and the device/browser/OS splits are counted from the Live visitor stream's
   // visitors (one person per account or linked device, under-a-second visitors left out), as on the Overview. The SQL
   // report counted each browser cookie as a visitor, so the same people read as more visitors here than there.
-  const stream = useStreamVisitors();
+  const stream = useStreamVisitors(15_000);
   // Visits are kept VISIT_RETENTION_DAYS days: a longer window can only ever show those.
   const span = Math.min(days, stream.days || VISIT_RETENTION_DAYS);
   const sum = useMemo(() => stream.everyone && !stream.capped ? periodSummary(stream.everyone, stream.now - span * 86_400_000) : null, [stream, span]);
@@ -69,10 +75,10 @@ export function SuperAdminActivity({ days, query }: { days: number; query: strin
     } catch (e) { if (!signal?.aborted && !(e instanceof DOMException)) setError(errorText(e instanceof Error ? e.message : "")); }
     finally { if (!signal?.aborted) setBusy(false); }
   }, [days]);
-  // Live figures move quickly, so this page refreshes every 30 seconds while it is visible.
+  // Live figures move quickly, so this page (and its visitor stream) refreshes every 15 seconds while it is visible.
   useEffect(() => {
     const controller = new AbortController(); queueMicrotask(() => { if (!controller.signal.aborted) void refresh(controller.signal); });
-    const timer = setInterval(() => { if (document.visibilityState === "visible") void refresh(controller.signal); }, 30_000);
+    const timer = setInterval(() => { if (document.visibilityState === "visible") void refresh(controller.signal); }, 15_000);
     return () => { controller.abort(); clearInterval(timer); };
   }, [refresh]);
 
@@ -86,7 +92,9 @@ export function SuperAdminActivity({ days, query }: { days: number; query: strin
   const rows = <K extends string>(list: ({ people: number } & Record<K, string>)[] | undefined, key: K, fallback: Row[]) => list ? list.map(item => ({ [key]: item[key], visitors: item.people }) as Row) : fallback;
 
   return <div className={styles.activity}>
+    <SectionNav label="User activity sections" items={NAV} />
     {error && <AdminError>{error} Showing the last successful snapshot; figures may be out of date.</AdminError>}
+    <SectionHead id="ac-now" index={1} title="Right now" question="Who has a page open at this moment, and how fresh is this data?" icon={Radio} tone="mint" live />
     <div className={styles.liveBar}>
       <span className={styles.livePulse} aria-hidden="true" />
       <strong>{number(live?.now ?? t.liveNow)}</strong> on the site now <span className={styles.liveSub}>({number(live?.signed ?? t.liveSignedIn)} signed in · a page open in the last 100 seconds)</span>
@@ -104,6 +112,7 @@ export function SuperAdminActivity({ days, query }: { days: number; query: strin
         : <>Showing the <b>last {span === 1 ? "24 hours" : `${span} days`}</b>.</>}
       {" "}{sum ? "Visitor figures match the Overview's Live visitor stream." : "Counting visitors from the database report until the visitor stream loads."}
     </p>
+    <SectionHead id="ac-audience" index={2} title="Audience" question="How many people came, how long they stayed and how many were new." icon={Users} tone="lavender" />
     <div className={styles.metrics}>
       <Stat tone="lavender" index={0} icon={<Users size={16} />} label="Visitors" value={number(visitors)} note="People: a signed-in account, or one device (cookie resets linked)" />
       <Stat tone="sky" index={1} icon={<MousePointerClick size={16} />} label="Page views" value={number(sum ? sum.views : t.pageViews)} note={`${(sum ? sum.pagesPerSession : t.pagesPerSession) ?? "—"} pages per visit · on screen ≥ 1 s`} />
@@ -115,6 +124,7 @@ export function SuperAdminActivity({ days, query }: { days: number; query: strin
       <Stat tone="aqua" index={7} icon={<MonitorSmartphone size={16} />} label="Bot sessions filtered" value={number(t.bots)} note="Crawlers and automated browsers, kept out of every figure" />
     </div>
 
+    <SectionHead id="ac-traffic" index={3} title="Traffic over time" question="Page views, visitors and new visitors by day, and busy hours." icon={Activity} tone="sky" />
     <div className={styles.charts}>
       <Card className={`${shell.panel} ${styles.chartCard}`}>
         <div className={shell.panelHeading}><h2>Daily traffic (IST)</h2><span className={styles.legend}><i data-key="views" />Page views <i data-key="visitors" />Visitors <i data-key="new" />New</span></div>
@@ -123,10 +133,12 @@ export function SuperAdminActivity({ days, query }: { days: number; query: strin
       <SuperAdminHourly />
     </div>
 
+    <SectionHead id="ac-places" index={4} title="Where visitors are" question="Countries, cities and first-time visitors on the map." icon={MapPin} tone="peach" />
     <SuperAdminLocations days={days} query={query} />
     <SuperAdminNewUserLocations days={days} query={query} />
     <AudienceExplorer days={days} fallback={{ countries: data.countries, cities: data.cities, pages: data.pages, referrers: data.referrers }} />
 
+    <SectionHead id="ac-tech" index={5} title="Devices & sources" question="What visitors browse with and which links brought them." icon={MonitorSmartphone} tone="butter" />
     <div className={styles.breakdowns}>
       <Breakdown title="Devices" icon={<MonitorSmartphone size={16} />} tone="sky" rows={rows(sum?.devices, "device", data.devices)} label="device" value="visitors" heads={["Device", "Visitors"]} rowIcon={row => deviceIcon(show(row.device))} />
       <Breakdown title="Browsers" icon={<Compass size={16} />} tone="lavender" rows={rows(sum?.browsers, "browser", data.browsers)} label="browser" value="visitors" heads={["Browser", "Visitors"]} rowIcon={row => brandIcon(show(row.browser), BROWSER_MARKS, <Globe size={15} />)} />
@@ -134,6 +146,7 @@ export function SuperAdminActivity({ days, query }: { days: number; query: strin
       <Breakdown title="Campaigns (UTM)" icon={<Megaphone size={16} />} tone="peach" rowIcon={row => brandIcon(show(row.source), CAMPAIGN_MARKS, <Megaphone size={15} />)} rows={data.campaigns} label="source" value="views" heads={["Source · medium · campaign", "Views"]} extra={row => `${show(row.medium)} · ${show(row.campaign)}`} empty="No tagged links visited yet. Add ?utm_source=… to links you share." />
     </div>
 
+    <SectionHead id="ac-people" index={6} title="People & visits" question="Each account or browser, and every individual visit. Open one to see its full timeline." icon={UserRound} tone="rose" />
     <People rows={data.people} query={query} onOpen={(key, label) => setPerson({ key, label })} />
     <VisitLog rows={data.recent} query={query} onOpen={(key, label) => setPerson({ key, label })} />
     <p className={shell.note}>Visits are recorded by a first-party beacon on every page (super admin pages excluded). Crawlers, automated browsers, this site&apos;s own machines and anyone on screen for under a second are left out. A visitor is one person: their signed-in account, or one device (an in-app browser that drops its cookie still counts once). The People list and visit log below are per account or browser. IP addresses are stored masked. Visits are kept for {VISIT_RETENTION_DAYS} days, so no window reaches further back than that.</p>
