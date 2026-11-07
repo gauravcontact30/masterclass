@@ -79,7 +79,7 @@ const fields = {
   budget_inr: z.number().min(0).max(1e10), spend_inr: z.number().min(0).max(1e10), reach: count, impressions: count, engagements: count, followers_gained: count,
   notes: z.string().trim().max(1000).nullable().optional(),
   // Platform-specific manual figures; counts must be integers, while money, ratings and reading time allow fractions.
-  platform_metrics: z.object(Object.fromEntries(METRIC_KEYS.map(key => [key, (key === "rating_average" ? z.number().min(0).max(5) : ["earnings_inr", "member_reading_minutes", "watch_time_hours"].includes(key) ? z.number().min(0).max(1e10) : z.number().int().min(0).max(2_000_000_000)).optional()]))).strict().optional(),
+  platform_metrics: z.object(Object.fromEntries(METRIC_KEYS.map(key => [key, (key === "rating_average" ? z.number().min(0).max(5) : ["earnings_inr", "mrr_inr", "member_reading_minutes", "watch_time_hours"].includes(key) ? z.number().min(0).max(1e10) : z.number().int().min(0).max(2_000_000_000)).optional()]))).strict().optional(),
 };
 const createSchema = z.object({ ...fields, budget_inr: fields.budget_inr.default(0), spend_inr: fields.spend_inr.default(0), reach: count.default(0), impressions: count.default(0), engagements: count.default(0), followers_gained: count.default(0), status: fields.status.default("planned"), format: fields.format.default("post") }).strict()
   .refine(input => !input.starts_on || !input.ends_on || input.ends_on >= input.starts_on, { message: "invalid_window" });

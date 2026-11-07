@@ -1,6 +1,6 @@
 "use client";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Briefcase, Camera, Check, CircleDot, Copy, GraduationCap, Link2, MessageCircle, PenLine, Pencil, Pin, PlayCircle, Plus, Search, Send, ThumbsUp, Trash2, AtSign, type LucideIcon } from "lucide-react";
+import { Briefcase, Camera, Check, CircleDot, Copy, GraduationCap, Link2, MessageCircle, PenLine, Pencil, Pin, PlayCircle, Plus, Search, Send, ThumbsUp, Trash2, TrendingUp, AtSign, type LucideIcon } from "lucide-react";
 import { Alert, AlertDescription } from "./ui/alert";
 import { Card } from "./ui/card";
 import { AdminTable } from "./super-admin-table";
@@ -11,9 +11,9 @@ import { SuperAdminSearchConsole } from "./super-admin-search-console";
 import styles from "./super-admin-promotions.module.css";
 
 type Data = Attribution & { promotions: Promotion[]; days: number; capped: boolean; generatedAt: string; retentionDays: number };
-export const PLATFORM_ICON: Record<Platform, LucideIcon> = { instagram: Camera, facebook: ThumbsUp, linkedin: Briefcase, telegram: Send, medium: PenLine, pinterest: Pin, coursera: GraduationCap, youtube: PlayCircle, x: AtSign, whatsapp: MessageCircle, google_search: Search, other: CircleDot };
+export const PLATFORM_ICON: Record<Platform, LucideIcon> = { instagram: Camera, facebook: ThumbsUp, linkedin: Briefcase, telegram: Send, medium: PenLine, pinterest: Pin, coursera: GraduationCap, trustmrr: TrendingUp, youtube: PlayCircle, x: AtSign, whatsapp: MessageCircle, google_search: Search, other: CircleDot };
 /** Validated categorical palette (dataviz default order); stacking order follows it, so colour follows the platform. */
-const PLATFORM_COLOR: Record<Platform, string> = { facebook: "#2a78d6", instagram: "#eb6834", telegram: "#1baf7a", linkedin: "#eda100", x: "#e87ba4", whatsapp: "#008300", other: "#6250d6", youtube: "#e34948", medium: "#3d3d3a", pinterest: "#a3176a", coursera: "#00838f", google_search: "#4285f4" };
+const PLATFORM_COLOR: Record<Platform, string> = { facebook: "#2a78d6", instagram: "#eb6834", telegram: "#1baf7a", linkedin: "#eda100", x: "#e87ba4", whatsapp: "#008300", other: "#6250d6", youtube: "#e34948", medium: "#3d3d3a", pinterest: "#a3176a", coursera: "#00838f", trustmrr: "#5b3fd1", google_search: "#4285f4" };
 const STACK: readonly Platform[] = PLATFORMS;
 const money = (n: number) => new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(n);
 const num = (n: number) => n.toLocaleString("en-IN");
@@ -23,7 +23,7 @@ const blank = { platform: "instagram" as Platform, title: "", format: "post" as 
 function metricValue(platform: Platform, key: MetricKey, value: number | undefined) {
   if (value === undefined) return "—";
   const def = hasPlatformMetrics(platform) ? PLATFORM_METRICS[platform].find(item => item.key === key) : undefined;
-  if (key === "earnings_inr") return money(value);
+  if (key === "earnings_inr" || key === "mrr_inr") return money(value);
   return def && "decimals" in def ? value.toFixed(def.decimals) : num(value);
 }
 type Draft = typeof blank & { id?: string };
@@ -45,7 +45,7 @@ export function SuperAdminPromotions({ days, query }: Readonly<{ days: number; q
     try {
       const response = await fetch(`/api/super-admin/promotions?days=${days}`, { cache: "no-store", signal });
       const body = await response.json().catch(() => ({}));
-      if (!response.ok) throw new Error(body.error === "migration_required" ? "Apply the promotional tracking migrations through 0047_promotions_google_search.sql." : "Promotional tracking is unavailable right now.");
+      if (!response.ok) throw new Error(body.error === "migration_required" ? "Apply the promotional tracking migrations through 0052_promotions_trustmrr.sql." : "Promotional tracking is unavailable right now.");
       if (!signal?.aborted && version === requestVersion.current) { setData(body); setError(""); }
     } catch (e) { if (!signal?.aborted && version === requestVersion.current) setError(e instanceof Error ? e.message : "Unable to load promotions."); }
   }, [days]);
@@ -72,7 +72,7 @@ export function SuperAdminPromotions({ days, query }: Readonly<{ days: number; q
     payload.platform_metrics = hasPlatformMetrics(draft.platform) ? Object.fromEntries(PLATFORM_METRICS[draft.platform].map(def => [def.key, metrics?.[def.key as MetricKey]]).filter(([, value]) => typeof value === "number" && Number.isFinite(value))) : {};
     try {
       const response = await fetch("/api/super-admin/promotions", { method: id ? "PATCH" : "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(id ? { id, ...payload } : payload) });
-      if (!response.ok) { const body = await response.json().catch(() => ({})); throw new Error(body.error === "invalid_request" ? "Check the fields: title, campaign and a valid https link are required." : body.error === "promotions_window" ? "The end date must be on or after the start date." : body.error === "migration_required" ? "Apply the promotional tracking migrations through 0047_promotions_google_search.sql." : body.error === "invalid_platform_metrics" ? "The entered figures do not belong to the selected platform." : "The promotion could not be saved."); }
+      if (!response.ok) { const body = await response.json().catch(() => ({})); throw new Error(body.error === "invalid_request" ? "Check the fields: title, campaign and a valid https link are required." : body.error === "promotions_window" ? "The end date must be on or after the start date." : body.error === "migration_required" ? "Apply the promotional tracking migrations through 0052_promotions_trustmrr.sql." : body.error === "invalid_platform_metrics" ? "The entered figures do not belong to the selected platform." : "The promotion could not be saved."); }
       setDraft(null); await load();
     } catch (e) { setError(e instanceof Error ? e.message : "The promotion could not be saved."); }
     finally { setSaving(false); }
@@ -183,7 +183,7 @@ function DailyChart({ data }: Readonly<{ data: Data }>) {
   </Card>;
 }
 
-/** Medium, Pinterest and Coursera report figures no other platform has; their cards show them with the headline rates. */
+/** Medium, Pinterest, Coursera and Trust MRR report figures no other platform has; their cards show them with the headline rates. */
 function PlatformAnalytics({ stats }: Readonly<{ stats: PlatformStats }>) {
   if (!hasPlatformMetrics(stats.platform)) return null;
   const rates = derivedRates(stats.platform, stats.metrics, stats.impressions);

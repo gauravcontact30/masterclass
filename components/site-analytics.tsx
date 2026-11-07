@@ -34,8 +34,8 @@ function flushVitals() {
 export function SiteAnalytics() {
   useReportWebVitals(reportVital);
   return <>
-    {/* DataFast (2026-11-07): loads on every page because SiteAnalytics sits in the root layout. */}
-    <Script src="https://datafa.st/js/script.js" data-website-id="dfid_4mXzOZawCzXn52pceXN2q" data-domain="www.masterclassbuddy.com" strategy="afterInteractive" />
+    {/* DataFast (2026-11-07), cookieless / privacy mode: loads on every page because SiteAnalytics sits in the root layout. */}
+    <Script src="https://datafa.st/js/script.cookieless.js" data-website-id="dfid_4mXzOZawCzXn52pceXN2q" data-domain="www.masterclassbuddy.com" strategy="afterInteractive" />
     {gaOn && <>
       <Script id="ga4" src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`} strategy="lazyOnload" />
       <Script id="ga4-init" strategy="lazyOnload" onReady={flushVitals}>{`window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}window.gtag=gtag;gtag('js',new Date());gtag('config','${GA_ID}',{anonymize_ip:true});`}</Script>

@@ -351,6 +351,7 @@ function LearningPaths({ cards }: { cards: TechBuzzCard[] }) {
   ] as PathTab[]).filter(tab => tab.items.length), [picks]);
   const [tabId, setTabId] = useState<string>(ALL_PICKS);
   const [group, setGroup] = useState("all");
+  const [manualPills, setManualPills] = useState<{ key: string; page: number } | null>(null);
   const active = tabs.find(tab => tab.id === tabId) ?? tabs[0];
   const groups = useMemo(() => {
     const counts = new Map<string, { group: TechGroup; count: number }>();
@@ -360,6 +361,12 @@ function LearningPaths({ cards }: { cards: TechBuzzCard[] }) {
   const shown = useMemo(() => group === "all" ? active?.items ?? [] : (active?.items ?? []).filter(card => techGroupOf(card).id === group), [active, group]);
   const paged = usePaged(shown, 6);
   if (!active) return null;
+  // Technology pills show TECH_TABS_PER_PAGE at a time; the page holding the selected pill is shown until the reader pages away.
+  const pills = [{ id: "all", label: "All technologies", count: active.items.length }, ...groups.map(entry => ({ id: entry.group.id, label: entry.group.label, count: entry.count }))];
+  const pillPages = Math.ceil(pills.length / TECH_TABS_PER_PAGE);
+  const homePage = Math.floor(Math.max(0, pills.findIndex(pill => pill.id === group)) / TECH_TABS_PER_PAGE);
+  const pillPage = Math.min(pillPages - 1, manualPills?.key === `${active.id}|${group}` ? manualPills.page : homePage);
+  const goPills = (page: number) => setManualPills({ key: `${active.id}|${group}`, page: Math.max(0, Math.min(pillPages - 1, page)) });
   const pickTab = (id: string) => { setTabId(id); setGroup("all"); paged.setPage(0); };
   const onKey = (event: KeyboardEvent<HTMLButtonElement>, index: number) => {
     const next = event.key === "ArrowRight" || event.key === "ArrowDown" ? index + 1 : event.key === "ArrowLeft" || event.key === "ArrowUp" ? index - 1 : event.key === "Home" ? 0 : event.key === "End" ? tabs.length - 1 : null;
@@ -385,9 +392,17 @@ function LearningPaths({ cards }: { cards: TechBuzzCard[] }) {
         <p>{active.blurb}</p>
       </header>
       <ul className={styles.pathFocus} aria-label="What you practise">{active.focus.map(item => <li key={item}>{item}</li>)}</ul>
-      {groups.length > 1 && <div className={styles.pathFilters} role="group" aria-label="Filter by technology">
-        <button type="button" aria-pressed={group === "all"} onClick={() => { setGroup("all"); paged.setPage(0); }}>All technologies<span>{active.items.length}</span></button>
-        {groups.map(entry => <button key={entry.group.id} type="button" aria-pressed={group === entry.group.id} onClick={() => { setGroup(entry.group.id); paged.setPage(0); }}>{entry.group.label}<span>{entry.count}</span></button>)}
+      {groups.length > 1 && <div className={styles.pathFilterRow}>
+        <div className={styles.pathFilters} role="group" aria-label="Filter by technology">
+          {pills.slice(pillPage * TECH_TABS_PER_PAGE, pillPage * TECH_TABS_PER_PAGE + TECH_TABS_PER_PAGE).map(pill => <button key={pill.id} type="button" aria-pressed={group === pill.id} onClick={() => { setGroup(pill.id); paged.setPage(0); }}>{pill.label}<span>{pill.count}</span></button>)}
+        </div>
+        {pillPages > 1 && <nav className={styles.tabPager} aria-label="Technology filter pages">
+          <button type="button" onClick={() => goPills(0)} disabled={pillPage === 0} aria-label="First technologies"><ChevronsLeft size={15} aria-hidden="true" /></button>
+          <button type="button" onClick={() => goPills(pillPage - 1)} disabled={pillPage === 0} aria-label="Previous technologies"><ChevronLeft size={15} aria-hidden="true" /></button>
+          {Array.from({ length: pillPages }, (_, page) => <button key={page} type="button" onClick={() => goPills(page)} aria-current={page === pillPage ? "page" : undefined} aria-label={`Technologies page ${page + 1} of ${pillPages}`}>{page + 1}</button>)}
+          <button type="button" onClick={() => goPills(pillPage + 1)} disabled={pillPage >= pillPages - 1} aria-label="Next technologies"><ChevronRight size={15} aria-hidden="true" /></button>
+          <button type="button" onClick={() => goPills(pillPages - 1)} disabled={pillPage >= pillPages - 1} aria-label="Last technologies"><ChevronsRight size={15} aria-hidden="true" /></button>
+        </nav>}
       </div>}
       <ul className={styles.groupGrid}>
         {paged.rows.map(card => <li key={card.id}>

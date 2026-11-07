@@ -5,12 +5,12 @@ import { isGoogleSearchHost, nextTrafficSource, type TrafficSource } from "./tra
  * rules are testable without a database and shared by the super admin page. No zod or server imports here.
  */
 
-export const PLATFORMS = ["instagram", "facebook", "linkedin", "telegram", "medium", "pinterest", "coursera", "youtube", "x", "whatsapp", "google_search", "other"] as const;
+export const PLATFORMS = ["instagram", "facebook", "linkedin", "telegram", "medium", "pinterest", "coursera", "trustmrr", "youtube", "x", "whatsapp", "google_search", "other"] as const;
 export type Platform = (typeof PLATFORMS)[number];
 /** The platforms the team promotes on first; the rest are tracked when traffic arrives from them. */
-export const PRIMARY_PLATFORMS: Platform[] = ["instagram", "facebook", "linkedin", "telegram", "medium", "pinterest", "coursera"];
-export const PLATFORM_LABEL: Record<Platform, string> = { instagram: "Instagram", facebook: "Facebook", linkedin: "LinkedIn", telegram: "Telegram", medium: "Medium", pinterest: "Pinterest", coursera: "Coursera", youtube: "YouTube", x: "X (Twitter)", whatsapp: "WhatsApp", google_search: "Google Search", other: "Other" };
-export const PROMOTION_FORMATS = ["post", "reel", "story", "video", "ad", "article", "pin", "idea_pin", "board", "course", "lecture", "group", "channel", "live"] as const;
+export const PRIMARY_PLATFORMS: Platform[] = ["instagram", "facebook", "linkedin", "telegram", "medium", "pinterest", "coursera", "trustmrr"];
+export const PLATFORM_LABEL: Record<Platform, string> = { instagram: "Instagram", facebook: "Facebook", linkedin: "LinkedIn", telegram: "Telegram", medium: "Medium", pinterest: "Pinterest", coursera: "Coursera", trustmrr: "Trust MRR", youtube: "YouTube", x: "X (Twitter)", whatsapp: "WhatsApp", google_search: "Google Search", other: "Other" };
+export const PROMOTION_FORMATS = ["post", "reel", "story", "video", "ad", "article", "pin", "idea_pin", "board", "course", "lecture", "group", "channel", "live", "listing"] as const;
 export const PROMOTION_STATUSES = ["planned", "live", "paused", "ended"] as const;
 export type PromotionFormat = (typeof PROMOTION_FORMATS)[number];
 export type PromotionStatus = (typeof PROMOTION_STATUSES)[number];
@@ -19,7 +19,7 @@ export type Promotion = {
   id: string; created_at: string; updated_at: string; platform: Platform; title: string; format: PromotionFormat; status: PromotionStatus;
   url: string | null; utm_campaign: string; audience: string | null; owner: string | null; starts_on: string | null; ends_on: string | null;
   budget_inr: number; spend_inr: number; reach: number; impressions: number; engagements: number; followers_gained: number; notes: string | null;
-  /** Figures only one platform reports (Medium reads, Pinterest saves, Coursera enrolments); keys from PLATFORM_METRICS. */
+  /** Figures only one platform reports (Medium reads, Pinterest saves, Coursera enrolments, Trust MRR listing views); keys from PLATFORM_METRICS. */
   platform_metrics?: Partial<Record<MetricKey, number>> | null;
 };
 
@@ -40,6 +40,8 @@ export const PLATFORM_METRICS = {
   whatsapp: [{ key: "messages_sent", label: "Messages sent" }, { key: "messages_delivered", label: "Messages delivered" }, { key: "messages_read", label: "Messages read" }],
   medium: [{ key: "views", label: "Views" }, { key: "reads", label: "Reads" }, { key: "claps", label: "Claps" }, { key: "responses", label: "Responses" }, { key: "member_reading_minutes", label: "Member reading time (min)" }, { key: "earnings_inr", label: "Partner earnings (₹)", decimals: 2 }],
   pinterest: [{ key: "saves", label: "Saves" }, { key: "pin_clicks", label: "Pin clicks" }, { key: "outbound_clicks", label: "Outbound clicks" }, { key: "video_views", label: "Video views" }],
+  // Trust MRR (startup listing and verified-revenue leaderboard): how many people open the listing and click through, and the MRR it shows.
+  trustmrr: [{ key: "listing_views", label: "Listing views" }, { key: "website_clicks", label: "Website clicks" }, { key: "upvotes", label: "Upvotes" }, { key: "followers", label: "Followers" }, { key: "mrr_inr", label: "Verified MRR (₹)", decimals: 2 }],
   coursera: [{ key: "enrollments", label: "Enrolments" }, { key: "active_learners", label: "Active learners" }, { key: "completions", label: "Completions" }, { key: "ratings", label: "Ratings" }, { key: "rating_average", label: "Average rating (of 5)", decimals: 1, max: 5 }, { key: "earnings_inr", label: "Revenue (₹)", decimals: 2 }],
 } as const satisfies Partial<Record<Platform, readonly MetricDef[]>>;
 export type MetricPlatform = keyof typeof PLATFORM_METRICS;
@@ -47,7 +49,7 @@ export type MetricKey = (typeof PLATFORM_METRICS)[MetricPlatform][number]["key"]
 export const METRIC_KEYS = [...new Set(Object.values(PLATFORM_METRICS).flat().map(def => def.key))] as MetricKey[];
 export const hasPlatformMetrics = (platform: Platform): platform is MetricPlatform => platform in PLATFORM_METRICS;
 /** The format a new promotion defaults to on each platform. */
-export const DEFAULT_FORMAT: Partial<Record<Platform, PromotionFormat>> = { medium: "article", pinterest: "pin", coursera: "course", youtube: "video", telegram: "channel", google_search: "ad" };
+export const DEFAULT_FORMAT: Partial<Record<Platform, PromotionFormat>> = { medium: "article", pinterest: "pin", coursera: "course", trustmrr: "listing", youtube: "video", telegram: "channel", google_search: "ad" };
 /** Where to put the tracked link on each platform, so its visits are attributed. */
 export const LINK_HINT: Partial<Record<Platform, string>> = {
   instagram: "Use a tagged link in your bio, story link or ad. In-app browsers may remove referrers.",
@@ -60,6 +62,7 @@ export const LINK_HINT: Partial<Record<Platform, string>> = {
   google_search: "Search referrers are detected automatically. Use the builder for paid search ads only; do not tag organic canonical URLs. Search Console metrics are shown separately below.",
   medium: "Put the tracked link in the article body or its closing call to action; Medium keeps query strings on outbound links.",
   pinterest: "Set the tracked link as the Pin's destination link (Idea Pins: the product or link sticker).",
+  trustmrr: "Set the tracked link as the listing's website link on your Trust MRR startup page, so clicks from the listing are attributed.",
   coursera: "Add the tracked link to the course's resources, the instructor profile or a reading item.",
 };
 
@@ -74,6 +77,9 @@ export function derivedRates(platform: Platform, m: Partial<Record<MetricKey, nu
   if (platform === "pinterest") return [
     { label: "Save rate", value: rate(m.saves, impressions), hint: "Saves ÷ impressions" },
     { label: "Outbound click rate", value: rate(m.outbound_clicks, impressions), hint: "Outbound clicks ÷ impressions" },
+  ];
+  if (platform === "trustmrr") return [
+    { label: "Click-through rate", value: rate(m.website_clicks, m.listing_views), hint: "Website clicks ÷ listing views" },
   ];
   if (platform === "coursera") return [
     { label: "Completion rate", value: rate(m.completions, m.enrollments), hint: "Completions ÷ enrolments" },
@@ -99,6 +105,8 @@ const SOURCES: Record<Exclude<Platform, "other" | "google_search">, { utm: strin
   // Pinterest serves country domains (in.pinterest.com, pinterest.co.uk) and shortens links with pin.it.
   pinterest: { utm: ["pinterest", "pin", "pinterest.com"], hosts: /(^|\.)(pinterest\.[a-z]{2,3}(\.[a-z]{2})?|pin\.it)$/ },
   coursera: { utm: ["coursera", "coursera.org"], hosts: /(^|\.)coursera\.(org|com)$/ },
+  // The site is trustmrr.com; utm_source may be written with a space or hyphen.
+  trustmrr: { utm: ["trustmrr", "trust-mrr", "trust_mrr", "trust mrr", "trustmrr.com"], hosts: /(^|\.)trustmrr\.com$/ },
 };
 
 /** The social platform a visit came from: its utm_source first (the team's own tagging), then its referrer host. */

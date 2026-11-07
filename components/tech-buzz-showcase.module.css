@@ -167,7 +167,8 @@ a:hover .cover > img, a:focus-visible .cover > img { transform: scale(1.05); }
 .paths .groupTabs button svg { flex: none; }
 .pathFocus { display: flex; flex-wrap: wrap; gap: 8px; margin: -4px 0 14px; padding: 0; list-style: none; }
 .pathFocus li { padding: 4px 11px; border-radius: 999px; background: #fff; border: 1px solid color-mix(in srgb, var(--tone) 28%, #ece9df); color: var(--tone); font-size: 12px; font-weight: 650; }
-.pathFilters { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+.pathFilterRow { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 16px; margin-bottom: 14px; }
+.pathFilters { display: flex; flex-wrap: wrap; gap: 8px; min-width: 0; }
 .pathFilters button { display: inline-flex; align-items: center; gap: 7px; min-height: 32px; padding: 0 12px; border: 1px solid #e0ddd2; border-radius: 999px; background: #fff; color: #3d3d3a; font: inherit; font-size: 12.5px; font-weight: 650; cursor: pointer; }
 .pathFilters button:hover { border-color: var(--tone); }
 .pathFilters button[aria-pressed="true"] { border-color: var(--tone); background: var(--tone); color: #fff; }
