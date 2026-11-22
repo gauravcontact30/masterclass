@@ -8,6 +8,7 @@ import { losslessImageLoader } from "@/lib/responsive-image-loader";
 import Link from "@/components/site-link";
 import { Bell, ChevronLeft, ChevronRight, Flame, Pause, Play } from "lucide-react";
 import { useLanguage } from "./language-provider";
+import { useIndiaAccess } from "./audience-provider";
 import styles from "./landing-home.module.css";
 import { useVisiblePlayback } from "./use-visible-playback";
 
@@ -113,32 +114,13 @@ type ImageSlide = SlideBase & { imageOnly: true; portrait: string };
 type Slide = StorySlide | ImageSlide;
 
 /**
- * Two supplied poster scenes (metro station, airport) lead the hero, then the two interview scenes, two Tech Buzz scenes and four study scenes.
+ * Two supplied interview posters lead the hero, then the supplied Board Exams and Government Exams artwork, two Tech Buzz scenes and four study scenes.
  * Each slide stays for 15 seconds. Playback pauses for keyboard focus, the pause button, hidden tabs, and reduced motion.
  */
+const EXAM_SLIDES = new Set(["board-exams", "government-exams"]);
 function slidesFor(technologies: number | undefined): Slide[] {
   const count = technologies ? String(technologies) : "60+";
   return [
-    {
-      id: "metro-station-ads",
-      src: "/images/landing/hero-interviews-subway.webp",
-      portrait: "/images/landing/hero-interviews-subway-portrait.webp",
-      imageOnly: true,
-      focus: "50% 50%",
-      tone: "sky",
-      tool: { en: "Metro station", hi: "Metro station", es: "Metro station", ja: "Metro station", de: "Metro station", fr: "Metro station", zh: "Metro station" },
-      alt: "Master Class Buddy posters for LangChain, LangGraph, Next.js, AWS, Docker, Kubernetes, Python, FastAPI and more along a festive metro station platform as commuters walk past"
-    },
-    {
-      id: "airport-terminal-ads",
-      src: "/images/landing/hero-interviews-airport.webp",
-      portrait: "/images/landing/hero-interviews-airport-portrait.webp",
-      imageOnly: true,
-      focus: "50% 50%",
-      tone: "sky",
-      tool: { en: "Airport", hi: "Airport", es: "Airport", ja: "Airport", de: "Airport", fr: "Airport", zh: "Airport" },
-      alt: "Master Class Buddy technology posters for LangChain, LangGraph, Docker, Kubernetes, Next.js, AWS and Neon lining a Diwali-decorated airport concourse with travellers walking towards the gates"
-    },
     {
       id: "technology-interviews",
       src: "/images/landing/hero-interviews-ads9.webp",
@@ -158,6 +140,26 @@ function slidesFor(technologies: number | undefined): Slide[] {
       tone: "clay",
       tool: { en: "Interview preparation", hi: "इंटरव्यू की तैयारी", es: "Preparación de entrevistas", ja: "面接準備", de: "Interviewvorbereitung", fr: "Préparation aux entretiens", zh: "面试准备" },
       alt: "Master Class Buddy interview preparation centre with a glass meeting room, candidates studying, and technology posters for LangChain, LangGraph, Python, Docker, Kubernetes, FastAPI and Playwright"
+    },
+    {
+      id: "board-exams",
+      src: "/images/landing/hero-board-exams.webp",
+      portrait: "/images/landing/hero-board-exams-portrait.webp",
+      imageOnly: true,
+      focus: "50% 50%",
+      tone: "violet",
+      tool: { en: "Board exams", hi: "बोर्ड परीक्षा", es: "Exámenes de bachillerato", ja: "ボード試験", de: "Abschlussprüfungen", fr: "Examens du bac", zh: "毕业会考" },
+      alt: "Three groups of students in school uniforms studying together under state board, CBSE and ICSE style emblems, with textbooks, notebooks, a calculator, tablets and laptops on their desks"
+    },
+    {
+      id: "government-exams",
+      src: "/images/landing/hero-government-exams.webp",
+      portrait: "/images/landing/hero-government-exams-portrait.webp",
+      imageOnly: true,
+      focus: "50% 50%",
+      tone: "honey",
+      tool: { en: "Government exams", hi: "सरकारी परीक्षाएँ", es: "Oposiciones", ja: "公務員試験", de: "Staatliche Prüfungen", fr: "Concours de la fonction publique", zh: "公职考试" },
+      alt: "Aspirants preparing for defence, banking, railway and civil services exams: cadets in uniform, a candidate studying market charts on a laptop, a student writing beside trains, and two candidates solving papers in front of the Indian flag"
     },
     {
       id: "buzz-cafe",
@@ -526,7 +528,9 @@ const TechBuzzDock = memo(function TechBuzzDock({ running }: { running: boolean 
 export function LandingSlider({ technologies }: { technologies?: number }) {
   const { language, t } = useLanguage();
   const pick = (record: MultiLang) => record[language] ?? record.en;
-  const slides = useMemo(() => slidesFor(technologies), [technologies]);
+  // Board and Government exam artwork is for visitors in India only; everyone else sees the Tech and study slides.
+  const india = useIndiaAccess();
+  const slides = useMemo(() => slidesFor(technologies).filter(slide => india || !EXAM_SLIDES.has(slide.id)), [technologies, india]);
   const [index, setIndex] = useState(0);
   const [playing, setPlaying] = useState(true);
   const [held, setHeld] = useState(false);

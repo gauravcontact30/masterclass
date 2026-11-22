@@ -1,0 +1,45 @@
+import { obj, pack, sub } from "./types";
+
+/*
+ * Income Tax: Inspector posts are filled through SSC CGL (Tax Assistant through CHSL), so the general sections come
+ * from the shared GK and computed practice. This pack covers tax administration, direct and indirect tax basics and
+ * public finance. "asked" names the recurring topic, never one specific paper.
+ */
+const SSC = "SSC CGL General Awareness (recurring topic)";
+const ECO = "SSC CGL, CHSL Economy (recurring topic)";
+const DEPT = "Income Tax Inspector interview (recurring topic)";
+export default pack("income-tax", [
+  obj("Tax administration", 5, SSC, "Direct taxes in India are administered by the", ["CBIC", "CBDT", "RBI", "GST Council"], 1, "The Central Board of Direct Taxes, under the Department of Revenue, Ministry of Finance."),
+  obj("Tax administration", 5, SSC, "Customs and GST are administered by the", ["CBDT", "CBIC", "SEBI", "NITI Aayog"], 1, "The Central Board of Indirect Taxes and Customs (formerly the CBEC)."),
+  obj("Tax administration", 4, SSC, "The CBDT and the CBIC were constituted under the", ["Income-tax Act, 1961", "Central Boards of Revenue Act, 1963", "Finance Act, 1950", "Constitution's Article 280"], 1, "The Central Boards of Revenue Act, 1963 split the old board into two."),
+  obj("Tax administration", 4, ECO, "Which Act replaced the Income-tax Act, 1961 with effect from 1 April 2026?", ["Direct Taxes Code, 2010", "Income-tax Act, 2025", "Finance Act, 2026", "Taxation Laws (Amendment) Act, 2019"], 1, "The Income-tax Act, 2025 simplified and replaced the 1961 Act from 1 April 2026."),
+  obj("Tax administration", 4, SSC, "Income Tax Day is observed on 24 July because income tax was first introduced in India on that date in", ["1860", "1886", "1922", "1961"], 0, "Sir James Wilson introduced income tax on 24 July 1860."),
+  obj("Tax administration", 4, SSC, "The first tribunal set up in India, in 1941, was the", ["Central Administrative Tribunal", "Income Tax Appellate Tribunal", "National Green Tribunal", "Armed Forces Tribunal"], 1, "The ITAT was set up in January 1941."),
+  obj("Tax administration", 4, DEPT, "Faceless assessment of income tax was launched under which platform in August 2020?", ["Digital India", "Transparent Taxation: Honoring the Honest", "Vivad se Vishwas", "Jan Dhan"], 1, "The platform introduced faceless assessment and a taxpayers' charter."),
+  obj("Tax basics", 5, ECO, "Which of these is a direct tax?", ["GST", "Customs duty", "Income tax", "Excise duty"], 2, "A direct tax is paid by the person on whom it is levied; its burden cannot be shifted."),
+  obj("Tax basics", 4, ECO, "A tax whose rate rises as income rises is called", ["proportional", "regressive", "progressive", "flat"], 2, "Indian income tax is progressive, with higher slabs at higher incomes."),
+  obj("Tax basics", 5, SSC, "How many characters does a PAN have?", ["8", "10", "12", "15"], 1, "The Permanent Account Number has 10 alphanumeric characters: five letters, four digits and a letter."),
+  obj("Tax basics", 4, DEPT, "What does TAN stand for?", ["Tax Assessment Number", "Tax Deduction and Collection Account Number", "Taxpayer Account Number", "Total Annual Number"], 1, "Anyone deducting or collecting tax at source must quote a TAN."),
+  obj("Tax basics", 4, DEPT, "Form 16 is a certificate of", ["advance tax paid", "tax deducted at source on salary", "GST registration", "income tax refund"], 1, "The employer issues Form 16 for TDS on salary."),
+  obj("Tax basics", 4, DEPT, "How many heads of income did the Income-tax Act, 1961 recognise?", ["Three", "Four", "Five", "Six"], 2, "Salaries, house property, business or profession, capital gains, and other sources."),
+  obj("Tax basics", 4, DEPT, "Under the Income-tax Act, 1961, agricultural income in India was", ["taxed at 10%", "exempt from central income tax", "taxed like salary", "taxed only above ₹1 crore"], 1, "Tax on agricultural income is a State List subject, so it was exempt from central income tax."),
+  obj("Tax basics", 3, DEPT, "Form 26AS is the taxpayer's", ["return form", "annual tax credit statement", "PAN application", "GST invoice"], 1, "It shows TDS, TCS, advance tax and refunds credited against the PAN."),
+  obj("Constitution", 5, SSC, "Which Article says no tax shall be levied or collected except by authority of law?", ["Article 110", "Article 265", "Article 280", "Article 300A"], 1, "Article 265 is the constitutional basis of every tax law."),
+  obj("Constitution", 4, SSC, "Which Article provides for the Finance Commission?", ["Article 148", "Article 266", "Article 280", "Article 324"], 2, "The Finance Commission recommends how tax revenue is shared between the Union and the states."),
+  obj("GST", 5, SSC, "GST came into force in India on", ["1 April 2017", "1 July 2017", "1 January 2018", "8 November 2016"], 1, "It was launched at midnight on 30 June–1 July 2017."),
+  obj("GST", 5, SSC, "GST was introduced through which Constitutional Amendment Act?", ["99th", "100th", "101st", "103rd"], 2, "The Constitution (One Hundred and First Amendment) Act, 2016."),
+  obj("GST", 4, SSC, "Who chairs the GST Council?", ["The Prime Minister", "The Union Finance Minister", "The RBI Governor", "The Chief Economic Adviser"], 1, "Article 279A makes the Union Finance Minister the chairperson."),
+  obj("GST", 4, ECO, "GST is a tax on", ["income", "wealth", "the supply of goods and services", "property"], 2, "It is a destination-based indirect tax on supply."),
+  obj("Public finance", 4, ECO, "Fiscal deficit is", ["total expenditure minus total receipts excluding borrowings", "revenue expenditure minus revenue receipts", "interest payments only", "imports minus exports"], 0, "It measures how much the government must borrow in a year."),
+  obj("Public finance", 3, ECO, "The Laffer curve shows the relationship between", ["inflation and unemployment", "tax rates and tax revenue", "savings and investment", "money supply and prices"], 1, "Beyond a point, higher tax rates can reduce revenue."),
+  obj("Public finance", 4, ECO, "Corporation tax is a", ["direct tax on company profits", "tax on sales", "state tax", "customs duty"], 0, "Companies pay it on their net income; the burden is not passed on through prices by law."),
+  obj("Black money", 4, SSC, "Which law targets undisclosed foreign income and assets?", ["Benami Transactions Act, 1988", "Black Money (Undisclosed Foreign Income and Assets) and Imposition of Tax Act, 2015", "FEMA, 1999", "PMLA, 2002"], 1, "It imposes tax and penalties on undisclosed foreign income and assets."),
+  obj("Black money", 3, SSC, "A property held in one person's name but paid for by another, who is the real owner, is called a", ["joint property", "benami property", "ancestral property", "trust property"], 1, "The Benami Transactions (Prohibition) Act, 1988 (amended 2016) allows such property to be confiscated."),
+  obj("Customs", 3, SSC, "The main law on customs duty in India is the", ["Customs Act, 1962", "Customs Tariff Act, 1975 only", "Foreign Trade Act, 1992", "Sea Customs Act, 1878"], 0, "The Customs Act, 1962 governs levy and collection; the Customs Tariff Act sets the rates."),
+], [
+  sub("Tax basics", 5, DEPT, "Distinguish a direct tax from an indirect tax, with examples.", ["Direct tax: the person on whom it is levied bears it, for example income tax and corporation tax.", "Indirect tax: levied on goods and services and passed on to the consumer, for example GST and customs duty.", "Direct taxes are usually progressive; indirect taxes fall equally on rich and poor buyers.", "Direct taxes are administered by the CBDT, indirect taxes by the CBIC."]),
+  sub("Tax basics", 4, DEPT, "What is TDS, and why does the government use it?", ["Tax Deducted at Source: the payer deducts tax before paying salary, interest, rent or fees.", "It collects tax as income is earned, not at the year's end.", "It widens the tax base and creates a trail of transactions.", "The deductee claims credit for it in the return, using Form 16 or 16A and Form 26AS."]),
+  sub("Tax administration", 4, DEPT, "What does an Income Tax Inspector do?", ["Assists in assessment, survey and verification of returns.", "Serves notices and collects information during scrutiny.", "Helps in recovery of tax arrears and in searches.", "Handles taxpayer services, refunds and grievances."]),
+  sub("GST", 4, ECO, "Explain the structure of GST in India.", ["CGST and SGST on supplies within a state, shared equally by the Union and the state.", "IGST on supplies between states and on imports, collected by the Union.", "Input tax credit removes tax on tax across the supply chain.", "The GST Council (Article 279A) recommends rates and rules."]),
+  sub("Interview", 4, "Income Tax Inspector interview (recurring question)", "How would you deal with a taxpayer who offers you a bribe?", ["Refuse clearly and politely.", "Record the facts and report them to your superior and the vigilance officer at once.", "Continue the assessment strictly on the merits.", "Mention the Prevention of Corruption Act and the department's integrity standards."]),
+]);

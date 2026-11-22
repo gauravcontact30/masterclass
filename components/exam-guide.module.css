@@ -1,0 +1,29 @@
+/* Public exam guides (exam-guide.tsx): hero, covers, sample Q&A in light themes, related guides. Fluid at every width. */
+.guide { --q-bg: #f3f5ff; --q-line: #dfe4fb; --q-ink: #27336b; --a-bg: #eef8f2; --a-line: #d3ecdd; --a-ink: #1f4d36; min-width: 0; }
+.hero { margin-top: 28px; overflow: hidden; border-radius: 20px; border: 1px solid #ece7dc; background: #f5f2ea; aspect-ratio: 16 / 9; }
+.heroImage { display: block; width: 100%; height: 100%; object-fit: cover; }
+.ctaRow { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; margin-top: 20px; color: #6b6a64; font-size: 13.5px; }
+.cta { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 18px; border-radius: 999px; background: #c96442; color: #fff; font-weight: 650; text-decoration: none; }
+.cta:hover { background: #b5522f; }
+.cta:focus-visible { outline: 2px solid #c96442; outline-offset: 3px; }
+.section { margin-top: 44px; }
+.section h2, .more h2 { margin: 0 0 14px; font-family: Georgia, "Nirmala UI", serif; font-weight: 400; font-size: clamp(22px, 3vw, 28px); color: #1f1e1c; }
+.covers { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr)); gap: 12px; margin: 0; padding: 0; list-style: none; }
+.covers li { display: flex; gap: 10px; padding: 16px; border: 1px solid #ece7dc; border-radius: 16px; background: #fff; }
+.covers svg { flex-shrink: 0; margin-top: 2px; color: #2f8a5b; }
+.covers h3 { margin: 0 0 4px; font-size: 15px; color: #1f1e1c; }
+.covers p { margin: 0; font-size: 13.5px; line-height: 1.6; color: #5e5d59; }
+.note { margin: -6px 0 14px; font-size: 13.5px; color: #6b6a64; }
+.samples { display: grid; gap: 12px; margin: 0; padding: 0; list-style: none; }
+.samples li { display: grid; overflow: hidden; border-radius: 16px; border: 1px solid var(--q-line); }
+.q { display: grid; gap: 6px; padding: 14px 16px; background: var(--q-bg); color: var(--q-ink); }
+.q p, .a p { margin: 0; font-size: 14.5px; line-height: 1.65; overflow-wrap: anywhere; }
+.tag { justify-self: start; padding: 2px 9px; border-radius: 999px; background: #fff; border: 1px solid var(--q-line); font-size: 11.5px; font-weight: 700; }
+.a { display: flex; gap: 8px; padding: 14px 16px; border-top: 1px solid var(--a-line); background: var(--a-bg); color: var(--a-ink); }
+.a svg { flex-shrink: 0; margin-top: 4px; }
+.more { margin-top: 44px; padding: 18px; border: 1px solid #ece7dc; border-radius: 18px; background: #fbf9f4; }
+.more h2 { display: flex; align-items: center; gap: 8px; font-size: 20px; }
+.more ul { display: flex; flex-wrap: wrap; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.more a { display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding: 0 14px; border: 1px solid #e6e2d6; border-radius: 999px; background: #fff; color: #3d3d3a; font-size: 14px; font-weight: 600; text-decoration: none; }
+.more a:hover { border-color: #c96442; color: #b5522f; }
+@media (max-width: 480px) { .hero { border-radius: 14px; } .ctaRow .cta { width: 100%; justify-content: center; } }

@@ -1,7 +1,7 @@
 /** @jest-environment node */
 import { GET } from "@/app/api/documents/[id]/download/route";
 import { ownedDocument } from "@/lib/server/repository";
-import { recordEvent } from "@/lib/server/monitoring";
+import { recordEventLater as recordEvent } from "@/lib/server/monitoring";
 
 jest.mock("@/lib/server/http", () => ({
   userId: async () => "alice",
@@ -9,7 +9,7 @@ jest.mock("@/lib/server/http", () => ({
   api: async (fn: () => Promise<Response>) => { try { return await fn(); } catch (error) { const e = error as { status?: number; message: string }; return Response.json({ error: e.message }, { status: e.status ?? 500 }); } },
 }));
 jest.mock("@/lib/server/repository", () => ({ ownedDocument: jest.fn() }));
-jest.mock("@/lib/server/monitoring", () => ({ recordEvent: jest.fn() }));
+jest.mock("@/lib/server/monitoring", () => ({ recordEvent: jest.fn(), recordEventLater: jest.fn() }));
 
 const curriculum = { title: "Functions", minutes: 20, objectives: ["Understand functions"], prerequisites: [], lessons: [], project: "Create a function", summary: "Functions return values", glossary: [] };
 const get = (id = "doc-1") => GET(new Request(`http://localhost/api/documents/${id}/download`), { params: Promise.resolve({ id }) });

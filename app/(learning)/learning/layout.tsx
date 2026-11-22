@@ -1,3 +1,4 @@
+import { LearningMarksProvider } from "@/components/learning-marks";
 import { Suspense } from "react";
 import { privateMetadata } from "@/lib/seo";
 import { AnnouncementBanner } from "@/components/announcement-banner";
@@ -10,4 +11,6 @@ export const metadata = { ...privateMetadata, title: "Your learning dashboard" }
 // the page's render. Dashboard pages render once the signed-in user and their content are ready, with no loading screen.
 // AuthNoticeToast sits outside the page, so the sign-in toast no longer waits for the whole dashboard to hydrate.
 export const instant = false;
-export default function Layout({ children }: { children: React.ReactNode }) { return <><AuthNoticeToast />{children}<Suspense fallback={null}><AnnouncementBanner /></Suspense></>; }
+// Highlighting and personal text edits (LearningRegion) exist only in the dashboard, so their provider and its ~30 KB of
+// client code load here instead of on every public page.
+export default function Layout({ children }: { children: React.ReactNode }) { return <><AuthNoticeToast /><LearningMarksProvider>{children}</LearningMarksProvider><Suspense fallback={null}><AnnouncementBanner /></Suspense></>; }

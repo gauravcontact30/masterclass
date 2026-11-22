@@ -45,7 +45,8 @@ const scoreTone = (score: number) => score >= 85 ? "good" : score >= 60 ? "warn"
  * while the tab is visible (pausable).
  */
 export function SuperAdminLogsHealth() {
-  const [hours, setHours] = useState(24);
+  // Opens on 7 days, like every other console page (user request 2026-11-15; it was 24 h).
+  const [hours, setHours] = useState(168);
   const [data, setData] = useState<Report | null>(null);
   const [error, setError] = useState("");
   const [paused, setPaused] = useState(false);

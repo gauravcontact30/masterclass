@@ -4,7 +4,7 @@
  * /dashboard stays for links saved before the Learning Dashboard moved to /learning (2026-10-25); /reset-password is
  * where password-reset links land.
  */
-const ALLOWED = /^\/(learning|super-admin|dashboard|notes|subscribe|tech-buzz|reset-password)(\/|\?|$)/;
+const ALLOWED = /^\/(learning|super-admin|dashboard|notes|subscribe|tech-buzz|reset-password|exams|portal)(\/|\?|$)/;
 
 export const isSafeRedirect = (target: string | null | undefined): target is string =>
   Boolean(target && ALLOWED.test(target) && !target.startsWith("//") && !target.includes("\\"));

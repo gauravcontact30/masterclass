@@ -213,6 +213,31 @@ function Pagination({ paged, label, anchor, sizes, tone = "light" }: { paged: Pa
   </nav>;
 }
 
+/** The one blog card used across /tech-buzz: a full-bleed cover with the date and read time over it, the technology in
+ *  its colour, the title, a two-line excerpt (or the reviewer's verdict) and a "Read story" cue, then the reactions.
+ *  `step` adds an n8n-style Trigger / Step chip; `dark` suits the dark n8n canvas; `onOpen` runs on click (analytics). */
+function StoryTile({ card, rated = false, verdict = false, step, dark = false, onOpen }: { card: TechBuzzCard; rated?: boolean; verdict?: boolean; step?: number; dark?: boolean; onOpen?: () => void }) {
+  return <li className={styles.tile} data-dark={dark || undefined} style={{ "--tone": card.color } as CSSProperties}>
+    <Link href={`/tech-buzz/${card.slug}`} className={styles.tileLink} onClick={onOpen}>
+      <span className={styles.tileMedia}>
+        <Cover card={card} className={styles.tileCover} sizes="(max-width: 640px) 92vw, (max-width: 1100px) 46vw, 440px" />
+        <span className={styles.tileDate}><CalendarDays size={12} aria-hidden="true" /><time dateTime={card.publishedAt}>{formatDate(card.publishedAt)}</time></span>
+        <span className={styles.tileTime}><Clock size={12} aria-hidden="true" />{card.readTimeMinutes} min read</span>
+        {step !== undefined && <span className={styles.tileStep}>{step === 0 ? <Zap size={12} aria-hidden="true" /> : <Workflow size={12} aria-hidden="true" />}{step === 0 ? "Trigger" : `Step ${step + 1}`}</span>}
+      </span>
+      <span className={styles.tileBody}>
+        <span className={styles.tileTech}><TechIcon item={card} /><span className={styles.tileTechName} title={card.technology}>{shortTech(card.technology)}</span>{rated && <RatingBadge card={card} />}</span>
+        <strong className={styles.tileTitle}>{card.title}</strong>
+        {verdict && card.review?.verdict
+          ? <span className={styles.tileVerdict}><Award size={13} aria-hidden="true" /><span><b>Reviewer&rsquo;s verdict</b>{card.review.verdict}</span></span>
+          : card.subtitle && <span className={styles.tileExcerpt}>{card.subtitle}</span>}
+        <span className={styles.tileRead}>Read story<ArrowRight size={14} aria-hidden="true" /></span>
+      </span>
+    </Link>
+    <div className={styles.tileFoot}><ReactionBar card={card} tone={dark ? "dark" : "light"} /></div>
+  </li>;
+}
+
 /* ── 2. Fresh & Latest: every earlier edition, kept for later reading, one block per daily track so each
    technology holds only its own stories (newest first, paginated per block). ────────────────────────────────── */
 const FRESH_TABS_PER_PAGE = 6;
@@ -258,29 +283,21 @@ function FreshLatest({ cards }: { cards: TechBuzzCard[] }) {
       </div>
       {tracks.map(({ track, items }) => <div key={track.id} id={`tb-fresh-panel-${track.id}`} role="tabpanel"
         aria-labelledby={`tb-fresh-tab-${track.id}`} hidden={track.id !== active.track.id}>
-        {track.id === active.track.id && <FreshTrack key={track.id} track={track} items={items} showAll={track.id === "all"} />}
+        {track.id === active.track.id && <FreshTrack key={track.id} track={track} items={items} />}
       </div>)}
     </>}
   </section>;
 }
 
-function FreshTrack({ track, items, showAll = false }: { track: DailyTrack; items: TechBuzzCard[]; showAll?: boolean }) {
-  const paged = usePaged(items, 4);
+function FreshTrack({ track, items }: { track: DailyTrack; items: TechBuzzCard[] }) {
+  const paged = usePaged(items, 9);
   const heading = `tb-fresh-${track.id}-title`;
   return <section id={`tb-fresh-${track.id}`} className={styles.freshTrack} style={{ "--tone": track.color } as CSSProperties} aria-labelledby={heading}>
     <h3 id={heading} tabIndex={-1} className={styles.freshTrackHead}><TrackLogos track={track.id} />{track.short}<span>{items.length} {items.length === 1 ? "blog" : "blogs"}</span></h3>
-    <ol className={styles.timeline}>
-      {(showAll ? items : paged.rows).map(card => <li key={card.id} style={{ "--tone": card.color } as CSSProperties}>
-        <span className={styles.timelineHead}><span className={styles.timelineDot} aria-hidden="true" /><time dateTime={card.publishedAt}>{formatDate(card.publishedAt)}</time></span>
-        <Link href={`/tech-buzz/${card.slug}`} className={styles.freshCard}>
-          <Cover card={card} className={styles.freshCover} sizes="(max-width: 640px) 90vw, (max-width: 1100px) 320px, 240px" />
-          <span className={styles.freshTech}><TechIcon item={card} />{shortTech(card.technology)}</span>
-          <strong className={styles.cardTitle}>{card.title}</strong>
-        </Link>
-        <ReactionBar card={card} />
-      </li>)}
+    <ol className={styles.tileGrid}>
+      {paged.rows.map(card => <StoryTile key={card.id} card={card} />)}
     </ol>
-    {!showAll && <Pagination paged={paged} label={`Fresh & Latest: ${track.short}`} anchor={heading} sizes={[4, 8, 12]} />}
+    <Pagination paged={paged} label={`Fresh & Latest: ${track.short}`} anchor={heading} sizes={[9, 18, 36]} />
   </section>;
 }
 
@@ -405,19 +422,8 @@ function LearningPaths({ cards }: { cards: TechBuzzCard[] }) {
           <button type="button" onClick={() => goPills(pillPages - 1)} disabled={pillPage >= pillPages - 1} aria-label="Last technologies"><ChevronsRight size={15} aria-hidden="true" /></button>
         </nav>}
       </div>}
-      <ul className={styles.groupGrid}>
-        {paged.rows.map(card => <li key={card.id}>
-          <Link href={`/tech-buzz/${card.slug}`} className={styles.groupCard} onClick={() => trackGoal(GOALS.techBuzzOpen, { from: "learning_path", tech: card.techId })}>
-            <Cover card={card} className={styles.groupCover} sizes="(max-width: 640px) 80vw, (max-width: 1100px) 320px, 280px" />
-            <span className={styles.groupBody}>
-              <span className={styles.groupTech}><TechIcon item={card} /><span className={styles.groupTechName} title={card.technology}>{shortTech(card.technology)}</span><RatingBadge card={card} /></span>
-              <strong className={styles.cardTitle}>{card.title}</strong>
-              {card.review && <span className={styles.verdict}>{card.review.verdict}</span>}
-              <span className={styles.meta}><CalendarDays size={12} aria-hidden="true" />{formatDate(card.publishedAt)}<Clock size={12} aria-hidden="true" />{card.readTimeMinutes} min</span>
-            </span>
-          </Link>
-          <ReactionBar card={card} />
-        </li>)}
+      <ul className={styles.tileGrid}>
+        {paged.rows.map(card => <StoryTile key={card.id} card={card} rated verdict onOpen={() => trackGoal(GOALS.techBuzzOpen, { from: "learning_path", tech: card.techId })} />)}
       </ul>
       <Pagination paged={paged} label={active.label} anchor="tb-paths-active" sizes={[6, 9, 12]} />
     </div>
@@ -431,17 +437,8 @@ function N8nWorkflows({ cards }: { cards: TechBuzzCard[] }) {
   if (!flows.length) return null;
   return <section data-track-topic={TECH_BUZZ_TRACKED.n8n} className={styles.n8n} aria-labelledby="tb-n8n">
     <SectionHead id="tb-n8n" icon={<Workflow size={16} aria-hidden="true" />} kicker="Automation" title="n8n Workflow Blogs" lede="Triggers, AI agent nodes and production workflows, step by step." />
-    <ol className={styles.canvas}>
-      {paged.rows.map((card, i) => { const step = paged.offset + i; return <li key={card.id} className={styles.node}>
-        <span className={styles.nodePort} data-side="in" aria-hidden="true" />
-        <Link href={`/tech-buzz/${card.slug}`} className={styles.nodeLink}>
-          <span className={styles.nodeHead}><span className={styles.nodeIcon} aria-hidden="true">{step === 0 ? <Zap size={14} /> : <Workflow size={14} />}</span>{step === 0 ? "Trigger" : `Step ${step + 1}`}<RatingBadge card={card} /></span>
-          <strong className={styles.cardTitle}>{card.title}</strong>
-          <span className={styles.meta}>{formatDate(card.publishedAt)} · {card.readTimeMinutes} min</span>
-        </Link>
-        <ReactionBar card={card} tone="dark" />
-        <span className={styles.nodePort} data-side="out" aria-hidden="true" />
-      </li>; })}
+    <ol className={styles.tileGrid} data-flow>
+      {paged.rows.map((card, i) => <StoryTile key={card.id} card={card} rated dark step={paged.offset + i} />)}
     </ol>
     <Pagination paged={paged} label="n8n Workflow Blogs" anchor="tb-n8n" tone="dark" />
   </section>;
@@ -612,18 +609,8 @@ function TechGroupSection({ group, items }: { group: TechGroup; items: TechBuzzC
       <h3 id={heading} tabIndex={-1}>{group.label}<span>{items.length} {items.length === 1 ? "blog" : "blogs"}</span></h3>
       <p>{group.blurb}</p>
     </header>
-    <ul className={styles.groupGrid}>
-      {paged.rows.map(card => <li key={card.id}>
-        <Link href={`/tech-buzz/${card.slug}`} className={styles.groupCard}>
-          <Cover card={card} className={styles.groupCover} sizes="(max-width: 640px) 80vw, (max-width: 1100px) 320px, 280px" />
-          <span className={styles.groupBody}>
-            <span className={styles.groupTech}><TechIcon item={card} /><span className={styles.groupTechName} title={card.technology}>{shortTech(card.technology)}</span><RatingBadge card={card} /></span>
-            <strong className={styles.cardTitle}>{card.title}</strong>
-            <span className={styles.meta}><CalendarDays size={12} aria-hidden="true" />{formatDate(card.publishedAt)}<Clock size={12} aria-hidden="true" />{card.readTimeMinutes} min</span>
-          </span>
-        </Link>
-        <ReactionBar card={card} />
-      </li>)}
+    <ul className={styles.tileGrid}>
+      {paged.rows.map(card => <StoryTile key={card.id} card={card} rated />)}
     </ul>
     <Pagination paged={paged} label={group.label} anchor={heading} sizes={[6, 9, 12]} />
   </section>;

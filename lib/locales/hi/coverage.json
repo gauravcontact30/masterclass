@@ -1,0 +1,14 @@
+{
+  "sourceHash": "c45e8ef2c45911b238a2fd2668577c9caf73ef76d610dc5ce164f8e8313d5b73",
+  "sourceStrings": 47177,
+  "translatable": 35957,
+  "keptEnglish": 4079,
+  "noProse": 2411,
+  "translatedStrings": 31697,
+  "shards": 29,
+  "uiStrings": 491,
+  "uiTranslated": 470,
+  "reviewedOverrides": 537,
+  "rejectedPendingReview": 4266,
+  "method": "local IndicTrans2 (dist-200M, CTranslate2), math masked, validated; reviewed overrides win"
+}

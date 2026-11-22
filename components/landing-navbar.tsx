@@ -2,8 +2,10 @@
 
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from "react";
 import Link from "@/components/site-link";
-import { ArrowRight, BookOpen, CodeXml, Crown, Flame, GraduationCap, Layers, Library, LogIn, Menu, Terminal, Type, UserPlus, UserRound, X, type LucideIcon } from "lucide-react";
+import { ArrowRight, BookOpen, Briefcase, ChevronRight, CodeXml, Compass, Crown, Flame, Globe2, GraduationCap, Landmark, Languages, LayoutDashboard, Layers, Library, LogIn, MapPin, Menu, NotebookPen, Palette, Sparkles, Terminal, Type, UserPlus, UserRound, X, type LucideIcon } from "lucide-react";
 import { Wordmark } from "./brand-mark";
+import { useAudienceGroups, type AudienceGroup } from "./audience-paths";
+import { HeaderLanguageSwitch } from "./language-switch";
 import { SuggestionBox } from "./suggestion-box";
 import { LandingPlansMenu } from "./landing-plans-menu";
 import { scrollToSection } from "./hashless-navigation";
@@ -23,6 +25,12 @@ type Indicator = { left: number; right: number; visible: boolean; href: string |
 const PILL_TINTS = ["#f3dccd", "#dbe7e2", "#e3e2ee", "#f3ead6", "#dce8f3", "#e4e9d6", "#fed7aa"];
 /** The matching deeper ink for each tint: icon colour, and the well fill when a link is active. */
 const PILL_INKS = ["#a84f36", "#3f6b55", "#5b5689", "#8a6212", "#2f5f82", "#5d6a14", "#c2410c"];
+/** Account dropdown tabs, in order. */
+const ACCOUNT_TABS = ["account", "paths", "style"] as const;
+type AccountTab = typeof ACCOUNT_TABS[number];
+const PATH_ICONS: Record<AudienceGroup["id"], LucideIcon> = { tech: Briefcase, boards: GraduationCap, government: Landmark };
+/** Each Learning paths destination's own icon (falls back to the group's). */
+const PATH_LINK_ICONS: Record<string, LucideIcon> = { "/learning": LayoutDashboard, "/tech-buzz": Flame, "/learning/ielts": Languages, "/exams/board-exams": NotebookPen, "/exams/competitive-exams": Landmark };
 const NAV_ICONS: Record<string, LucideIcon> = {
   "#workflows": Layers,
   "#library": Library,
@@ -43,7 +51,6 @@ const NAV_ICONS: Record<string, LucideIcon> = {
 /** `links`: [section key ("#workflows"), label, the section's own page for crawlers and new tabs]. */
 export function LandingNavbar({ links, prices = null, onCurrency }: { links: [string, string, string?][]; prices?: PlansMenuPrices | null; onCurrency?: (currency: Currency) => void }) {
   const { language, t } = useLanguage();
-  const hi = language === "hi";
   const text = (en: string, hindi: string) => {
     if (language === "hi") return hindi;
     if (language === "es") {
@@ -101,6 +108,8 @@ export function LandingNavbar({ links, prices = null, onCurrency }: { links: [st
   const [scrolled, setScrolled] = useState(false);
   const [menu, setMenu] = useState(false);
   const [account, setAccount] = useState(false);
+  const [accountTab, setAccountTab] = useState<AccountTab>("account");
+  const audienceGroups = useAudienceGroups();
   const [plans, setPlans] = useState(false);
   const { appFontId, setAppFont, resetAppFont } = useAppFont();
   const openPlans = useCallback((value: boolean) => { setPlans(value); if (value) { setAccount(false); setMenu(false); } }, []);
@@ -181,47 +190,109 @@ export function LandingNavbar({ links, prices = null, onCurrency }: { links: [st
         })}
       </nav>
       <div className={styles.navActions}>
-        <SuggestionBox label={t("suggestionBox")} iconOnly />
+        <HeaderLanguageSwitch classes={{ root: styles.langSwitch, thumb: styles.langThumb, glyph: styles.langGlyph }} /><span className={styles.headerSuggestion}><SuggestionBox label={t("suggestionBox")} iconOnly /></span>
         <LandingPlansMenu prices={prices} open={plans} onOpenChange={openPlans} onCurrency={onCurrency} />
         <div ref={accountRef} className={styles.account}>
-          <button type="button" className={styles.accountButton} aria-label={text("Account", "खाता")} aria-expanded={account} aria-controls="landing-account-menu" onClick={() => { setAccount(value => !value); setMenu(false); setPlans(false); }}>
+          <button type="button" className={styles.accountButton} aria-label={text("Account", "खाता")} aria-expanded={account} aria-controls="landing-account-menu" onClick={() => { if (!account) setAccountTab("account"); setAccount(value => !value); setMenu(false); setPlans(false); }}>
             <UserRound size={19} strokeWidth={1.9} aria-hidden="true" />
           </button>
           {account && <div id="landing-account-menu" className={styles.accountMenu}>
-            <div className={styles.accountActions}>
-              <Link className={styles.accountPrimary} href="/sign-up" onClick={() => setAccount(false)}>
-                <UserPlus size={16} strokeWidth={2} aria-hidden="true" />{text("Create free account", "मुफ़्त खाता बनाएँ")}<ArrowRight size={15} strokeWidth={2} aria-hidden="true" />
-              </Link>
-              <Link className={styles.accountItem} href="/sign-in" onClick={() => setAccount(false)}>
-                <span className={styles.accountIcon} aria-hidden="true"><LogIn size={16} strokeWidth={1.9} /></span>
-                <span><strong>{text("Sign in", "साइन इन")}</strong><small aria-hidden="true">{text("Already have an account? Welcome back", "पहले से खाता है? फिर से स्वागत है")}</small></span>
-              </Link>
+            {/* Welcome band: who this menu is for, above the tabs. */}
+            <div className={styles.accountHero}>
+              <span className={styles.accountAvatar} aria-hidden="true"><UserRound size={20} strokeWidth={1.9} /><Sparkles size={11} strokeWidth={2.4} className={styles.accountAvatarSpark} /></span>
+              <span className={styles.accountHeroText}>
+                <strong>{text("Welcome to MasterClass Buddy", "MasterClass Buddy में स्वागत है")}</strong>
+                <small>{text("Save progress, pick a path, make it yours", "प्रगति सहेजें, मार्ग चुनें, अपने अनुसार बनाएँ")}</small>
+              </span>
             </div>
-            {/* Google font-family dropdown as shadcn ui: changes font-family of entire application */}
-            <div className={styles.accountTypography}>
-              <div className={styles.accountTypographyHead}>
-                <span className={styles.accountTypographyIcon} aria-hidden="true">
-                  <Type size={15} strokeWidth={2.2} />
-                </span>
-                <div className={styles.accountTypographyMeta}>
-                  <strong>{text("Application Typography", "एप्लिकेशन फ़ॉन्ट")}</strong>
-                  <small>{text("Google fonts for Landing, Dashboards & Blogs", "पूरे ऐप (लैंडिंग, डैशबोर्ड और ब्लॉग्स) का फ़ॉन्ट")}</small>
+            {/* Tabs: Account (sign up / sign in), Learning paths (who the site serves), Appearance (app typography). */}
+            <div className={styles.accountTabs} role="tablist" aria-label={text("Account menu", "खाता मेनू")} onKeyDown={event => {
+              if (event.key !== "ArrowRight" && event.key !== "ArrowLeft" && event.key !== "Home" && event.key !== "End") return;
+              event.preventDefault();
+              const at = ACCOUNT_TABS.indexOf(accountTab);
+              const next = event.key === "Home" ? 0 : event.key === "End" ? ACCOUNT_TABS.length - 1 : (at + (event.key === "ArrowRight" ? 1 : -1) + ACCOUNT_TABS.length) % ACCOUNT_TABS.length;
+              setAccountTab(ACCOUNT_TABS[next]);
+              document.getElementById(`landing-account-tab-${ACCOUNT_TABS[next]}`)?.focus();
+            }}>
+              {ACCOUNT_TABS.map(tab => {
+                const Icon = tab === "account" ? UserRound : tab === "paths" ? Compass : Palette;
+                const label = tab === "account" ? text("Account", "खाता") : tab === "paths" ? text("Learning paths", "अध्ययन मार्ग") : text("Appearance", "रूप-रंग");
+                return <button key={tab} id={`landing-account-tab-${tab}`} type="button" role="tab" aria-selected={accountTab === tab} aria-controls="landing-account-panel" tabIndex={accountTab === tab ? 0 : -1} onClick={() => setAccountTab(tab)}>
+                  <Icon size={13} strokeWidth={2} aria-hidden="true" /><span>{label}</span>
+                </button>;
+              })}
+            </div>
+            <div id="landing-account-panel" className={styles.accountPanel} role="tabpanel" aria-labelledby={`landing-account-tab-${accountTab}`}>
+              {accountTab === "account" && <div className={styles.accountActions}>
+                <Link className={styles.accountPrimary} href="/sign-up" onClick={() => setAccount(false)}>
+                  <UserPlus size={16} strokeWidth={2} aria-hidden="true" />{text("Create free account", "मुफ़्त खाता बनाएँ")}<ArrowRight size={15} strokeWidth={2} aria-hidden="true" />
+                </Link>
+                <Link className={styles.accountItem} href="/sign-in" onClick={() => setAccount(false)}>
+                  <span className={styles.accountIcon} aria-hidden="true"><LogIn size={16} strokeWidth={1.9} /></span>
+                  <span><strong>{text("Sign in", "साइन इन")}</strong><small aria-hidden="true">{text("Already have an account? Welcome back", "पहले से खाता है? फिर से स्वागत है")}</small></span>
+                  <ArrowRight size={15} strokeWidth={2} className={styles.accountItemArrow} aria-hidden="true" />
+                </Link>
+              </div>}
+              {/* Learning paths: a short intro, then one card per audience. Each card has a header (icon, who it is for,
+                  where it is available) over full-width destination rows with an icon, a one-line hint and a chevron. */}
+              {accountTab === "paths" && <div className={styles.accountPaths}>
+                <p className={styles.accountPathsIntro}>{text("Pick where you want to start. You can switch any time.", "जहाँ से शुरू करना है वह चुनें। आप कभी भी बदल सकते हैं।")}</p>
+                {audienceGroups.map(group => {
+                  const Icon = PATH_ICONS[group.id];
+                  const headingId = `landing-path-${group.id}`;
+                  return <section key={group.id} className={styles.accountPath} data-tone={group.id} aria-labelledby={headingId}>
+                    <header className={styles.accountPathHead}>
+                      <span className={styles.accountPathIcon} aria-hidden="true"><Icon size={17} strokeWidth={2} /></span>
+                      <span className={styles.accountPathTitle}>
+                        <strong id={headingId}>{group.title}</strong>
+                        <small>{group.note}</small>
+                      </span>
+                      <span className={styles.accountPathScope} data-scope={group.scope}>
+                        {group.scope === "world" ? <Globe2 size={11} strokeWidth={2.2} aria-hidden="true" /> : <MapPin size={11} strokeWidth={2.2} aria-hidden="true" />}
+                        {group.scope === "world" ? text("Worldwide", "दुनिया भर") : text("India", "भारत")}
+                      </span>
+                    </header>
+                    <ul className={styles.accountPathLinks}>
+                      {group.links.map(link => {
+                        const LinkIcon = PATH_LINK_ICONS[link.href] ?? Icon;
+                        return <li key={link.href}>
+                          <Link href={link.href} prefetch={link.prefetch} onClick={() => setAccount(false)}>
+                            <span className={styles.accountPathLinkIcon} aria-hidden="true"><LinkIcon size={15} strokeWidth={2} /></span>
+                            <span className={styles.accountPathLinkText}><b>{link.label}</b><small>{link.hint}</small></span>
+                            <ChevronRight size={16} strokeWidth={2.2} className={styles.accountPathChevron} aria-hidden="true" />
+                          </Link>
+                        </li>;
+                      })}
+                    </ul>
+                  </section>;
+                })}
+              </div>}
+              {/* Google font-family dropdown as shadcn ui: changes font-family of entire application */}
+              {accountTab === "style" && <div className={styles.accountTypography}>
+                <div className={styles.accountTypographyHead}>
+                  <span className={styles.accountTypographyIcon} aria-hidden="true">
+                    <Type size={15} strokeWidth={2.2} />
+                  </span>
+                  <div className={styles.accountTypographyMeta}>
+                    <strong>{text("Application Typography", "एप्लिकेशन फ़ॉन्ट")}</strong>
+                    <small>{text("Google fonts for Landing, Dashboards & Blogs", "पूरे ऐप (लैंडिंग, डैशबोर्ड और ब्लॉग्स) का फ़ॉन्ट")}</small>
+                  </div>
                 </div>
-              </div>
-              <div className={styles.accountTypographyPicker}>
-                <FontFamilyDropdown
-                  value={appFontId}
-                  onChange={setAppFont}
-                  onReset={resetAppFont}
-                  ariaLabel="Application font family"
-                  variant="pill"
-                  valueType="id"
-                  defaultVal="inter"
-                  matchTriggerWidth={true}
-                />
-              </div>
+                <div className={styles.accountTypographyPicker}>
+                  <FontFamilyDropdown
+                    value={appFontId}
+                    onChange={setAppFont}
+                    onReset={resetAppFont}
+                    ariaLabel="Application font family"
+                    variant="pill"
+                    valueType="id"
+                    defaultVal="inter"
+                    matchTriggerWidth={true}
+                  />
+                </div>
+              </div>}
             </div>
-            {/* Bottom band: a no-commitment way in positioned below the font dropdown. */}
+            {/* Bottom band: a no-commitment way in, on every tab. */}
             <Link className={styles.accountBrowse} href="/library" onClick={() => setAccount(false)}>
               <span className={styles.accountBrowseIcon} aria-hidden="true"><Library size={15} strokeWidth={2} /></span>
               <span><strong>{text("Just browsing?", "बस देख रहे हैं?")}</strong><small>{text("Read the free library, no account needed", "फ़्री लाइब्रेरी पढ़ें, खाते की ज़रूरत नहीं")}</small></span>

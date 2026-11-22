@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { COUNTRY_TO_LANGUAGE, SUPPORTED_LANGUAGES } from "@/lib/i18n";
 import type { Language } from "@/lib/domain";
+import { visitorCountry } from "@/lib/server/audience";
 
 /**
  * Detects visitor location and suggests the appropriate native language.
@@ -8,12 +9,7 @@ import type { Language } from "@/lib/domain";
  */
 export async function GET(request: Request) {
   const headers = request.headers;
-  const rawCountry = (
-    headers.get("x-vercel-ip-country") ||
-    headers.get("cf-ipcountry") ||
-    headers.get("x-country-code") ||
-    ""
-  ).trim().toUpperCase();
+  const rawCountry = visitorCountry(headers);
 
   const acceptLang = (headers.get("accept-language") || "").toLowerCase();
 
@@ -34,6 +30,7 @@ export async function GET(request: Request) {
   return NextResponse.json(
     {
       country: rawCountry || null,
+      indiaAccess: rawCountry === "IN",
       language: detectedLanguage,
       isDetected: Boolean(rawCountry),
       info: langInfo || null,

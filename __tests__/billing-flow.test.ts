@@ -8,8 +8,6 @@ import { db } from "@/lib/server/db";
 import { entitlementTier } from "@/lib/domain";
 import { validateSubscriptionPlan } from "@/lib/server/billing";
 
-import { saleOffer } from "@/lib/server/festive-sale";
-jest.mock("@/lib/server/festive-sale", () => ({ saleOffer: jest.fn().mockResolvedValue(null) }));
 jest.mock("@/lib/server/http",()=>({...jest.requireActual("@/lib/server/http"),userId:jest.fn().mockResolvedValue("student")}));
 jest.mock("@/lib/server/repository",()=>({profile:jest.fn()}));
 jest.mock("@/lib/server/rate-limit",()=>({rateLimit:jest.fn()}));
@@ -26,32 +24,11 @@ let remoteCalls:string[];
 let createdBodies:Row[];
 const post=(body:unknown,origin="http://localhost")=>billing(new Request("http://localhost/api/billing",{method:"POST",headers:{origin,"Content-Type":"application/json"},body:JSON.stringify(body)}));
 const sign=(text:string,secret="checkout-secret")=>createHmac("sha256",secret).update(text).digest("hex");
-test.each(["monthly", "yearly"] as const)("Diwali %s retains discounted recurring plan after campaign expiry", async tier => {
-  const amountInr = tier === "monthly" ? 225 : 2250;
-  jest.mocked(saleOffer).mockResolvedValue({ slug:"diwali-2026", planId:`plan_sale_${tier}`, amountInr });
-  const response = await post({ action:"checkout", tier, expectedSale:"diwali-2026" });
-  expect(response.status).toBe(200);
-  expect(await response.json()).toMatchObject({ amount:Math.round(amountInr * 100), discounted:true });
-  expect(createdBodies[0].plan_id).toBe(`plan_sale_${tier}`);
-  expect(local).toMatchObject({ festive_sale:"diwali-2026", recurring_amount_inr:amountInr, razorpay_plan_id:`plan_sale_${tier}` });
-  jest.mocked(saleOffer).mockResolvedValue(null);
-  remote = { ...remote, status:"active", paid_count:2, current_end:Math.floor(Date.now()/1000)+86400*60 };
-  expect((await sendEvent("subscription.charged")).status).toBe(200);
-  expect(entitlementTier(local as never)).toBe(tier);
-  expect(local?.recurring_amount_inr).toBe(amountInr);
-});
-
-test("expired advertised campaign rejects checkout before creating a mandate", async () => {
-  const response = await post({ action:"checkout", tier:"monthly", expectedSale:"diwali-2026" });
-  expect(response.status).toBe(409);
-  expect(createdBodies).toHaveLength(0);
-});
 async function sendEvent(event:string,extra:Row={}) {
   const raw=JSON.stringify({event,payload:{subscription:{entity:remote},...extra}});
   return webhook(new Request("http://localhost/api/webhooks/razorpay",{method:"POST",headers:{"x-razorpay-signature":sign(raw,"webhook-secret")},body:raw}));
 }
 beforeEach(()=>{
-  jest.mocked(saleOffer).mockResolvedValue(null);
   Object.assign(process.env,{RAZORPAY_KEY_ID:"rzp_test_key",RAZORPAY_KEY_SECRET:"checkout-secret",RAZORPAY_WEBHOOK_SECRET:"webhook-secret",RAZORPAY_MONTHLY_PLAN_ID:"plan_monthly",RAZORPAY_YEARLY_PLAN_ID:"plan_yearly",BILLING_ENABLED:"true",ALLOW_LIVE_BILLING:"false",PRO_MONTHLY_PRICE_INR:"299",PRO_YEARLY_PRICE_INR:"2999"});
   local=null;events=new Set();ledger=[];invoiceRows=[];remoteCalls=[];createdBodies=[];
   remote={id:"sub_flow",plan_id:"plan_monthly",status:"created",current_end:null,notes:{user_id:"student"}};
@@ -79,7 +56,7 @@ beforeEach(()=>{
   global.fetch=jest.fn(async(url,init)=>{
     const path=String(url).replace("https://api.razorpay.com/v1/","");remoteCalls.push(path);
     let result:unknown;
-    if(path.startsWith("plans/")){const yearly=path.endsWith("yearly"), sale=path.includes("sale_");result={id:path.slice(6),period:yearly?"yearly":"monthly",interval:1,item:{amount:sale?(yearly?225000:22500):(yearly?299900:29900),currency:"INR"}};}
+    if(path.startsWith("plans/")){const yearly=path.endsWith("yearly");result={id:path.slice(6),period:yearly?"yearly":"monthly",interval:1,item:{amount:yearly?299900:29900,currency:"INR"}};}
     else if(path==="subscriptions"){const body=JSON.parse(String(init?.body));createdBodies.push(body);remote={...remote,plan_id:body.plan_id,...(body.start_at?{id:"sub_renewal",status:"created",paid_count:0,current_end:null}:{})};result=remote;}
     else if(path.endsWith("/cancel")){const body=JSON.parse(String(init?.body));if(!body.cancel_at_cycle_end)remote={...remote,status:"cancelled"};result=remote;}
     else if(path.startsWith("invoices?"))result={items:invoiceRows};

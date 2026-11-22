@@ -5,6 +5,8 @@ import { redirectFor } from "@/lib/auth-routes";
 import { protectWithArcjet } from "@/lib/arcjet";
 import { checkRateLimit } from "@/lib/redis";
 import { isUntrackedEmail, UNTRACKED_COOKIE } from "@/lib/server/tracking-exclusions";
+import { isIndiaOnlyRequest } from "@/lib/audience";
+import { isIndiaVisitor } from "@/lib/server/audience";
 
 /**
  * Next.js 16 Edge Proxy (replaces middleware.ts)
@@ -17,11 +19,19 @@ const PUBLIC_DATA = new Set(["/api/landing/news", "/api/landing/library", "/api/
 
 /** The routes this proxy guards (Arcjet, rate limit, session, headers). The matcher below is wider so AI crawler
  *  visits to every public page, robots.txt, llms.txt and sitemaps are tracked; those pass straight through. */
-const GUARDED = /^\/(?:$|learning(?:\/|$)|super-admin(?:\/|$)|sign-in(?:\/|$)|sign-up(?:\/|$)|api(?:\/|$))/;
+const GUARDED = /^\/(?:$|learning(?:\/|$)|super-admin(?:\/|$)|sign-in(?:\/|$)|sign-up(?:\/|$)|exams(?:\/|$)|portal(?:\/|$)|api(?:\/|$))/;
 
 export default async function proxy(request: NextRequest, event: NextFetchEvent) {
   const startTime = Date.now();
   const { pathname } = request.nextUrl;
+  // Check geography before auth, redirects, prefetches or cached pages can reveal India-only content.
+  if (isIndiaOnlyRequest(request.nextUrl, request.headers) && !isIndiaVisitor(request.headers)) {
+    const response = pathname.startsWith("/api/")
+      ? NextResponse.json({ error: "region_unavailable" }, { status: 403 })
+      : NextResponse.redirect(new URL("/", request.url));
+    response.headers.set("Cache-Control", "private, no-store");
+    return response;
+  }
   // DataFast AI crawler tracking (2026-11-07), server side: not awaited, the package keeps the work alive through event.waitUntil.
   trackAICrawlerRequest(request, event, { websiteId: "dfid_4mXzOZawCzXn52pceXN2q" });
   if (!GUARDED.test(pathname)) return NextResponse.next();

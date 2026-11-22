@@ -210,7 +210,7 @@ function PromotionForm({ draft, saving, onChange, onCancel, onSave }: Readonly<{
         <label><span>Format</span><select value={draft.format} onChange={event => set("format", event.target.value as PromotionFormat)}>{PROMOTION_FORMATS.map(f => <option key={f} value={f}>{f}</option>)}</select></label>
         <label><span>Status</span><select value={draft.status} onChange={event => set("status", event.target.value)}>{PROMOTION_STATUSES.map(s => <option key={s} value={s}>{s}</option>)}</select></label>
         {field("title", "Title", "text", true)}
-        <label><span>Campaign (utm_campaign)</span><input value={draft.utm_campaign} onChange={event => set("utm_campaign", campaignSlug(event.target.value))} placeholder="diwali-offer" required /></label>
+        <label><span>Campaign (utm_campaign)</span><input value={draft.utm_campaign} onChange={event => set("utm_campaign", campaignSlug(event.target.value))} placeholder="launch-week" required /></label>
         {field("url", "Post or ad link", "url", true)}
         {field("starts_on", "Starts", "date")}{field("ends_on", "Ends", "date")}{field("owner", "Owner")}
         {field("audience", "Audience", "text", true)}

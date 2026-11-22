@@ -1,7 +1,7 @@
 "use client";
 
 import { RouteH1 } from "@/components/route-heading";
-import { TECH_BUZZ_TRACKED, shortTech } from "@/lib/tech-buzz-sections";
+import { TECH_BUZZ_TRACKED, shortTech, techGroupOf } from "@/lib/tech-buzz-sections";
 import { useEffect, useMemo, useState, useSyncExternalStore, type CSSProperties } from "react";
 import Image from "@/components/responsive-image";
 import Link from "@/components/site-link";
@@ -12,7 +12,6 @@ import {
 } from "lucide-react";
 import { BrandMark } from "./brand-mark";
 import { useLanguage } from "./language-provider";
-import { getDiwaliFestiveSaleInfo } from "@/lib/festive-sale";
 import { DEFAULT_READING_FONT_ID, popularity, READING_FONTS, logoOf, techLogo, type TechBuzzCard } from "@/lib/tech-buzz-public";
 import { TechIcon } from "./tech-icon";
 import { isUnsplash, unoptimizedRemote, unsplashLoader } from "@/lib/image-loaders";
@@ -58,7 +57,6 @@ const writeStored = (key: string, value: string) => {
   window.dispatchEvent(new Event(STORE_EVENT));
 };
 const useStored = (key: string) => useSyncExternalStore(subscribe, () => readStored(key), () => null);
-const never = () => () => {};
 const readUrlTag = () => urlParam("tag");
 const readUrlQuery = () => urlParam("q") ?? "";
 const readUrlFeed = () => urlParam("feed");
@@ -264,9 +262,7 @@ export function TechBuzzBlog({ cards, groups, showcase = false }: { cards: TechB
   const [clearedTag, setClearedTag] = useState<string | null>(null);
   const tag = urlTag && urlTag !== clearedTag ? urlTag : null;
   const storedView = useStored(VIEW_KEY);
-  const view = viewThisVisit ?? (storedView === "grid" ? "grid" : "list");
-  const saleEnded = useSyncExternalStore(never, () => !getDiwaliFestiveSaleInfo(Date.now()).active, () => false);
-  const sale = getDiwaliFestiveSaleInfo();
+  const view = viewThisVisit ?? (storedView === "list" ? "list" : "grid");
 
   // Popular Learning Tracks Pagination
   const TRACKS_PER_PAGE = 5;
@@ -336,6 +332,12 @@ export function TechBuzzBlog({ cards, groups, showcase = false }: { cards: TechB
   const hero = filtered ? null : ranked[0];
   const stories = hero ? ranked.slice(1) : ranked;
   const visible = stories.slice(0, shown);
+  // Masthead figures, all counted from the stories themselves (they used to be fixed: "100% verified", "18 tracks", "4.9★").
+  const deck = useMemo(() => {
+    const reviewed = cards.filter(card => card.review);
+    const average = reviewed.length ? reviewed.reduce((sum, card) => sum + (card.review?.stars ?? 0), 0) / reviewed.length : 0;
+    return { guides: cards.length, tracks: new Set(cards.map(card => techGroupOf(card).id)).size, reviewed: reviewed.length, average };
+  }, [cards]);
   const staffPicks = useMemo(() => [...tunedCards].filter(card => card.rating.count).sort((a, b) => b.rating.average - a.rating.average).slice(0, 4), [tunedCards]);
   const trending = useMemo(() => [...tunedCards].sort((a, b) => (a.trendingRank ?? 99) - (b.trendingRank ?? 99) || popularity(b) - popularity(a)).slice(0, 5), [tunedCards]);
   const milestones = useMemo(() => tunedCards.filter(card => card.milestone && card.claps > 0).slice(0, 3), [tunedCards]);
@@ -461,27 +463,29 @@ export function TechBuzzBlog({ cards, groups, showcase = false }: { cards: TechB
         <div className={styles.metricsRibbon}>
           <div className={styles.metricItem}>
             <BookOpen size={14} className={styles.metricIcon} aria-hidden="true" />
-            <span className={styles.metricValue}>{cards.length}+</span>
+            <span className={styles.metricValue}>{deck.guides}</span>
             <span className={styles.metricLabel}>Engineering Guides</span>
           </div>
           <span className={styles.metricDivider} aria-hidden="true" />
           <div className={styles.metricItem}>
             <ShieldCheck size={14} className={styles.metricIcon} aria-hidden="true" />
-            <span className={styles.metricValue}>100%</span>
-            <span className={styles.metricLabel}>Code & Architecture Verified</span>
+            <span className={styles.metricValue}>{deck.reviewed}</span>
+            <span className={styles.metricLabel}>Expert-reviewed</span>
           </div>
           <span className={styles.metricDivider} aria-hidden="true" />
           <div className={styles.metricItem}>
             <Layers size={14} className={styles.metricIcon} aria-hidden="true" />
-            <span className={styles.metricValue}>18</span>
+            <span className={styles.metricValue}>{deck.tracks}</span>
             <span className={styles.metricLabel}>Technology Tracks</span>
           </div>
-          <span className={styles.metricDivider} aria-hidden="true" />
-          <div className={styles.metricItem}>
-            <Star size={13} className={styles.metricStarIcon} aria-hidden="true" />
-            <span className={styles.metricValue}>4.9★</span>
-            <span className={styles.metricLabel}>Developer Rated</span>
-          </div>
+          {deck.reviewed > 0 && <>
+            <span className={styles.metricDivider} aria-hidden="true" />
+            <div className={styles.metricItem}>
+              <Star size={13} className={styles.metricStarIcon} aria-hidden="true" />
+              <span className={styles.metricValue}>{deck.average.toFixed(1)}★</span>
+              <span className={styles.metricLabel}>Avg. expert rating</span>
+            </div>
+          </>}
         </div>
 
         <div className={styles.tools}>
@@ -654,12 +658,6 @@ export function TechBuzzBlog({ cards, groups, showcase = false }: { cards: TechB
         </div>
       </section>
     )}
-
-    {!saleEnded && <Link href="/subscribe" className={styles.sale}>
-      <Sparkles size={16} aria-hidden="true" />
-      <span><b>{sale.title}:</b> {sale.discountPercent}% off membership until {sale.validTill}. Read every story in full with interactive code & audio.</span>
-      <ArrowRight size={16} aria-hidden="true" />
-    </Link>}
 
     {/* 4. Feeds Pills */}
     {/* Feed filters re-sort the list in place, so they are a toggle group, not navigation. */}

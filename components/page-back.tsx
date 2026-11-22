@@ -13,7 +13,7 @@ import { ArrowLeft } from "lucide-react";
 const LABELS: Record<string, string> = {
   "/": "Home", "/about": "About", "/api-reference": "API Reference", "/compare": "Comparisons", "/contact": "Contact", "/courses": "Courses",
   "/interview-questions": "Interview Questions", "/learn": "Handbooks", "/library": "Free Library", "/tech-buzz": "Tech Buzz", "/vocabulary": "Vocabulary", "/workflows": "Workflow Blueprints",
-  "/learning": "Learning Dashboard", "/learning/api-docs": "API Docs", "/learning/coffee-and-code": "Coffee & Code", "/learning/lessons": "Lessons", "/super-admin": "Super Admin",
+  "/learning": "Learning Dashboard", "/learning/api-docs": "API Docs", "/learning/coffee-and-code": "Coffee & Code", "/learning/board-exams": "Board Exams", "/learning/competitive-exams": "Competitive Exams", "/learning/lessons": "Lessons", "/super-admin": "Super Admin",
 };
 /** Dynamic pages that have children of their own. */
 const DYNAMIC_PARENTS = [/^\/api-reference\/[^/]+$/];

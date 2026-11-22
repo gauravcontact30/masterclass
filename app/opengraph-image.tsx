@@ -4,7 +4,7 @@ import { join } from "node:path";
 import { HOME_OG_TECHNOLOGIES, HOME_OG_WALL, HomeOgCard } from "@/components/og-card";
 import { siteName, siteUrl } from "@/lib/seo";
 
-export const alt = `${siteName}: from AI agents to production. Courses, interview prep and weekly Tech Buzz stories across ${HOME_OG_TECHNOLOGIES.map(tech => tech.name).join(", ")}`;
+export const alt = `${siteName}: tech careers, board exams and competitive exams, in English and Hindi. Interview prep and courses across ${HOME_OG_TECHNOLOGIES.map(tech => tech.name).join(", ")}; UP Board, CBSE and ICSE Class 10 and 12; NDA, defence, SSC, banking, railway, UPSC and TET exams; IELTS English`;
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 

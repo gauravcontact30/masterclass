@@ -46,5 +46,9 @@ test('interview practice reveals explanatory feedback and subjective answers',as
   await user.click(screen.getByRole('radio',{name:detail.objective[0].options[0]}));
   expect(screen.getByRole('status')).toHaveTextContent('Correct.');
   await user.click(screen.getByText(detail.subjective[0].question));
-  expect(screen.getByText(detail.subjective[0].answer,{exact:false})).toBeVisible();
+  // The answer is rendered with emphasis split across elements, so the opened panel's text is compared as a whole.
+  const panel=screen.getByText(detail.subjective[0].question).closest('details')!;
+  expect(panel).toHaveAttribute('open');
+  const words=(text:string)=>text.replace(/\s+/g,'');
+  expect(words(panel.textContent!)).toContain(words(detail.subjective[0].answer).slice(0,60));
 });

@@ -1,3 +1,4 @@
+import { SOURCE_LABEL, classifySource } from "./traffic-sources";
 import { dayBounds, reportDay } from "./daily-social";
 
 /*
@@ -54,6 +55,8 @@ export function learningPath(path: string): string {
   if (/vocab/.test(p)) return "Vocabulary";
   if (/^\/tech-buzz(\/|$)/.test(p)) return "Tech Buzz";
   if (/^\/learning\/coffee-and-code(\/|$)/.test(p)) return "Coffee & Code";
+  if (/^\/learning\/board-exams(\/|$)/.test(p)) return "Board Exams";
+  if (/^\/learning\/competitive-exams(\/|$)/.test(p)) return "Competitive Exams";
   if (/^\/learning\/compiler(\/|$)/.test(p)) return "Compiler";
   if (/^\/learning\/(notes|bookmark|search|step-by-step|library|mentors)(\/|$)|^\/library(\/|$)/.test(p)) return "Notes & study tools";
   if (/^\/learning\/(plans|settings)(\/|$)/.test(p)) return NOT_LEARNING;
@@ -80,22 +83,9 @@ function countryName(code: string | null | undefined) {
   if (!code) return null;
   try { return REGIONS.of(code.toUpperCase()) ?? code; } catch { return code; }
 }
-/** Where a session came from: its campaign, else the referring site, else direct (our own host counts as direct). */
+/** Where a session came from (lib/traffic-sources.ts): its campaign tag, else the referring site, else Direct. */
 function sourceOf(view: WeekView, ownHosts: string[]): string {
-  // Campaign tags are short names ("fb", "ig", "li"); referrers are host names. Both fold into the same families.
-  const host = (view.utm_source || view.referrer_host)?.toLowerCase().trim().replace(/^www\./, "");
-  if (!host || ownHosts.some(own => host === own || host.endsWith(`.${own}`))) return "Direct";
-  if (/^(fb|facebook|ig|instagram|meta)$/.test(host)) return "Meta";
-  if (/^(li|linkedin)$/.test(host)) return "LinkedIn";
-  if (/^(x|twitter|tw)$/.test(host)) return "X (Twitter)";
-  if (/^(google|gsc|google_search)$/.test(host)) return "Google";
-  if (/google\./.test(host)) return "Google";
-  if (/bing\.|duckduckgo|yahoo\./.test(host)) return "Other search";
-  if (/linkedin|lnkd/.test(host)) return "LinkedIn";
-  if (/(^|\.)(t\.co|twitter\.com|x\.com)$/.test(host)) return "X (Twitter)";
-  if (/facebook|instagram|fb\./.test(host)) return "Meta";
-  if (/chatgpt|openai|perplexity|claude\.ai|gemini/.test(host)) return "AI assistants";
-  return host;
+  return SOURCE_LABEL[classifySource(view, ownHosts)];
 }
 
 function totals(views: WeekView[], leaves: WeekLeave[]): WeekTotals {

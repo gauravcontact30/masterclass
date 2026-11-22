@@ -124,10 +124,11 @@ export function HomeOgCard({ wall, footer }: { wall: readonly (readonly OgTechno
         </div>
       </div>
 
-      <div style={{ display: "flex", flexDirection: "column", marginTop: 38, fontSize: 62, fontWeight: 800, lineHeight: 1.06, letterSpacing: -2.4, color: INK }}>
-        <span>From AI agents</span><span>to production.</span><span style={{ color: P.terracotta }}>Learn it all here.</span>
+      <div style={{ display: "flex", flexDirection: "column", marginTop: 34, fontSize: 54, fontWeight: 800, lineHeight: 1.06, letterSpacing: -2.2, color: INK }}>
+        <span>Tech careers,</span><span>board exams &</span><span style={{ color: P.terracotta }}>competitive exams.</span>
       </div>
-      <div style={{ display: "flex", marginTop: 22, width: 500, fontSize: 25, fontWeight: 500, lineHeight: 1.36, color: SOFT }}>Courses, interview prep and new Tech Buzz stories every week, across 35+ technologies.</div>
+      <div style={{ display: "flex", marginTop: 20, width: 540, fontSize: 23, fontWeight: 500, lineHeight: 1.38, color: SOFT }}>Interview prep and AI courses · UP, CBSE & ICSE Class 10 and 12 · NDA, SSC, banks, railways, UPSC, TET · IELTS English.</div>
+      <div style={{ display: "flex", alignItems: "center", marginTop: 16, padding: "7px 14px", borderRadius: 999, border: `2px solid ${P.terracotta}`, color: P.terracotta, fontSize: 19, fontWeight: 800, alignSelf: "flex-start" }}>In English & Hindi</div>
 
       <div style={{ display: "flex", alignItems: "center", marginTop: "auto" }}>
         <div style={{ display: "flex", alignItems: "center", padding: "15px 26px", borderRadius: 14, background: INK, color: "#ffffff", fontSize: 24, fontWeight: 800 }}>Start learning free →</div>

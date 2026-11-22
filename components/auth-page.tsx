@@ -1,18 +1,23 @@
 "use client";
+import { AuthAudiencePicker } from "./auth-audience-picker";
+import { useIndiaAccess } from "./audience-provider";
 import { GOALS, trackGoal } from "@/lib/goals";
 import { RouteH1 } from "@/components/route-heading";
-import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { Field, FieldDescription, FieldLabel } from "@/components/ui/field";
+import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput } from "@/components/ui/input-group";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 import { ExpandedText } from "@/components/expanded-text";
 
 import { useEffect, useState, useSyncExternalStore } from "react";
 import Link from "@/components/site-link";
 import { toast } from "sonner";
 import { setAuthNotice } from "@/lib/auth-notice";
-import { ArrowLeft, ArrowUpRight, Eye, EyeOff, MailCheck, Settings2 } from "lucide-react";
+import { ArrowLeft, ArrowUpRight, Eye, EyeOff, Globe2, MailCheck, Settings2, Sparkles } from "lucide-react";
 import { browserAuth, preloadSupabaseBrowser } from "@/lib/supabase-browser-lazy";
 import { hardNavigate } from "@/lib/hard-navigate";
 import { isSafeRedirect } from "@/lib/safe-redirect";
+import { PORTALS, isExamPortal, otherPortals, type Portal } from "@/lib/portal";
 import { en, TranslationKey } from "@/lib/i18n";
 import { useLanguage } from "./language-provider";
 import { Button } from "./ui/button";
@@ -43,13 +48,15 @@ export function safeRedirect(target: string | undefined) {
  */
 const enterApp = (target: string) => hardNavigate(target);
 /** Problems with an emailed link, passed back by /auth/confirm and /auth/callback as ?error=. */
-export type LinkError = "link_expired" | "reset_expired" | "link_invalid" | "link_other_device" | "oauth_failed" | "oauth_unavailable";
+export type LinkError = "link_expired" | "reset_expired" | "link_invalid" | "link_other_device" | "oauth_failed" | "oauth_unavailable" | "no_portal_account" | "portal_unavailable";
 const LINK_ERRORS: Record<LinkError, [en: string, hi: string]> = {
   link_expired: ["That email link has expired or was already used. Sign in, or send a new one below.", "यह ईमेल लिंक समाप्त हो गया है या पहले ही उपयोग हो चुका है। साइन इन करें, या नीचे से नया लिंक भेजें।"],
   reset_expired: ["That password-reset link has expired or was already used. Enter your email to get a new one.", "यह पासवर्ड-रीसेट लिंक समाप्त हो गया है या पहले ही उपयोग हो चुका है। नया लिंक पाने के लिए अपना ईमेल लिखें।"],
   link_invalid: ["That link is not valid or was already used. If your email is confirmed, just sign in.", "यह लिंक मान्य नहीं है या पहले ही उपयोग हो चुका है। ईमेल सत्यापित है तो सीधे साइन इन करें।"],
   link_other_device: ["That link was opened in a different browser from the one you signed up in. Your email may already be confirmed: try signing in.", "यह लिंक उस ब्राउज़र से अलग ब्राउज़र में खुला जिसमें आपने साइन अप किया था। आपका ईमेल शायद सत्यापित हो चुका है: साइन इन करके देखें।"],
   oauth_failed: ["Google sign-in was cancelled or did not finish. Try again, or use your email and password.", "Google साइन-इन रद्द हुआ या पूरा नहीं हुआ। फिर कोशिश करें, या ईमेल और पासवर्ड से साइन इन करें।"],
+  no_portal_account: ["You are signed in, but you do not have an account in this portal yet. Create one below.", "You are signed in, but you do not have an account in this portal yet. Create one below."],
+  portal_unavailable: ["This portal is not available right now. Please try again shortly.", "This portal is not available right now. Please try again shortly."],
   oauth_unavailable: ["Google sign-in is not available right now. Please use your email and password.", "Google साइन-इन अभी उपलब्ध नहीं है। कृपया ईमेल और पासवर्ड से साइन इन करें।"],
 };
 /** The callback URL for emailed links, carrying the page to return to. */
@@ -64,7 +71,29 @@ const GoogleMark = () => <svg width="18" height="18" viewBox="0 0 48 48" aria-hi
 const RESEND_WAIT = 60;
 const noSubscribe = () => () => {};
 
-export function AuthPage({ mode, enabled, initialEmail = "", redirectTo, linkError }: { mode: "signin" | "signup"; enabled: boolean; initialEmail?: string; redirectTo?: string; linkError?: LinkError }) {
+/** Opens `portal` for the session Supabase just issued (app/api/portal/enter): sign-up creates the portal account, sign-in needs one. */
+async function openPortal(portal: Portal, intent: "signin" | "signup"): Promise<{ ok: true } | { ok: false; error: TranslationKey; hasOther: boolean }> {
+  const response = await fetch("/api/portal/enter", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ portal, intent }) });
+  if (response.ok) return { ok: true };
+  const body = await response.json().catch(() => ({})) as { error?: string; hasOther?: boolean };
+  return { ok: false, error: body.error === "no_portal_account" ? (isExamPortal(portal) ? "no_exams_account" : "no_tech_account") : body.error === "portal_unavailable" ? "portal_unavailable" : "service_error", hasOther: Boolean(body.hasOther) };
+}
+
+/**
+ * `portal`: which of the site's three portals this form signs in to (lib/portal.ts): Tech Pro, Board Scholars or
+ * Exam Aspirants. Each has its own pages, its own account and its own membership; an account in one opens no other.
+ */
+export function AuthPage({ mode, enabled, initialEmail = "", redirectTo, linkError, portal = "tech" }: { mode: "signin" | "signup"; enabled: boolean; initialEmail?: string; redirectTo?: string; linkError?: LinkError; portal?: Portal }) {
+  const india = useIndiaAccess();
+  const here = PORTALS[portal]; const exam = isExamPortal(portal);
+  // The other portals offered at the foot of the form: the exam portals only where they are available (India).
+  const others = otherPortals(portal).filter(other => india || exam ? true : other === "tech");
+  /** Where a finished sign-in lands: the page that asked for it, else this portal's dashboard. */
+  const [selectedDestination, setSelectedDestination] = useState<string | null>(null);
+  const destination = selectedDestination ?? (isSafeRedirect(redirectTo) ? redirectTo : here.home);
+  /** Where emailed links and Google return. An exam portal goes through /portal/enter, which opens that portal first. */
+  const returnTo = (intent: "signin" | "signup") => exam ? `/portal/enter?portal=${portal}&intent=${intent}&next=${encodeURIComponent(destination)}` : destination;
+  const query = `?redirect=${encodeURIComponent(destination)}`;
   const { t, language, setLanguage } = useLanguage();
   // False in the server HTML, true once React has hydrated. Until then the submit button stays disabled, so a tap
   // on a slow phone connection cannot fall through to a native form submit that silently reloads the page.
@@ -101,16 +130,16 @@ export function AuthPage({ mode, enabled, initialEmail = "", redirectTo, linkErr
       toast.success(hi ? "पुष्टि ईमेल फिर से भेजा गया" : "Confirmation email sent again", { description: hi ? `${address} का इनबॉक्स (और स्पैम फ़ोल्डर) देखें।` : `Check the inbox (and spam folder) of ${address}.` });
     } catch { setError("service_error"); } finally { setBusy(false); }
   }
-  const resendButton = <button type="button" className={styles.switchLink} disabled={busy || resendIn > 0} onClick={() => void resendConfirmation()}>
+  const resendButton = <Button type="button" variant="link" className={styles.switchLink} disabled={busy || resendIn > 0} onClick={() => void resendConfirmation()}>
     <ExpandedText text={resendIn > 0 ? (hi ? `${resendIn} सेकंड में फिर भेज सकते हैं` : `Resend available in ${resendIn}s`) : (hi ? "पुष्टि ईमेल फिर से भेजें" : "Resend confirmation email")} />
-  </button>;
+  </Button>;
 
   // Accounts created at guest checkout have no password until the owner sets one.
   async function sendLink() {
     if (!email.trim()) { setError("invalid_request"); return; }
     setBusy(true); setError(null);
     try {
-      const { error } = await (await browserAuth()).signInWithOtp({ email: email.trim(), options: { shouldCreateUser: false, emailRedirectTo: callbackFor(redirectTo) } });
+      const { error } = await (await browserAuth()).signInWithOtp({ email: email.trim(), options: { shouldCreateUser: false, emailRedirectTo: callbackFor(returnTo("signin")) } });
       // Report success either way, so the form does not reveal which emails have accounts.
       if (error && error.status !== 400 && error.status !== 422) { setError(authErrorKey(error)); return; }
       setLinkSent("signin");
@@ -136,7 +165,8 @@ export function AuthPage({ mode, enabled, initialEmail = "", redirectTo, linkErr
     setBusy(true); setError(null);
     try { sessionStorage.removeItem("masterclass:sidebar-collapsed"); } catch {}
     trackGoal(GOALS.googleSignIn, { mode });
-    hardNavigate(`/api/auth/google${redirectTo ? `?next=${encodeURIComponent(safeRedirect(redirectTo))}` : ""}`);
+    const back = returnTo(mode === "signup" ? "signup" : "signin");
+    hardNavigate(`/api/auth/google${back ? `?next=${encodeURIComponent(safeRedirect(back))}` : ""}`);
   }
 
   async function submit(event: React.FormEvent) {
@@ -150,28 +180,46 @@ export function AuthPage({ mode, enabled, initialEmail = "", redirectTo, linkErr
         if (error) { setError(authErrorKey(error)); return; }
         // Only a confirmed email may enter, even if the project ever issues a session before confirmation.
         if (!data.user?.email_confirmed_at) { await auth.signOut(); setError("email_not_confirmed"); return; }
+        // The login is right; now this portal must hold an account for it. No account opens another portal.
+        if (exam) {
+          const opened = await openPortal(portal, "signin");
+          if (!opened.ok) { if (!opened.hasOther) await auth.signOut(); setError(opened.error); return; }
+        }
         trackGoal(GOALS.signIn, { method: "password" });
         setAuthNotice("signed_in");
         // Dashboards open with the sidebar collapsed on every sign-in.
         try { sessionStorage.removeItem("masterclass:sidebar-collapsed"); } catch {}
-        leaving = true; enterApp(safeRedirect(redirectTo));
+        leaving = true; enterApp(destination);
         return;
       } else {
         // full_name rides along in the user metadata; the on_auth_user_created
         // trigger copies it into public.profiles.name (migration 0003).
-        const { data, error } = await auth.signUp({ email, password, options: { data: { full_name: name.trim() }, emailRedirectTo: callbackFor(redirectTo) } });
+        const { data, error } = await auth.signUp({ email, password, options: { data: { full_name: name.trim(), portal, learning_path: destination, preferred_language: language }, emailRedirectTo: callbackFor(returnTo("signup")) } });
         if (error) { setError(authErrorKey(error)); return; }
         // An already-confirmed address gets a decoy user with no identities and no email at all. Say so, instead
         // of sending the visitor to wait for a confirmation that will never arrive. (An unconfirmed address gets
         // its real user back and a fresh email, so it takes the normal path below.)
         if (data.user && data.user.identities?.length === 0) {
-          setError("user_already_exists");
+          // The email already has a login, perhaps from the other portal. The same password proves ownership, and
+          // then this portal's own account is created for it. A wrong password says how to proceed.
+          const existing = await auth.signInWithPassword({ email, password });
+          if (!existing.error && existing.data.user?.email_confirmed_at) {
+            const opened = await openPortal(portal, "signup");
+            if (opened.ok) { trackGoal(GOALS.signUp, { method: "password" }); setAuthNotice("created"); leaving = true; enterApp(destination); return; }
+            setError(opened.error); return;
+          }
+          if (!existing.error) await auth.signOut();
+          setError("portal_existing_login");
           toast.info(hi ? "यह ईमेल पहले से पंजीकृत है" : "This email already has an account", { description: hi ? "साइन इन करें, या पासवर्ड न हो तो साइन-इन लिंक मँगवाएँ।" : "Sign in instead, or ask for a sign-in link if you have no password." });
           return;
         }
         // With email confirmation on, Supabase returns no session until the link is opened.
         trackGoal(GOALS.signUp, { method: "password" });
-        if (data.session && data.user?.email_confirmed_at) { setAuthNotice("created"); leaving = true; enterApp(safeRedirect(redirectTo)); return; }
+        if (data.session && data.user?.email_confirmed_at) {
+          const opened = await openPortal(portal, "signup");
+          if (!opened.ok) { setError(opened.error); return; }
+          setAuthNotice("created"); leaving = true; enterApp(destination); return;
+        }
         if (data.session) await auth.signOut();
         setSent(true); setResendIn(RESEND_WAIT);
         toast.success(hi ? "खाता बन गया" : "Account created successfully", { description: hi ? `हमने ${email.trim()} पर पुष्टि लिंक भेजा है। साइन इन करने से पहले उसे खोलें (स्पैम फ़ोल्डर भी देखें)।` : `We sent a confirmation link to ${email.trim()}. Open it before signing in (check spam too).`, duration: 8000 });
@@ -204,22 +252,22 @@ export function AuthPage({ mode, enabled, initialEmail = "", redirectTo, linkErr
               <p className={styles.lead}><ExpandedText text={linkSent === "reset"
                 ? (hi ? `अगर ${email.trim()} से कोई खाता है, तो हमने उस पर पासवर्ड रीसेट लिंक भेजा है। उसी ब्राउज़र में लिंक खोलें और नया पासवर्ड चुनें (स्पैम फ़ोल्डर भी देखें)।` : `If an account exists for ${email.trim()}, we have sent it a password reset link. Open it in this browser to choose a new password (check spam too).`)
                 : (hi ? `अगर ${email.trim()} से कोई खाता है, तो हमने उस पर साइन-इन लिंक भेजा है। लिंक खोलकर साइन इन करें।` : `If an account exists for ${email.trim()}, we have sent it a sign-in link. Open the link to sign in.`)} /></p>
-              <button type="button" className={styles.switchLink} onClick={() => setLinkSent(null)}><ExpandedText text={hi ? "वापस जाएँ" : "Back to sign in"} /></button>
+              <Button type="button" variant="link" className={styles.switchLink} onClick={() => setLinkSent(null)}><ExpandedText text={hi ? "वापस जाएँ" : "Back to sign in"} /></Button>
             </section>
           ) : forgot ? (
             <section>
               <RouteH1 className={styles.title}><ExpandedText text={hi ? "पासवर्ड रीसेट करें" : "Reset your password"} /></RouteH1>
               <p className={styles.lead}><ExpandedText text={hi ? "अपने खाते का ईमेल लिखें। हम उस पर एक लिंक भेजेंगे जिससे आप नया पासवर्ड चुन सकेंगे।" : "Enter the email for your account and we will send you a link to choose a new password."} /></p>
-              {!error && linkError === "reset_expired" && <p className={`error-banner ${styles.error}`} role="alert"><ExpandedText text={LINK_ERRORS.reset_expired[hi ? 1 : 0]} /></p>}
-              {error && <p className={`error-banner ${styles.error}`} role="alert"><ExpandedText text={t(error)} /></p>}
+              {!error && linkError === "reset_expired" && <Alert variant="destructive" className={`error-banner ${styles.error}`}><AlertDescription><ExpandedText text={LINK_ERRORS.reset_expired[hi ? 1 : 0]} /></AlertDescription></Alert>}
+              {error && <Alert variant="destructive" className={`error-banner ${styles.error}`}><AlertDescription><ExpandedText text={t(error)} /></AlertDescription></Alert>}
               <form method="post" onSubmit={event => { event.preventDefault(); void sendReset(); }} className={styles.form}>
-                <div className={styles.field}>
-                  <Label className={styles.label} htmlFor="reset-email"><ExpandedText text={t("email")} /></Label>
+                <Field className={styles.field}>
+                  <FieldLabel className={styles.label} htmlFor="reset-email"><ExpandedText text={t("email")} /></FieldLabel>
                   <Input className={styles.input} id="reset-email" type="email" autoComplete="email" required autoFocus value={email} onChange={e => setEmail(e.target.value)} />
-                </div>
+                </Field>
                 <Button className={styles.submit} type="submit" disabled={busy || !hydrated} aria-busy={busy}><ExpandedText text={busy ? t("loading") : (hi ? "रीसेट लिंक भेजें" : "Send reset link")} /></Button>
               </form>
-              <p className={styles.switchRow}><button type="button" className={styles.switchLink} disabled={busy} onClick={() => { setForgot(false); setError(null); }}><ExpandedText text={hi ? "वापस जाएँ" : "Back to sign in"} /></button></p>
+              <p className={styles.switchRow}><Button type="button" variant="link" className={styles.switchLink} disabled={busy} onClick={() => { setForgot(false); setError(null); }}><ExpandedText text={hi ? "वापस जाएँ" : "Back to sign in"} /></Button></p>
             </section>
           ) : sent ? (
             <section className={styles.notice}>
@@ -228,52 +276,68 @@ export function AuthPage({ mode, enabled, initialEmail = "", redirectTo, linkErr
               <p className={styles.lead}><ExpandedText text={t("confirmBody")} /></p>
               <p className={styles.lead}><ExpandedText text={hi ? `ईमेल: ${email.trim()}। ईमेल नहीं मिला? स्पैम फ़ोल्डर देखें या फिर से भेजें।` : `Sent to ${email.trim()}. Nothing arrived? Check your spam folder, or send it again.`} /></p>
               <p className={styles.switchRow}>{resendButton}</p>
-              <Link className={styles.switchLink} href="/sign-in"><ExpandedText text={t("signin")} /><ArrowUpRight size={15} aria-hidden="true" /></Link>
+              <Link className={styles.switchLink} href={here.signIn}><ExpandedText text={t("signin")} /><ArrowUpRight size={15} aria-hidden="true" /></Link>
             </section>
           ) : (
             <section>
+              {/* One framed intro above the title: which portal this is and where it is available, the learning
+                  path cards, then what the portal includes (wraps instead of truncating). */}
+              <div className={styles.intro} data-portal={portal}>
+                <div className={styles.introHead}>
+                  <p className={styles.portal}><span className={styles.portalDot} aria-hidden="true" /><b>{hi ? `${here.name} पोर्टल` : `${here.name} portal`}</b></p>
+                  <span className={styles.scope}><Globe2 size={12} strokeWidth={2.2} aria-hidden="true" />{exam ? (hi ? "परीक्षा तैयारी" : "Exam prep") : (hi ? "दुनिया भर" : "Worldwide")}</span>
+                </div>
+                <AuthAudiencePicker mode={mode} portal={portal} destination={destination} onDestination={setSelectedDestination} />
+                <p className={styles.introFoot}><Sparkles size={13} strokeWidth={2.2} aria-hidden="true" /><span>{hi ? "शामिल: " : "Includes "}<b>{here.tagline.split(" · ")[0]}</b></span></p>
+              </div>
               <RouteH1 className={styles.title}><ExpandedText text={t(mode === "signin" ? "signinTitle" : "signupTitle")} /></RouteH1>
-              <p className={styles.lead}><ExpandedText text={t(mode === "signin" ? "signinHelp" : "signupHelp")} /></p>
+              <p className={styles.lead}><ExpandedText text={portal === "boards" ? (mode === "signin" ? (hi ? "अपनी बोर्ड परीक्षा की तैयारी जारी रखने के लिए साइन इन करें।" : "Sign in to continue your Class 10 or 12 board preparation.") : (hi ? "अपना बोर्ड और कक्षा चुनें, फिर Board Scholars खाता बनाएँ।" : "Choose your board and class, then create your Board Scholars account."))
+                : portal === "competitive" ? (mode === "signin" ? (hi ? "अपनी प्रतियोगी परीक्षा की तैयारी जारी रखने के लिए साइन इन करें।" : "Sign in to continue your government and competitive exam preparation.") : (hi ? "अपनी लक्ष्य परीक्षा चुनें, फिर Exam Aspirants खाता बनाएँ।" : "Choose your target exam, then create your Exam Aspirants account."))
+                : t(mode === "signin" ? "signinHelp" : "signupHelp")} /></p>
               {mode === "signup" && <p className={styles.trial}><ExpandedText text={hi ? "हर नया खाता 1 दिन के निःशुल्क ट्रायल से शुरू होता है: पूरी पहुँच, कोई कार्ड नहीं।" : "Every new account starts with a 1-day free trial: full access, no card needed."} /></p>}
               <LearningSlot surface={mode === "signin" ? "sign_in" : "sign_up"} page={mode === "signin" ? "sign-in" : "sign-up"} section="above-form" />
-              {!error && linkError && <p className={`error-banner ${styles.error}`} role="alert"><ExpandedText text={LINK_ERRORS[linkError][hi ? 1 : 0]} /></p>}
-              {error && <p className={`error-banner ${styles.error}`} role="alert"><ExpandedText text={t(error)} /></p>}
+              {!error && linkError && <Alert variant="destructive" className={`error-banner ${styles.error}`}><AlertDescription><ExpandedText text={LINK_ERRORS[linkError][hi ? 1 : 0]} /></AlertDescription></Alert>}
+              {error && <Alert variant="destructive" className={`error-banner ${styles.error}`}><AlertDescription><ExpandedText text={t(error)} /></AlertDescription></Alert>}
               {(error === "email_not_confirmed" || linkError === "link_expired") && <p className={styles.switchRow}>{resendButton}</p>}
-              <button type="button" className={styles.google} disabled={busy || !hydrated} onClick={continueWithGoogle}>
+              <Button type="button" variant="outline" className={styles.google} disabled={busy || !hydrated} onClick={continueWithGoogle}>
                 <GoogleMark /><ExpandedText text={mode === "signin" ? (hi ? "Google से साइन इन करें" : "Sign in with Google") : (hi ? "Google से साइन अप करें" : "Sign up with Google")} />
-              </button>
+              </Button>
               <p className={styles.divider}><ExpandedText text={hi ? "या ईमेल से" : "or with email"} /></p>
               {/* method="post": even before hydration a submit never puts anything in the URL. */}
               <form method="post" onSubmit={submit} className={styles.form}>
                 {mode === "signup" && (
                   // The hint sits outside the label so it describes the field
                   // without becoming part of its accessible name.
-                  <div className={styles.field}>
-                    <Label className={styles.label} htmlFor="auth-name"><ExpandedText text={t("fullName")} /></Label>
+                  <Field className={styles.field}>
+                    <FieldLabel className={styles.label} htmlFor="auth-name"><ExpandedText text={t("fullName")} /></FieldLabel>
                     <Input className={styles.input} id="auth-name" type="text" autoComplete="name" required maxLength={80} aria-describedby="auth-name-hint" value={name} onChange={e => setName(e.target.value)} />
-                    <small className={styles.hint} id="auth-name-hint"><ExpandedText text={t("fullNameHint")} /></small>
-                  </div>
+                    <FieldDescription className={styles.hint} id="auth-name-hint"><ExpandedText text={t("fullNameHint")} /></FieldDescription>
+                  </Field>
                 )}
-                <div className={styles.field}>
-                  <Label className={styles.label} htmlFor="auth-email"><ExpandedText text={t("email")} /></Label>
+                <Field className={styles.field}>
+                  <FieldLabel className={styles.label} htmlFor="auth-email"><ExpandedText text={t("email")} /></FieldLabel>
                   <Input className={styles.input} id="auth-email" type="email" autoComplete="email" required value={email} onChange={e => setEmail(e.target.value)} />
-                </div>
-                <div className={styles.field}>
-                  <Label className={styles.label} htmlFor="auth-password"><ExpandedText text={t("password")} /></Label>
-                  <div className={styles.passwordBox}>
-                    <Input className={styles.input} id="auth-password" type={showPassword ? "text" : "password"} autoComplete={mode === "signin" ? "current-password" : "new-password"} required minLength={6} aria-describedby={mode === "signup" ? "auth-password-hint" : undefined} value={password} onChange={e => setPassword(e.target.value)} />
-                    <Button className={styles.eye} type="button" aria-controls="auth-password" aria-pressed={showPassword} aria-label={showPassword ? t("hidePassword") : t("showPassword")} onClick={() => setShowPassword(value => !value)}>
-                      {showPassword ? <EyeOff size={18} aria-hidden="true" /> : <Eye size={18} aria-hidden="true" />}
-                    </Button>
-                  </div>
-                  {mode === "signup" && <small className={styles.hint} id="auth-password-hint"><ExpandedText text={t("authPasswordHint")} /></small>}
-                </div>
-                {mode === "signin" && <button type="button" className={`${styles.switchLink} ${styles.forgot}`} disabled={busy} onClick={() => { setError(null); setForgot(true); }}><ExpandedText text={hi ? "पासवर्ड भूल गए?" : "Forgot password?"} /></button>}
+                </Field>
+                <Field className={styles.field}>
+                  <FieldLabel className={styles.label} htmlFor="auth-password"><ExpandedText text={t("password")} /></FieldLabel>
+                  <InputGroup className={styles.passwordBox}>
+                    <InputGroupInput className={styles.passwordInput} id="auth-password" type={showPassword ? "text" : "password"} autoComplete={mode === "signin" ? "current-password" : "new-password"} required minLength={6} aria-describedby={mode === "signup" ? "auth-password-hint" : undefined} value={password} onChange={e => setPassword(e.target.value)} />
+                    <InputGroupAddon align="inline-end">
+                      <InputGroupButton className={styles.eye} size="icon-sm" aria-controls="auth-password" aria-pressed={showPassword} aria-label={showPassword ? t("hidePassword") : t("showPassword")} onClick={() => setShowPassword(value => !value)}>
+                        {showPassword ? <EyeOff size={18} aria-hidden="true" /> : <Eye size={18} aria-hidden="true" />}
+                      </InputGroupButton>
+                    </InputGroupAddon>
+                  </InputGroup>
+                  {mode === "signup" && <FieldDescription className={styles.hint} id="auth-password-hint"><ExpandedText text={t("authPasswordHint")} /></FieldDescription>}
+                </Field>
+                {mode === "signin" && <Button type="button" variant="link" className={`${styles.switchLink} ${styles.forgot}`} disabled={busy} onClick={() => { setError(null); setForgot(true); }}><ExpandedText text={hi ? "पासवर्ड भूल गए?" : "Forgot password?"} /></Button>}
                 <Button className={styles.submit} type="submit" disabled={busy || !hydrated} aria-busy={busy || !hydrated}><ExpandedText text={busy || !hydrated ? t("loading") : t(mode === "signin" ? "signin" : "signup")} /></Button>
               </form>
-              {mode === "signup" && error === "user_already_exists" && <p className={styles.switchRow}><Link className={styles.switchLink} href={`/sign-in?email=${encodeURIComponent(email.trim())}${redirectTo ? `&redirect=${encodeURIComponent(safeRedirect(redirectTo))}` : ""}`}><ExpandedText text={t("signin")} /><ArrowUpRight size={15} aria-hidden="true" /></Link></p>}
-              {mode === "signin" && <p className={styles.switchRow}><button type="button" className={styles.switchLink} disabled={busy} onClick={() => void sendLink()}><ExpandedText text={hi ? "पासवर्ड नहीं है? मुझे साइन-इन लिंक ईमेल करें" : "No password? Email me a sign-in link"} /></button></p>}
-              <p className={styles.switchRow}><Link className={styles.switchLink} href={mode === "signin" ? `/sign-up${redirectTo ? `?redirect=${encodeURIComponent(safeRedirect(redirectTo))}` : ""}` : `/sign-in${redirectTo ? `?redirect=${encodeURIComponent(safeRedirect(redirectTo))}` : ""}`}><ExpandedText text={t(mode === "signin" ? "noAccount" : "haveAccount")} /></Link></p>
+              {mode === "signup" && (error === "user_already_exists" || error === "portal_existing_login") && <p className={styles.switchRow}><Link className={styles.switchLink} href={`${here.signIn}?email=${encodeURIComponent(email.trim())}${`&redirect=${encodeURIComponent(destination)}`}`}><ExpandedText text={t("signin")} /><ArrowUpRight size={15} aria-hidden="true" /></Link></p>}
+              {mode === "signin" && <p className={styles.switchRow}><Button type="button" variant="link" className={styles.switchLink} disabled={busy} onClick={() => void sendLink()}><ExpandedText text={hi ? "पासवर्ड नहीं है? मुझे साइन-इन लिंक ईमेल करें" : "No password? Email me a sign-in link"} /></Button></p>}
+              <p className={styles.switchRow}><Link className={styles.switchLink} href={`${mode === "signin" ? here.signUp : here.signIn}${query}`}><ExpandedText text={t(mode === "signin" ? "noAccount" : "haveAccount")} /></Link></p>
+              {(error === "no_exams_account" || error === "no_tech_account") && <p className={styles.switchRow}><Link className={styles.switchLink} href={`${here.signUp}?email=${encodeURIComponent(email.trim())}`}>Create your {here.name} account<ArrowUpRight size={15} aria-hidden="true" /></Link></p>}
+              {others.length > 0 && <p className={styles.otherPortal}>{others.map((other, index) => <span key={other}>{index > 0 && " "}Looking for {PORTALS[other].tagline.split(" · ")[0]}? <Link href={mode === "signin" ? PORTALS[other].signIn : PORTALS[other].signUp}>Go to {PORTALS[other].name}</Link>.</span>)} Tech Pro, Board Scholars and Exam Aspirants use separate accounts.</p>}
               {mode === "signup" && <p className={styles.hint}>{language === "hi"
                 ? <>खाता बनाकर आप हमारे <Link href="/terms">नियम और शर्तें</Link> और <Link href="/privacy">गोपनीयता नीति</Link> स्वीकार करते हैं।</>
                 : <>By creating an account you agree to our <Link href="/terms">Terms &amp; conditions</Link> and <Link href="/privacy">Privacy policy</Link>.</>}</p>}
@@ -282,7 +346,7 @@ export function AuthPage({ mode, enabled, initialEmail = "", redirectTo, linkErr
           )}
         </div>
       </main>
-      <AuthStory mode={mode} />
+      <AuthStory mode={mode} portal={portal} />
     </div>
   );
 }

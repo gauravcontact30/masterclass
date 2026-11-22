@@ -1,6 +1,7 @@
 import type { Metadata, MetadataRoute } from "next";
 import { ADDRESS, SOCIAL_PROFILES, SUPPORT } from "./site-contact";
 import { HINDI_ENABLED } from "./i18n";
+import { EXAM_GUIDES } from "./exam-guides";
 
 // Never derive canonical URLs from a request Host header or a preview hostname.
 export function siteUrl(): URL {
@@ -24,9 +25,11 @@ export const siteName = "MasterClass Buddy";
 // Carries the home page's most-used words (interview questions, system design), so the title, description and headings
 // agree on the topic; the technologies are in the description and the h1. 55 characters: SEO checkers flag titles over
 // 60 and Google truncates them.
-export const siteTitle = "MasterClass Buddy | Interview Questions & System Design";
+// Since 2026-11-22 the site has three categories (Tech, Board Exams, Competitive Exams), so the title names all three. 56 characters.
+export const siteTitle = "MasterClass Buddy | Tech, Board & Competitive Exam Prep";
 /** Under 160 characters so Google shows it whole; it names what the site teaches today (the search snippet and link previews). */
-export const siteDescription = "Read weekly Tech Buzz blogs, write real code and learn Agentic AI, LangChain, n8n, Next.js, Python, AWS & DSA, with system design and interview questions.";
+// Since 2026-11-22 the exam learning content is also in Hindi, and the hero leads with defence, banking, railway and civil-services exams.
+export const siteDescription = "Tech interview prep and AI courses, Class 10 & 12 board exams (UP, CBSE, ICSE), NDA, SSC, bank, railway, UPSC and TET exams, and IELTS, in English & Hindi.";
 /**
  * Site-wide keywords: only searches that an indexed page answers (Tech Buzz, /interview-questions, /workflows,
  * /learn, /compare, /api-reference, /vocabulary), phrased the way people search. Google ignores the keywords tag
@@ -54,6 +57,28 @@ export const siteKeywords = [
   "weekly tech blogs", "AI engineering blog",
   // Vocabulary (/vocabulary)
   "English vocabulary with Hindi meanings", "corporate English vocabulary",
+  // Board Exams (the home page's Board Exams category and /exams/board-exams)
+  "board exam preparation", "UP Board important questions", "CBSE Class 10 important questions", "CBSE Class 12 important questions",
+  "ICSE Class 10 important questions", "ISC Class 12 important questions", "Class 10 Maths important questions", "Class 12 Physics important questions",
+  "board exam previous year papers", "UP Board 2027 exam date",
+  // Competitive Exams (the home page's Competitive Exams category and /exams/competitive-exams)
+  "competitive exam preparation", "government exam preparation", "NDA exam preparation", "NDA previous year questions", "CTET preparation",
+  "UPTET questions and answers", "TET child development and pedagogy questions", "SSC CGL questions", "bank exam questions", "RRB NTPC questions",
+  // Board Exams, more searches (2026-11-22): the home page's Board Exams section and its subject packs
+  "UP Board Class 10 important questions", "UP Board Class 12 important questions", "CBSE board exam preparation",
+  "ICSE board exam preparation", "board exam MCQ questions with answers", "Class 10 Science important questions",
+  "Class 12 Chemistry important questions", "Class 12 Maths important questions", "board exam mock test",
+  // Competitive Exams, more searches (2026-11-22): the home page's Competitive Exams section
+  "government job exam preparation", "SSC CHSL questions", "IBPS PO questions", "SBI PO preparation", "RRB Group D questions",
+  "UPSC prelims questions", "NDA maths questions", "defence exam preparation", "police exam questions",
+  "general knowledge questions with answers", "reasoning questions with answers", "quantitative aptitude questions",
+  // TET (2026-11-22): the TET exam in the Competitive Exams section
+  "CTET questions and answers", "CTET Paper 1 preparation", "CTET Paper 2 preparation", "UPTET preparation",
+  "child development and pedagogy MCQ", "Piaget Vygotsky Kohlberg questions",
+  // Hindi (2026-11-22): the exam material reads in Hindi too
+  "board exam questions in Hindi", "competitive exam questions in Hindi", "TET questions in Hindi",
+  // IELTS (2026-11-22): /vocabulary and the IELTS course on /courses
+  "IELTS vocabulary", "IELTS preparation", "IELTS vocabulary with Hindi meanings",
 ];
 export const privateMetadata: Metadata = { robots: { index: false, follow: false } };
 
@@ -66,14 +91,22 @@ export const PUBLIC_PAGES: readonly PublicPage[] = [
   { path: "/", title: siteTitle, label: "Home", description: siteDescription, changeFrequency: "weekly", priority: 1 },
   { path: "/courses", title: "Courses & learning paths", label: "Courses", description: "Browse every MasterClass learning path: technology handbooks and interviews, system design case studies, and IELTS and professional vocabulary.", changeFrequency: "weekly", priority: 0.9 },
   { path: "/library", title: "Free learning library", label: "Library", description: "Free interview questions for 31 technologies, system design and AI agent blueprints, an API reference for 60 technologies, handbooks and English vocabulary.", changeFrequency: "weekly", priority: 0.9 },
-  { path: "/about", title: "About MasterClass", label: "About", description: `MasterClass Buddy is ${HINDI_ENABLED ? "a bilingual English and Hindi" : "a"} learning space for tech professionals: courses, AI agents, certifications and interview prep, with notes, worked answers and practice.`, changeFrequency: "monthly", priority: 0.7 },
+  { path: "/about", title: "About MasterClass", label: "About", description: `MasterClass Buddy is ${HINDI_ENABLED ? "a bilingual English and Hindi" : "a"} learning space for tech careers worldwide: courses, interview prep, Tech Buzz blogs, IELTS English, worked answers and mock tests.`, changeFrequency: "monthly", priority: 0.7 },
   { path: "/contact", title: "Contact & support", label: "Contact", description: "Get help with your MasterClass account, membership, billing or study content, and find answers to common questions.", changeFrequency: "yearly", priority: 0.5 },
   { path: "/privacy", title: "Privacy policy", label: "Privacy", description: "How MasterClass collects, uses and protects your account, payment and learning data, and what stays only in your browser.", changeFrequency: "yearly", priority: 0.3 },
   { path: "/terms", title: "Terms & conditions", label: "Terms", description: "The terms that apply when you create a MasterClass account, buy a membership and use study content and AI-assisted answers.", changeFrequency: "yearly", priority: 0.3 },
   { path: "/tech-buzz", title: "Tech Buzz — Weekly Technology Blogs on Agentic AI, LangChain & Next.js", label: "Tech Buzz", description: "Five new tech blogs every Monday at 00:00 IST, one per track: Agentic AI with LangChain, LangGraph and n8n, System Design, AWS & DevOps, Kubernetes & Docker, and Next.js & React. Reviewed, rated and clapped by developers.", changeFrequency: "weekly", priority: 0.95 },
+  { path: "/board-exams", title: "Board Exams: Class 10 & 12 UP Board, CBSE, ICSE Questions with Answers", label: "Board Exams", description: "Class 10 and 12 board exam prep for UP Board, CBSE and ICSE: chapter-wise questions with worked answers, MCQs, most-asked questions and past papers, in English and Hindi.", changeFrequency: "weekly", priority: 0.9 },
+  { path: "/competitive-exams", title: "Competitive Exams: SSC, Bank, Railway, NDA & UPSC Questions with Answers", label: "Competitive Exams", description: "Government exam prep for SSC, banks, railways, NDA, UPSC, state PSC, police and more: 400+ objective questions per exam with explanations, model answers and marking schemes.", changeFrequency: "weekly", priority: 0.9 },
+  { path: "/tet-exam", title: "TET Exam Preparation: CTET & UPTET Child Development and Pedagogy", label: "TET Exams", description: "CTET, UPTET and state TET preparation: child development and pedagogy, Piaget, Vygotsky, learning theories, inclusive education and EVS pedagogy, with answers, in English and Hindi.", changeFrequency: "weekly", priority: 0.85 },
+  { path: "/ielts-preparation", title: "IELTS Preparation: Writing Task 2 Topics, Speaking Cue Cards & Band Calculator", label: "IELTS Preparation", description: "IELTS Academic and General Training prep: practice for all four skills, 30 Writing Task 2 and Speaking topics with vocabulary, a band score calculator and a study plan.", changeFrequency: "weekly", priority: 0.85 },
   { path: "/site-map", title: "Site map: every technology and learning page", label: "Site map", description: "Find any free MasterClass page: interview questions, handbooks and API reference for each technology, plus system design blueprints, comparisons, vocabulary and Tech Buzz.", changeFrequency: "weekly", priority: 0.6 },
   { path: "/refund-policy", title: "Cancellation & refund policy", label: "Refunds", description: "How to cancel a MasterClass membership, how long your access continues, and when payments are refunded, including duplicate and failed charges.", changeFrequency: "yearly", priority: 0.3 },
 ];
+
+/** Public pages shown to visitors in India only (proxy.ts redirects everyone else): left out of the sitemap and llms.txt,
+ *  because a crawler outside India is redirected away from them. */
+export const INDIA_ONLY_PAGES = new Set<string>(["/board-exams", "/competitive-exams", "/tet-exam"]);
 
 export function publicPage(path: PublicPage["path"]): PublicPage {
   const page = PUBLIC_PAGES.find(entry => entry.path === path);
@@ -82,8 +115,10 @@ export function publicPage(path: PublicPage["path"]): PublicPage {
 }
 
 /** Bump the version when the picture changes: social networks cache a preview by its URL. */
-export const ogImagePath = "/opengraph-image?v=2026-11-03";
-const ogImage = { url: ogImagePath, width: 1200, height: 630, alt: `${siteName}: from AI agents to production. Agentic AI, LangChain, Next.js, AWS, Kubernetes and 35+ technologies` };
+export const ogImagePath = "/opengraph-image?v=2026-11-22b";
+/** What the home card shows (components/og-card.tsx HomeOgCard), for every page that shares it. */
+export const ogImageAlt = `${siteName}: tech careers, board exams and government exams, in English and Hindi. Interview prep and AI courses across Agentic AI, LangChain, Next.js, AWS and 40+ technologies; UP Board, CBSE and ICSE Class 10 and 12; NDA, SSC, banking, railway, UPSC and TET exams; IELTS English`;
+const ogImage = { url: ogImagePath, width: 1200, height: 630, alt: ogImageAlt };
 
 /**
  * Complete metadata for a public page. Next.js replaces (not merges) nested
@@ -94,9 +129,14 @@ const ogImage = { url: ogImagePath, width: 1200, height: 630, alt: `${siteName}:
  * 2026-10-28). Legal and policy pages carry none: nobody searches for them, and they only inherit the site list.
  */
 const PAGE_KEYWORDS: Partial<Record<PublicPage["path"], string[]>> = {
+  "/board-exams": EXAM_GUIDES["/board-exams"].keywords,
+  "/competitive-exams": EXAM_GUIDES["/competitive-exams"].keywords,
+  "/tet-exam": EXAM_GUIDES["/tet-exam"].keywords,
+  "/ielts-preparation": EXAM_GUIDES["/ielts-preparation"].keywords,
   "/courses": [
     "system design course", "system design case studies", "payment gateway system design", "WhatsApp system design",
-    "Netflix system design", "React 19 Next.js TypeScript course", "IELTS vocabulary for tech professionals"
+    "Netflix system design", "React 19 Next.js TypeScript course", "IELTS vocabulary for tech professionals",
+    "IELTS preparation course", "IELTS Academic writing task 1 and 2", "IELTS speaking practice"
   ],
   "/library": [
     "free learning library", "free programming tutorials", "interview questions with answers", "React interview questions",
@@ -147,6 +187,23 @@ export function learningMetadata({ path, title, description: full, keywords }: {
   };
 }
 
+/**
+ * Metadata for the Exams portal (login-gated and never indexed): a shared link still previews with the page's own
+ * title and description. Next.js replaces nested openGraph objects, so each exam page needs the full set.
+ */
+export const EXAM_PORTAL_COPY = {
+  boards: { title: "Board Exams · UP Board, CBSE and ICSE", description: "Class 10 and 12 board exam prep for UP Board, CBSE and ICSE: chapter-wise questions, worked answers, past papers and mock tests, in English and Hindi." },
+  competitive: { title: "Competitive Exams · NDA, Defence, Banks, Railways, SSC, UPSC, CBI and Income Tax", description: "Government exam prep for NDA, defence, banks, railways, SSC, UPSC, TET and more: most-asked questions, model answers and mock tests, in English and Hindi." },
+} as const;
+export function examMetadata({ title, description, path }: { title: string; description: string; path: `/${string}` }): Metadata {
+  const full = `${title} · MasterClass Exams`, text = snippet(description);
+  return {
+    title, description: text,
+    openGraph: { type: "website", url: path, siteName, title: full, description: text, locale: "en_IN", images: [ogImage] },
+    twitter: { card: "summary_large_image", title: full, description: text, images: [ogImage.url] },
+  };
+}
+
 /** Search results show about 160 characters; generated descriptions (a technology's tagline appended) ran past that,
  *  so they end at the last whole word that fits instead of being cut mid-word by the search engine. */
 function snippet(text: string, max = 158): string {
@@ -179,10 +236,10 @@ export function readableDate(date: string): string {
 
 export function websiteSchema() {
   const url = siteUrl().href;
-  return { "@context": "https://schema.org", "@type": "WebSite", "@id": `${url}#website`, url, name: siteName, alternateName: ["Master Class Buddy", "masterclassbuddy.com"], description: siteDescription, inLanguage: "en", keywords: siteKeywords.join(", "), publisher: { "@id": `${url}#organization` } };
+  return { "@context": "https://schema.org", "@type": "WebSite", "@id": `${url}#website`, url, name: siteName, alternateName: ["Master Class Buddy", "masterclassbuddy.com"], description: siteDescription, inLanguage: HINDI_ENABLED ? ["en", "hi"] : "en", keywords: siteKeywords.join(", "), publisher: { "@id": `${url}#organization` } };
 }
 
-export function organizationSchema(prices?: { monthly:number; yearly:number; endsAt?:string }) {
+export function organizationSchema(prices?: { monthly:number; yearly:number }) {
   const url = siteUrl().href;
   // The membership, as search engines should describe the business: one plan, monthly or yearly, in rupees.
   const offer = (name: string, price: number, unit: "MON" | "ANN") => ({
@@ -194,7 +251,7 @@ export function organizationSchema(prices?: { monthly:number; yearly:number; end
     // A raster logo (Google's logo guidance asks for a crawlable image of at least 112×112); the SVG stays the favicon.
     logo: { "@type": "ImageObject", url: new URL("/brand/masterclass-mark-512.png", url).href, width: 512, height: 512 },
     image: new URL(ogImagePath, url).href,
-    description: siteDescription, slogan: "Your buddy for mastering Agentic AI and the modern web stack.", areaServed: "IN", knowsLanguage: ["en"],
+    description: siteDescription, slogan: "Your buddy for tech careers, board exams and competitive exams.", areaServed: "IN", knowsLanguage: HINDI_ENABLED ? ["en", "hi"] : ["en"],
     // Support contact, postal address and social profiles (lib/site-contact.ts); the address makes it a LocalBusiness.
     // No email: it would put a plaintext address in every page's HTML for harvesters (and SEO checkers' plaintext-email
     // test); the Contact page URL stands in, and components/email-link.tsx shows the address there.
@@ -205,11 +262,13 @@ export function organizationSchema(prices?: { monthly:number; yearly:number; end
       "React 19", "Next.js 16", "TypeScript", "JavaScript", "Python 3.12", "Node.js", "System design",
       "Agentic AI", "AI agents", "Model Context Protocol MCP", "Claude Code", "LangChain", "LangGraph", "LangSmith", "LangFlow", "n8n", "TanStack Start",
       "AWS", "Docker", "Kubernetes", "Linux", "Git", "PostgreSQL", "Redis", "FastAPI", "Go", "Rust", "Zustand", "TanStack Query",
-      "Vitest", "Playwright", "Tech interview preparation", "English vocabulary with Hindi meanings"
+      "Vitest", "Playwright", "Tech interview preparation", "English vocabulary with Hindi meanings",
+      "Board exam preparation", "UP Board", "CBSE", "ICSE", "Class 10 and Class 12 Mathematics, Physics, Chemistry and English",
+      "Competitive exam preparation", "NDA", "Defence exams", "Teacher Eligibility Test (CTET, UPTET)", "SSC", "Banking exams", "Railway exams", "UPSC Civil Services", "State PSC exams", "IELTS preparation"
     ],
     ...(prices ? { hasOfferCatalog: { "@type": "OfferCatalog", name: "MasterClass membership", itemListElement: [
-      { ...offer("Monthly membership", prices.monthly, "MON"), ...(prices.endsAt ? { priceValidUntil:prices.endsAt } : {}) },
-      { ...offer("Yearly membership", prices.yearly, "ANN"), ...(prices.endsAt ? { priceValidUntil:prices.endsAt } : {}) },
+      offer("Monthly membership", prices.monthly, "MON"),
+      offer("Yearly membership", prices.yearly, "ANN"),
     ] } } : {}),
   };
 }

@@ -27,7 +27,7 @@
 .brand :global(.brand-name){font-size:21px}
 .title{font:400 30px/1.2 Georgia,"Nirmala UI",serif;letter-spacing:-.4px;color:var(--ink)}
 .lead{margin-top:8px;font-size:14px;line-height:1.6;color:var(--muted)}
-.main .error{margin:18px 0 0}
+.main .error{margin:18px 0 0;font-size:13.5px;line-height:1.5}
 
 .form{display:grid;gap:16px;margin-top:24px}
 .field{display:grid;gap:6px}
@@ -37,9 +37,13 @@
 .input:focus-visible{outline:2px solid var(--focus);outline-offset:1px;border-color:var(--focus)}
 .hint{display:block;font-size:12px;line-height:1.5;color:var(--muted)}
 
-.passwordBox{position:relative}
-.passwordBox .input{padding-right:48px}
-.eye{position:absolute;top:4px;right:4px;width:36px;height:36px;display:grid;place-items:center;padding:0;border:0;border-radius:6px;background:transparent;color:#5e5d59;cursor:pointer}
+/* Password: a shadcn InputGroup (components/ui/input-group.tsx) with the reveal button as its inline-end addon. */
+.passwordBox{height:44px;border:1px solid var(--field);border-radius:8px;background:#fff;transition:border-color .15s}
+.passwordBox:hover{border-color:#73726c}
+.passwordBox:focus-within{outline:2px solid var(--focus);outline-offset:1px;border-color:var(--focus)}
+.passwordInput{height:42px;padding:0 4px 0 12px;color:var(--ink);font:inherit;font-size:16px}
+.passwordInput:focus-visible{outline:none}
+.eye{width:36px;height:36px;display:grid;place-items:center;padding:0;border:0;border-radius:6px;background:transparent;color:#5e5d59;cursor:pointer}
 .eye:hover{background:#f0eee6;color:var(--ink)}
 .page .eye:focus-visible{outline-offset:-2px}
 
@@ -63,7 +67,7 @@
 .switchRow{margin-top:22px;padding-top:18px;border-top:1px solid var(--line);text-align:center}
 .switchLink{display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;color:#4d4c48;text-decoration:underline;text-decoration-color:transparent;text-underline-offset:3px;transition:text-decoration-color .15s}
 .switchLink:hover{text-decoration-color:currentColor}
-button.switchLink{padding:0;border:0;background:none;font-family:inherit;cursor:pointer}
+button.switchLink{height:auto;padding:0;border:0;background:none;font-family:inherit;white-space:normal;text-align:center;cursor:pointer}
 button.switchLink:disabled{opacity:.6;cursor:default}
 .notice .switchLink{margin-top:20px}
 .noticeIcon{display:grid;place-items:center;width:44px;height:44px;margin-bottom:18px;border-radius:12px;background:#e8e6dc;color:var(--ink)}
@@ -138,3 +142,22 @@ button.switchLink:disabled{opacity:.6;cursor:default}
 
 /* The one-day trial note on the sign-up form. */
 .trial { margin: -4px 0 14px; padding: 8px 12px; border-radius: 10px; background: linear-gradient(100deg, #fdf1ea, #f3eefc); color: #3d3d3a; font-size: 13.5px; font-weight: 600; line-height: 1.45; }
+
+/* Which portal this form belongs to (Tech or Exams), and the pointer to the other one. */
+/* Intro panel above the title: portal + availability, the path cards, and what the portal includes. */
+.intro { --tone: #c4613a; --tone-ink: #a94f31; --tone-soft: rgba(196, 97, 58, .14); --tone-rule: #f0dccd; position: relative; margin: 0 0 26px; padding: 12px; border: 1px solid var(--tone-rule); border-radius: 18px; background: radial-gradient(120% 90% at 100% 0%, #fff1e6 0%, transparent 60%), #fffdfb; box-shadow: 0 1px 2px rgba(20, 20, 19, .04), 0 14px 32px -24px rgba(143, 63, 35, .45); }
+.intro[data-portal="exams"] { --tone: #2f6fb0; --tone-ink: #1d4f86; --tone-soft: rgba(47, 111, 176, .14); --tone-rule: #d5e4f5; background: radial-gradient(120% 90% at 100% 0%, #eaf3fd 0%, transparent 60%), #fcfdff; box-shadow: 0 1px 2px rgba(20, 20, 19, .04), 0 14px 32px -24px rgba(29, 79, 134, .45); }
+.introHead { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; margin: 0 2px 12px; }
+.portal { display: inline-flex; align-items: center; gap: 9px; margin: 0; }
+.portal b { font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--tone-ink); }
+.portalDot { position: relative; width: 7px; height: 7px; flex-shrink: 0; border-radius: 50%; background: var(--tone); box-shadow: 0 0 0 3px var(--tone-soft); }
+.scope { display: inline-flex; align-items: center; gap: 5px; padding: 3px 9px; border-radius: 999px; background: #fff; color: var(--tone-ink); box-shadow: inset 0 0 0 1px var(--tone-rule); font-size: 11px; font-weight: 650; white-space: nowrap; }
+.introFoot { display: flex; align-items: flex-start; gap: 7px; margin: 12px 2px 0; padding-top: 10px; border-top: 1px dashed var(--tone-rule); color: #6b625a; font-size: 12.5px; line-height: 1.5; }
+.introFoot svg { flex-shrink: 0; margin-top: 3px; color: var(--tone); }
+.introFoot b { font-weight: 600; color: #3d3a35; }
+@media (prefers-reduced-motion: no-preference) {
+  .portalDot::after { content: ""; position: absolute; inset: 0; border-radius: 50%; background: inherit; animation: portal-pulse 2.4s ease-out infinite; }
+  @keyframes portal-pulse { 0% { transform: scale(1); opacity: .6; } 70%, 100% { transform: scale(2.6); opacity: 0; } }
+}
+.otherPortal { margin: 14px 0 0; padding-top: 12px; border-top: 1px solid #ebe9e0; font-size: 13.5px; line-height: 1.55; color: #5e5d59; }
+.otherPortal a { font-weight: 600; color: inherit; text-decoration: underline; text-underline-offset: 3px; }

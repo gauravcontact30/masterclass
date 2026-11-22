@@ -7,6 +7,7 @@ import { TECH_CONCEPTS } from "@/lib/tech-docs-concepts";
 import { account } from "@/lib/server/repository";
 import { isSuperAdminUser } from "@/lib/study/preparations";
 import { currentUser } from "@/lib/server/auth";
+import { requireTechAccount } from "@/lib/server/portal";
 import { authConfigured,databaseConfigured,billingConfigured } from "@/lib/server/config";
 import { legacyDashboardRoute } from "@/lib/dashboard-routes";
 import { contentOverrides } from "@/lib/server/content-overrides";
@@ -24,6 +25,7 @@ export default async function Dashboard({searchParams}:{searchParams:Promise<{ta
   if(tab!==undefined)redirect(legacyDashboardRoute(tab));
   const user=authConfigured()?await currentUser():null;
   if(authConfigured()&&!user)redirect("/sign-in");
+  if(user)await requireTechAccount(user);
   // Members, trial users and the super admin get the full sections; an unpaid account after its trial gets previews.
   // If the account can't be read these stay open: they show public documentation, and the learning APIs gate themselves.
   const superAdmin=!!user&&isSuperAdminUser(user);

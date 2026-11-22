@@ -1,0 +1,91 @@
+/* Competitive Exams page (competitive-exams.tsx). The page shell, cards, search and notes come from
+   board-exams.module.css; only what this page adds is here. Colours repeat that file's tokens, which are set on its .page. */
+.stepHead { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 14px; }
+.stepHead h2 { display: flex; align-items: center; gap: 10px; margin: 0; font-size: 15px; font-weight: 700; letter-spacing: -.005em; }
+.stepHead h2 span { display: grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; background: var(--ink); color: #fff; font-size: 12.5px; font-variant-numeric: tabular-nums; }
+.stepHead p { margin: 0; font-size: 12.5px; color: var(--muted); font-variant-numeric: tabular-nums; }
+
+/* Four exam tabs to a page: the row keeps its height while the pager turns it. */
+.exams { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+.exam { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 12px; min-height: 76px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 16px; background: #fff; font: inherit; text-align: left; color: var(--ink); cursor: pointer; transition: border-color .15s, box-shadow .15s, transform .15s; }
+.exam:hover { border-color: #d6c7b8; transform: translateY(-1px); }
+.exam[aria-selected="true"] { border-color: var(--clay); box-shadow: 0 0 0 1px var(--clay), 0 10px 22px -14px rgba(201, 100, 66, .6); background: linear-gradient(180deg, #fff, var(--clay-soft)); }
+.examCode { display: grid; place-items: center; min-width: 50px; height: 42px; padding: 0 6px; border-radius: 12px; background: var(--oat); font-size: 12px; font-weight: 800; letter-spacing: .04em; color: var(--read); }
+.exam[aria-selected="true"] .examCode { background: var(--clay); color: #fff; }
+.examText { display: grid; gap: 2px; min-width: 0; }
+.examText strong { font-size: 15px; line-height: 1.25; letter-spacing: -.01em; }
+.examText small { font-size: 12px; line-height: 1.4; color: var(--muted); }
+.tabPager nav { margin-top: 0; }
+
+.pattern { display: grid; gap: 4px; padding: 14px 18px; border: 1px solid var(--line); border-radius: 16px; background: #fff; }
+.pattern small { font-size: 11.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.pattern p { margin: 0; font-size: 13.5px; line-height: 1.6; color: var(--read); }
+.pattern p span { color: var(--muted); }
+
+.kinds { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr)); gap: 8px; }
+.asked { display: inline-flex; align-items: center; gap: 5px; padding: 2px 9px; border: 1px solid #d9e2cc; border-radius: 999px; background: var(--sage-soft); font-size: 11.5px; font-weight: 600; color: var(--sage); }
+
+/* Objective questions: the options are always in view; picking one marks it and shows the reason. */
+.objective { display: grid; gap: 12px; padding: 14px 16px 16px; }
+.question { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: start; gap: 12px; }
+.question h3 { margin: 0; }
+.options { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin-left: 42px; }
+.options button { display: flex; align-items: center; gap: 10px; min-height: 44px; padding: 6px 12px; border: 1px solid var(--line); border-radius: 12px; background: #fff; font: inherit; font-size: 14px; line-height: 1.4; text-align: left; color: var(--ink); cursor: pointer; overflow-wrap: anywhere; transition: border-color .15s, background-color .15s; }
+.options button:hover:enabled { border-color: var(--ink); background: #faf9f5; }
+.options button:disabled { cursor: default; color: var(--read); }
+.options button span { display: grid; place-items: center; flex: none; width: 24px; height: 24px; border-radius: 50%; background: var(--oat); font-size: 11.5px; font-weight: 700; color: var(--read); }
+.options button[data-state="right"] { border-color: #2f7d46; background: #edf7ef; color: var(--ink); }
+.options button[data-state="right"] span { background: #2f7d46; color: #fff; }
+.options button[data-state="wrong"] { border-color: #b42318; background: #fdeeee; color: var(--ink); }
+.options button[data-state="wrong"] span { background: #b42318; color: #fff; }
+.why { display: flex; gap: 8px; margin: 0 0 0 42px; padding: 11px 14px; border-left: 3px solid var(--clay); border-radius: 0 12px 12px 0; background: #faf9f5; font-size: 14px; line-height: 1.6; color: var(--read); overflow-wrap: anywhere; }
+.why svg { flex: none; margin-top: 4px; color: #2f7d46; }
+.why b { color: var(--ink); }
+.reveal { justify-self: start; min-height: 36px; margin-left: 42px; padding: 0 12px; border: 0; border-radius: 10px; background: none; font: inherit; font-size: 13px; font-weight: 600; color: var(--clay-deep); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; }
+
+@media (max-width: 980px) { .exams { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 560px) {
+  .exams, .kinds, .options { grid-template-columns: 1fr; }
+  .options, .why, .reveal { margin-left: 0; }
+  .objective { padding: 12px; }
+}
+@media (prefers-reduced-motion: reduce) { .exam { transition: none; } }
+
+/* Chance of being asked again (follows the star rating). */
+.chance { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 999px; background: #fff4e5; color: #9a4f0b; font-size: 11.5px; font-weight: 700; }
+.chance[data-level="5"] { background: #fde7e1; color: #a3361b; }
+.chance[data-level="3"] { background: #f1efe8; color: #5f5c55; }
+
+/* Exam pictures (npm run images:competitive), the conducting-body line and the calendar table. */
+.examArt { width: 52px; height: 52px; border-radius: 12px; object-fit: cover; background: var(--oat); }
+.body { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding-top: 6px; border-top: 1px dashed var(--line); font-size: 12.5px !important; color: var(--muted) !important; }
+.body svg { color: var(--clay); }
+.body a { display: inline-flex; align-items: center; gap: 3px; font-weight: 600; color: var(--clay-deep); }
+.calendarExam { padding: 0; border: 0; background: none; font: inherit; font-weight: 700; color: var(--ink); text-align: left; cursor: pointer; text-decoration: underline; text-decoration-color: var(--line); text-underline-offset: 3px; }
+.calendarExam:hover { color: var(--clay-deep); text-decoration-color: currentColor; }
+.calendarRow[data-current] > th, .calendarRow[data-current] > td { background: var(--clay-soft); }
+
+/* Marks per objective question (+2 · −0.5) and the answer form of a subjective question. */
+.marksTag, .formTag { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 999px; font-size: 11.5px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.marksTag { background: #eef1fb; color: #2f4a8a; }
+.formTag { background: #eef3e6; color: #45592a; }
+.formTag[data-form="oneLine"] { background: #fdf3e2; color: #8a5a12; }
+.formTag[data-form="short"] { background: #f1ecfa; color: #5b3d8f; }
+
+/* Light question theme (2026-11-22): the question block of an objective card sits on soft periwinkle,
+   its explanation on soft mint (board-exams.module.css .why). */
+.question { margin: -14px -16px 0; padding: 14px 16px 12px; border-bottom: 1px solid var(--q-line, #e1dcfb); background: var(--q-bg, #f4f2ff); color: var(--q-ink, #2f2a5c); }
+.why { border-left-color: var(--a-accent, #2f8a5b); background: var(--a-bg, #effaf4); color: var(--a-ink, #1d4b33); }
+.why svg { color: var(--a-accent, #2f8a5b); }
+@media (max-width: 560px) { .question { margin: -12px -12px 0; padding: 12px; } }
+
+/* Professional polish (2026-11-22): the exam picker matches the board page's step cards. */
+.stepHead h2 { font-size: 16px; }
+.stepHead h2 span { width: 28px; height: 28px; background: linear-gradient(135deg, var(--clay), #5b4fcf); box-shadow: 0 6px 12px -6px rgba(91, 79, 207, .7); }
+.exam { transition: border-color .15s, box-shadow .15s, transform .15s; }
+.exam:hover:not([aria-selected="true"]) { transform: translateY(-1px); box-shadow: 0 10px 20px -16px rgba(38, 38, 36, .6); }
+@media (prefers-reduced-motion: reduce) { .exam { transition: none; } .exam:hover { transform: none; } }
+/* Subjects & Topics card: count of five-star (most popular) questions, beside the Objective and Subjective buttons. */
+.popular { display: inline-flex; align-items: center; gap: 5px; min-height: 32px; padding: 0 10px; border-radius: 999px; background: #fdf3d7; font-size: 12.5px; font-weight: 600; color: #8a5a00; }
+.popular svg { color: #c98a1b; }
+.popular b { padding: 0 6px; border-radius: 999px; background: #fff; font-size: 11px; font-variant-numeric: tabular-nums; }

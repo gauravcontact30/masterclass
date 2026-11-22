@@ -8,7 +8,8 @@ import { userId } from "@/lib/server/http";
 jest.mock("@/lib/server/auth", () => ({ supabaseServer: jest.fn() }));
 jest.mock("@/lib/server/db", () => ({ db: jest.fn() }));
 jest.mock("@/lib/server/monitoring", () => ({ recordEvent: jest.fn() }));
-jest.mock("@/lib/server/http", () => ({ ...jest.requireActual("@/lib/server/http"), userId: jest.fn() }));
+// GET reads the session with readerId (claims only) and PATCH with userId; one mock drives both.
+jest.mock("@/lib/server/http", () => { const userId = jest.fn(); return { ...jest.requireActual("@/lib/server/http"), userId, readerId: userId }; });
 
 const request = (url: string, init?: RequestInit) => new Request(url, init) as unknown as Parameters<typeof confirm>[0];
 
@@ -18,7 +19,7 @@ describe("GET /auth/confirm (token-hash links, any device)", () => {
     (supabaseServer as jest.Mock).mockResolvedValue({ auth: { verifyOtp } });
     const response = await confirm(request("http://localhost:3000/auth/confirm?token_hash=pkce_abcdef123456&type=email"));
     expect(verifyOtp).toHaveBeenCalledWith({ token_hash: "pkce_abcdef123456", type: "email" });
-    expect(response.headers.get("location")).toBe("http://localhost:3000/dashboard?notice=verified");
+    expect(response.headers.get("location")).toBe("http://localhost:3000/learning?notice=verified");
   });
   test("an expired link is explained on the sign-in page", async () => {
     (supabaseServer as jest.Mock).mockResolvedValue({ auth: { verifyOtp: jest.fn().mockResolvedValue({ data: {}, error: { code: "otp_expired" } }) } });

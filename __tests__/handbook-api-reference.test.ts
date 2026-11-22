@@ -3,6 +3,7 @@ import { API_PACKAGES } from "@/lib/api-docs";
 import { API_DETAILS } from "@/lib/api-docs-details";
 import { TAB_API_PACKAGES, withApiReference } from "@/lib/server/handbook-api-reference";
 import { prepareHandbooks } from "@/lib/server/prepared-catalog";
+import { officialApiCard } from "@/lib/server/official-content";
 
 const byTitle = new Map(TECHNOLOGY_HANDBOOKS.map(handbook => [handbook.title, handbook]));
 
@@ -19,7 +20,8 @@ test("a tab gains its package's curated API reference, after its own rows and wi
   const added = langchain.topics.slice(own);
   expect(added.length).toBeGreaterThan(0);
   expect(added.every(topic => topic.category.startsWith("API docs: "))).toBe(true);
-  expect(added.every(topic => API_DETAILS[`langchain:${topic.name}`])).toBe(true);
+  // A row comes across only with real content: a hand-curated reference or a verified official card.
+  expect(added.every(topic => API_DETAILS[`langchain:${topic.name}`] || officialApiCard("langchain", topic.name))).toBe(true);
   const names = langchain.topics.map(topic => topic.name.toLowerCase());
   expect(new Set(names).size).toBe(names.length);
   // The categories, and so the tab's count pill, include the new rows.
@@ -28,7 +30,8 @@ test("a tab gains its package's curated API reference, after its own rows and wi
 
 test("an added row opens the reference the API Docs page shows", () => {
   const [langgraph] = prepareHandbooks(withApiReference([byTitle.get("LangGraph")!]));
-  const row = langgraph.topics.find(topic => topic.category.startsWith("API docs: "))!;
+  // A curated row, so its answer can be compared with the hand-written reference.
+  const row = langgraph.topics.find(topic => topic.category.startsWith("API docs: ") && API_DETAILS[`langgraph:${topic.name}`])!;
   const detail = API_DETAILS[`langgraph:${row.name}`];
   expect(row.prepared!.answer.definition).toBe(detail.description);
   expect(row.prepared!.answer.keyPoints).toEqual(detail.notes);

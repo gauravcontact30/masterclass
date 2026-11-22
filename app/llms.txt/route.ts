@@ -1,9 +1,10 @@
 import { cacheLife, cacheTag } from "next/cache";
-import { PUBLIC_PAGES, siteDescription, siteName, siteUrl } from "@/lib/seo";
+import { INDIA_ONLY_PAGES, PUBLIC_PAGES, siteDescription, siteName, siteUrl } from "@/lib/seo";
 import { COMPARISONS } from "@/lib/comparisons";
 import { TECH_BUZZ_TAG, listPublishedTechBuzzArticles } from "@/lib/server/tech-buzz-storage";
 import { handbooks, interviewTechs, workflows } from "@/lib/public-learning";
 import { ADDRESS_LINE, SOCIAL_PROFILES, SUPPORT } from "@/lib/site-contact";
+import { BOARD_FAQ, CATEGORIES, COMPETITIVE_FAQ } from "@/lib/landing-categories";
 
 /*
  * /llms.txt (llmstxt.org): a plain-Markdown map of the site for AI assistants and answer engines, read from the same
@@ -19,14 +20,21 @@ async function body() {
   const link = (title: string, path: string, note?: string) => `- [${title}](${new URL(path, origin).href})${note ? `: ${note}` : ""}`;
   const stories = (await listPublishedTechBuzzArticles())
     .sort((a, b) => Date.parse(b.publishedAt) - Date.parse(a.publishedAt)).slice(0, 25);
-  const pages = PUBLIC_PAGES.filter(page => page.path !== "/");
+  const pages = PUBLIC_PAGES.filter(page => page.path !== "/" && !INDIA_ONLY_PAGES.has(page.path));
   return [
     `# ${siteName}`,
     "",
     `> ${siteDescription}`,
     "",
-    "MasterClass Buddy is an online learning platform for software engineers and students: weekly technology blogs (Tech Buzz, five every Monday), interview questions with model answers, system design and AI agent workflow blueprints, technology handbooks, side-by-side comparisons and an API reference. The pages below are free to read; courses, certifications and practice tests live in the signed-in Learning Dashboard.",
+    "MasterClass Buddy is an online learning platform covering Tech (for software engineers and college students), Board Exams (Class 10 and 12: UP Board, CBSE, ICSE / ISC), Competitive Exams (NDA, SSC, banks, railways, UPSC, state PSC and more), TET (CTET, UPTET and state Teacher Eligibility Tests) and IELTS preparation (Academic and General Training), in English and Hindi. For Tech it offers weekly technology blogs (Tech Buzz, five every Monday), interview questions with model answers, system design and AI agent workflow blueprints, technology handbooks, side-by-side comparisons and an API reference. The pages below are free to read; courses, certifications and practice tests live in the signed-in Learning Dashboard.",
     "",
+    "## Categories",
+    ...CATEGORIES.map(category => link(category.title, category.id === "tech" ? "/" : `/#${category.anchor}`, `${category.audience}. ${category.summary}`)),
+    "",
+    "## Board Exams: frequently asked questions",
+    ...BOARD_FAQ.flatMap(item => [`### ${item.question}`, item.answer, ""]),
+    "## Competitive Exams: frequently asked questions",
+    ...COMPETITIVE_FAQ.flatMap(item => [`### ${item.question}`, item.answer, ""]),
     "## Main pages",
     ...pages.map(page => link(page.label, page.path, page.description)),
     "",
@@ -58,6 +66,7 @@ async function body() {
     link("Contact page", "/contact"),
     "",
     "## Optional",
+    link("Full text for AI assistants", "/llms-full.txt", "Tech Buzz key takeaways, comparison summaries and top interview answers in one file"),
     link("Sitemap", "/sitemap.xml"),
     "",
   ].join("\n");

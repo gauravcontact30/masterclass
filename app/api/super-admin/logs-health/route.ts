@@ -30,7 +30,7 @@ export async function GET(request: Request) {
   return api(async () => {
     await requireSuperAdmin();
     const asked = Number(new URL(request.url).searchParams.get("hours"));
-    const hours = [1, 6, 24, 72, 168].includes(asked) ? asked : 24;
+    const hours = [1, 6, 24, 72, 168].includes(asked) ? asked : 168;
     const since = new Date(Date.now() - hours * 3_600_000).toISOString();
     const client = db();
     const upstash = redisConfigured;

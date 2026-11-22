@@ -1,11 +1,14 @@
 /** @jest-environment node */
 import { userId } from "@/lib/server/http";
-import { supabaseServer } from "@/lib/server/auth";
+import { authUser, supabaseServer } from "@/lib/server/auth";
 
-jest.mock("@/lib/server/auth", () => ({ supabaseServer: jest.fn() }));
+// userId() reads the verified user through authUser (lib/server/auth), which asks Supabase's getUser.
+jest.mock("@/lib/server/auth", () => ({ supabaseServer: jest.fn(), authUser: jest.fn() }));
+jest.mock("next/headers", () => ({ headers: async () => new Headers(), cookies: async () => ({ get: () => undefined }) }));
 
 function session(user: { id: string } | null) {
   (supabaseServer as jest.Mock).mockResolvedValue({ auth: { getUser: async () => ({ data: { user }, error: null }) } });
+  (authUser as jest.Mock).mockResolvedValue(user);
 }
 
 beforeEach(() => {

@@ -1,5 +1,5 @@
 /**
- * Guards the globals.css split: app/dashboard.css is loaded only by the Learning Dashboard and Super Admin
+ * Guards the globals.css split: app/dashboard.css is loaded only by the Learning Dashboard, Super Admin and the exam portals
  * (app/(learning)/learning/layout.tsx, re-exported by app/(admin)/super-admin/layout.tsx), so a class styled only there
  * renders unstyled on any other page. This follows every import (static, dynamic, re-export) from each route group's
  * pages and layouts and fails when a class in dashboard.css is used by a file that a public page reaches, or by a file
@@ -9,7 +9,8 @@
 import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { dirname, join, sep } from "node:path";
 
-const DASHBOARD_GROUPS = new Set(["(learning)", "(admin)"]);
+// (exams) loads dashboard.css in app/(exams)/exams/layout.tsx: the exam portals share the dashboard shell.
+const DASHBOARD_GROUPS = new Set(["(learning)", "(admin)", "(exams)"]);
 const slash = (path: string) => path.split(sep).join("/");
 
 function sourceFiles(dir: string, out: string[] = []) {

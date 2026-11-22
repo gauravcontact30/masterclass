@@ -6,7 +6,12 @@ const mockList = jest.fn(async () => ({ marks: [], nextCursor: null as string | 
 const mockSave = jest.fn(async (_owner: string, mark: unknown) => mark);
 const mockRemove = jest.fn(async () => {});
 jest.mock("@/lib/server/config", () => ({ authConfigured: () => true }));
-jest.mock("@/lib/server/auth", () => ({ supabaseServer: async () => ({ auth: { getUser: async () => ({ data: { user: mockOwner ? { id: mockOwner } : null } }) } }) }));
+// lib/server/http reads the session through authUser (writes) and sessionUserId (reads); both follow mockOwner.
+jest.mock("@/lib/server/auth", () => ({
+  supabaseServer: async () => ({ auth: { getUser: async () => ({ data: { user: mockOwner ? { id: mockOwner } : null } }) } }),
+  authUser: async () => mockOwner ? { id: mockOwner } : null, sessionUserId: async () => mockOwner,
+}));
+jest.mock("next/headers", () => ({ headers: async () => new Headers(), cookies: async () => ({ get: () => undefined }) }));
 jest.mock("@/lib/server/learning-marks", () => ({ listLearningMarks: (...args: unknown[]) => mockList(...args as []), saveLearningMark: (...args: [string, unknown]) => mockSave(...args), removeLearningMark: (...args: unknown[]) => mockRemove(...args as []) }));
 const id = "00000000-0000-4000-8000-000000000001";
 const body = { id, expectedUserId: "alice", contentKey: "lesson", kind: "highlight", color: "teal", quote: "event loop", prefix: "", suffix: "", start: 0, end: 10 };

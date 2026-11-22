@@ -13,7 +13,8 @@ export const metadata = learningMetadata({
   keywords: [
     "English vocabulary with meanings", "corporate English words",
     "spoken English for software engineers", "synonyms and antonyms", "tech industry English communication",
-    "daily English words and meanings", "English vocabulary for developers"
+    "daily English words and meanings", "English vocabulary for developers",
+    "IELTS vocabulary", "IELTS vocabulary with meanings", "IELTS academic words", "English vocabulary for competitive exams"
   ],
 });
 

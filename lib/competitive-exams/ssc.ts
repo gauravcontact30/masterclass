@@ -1,0 +1,78 @@
+import { obj, pack, sub } from "./types";
+
+/* Staff Selection Commission: CGL, CHSL, MTS, GD Constable and CPO. The papers are objective; the subjective set is short-answer revision. */
+export default pack("ssc", [
+  obj("Polity", 5, "SSC CGL 2017, SSC CHSL 2020", "Who is known as the chief architect of the Indian Constitution?", ["Jawaharlal Nehru", "B. R. Ambedkar", "Rajendra Prasad", "B. N. Rau"], 1, "Dr Ambedkar chaired the Drafting Committee; Rajendra Prasad presided over the Constituent Assembly."),
+  obj("Polity", 5, "SSC CGL 2018, SSC MTS 2021", "Which Article of the Constitution abolishes untouchability?", ["Article 14", "Article 15", "Article 17", "Article 21"], 2, "Article 17 abolishes untouchability and forbids its practice in any form."),
+  obj("History", 5, "SSC CGL 2016, SSC CHSL 2019", "Who founded the Indian National Congress in 1885?", ["Dadabhai Naoroji", "A. O. Hume", "W. C. Bonnerjee", "Surendranath Banerjee"], 1, "Hume, a retired civil servant, founded it; W. C. Bonnerjee presided over the first session at Bombay."),
+  obj("History", 4, "SSC CGL 2019, SSC CPO 2020", "The Harappan site of Lothal is located in which present-day state?", ["Punjab", "Rajasthan", "Gujarat", "Haryana"], 2, "Lothal, known for its dockyard, is in Gujarat."),
+  obj("Geography", 4, "SSC CHSL 2018, SSC CGL 2021", "Which is the largest planet in the solar system?", ["Saturn", "Jupiter", "Neptune", "Earth"], 1, "Jupiter is the largest; Mercury is the smallest."),
+  obj("General Science", 5, "SSC CGL 2017, SSC GD 2021", "Which organelle is called the powerhouse of the cell?", ["Ribosome", "Nucleus", "Mitochondrion", "Golgi body"], 2, "Mitochondria produce ATP through cellular respiration."),
+  obj("General Science", 4, "SSC CHSL 2019, SSC MTS 2022", "What is the pH of pure water at 25 °C?", ["0", "5", "7", "14"], 2, "Pure water is neutral, with pH 7."),
+  obj("Quantitative Aptitude", 5, "SSC CGL 2018, SSC CHSL 2021", "If x + 1/x = 3, what is the value of x² + 1/x²?", ["5", "7", "9", "11"], 1, "(x + 1/x)² = x² + 1/x² + 2, so x² + 1/x² = 9 − 2 = 7."),
+  obj("Quantitative Aptitude", 5, "SSC CGL 2019, SSC CPO 2022", "A shopkeeper marks an article 40% above cost and allows a discount of 25%. What is his profit per cent?", ["5%", "10%", "12.5%", "15%"], 0, "Selling price = 1.40 × 0.75 = 1.05 times cost, a profit of 5%."),
+  obj("English", 5, "SSC CGL 2017, SSC CHSL 2020", "Choose the one-word substitute for 'a person who knows many languages'.", ["Linguist", "Polyglot", "Bilingual", "Orator"], 1, "A polyglot knows or uses several languages."),
+  obj("English", 4, "SSC CGL 2018, SSC MTS 2021", "What is the meaning of the idiom 'to burn the midnight oil'?", ["To waste resources", "To work late into the night", "To start a quarrel", "To celebrate"], 1, "It means to study or work until late at night."),
+  obj("Reasoning", 4, "SSC CGL 2019, SSC CHSL 2022", "Select the odd one out: 27, 64, 125, 144", ["27", "64", "125", "144"], 3, "27, 64 and 125 are perfect cubes; 144 is a perfect square."),
+  obj("Geography", 4, "SSC CHSL 2018, SSC MTS 2021", "Which is the largest state of India by area?", ["Madhya Pradesh", "Maharashtra", "Rajasthan", "Uttar Pradesh"], 2, "Rajasthan is the largest by area; Uttar Pradesh is the largest by population."),
+  obj("General Science", 4, "SSC CGL 2017, SSC GD 2022", "What is the chemical symbol of gold?", ["Ag", "Au", "Gd", "Go"], 1, "Au comes from the Latin 'aurum'; Ag is silver."),
+  obj("Quantitative Aptitude", 4, "SSC CHSL 2019, SSC MTS 2022", "What is the average of the first ten natural numbers?", ["5", "5.5", "6", "10"], 1, "The sum is 55, and 55/10 = 5.5."),
+], [
+  sub("Polity", 5, "SSC CGL and CHSL, asked across 2016 to 2022", "Name the features the Indian Constitution borrowed from other constitutions.", [
+    "Britain: parliamentary government, rule of law, single citizenship.",
+    "United States: Fundamental Rights, judicial review, the Preamble's opening.",
+    "Ireland: Directive Principles of State Policy.",
+    "Canada: federation with a strong centre, residuary powers with the Union.",
+    "Germany (Weimar): suspension of Fundamental Rights during an emergency.",
+    "Former USSR: Fundamental Duties. South Africa: procedure for amendment.",
+  ]),
+  sub("History", 5, "SSC CGL 2017 to 2021", "Arrange the major events of the freedom struggle from 1905 to 1947 in order.", [
+    "1905: Partition of Bengal and the Swadeshi movement.",
+    "1919: Rowlatt Act and the Jallianwala Bagh massacre.",
+    "1920 to 1922: Non-Cooperation Movement.",
+    "1930: Dandi March and the Civil Disobedience Movement.",
+    "1942: Quit India Movement.",
+    "1947: Independence and Partition.",
+  ]),
+  sub("Quantitative Aptitude", 4, "SSC CGL Tier 2, 2018 and 2021", "A sum doubles itself in 8 years at simple interest. In how many years will it become four times?", [
+    "Doubling means the interest equals the principal in 8 years.",
+    "To become four times, the interest must be three times the principal.",
+    "At simple interest the interest grows in proportion to time: 3 × 8 = 24 years.",
+    "Answer: 24 years (not 16, which would be true only for compound interest).",
+  ]),
+  sub("General Science", 4, "SSC CHSL 2018, SSC GD 2021", "Give the common name and chemical formula of five everyday compounds.", [
+    "Common salt: sodium chloride, NaCl.",
+    "Baking soda: sodium hydrogen carbonate, NaHCO₃.",
+    "Washing soda: sodium carbonate decahydrate, Na₂CO₃·10H₂O.",
+    "Bleaching powder: calcium oxychloride, CaOCl₂.",
+    "Plaster of Paris: calcium sulphate hemihydrate, CaSO₄·½H₂O.",
+  ]),
+  sub("English", 4, "SSC CGL Tier 2, 2017 to 2022", "State the rules for changing a sentence from direct to indirect speech.", [
+    "Remove the quotation marks and add a conjunction such as 'that', 'if' or 'whether'.",
+    "If the reporting verb is in the past, shift the tense back: present to past, past to past perfect.",
+    "Change pronouns to match the speaker and listener.",
+    "Change words of nearness: now to then, today to that day, here to there.",
+    "Universal truths keep their tense.",
+  ]),
+  sub("Descriptive", 3, "SSC CHSL Tier 2 and MTS descriptive paper, 2017 to 2021", "Write a short essay outline on 'Digital India'.", [
+    "Introduction: launched in July 2015 to turn India into a digitally empowered society.",
+    "Three vision areas: digital infrastructure for every citizen, governance and services on demand, and digital empowerment.",
+    "Achievements: Aadhaar, UPI, DigiLocker and online public services.",
+    "Challenges: the rural connectivity gap, digital literacy and cyber security.",
+    "Conclusion: access plus skills will decide its success.",
+  ]),
+  sub("Geography", 4, "SSC CGL 2017 to 2022", "Name the countries that share a land border with India.", [
+    "Pakistan and Afghanistan to the north-west.",
+    "China, Nepal and Bhutan to the north.",
+    "Bangladesh and Myanmar to the east.",
+    "The longest border is with Bangladesh and the shortest with Afghanistan.",
+    "Sri Lanka and the Maldives are maritime neighbours.",
+  ]),
+  sub("English", 4, "SSC CGL and CHSL Tier 2, 2017 to 2022", "State the main rules of subject–verb agreement.", [
+    "A singular subject takes a singular verb and a plural subject a plural verb.",
+    "Two subjects joined by 'and' take a plural verb, unless they name one idea.",
+    "With 'or', 'nor', 'either … or' and 'neither … nor', the verb agrees with the nearer subject.",
+    "'Each', 'every', 'either', 'neither' and 'one of' take a singular verb.",
+    "Words joined by 'as well as' or 'along with' do not change the number of the subject.",
+  ]),
+]);

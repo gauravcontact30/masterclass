@@ -2,7 +2,7 @@ import "server-only";
 import { db, check } from "./db";
 import { quota, trialHours } from "./config";
 import { DOCUMENT_FORMAT, DocumentRecord, entitlementTier, monthKey, Progress, Tier, trialEndsAt } from "@/lib/domain";
-import { HttpError } from "./http";
+import { HttpError } from "./http-error";
 import { preparationAccess } from "./preparations";
 import { canReadTechnology } from "@/lib/study/preparations";
 export async function profile(id: string) {

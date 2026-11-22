@@ -1,0 +1,86 @@
+/* The landing page's Board Exams and Competitive Exams sections (landing-exams.tsx). The dock, tabs, rail and sheet
+   are the API Docs classes from landing-pro-sections.module.css; only what these two sections add is here.
+   Colours are the --nb tokens set on .home (landing-home.module.css). */
+.three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+/* The PNG icons carry their own tinted tile, so the slot drops the tab's white chip and its pressed fill. */
+.logo { display: block; width: 100%; height: 100%; object-fit: contain; }
+.logoSlot.logoSlot.logoSlot.logoSlot { padding: 0; background: none; box-shadow: none; }
+.title { display: grid; grid-template-columns: 56px minmax(0, 1fr); align-items: center; gap: 14px; }
+.title > .logo { width: 56px; height: 56px; filter: drop-shadow(0 6px 10px rgba(20, 20, 19, .16)); }
+.seg { display: inline-grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 4px; padding: 4px; border-radius: 12px; background: var(--nb-wash); border: 1px solid var(--nb-rule); }
+.seg button { min-height: 40px; padding: 0 14px; border: 0; border-radius: 9px; background: transparent; color: var(--nb-text); font-size: 14px; white-space: nowrap; cursor: pointer; transition: background-color .15s, color .15s; }
+.seg button[aria-pressed="true"] { background: var(--nb-graphite); color: #fff; }
+.seg button:focus-visible { outline: 3px solid var(--nb-graphite); outline-offset: 2px; }
+
+/* Competitive Exams has no rail: the sheet sits beside a quiet side column. */
+.wide { grid-template-columns: minmax(0, 1.6fr) minmax(240px, 1fr); }
+.side { display: grid; align-content: start; gap: 12px; min-width: 0; padding: clamp(16px, 2.4vw, 26px); border-left: 1px solid var(--nb-rule); background: var(--nb-paper); }
+
+.sample { display: grid; gap: 12px; min-width: 0; padding: clamp(14px, 2vw, 20px); border: 1px solid var(--nb-rule-2); border-radius: 12px; background: var(--nb-paper); }
+.meta { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; font-size: 12.5px; color: var(--nb-text); }
+.meta > span:not(.stars) { padding: 2px 10px; border: 1px solid var(--nb-rule-2); border-radius: 999px; background: var(--nb-sheet); }
+.meta .asked { display: inline-flex; align-items: center; gap: 5px; border-color: #d9e2cc; background: #eef3e6; color: #45592a; }
+.stars { display: inline-flex; gap: 1px; padding: 3px 8px; border-radius: 999px; background: #fdf3d7; }
+.stars i { font-style: normal; font-size: 13px; line-height: 1; color: #d8cfb6; }
+.stars i[data-on] { color: #e0a526; }
+.question { font-size: clamp(17px, 1.7vw, 20px); font-weight: 600; line-height: 1.45; color: var(--nb-graphite); overflow-wrap: anywhere; }
+
+/* The worked answer: the same light editor window as the Board Exams page. */
+.editor { min-width: 0; overflow: hidden; border: 1px solid #d9d9de; border-radius: 12px; background: #fff; }
+.editor figcaption { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 12px; min-height: 34px; padding: 0 12px; border-bottom: 1px solid #dcdce0; background: linear-gradient(180deg, #f6f6f7, #e9e9ec); }
+.editor figcaption span { display: inline-flex; gap: 7px; }
+.editor figcaption i { width: 11px; height: 11px; border-radius: 50%; background: #ff5f57; }
+.editor figcaption i:nth-child(2) { background: #febc2e; }
+.editor figcaption i:nth-child(3) { background: #28c840; }
+.editor figcaption b { justify-self: center; padding-right: 44px; font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-size: 12px; font-weight: 600; color: #4b4b52; }
+.editor ol { display: grid; margin: 0; padding: 10px 0; list-style: none; counter-reset: line; font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-size: 13.5px; line-height: 1.75; color: #1f1f24; }
+.editor li { display: grid; grid-template-columns: 40px minmax(0, 1fr); align-items: baseline; padding-right: 14px; counter-increment: line; }
+.editor li::before { content: counter(line); padding-right: 12px; text-align: right; font-size: 11.5px; color: #a8a8b0; }
+.editor code { font: inherit; white-space: pre-wrap; overflow-wrap: anywhere; }
+.editor li[data-note] code { color: #5d6c79; font-style: italic; }
+.editor li[data-result] { margin-top: 6px; background: #eaf7ee; box-shadow: 3px 0 0 #28a745 inset; }
+.editor li[data-result] code { font-weight: 700; color: #17602f; }
+
+.options { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.options button { display: flex; align-items: center; gap: 10px; min-height: 46px; padding: 6px 12px; border: 1px solid var(--nb-rule-2); border-radius: 11px; background: var(--nb-sheet); color: var(--nb-graphite); font-size: 15px; line-height: 1.4; text-align: left; cursor: pointer; overflow-wrap: anywhere; transition: border-color .15s, background-color .15s; }
+.options button:hover:enabled { border-color: var(--nb-graphite); }
+.options button:focus-visible { outline: 3px solid var(--nb-graphite); outline-offset: 2px; }
+.options button:disabled { cursor: default; color: var(--nb-text); }
+.options button span { display: grid; place-items: center; flex: none; width: 26px; height: 26px; border-radius: 50%; background: var(--nb-wash); font-size: 12px; font-weight: 600; color: var(--nb-text); }
+.options button[data-state="right"] { border-color: #2f7d46; background: #edf7ef; color: var(--nb-graphite); }
+.options button[data-state="right"] span { background: #2f7d46; color: #fff; }
+.options button[data-state="wrong"] { border-color: #b42318; background: #fdeeee; color: var(--nb-graphite); }
+.options button[data-state="wrong"] span { background: #b42318; color: #fff; }
+/* The reason holds its two lines before an option is picked, so answering does not move the page. */
+.why { display: flex; gap: 8px; min-height: 3.2em; font-size: 14.5px; line-height: 1.6; color: var(--nb-muted); }
+.why[data-shown] { color: var(--nb-text); }
+.why svg { flex: none; margin-top: 4px; color: #2f7d46; }
+.why b { font-weight: 600; color: var(--nb-graphite); }
+
+.material { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; margin: 0; padding: 0; list-style: none; }
+.material[data-stack] { grid-template-columns: minmax(0, 1fr); }
+.material li { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 10px; min-height: 52px; padding: 8px 12px; border: 1px solid var(--nb-rule); border-radius: 11px; background: var(--nb-sheet); }
+.material svg { color: var(--nb-ink); }
+.material span { display: grid; gap: 1px; min-width: 0; }
+.material b { font-size: 14.5px; font-weight: 600; color: var(--nb-graphite); }
+.material small { font-size: 12.5px; line-height: 1.4; color: var(--nb-muted); }
+
+.quick { display: grid; gap: 8px; }
+.quick > div { display: grid; gap: 3px; padding: 10px 12px; border: 1px solid var(--nb-rule); border-radius: 11px; background: var(--nb-sheet); }
+.quick dt { font-size: 14.5px; font-weight: 600; line-height: 1.45; color: var(--nb-graphite); }
+.quick dd { font-size: 14px; line-height: 1.5; color: var(--nb-text); }
+
+@media (max-width: 900px) {
+  .wide { grid-template-columns: minmax(0, 1fr); }
+  .side { border-left: 0; border-top: 1px solid var(--nb-rule); }
+  .material { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 640px) {
+  .three { grid-template-columns: minmax(0, 1fr); }
+  .seg { display: grid; grid-column: 1 / -1; }
+  .seg button { padding: 0 8px; font-size: 13px; white-space: normal; }
+  .options, .material { grid-template-columns: minmax(0, 1fr); }
+  .editor ol { font-size: 12.5px; }
+  .editor li { grid-template-columns: 30px minmax(0, 1fr); padding-right: 10px; }
+}
+@media (prefers-reduced-motion: reduce) { .seg button, .options button { transition: none; } }

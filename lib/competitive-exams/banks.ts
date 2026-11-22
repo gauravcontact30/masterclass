@@ -1,0 +1,76 @@
+import { obj, pack, sub } from "./types";
+
+/* Government bank exams: IBPS PO and Clerk, SBI PO, RBI Grade B and RRB. Subjective set: the PO descriptive paper and interview. */
+export default pack("banks", [
+  obj("Banking Awareness", 5, "IBPS PO 2018, SBI PO 2020", "The Reserve Bank of India was established in which year?", ["1935", "1949", "1947", "1955"], 0, "The RBI began operations on 1 April 1935 under the RBI Act, 1934, and was nationalised in 1949."),
+  obj("Banking Awareness", 5, "IBPS Clerk 2019, IBPS PO 2021", "The rate at which the RBI lends short-term funds to commercial banks against government securities is the", ["reverse repo rate", "repo rate", "bank rate", "cash reserve ratio"], 1, "Repo is a repurchase agreement: banks borrow from the RBI by pledging securities."),
+  obj("Banking Awareness", 5, "SBI Clerk 2018, IBPS RRB 2021", "What does NEFT stand for?", ["National Electronic Funds Transfer", "National Exchange Fund Transfer", "Net Electronic Funds Transaction", "National Electronic Finance Transfer"], 0, "NEFT settles in half-hourly batches and has been available round the clock since December 2019."),
+  obj("Banking Awareness", 4, "IBPS PO 2019, RBI Assistant 2020", "How many digits are there in a MICR code?", ["6", "9", "11", "12"], 1, "MICR has 9 digits (city, bank, branch); IFSC has 11 characters."),
+  obj("Banking Awareness", 4, "SBI PO 2019, IBPS Clerk 2022", "An account is classified as a Non-Performing Asset when interest or principal stays overdue for more than", ["30 days", "60 days", "90 days", "180 days"], 2, "The 90-day overdue norm applies to term loans."),
+  obj("Quantitative Aptitude", 5, "IBPS PO Prelims 2019, SBI Clerk 2021", "A sum of ₹8,000 amounts to ₹9,680 in 2 years at compound interest, compounded annually. What is the rate of interest?", ["8%", "10%", "11%", "12%"], 1, "9680/8000 = 1.21 = (1.1)², so the rate is 10%."),
+  obj("Quantitative Aptitude", 5, "IBPS Clerk 2018, IBPS PO 2022", "A can do a piece of work in 12 days and B in 18 days. In how many days will they finish it together?", ["6", "7.2", "7.5", "9"], 1, "1/12 + 1/18 = 5/36 of the work a day, so 36/5 = 7.2 days."),
+  obj("Quantitative Aptitude", 4, "SBI PO Prelims 2020, IBPS RRB 2022", "What comes next in the series 7, 13, 25, 49, 97, ?", ["145", "189", "193", "194"], 2, "Each term is the previous term × 2 − 1: 97 × 2 − 1 = 193."),
+  obj("Reasoning", 5, "IBPS PO 2020, SBI Clerk 2022", "If in a certain code 'ROSE' is written as 'TQUG', how is 'LILY' written?", ["NKNA", "NKMA", "MJMZ", "NJNA"], 0, "Each letter moves two places forward: L→N, I→K, L→N, Y→A."),
+  obj("Reasoning", 4, "IBPS Clerk 2019, IBPS PO 2021", "Statements: All pens are books. Some books are bags. Conclusions: I. Some pens are bags. II. Some bags are books.", ["Only I follows", "Only II follows", "Both follow", "Neither follows"], 1, "II is the direct conversion of the second statement. I does not follow because the pens need not be among the books that are bags."),
+  obj("English", 4, "SBI PO 2018, IBPS PO 2020", "Find the error: 'Neither of the two managers (A) / have submitted (B) / the audit report yet (C). / No error (D)'", ["A", "B", "C", "D"], 1, "'Neither' takes a singular verb: 'has submitted'."),
+  obj("Computer Awareness", 3, "IBPS Clerk Mains 2018, IBPS RRB 2020", "Which of these is not an operating system?", ["Linux", "Windows", "Oracle", "macOS"], 2, "Oracle is a database management system."),
+  obj("Banking Awareness", 4, "IBPS RRB 2019, IBPS Clerk 2021", "Where is the headquarters of NABARD?", ["New Delhi", "Mumbai", "Chennai", "Lucknow"], 1, "NABARD was set up in 1982 on the recommendation of the Sivaraman Committee and is based in Mumbai."),
+  obj("Quantitative Aptitude", 4, "SBI Clerk 2020, IBPS RRB 2022", "A and B invest in a business in the ratio 3 : 5. If the profit is ₹6,400, what is A's share?", ["₹2,000", "₹2,400", "₹3,200", "₹4,000"], 1, "A's share = 6400 × 3/8 = ₹2,400."),
+  obj("Banking Awareness", 4, "IBPS Clerk 2018, SBI Clerk 2021", "What does KYC stand for?", ["Keep Your Cash", "Know Your Customer", "Know Your Credit", "Key Yield Certificate"], 1, "KYC is the process by which a bank verifies the identity and address of its customer."),
+], [
+  sub("Descriptive: Essay", 5, "SBI PO Mains 2019, IBPS PO Mains 2021", "Write an essay of about 250 words on 'The role of digital banking in financial inclusion'.", [
+    "Introduction: financial inclusion means affordable access to accounts, credit, insurance and payments for every household.",
+    "What digital banking changed: Jan Dhan accounts, Aadhaar-based eKYC and UPI brought banking to a phone without a branch visit.",
+    "Evidence: over 50 crore Jan Dhan accounts and billions of UPI transactions a month; direct benefit transfer cut leakage.",
+    "Limits: weak connectivity, low digital literacy, fraud and dormant accounts.",
+    "Way forward: business correspondents, vernacular apps, stronger grievance redress and customer education.",
+    "Conclusion: technology widens access, but trust and literacy decide whether accounts are actually used.",
+  ]),
+  sub("Descriptive: Letter", 5, "IBPS PO Mains 2018, SBI PO Mains 2020", "Write a letter to your branch manager reporting an unauthorised debit-card transaction.", [
+    "Format: sender's address, date, receiver's address, subject line, salutation, body, complimentary close and signature.",
+    "Subject: 'Unauthorised transaction of ₹____ on debit card ending ____'.",
+    "Paragraph 1: account number, date, time and amount of the transaction, and a clear statement that you did not make it.",
+    "Paragraph 2: steps already taken: card blocked through the helpline, complaint number noted.",
+    "Paragraph 3: request reversal of the amount and a replacement card; mention enclosed statement and ID copy.",
+    "Keep it formal and within 150 words.",
+  ]),
+  sub("Banking Awareness", 4, "IBPS PO Interview 2019 to 2023", "Explain the difference between repo rate, reverse repo rate, CRR and SLR.", [
+    "Repo rate: the rate at which the RBI lends to banks against securities; raising it makes loans costlier.",
+    "Reverse repo rate: the rate the RBI pays banks for parking surplus funds with it.",
+    "CRR: the share of deposits a bank must keep with the RBI in cash; it earns no interest.",
+    "SLR: the share of deposits a bank must hold itself in gold, cash or approved securities.",
+    "All four are monetary-policy tools used to control liquidity and inflation.",
+  ]),
+  sub("Banking Awareness", 4, "SBI PO Interview 2018 to 2022", "What is a Non-Performing Asset, and how are NPAs classified?", [
+    "A loan becomes an NPA when interest or principal is overdue for more than 90 days.",
+    "Substandard: NPA for up to 12 months.",
+    "Doubtful: remained substandard for more than 12 months.",
+    "Loss asset: identified as uncollectible but not yet fully written off.",
+    "Recovery routes: SARFAESI Act, Debt Recovery Tribunals, the Insolvency and Bankruptcy Code and Lok Adalats.",
+  ]),
+  sub("Interview", 4, "IBPS and SBI PO interviews, asked every year", "Why do you want to join the banking sector after your graduation in another field?", [
+    "State what attracts you: a stable career with clear growth, work that touches people's finances, and a role in the economy.",
+    "Connect your degree: analytical training, comfort with numbers or technology that banking now needs.",
+    "Show awareness of the job: targets, transfers and customer handling.",
+    "End with a long-term aim inside the bank, such as credit or branch management.",
+  ]),
+  sub("Banking Awareness", 3, "RBI Grade B Phase 2, 2019 and 2021", "What are the main functions of the Reserve Bank of India?", [
+    "Monetary authority: sets policy rates to keep inflation near target.",
+    "Issuer of currency: all notes except the one-rupee note.",
+    "Banker to the government and banker to banks; lender of last resort.",
+    "Regulator and supervisor of banks, NBFCs and payment systems.",
+    "Manager of foreign exchange under FEMA and custodian of reserves.",
+  ]),
+  sub("Banking Awareness", 4, "IBPS Clerk and PO interviews 2018 to 2023", "What is the difference between a savings account and a current account?", [
+    "Savings account: for individuals to save; earns interest; limits on the number of transactions.",
+    "Current account: for businesses with frequent transactions; normally earns no interest.",
+    "A current account may carry an overdraft facility; a savings account does not.",
+    "Minimum balance is usually higher for a current account.",
+  ]),
+  sub("Banking Awareness", 4, "SBI PO and IBPS PO interviews 2019 to 2023", "What is UPI, and how does it work?", [
+    "Unified Payments Interface, launched in 2016 by the National Payments Corporation of India.",
+    "It links one or more bank accounts to a mobile app and a virtual payment address.",
+    "Money moves instantly, round the clock, between accounts; the payer approves with a UPI PIN.",
+    "No account number or IFSC needs to be shared, which makes small payments simple and safe.",
+  ]),
+]);

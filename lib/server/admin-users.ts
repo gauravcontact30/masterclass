@@ -11,7 +11,7 @@ const DAY = 86_400_000;
 // The directory reads every Auth account in pages of 1000 (Supabase's maximum); enough for search and filters here.
 const AUTH_PAGE = 1000, AUTH_PAGES_MAX = 20;
 
-async function allAuthUsers(): Promise<User[]> {
+export async function allAuthUsers(): Promise<User[]> {
   const users: User[] = [];
   for (let page = 1; page <= AUTH_PAGES_MAX; page++) {
     const { data, error } = await db().auth.admin.listUsers({ page, perPage: AUTH_PAGE });

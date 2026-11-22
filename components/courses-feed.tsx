@@ -18,7 +18,6 @@ import {
   Flame
 } from "lucide-react";
 import { getTechnologyBrandIcon } from "./tech-buzz-brand-icons";
-import { getDiwaliFestiveSaleInfo } from "@/lib/festive-sale";
 import { parseStoredRecord, useStoredValue, writeStoredValue } from "@/lib/local-store";
 import styles from "./courses-feed.module.css";
 
@@ -365,8 +364,6 @@ export const MASTER_COURSES: MasterCourseItem[] = [
 
 const LAYOUT_KEY = "masterclass:courses-layout", LIKES_KEY = "masterclass:courses-likes";
 const DISLIKES_KEY = "masterclass:courses-dislikes", CLAPS_KEY = "masterclass:courses-claps";
-// The banner shows the sale's fixed terms only, so it needs no clock.
-const festiveSale = getDiwaliFestiveSaleInfo();
 
 export function CoursesFeed() {
   const [courses, setCourses] = useState<MasterCourseItem[]>(() => MASTER_COURSES);
@@ -501,16 +498,12 @@ export function CoursesFeed() {
 
   return (
     <div className={styles.coursesRoot}>
-      {/* 1. Top Brand & Festive Sale Bar */}
+      {/* 1. Top Brand Bar */}
       <div className={styles.topBar}>
         <div className={styles.topBarLeft}>
           <Link href="/courses" className={styles.brandBadge}>
             <span className={styles.brandDot} />
             <span>MasterClass Buddy · Learning Paths</span>
-          </Link>
-          <Link href="/#pricing" className={styles.festiveBannerPill}>
-            <span>🪔</span>
-            <span>{festiveSale.title}: <strong>{festiveSale.discountPercent}% OFF (₹{festiveSale.discountedMonthly}/mo)</strong></span>
           </Link>
         </div>
 
@@ -890,7 +883,7 @@ export function CoursesFeed() {
         </div>
         <div className={styles.proBannerRight}>
           <Link href="/#pricing" className={styles.proBannerBtn}>
-            <span>Get All-Access Pro (25% OFF)</span>
+            <span>Get All-Access Pro</span>
             <ArrowRight size={14} />
           </Link>
         </div>

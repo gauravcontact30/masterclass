@@ -65,7 +65,7 @@ async function readReport(days: number) {
 export async function GET(request: Request) {
   return api(async () => {
     await requireSuperAdmin();
-    const days = Math.floor(Math.min(365, Math.max(1, Number(new URL(request.url).searchParams.get("days")) || 30)));
+    const days = Math.floor(Math.min(365, Math.max(1, Number(new URL(request.url).searchParams.get("days")) || 7)));
     return Response.json(await reports.get(String(days), () => readReport(days)));
   }, request);
 }

@@ -36,7 +36,7 @@ function Rating({ story }: Readonly<{ story: LandingBuzz }>) {
 }
 
 /**
- * Tech Buzz on the landing page, straight under the festive sale (user requests 2026-11-01): the Certifications form
+ * Tech Buzz on the landing page, (user requests 2026-11-01): the Certifications form
  * (FeatureSection), its text set as an article (pitch, four details, how it works, the way into /tech-buzz) beside a
  * reading list on a stack of paper (user requests 2026-11-03): a line summing up the newest stories, the current story's cover with its headline, subtitle,
  * star rating and the likes, dislikes and claps readers gave it, and a row per story to jump to. BuzzQueue runs it

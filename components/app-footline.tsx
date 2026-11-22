@@ -2,12 +2,12 @@ import Link from "@/components/site-link";
 import styles from "./app-footline.module.css";
 
 /**
- * The signed-in dashboards' one-line footer (Learning Dashboard and Super Admin, user request 2026-11-02): a thin rule
+ * The signed-in dashboards' one-line footer (Learning Dashboard, Super Admin and the exam portals; user request 2026-11-02): a thin rule
  * with the name and three links, at the bottom of the main column. FooterVisibility keeps the full site footer off them.
  */
-export function AppFootline() {
+export function AppFootline({ tagline = "Interview prep, system design and AI agents for working engineers" }: { tagline?: string } = {}) {
   return <footer className={`app-footline ${styles.line}`}>
-    <span className={styles.about}><b>MasterClass Buddy</b><span className={styles.tagline}> · Interview prep, system design and AI agents for working engineers</span></span>
+    <span className={styles.about}><b>MasterClass Buddy</b><span className={styles.tagline}> · {tagline}</span></span>
     <nav aria-label="Help and policies" className={styles.links}>
       <Link href="/contact" prefetch={false}>Support</Link>
       <Link href="/privacy" prefetch={false}>Privacy</Link>

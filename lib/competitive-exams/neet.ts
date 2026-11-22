@@ -1,0 +1,76 @@
+import { obj, pack, sub } from "./types";
+
+/* NEET UG. The paper is objective; the subjective set is NCERT short-answer revision of the same high-yield topics. */
+export default pack("neet", [
+  obj("Biology", 5, "NEET 2017, NEET 2020", "Which organelle is the site of aerobic respiration in a eukaryotic cell?", ["Ribosome", "Mitochondrion", "Lysosome", "Golgi apparatus"], 1, "The Krebs cycle runs in the matrix and the electron transport chain on the inner membrane."),
+  obj("Biology", 5, "NEET 2018, NEET 2021", "The DNA double-helix model was proposed by", ["Mendel", "Watson and Crick", "Hershey and Chase", "Meselson and Stahl"], 1, "Watson and Crick proposed it in 1953 using the X-ray data of Wilkins and Franklin."),
+  obj("Biology", 5, "NEET 2016, NEET 2019, NEET 2022", "In a dihybrid cross between two heterozygotes, the phenotypic ratio in the F₂ generation is", ["3 : 1", "1 : 2 : 1", "9 : 3 : 3 : 1", "1 : 1 : 1 : 1"], 2, "Mendel's law of independent assortment gives 9 : 3 : 3 : 1."),
+  obj("Biology", 4, "NEET 2018, NEET 2021", "Which hormone lowers the blood glucose level?", ["Glucagon", "Insulin", "Adrenaline", "Thyroxine"], 1, "Insulin from the beta cells of the pancreas promotes uptake of glucose and glycogen formation."),
+  obj("Biology", 4, "NEET 2017, NEET 2020", "The functional unit of the kidney is the", ["neuron", "nephron", "alveolus", "glomerulus"], 1, "Each kidney has about a million nephrons; the glomerulus is one part of a nephron."),
+  obj("Biology", 4, "NEET 2019, NEET 2023", "In C₄ plants, the first stable product of carbon dioxide fixation is", ["3-phosphoglyceric acid", "oxaloacetic acid", "RuBP", "pyruvic acid"], 1, "PEP carboxylase fixes CO₂ into oxaloacetic acid, a four-carbon acid, in the mesophyll cells."),
+  obj("Biology", 4, "NEET 2018, NEET 2022", "Which of the following is a sexually transmitted disease caused by a bacterium?", ["AIDS", "Genital herpes", "Syphilis", "Hepatitis B"], 2, "Syphilis is caused by Treponema pallidum; the other three are viral."),
+  obj("Chemistry", 5, "NEET 2017, NEET 2021", "The number of sigma and pi bonds in ethene (C₂H₄) is", ["5 sigma and 1 pi", "4 sigma and 2 pi", "6 sigma and 0 pi", "3 sigma and 2 pi"], 0, "Four C–H sigma bonds, one C–C sigma bond and one C–C pi bond."),
+  obj("Chemistry", 4, "NEET 2019, NEET 2022", "Which of the following is an example of a colligative property?", ["Viscosity", "Osmotic pressure", "Surface tension", "Refractive index"], 1, "Colligative properties depend only on the number of solute particles."),
+  obj("Physics", 5, "NEET 2018, NEET 2021", "The dimensional formula of Planck's constant is", ["[ML²T⁻¹]", "[MLT⁻²]", "[ML²T⁻²]", "[ML²T⁻³]"], 0, "h = E/ν, so [ML²T⁻²]/[T⁻¹] = [ML²T⁻¹], the same as angular momentum."),
+  obj("Physics", 4, "NEET 2017, NEET 2020", "A convex lens of focal length 20 cm has a power of", ["+0.5 D", "+2 D", "+5 D", "−5 D"], 2, "P = 1/f in metres = 1/0.2 = +5 D."),
+  obj("Physics", 4, "NEET 2019, NEET 2023", "The work done by a centripetal force on a body in uniform circular motion in one revolution is", ["2πr × F", "πr × F", "F × r", "zero"], 3, "The force is always perpendicular to the displacement, so the work is zero."),
+  obj("Biology", 4, "NEET 2017, NEET 2021", "Which is the longest bone in the human body?", ["Humerus", "Tibia", "Femur", "Fibula"], 2, "The femur (thigh bone) is the longest and strongest bone."),
+  obj("Biology", 4, "NEET 2018, NEET 2022", "Which enzyme unwinds the DNA double helix during replication?", ["DNA ligase", "Helicase", "DNA polymerase", "Primase"], 1, "Helicase breaks the hydrogen bonds between the strands at the replication fork."),
+  obj("Chemistry", 4, "NEET 2019, NEET 2023", "Which is the most electronegative element?", ["Oxygen", "Chlorine", "Fluorine", "Nitrogen"], 2, "Fluorine has the value 4.0 on the Pauling scale."),
+], [
+  sub("Biology", 5, "NEET 2016 to 2023, topic asked every year", "Describe the structure of the DNA double helix.", [
+    "Two polynucleotide chains run antiparallel, one 5′→3′ and the other 3′→5′.",
+    "The sugar-phosphate backbone is on the outside and the bases point inward.",
+    "Adenine pairs with thymine by two hydrogen bonds; guanine pairs with cytosine by three.",
+    "The helix is right-handed with a pitch of 3.4 nm and about ten base pairs per turn.",
+    "The distance between successive base pairs is 0.34 nm.",
+  ]),
+  sub("Biology", 5, "NEET 2017 to 2022", "State Mendel's laws of inheritance.", [
+    "Law of dominance: in a heterozygote one allele (dominant) is expressed and masks the other (recessive).",
+    "Law of segregation: the two alleles of a gene separate during gamete formation, so each gamete carries one.",
+    "Law of independent assortment: alleles of different genes assort independently when the genes are on different chromosomes.",
+    "Ratios: 3 : 1 in a monohybrid F₂ and 9 : 3 : 3 : 1 in a dihybrid F₂.",
+  ]),
+  sub("Biology", 4, "NEET 2018 to 2023", "Distinguish between C₃ and C₄ plants.", [
+    "First product: 3-PGA (three carbons) in C₃; oxaloacetic acid (four carbons) in C₄.",
+    "CO₂ acceptor: RuBP in C₃; PEP in the mesophyll of C₄.",
+    "Leaf anatomy: C₄ plants show Kranz anatomy with bundle-sheath cells.",
+    "Photorespiration: significant in C₃, negligible in C₄.",
+    "Examples: wheat and rice are C₃; maize and sugarcane are C₄.",
+  ]),
+  sub("Biology", 4, "NEET 2017 to 2021", "Explain the events of the human menstrual cycle.", [
+    "Menstrual phase (days 1 to 5): the endometrium breaks down as progesterone falls.",
+    "Follicular phase (days 6 to 13): FSH matures a follicle, which secretes oestrogen; the endometrium regenerates.",
+    "Ovulation (about day 14): an LH surge releases the ovum.",
+    "Luteal phase (days 15 to 28): the corpus luteum secretes progesterone to maintain the endometrium.",
+    "Without fertilisation the corpus luteum degenerates and the cycle restarts.",
+  ]),
+  sub("Chemistry", 4, "NEET 2018 to 2022", "What are colligative properties? Name the four.", [
+    "Properties of a dilute solution that depend only on the number of solute particles, not their nature.",
+    "Relative lowering of vapour pressure.",
+    "Elevation of boiling point.",
+    "Depression of freezing point.",
+    "Osmotic pressure. For electrolytes each is multiplied by the van't Hoff factor i.",
+  ]),
+  sub("Physics", 3, "NEET 2017 to 2021", "State the laws of the photoelectric effect.", [
+    "Emission is instantaneous, with no measurable time lag.",
+    "Below a threshold frequency no electrons are emitted, whatever the intensity.",
+    "The maximum kinetic energy rises linearly with frequency and does not depend on intensity.",
+    "The photoelectric current is proportional to the intensity above the threshold.",
+    "Einstein's equation: hν = φ + K(max).",
+  ]),
+  sub("Biology", 4, "NEET 2017 to 2022", "Describe the parts of a nephron.", [
+    "Glomerulus: a tuft of capillaries where blood is filtered under pressure.",
+    "Bowman's capsule: the cup that collects the filtrate; with the glomerulus it forms the renal corpuscle.",
+    "Proximal convoluted tubule: reabsorbs most of the water, glucose, amino acids and salts.",
+    "Loop of Henle: sets up the concentration gradient in the medulla.",
+    "Distal convoluted tubule and collecting duct: fine control of water and ions under ADH and aldosterone.",
+  ]),
+  sub("Biology", 4, "NEET 2018 to 2023", "What is the central dogma of molecular biology?", [
+    "Genetic information flows from DNA to RNA to protein.",
+    "Replication: DNA makes a copy of itself.",
+    "Transcription: an mRNA copy is made from the DNA template.",
+    "Translation: ribosomes read the mRNA and build the polypeptide.",
+    "Exception: retroviruses make DNA from RNA by reverse transcription.",
+  ]),
+]);

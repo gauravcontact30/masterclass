@@ -602,5 +602,3 @@ export function getTopPlatformsComparison(): ContentPlatformComparison[] {
   return TOP_PLATFORMS_COMPARISON;
 }
 
-// The festive sale lives in its own small module so client pages can read it without bundling these articles.
-export { getDiwaliFestiveSaleInfo, type FestiveSaleInfo } from "./festive-sale";

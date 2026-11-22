@@ -1,0 +1,76 @@
+import { obj, pack, sub } from "./types";
+
+/* UGC NET Paper 1 (Teaching and Research Aptitude), common to every subject. The paper is objective; the subjective set is short-answer revision. */
+export default pack("ugc-net", [
+  obj("Teaching Aptitude", 5, "UGC NET June 2019, December 2021", "Which level of teaching aims at developing insight and problem-solving in the learner?", ["Memory level", "Understanding level", "Reflective level", "Autonomous level"], 2, "Memory (Herbart), understanding (Morrison) and reflective (Hunt): the reflective level is the highest."),
+  obj("Teaching Aptitude", 5, "UGC NET December 2018, June 2020", "In the revised Bloom's taxonomy, the highest level of the cognitive domain is", ["evaluating", "analysing", "creating", "applying"], 2, "Revised order: remember, understand, apply, analyse, evaluate, create."),
+  obj("Teaching Aptitude", 4, "UGC NET June 2019, December 2022", "SWAYAM is a platform for", ["online plagiarism checks", "massive open online courses", "research funding", "university ranking"], 1, "SWAYAM hosts MOOCs from school to postgraduate level."),
+  obj("Research Aptitude", 5, "UGC NET December 2018, June 2021", "A hypothesis that states there is no relationship between the variables is called a", ["directional hypothesis", "null hypothesis", "alternative hypothesis", "research hypothesis"], 1, "The null hypothesis (H₀) is the one tested statistically."),
+  obj("Research Aptitude", 5, "UGC NET June 2019, December 2020", "In which sampling method does every member of the population have an equal chance of selection?", ["Quota sampling", "Purposive sampling", "Simple random sampling", "Snowball sampling"], 2, "Simple random sampling is a probability method; the other three are non-probability methods."),
+  obj("Research Aptitude", 4, "UGC NET December 2019, June 2022", "Research that aims to solve an immediate, local problem, often by a practitioner, is called", ["fundamental research", "action research", "historical research", "ex post facto research"], 1, "Action research is done by teachers and practitioners to improve their own practice."),
+  obj("Communication", 4, "UGC NET June 2019, December 2021", "In classroom communication, the process by which a listener turns a message into meaning is", ["encoding", "decoding", "feedback", "noise"], 1, "The sender encodes and the receiver decodes."),
+  obj("Logical Reasoning", 4, "UGC NET December 2018, June 2020", "In Indian logic (Nyaya), which pramana means 'inference'?", ["Pratyaksha", "Anumana", "Upamana", "Shabda"], 1, "Pratyaksha is perception, anumana inference, upamana comparison and shabda verbal testimony."),
+  obj("ICT", 4, "UGC NET June 2019, December 2022", "1 gigabyte is equal to", ["1000 kilobytes", "1024 megabytes", "1024 kilobytes", "1024 terabytes"], 1, "1 GB = 1024 MB and 1 MB = 1024 KB."),
+  obj("Environment", 4, "UGC NET December 2019, June 2021", "How many Sustainable Development Goals were adopted by the United Nations in 2015?", ["8", "15", "17", "21"], 2, "17 SDGs with 169 targets, to be met by 2030; the earlier Millennium Development Goals numbered 8."),
+  obj("Higher Education", 4, "UGC NET June 2019, December 2021", "The University Grants Commission was established by an Act of Parliament in", ["1948", "1953", "1956", "1968"], 2, "The UGC was inaugurated in 1953 and became a statutory body under the UGC Act, 1956."),
+  obj("Data Interpretation", 3, "UGC NET December 2018, June 2022", "The mean of 4, 8, 12, 16 and 20 is", ["10", "12", "14", "16"], 1, "The sum is 60 and 60/5 = 12."),
+  obj("Teaching Aptitude", 4, "UGC NET June 2019, December 2021", "Micro-teaching was first developed at", ["Harvard University", "Stanford University", "Oxford University", "Columbia University"], 1, "Dwight Allen and his colleagues developed it at Stanford in 1963."),
+  obj("Research Aptitude", 4, "UGC NET December 2019, June 2022", "Presenting another person's work or ideas as one's own is called", ["paraphrasing", "plagiarism", "citation", "peer review"], 1, "UGC regulations of 2018 set penalties by the level of similarity."),
+  obj("ICT", 4, "UGC NET June 2019, December 2020", "MOOC stands for", ["Massive Open Online Course", "Modular Object Oriented Course", "Multiple Online Open Classes", "Managed Open Online Curriculum"], 0, "SWAYAM is India's MOOC platform."),
+], [
+  sub("Teaching Aptitude", 5, "UGC NET 2018 to 2022, topic asked every cycle", "Explain the three levels of teaching.", [
+    "Memory level (Herbart): recall of facts; the teacher is active and the learner passive.",
+    "Understanding level (Morrison): the learner grasps meaning, relationships and principles.",
+    "Reflective level (Hunt): the learner examines a problem critically and builds an original solution.",
+    "Each level needs the one before it; the reflective level is learner-centred.",
+  ]),
+  sub("Research Aptitude", 5, "UGC NET 2018 to 2022", "List the steps of the research process.", [
+    "Identify and define the research problem.",
+    "Review the literature.",
+    "Formulate hypotheses or research questions.",
+    "Prepare the research design and choose the sample.",
+    "Collect data, then analyse it and test the hypotheses.",
+    "Interpret the findings and write the report.",
+  ]),
+  sub("Research Aptitude", 4, "UGC NET 2019 to 2022", "Differentiate between qualitative and quantitative research.", [
+    "Quantitative research measures variables numerically and tests hypotheses with statistics.",
+    "Qualitative research explores meanings and experiences through words, observation and interviews.",
+    "Quantitative work uses large, often random samples; qualitative work uses small, purposive ones.",
+    "Reasoning is mainly deductive in quantitative and inductive in qualitative studies.",
+    "Mixed-methods research combines both.",
+  ]),
+  sub("Communication", 4, "UGC NET 2018 to 2021", "What are the barriers to effective classroom communication?", [
+    "Physical: noise, poor seating and faulty equipment.",
+    "Semantic: difficult vocabulary and jargon.",
+    "Psychological: anxiety, prejudice and lack of attention.",
+    "Cultural: differences in background and language.",
+    "Remedy: clear language, feedback and active listening.",
+  ]),
+  sub("Higher Education", 4, "UGC NET 2020 to 2023", "State the main recommendations of the National Education Policy 2020 for higher education.", [
+    "Multidisciplinary universities and colleges with multiple entry and exit points.",
+    "A four-year undergraduate degree with a research option and an Academic Bank of Credits.",
+    "A single regulator, the Higher Education Commission of India, excluding medical and legal education.",
+    "A National Research Foundation to fund research.",
+    "Raise the gross enrolment ratio to 50 per cent by 2035.",
+  ]),
+  sub("Logical Reasoning", 3, "UGC NET 2018 to 2022", "Explain the square of opposition in categorical propositions.", [
+    "A (All S are P) and O (Some S are not P) are contradictories; so are E (No S is P) and I (Some S are P).",
+    "A and E are contraries: both cannot be true, but both may be false.",
+    "I and O are subcontraries: both cannot be false, but both may be true.",
+    "A to I and E to O are subaltern relations: truth flows downward, falsity upward.",
+  ]),
+  sub("Teaching Aptitude", 4, "UGC NET 2018 to 2022", "What are the characteristics of effective teaching?", [
+    "Clear objectives that are shared with the learners.",
+    "Sound command of the subject and good preparation.",
+    "Methods matched to the learners, with active participation.",
+    "Clear communication and use of teaching aids.",
+    "Regular feedback and assessment that guide the next lesson.",
+  ]),
+  sub("Research Aptitude", 4, "UGC NET 2019 to 2023", "What are the main principles of research ethics?", [
+    "Honesty in collecting, analysing and reporting data; no fabrication or falsification.",
+    "No plagiarism: every source is acknowledged.",
+    "Informed consent of participants, with the right to withdraw.",
+    "Confidentiality and protection from harm.",
+    "Disclosure of conflicts of interest and fair credit to co-workers.",
+  ]),
+]);

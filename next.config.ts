@@ -46,6 +46,8 @@ const nextConfig: NextConfig = {
     // Tried 2026-11-01: requestCost 80 KB only cut the landing page's CSS requests 40 → 33 and raised its render-blocking
     // sheets 21 → 25 (the split follows dynamic-import boundaries, not cost), so the default tuning stays.
     cssChunking: process.env.TURBOPACK ? "graph" : true,
+    // Tried 2026-11-21: inlineCss. Mobile lab (4x CPU, slow 4G): /tech-buzz FCP 1.85 → 0.95 s, but the home page's gzipped
+    // HTML grew 124 → 337 KB and its LCP got worse (4.5 → 7.8 s), and returning visitors lose cached CSS. Left off.
     optimizePackageImports: [
       "lucide-react",
       "@upstash/redis",
@@ -75,6 +77,8 @@ const nextConfig: NextConfig = {
       { source: "/dashboard", destination: "/learning", permanent: true },
       // A page-level redirect() here was prerendered as a 200 shell, which Google saw as a duplicate of the home page.
       { source: "/notes", destination: "/learning/notes", permanent: true },
+      // The IELTS preparation hub lives inside the Learning Dashboard only (user request 2026-11-21).
+      { source: "/ielts", destination: "/learning/ielts", permanent: true },
     ];
   },
   async headers() {

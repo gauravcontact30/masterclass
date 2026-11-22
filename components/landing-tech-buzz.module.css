@@ -151,7 +151,7 @@
 @media (max-width: 560px) {
   .stack { padding: 8px 4px 10px; }
   .stack::before, .stack::after { inset: 8px 4px 10px; }
-  .ring { right: -10px; width: 92px; height: 92px; }
+  .ring { right: -6px; width: 92px; height: 92px; }
   .board { padding: 12px; }
   /* Tall enough that three lines of headline clear the tags above them. */
   .cover { aspect-ratio: 4 / 3; }

@@ -13,7 +13,7 @@ import { vocabularyImageSlug } from "./vocabulary-image";
  */
 export const LEARNING_IMAGE_BUCKET = "learning-images";
 
-export type LearningImageSet = "topics" | "api" | "workflow" | "docs" | "notes" | "lessons" | "guides" | "courses";
+export type LearningImageSet = "topics" | "api" | "workflow" | "docs" | "notes" | "lessons" | "guides" | "courses" | "exams";
 
 /** FNV-1a, base 36: a short, stable tag that tells apart names that slug alike. */
 function tag(text: string) {

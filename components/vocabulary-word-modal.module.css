@@ -98,7 +98,9 @@
   line-height: 1.2;
   color: #141413;
   letter-spacing: -0.02em;
-  white-space: nowrap;
+  /* Single words stay on one line; a long idiom wraps instead of pushing the modal wider than a phone. */
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .hindiBadge {

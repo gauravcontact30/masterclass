@@ -1,7 +1,8 @@
 import type { MetadataRoute } from "next";
 import { cacheLife, cacheTag } from "next/cache";
-import { PUBLIC_PAGES, isIndexable, siteUrl } from "@/lib/seo";
+import { INDIA_ONLY_PAGES, PUBLIC_PAGES, isIndexable, siteUrl } from "@/lib/seo";
 import { COMPARISONS } from "@/lib/comparisons";
+import { EXAM_GUIDES, type ExamGuidePath } from "@/lib/exam-guides";
 import { TECH_BUZZ_TAG, listPublishedTechBuzzArticles } from "@/lib/server/tech-buzz-storage";
 import { handbookName, handbookSlug, handbooks, interviewTechs, vocabularyGroups, workflows } from "@/lib/public-learning";
 import { technologyLogo } from "@/lib/technology-logo";
@@ -36,8 +37,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }));
   const latestStory = buzz.reduce<Date | undefined>((latest, story) => !latest || story.lastModified > latest ? story.lastModified : latest, undefined);
   return [
-    ...PUBLIC_PAGES.map(({ path, changeFrequency, priority }) => ({ url: url(path), changeFrequency, priority,
-      ...(path === "/" ? { images: [url("/images/landing/hero-interviews-subway.webp"), url("/images/landing/hero-interviews-airport.webp")] } : {}),
+    ...PUBLIC_PAGES.filter(page => !INDIA_ONLY_PAGES.has(page.path)).map(({ path, changeFrequency, priority }) => ({ url: url(path), changeFrequency, priority,
+      ...(path in EXAM_GUIDES ? { images: [url(EXAM_GUIDES[path as ExamGuidePath].image)] } : {}),
+      ...(path === "/" ? { images: [url("/images/landing/hero-interviews-ads9.webp"), url("/images/landing/hero-interviews-ads17.webp"), url("/images/landing/hero-board-exams.webp"), url("/images/landing/hero-government-exams.webp")] } : {}),
       ...((path === "/tech-buzz" || path === "/library") && latestStory ? { lastModified: latestStory } : {}) })),
     library("/interview-questions", 0.9, "weekly"), ...interviewTechs().map(tech => technology(`/interview-questions/${tech.id}`, 0.8, tech.id, tech.title)),
     library("/workflows", 0.9, "weekly"), ...workflows().map(item => library(`/workflows/${item.id}`, 0.8)),

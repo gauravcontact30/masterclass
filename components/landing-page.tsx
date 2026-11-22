@@ -1,4 +1,6 @@
 "use client";
+import { useIndiaAccess } from "./audience-provider";
+import { ExamLocaleProvider } from "./exam-locale";
 /*
  * Direction contract (Impeccable; user-pinned brief 2026-09-24: "remove the hero, a four-image autoplay slider with arrows directly under the navbar, a more creative and professional navbar, Claude Code design system").
  * THESIS: the photographs are the hero; each slide is a real learner moment carrying its own headline and actions.
@@ -13,8 +15,7 @@ import { startTransition, Suspense, useEffect, useMemo, useState, type ReactNode
 import { RouteH1 } from "./route-heading";
 import dynamic from "next/dynamic";
 import { loadPrices } from "./currency-picker";
-import type { Currency, SaleInfo } from "@/lib/pricing";
-import { LandingFestiveSale } from "./landing-festive-sale";
+import type { Currency } from "@/lib/pricing";
 import { LibraryBig } from "lucide-react";
 import { landingFont } from "./landing-fonts";
 import { LandingNews } from "./landing-news";
@@ -43,6 +44,7 @@ import { LandingWorkflows } from "./landing-workflows";
 import { LandingComparisons } from "./landing-comparisons";
 import { LandingInterview } from "./landing-interview";
 import { LandingAiPulse } from "./landing-ai-pulse";
+import { CategoryBand, LandingCategories } from "./landing-categories";
 
 // Sections below the first screens are split into their own chunks. They still render on the server (the HTML and
 // what search engines read are unchanged); in the browser each hydrates on its own, so no single long task blocks input.
@@ -55,7 +57,13 @@ const StudentReviews = dynamic(() => import("./student-reviews").then(m => m.Stu
 const LandingSearchDocs = dynamic(() => import("./landing-search-docs").then(m => m.LandingSearchDocs));
 const LandingCoffee = dynamic(() => import("./landing-coffee").then(m => m.LandingCoffee));
 const LandingApiDocs = dynamic(() => import("./landing-pro-sections").then(m => m.LandingApiDocs));
+const LandingBoardExams = dynamic(() => import("./landing-exams").then(m => m.LandingBoardExams));
+const LandingCompetitiveExams = dynamic(() => import("./landing-exams").then(m => m.LandingCompetitiveExams));
 const LandingTechy = dynamic(() => import("./landing-pro-sections").then(m => m.LandingTechy));
+const LandingBoardHighlights = dynamic(() => import("./landing-categories").then(m => m.LandingBoardHighlights));
+const LandingCompetitiveHighlights = dynamic(() => import("./landing-categories").then(m => m.LandingCompetitiveHighlights));
+const BoardFaq = dynamic(() => import("./landing-categories").then(m => m.BoardFaq));
+const CompetitiveFaq = dynamic(() => import("./landing-categories").then(m => m.CompetitiveFaq));
 
 /**
  * Each section hydrates on its own instead of in one long task: nothing here suspends, so the fallback never shows, but
@@ -95,9 +103,10 @@ function MembershipSection({ prices, priceState, onCurrency }: { prices: Landing
 }
 
 /** `international`: other currencies are offered, so the page re-prices itself where the visitor is (it is cached in rupees). */
-export type LandingPrices = { monthly: number; yearly: number; enabled: boolean; currency?: Currency; currencies?: Currency[]; local?: Currency; inr?: { monthly: number; yearly: number }; international?: boolean; sale?: SaleInfo | null };
+export type LandingPrices = { monthly: number; yearly: number; enabled: boolean; currency?: Currency; currencies?: Currency[]; local?: Currency; inr?: { monthly: number; yearly: number }; international?: boolean };
 /** `today`: the India-calendar week number (istWeek, lib/ist-week.ts); the sections that turn over weekly, on Monday at 00:00 IST, pick their content from it. */
 export function LandingPage({ features, answers, certifications, techBuzz, workflows, pro, library, prices: initialPrices, daily, techDocs, overrides, coffee, today = 0, fresh = null }: { features?: ReactNode; answers?: ReactNode; certifications?: ReactNode; techBuzz?: ReactNode; workflows: WorkflowPreview; fresh?: LandingFresh | null; today?: number; featuredDoc?: string; overrides?: ContentOverrides; coffee?: BlogTeaser[]; pro?: LandingProPreview; library?: LandingLibrary; prices?: LandingPrices; techDocs?: OfficialTechDocs | null; daily?: { day: string; pulse: PulseCard[]; words: DailyWord[]; locked?: { pulse: LockedTeaser | null; word: LockedTeaser | null }; totals?: { pulse: number; words: number } } }) {
+  const india = useIndiaAccess();
   const { language, t } = useLanguage(); const hi = language === "hi";
   // Prices rendered on the server arrive in the HTML, so the plan card never paints "—" and then shifts; the fetch is only the fallback.
   // A failed re-price (to the visitor's currency) keeps the server's rupee prices rather than blanking the card.
@@ -120,7 +129,12 @@ export function LandingPage({ features, answers, certifications, techBuzz, workf
   // Prices change on this component, and only the navbar, sale and plans show them. Everything else is
   // one stable element, so React skips it: a re-price used to re-render about 6,000 DOM nodes' worth of components.
   const hero = useMemo(() => <LandingSlider technologies={library?.counts.technology} />, [library?.counts.technology]);
+  // After the slider the page is divided into three categories (user request 2026-11-22): Tech, Board Exams and
+  // Competitive Exams. A navigator lists the three; a band opens each, followed by that category's sections in their
+  // existing order. The exam categories (navigator, bands, sections) render only for visitors in India; everyone else sees Tech.
   const beforePlans = useMemo(() => <>
+    {india && <LandingCategories />}
+    <CategoryBand id="tech" india={india} />
     {/* Tech Buzz right under the sale (user request 2026-11-01): the newest stories and the way into /tech-buzz. */}
     <Part>{techBuzz}</Part>
     {/* API Docs next, then Fresh in tech (user request 2026-11-03). */}
@@ -141,9 +155,20 @@ export function LandingPage({ features, answers, certifications, techBuzz, workf
     <LandingSearchDocs fresh={fresh?.doc} week={today} />
     {pro && <LandingTechy data={pro.techy} />}
     {daily && <LandingVocabulary words={daily.words} total={daily.totals?.words} day={daily.day} locked={daily.locked?.word} preview />}
+    {/* Board and Competitive Exams are for visitors in India only (server geo decision via /api/geo). */}
+    {india && <>
+    <CategoryBand id="board" india={india} />
+    <Part><ExamLocaleProvider><LandingBoardExams /></ExamLocaleProvider></Part>
+    <Part><LandingBoardHighlights /></Part>
+    <Part><BoardFaq /></Part>
+    <CategoryBand id="competitive" india={india} />
+    <Part><ExamLocaleProvider><LandingCompetitiveExams /></ExamLocaleProvider></Part>
+    <Part><LandingCompetitiveHighlights /></Part>
+    <Part><CompetitiveFaq /></Part>
+    </>}
     <StudentReviews />
     <LearningSlot surface="landing" page="home" section="before-plans" className={styles.learningSlot} />
-  </>, [today, hi, fresh, library, daily, workflows, certifications, techBuzz, coffee, features, techDocs, pro]);
+  </>, [india, today, hi, fresh, library, daily, workflows, certifications, techBuzz, coffee, features, techDocs, pro]);
   return <ContentProvider overrides={overrides}><div className={`${styles.page} ${home.home} ${font.variable} ${font.className}`}><a className={styles.skip} href="#main-content">{t("skipToContent") || "Skip to content"}</a>
     <LandingNavbar links={navigation as [string, string, string][]} prices={priceState === "ready" ? prices : null} onCurrency={reprice} />
     <WelcomeModal />
@@ -153,8 +178,6 @@ export function LandingPage({ features, answers, certifications, techBuzz, workf
         sections (interview prep, the daily pulse, blueprints, certification paths), a section each for AI Search, featured lessons and notes, proof of depth (library, comparisons,
         docs), then social proof straight before the ask (reviews, membership). */}
     {hero}
-    {/* A festive sale in force (lib/server/festive-sale.ts) leads straight after the hero; it renders nothing otherwise. */}
-    {priceState === "ready" && prices.sale && <Part><LandingFestiveSale prices={prices} /></Part>}
     {beforePlans}
     <Part><MembershipSection prices={prices} priceState={priceState} onCurrency={reprice} /></Part>
     <LearningSlot surface="landing" page="home" section="bottom" className={styles.learningSlot} />

@@ -7,6 +7,6 @@ export async function GET(request: Request) {
   return api(async () => {
     await requireSuperAdmin();
     const days = Number(new URL(request.url).searchParams.get("days"));
-    return Response.json({ ...(await adminRpc<object>("admin_insights", { p_days: [1, 7, 30, 90].includes(days) ? days : 30 })), generatedAt: new Date().toISOString() });
+    return Response.json({ ...(await adminRpc<object>("admin_insights", { p_days: [1, 7, 30, 90].includes(days) ? days : 7 })), generatedAt: new Date().toISOString() });
   }, request);
 }

@@ -11,7 +11,7 @@ import styles from "../site.module.css";
 export const metadata = pageMetadata("/contact");
 
 const FAQ = [
-  { question: "How do I start learning?", answer: "Create an account, choose the exams, school classes or courses you are preparing for, and your dashboard opens with those paths ready." },
+  { question: "How do I start learning?", answer: "Create an account, choose the learning path you want to prepare for, and your dashboard opens with those paths ready." },
   // Only while Hindi is switched on: the site is English-only otherwise.
   ...(HINDI_ENABLED ? [{ question: "Is the content available in Hindi?", answer: "Yes. Study notes and most of the interface are available in English and Hindi, and you can switch language at any time." }] : []),
   { question: "How does the membership work?", answer: "Membership is billed monthly or yearly. Access starts after your payment is verified. You can cancel renewal from the Membership page and keep access until the end of the paid period." },

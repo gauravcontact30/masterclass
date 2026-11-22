@@ -1,3 +1,4 @@
+import { AudienceNavigation } from "@/components/audience-navigation";
 import { Suspense } from "react";
 import Link from "@/components/site-link";
 import { cacheLife } from "next/cache";
@@ -29,6 +30,8 @@ const COLUMNS: { title: string; links: [string, string][] }[] = [
   { title: "Tech Buzz", links: [["This Week's 5 Blogs", "/tech-buzz#tb-daily"], ["Fresh & Latest", "/tech-buzz#tb-fresh"], ["Star-Rated Blogs", "/tech-buzz#tb-stars"], ["Most Liked", "/tech-buzz#tb-liked"], ["n8n Workflow Blogs", "/tech-buzz#tb-n8n"], ["Blogs by Technology", "/tech-buzz#tb-groups"]] },
   { title: "Free library", links: [["Interview Questions", "/interview-questions"], ["Comparisons", "/compare"], ["Workflow Blueprints", "/workflows"], ["Technology Handbooks", "/learn"], ["API Reference", "/api-reference"], ["English Vocabulary", "/vocabulary"]] },
   { title: "Courses & paths", links: [["All Courses", "/courses"], ["System Design", "/learning/system-design"], ["Technology Courses", "/learning/technology"], ["English & IELTS", "/learning/languages"], ["Certifications", "/learning/certifications"], ["Free Library Overview", "/library"]] },
+  // Board, Competitive and TET links are India-only and live in AudienceNavigation (geo-checked); this column is global.
+  { title: "English & IELTS", links: [["IELTS Preparation", "/ielts-preparation"], ["IELTS Practice Hub", "/learning/ielts"], ["English Vocabulary", "/vocabulary"]] },
   { title: "Member tools", links: [["Learning Dashboard", "/learning"], ["Official Docs Explained", "/learning/official-docs"], ["API Docs", "/learning/api-docs"], ["Techy Code Lab", "/learning/techy"], ["Agentic Workflows", "/learning/workflow"], ["Interview Practice", "/learning/interview"]] },
   { title: "Company", links: [["About Us", "/about"], ["Contact & Support", "/contact"], ["Site Map", "/site-map"], ["Plans & Pricing", "/learning/plans"], ["Privacy Policy", "/privacy"], ["Terms & Conditions", "/terms"], ["Cancellation & Refunds", "/refund-policy"]] },
 ];
@@ -42,7 +45,7 @@ const COLUMNS: { title: string; links: [string, string][] }[] = [
  */
 export function SiteFooter() {
   return <Suspense fallback={null}><FooterVisibility><footer id="site-footer" className={styles.footer}>
-    <div className={styles.inner}>
+    <div className={styles.inner}><AudienceNavigation />
       <div className={styles.intro}>
         <details className={styles.brand} data-accordion="free" aria-label="About MasterClass Buddy" suppressHydrationWarning>
           <summary className={styles.brandHead}>

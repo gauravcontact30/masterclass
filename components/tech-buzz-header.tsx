@@ -10,6 +10,7 @@ import { PUBLIC_PAGES } from "@/lib/seo";
 import { RAIL_KEY } from "@/lib/tech-buzz-outline";
 import { searchStories, type TechBuzzSearchStory } from "@/lib/tech-buzz-search";
 import { onFeedPage, openFeedView, replaceFeedParams, subscribeUrl, urlParam } from "@/lib/tech-buzz-url";
+import { AudienceNavigation } from "./audience-navigation";
 import { TechBuzzSideNav } from "./tech-buzz-side-nav";
 import styles from "./tech-buzz-header.module.css";
 
@@ -157,7 +158,7 @@ export function TechBuzzHeader() {
           <Link href="/" prefetch={false} aria-label="MasterClass Buddy home" className={styles.drawerBrand} onClick={closeDrawer}><Wordmark /></Link>
           <button type="button" className={styles.iconButton} onClick={closeDrawer} aria-label="Close the menu"><X size={20} aria-hidden="true" /></button>
         </div>
-        <TechBuzzSideNav onNavigate={closeDrawer} />
+        <TechBuzzSideNav onNavigate={closeDrawer} /><AudienceNavigation />
         <nav className={styles.drawerLinks} aria-label="More from MasterClass Buddy">
           {NAV.map(page => <Link key={page.path} href={page.path} onClick={closeDrawer}>{page.label}</Link>)}
           {!signedIn && <Link href="/sign-in" prefetch={false} onClick={closeDrawer}>Sign in</Link>}

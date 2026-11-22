@@ -11,11 +11,17 @@ const fill = () => {
   fireEvent.change(screen.getByLabelText("Full name"), { target: { value: "Asha" } });
   fireEvent.change(screen.getByLabelText("Email"), { target: { value: "asha@example.com" } });
 };
+// Billing calls answer in order; the goal beacons (/api/goals, e.g. checkout_started) answer 204 on their own.
 const respond = (...bodies: [number, unknown][]) => {
-  const mock = jest.fn();
-  bodies.forEach(([status, body]) => mock.mockResolvedValueOnce({ ok: status < 400, status, json: async () => body }));
+  const queue = [...bodies];
+  const mock = jest.fn(async (url: string) => {
+    if (url === "/api/goals") return { ok: true, status: 204, json: async () => ({}) };
+    const [status, body] = queue.shift() ?? [500, { error: "unexpected_call" }];
+    return { ok: status < 400, status, json: async () => body };
+  });
   global.fetch = mock as never;
-  return mock;
+  const billing = { mock: { get calls() { return mock.mock.calls.filter(call => call[0] !== "/api/goals"); } } };
+  return billing;
 };
 
 test("checkout needs no course selection, then emails the new account a sign-in link", async () => {
@@ -33,7 +39,7 @@ test("checkout needs no course selection, then emails the new account a sign-in 
   jest.mocked(openSubscriptionCheckout).mockResolvedValue({ razorpay_payment_id: "pay_1", razorpay_subscription_id: "sub_1", razorpay_signature: "a".repeat(64) });
   fireEvent.click(pay);
   expect(await screen.findByRole("heading", { name: "Your membership is active" })).toBeInTheDocument();
-  expect(JSON.parse(fetch.mock.calls[0][1].body)).toEqual({ action: "checkout", tier: "yearly", currency: "INR", expectedSale: null, expectedAmountPaise: 299900, email: "asha@example.com", name: "Asha" });
+  expect(JSON.parse(fetch.mock.calls[0][1].body)).toEqual({ action: "checkout", tier: "yearly", currency: "INR", expectedAmountPaise: 299900, email: "asha@example.com", name: "Asha" });
   expect(JSON.parse(fetch.mock.calls[1][1].body)).toMatchObject({ action: "verify", checkoutId: "c1", razorpay_payment_id: "pay_1" });
   expect(openSubscriptionCheckout).toHaveBeenCalledWith(expect.objectContaining({ subscription_id: "sub_1", prefill: { email: "asha@example.com", name: "Asha" } }));
   // The link goes to the inbox; this browser is never signed in directly.

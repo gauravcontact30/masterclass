@@ -1,0 +1,78 @@
+import { obj, pack, sub } from "./types";
+
+/* Police and paramilitary recruitment: UPSC CAPF (Assistant Commandant), SSC CPO, state police Sub-Inspector and Constable. Subjective: CAPF Paper 2 and interview. */
+export default pack("police", [
+  obj("Police GK", 5, "UP Police Constable 2018, SSC CPO 2019", "What is the full form of FIR?", ["First Investigation Report", "First Information Report", "Final Information Report", "Formal Inquiry Report"], 1, "An FIR records information about a cognisable offence given to the police."),
+  obj("Police GK", 5, "SSC CPO 2018, Bihar Police SI 2020", "Which is the largest Central Armed Police Force in India?", ["BSF", "CISF", "CRPF", "ITBP"], 2, "The Central Reserve Police Force is the largest and handles internal security."),
+  obj("Police GK", 4, "UPSC CAPF 2019, SSC CPO 2022", "Which force guards the India–China border?", ["BSF", "ITBP", "SSB", "Assam Rifles"], 1, "ITBP guards the China border; BSF guards Pakistan and Bangladesh, and SSB guards Nepal and Bhutan."),
+  obj("Police GK", 4, "UP Police SI 2017, Rajasthan Police 2021", "The National Police Academy that trains IPS officers is located at", ["Dehradun", "Hyderabad", "Mussoorie", "New Delhi"], 1, "The Sardar Vallabhbhai Patel National Police Academy is at Hyderabad."),
+  obj("Polity", 5, "UPSC CAPF 2018, SSC CPO 2020", "'Police' and 'public order' are subjects in which list of the Seventh Schedule?", ["Union List", "State List", "Concurrent List", "Residuary powers"], 1, "Both are State List subjects, so each state has its own police force."),
+  obj("Polity", 4, "SSC CPO 2019, UP Police SI 2021", "Under Article 22, an arrested person must be produced before a magistrate within", ["12 hours", "24 hours", "48 hours", "72 hours"], 1, "Within 24 hours, excluding the time of the journey to the court."),
+  obj("Law", 4, "State Police SI 2024, UPSC CAPF 2024", "Which law replaced the Code of Criminal Procedure, 1973 from 1 July 2024?", ["Bharatiya Nyaya Sanhita", "Bharatiya Nagarik Suraksha Sanhita", "Bharatiya Sakshya Adhiniyam", "Police Act"], 1, "The BNSS replaced the CrPC; the BNS replaced the IPC and the BSA replaced the Evidence Act."),
+  obj("Reasoning", 5, "SSC CPO 2019, UP Police Constable 2018", "A man walks 5 km north, turns right and walks 3 km, then turns right again and walks 5 km. How far is he from the start?", ["3 km", "5 km", "8 km", "13 km"], 0, "The two 5 km legs cancel, leaving him 3 km east of the start."),
+  obj("Numerical Ability", 4, "SSC CPO 2018, Delhi Police Constable 2020", "A man runs 100 m in 16 seconds. What is his speed in km/h?", ["18", "20", "22.5", "25"], 2, "100/16 = 6.25 m/s = 6.25 × 18/5 = 22.5 km/h."),
+  obj("General Knowledge", 4, "Delhi Police Constable 2020, SSC GD 2021", "Police Commemoration Day is observed in India on", ["15 August", "21 October", "26 November", "7 December"], 1, "It marks the killing of ten policemen by Chinese troops at Hot Springs, Ladakh, on 21 October 1959."),
+  obj("General Science", 4, "UP Police Constable 2018, SSC GD 2022", "Which technique is used to identify a person from biological samples in forensic work?", ["Carbon dating", "DNA fingerprinting", "Chromatography", "Spectroscopy"], 1, "DNA profiling compares repeated sequences that differ between individuals."),
+  obj("General Knowledge", 3, "SSC CPO 2019, UPSC CAPF 2021", "Who was the first woman IPS officer of India?", ["Kiran Bedi", "Kanchan Chaudhary Bhattacharya", "Anna Rajam Malhotra", "Sarla Grewal"], 0, "Kiran Bedi joined the IPS in 1972; Kanchan Chaudhary Bhattacharya was the first woman Director General of Police of a state."),
+  obj("General Knowledge", 4, "SSC CPO 2018, UPSC CAPF 2020", "Where is the headquarters of Interpol?", ["Geneva", "Lyon", "Vienna", "The Hague"], 1, "Interpol is based in Lyon, France; the CBI is India's national central bureau for it."),
+  obj("Police GK", 4, "Delhi Police Constable 2020, UP Police 2024", "Which is the single emergency helpline number in India?", ["100", "108", "112", "1098"], 2, "112 connects police, fire and ambulance services under the Emergency Response Support System."),
+  obj("Reasoning", 4, "SSC CPO 2019, SSC GD 2022", "If 'COP' is coded as 'DPQ', how is 'LAW' coded?", ["MBX", "KZV", "MBW", "NCY"], 0, "Each letter moves one place forward: L→M, A→B, W→X."),
+], [
+  sub("Essay", 5, "UPSC CAPF Paper 2: 2018, 2020, 2022", "Write an essay outline on 'Internal security challenges before India'.", [
+    "Introduction: internal security is the protection of the state and its people from threats within its borders.",
+    "Left-wing extremism in central India.",
+    "Cross-border terrorism and insurgency in the north-east.",
+    "Newer threats: cyber crime, drug trafficking and radicalisation online.",
+    "Response: better intelligence sharing, police modernisation and development in affected districts.",
+    "Conclusion: security and development must go together.",
+  ]),
+  sub("Police GK", 5, "State Police SI and UPSC CAPF interviews, asked every year", "Name the Central Armed Police Forces and the main role of each.", [
+    "CRPF: internal security, counter-insurgency and election duty.",
+    "BSF: guards the Pakistan and Bangladesh borders.",
+    "ITBP: guards the China border.",
+    "SSB: guards the Nepal and Bhutan borders.",
+    "CISF: protects airports, metro rail and industrial installations.",
+    "Assam Rifles: the Myanmar border and the north-east. NSG is a special counter-terror force.",
+  ]),
+  sub("Law", 4, "State Police SI 2018 to 2023", "What is the difference between a cognisable and a non-cognisable offence?", [
+    "Cognisable: the police can register an FIR and arrest without a warrant, and investigate without a magistrate's order.",
+    "Examples: murder, rape, robbery and kidnapping.",
+    "Non-cognisable: the police need the magistrate's permission to investigate and a warrant to arrest.",
+    "Examples: simple hurt, defamation and public nuisance.",
+    "The classification is given in the First Schedule of the procedure code.",
+  ]),
+  sub("Law", 4, "UPSC CAPF Paper 2 and SI mains, 2017 to 2022", "What are the rights of an arrested person?", [
+    "To be told the grounds of arrest (Article 22).",
+    "To consult and be defended by a lawyer of his choice; free legal aid if he cannot afford one.",
+    "To be produced before a magistrate within 24 hours.",
+    "To remain silent and not be compelled to be a witness against himself (Article 20(3)).",
+    "To have a relative or friend informed and to be medically examined (D. K. Basu guidelines).",
+  ]),
+  sub("Interview", 4, "Police SI and CAPF interviews, asked every year", "How would you handle an angry crowd blocking a road?", [
+    "Assess the cause and size of the crowd and inform seniors at once.",
+    "Speak to the leaders calmly and listen to the grievance.",
+    "Keep traffic and bystanders away and call for reinforcement.",
+    "Use minimum force, and only after warning, if persuasion fails.",
+    "Record the event and follow up on the grievance so that it does not recur.",
+  ]),
+  sub("Report Writing", 3, "UPSC CAPF Paper 2: 2019, 2021", "What should a good report on an incident contain?", [
+    "A heading with the subject, date and place.",
+    "Facts in order of time: what happened, when, where and who was involved.",
+    "Action taken on the spot.",
+    "Findings or causes, stated without opinion.",
+    "Recommendations, then the writer's name and designation.",
+  ]),
+  sub("Police GK", 4, "State Police SI interviews 2018 to 2023", "What is community policing?", [
+    "A way of policing in which the police and residents work together to prevent crime.",
+    "Tools: beat officers known to the locality, citizen committees and regular meetings.",
+    "Benefits: better information, trust and quicker response.",
+    "Indian examples: Janamaithri in Kerala and Mohalla committees in Maharashtra.",
+  ]),
+  sub("Law", 4, "UPSC CAPF Paper 2 and SI mains 2017 to 2022", "What are the main duties of the police?", [
+    "Maintain public order and protect life and property.",
+    "Prevent and detect crime, and investigate offences.",
+    "Arrest offenders and bring them before the court.",
+    "Regulate traffic and help during disasters and emergencies.",
+    "Act within the law and respect the rights of citizens.",
+  ]),
+]);

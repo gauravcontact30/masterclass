@@ -1,0 +1,77 @@
+import { obj, pack, sub } from "./types";
+
+/* UPSC Civil Services: Prelims General Studies as the objective set, Mains General Studies and essay as the subjective set. */
+export default pack("upsc", [
+  obj("Polity", 5, "UPSC Prelims 2015, 2017, 2020", "The Preamble to the Constitution of India is", ["a part of the Constitution and has no legal effect independently of other parts", "not a part of the Constitution", "a part of the Constitution enforceable in a court of law", "a part of the Constitution that cannot be amended"], 0, "Kesavananda Bharati (1973) held it to be part of the Constitution; it is not a source of power or directly enforceable, and it was amended in 1976."),
+  obj("Polity", 5, "UPSC Prelims 2013, 2019", "The doctrine of the 'basic structure' of the Constitution was laid down in", ["Golaknath v. State of Punjab", "Kesavananda Bharati v. State of Kerala", "Minerva Mills v. Union of India", "Maneka Gandhi v. Union of India"], 1, "The 1973 thirteen-judge bench held that Parliament may amend the Constitution but not alter its basic structure."),
+  obj("Polity", 4, "UPSC Prelims 2014, 2018", "Which Schedule of the Constitution contains the provisions on disqualification on the ground of defection?", ["Seventh Schedule", "Eighth Schedule", "Ninth Schedule", "Tenth Schedule"], 3, "The Tenth Schedule was added by the 52nd Amendment Act, 1985."),
+  obj("Polity", 4, "UPSC Prelims 2015, 2021", "A Money Bill can be introduced", ["in either House of Parliament", "only in the Rajya Sabha", "only in the Lok Sabha", "only in a joint sitting"], 2, "Article 109: only in the Lok Sabha, on the President's recommendation; the Rajya Sabha may only make recommendations within 14 days."),
+  obj("History", 5, "UPSC Prelims 2014, 2018", "The Champaran Satyagraha of 1917 was related to", ["a tax on salt", "the tinkathia system of indigo cultivation", "the dismissal of mill workers", "the partition of Bengal"], 1, "Peasants were forced to grow indigo on three-twentieths of their land; it was Gandhi's first satyagraha in India."),
+  obj("History", 4, "UPSC Prelims 2016, 2019", "The Non-Cooperation Movement was withdrawn in 1922 after the incident at", ["Jallianwala Bagh", "Chauri Chaura", "Kakori", "Bardoli"], 1, "A mob set fire to a police station at Chauri Chaura in February 1922, killing 22 policemen."),
+  obj("Geography", 5, "UPSC Prelims 2015, 2020", "Which of the following is the main reason for the south-west monsoon in India?", ["The apparent southward movement of the sun", "Differential heating of land and sea and the northward shift of the ITCZ", "The retreat of the westerly jet stream alone", "Western disturbances"], 1, "Intense heating of the landmass creates low pressure and the Inter-Tropical Convergence Zone shifts north, drawing moist winds from the ocean."),
+  obj("Environment", 5, "UPSC Prelims 2014, 2019", "The 'Red Data Book' is published by", ["UNEP", "WWF", "IUCN", "the Ministry of Environment"], 2, "The International Union for Conservation of Nature maintains the Red List of threatened species."),
+  obj("Environment", 4, "UPSC Prelims 2015, 2018", "The Montreal Protocol deals with", ["the protection of the ozone layer", "trade in endangered species", "greenhouse gas emissions", "hazardous waste movement"], 0, "The 1987 protocol phases out ozone-depleting substances; the Kigali Amendment added HFCs."),
+  obj("Economy", 5, "UPSC Prelims 2015, 2020", "Which of the following is the nodal body for setting the policy repo rate in India?", ["The Finance Commission", "The Monetary Policy Committee", "NITI Aayog", "The Ministry of Finance"], 1, "The six-member MPC, created in 2016 under the amended RBI Act, sets the repo rate to meet the inflation target."),
+  obj("Economy", 4, "UPSC Prelims 2013, 2017", "Fiscal deficit is best described as", ["total expenditure minus total receipts excluding borrowings", "revenue expenditure minus revenue receipts", "total expenditure minus total receipts", "fiscal deficit plus interest payments"], 0, "It shows the government's total borrowing requirement for the year."),
+  obj("Science & Technology", 4, "UPSC Prelims 2016, 2019", "CRISPR-Cas9, often seen in the news, is a tool for", ["weather forecasting", "genome editing", "quantum computing", "deep-sea mining"], 1, "It uses a guide RNA and the Cas9 enzyme to cut DNA at a chosen site."),
+  obj("Polity", 4, "UPSC Prelims 2015, 2019", "Which Article of the Constitution directs the State to organise village panchayats?", ["Article 39", "Article 40", "Article 44", "Article 48"], 1, "Article 40 is a Gandhian Directive Principle; it was given effect by the 73rd Amendment."),
+  obj("History", 4, "UPSC Prelims 2016, 2021", "The Satyashodhak Samaj was founded by", ["Jyotirao Phule", "B. R. Ambedkar", "Gopal Hari Deshmukh", "M. G. Ranade"], 0, "Phule founded it in 1873 to work against caste oppression and for the education of the lower castes and women."),
+  obj("Geography", 4, "UPSC Prelims 2014, 2018", "Which Indian state has the longest mainland coastline?", ["Tamil Nadu", "Andhra Pradesh", "Gujarat", "Maharashtra"], 2, "Gujarat has the longest mainland coastline, followed by Andhra Pradesh."),
+], [
+  sub("GS 2: Polity", 5, "UPSC Mains 2016, 2019, 2022", "Discuss the significance of the 'basic structure' doctrine. (150 words)", [
+    "Origin: Kesavananda Bharati (1973) held that Parliament's amending power under Article 368 does not extend to destroying the Constitution's basic structure.",
+    "Elements identified by the Court: supremacy of the Constitution, democracy, secularism, federalism, separation of powers, judicial review and free and fair elections.",
+    "Significance: it guards against a transient majority rewriting the Constitution, as seen in Minerva Mills (1980) and the NJAC case (2015).",
+    "Criticism: the list is judge-made and open-ended, which gives the judiciary wide power.",
+    "Conclusion: it has kept the balance between flexibility and the permanence of core values.",
+  ]),
+  sub("GS 2: Polity", 5, "UPSC Mains 2017, 2020", "What is cooperative federalism? How has the GST Council advanced it?", [
+    "Cooperative federalism: the Union and the states work together on shared goals instead of acting in separate spheres.",
+    "GST Council (Article 279A): the Union Finance Minister chairs it and every state is a member.",
+    "Voting: the Union has one-third weight and the states two-thirds; a decision needs three-fourths of the weighted votes, so neither side can act alone.",
+    "Achievement: most decisions on rates and exemptions have been taken by consensus.",
+    "Strains: delayed compensation and the states' loss of independent taxing power.",
+  ]),
+  sub("GS 3: Economy", 4, "UPSC Mains 2015, 2019, 2021", "What do you understand by inclusive growth? Suggest measures to achieve it in India.", [
+    "Inclusive growth: growth that creates opportunity for all sections and shares its benefits widely.",
+    "Why it matters: high inequality, informal employment and regional gaps persist despite rapid GDP growth.",
+    "Measures: quality schooling and skilling, public health spending, and labour-intensive manufacturing.",
+    "Financial inclusion and direct benefit transfers; credit to small enterprises.",
+    "Raise farm productivity and women's participation in the workforce.",
+  ]),
+  sub("GS 1: History", 4, "UPSC Mains 2014, 2018, 2023", "Assess the role of Mahatma Gandhi in making the national movement a mass movement.", [
+    "Before 1917 the movement was led mainly by the educated urban middle class.",
+    "Local struggles at Champaran, Kheda and Ahmedabad brought in peasants and workers.",
+    "Non-Cooperation, Civil Disobedience and Quit India drew in women, students, traders and villagers across regions.",
+    "Methods anyone could follow: satyagraha, boycott, khadi and the salt march.",
+    "Limits: uneven participation of some communities and periodic withdrawals of movements.",
+  ]),
+  sub("GS 4: Ethics", 4, "UPSC Mains 2013 to 2022", "Distinguish between ethics and morality, and explain why integrity is essential in public service.", [
+    "Morality: an individual's own beliefs about right and wrong.",
+    "Ethics: standards of conduct accepted by a society or profession.",
+    "Integrity: consistency between values, words and action, including when no one is watching.",
+    "Why it matters: officials hold discretion and public money; integrity builds trust, prevents corruption and ensures fair decisions.",
+    "Illustrate with a short example of an officer refusing an undue favour.",
+  ]),
+  sub("Essay", 3, "UPSC Mains Essay 2021", "How should an essay on an abstract topic, such as 'The process of self-discovery has now been technologically outsourced', be structured?", [
+    "Open with a short anecdote or image that makes the abstract idea concrete.",
+    "State your interpretation of the topic in one clear sentence.",
+    "Examine it across dimensions: individual, social, economic, ethical and historical.",
+    "Give the counter-view fairly, then reconcile it.",
+    "Close with a forward-looking, balanced conclusion that returns to the opening image.",
+  ]),
+  sub("GS 3: Environment", 4, "UPSC Mains 2017, 2021, 2022", "Differentiate between climate-change mitigation and adaptation, and state India's 'Panchamrit' commitments.", [
+    "Mitigation reduces emissions or removes greenhouse gases; adaptation adjusts to impacts that are already unavoidable.",
+    "Panchamrit, announced at COP26 in 2021: 500 GW of non-fossil capacity by 2030.",
+    "50 per cent of energy requirement from renewable sources by 2030.",
+    "A reduction of one billion tonnes in projected carbon emissions by 2030 and a 45 per cent cut in the carbon intensity of the economy.",
+    "Net-zero emissions by 2070.",
+  ]),
+  sub("GS 2: Governance", 4, "UPSC Mains 2016, 2020", "Examine the role of the civil services in a democracy.", [
+    "Policy advice to the political executive, based on evidence and continuity of experience.",
+    "Implementation of laws and schemes, and delivery of public services.",
+    "Permanence and political neutrality across changes of government.",
+    "Challenges: political interference, frequent transfers and a generalist structure.",
+    "Reforms: fixed tenure, lateral entry, Mission Karmayogi and performance-based appraisal.",
+  ]),
+]);

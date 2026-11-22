@@ -5,6 +5,7 @@ import { HttpError } from "./http";
 import { isSuperAdminUser } from "@/lib/study/preparations";
 import { redirect } from "next/navigation";
 import { signInFor } from "@/lib/safe-redirect";
+import { requireTechAccount } from "./portal";
 
 export async function requirePaidAccess(owner:string) {
   const user=await currentUser();
@@ -29,12 +30,16 @@ export async function requireStudyBuddyAccess() {
 export async function learningViewer(path="/learning") {
   const user=await currentUser();
   if (!user) redirect(signInFor(path));
+  // An identity that only holds an Exams account has no Tech dashboard (lib/server/portal.ts).
+  await requireTechAccount(user);
   return { user, member: isSuperAdminUser(user) || (await account(user.id)).tier !== "free" };
 }
 /** Gate on the server before any protected learning data is serialized to the browser. `path` is where sign-in returns. */
 export async function requireLearningUser(path="/learning") {
   const user=await currentUser();
   if (!user) redirect(signInFor(path));
+  // An identity that only holds an Exams account has no Tech dashboard (lib/server/portal.ts).
+  await requireTechAccount(user);
   if (!isSuperAdminUser(user) && (await account(user.id)).tier === "free") redirect("/learning/plans");
   return user;
 }

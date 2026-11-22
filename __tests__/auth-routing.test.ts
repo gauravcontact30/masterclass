@@ -11,7 +11,8 @@ describe("redirectFor", () => {
   });
   it("sends signed-out visitors from the dashboard to sign-in", () => {
     expect(redirectFor({ pathname: "/learning", signedIn: false })).toBe("/sign-in");
-    expect(redirectFor({ pathname: "/learning/library", signedIn: false })).toBe("/sign-in");
+    // A deep link keeps its destination, so signing in returns the visitor to it.
+    expect(redirectFor({ pathname: "/learning/library", signedIn: false })).toBe("/sign-in?redirect=%2Flearning%2Flibrary");
   });
 
   it("leaves signed-in visitors on the dashboard", () => {
@@ -41,7 +42,7 @@ describe("GET /auth/callback", () => {
 
     expect(exchangeCodeForSession).toHaveBeenCalledWith("abc123");
     // Just confirmed: the dashboard says so.
-    expect(response.headers.get("location")).toBe("http://localhost:3000/dashboard?notice=verified");
+    expect(response.headers.get("location")).toBe("http://localhost:3000/learning?notice=verified");
   });
 
   it("sends the visitor back to sign-in when the link is invalid or expired", async () => {

@@ -16,7 +16,7 @@ export async function GET(request: Request) {
 
     const url = new URL(request.url);
     const rawDays = Number(url.searchParams.get("days"));
-    const days = [1, 7, 30, 90].includes(rawDays) ? rawDays : 30;
+    const days = [1, 7, 30, 90].includes(rawDays) ? rawDays : 7;
 
     // 3. Upstash / Redis Caching Layer (Cache snapshot for 30s to reduce DB load)
     const started = performance.now();

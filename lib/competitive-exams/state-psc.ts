@@ -1,0 +1,75 @@
+import { obj, pack, sub } from "./types";
+
+/* State Public Service Commissions: UPPSC, BPSC, MPPSC, RPSC and others. Prelims as the objective set, Mains answers as the subjective set. */
+export default pack("state-psc", [
+  obj("Polity", 5, "UPPSC 2018, BPSC 2020", "Who appoints the Governor of a state?", ["The Prime Minister", "The President", "The Chief Justice of India", "The Chief Minister"], 1, "Article 155: the Governor is appointed by the President and holds office during the President's pleasure."),
+  obj("Polity", 5, "MPPSC 2019, UPPSC 2021", "The 73rd Constitutional Amendment Act relates to", ["urban local bodies", "Panchayati Raj institutions", "anti-defection", "cooperative societies"], 1, "It added Part IX and the Eleventh Schedule in 1992; the 74th Amendment covers municipalities."),
+  obj("Polity", 4, "RPSC 2018, BPSC 2021", "The Chairman of a State Public Service Commission is appointed by the", ["President", "Governor", "Chief Minister", "UPSC"], 1, "The Governor appoints, but only the President can remove the chairman and members."),
+  obj("History", 5, "UPPSC 2017, BPSC 2019", "The Revolt of 1857 began at", ["Kanpur", "Meerut", "Jhansi", "Lucknow"], 1, "Sepoys mutinied at Meerut on 10 May 1857 and marched to Delhi."),
+  obj("History", 4, "BPSC 2018, BPSC 2022", "Who led the Revolt of 1857 in Bihar?", ["Nana Saheb", "Kunwar Singh", "Tantia Tope", "Bakht Khan"], 1, "Kunwar Singh of Jagdishpur led the revolt in Bihar at the age of about eighty."),
+  obj("History", 4, "MPPSC 2018, UPPSC 2020", "The rock-cut caves of Ajanta are mainly associated with", ["Jainism", "Buddhism", "Shaivism", "Vaishnavism"], 1, "The Ajanta caves in Maharashtra hold Buddhist chaityas, viharas and murals."),
+  obj("Geography", 5, "UPPSC 2019, RPSC 2021", "Black soil is best suited to the cultivation of", ["rice", "tea", "cotton", "jute"], 2, "Black (regur) soil of the Deccan lava plateau holds moisture and suits cotton."),
+  obj("Geography", 4, "UPPSC 2018, MPPSC 2020", "Which state shares its border with the largest number of other states?", ["Madhya Pradesh", "Uttar Pradesh", "Assam", "Maharashtra"], 1, "Uttar Pradesh borders eight states and one union territory."),
+  obj("Economy", 4, "BPSC 2019, UPPSC 2022", "The Finance Commission is constituted under which Article?", ["Article 148", "Article 266", "Article 280", "Article 324"], 2, "Article 280: the President constitutes it every five years to recommend the sharing of taxes."),
+  obj("Economy", 4, "MPPSC 2018, RPSC 2021", "NITI Aayog replaced the Planning Commission in", ["2013", "2014", "2015", "2016"], 2, "NITI Aayog was set up on 1 January 2015, with the Prime Minister as chairperson."),
+  obj("Science", 4, "UPPSC 2017, BPSC 2020", "Which instrument is used to measure atmospheric pressure?", ["Hygrometer", "Barometer", "Anemometer", "Altimeter"], 1, "A barometer measures pressure; a hygrometer measures humidity and an anemometer wind speed."),
+  obj("Environment", 3, "UPPSC 2019, MPPSC 2021", "Project Tiger was launched in India in", ["1970", "1973", "1980", "1992"], 1, "It began in 1973 at Jim Corbett National Park."),
+  obj("Polity", 4, "UPPSC 2018, RPSC 2021", "What is the minimum age for appointment as the Governor of a state?", ["25 years", "30 years", "35 years", "40 years"], 2, "Article 157: a citizen of India who has completed 35 years."),
+  obj("History", 4, "BPSC 2019, MPPSC 2021", "The Dandi March of 1930 started from", ["Sevagram", "Sabarmati Ashram", "Bardoli", "Champaran"], 1, "Gandhi set out from Sabarmati Ashram on 12 March 1930 and reached Dandi on 6 April."),
+  obj("History", 4, "MPPSC 2018, UPPSC 2020", "The Great Stupa at Sanchi is in which state?", ["Bihar", "Uttar Pradesh", "Madhya Pradesh", "Odisha"], 2, "Sanchi is in the Raisen district of Madhya Pradesh; the original stupa was built by Ashoka."),
+], [
+  sub("Polity", 5, "UPPSC Mains 2018, BPSC Mains 2020", "Examine the discretionary powers of the Governor.", [
+    "Constitutional discretion: reserving a bill for the President (Article 200) and recommending President's Rule (Article 356).",
+    "Situational discretion: inviting a leader to form the government when no party has a majority, and asking for a floor test.",
+    "Limits set by the courts: S. R. Bommai (1994) made the floor of the House the place to test a majority.",
+    "Concerns: delay in assent to bills and partisan use.",
+    "Reform: Sarkaria and Punchhi Commission recommendations on appointment and time limits.",
+  ]),
+  sub("Polity", 5, "MPPSC Mains 2019, UPPSC Mains 2021", "Evaluate the working of Panchayati Raj institutions since the 73rd Amendment.", [
+    "Provisions: three tiers, direct elections every five years, reservation for SCs, STs and women, State Election and Finance Commissions.",
+    "Gains: over thirty lakh elected representatives, a large share of them women; local planning through the gram sabha.",
+    "Weaknesses: the '3 Fs' (funds, functions, functionaries) have not been fully devolved.",
+    "Other problems: proxy representation and weak capacity.",
+    "Way forward: untied grants, own revenue, training and social audit.",
+  ]),
+  sub("History", 4, "UPPSC Mains 2017, BPSC Mains 2019", "What were the causes of the Revolt of 1857, and why did it fail?", [
+    "Political: annexations under the Doctrine of Lapse and of Awadh.",
+    "Economic: heavy land revenue and the ruin of artisans.",
+    "Military and immediate: poor pay and status of sepoys, and the greased cartridges.",
+    "Failure: no unified command or common plan, limited spread in the south and west.",
+    "Superior British resources and the support of some princes decided the outcome.",
+  ]),
+  sub("Economy", 4, "BPSC Mains 2018, RPSC Mains 2021", "Discuss the main problems of Indian agriculture and suggest solutions.", [
+    "Small and fragmented holdings and dependence on the monsoon.",
+    "Low productivity, poor storage and weak market access.",
+    "Indebtedness and price volatility.",
+    "Solutions: irrigation and micro-irrigation, quality seed, farmer producer organisations and warehousing.",
+    "Crop diversification, crop insurance and allied activities such as dairy and fisheries.",
+  ]),
+  sub("Geography", 4, "UPPSC Mains 2019, MPPSC Mains 2020", "Explain the causes of floods in the Ganga plain and the measures to manage them.", [
+    "Causes: heavy monsoon rain in a short period and high sediment load from the Himalayas.",
+    "Rivers such as the Kosi shift course; embankments breach and drainage is blocked.",
+    "Deforestation and building on flood plains worsen the damage.",
+    "Structural measures: embankment upkeep, reservoirs and desilting.",
+    "Non-structural measures: flood-plain zoning, forecasting and early warning.",
+  ]),
+  sub("Interview", 3, "State PSC interviews, asked every year", "Why do you want to join the state civil service instead of a private-sector career?", [
+    "Start with a concrete reason from your district or state.",
+    "Explain the scale of impact: field postings let an officer change delivery of schools, health and land records.",
+    "Tie in your background and what you would bring.",
+    "Accept the trade-offs honestly: transfers and pressure.",
+  ]),
+  sub("Polity", 4, "UPPSC Mains 2019, RPSC Mains 2021", "What is the State Finance Commission and what does it do?", [
+    "Constituted by the Governor every five years under Article 243-I.",
+    "Recommends how the state's taxes, duties and fees are shared between the state and the panchayats.",
+    "Recommends the taxes that may be assigned to panchayats and the grants-in-aid to them.",
+    "Under Article 243-Y it does the same for municipalities.",
+    "Weakness: reports are often delayed and recommendations only partly accepted.",
+  ]),
+  sub("Polity", 4, "BPSC Mains 2018, MPPSC Mains 2020", "How do the Directive Principles differ from the Fundamental Rights?", [
+    "Fundamental Rights (Part III) are justiciable; Directive Principles (Part IV) are not enforceable in court.",
+    "Rights are mostly limits on the State; the Principles are positive instructions to it.",
+    "Rights aim at political democracy; the Principles aim at social and economic democracy.",
+    "Minerva Mills (1980): the Constitution rests on a balance between the two.",
+  ]),
+]);

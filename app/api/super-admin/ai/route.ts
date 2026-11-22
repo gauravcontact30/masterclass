@@ -10,7 +10,7 @@ import { summarizeAiEvents, type AiEventRow } from "@/lib/ai-insights";
 const PAGE = 1000;
 /** Enough for a busy 90-day window; beyond this the response says the sample was capped. */
 const MAX_ROWS = 20000;
-const windowDays = (value: unknown) => [1, 7, 30, 90].includes(Number(value)) ? Number(value) : 30;
+const windowDays = (value: unknown) => [1, 7, 30, 90].includes(Number(value)) ? Number(value) : 7;
 
 async function aiEvents(days: number) {
   const since = new Date(Date.now() - days * 86400000).toISOString();

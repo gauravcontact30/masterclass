@@ -118,6 +118,10 @@ export default async function TechBuzzArticlePage({ params }: PageProps) {
     url: pageUrl,
     keywords: [article.technology, article.category, ...article.tags].join(", "),
     articleSection: article.category,
+    // For answer engines: the story's key takeaways as its abstract, what it is about, and the blog it belongs to.
+    ...(article.summaryBullets?.length ? { abstract: article.summaryBullets.join(" ") } : {}),
+    about: { "@type": "Thing", name: article.technology },
+    isPartOf: { "@type": "Blog", name: "Tech Buzz", url: new URL("/tech-buzz", origin).href },
     timeRequired: `PT${article.readTimeMinutes || 5}M`,
     inLanguage: "en",
     author: {

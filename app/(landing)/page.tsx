@@ -9,9 +9,8 @@ import { pickDaily } from "@/lib/daily-rotation";
 import { LANDING_TECH_DOC_IDS, TECH_DOCS } from "@/lib/tech-docs";
 import { billingConfigured } from "@/lib/server/config";
 import { internationalBilling } from "@/lib/server/pricing";
-import { activeSale } from "@/lib/server/festive-sale";
 import { officialTechDocs, previewTechDocs } from "@/lib/server/official-tech-docs";
-import { organizationSchema, pageMetadata, webPageSchema, websiteSchema } from "@/lib/seo";
+import { organizationSchema, pageMetadata, siteUrl, webPageSchema, websiteSchema } from "@/lib/seo";
 import { weekStartDate } from "@/lib/ist-week";
 import { contentOverrides } from "@/lib/server/content-overrides";
 import { blogTeasers } from "@/lib/coffee-and-code";
@@ -48,16 +47,15 @@ export default async function Home() {
   const latest = daily.pulse[0];
   const features = <LandingFeatures latest={latest ? { title: latest.title, text: latest.definition, image: latest.image, day: daily.day } : null} />;
   // Cached for everyone, so it is priced in rupees; with international billing on, the page re-prices itself for the visitor.
-  // A festive sale in force (lib/server/festive-sale.ts) rides along in rupees; the client hides it at its end time.
   // Independent reads share the cold-render critical path.
   // Tech Buzz stories (titles and links only) for the Tech Buzz section.
-  const [festive, docs, overrides, fresh, buzz, buzzTopics] = await Promise.all([activeSale().catch(() => null), officialTechDocs(), contentOverrides(), landingFresh(today), landingBuzz(), landingBuzzTopics()]);
-  const sale = festive && { slug: festive.slug, title: festive.title, titleHi: festive.titleHi, percent: festive.percent, endsAt: festive.endsAt,
-    monthly: festive.plans.monthly?.inr ?? null, yearly: festive.plans.yearly?.inr ?? null, inr: { monthly: festive.plans.monthly?.inr ?? null, yearly: festive.plans.yearly?.inr ?? null } };
-  const prices = { monthly: Number(process.env.PRO_MONTHLY_PRICE_INR ?? 299), yearly: Number(process.env.PRO_YEARLY_PRICE_INR ?? 2999), enabled: billingConfigured(), currency: "INR" as const, international: internationalBilling(), sale };
+  const [docs, overrides, fresh, buzz, buzzTopics] = await Promise.all([officialTechDocs(), contentOverrides(), landingFresh(today), landingBuzz(), landingBuzzTopics()]);
+  const prices = { monthly: Number(process.env.PRO_MONTHLY_PRICE_INR ?? 299), yearly: Number(process.env.PRO_YEARLY_PRICE_INR ?? 2999), enabled: billingConfigured(), currency: "INR" as const, international: internationalBilling() };
   // Super Admin content edits apply to the landing previews too; a save expires both this page and the overrides.
   // Today's AI-written additions (lib/server/landing-fresh.ts); the nightly job publishes them with revalidateTag("landing").
   // The page's content turns over every Monday at 00:00 IST, so that is when it last changed.
   const updated = weekStartDate(today);
-  return <><JsonLd data={[websiteSchema(), webPageSchema("/", updated), organizationSchema({ monthly:sale?.monthly ?? prices.monthly, yearly:sale?.yearly ?? prices.yearly, endsAt:sale?.endsAt })]} /><LandingPage features={features} answers={<LandingAnswers monthly={prices.monthly} yearly={prices.yearly} updated={updated} />} certifications={<LandingCertifications />} techBuzz={<LandingTechBuzz stories={buzz} topics={buzzTopics} week={today} />} workflows={previewWorkflows(overrides)} pro={pro} library={previewLibrary(landingLibrary(pro), today)} prices={prices} daily={daily} techDocs={previewTechDocs(docs, featuredDoc)} featuredDoc={featuredDoc} fresh={fresh} today={today} overrides={overrides} coffee={blogTeasers(8, today)} /></>;
+  // Exam categories and their FAQs are India-only client content (components/landing-page.tsx), so the globally cached
+  // HTML carries no structured data for them.
+  return <><JsonLd data={[websiteSchema(), webPageSchema("/", updated), organizationSchema({ monthly:prices.monthly, yearly:prices.yearly })]} /><LandingPage features={features} answers={<LandingAnswers monthly={prices.monthly} yearly={prices.yearly} updated={updated} />} certifications={<LandingCertifications />} techBuzz={<LandingTechBuzz stories={buzz} topics={buzzTopics} week={today} />} workflows={previewWorkflows(overrides)} pro={pro} library={previewLibrary(landingLibrary(pro), today)} prices={prices} daily={daily} techDocs={previewTechDocs(docs, featuredDoc)} featuredDoc={featuredDoc} fresh={fresh} today={today} overrides={overrides} coffee={blogTeasers(8, today)} /></>;
 }

@@ -1,0 +1,83 @@
+/* The Exams portal pages (exams-shell.tsx, exams-frame.tsx): since 2026-11-22 they sit in the Tech Learning Dashboard's
+   frame (.app-shell.compact-workspace in globals.css), so these tokens use the dashboard's paper-and-clay palette. */
+.shell { --ink: #262624; --read: #3d3d3a; --muted: #5e5d59; --line: #e6e2d6; --paper: #f5f4ed; --sheet: #fff; --accent: #a94f31; --accent-soft: #f9ece6; --clay: #a94f31; color: var(--ink); }
+.shell .workspace *, .shell .workspace *::before, .shell .workspace *::after { box-sizing: border-box; }
+.shell .workspace a:focus-visible, .shell .workspace button:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; border-radius: 8px; }
+
+.email { max-width: 190px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; color: var(--muted); }
+.primary, .ghost { display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-height: 36px; padding: 0 13px; border-radius: 9px; font: inherit; font-size: 13px; font-weight: 600; text-decoration: none; white-space: nowrap; cursor: pointer; }
+.primary { border: 1px solid var(--accent); background: var(--accent); color: #fff; }
+.primary:hover { background: #8f4228; }
+.primary:disabled, .ghost:disabled { opacity: .6; cursor: default; }
+.ghost { border: 1px solid var(--line); background: var(--sheet); color: var(--ink); }
+.ghost:hover { border-color: var(--ink); }
+
+/* The A / अ language switch in the top bar: Hindi matters most to exam learners, so it is always in reach. */
+.lang { position: relative; display: inline-grid; grid-template-columns: 1fr 1fr; align-items: center; width: 64px; height: 32px; padding: 3px; border: 1px solid var(--line); border-radius: 999px; background: var(--sheet); cursor: pointer; }
+.langThumb { position: absolute; top: 3px; left: 3px; width: 28px; height: 24px; border-radius: 999px; background: var(--ink); transition: transform .2s ease; }
+.lang[data-lang="hi"] .langThumb { transform: translateX(28px); }
+.langGlyph { position: relative; z-index: 1; text-align: center; font-size: 13px; font-weight: 700; color: var(--muted); }
+.langGlyph[data-on] { color: #fff; }
+@media (prefers-reduced-motion: reduce) { .langThumb { transition: none; } }
+@media (max-width: 760px) { .email { display: none; } .primary, .ghost { min-height: 34px; padding: 0 10px; font-size: 12px; } }
+
+
+/* Page pieces shared by the dashboard home, plans and blog. */
+.hero { display: grid; gap: 10px; padding: clamp(20px, 3vw, 30px); border: 1px solid var(--line); border-radius: 20px; background: radial-gradient(120% 140% at 100% 0%, #e6f0fc 0%, transparent 55%), var(--sheet); }
+.eyebrow { display: inline-flex; align-items: center; gap: 6px; justify-self: start; margin: 0; padding: 4px 10px; border: 1px solid var(--line); border-radius: 999px; background: var(--sheet); font-size: 11.5px; font-weight: 600; letter-spacing: .09em; text-transform: uppercase; color: var(--accent); }
+.hero h1 { margin: 0; font-size: clamp(26px, 3.4vw, 38px); line-height: 1.12; font-weight: 700; letter-spacing: -.025em; }
+.hero h1 em { font-style: normal; color: var(--accent); }
+.hero p { margin: 0; max-width: 68ch; font-size: 15.5px; line-height: 1.65; color: var(--muted); }
+.status { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 14px; margin-top: 4px; padding: 10px 14px; border: 1px solid #cfe1f6; border-radius: 12px; background: var(--accent-soft); font-size: 14px; color: var(--read); }
+.status[data-tone="warn"] { border-color: #ecd49a; background: #fff6e0; }
+.status b { color: var(--ink); }
+.status a { font-weight: 600; color: var(--accent); }
+.stack { display: grid; gap: 18px; }
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr)); gap: 14px; margin: 0; padding: 0; list-style: none; }
+.card { display: grid; gap: 8px; align-content: start; height: 100%; padding: 18px; border: 1px solid var(--line); border-radius: 16px; background: var(--sheet); color: var(--ink); text-decoration: none; transition: border-color .15s, transform .15s, box-shadow .15s; }
+a.card:hover { border-color: var(--accent); transform: translateY(-2px); box-shadow: 0 16px 30px -22px rgba(29, 79, 134, .6); }
+.card img { width: 48px; height: 48px; }
+.card h2, .card h3 { margin: 0; font-size: 18px; letter-spacing: -.01em; }
+.card p { margin: 0; font-size: 14px; line-height: 1.6; color: var(--muted); }
+.card small { font-size: 12.5px; font-weight: 600; color: var(--accent); }
+.sectionTitle { margin: 6px 0 0; font-size: 20px; letter-spacing: -.015em; }
+
+/* Plans. */
+.plans { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 280px), 1fr)); gap: 14px; }
+.plan { display: grid; gap: 10px; align-content: start; padding: 20px; border: 1px solid var(--line); border-radius: 18px; background: var(--sheet); }
+.plan[data-best] { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+.plan h2 { margin: 0; font-size: 18px; }
+.price { margin: 0; font-size: 34px; font-weight: 700; letter-spacing: -.03em; font-variant-numeric: tabular-nums; }
+.price small { font-size: 14px; font-weight: 500; letter-spacing: 0; color: var(--muted); }
+.plan ul { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; font-size: 14px; color: var(--read); }
+.plan li { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 8px; align-items: start; line-height: 1.5; }
+.plan li svg { margin-top: 3px; color: #2f7d46; }
+.error { margin: 0; padding: 10px 14px; border: 1px solid #f4c4ba; border-radius: 12px; background: #fdeeee; font-size: 14px; color: #8a1c10; }
+.note { margin: 0; font-size: 13px; line-height: 1.6; color: var(--muted); }
+
+/* Blog. */
+.post { display: grid; gap: 14px; max-width: 760px; margin: 0 auto; }
+.post h1 { margin: 0; font-size: clamp(28px, 4vw, 40px); line-height: 1.14; letter-spacing: -.025em; }
+.post h2 { margin: 14px 0 0; font-size: 21px; letter-spacing: -.015em; }
+.post p, .post li { margin: 0; font-size: 16.5px; line-height: 1.75; color: var(--read); }
+.post ul { display: grid; gap: 6px; margin: 0; padding-left: 22px; }
+.meta { display: flex; flex-wrap: wrap; gap: 6px 12px; margin: 0; font-size: 13px; color: var(--muted); }
+.meta b { padding: 2px 9px; border-radius: 999px; background: var(--accent-soft); font-weight: 600; color: var(--accent); }
+.back { justify-self: start; font-size: 14px; font-weight: 600; color: var(--accent); }
+
+@media (max-width: 900px) {
+  .bar { grid-template-columns: minmax(0, 1fr) auto; }
+  .nav { grid-column: 1 / -1; order: 3; margin: 0 -4px; }
+  .email { display: none; }
+}
+@media (max-width: 420px) { .brand small { display: none; } .primary, .ghost { padding: 0 10px; font-size: 13px; } }
+@media (prefers-reduced-motion: reduce) { .card { transition: none; } a.card:hover { transform: none; } }
+
+/* Each exam portal has its own accent: amber for Board Scholars, navy for Exam Aspirants (the default). */
+.shell[data-portal="boards"] { --accent: #a4520f; --accent-soft: #fdf1e3; }
+.shell[data-portal="boards"] .status { border-color: #f1d3ad; }
+/* The newest blog post leads the blog index. */
+.card[data-featured] { padding: clamp(20px, 3vw, 30px); border-color: var(--accent); background: linear-gradient(135deg, var(--accent-soft), var(--sheet) 70%); }
+.card[data-featured] h2 { font-size: clamp(20px, 2.4vw, 26px); line-height: 1.25; }
+.card[data-featured] small:last-child { font-weight: 600; color: var(--accent); }
+.card ul { margin: 0; padding-left: 18px; display: grid; gap: 4px; font-size: 14px; line-height: 1.5; color: var(--read); }

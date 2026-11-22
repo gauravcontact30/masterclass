@@ -1,16 +1,16 @@
 /** @jest-environment node */
 import { GET } from "@/app/api/notes/[id]/route";
-import NotesRedirect from "@/app/notes/page";
-import { redirect } from "next/navigation";
+import nextConfig from "@/next.config";
 import { NOTES_SUMMARIES } from "@/lib/server/notes-study-catalog";
 import { requirePaidAccess } from "@/lib/server/subscription-access";
 jest.mock("@/lib/server/http",()=>({...jest.requireActual("@/lib/server/http"),userId:jest.fn().mockResolvedValue("learner")}));
 jest.mock("@/lib/server/subscription-access",()=>({requirePaidAccess:jest.fn().mockResolvedValue({id:"learner"})}));
-jest.mock("next/navigation", () => ({ redirect: jest.fn() }));
 
-test("legacy notes URLs preserve their filters while redirecting into dashboard", async () => {
-  await NotesRedirect({ searchParams: Promise.resolve({ q: "use state", kind: "Hooks" }) });
-  expect(redirect).toHaveBeenCalledWith("/learning/notes?q=use+state&kind=Hooks");
+// The legacy /notes page became a permanent redirect in next.config.ts (a page-level redirect() was prerendered as a
+// 200 shell); Next.js carries the query string across a config redirect, so filters survive.
+test("legacy notes URLs redirect permanently into the dashboard", async () => {
+  const rules = await nextConfig.redirects!();
+  expect(rules).toContainEqual(expect.objectContaining({ source: "/notes", destination: "/learning/notes", permanent: true }));
 });
 test("the paid built-in detail endpoint returns a card and rejects unknown IDs", async () => {
   const id = NOTES_SUMMARIES[0].id;

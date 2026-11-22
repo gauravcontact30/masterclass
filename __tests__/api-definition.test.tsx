@@ -41,16 +41,13 @@ test("imports come from the example, and kinds are named the way learners say th
   expect(kindInfo("Hook", "react", "useState()").summary).toMatch(/top level of a component/);
 });
 
-test("the definition shows what it is, its import, syntax and the example twice", () => {
+// The worked example moved to the page's own Example code section; the definition cards keep what it is, the
+// import and the complete syntax.
+test("the definition shows what it is, its import and its syntax", () => {
   const detail = API_DETAILS["nextjs:usePathname"];
   render(<ApiDefinitionCards name="usePathname" kindLabel="Hook" status="Stable" packageName={detail.packageName} signature={detail.signature} parameters={detail.parameters} returns={detail.returns} code={detail.code} language={detail.language} missingSignature="" missingExample="" />);
-  for (const name of ["What it is", "Import", "Syntax", "Example", "Example with line notes"]) expect(screen.getByRole("heading", { name })).toBeInTheDocument();
+  for (const name of ["What it is", "Import", "Syntax"]) expect(screen.getByRole("heading", { name })).toBeInTheDocument();
   expect(screen.getByLabelText("usePathname syntax")).toHaveTextContent("import { usePathname } from 'next/navigation';");
-  const clean = screen.getByLabelText("example.tsx").textContent!;
-  const explained = screen.getByLabelText("example_explained.tsx").textContent!;
-  expect(clean).not.toContain("// ");
-  expect(explained).toContain("// Call usePathname() and keep pathname");
-  expect(explained).toContain("{/* Render <h1> */}");
 });
 
 test("built-in identifiers say no import is needed", () => {

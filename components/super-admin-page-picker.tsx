@@ -2,14 +2,14 @@
 import { createElement, useId, useMemo, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
 import {
   Award, Bookmark, BookMarked, BookOpen, BookOpenText, Check, ChevronDown, CircleHelp, Clock3, Code2, Coffee, Compass, CreditCard, FileCode2, FileText, FilePlus2,
-  GraduationCap, Landmark, Layers, Library, ListOrdered, MessagesSquare, Search, SearchX, Settings, ShieldCheck, Sparkles, UserCog, Workflow, X, type LucideIcon,
+  GraduationCap, Trophy, Landmark, Layers, Library, ListOrdered, MessagesSquare, Search, SearchX, Settings, ShieldCheck, Sparkles, UserCog, Workflow, X, type LucideIcon,
 } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { PAGE_GROUPS, type PageGroup, type PageOption } from "@/lib/learning-uploads";
 import styles from "./super-admin-page-picker.module.css";
 
 const PAGE_ICONS: Record<string, LucideIcon> = {
-  dashboard: Compass, library: Library, search: Search, "step-by-step": ListOrdered, notes: BookOpen, vocabulary: BookOpenText, "coffee-and-code": Coffee,
+  dashboard: Compass, library: Library, search: Search, "step-by-step": ListOrdered, notes: BookOpen, vocabulary: BookOpenText, "coffee-and-code": Coffee, "board-exams": GraduationCap, "competitive-exams": Trophy,
   classroom: GraduationCap, bookmark: Bookmark, "official-docs": BookMarked, techy: Code2, "api-docs": FileCode2, workflow: Workflow, certifications: Award, lessons: BookOpenText,
   quiz: CircleHelp, interview: MessagesSquare, plans: CreditCard, settings: Settings,
 };

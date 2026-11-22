@@ -1,0 +1,77 @@
+import { obj, pack, sub } from "./types";
+
+/* CLAT and other law entrance tests (AILET, LSAT India). Subjective: legal-reasoning short answers of the kind set in CLAT PG and law-school interviews. */
+export default pack("clat", [
+  obj("Legal Reasoning", 5, "CLAT 2018, CLAT 2021", "Principle: A person is liable for negligence if he owes a duty of care, breaches it, and causes damage. Facts: A driver jumps a red light and injures a pedestrian on the crossing. The driver is", ["not liable, since there was no intention", "liable for negligence", "liable only if drunk", "not liable, since the pedestrian took the risk"], 1, "Duty (to road users), breach (jumping the signal) and damage (injury) are all present; intention is not required."),
+  obj("Legal Reasoning", 5, "CLAT 2017, CLAT 2020", "'Volenti non fit injuria' means", ["let the buyer beware", "to a willing person, no injury is done", "the thing speaks for itself", "no one is above the law"], 1, "A person who consents to a risk cannot later sue for the harm."),
+  obj("Legal Reasoning", 4, "CLAT 2019, AILET 2021", "Under the Indian Contract Act, 1872, an agreement with a minor is", ["valid", "voidable at the minor's option", "void from the beginning", "valid if for his benefit"], 2, "Mohori Bibee v. Dharmodas Ghose (1903) held a minor's agreement void ab initio."),
+  obj("Legal Reasoning", 4, "CLAT 2018, CLAT 2022", "The maxim 'res ipsa loquitur' is applied in cases of", ["defamation", "negligence", "contract", "trespass"], 1, "'The thing speaks for itself': the accident itself implies negligence, shifting the burden to the defendant."),
+  obj("Constitution", 5, "CLAT 2017, CLAT 2020", "The right to constitutional remedies is guaranteed by", ["Article 19", "Article 21", "Article 32", "Article 226"], 2, "Article 32 lets a person move the Supreme Court to enforce Fundamental Rights; Dr Ambedkar called it the heart and soul of the Constitution."),
+  obj("Constitution", 5, "CLAT 2019, AILET 2022", "The Supreme Court declared the right to privacy a Fundamental Right in", ["Maneka Gandhi v. Union of India", "K. S. Puttaswamy v. Union of India", "Navtej Singh Johar v. Union of India", "A. K. Gopalan v. State of Madras"], 1, "A nine-judge bench held in 2017 that privacy is part of the right to life under Article 21."),
+  obj("Constitution", 4, "CLAT 2018, CLAT 2021", "Which writ is issued to release a person from unlawful detention?", ["Mandamus", "Certiorari", "Habeas corpus", "Quo warranto"], 2, "Habeas corpus means 'you may have the body'."),
+  obj("Current Affairs", 4, "CLAT 2024, AILET 2024", "The Bharatiya Nyaya Sanhita, 2023 replaced which law?", ["The Code of Criminal Procedure", "The Indian Penal Code", "The Indian Evidence Act", "The Indian Contract Act"], 1, "The BNS replaced the IPC; the BNSS replaced the CrPC and the BSA replaced the Evidence Act, in force from 1 July 2024."),
+  obj("Logical Reasoning", 4, "CLAT 2020, CLAT 2023", "'All lawyers are graduates. Some graduates are poets.' Which conclusion necessarily follows?", ["Some lawyers are poets", "All poets are graduates", "Some graduates are lawyers", "No lawyer is a poet"], 2, "If lawyers exist, they are graduates, so some graduates are lawyers. The poets need not include any lawyer."),
+  obj("English", 4, "CLAT 2019, CLAT 2022", "In a reading passage, the 'tone' of the author refers to", ["the length of the passage", "the author's attitude towards the subject", "the number of arguments", "the title"], 1, "Tone words include critical, neutral, sceptical and optimistic."),
+  obj("Quantitative Techniques", 3, "CLAT 2020, CLAT 2022", "The ratio of boys to girls in a class of 60 is 7 : 5. How many girls are there?", ["20", "25", "30", "35"], 1, "Girls = 60 × 5/12 = 25."),
+  obj("Legal Reasoning", 4, "CLAT 2017, AILET 2020", "A promises to pay B ₹10,000 if B beats C. This agreement is", ["valid", "voidable", "void, as its object is unlawful", "enforceable after the act"], 2, "Section 23 of the Contract Act makes an agreement with an unlawful object void."),
+  obj("Legal Reasoning", 4, "CLAT 2018, AILET 2021", "'Audi alteram partem' means", ["no one can be a judge in his own cause", "hear the other side", "let the buyer beware", "the act itself"], 1, "It is one of the two pillars of natural justice."),
+  obj("Constitution", 4, "CLAT 2017, CLAT 2021", "Which body is regarded as the guardian of the Constitution of India?", ["Parliament", "The President", "The Supreme Court", "The Election Commission"], 2, "The Supreme Court protects the Constitution through its power of judicial review."),
+  obj("Legal Reasoning", 4, "CLAT 2019, CLAT 2022", "Under the Indian Majority Act, 1875, a person attains majority on completing", ["16 years", "18 years", "21 years", "25 years"], 1, "The age of majority is 18 years."),
+], [
+  sub("Legal Reasoning", 5, "CLAT 2017 to 2023, principle asked every year", "What are the essential elements of a valid contract?", [
+    "Offer and acceptance, giving an agreement.",
+    "Intention to create legal relations.",
+    "Lawful consideration and a lawful object.",
+    "Capacity of the parties: majority, sound mind and not disqualified by law.",
+    "Free consent: no coercion, undue influence, fraud, misrepresentation or mistake.",
+    "The agreement must not be expressly declared void.",
+  ]),
+  sub("Legal Reasoning", 5, "CLAT 2018 to 2022", "Explain the tort of negligence with its essentials.", [
+    "Negligence is the breach of a legal duty to take care, causing damage the defendant did not intend.",
+    "Duty of care owed to the claimant (Donoghue v. Stevenson, the neighbour principle).",
+    "Breach of that duty, judged by the standard of a reasonable person.",
+    "Damage caused by the breach and not too remote.",
+    "Defences: contributory negligence, act of God and inevitable accident.",
+  ]),
+  sub("Constitution", 4, "CLAT PG 2019 to 2023", "Name the five writs and the purpose of each.", [
+    "Habeas corpus: to produce a detained person and release him if the detention is unlawful.",
+    "Mandamus: to order a public authority to perform a public duty.",
+    "Prohibition: to stop a lower court from exceeding its jurisdiction.",
+    "Certiorari: to quash an order already passed without jurisdiction.",
+    "Quo warranto: to ask by what authority a person holds a public office.",
+  ]),
+  sub("Constitution", 4, "CLAT PG 2020, AILET 2022", "What did the Supreme Court hold in Maneka Gandhi v. Union of India (1978)?", [
+    "Facts: her passport was impounded without reasons being given.",
+    "Held: 'procedure established by law' under Article 21 must be just, fair and reasonable, not arbitrary.",
+    "Articles 14, 19 and 21 are linked; a law must satisfy all three.",
+    "The right to travel abroad is part of personal liberty.",
+    "Effect: it overruled the narrow view in A. K. Gopalan and widened Article 21.",
+  ]),
+  sub("Legal Reasoning", 4, "CLAT 2019 to 2023", "How should a principle-and-fact question be approached?", [
+    "Read the principle and treat it as true, even if it differs from the real law.",
+    "List the conditions the principle sets.",
+    "Test the facts against each condition in turn.",
+    "Do not bring in outside knowledge or sympathy for a party.",
+    "Choose the option whose reasoning, not just its result, follows from the principle.",
+  ]),
+  sub("Interview", 3, "Law-school interviews and statement-of-purpose prompts", "Why do you want to study law?", [
+    "Give a reason drawn from experience: a case you followed, a debate or a family matter.",
+    "Say what kind of lawyer you want to be.",
+    "Show you know the work is reading, writing and argument.",
+    "Mention how the five-year course fits your plan.",
+  ]),
+  sub("Legal Reasoning", 4, "CLAT 2018 to 2023", "What are the principles of natural justice?", [
+    "Nemo judex in causa sua: no one should be a judge in his own cause (rule against bias).",
+    "Audi alteram partem: no one should be condemned unheard.",
+    "This includes notice of the case and a fair chance to reply.",
+    "Courts have added a third: a reasoned decision.",
+    "They apply to courts, tribunals and administrative authorities that decide rights.",
+  ]),
+  sub("Legal Reasoning", 4, "CLAT 2017 to 2022", "Distinguish between a tort and a crime.", [
+    "A tort is a civil wrong against an individual; a crime is a wrong against society.",
+    "In tort the injured person sues; in crime the State prosecutes.",
+    "The remedy in tort is damages; in crime it is punishment.",
+    "Tort is proved on a balance of probabilities; crime beyond reasonable doubt.",
+    "One act, such as assault, can be both.",
+  ]),
+]);

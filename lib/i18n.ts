@@ -150,6 +150,10 @@ export const en = {
   "authSlide5Body": "A paid membership opens published lessons, worked answers and practice for your selected preparation.",
   "invalid_credentials": "That email and password don’t match an account.",
   "user_already_exists": "An account with this email already exists. Sign in instead.",
+  "no_exams_account": "This login has no account in this exam portal yet. Tech Pro, Board Scholars and Exam Aspirants are separate accounts: create this portal's account to continue.",
+  "no_tech_account": "This login has no Tech Pro account yet. Tech Pro, Board Scholars and Exam Aspirants are separate accounts: create your Tech Pro account to continue.",
+  "portal_existing_login": "This email already has a MasterClass login. Enter the password of that login here to create this portal's account, or reset the password from the sign-in page.",
+  "portal_unavailable": "This portal is not available right now. Please try again shortly.",
   "weak_password": "Use a password with at least 6 characters.",
   "weak_password_pwned": "This password appears in public data leaks, so it is easy to guess. Choose a different one, ideally a longer phrase.",
   "weak_password_rules": "Use a stronger password: mix upper- and lower-case letters, numbers and a symbol.",
@@ -284,6 +288,9 @@ export const en = {
   "onTheGo": "On The Go",
   "vocabulary": "Vocabulary",
   "coffeeAndCode": "Coffee & Code",
+  "boardExams": "Board Exams",
+  "competitiveExams": "Competitive Exams",
+  "examsPortal": "Exam portals",
   "bookmark": "Bookmark",
   "professionalLearn": "Professional Learn",
   "officialDocs": "Official Docs",
@@ -317,6 +324,15 @@ export const en = {
   "focusedLearningSpace": "A focused learning space for the preparation you choose.",
   "techBuzz": "Tech Buzz",
   "techBuzzBlogs": "Tech-Buzz - Blogs",
+  "portals": "Portals",
+  "portalTechPro": "Tech Pro",
+  "portalBoardScholars": "Board Scholars",
+  "portalExamAspirants": "Exam Aspirants",
+  "students": "Students",
+  "studentsTech": "Tech Professional",
+  "studentsBoards": "Board Exams",
+  "studentsCompetitive": "Competitive Exams",
+  "studentsTet": "TET Exams",
   "starRating": "Star Rating",
   "rateThisBlog": "Rate this blog",
   "startLearning": "Start learning",
@@ -354,10 +370,6 @@ export const en = {
   "techBuzzTagline": "Master Class Buddy",
   "techBuzzSubscribedBadge": "Subscribed Member",
   "techBuzzSubscribeBtn": "Subscribe to Platform",
-  "techBuzzDiwaliOffer": "Subscribe to Platform — ₹{price}/mo (25% Diwali OFF)",
-  "techBuzzDiwaliBannerTag": "DIWALI FESTIVE SALE · 25% OFF",
-  "techBuzzDiwaliBannerBody": "Unlock all engineering deep dives & code labs for only ₹{price}/month",
-  "techBuzzDiwaliActiveTill": "Active till {date}",
 
   // Format & Architectural Inspiration
   "formatInspirationTitle": "FORMAT & ARCHITECTURAL INSPIRATION",
@@ -510,17 +522,18 @@ export interface SupportedLanguage {
   country: string;
   flag: string;
   region: string;
-  /** Always true: English is the only entry. */
+  /** Whether the language is offered by the application. */
   available: boolean;
 }
 
 export const SUPPORTED_LANGUAGES: readonly SupportedLanguage[] = [
+  { code: "hi", countryCode: "IN", name: "Hindi", nativeName: "\u0939\u093f\u0928\u094d\u0926\u0940", country: "India", flag: "", region: "India", available: true },
   { code: "en", countryCode: "US", name: "English", nativeName: "English", country: "United States / Global", flag: "🇺🇸", region: "Global", available: true },
 ] as const;
 
-/** The site is in English only. */
+/** English is the default; Hindi is an explicit learner preference. */
 export const isLanguageAvailable = (code: string): code is Language => SUPPORTED_LANGUAGES.some(item => item.code === code && item.available);
-/** Whether Hindi is switched on. While it is off, no page may offer or promise Hindi (user rule 2026-10-31). */
+/** Hindi was enabled for the board and government-exam audiences. */
 export const HINDI_ENABLED = isLanguageAvailable("hi");
 /** The language to use for a saved, detected or requested choice: itself when available, English otherwise. */
 export const usableLanguage = (code: string | null | undefined): Language => (code && isLanguageAvailable(code) ? code : "en");

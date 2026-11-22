@@ -86,7 +86,8 @@ test("asks for a name when signing up and sends it as the profile's full name", 
   await user.click(screen.getByRole("button", { name: "Start learning" }));
 
   await waitFor(() => expect(signUp).toHaveBeenCalledWith(expect.objectContaining({
-    options: expect.objectContaining({ data: { full_name: "Asha Iyer" } }),
+    // The portal, learning path and language ride along too; the name is what this test checks.
+    options: expect.objectContaining({ data: expect.objectContaining({ full_name: "Asha Iyer" }) }),
   })));
 });
 
@@ -98,12 +99,12 @@ test("does not ask a returning visitor for their name", () => {
 
 test("offers the opposite route so visitors can switch between signing in and up", () => {
   render(<AuthPage mode="signin" enabled />);
-  expect(screen.getByRole("link", { name: /create an account/i })).toHaveAttribute("href", "/sign-up");
+  expect(screen.getByRole("link", { name: /create an account/i })).toHaveAttribute("href", expect.stringMatching(/^\/sign-up(\?|$)/));
 });
 
 test("offers the sign-in route from the sign-up page", () => {
   render(<AuthPage mode="signup" enabled />);
-  expect(screen.getByRole("link", { name: /already have an account/i })).toHaveAttribute("href", "/sign-in");
+  expect(screen.getByRole("link", { name: /already have an account/i })).toHaveAttribute("href", expect.stringMatching(/^\/sign-in(\?|$)/));
 });
 
 test("shows the setup notice instead of a form when auth is not configured", () => {
@@ -210,15 +211,19 @@ test("sign-up confirms the account was created, shows where the email went and w
 test("a project that auto-confirms still signs the new learner in, with a welcome notice", async () => {
   sessionStorage.clear();
   signUp.mockResolvedValue({ data: { user: { id: "u1", email_confirmed_at: "2026-10-20T00:00:00Z" }, session: { access_token: "t" } }, error: null });
+  // Signing up opens this portal's own account (/api/portal/enter) before entering the app.
+  const fetchMock = jest.fn().mockResolvedValue({ ok: true, status: 200, json: async () => ({}) });
+  global.fetch = fetchMock as never;
   render(<AuthPage mode="signup" enabled />);
   const user = await fillCredentials("new@example.com");
   await user.click(screen.getByRole("button", { name: "Start learning" }));
   await waitFor(() => expect(replace).toHaveBeenCalledWith("/learning"));
+  expect(fetchMock).toHaveBeenCalledWith("/api/portal/enter", expect.objectContaining({ method: "POST" }));
   expect(sessionStorage.getItem("mc:auth-notice")).toBe("created");
 });
 
 test.each([
-  ["link_expired", "That confirmation link has expired"],
+  ["link_expired", "That email link has expired"],
   ["link_other_device", "opened in a different browser"],
 ] as const)("an emailed-link problem (%s) is explained on the sign-in page", (linkError, text) => {
   render(<AuthPage mode="signin" enabled linkError={linkError} />);
@@ -229,11 +234,13 @@ test("sign-up with an already-registered address says so instead of waiting for 
   const { toast } = jest.requireMock("sonner") as { toast: { info: jest.Mock } };
   // Supabase's decoy for a confirmed address: 200, a user with no identities, and no email sent.
   signUp.mockResolvedValue({ data: { user: { id: "decoy", email_confirmed_at: null, identities: [] }, session: null }, error: null });
+  // The page first tries the typed password on the existing login (it may belong to the other portal); here it is wrong.
+  signInWithPassword.mockResolvedValue({ data: {}, error: { code: "invalid_credentials", message: "Invalid login credentials" } });
   render(<AuthPage mode="signup" enabled />);
   const user = await fillCredentials("taken@example.com");
   await user.click(screen.getByRole("button", { name: "Start learning" }));
-  expect(await screen.findByRole("alert")).toHaveTextContent("An account with this email already exists");
+  expect(await screen.findByRole("alert")).toHaveTextContent("This email already has a MasterClass login");
   expect(screen.queryByText(/Sent to taken@example.com/)).not.toBeInTheDocument();
   expect(toast.info).toHaveBeenCalledWith("This email already has an account", expect.anything());
-  expect(screen.getByRole("link", { name: "Sign in" })).toHaveAttribute("href", "/sign-in?email=taken%40example.com");
+  expect(screen.getByRole("link", { name: "Sign in" })).toHaveAttribute("href", expect.stringMatching(/^\/sign-in\?email=taken%40example\.com(&|$)/));
 });

@@ -1,4 +1,5 @@
 import "server-only";
+import { indiaAccess } from "./audience";
 import { ZodError } from "zod";
 import { authConfigured } from "./config";
 import { authUser, sessionUserId } from "./auth";
@@ -6,19 +7,39 @@ import { after } from "next/server";
 import { recordEvent } from "./monitoring";
 import { UNTRACKED_COOKIE } from "./tracking-exclusions";
 import { AUTH_USER, requestOnce, withRequestCache } from "./request-cache";
-export class HttpError extends Error { constructor(public status: number, public code: string) { super(code); } }
+import { headers } from "next/headers";
+import { PORTAL_HEADER, isExamPortal } from "@/lib/portal";
+import { HttpError } from "./http-error";
+export { HttpError };
 export async function userId() {
   if (!authConfigured()) throw new HttpError(503, "setup_required");
   const user = await requestOnce(AUTH_USER, authUser);
   if (!user) throw new HttpError(401, "signin_required");
-  return user.id;
+  return portalScoped(user.id);
+}
+/**
+ * Requests from an exam portal's pages carry `x-portal: boards` or `x-portal: competitive` (lib/client.ts) and act
+ * on the caller's account in that portal, a separate profile with its own trial and membership (lib/server/portal.ts).
+ * The header only selects between accounts the caller owns: an exam account needs this browser's Exams session and
+ * a row in portal_accounts.
+ */
+async function portalScoped(authUserId: string) {
+  const portal = (await headers()).get(PORTAL_HEADER);
+  if (!isExamPortal(portal)) return authUserId;
+  if (!await indiaAccess()) throw new HttpError(403, "region_unavailable");
+  // Loaded here, not at the top: portal.ts → repository.ts → … import this module back, and a static import made
+  // that cycle leave exports uninitialised for whichever module loaded first.
+  const { examAccountOf } = await import("./portal");
+  const accountId = await examAccountOf(authUserId, portal);
+  if (!accountId) throw new HttpError(401, "signin_required");
+  return accountId;
 }
 /** userId for GET routes that only read the caller's own data (see sessionUserId). Anything that changes data uses userId. */
 export async function readerId() {
   if (!authConfigured()) throw new HttpError(503, "setup_required");
   const id = await sessionUserId();
   if (!id) throw new HttpError(401, "signin_required");
-  return id;
+  return portalScoped(id);
 }
 export async function jsonBody(request: Request, max = 30000) {
   if (Number(request.headers.get("content-length")) > max) throw new HttpError(413, "request_too_large");

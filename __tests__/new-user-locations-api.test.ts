@@ -12,8 +12,10 @@ const REAL = "6f1c2a4e-1b2c-4d5e-8f90-123456789abc";
 
 function chainFor(result: unknown) {
   const chain: Record<string, jest.Mock> = {};
-  for (const method of ["select", "gte", "order", "eq", "in"]) chain[method] = jest.fn(() => chain);
+  for (const method of ["select", "gte", "order", "eq", "in", "is", "not"]) chain[method] = jest.fn(() => chain);
+  // Profiles end in limit(); visits are paged with range() (PostgREST returns at most 1,000 rows a request).
   chain.limit = jest.fn().mockResolvedValue(result);
+  chain.range = jest.fn().mockResolvedValue(result);
   return chain;
 }
 
@@ -38,6 +40,6 @@ test("looks up visits in chunks so hundreds of ids never build an oversized URL"
   const visits = chainFor({ error: null, data: [] });
   (db as jest.Mock).mockReturnValue({ from: jest.fn((table: string) => table === "profiles" ? profiles : visits) });
   expect((await GET(new Request("https://example.test/api/super-admin/activity/new-users?days=90"))).status).toBe(200);
-  expect(visits.in).toHaveBeenCalledTimes(3);
-  expect(visits.in.mock.calls.map(call => (call[1] as string[]).length)).toEqual([100, 100, 50]);
+  const byUser = visits.in.mock.calls.filter(call => call[0] === "user_id");
+  expect(byUser.map(call => (call[1] as string[]).length)).toEqual([100, 100, 50]);
 });

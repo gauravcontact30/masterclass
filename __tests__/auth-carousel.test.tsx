@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen } from "@testing-library/react";
+import { act, fireEvent, render, screen, within } from "@testing-library/react";
 import { AuthStory } from "@/components/auth-carousel";
 
 const FIRST = "Choose a goal. Make steady progress.";
@@ -99,18 +99,25 @@ test("fourth slide offers only monthly and yearly subscriptions", () => {
  expect(screen.queryByText(/free|per download/i)).not.toBeInTheDocument();
 });
 
+// Only the current photograph and the next one are mounted (a slide never opens on an empty frame, and the other two
+// are not downloaded up front), so each slide's picture is read by going to it.
+const visitPhotos = (container: HTMLElement) => [1, 2, 3, 4].map(n => {
+  fireEvent.click(within(container).getByRole("button", { name: `Go to slide ${n}` }));
+  const current = [...container.querySelectorAll<HTMLElement>("[aria-roledescription=slide]")].filter(slide => !slide.hidden);
+  expect(current).toHaveLength(1);
+  return decodeURIComponent(current[0].querySelector("img")!.getAttribute("src")!);
+});
+
 test("every slide has its own photograph", () => {
- const { container } = render(<AuthStory />);
- const sources = [...container.querySelectorAll("img")].map(img => img.getAttribute("src") ?? "");
- expect(sources).toHaveLength(4);
- expect(new Set(sources).size).toBe(4);
- sources.forEach(src => expect(decodeURIComponent(src)).toMatch(/\/images\/auth\/(guide|formats|languages|plans)\.webp/));
+  const sources = visitPhotos(render(<AuthStory />).container);
+  expect(new Set(sources).size).toBe(4);
+  sources.forEach(src => expect(src).toMatch(/\/images\/auth\/(guide|formats|languages|plans)\.webp/));
 });
 
 test("shows only the current slide's photograph, and sign-up never repeats a sign-in one", () => {
-  const photos = (container: HTMLElement) => [...container.querySelectorAll("[aria-roledescription=slide]")].map(slide => ({ hidden: (slide as HTMLElement).hidden, src: decodeURIComponent(slide.querySelector("img")!.getAttribute("src")!) }));
-  const signin = photos(render(<AuthStory />).container);
-  expect(signin.filter(p => !p.hidden)).toHaveLength(1);
-  const signup = photos(render(<AuthStory mode="signup" />).container);
-  expect(new Set([...signin, ...signup].map(p => p.src)).size).toBe(8);
+  const { container } = render(<AuthStory />);
+  expect(container.querySelectorAll("img").length).toBeLessThanOrEqual(2);
+  const signin = visitPhotos(container);
+  const signup = visitPhotos(render(<AuthStory mode="signup" />).container);
+  expect(new Set([...signin, ...signup]).size).toBe(8);
 });

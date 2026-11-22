@@ -4,8 +4,6 @@ import { db } from "@/lib/server/db";
 import { razorpay } from "@/lib/server/billing";
 import { savePreparations } from "@/lib/server/preparations";
 import { quota } from "@/lib/server/config";
-import { saleOffer } from "@/lib/server/festive-sale";
-jest.mock("@/lib/server/festive-sale", () => ({ saleOffer: jest.fn().mockResolvedValue(null), activeSale: jest.fn().mockResolvedValue(null) }));
 jest.mock("@/lib/server/http", () => ({ ...jest.requireActual("@/lib/server/http"), userId: jest.fn().mockResolvedValue("student") }));
 jest.mock("@/lib/server/repository", () => ({ profile: jest.fn() }));
 jest.mock("@/lib/server/rate-limit", () => ({ rateLimit: jest.fn() }));
@@ -26,18 +24,6 @@ test("public pricing offers only monthly and yearly; inactive accounts have zero
 });
 test.each([{ action: "buyDownloadCredit" }, { ...checkout, tier: "free" }, { ...checkout, selections: [] }, { ...checkout, selections: ["isSuperAdmin"] }, { ...checkout, selections: ["nda"] }])("rejects retired plans and invalid preparation before payment: %j", async body => {
   expect((await POST(request(body))).status).toBe(400); expect(razorpay).not.toHaveBeenCalled(); expect(savePreparations).not.toHaveBeenCalled();
-});
-test("during the Diwali sale a member subscribes to the 25%-off plan and is charged the discounted amount", async () => {
-  jest.mocked(saleOffer).mockResolvedValueOnce({ slug: "diwali-2026", planId: "plan_saleMonthly", amountInr: 225 });
-  const query = table(); jest.mocked(razorpay).mockResolvedValue({ id: "sub_sale", plan_id: "plan_saleMonthly", status: "created", short_url: "https://rzp.io/sale" });
-  const response = await POST(request({ ...checkout, expectedSale: "diwali-2026", expectedAmountPaise: 22500 }));
-  expect(response.status).toBe(200); expect(await response.json()).toMatchObject({ amount: 22500, currency: "INR", discounted: true });
-  expect(razorpay).toHaveBeenCalledWith("subscriptions", expect.objectContaining({ plan_id: "plan_saleMonthly" }));
-  expect(query.insert).toHaveBeenCalledWith(expect.objectContaining({ festive_sale: "diwali-2026", razorpay_plan_id: "plan_saleMonthly", recurring_amount_inr: 225 }));
-});
-test("a checkout priced for the sale is refused once the sale has ended", async () => {
-  const response = await POST(request({ ...checkout, expectedSale: "diwali-2026", expectedAmountPaise: 22500 }));
-  expect(response.status).toBe(409); expect(await response.json()).toEqual({ error: "pricing_changed" }); expect(razorpay).not.toHaveBeenCalled();
 });
 test("checkout saves preparation and creates pending access, never an active entitlement", async () => {
   const query = table(); jest.mocked(razorpay).mockResolvedValue({ id: "sub_new", plan_id: "plan_monthly", status: "created", short_url: "https://rzp.io/new" });

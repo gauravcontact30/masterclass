@@ -58,9 +58,9 @@ export async function reconcileSubscription(ref:string,eventId:string) {
 }
 
 /** Never charge a plan whose price or billing interval differs from the offer. Every visitor is charged in rupees. */
-export async function validateSubscriptionPlan(tier: "monthly" | "yearly", sale?: { planId:string; amountInr:number }) {
-  const id = sale?.planId ?? required(tier === "monthly" ? "RAZORPAY_MONTHLY_PLAN_ID" : "RAZORPAY_YEARLY_PLAN_ID");
+export async function validateSubscriptionPlan(tier: "monthly" | "yearly") {
+  const id = required(tier === "monthly" ? "RAZORPAY_MONTHLY_PLAN_ID" : "RAZORPAY_YEARLY_PLAN_ID");
   const plan = z.object({ id:z.string(), period:z.string(), interval:z.number(), item:z.object({ amount:z.number(), currency:z.string() }) }).parse(await razorpay(`plans/${encodeURIComponent(id)}`));
-  if (plan.id !== id || plan.period !== tier || plan.interval !== 1 || plan.item.currency !== "INR" || plan.item.amount !== Math.round((sale?.amountInr ?? subscriptionPrice(tier)) * 100)) throw new HttpError(503, "billing_plan_mismatch");
+  if (plan.id !== id || plan.period !== tier || plan.interval !== 1 || plan.item.currency !== "INR" || plan.item.amount !== Math.round(subscriptionPrice(tier) * 100)) throw new HttpError(503, "billing_plan_mismatch");
   return id;
 }

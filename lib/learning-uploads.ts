@@ -77,6 +77,8 @@ export const DASHBOARD_PAGES: PageOption[] = [
   page("learning", "search", "Search (AI)", "ai ask find"), page("learning", "step-by-step", "On The Go", "step by step guide"),
   page("learning", "notes", "Notes", "topic cards"), page("learning", "vocabulary", "Vocabulary", "words english hindi"),
   page("learning", "coffee-and-code", "Coffee & Code", "blog articles posts"),
+  page("learning", "board-exams", "Board Exams", "up board cbse icse class 10 12 high school intermediate"),
+  page("learning", "competitive-exams", "Competitive Exams", "defence bank railway tet isro upsc ssc jee neet gate government entrance"),
   page("learning", "bookmark", "Bookmark", "saved favourites"),
   page("professional", "official-docs", "Official Docs", "documentation reference"), page("professional", "techy", "Techy", "technology"),
   page("professional", "api-docs", "API Docs", "reference endpoints"), page("professional", "workflow", "Workflow", "agents langchain"),

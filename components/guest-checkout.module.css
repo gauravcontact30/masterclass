@@ -55,7 +55,6 @@
 .plan:hover { border-color: #e39a6d; }
 .plan[aria-checked="true"] { border-color: var(--ink); background: #fdf6f1; box-shadow: 0 0 0 3px rgba(181, 82, 47, .12); }
 .planName em { padding: 2px 8px; border-radius: 6px; background: #dbe7e2; color: var(--ok); font-size: 12px; font-style: normal; font-weight: 600; }
-.planName .saleDiscountTag { padding: 2px 8px; border-radius: 6px; background: #fee2e2; color: #b91c1c; font-size: 12px; font-style: normal; font-weight: 750; border: 1px solid #fca5a5; }
 .plan strong { font-size: 26px; font-weight: 700; font-variant-numeric: tabular-nums; }
 .plan strong small, .summaryPrice small { color: var(--muted); font-size: 14px; font-weight: 500; }
 .plan > small { color: var(--muted); font-size: 13px; }

@@ -5,7 +5,8 @@
  * and entry (`--set api`), agentic workflow (`--set workflow`), Official Docs
  * technology (`--set docs`), study note (`--set notes`), Pro lesson
  * (`--set lessons`), step-by-step guide and Techy deck (`--set guides`) or
- * learning path on /courses (`--set courses`).
+ * learning path on /courses (`--set courses`), Board Exams chapter (`--set boards`) or Competitive
+ * Exams exam (`--set competitive`) or subject (`--set competitive-subjects`).
  *
  * Per card: Claude designs a scene whose focal moment is the meaning
  * (scripts/card-art-director.ts), the image model paints it through the Vercel
@@ -63,6 +64,10 @@ import { INTERVIEW_TECHS } from "../lib/interview-bank";
 import { COMPARISONS } from "../lib/comparisons";
 import { CATEGORY_LABELS, PREPARATIONS, PREPARATION_GROUPS } from "../lib/study/preparations";
 import { COURSE_SUMMARIES } from "../lib/study/course-summaries";
+import { SUBJECTS as BOARD_SUBJECTS, loadPack as loadBoardPack } from "../lib/board-exams/boards";
+import { EXAMS as COMPETITIVE_EXAMS, loadExam as loadCompetitiveExam } from "../lib/competitive-exams/exams";
+import { boardChapterImageParts, competitiveExamImageParts, competitiveSubjectImageParts, ieltsTopicImageParts } from "../lib/exam-images";
+import { IELTS_TOPICS } from "../lib/ielts-topics";
 import { LEARNING_IMAGE_BUCKET, learningImageSlug, learningScenePrompt } from "../lib/learning-image";
 import { designScene, designServiceScene, designTopicScene, judgePicture, judgeServicePicture, judgeTopicPicture, type Scene, type TopicField, type Verdict } from "./card-art-director";
 
@@ -262,6 +267,48 @@ async function pictureSet(name: string): Promise<PictureSet> {
     points: [`Includes: ${PREPARATIONS.filter(option => option.category === category).map(option => option.label.en).join(", ")}`],
     label: category, parts: [category],
   }))), "study");
+  // Board Exams (components/board-exams.tsx): one picture per chapter of each class and subject, explaining the
+  // chapter's central idea. Chapters come from the hand-authored packs, the same list the page shows.
+  if (name === "boards") {
+    const topics: (Topic & { label: string; parts: string[] })[] = [];
+    for (const cls of ["10", "12"] as const) for (const subject of BOARD_SUBJECTS) {
+      const pack = await loadBoardPack(cls, subject.id);
+      const chapters = [...new Set([...pack.items.map(item => item.ch), ...pack.mcqs.map(item => item.ch)])];
+      for (const chapter of chapters) {
+        const questions = pack.items.filter(item => item.ch === chapter).slice(0, 4).map(item => item.q);
+        topics.push({ name: chapter, context: `Class ${cls} board exam, ${subject.name}`, summary: `The ${subject.name} chapter "${chapter}" as taught for Class ${cls} board exams (UP Board, CBSE, ICSE / ISC).`, points: questions, label: `boards: ${cls} ${subject.id} ${chapter}`, parts: boardChapterImageParts(cls, subject.id, chapter) });
+      }
+    }
+    return learningSet("exams", topics, "study");
+  }
+  // Competitive Exams (components/competitive-exams.tsx, landing): one picture per government exam.
+  if (name === "competitive") return learningSet("exams", COMPETITIVE_EXAMS.map(exam => ({
+    name: exam.name, context: `Indian government recruitment exam: ${exam.covers}`, summary: exam.pattern,
+    points: [exam.covers, exam.written], label: `competitive: ${exam.id}`, parts: competitiveExamImageParts(exam.id),
+  })), "study");
+  // Competitive Exams Subjects & Topics grid: one picture per subject name, shared by every exam that teaches it.
+  if (name === "competitive-subjects") {
+    const seen = new Map<string, { exams: string[]; questions: string[] }>();
+    for (const exam of COMPETITIVE_EXAMS) {
+      const pack = await loadCompetitiveExam(exam.id);
+      for (const item of [...pack.objective, ...pack.subjective]) {
+        const entry = seen.get(item.subject) ?? { exams: [], questions: [] };
+        if (!entry.exams.includes(exam.name)) entry.exams.push(exam.name);
+        if (entry.questions.length < 4) entry.questions.push(item.q);
+        seen.set(item.subject, entry);
+      }
+    }
+    return learningSet("exams", [...seen].map(([subject, entry]) => ({
+      name: subject, context: `Indian government exam preparation subject (${entry.exams.slice(0, 3).join(", ")})`,
+      summary: `The subject "${subject}" as asked in Indian competitive exams such as ${entry.exams.slice(0, 4).join(", ")}.`,
+      points: entry.questions, label: `competitive subject: ${subject}`, parts: competitiveSubjectImageParts(subject),
+    })), "study");
+  }
+  // IELTS Topics & Themes (components/ielts-topics.tsx): one picture per recurring Writing and Speaking theme.
+  if (name === "ielts") return learningSet("exams", IELTS_TOPICS.map(topic => ({
+    name: topic.topic, context: "IELTS English test preparation theme", summary: topic.task2,
+    points: [...topic.ideas, ...topic.words.map(([word]) => word)], label: `ielts: ${topic.topic}`, parts: ieltsTopicImageParts(topic.topic),
+  })), "study");
   if (name === "aws") return {
     bucket: AWS_SERVICE_IMAGE_BUCKET,
     folder: "",
@@ -286,7 +333,7 @@ async function pictureSet(name: string): Promise<PictureSet> {
       judge: jpeg => judgePicture(entry, jpeg),
     })),
   };
-  throw new Error(`--set must be "vocabulary", "aws", "topics", "api", "workflow", "docs", "notes", "lessons", "guides", "courses", "pulse", "blueprints", "interview" or "comparisons", not "${name}"`);
+  throw new Error(`--set must be "vocabulary", "aws", "topics", "api", "workflow", "docs", "notes", "lessons", "guides", "courses", "pulse", "blueprints", "interview", "comparisons", "boards", "competitive", "competitive-subjects" or "ielts", not "${name}"`);
 }
 
 /** A picture is done when its meaning is unmistakable from the picture alone and it carries no lettering. */

@@ -262,8 +262,10 @@ describe("TechBuzzBlog Component", () => {
       "Master Modern Tech: Agentic AI, Next.js 16+, React 19+ & System Design"
     );
     expect(screen.getByText("Engineering Masterclasses")).toBeInTheDocument();
-    expect(screen.getByText("9+")).toBeInTheDocument();
-    expect(screen.getByText("Code & Architecture Verified")).toBeInTheDocument();
+    // The ribbon counts the stories themselves (it used to show fixed "100% verified" and "4.9★" claims).
+    expect(screen.getByText("Engineering Guides").previousElementSibling).toHaveTextContent(String(MOCK_CARDS.length));
+    expect(screen.getByText("Expert-reviewed")).toBeInTheDocument();
+    expect(screen.queryByText("Code & Architecture Verified")).not.toBeInTheDocument();
   });
 
   test("renders featured learning tracks bar with requested technologies", () => {
