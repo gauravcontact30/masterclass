@@ -28,9 +28,34 @@ export function usePagedCarousel<T extends HTMLElement>(itemCount: number, perSc
   const [playing, setPlaying] = useState(true);
   const [held, setHeld] = useState(false);
 
+  // The page an arrow, dot or autoplay asked for, while the track is still scrolling there. The page shown follows it
+  // at once: read from the scroll position mid-animation it stayed on the old page, so a second click in that time
+  // went to the wrong page (or nowhere) and the arrows seemed not to work.
+  const target = useRef<{ page: number; timer: number } | null>(null);
   // A track with no width yet (hidden, or not laid out) would give NaN pages, so it keeps the last good values.
-  const measure = useCallback(() => { const el = track.current; if (!el || !el.clientWidth) return; setPages(Math.max(1, Math.round(el.scrollWidth / el.clientWidth))); setPage(Math.round(el.scrollLeft / el.clientWidth)); }, []);
-  const goTo = useCallback((next: number) => { const el = track.current; if (!el) return; const wrapped = ((next % pages) + pages) % pages; el.scrollTo({ left: wrapped * el.clientWidth, behavior: "smooth" }); }, [pages]);
+  const measure = useCallback(() => {
+    const el = track.current; if (!el || !el.clientWidth) return;
+    setPages(Math.max(1, Math.round(el.scrollWidth / el.clientWidth)));
+    const at = el.scrollLeft / el.clientWidth;
+    const aim = target.current;
+    if (aim) { if (Math.abs(at - aim.page) > 0.02) return; window.clearTimeout(aim.timer); target.current = null; }
+    setPage(Math.round(at));
+  }, []);
+  const goTo = useCallback((next: number) => {
+    const el = track.current; if (!el) return;
+    const wrapped = ((next % pages) + pages) % pages;
+    if (target.current) window.clearTimeout(target.current.timer);
+    // If the smooth scroll is cut short (a snap container re-snapping, a browser that ignores it), land there anyway.
+    const timer = window.setTimeout(() => {
+      if (target.current?.page !== wrapped) return;
+      target.current = null;
+      if (Math.abs(el.scrollLeft - wrapped * el.clientWidth) > 2) el.scrollTo({ left: wrapped * el.clientWidth, behavior: "instant" });
+    }, 900);
+    target.current = { page: wrapped, timer };
+    setPage(wrapped);
+    el.scrollTo({ left: wrapped * el.clientWidth, behavior: "smooth" });
+  }, [pages]);
+  useEffect(() => () => { if (target.current) window.clearTimeout(target.current.timer); }, []);
 
   useEffect(() => {
     const el = track.current; if (!el || !nearViewport) return;

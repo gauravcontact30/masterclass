@@ -1,6 +1,6 @@
 /**
  * The look of the "Fresh in tech" covers, shared by scripts/generate-news-covers.ts (the standing covers in
- * public/images/news) and lib/server/landing-news.ts, which paints a new cover for every slide each 21-day refresh.
+ * public/images/news) and lib/server/landing-news.ts, which paints a new cover for every slide each weekly refresh.
  */
 export const NEWS_COVER_STYLE = "A polished, modern 3D isometric illustration, soft studio lighting, clean pastel background with gentle gradients in warm cream, clay orange, sage and soft blue, crisp detailed objects, wide 16:9 landscape composition with the key action centred and breathing room at the edges. Absolutely no text, letters, words, numbers, code, logos, brand marks, captions or watermarks anywhere.";
 

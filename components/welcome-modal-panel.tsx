@@ -125,7 +125,7 @@ export default function WelcomeModalPanel({ open, onOpenChange }: { open: boolea
 
           <footer className={styles.actions}>
             <button type="button" className={styles.primary} onClick={() => { trackGoal(GOALS.welcomeStart); close(); }}>Start exploring<ArrowRight size={15} aria-hidden="true" /></button>
-            <Link href="/#tech-docs" className={styles.secondary} onClick={() => { trackGoal(GOALS.welcomeCourses); close(); }}>See the courses</Link>
+            <Link href="/courses" className={styles.secondary} onClick={() => { trackGoal(GOALS.welcomeCourses); close(); }}>See the courses</Link>
           </footer>
         </div>
       </DialogContent>

@@ -1,33 +1,38 @@
 import type { LandingNews, NewsLogo } from "@/lib/landing-news";
 
-// Brand logos with simple branding
-const LOGO_ANTHROPIC: NewsLogo = { name: "Anthropic", hex: "D97706", path: null };
-const LOGO_OPENAI: NewsLogo = { name: "OpenAI", hex: "000000", path: null };
-const LOGO_GOOGLE: NewsLogo = { name: "Google", hex: "4285F4", path: null };
-const LOGO_MICROSOFT: NewsLogo = { name: "Microsoft", hex: "00A4EF", path: null };
-const LOGO_LANGCHAIN: NewsLogo = { name: "LangChain", hex: "1C3C3C", path: null };
-const LOGO_N8N: NewsLogo = { name: "n8n", hex: "EA4B71", path: null };
-const LOGO_NETFLIX: NewsLogo = { name: "Netflix", hex: "E50914", path: null };
-const LOGO_CLOUDFLARE: NewsLogo = { name: "Cloudflare", hex: "F38020", path: null };
-const LOGO_UBER: NewsLogo = { name: "Uber", hex: "000000", path: null };
-const LOGO_STRIPE: NewsLogo = { name: "Stripe", hex: "635BFF", path: null };
-const LOGO_VERCEL: NewsLogo = { name: "Vercel", hex: "000000", path: null };
-const LOGO_REACT: NewsLogo = { name: "React", hex: "61DAFB", path: null };
-const LOGO_AWS: NewsLogo = { name: "AWS", hex: "FF9900", path: null };
-const LOGO_AMAZON: NewsLogo = { name: "Amazon", hex: "FF9900", path: null };
-const LOGO_SPACEX: NewsLogo = { name: "SpaceX", hex: "000000", path: null };
-const LOGO_TESLA: NewsLogo = { name: "Tesla", hex: "E82127", path: null };
-const LOGO_XAI: NewsLogo = { name: "xAI", hex: "000000", path: null };
-const LOGO_META: NewsLogo = { name: "Meta", hex: "0668E1", path: null };
-const LOGO_NVIDIA: NewsLogo = { name: "Nvidia", hex: "76B900", path: null };
-const LOGO_APPLE: NewsLogo = { name: "Apple", hex: "555555", path: null };
+/** Monogram logos for the built-in stories (the live set uses simple-icons marks, lib/server/landing-news.ts). */
+const LOGOS: Record<string, NewsLogo> = {
+  "Anthropic": { name: "Anthropic", hex: "D97706", path: null },
+  "OpenAI": { name: "OpenAI", hex: "000000", path: null },
+  "Google": { name: "Google", hex: "4285F4", path: null },
+  "Microsoft": { name: "Microsoft", hex: "5E5E5E", path: null },
+  "LangChain": { name: "LangChain", hex: "1C3C3C", path: null },
+  "Vercel": { name: "Vercel", hex: "000000", path: null },
+  "React": { name: "React", hex: "087EA4", path: null },
+  "AWS": { name: "AWS", hex: "FF9900", path: null },
+  "Amazon": { name: "Amazon", hex: "FF9900", path: null },
+  "SpaceX": { name: "SpaceX", hex: "000000", path: null },
+  "Tesla": { name: "Tesla", hex: "E82127", path: null },
+  "xAI": { name: "xAI", hex: "000000", path: null },
+  "Meta": { name: "Meta", hex: "0668E1", path: null },
+  "Nvidia": { name: "Nvidia", hex: "76B900", path: null },
+  "Harness": { name: "Harness", hex: "0278D5", path: null },
+  "TanStack": { name: "TanStack", hex: "FF4154", path: null },
+  "Nasdaq": { name: "Nasdaq", hex: "0996C7", path: null },
+  "Cloudflare": { name: "Cloudflare", hex: "F38020", path: null },
+  "Netflix": { name: "Netflix", hex: "E50914", path: null },
+  "Stripe": { name: "Stripe", hex: "635BFF", path: null },
+  "Uber": { name: "Uber", hex: "000000", path: null }
+};
+const L = (name: string) => LOGOS[name];
 
 /**
- * Pre-populated, verified standing news and interview questions for all 10 slides.
- * Displayed immediately on first paint so visitors on production never see an empty section or loading card.
+ * The built-in "Fresh in tech" set: shown on first paint and whenever the live set (searched weekly by
+ * lib/server/landing-news.ts) cannot be read, so the section is never empty. Every story links to the article it
+ * came from. Refreshed by hand for the week of 23 November 2026; the interview-question slides are evergreen.
  */
 export const DEFAULT_LANDING_NEWS: LandingNews = {
-  updatedAt: "2026-10-26T06:00:00Z",
+  updatedAt: "2026-11-23T00:00:00Z",
   slides: [
     {
       id: "ai-labs",
@@ -35,83 +40,78 @@ export const DEFAULT_LANDING_NEWS: LandingNews = {
       fresh: true,
       stories: [
         {
-          title: "Claude Code terminal agent ships for multi-file software engineering",
-          summary: "Anthropic launched Claude Code, an autonomous CLI agent that operates directly inside developer repositories to plan, edit files, execute test suites, and resolve Git diffs.",
-          source: "Anthropic News",
-          url: "https://www.anthropic.com/news",
-          date: "2026-10-24",
-          logo: LOGO_ANTHROPIC,
+          title: "Anthropic ships Claude Fable 5.2, with Mythos 5.2 for vetted teams",
+          summary: "Anthropic released Fable 5.2 for everyone and the same model as Mythos 5.2 for vetted cybersecurity and life-science teams, with faster outputs.",
+          source: "SD Times",
+          url: "https://sdtimes.com/ai/anthropic-introduces-claude-fable-5-2-mythos-5-2/",
+          date: "2026-11-09",
+          logo: L("Anthropic"),
           points: [
-            "Runs locally in your terminal with direct access to file trees and command-line tools.",
-            "Plans architectural changes across dozens of files before applying code edits.",
-            "Integrates prompt caching and compact token context to reduce execution costs by 80%."
+            "Fable 5.2 is open to all users, with cybersecurity and biology safeguards.",
+            "Mythos 5.2 is the same model, limited to Anthropic's verification programmes.",
+            "Anthropic reports gains in coding, reasoning and vision over the 5.1 models."
           ],
-          why: "Engineers spend less time on repetitive refactoring and boilerplate, focusing on core system architecture.",
-          concept: { term: "Agent loop", explain: "A model that evaluates outputs, executes tools iteratively, and corrects its own errors until a task succeeds." }
+          why: "One model, two access tiers: a pattern for shipping powerful capabilities while limiting misuse.",
+          concept: { term: "Tiered access", explain: "Giving riskier capabilities only to verified users, while everyone else gets the same model with extra safeguards." }
         },
         {
-          title: "OpenAI expands reasoning models with advanced function-calling pipelines",
-          summary: "OpenAI introduced updated reasoning capabilities with low-latency structured outputs, automated tool verification, and sandboxed execution environments.",
-          source: "OpenAI News",
-          url: "https://openai.com/news/",
-          date: "2026-10-23",
-          logo: LOGO_OPENAI,
+          title: "OpenAI launches GPT-6.2 Astra for professional work and GPT-6.2 Sol",
+          summary: "OpenAI released two GPT-6.2 models: Astra for demanding professional and coding work, and Sol for efficient everyday use, both in the API.",
+          source: "Let's Data Science",
+          url: "https://letsdatascience.com/news/openai-launches-gpt-62-astra-frontier-model-and-gpt-62-sol-ccad09ba",
+          date: "2026-11-17",
+          logo: L("OpenAI"),
           points: [
-            "Reasoning models now support strict JSON schemas with 100% schema compliance guarantee.",
-            "Chained function calls execute in parallel to minimize latency for complex analytical workflows."
+            "Two tiers: Astra for hard, long tasks and Sol for fast, cheaper everyday calls.",
+            "Both are available to developers through the OpenAI API.",
+            "Reported pricing for Astra is lower than the GPT-6 Astra it replaces."
           ],
-          why: "Developers can reliably build production automation without brittle custom regex parsers or retry loops.",
-          concept: { term: "Structured outputs", explain: "Constraining model generation to guaranteed JSON schema types so APIs can consume answers without parsing errors." }
+          why: "Picking the right tier per request is now a core cost and latency decision in AI apps.",
+          concept: { term: "Model routing", explain: "Sending each request to the cheapest model that can handle it, and only hard ones to the frontier model." }
         },
         {
-          title: "Google Gemini 2.5 expands multimodal context and real-time audio streaming",
-          summary: "Google AI rolled out Gemini 2.5 with native multimodal streaming, bidirectional audio processing, and expanded 2-million token context windows.",
-          source: "Google AI Blog",
-          url: "https://blog.google/technology/ai/",
-          date: "2026-10-22",
-          logo: LOGO_GOOGLE,
+          title: "Google introduces Gemini 4 Neon, the middle model of the Gemini 4 family",
+          summary: "Gemini 4 Neon sits between Carbon and Hydrogen, and is rolling out in the Gemini API, Google AI Studio and Google Antigravity.",
+          source: "Google Blog",
+          url: "https://blog.google/innovation-and-ai/models-and-research/gemini-models/introducing-gemini-4-neon/",
+          date: "2026-11-18",
+          logo: L("Google"),
           points: [
-            "Processes full multi-hour video streams and complete application codebases in a single context window.",
-            "Native voice-to-voice communication achieves sub-250ms latency for conversational agents."
+            "Neon sits between Gemini 4 Carbon (hardest tasks) and Hydrogen (fast, everyday).",
+            "Available in the Gemini API, Google AI Studio and Google Antigravity.",
+            "Antigravity can pair Neon as planner with Hydrogen as executor in one session."
           ],
-          why: "Enables interactive pair programming and instantaneous voice assistance over complex documentation.",
-          concept: { term: "Context window", explain: "The maximum amount of prompt text and media a model can inspect at one time without losing earlier conversation details." }
+          why: "Planner and executor pairs let a strong model plan while a cheaper one does the many small steps.",
+          concept: { term: "Planner-executor", explain: "An agent design where one model breaks a task into steps and another, faster model carries them out." }
         },
         {
-          title: "Microsoft Azure AI Studio adds automated evaluation & guardrails",
-          summary: "Microsoft launched enterprise safety evaluators and automated agent benchmarking tools within Azure AI Studio for production LLM deployments.",
-          source: "Microsoft AI Blog",
-          url: "https://blogs.microsoft.com/ai/",
-          date: "2026-10-21",
-          logo: LOGO_MICROSOFT,
+          title: "Microsoft unveils its own MAI models for coding, voice and security at Ignite",
+          summary: "At Ignite 2026 Microsoft announced in-house MAI models, led by MAI Code 2, and said enterprises can license some model weights to run in Azure.",
+          source: "Windows Central",
+          url: "https://windowscentral.com/software-apps/microsoft-launches-seven-in-house-ai-models-to-cut-developer-costs-and-reduce-reliance-on-openai",
+          date: "2026-11-17",
+          logo: L("Microsoft"),
           points: [
-            "Automated metrics score responses for factual groundedness, relevance, and safety compliance.",
-            "Real-time interceptors block prompt injections and toxic inputs before reaching backend models."
+            "MAI Code 2 targets coding at a lower price, per Microsoft's own benchmarks.",
+            "New voice and transcription models, plus a security model for select customers.",
+            "Some customers can license weights and fine-tune them inside their Azure tenancy."
           ],
-          why: "Enterprises can audit and safeguard mission-critical generative AI applications against regressions.",
-          concept: { term: "Model evaluations (Evals)", explain: "Automated test suites comparing LLM outputs against ground-truth benchmarks to detect regressions and hallucinations." }
+          why: "Big clouds now ship their own models, so developers get more choice and more price competition.",
+          concept: { term: "Model weights", explain: "The learned numbers that make up a trained model; holding them lets you run and fine-tune it yourself." }
         },
         {
-          title: "Anthropic Prompt Caching delivers massive latency reductions",
-          summary: "Prompt caching reuses static system instructions and documentation across calls, dropping both time-to-first-token and pricing.",
-          source: "Anthropic Engineering",
-          url: "https://www.anthropic.com/news",
-          date: "2026-10-20",
-          logo: LOGO_ANTHROPIC,
-          points: ["Caches repeated prompts up to 5 minutes.", "Drops cost per cached token by 90%."],
-          why: "Makes large documentation lookups fast and affordable.",
-          concept: { term: "Prompt caching", explain: "Storing token KV-pairs on server memory so repetitive prompts do not re-compute from scratch." }
-        },
-        {
-          title: "Mistral releases high-efficiency open multimodal models",
-          summary: "Mistral AI unveiled open-weight vision models capable of reading dense engineering diagrams and architectural schematics.",
-          source: "Mistral Blog",
-          url: "https://mistral.ai/news",
-          date: "2026-10-19",
-          logo: LOGO_OPENAI,
-          points: ["12B parameter model runs efficiently on edge GPUs.", "Translates visual wireframes into HTML/CSS."],
-          why: "Developers can run private visual document parsing on their own infrastructure.",
-          concept: { term: "Open weights", explain: "AI models whose neural network parameters are published publicly for local hosting and inspection." }
+          title: "Gemini 4 Neon lands on Vercel AI Gateway on launch day",
+          summary: "Vercel added Gemini 4 Neon to its AI Gateway, so apps can switch to it by changing one model string.",
+          source: "Vercel Changelog",
+          url: "https://vercel.com/changelog/gemini-4-neon-now-available-on-ai-gateway",
+          date: "2026-11-18",
+          logo: L("Vercel"),
+          points: [
+            "One API key and endpoint for models from many providers.",
+            "Switching models means changing the model ID, not the code."
+          ],
+          why: "Gateways make trying a new model a one-line change, which speeds up evaluation.",
+          concept: { term: "AI gateway", explain: "A single API in front of many model providers that handles keys, routing, retries and usage tracking." }
         }
       ]
     },
@@ -121,85 +121,64 @@ export const DEFAULT_LANDING_NEWS: LandingNews = {
       fresh: true,
       stories: [
         {
-          title: "Model Context Protocol (MCP) establishes universal standard for AI tools",
-          summary: "Anthropic's open-source Model Context Protocol has been adopted across IDEs, agent runtimes, and database clients as the open standard for tool connectivity.",
-          source: "MCP Blog",
-          url: "https://blog.modelcontextprotocol.io/",
-          date: "2026-10-24",
-          logo: LOGO_ANTHROPIC,
+          title: "Gemini API adds Tool Retrieval so agents load tools only when needed",
+          summary: "Google added Tool Retrieval in preview to the Gemini Interactions API: an agent searches its tools and loads deferred ones on demand.",
+          source: "The Neuron",
+          url: "https://www.theneuron.ai/digest/everything-that-happened-in-ai-today-friday-november-20-2026/",
+          date: "2026-11-20",
+          logo: L("Google"),
           points: [
-            "Acts as USB-C for AI: one standard interface lets any model interact with any data source or API.",
-            "Eliminates bespoke plugin code and custom wrappers for database querying and command execution.",
-            "SDKs released for TypeScript, Python, and Go with native sandboxed stdio and SSE transports."
+            "Agents add a tool_search tool to look tools up at run time.",
+            "Tools marked defer_loading stay out of the prompt until they are needed.",
+            "Keeps context small for agents with hundreds of tools."
           ],
-          why: "Developers write one MCP server to expose their application tools to Claude, ChatGPT, Cursor, and custom agents.",
-          concept: { term: "Model Context Protocol (MCP)", explain: "An open protocol standardizing how AI applications expose context, resources, and callable tools to language models." }
+          why: "Large tool lists eat context and confuse models; loading on demand keeps agents fast and accurate.",
+          concept: { term: "Deferred tool loading", explain: "Keeping tool definitions out of the prompt and fetching only the ones a task actually needs." }
         },
         {
-          title: "LangGraph v0.2 introduces durable multi-agent state cycles and human-in-the-loop",
-          summary: "LangChain released LangGraph v0.2, enabling developers to build complex cyclic workflows with persistent state checkpoints, branching, and pause-for-approval hooks.",
-          source: "LangChain Blog",
-          url: "https://blog.langchain.com/",
-          date: "2026-10-23",
-          logo: LOGO_LANGCHAIN,
+          title: "Google Antigravity pairs Gemini 4 Neon as planner with Hydrogen as executor",
+          summary: "Antigravity's Orchestrator can now run Gemini 4 Neon as the planner and Gemini 4 Hydrogen as the executor in a single coding session.",
+          source: "Google Antigravity",
+          url: "https://antigravity.google/blog/gemini-4-neon-in-google-antigravity/",
+          date: "2026-11-18",
+          logo: L("Google"),
           points: [
-            "Cyclic graph architecture lets agents retry, critique, and refine work instead of relying on linear DAGs.",
-            "Durable execution saves agent conversation state to Redis or Postgres across server restarts.",
-            "Human-in-the-loop triggers pause long-running tasks for approval before executing critical API mutations."
+            "A stronger model plans, a faster one executes each step.",
+            "Both run inside one Antigravity session.",
+            "Available to paid Google AI Pro and Ultra subscribers."
           ],
-          why: "Production agents require resilience, memory persistence, and supervision rather than unmonitored scripts.",
-          concept: { term: "Cyclic multi-agent graphs", explain: "Workflows where multiple specialized agents can loop back to previous steps for peer review and error correction." }
+          why: "Multi-model agents are becoming the default way to balance quality against speed and cost.",
+          concept: { term: "Orchestrator", explain: "The part of an agent system that splits work, hands steps to workers and combines their results." }
         },
         {
-          title: "n8n adds autonomous AI agent nodes with memory and tool integrations",
-          summary: "Workflow automation leader n8n introduced visual AI Agent nodes that connect to hundreds of SaaS services, vector databases, and custom REST tools.",
-          source: "n8n Blog",
-          url: "https://blog.n8n.io/",
-          date: "2026-10-22",
-          logo: LOGO_N8N,
+          title: "LangGraph 1.2.24 fixes message removal and checkpoint handling",
+          summary: "LangGraph's latest patch fixes how removed messages are handled and supports checkpoints that hold None values.",
+          source: "Releasebot",
+          url: "https://releasebot.io/updates/langchain-ai",
+          date: "2026-11-20",
+          logo: L("LangChain"),
           points: [
-            "Combines visual no-code triggers with advanced LangChain agent reasoning nodes.",
-            "Supports local LLM backends (Ollama) as well as cloud providers for automated data routing.",
-            "Includes pre-built nodes for vector store retrieval, memory buffers, and Webhook dispatch."
+            "Fixes message removal handling in graph state.",
+            "Supports checkpoints with None values.",
+            "LangGraph has shipped steady 1.2.x patches since 1.0 in October 2025."
           ],
-          why: "Technical teams can automate enterprise support and operations without managing serverless infrastructure.",
-          concept: { term: "Vector store retrieval", explain: "Finding semantically related documents by measuring cosine distance between high-dimensional embedding vectors." }
+          why: "Checkpoints are what let long-running agents pause, resume and recover, so their correctness matters.",
+          concept: { term: "Checkpointing", explain: "Saving an agent's state after each step so it can resume after a crash or a human approval." }
         },
         {
-          title: "CrewAI patterns standardize hierarchical agent teams for software tasks",
-          summary: "CrewAI introduced structured team orchestration, allowing leader agents to delegate tasks, synthesize findings, and manage specialized worker agents.",
-          source: "LangChain Blog",
-          url: "https://blog.langchain.com/",
-          date: "2026-10-21",
-          logo: LOGO_LANGCHAIN,
+          title: "LangChain 1.4 brings MCP tools into agents through langchain.mcp",
+          summary: "LangChain 1.4 added FastMCP support under langchain.mcp, so tools exposed by MCP servers plug into an agent without custom glue code.",
+          source: "Developers Digest",
+          url: "https://www.developersdigest.tech/blog/langchain-langgraph-whats-new-2026",
+          date: "2026-11-02",
+          logo: L("LangChain"),
           points: [
-            "Defines explicit agent roles, backstories, and goal definitions for higher contextual relevance.",
-            "Supports asynchronous task execution and consensus voting across competing agent outputs."
+            "MCP support moved into langchain.mcp (beta).",
+            "Any MCP server's tools can be handed to a LangChain agent.",
+            "langchain 1.4.8 was the current PyPI release in early November."
           ],
-          why: "Breaking complex assignments into discrete roles drastically reduces hallucination rates in agent workflows.",
-          concept: { term: "Hierarchical delegation", explain: "A master agent dividing an objective into distinct subtasks assigned to specialized subordinate agents." }
-        },
-        {
-          title: "LangSmith delivers real-time trace telemetry for LLM applications",
-          summary: "Developers gain full visibility into every prompt, tool execution, token usage, and latency metric across multi-turn agent runs.",
-          source: "LangChain Blog",
-          url: "https://blog.langchain.com/",
-          date: "2026-10-20",
-          logo: LOGO_LANGCHAIN,
-          points: ["Visualizes complex execution trees.", "Identifies failing tool invocations automatically."],
-          why: "Essential for debugging non-deterministic agent failures in production environments.",
-          concept: { term: "Trace telemetry", explain: "Recording every intermediate step, tool input, and model output in a nested call tree for debugging." }
-        },
-        {
-          title: "AutoGen Studio enables rapid visual prototyping for agent teams",
-          summary: "Microsoft's AutoGen Studio offers an interactive playground to test multi-agent debates, code generation, and web-search workflows.",
-          source: "Microsoft AI Blog",
-          url: "https://blogs.microsoft.com/ai/",
-          date: "2026-10-19",
-          logo: LOGO_MICROSOFT,
-          points: ["No-code testing environment for agent dialogs.", "Exports tested agents directly into Python scripts."],
-          why: "Accelerates iteration cycles when proving out feasibility of new agent architectures.",
-          concept: { term: "Multi-agent debate", explain: "Having multiple models challenge each other's reasoning to arrive at a verified, higher-accuracy solution." }
+          why: "MCP is becoming the standard plug for agent tools, so one integration works across frameworks.",
+          concept: { term: "MCP", explain: "Model Context Protocol: an open standard for connecting AI apps to tools and data through small servers." }
         }
       ]
     },
@@ -209,86 +188,63 @@ export const DEFAULT_LANDING_NEWS: LandingNews = {
       fresh: true,
       stories: [
         {
-          title: "Netflix shares modern edge routing architecture and adaptive concurrency limits",
-          summary: "Netflix engineering detailed how Zuul and its edge gateways handle hundreds of millions of requests per second with automatic backpressure and rate limiting.",
-          source: "Netflix Tech Blog",
-          url: "https://netflixtechblog.com/",
-          date: "2026-10-24",
-          logo: LOGO_NETFLIX,
+          title: "Harness postmortem: one hot document stalled deploys for 46 minutes",
+          summary: "A pipeline that kept all its state in one database document drew heavy concurrent writes, and lock waits stalled other pipelines on that node.",
+          source: "DEV Community",
+          url: "https://dev.to/kashif_manzer/one-pipeline-one-document-and-46-minutes-of-stalled-deploys-1aa0",
+          date: "2026-11-18",
+          logo: L("Harness"),
           points: [
-            "Replaced static rate limits with dynamic TCP Vegas-inspired adaptive concurrency algorithms.",
-            "Isolates degraded microservices before cascading failures can impact global playback streams.",
-            "Tiered EVCache and Redis clusters cache metadata at edge points of presence worldwide."
+            "Incident on 13 November, 17:56 to 18:42 UTC.",
+            "Interim fix: a longer lock-wait window.",
+            "Permanent fix: shard pipeline state across many documents."
           ],
-          why: "Prevents entire system outages when a single downstream dependency experiences slow response times.",
-          concept: { term: "Adaptive concurrency limits", explain: "Dynamically throttling incoming requests based on measured latency and queue depth rather than fixed arbitrary request counts." }
+          why: "A single hot record can take down neighbours sharing its node: a classic hotspot lesson.",
+          concept: { term: "Hot partition", explain: "One key or record that gets far more traffic than others and overloads the node that stores it." }
         },
         {
-          title: "Cloudflare explains distributed KV storage architecture handling millions of reads",
-          summary: "Cloudflare published an inside look at Workers KV, explaining how geo-replicated read paths achieve single-digit millisecond latency across 300+ cities.",
-          source: "Cloudflare Blog",
-          url: "https://blog.cloudflare.com/",
-          date: "2026-10-23",
-          logo: LOGO_CLOUDFLARE,
+          title: "Microsoft 365 outage on 12 November prompts architecture write-ups",
+          summary: "A long Microsoft 365 outage on 12 November set off analyses of cascading failure; accounts of the root cause differ, so wait for Microsoft's report.",
+          source: "The Architect's Notebook",
+          url: "https://thearchitectsnotebook.substack.com/p/the-microsoft-outage-of-november",
+          date: "2026-11-14",
+          logo: L("Microsoft"),
           points: [
-            "Uses asynchronous eventual consistency for writes with instant global invalidation broadcasts.",
-            "Edge memory caching avoids hitting central origin servers for 99.8% of incoming queries.",
-            "Zero-cold-start V8 isolates execute edge logic directly beside incoming network packets."
+            "Write-ups describe a change that spread failures across dependent services.",
+            "Root-cause accounts conflict: network change, BGP or lock contention.",
+            "The official post-incident review is the source to trust."
           ],
-          why: "Essential reading for designing ultra-low latency global consumer applications without centralized database bottlenecks.",
-          concept: { term: "Eventual consistency", explain: "A consistency model where all replicas eventually converge to the latest value without requiring synchronous multi-region write locks." }
+          why: "Learn to read outage reports critically: early commentary is often wrong on the root cause.",
+          concept: { term: "Cascading failure", explain: "When one component fails and the extra load or errors it causes knock over the services that depend on it." }
         },
         {
-          title: "Uber details petabyte-scale real-time event streaming with Apache Kafka",
-          summary: "Uber engineering revealed its real-time pipeline processing trillions of location updates, trip events, and marketplace signals every day.",
-          source: "InfoQ Architecture",
-          url: "https://www.infoq.com/architecture-design/",
-          date: "2026-10-22",
-          logo: LOGO_UBER,
+          title: "Amazon S3 doubles the read request rate for general purpose buckets",
+          summary: "S3 general purpose buckets can now serve up to twice as many read requests, according to AWS's 20 November update.",
+          source: "Dev Digest",
+          url: "https://weirdion.substack.com/p/dev-digest-week-of-2026-11-22",
+          date: "2026-11-20",
+          logo: L("AWS"),
           points: [
-            "Partitions event topics by geographical hex-cells (H3) for predictable, localized data locality.",
-            "Flink stream processors calculate surge pricing and dispatch matchmaking in sub-100ms windows.",
-            "Multi-region active-active failover ensures zero event loss even during complete cloud datacenter loss."
+            "Up to 2x read request rate for general purpose buckets.",
+            "Fewer key-prefix tricks needed for read-heavy workloads."
           ],
-          why: "Proves how to scale high-throughput event logs while maintaining order guarantees and strict partitioning.",
-          concept: { term: "Partitioning & Sharding", explain: "Distributing a massive dataset or stream across multiple server nodes using a deterministic key like user ID or location hash." }
+          why: "Read-heavy designs such as media and data lakes need less sharding work to hit high throughput.",
+          concept: { term: "Request rate limit", explain: "The number of operations per second a storage service accepts before it starts throttling." }
         },
         {
-          title: "Stripe shares zero-downtime database migration blueprints for PostgreSQL",
-          summary: "Stripe engineers outlined their proven 5-phase migration playbook for updating schemas on multi-terabyte mission-critical transactional databases.",
-          source: "InfoQ Architecture",
-          url: "https://www.infoq.com/architecture-design/",
-          date: "2026-10-21",
-          logo: LOGO_STRIPE,
+          title: "Postmortems from 2025 and 2026 cloud outages, distilled into lessons",
+          summary: "A review of seven official postmortems from recent cloud outages pulls out shared lessons on config changes, blast radius and recovery.",
+          source: "Ajay Kumar",
+          url: "https://www.ajayk.sh/blog/cloud-outages-2025-2026-resilience-lessons/",
+          date: "2026-11-10",
+          logo: null,
           points: [
-            "Phase 1 expands schema with nullable columns; Phase 2 performs dual-writes from application code.",
-            "Phase 3 backfills historical records in background batches without locking live transaction tables.",
-            "Phase 4 switches read traffic; Phase 5 safely deprecates and drops legacy column structures."
+            "Most outages started with a configuration or permissions change.",
+            "Smaller blast radius and staged rollouts limited the damage.",
+            "Fast rollback mattered more than fast diagnosis."
           ],
-          why: "Enables continuous production deployments for fintech and payment databases without requiring maintenance windows.",
-          concept: { term: "Expand and contract pattern", explain: "A phased migration strategy where new and old schemas coexist during transitions to eliminate downtime and rollback risks." }
-        },
-        {
-          title: "Amazon DynamoDB Global Tables active-active replication deep dive",
-          summary: "How AWS synchronizes multi-region writes within seconds using timestamp-based conflict resolution and change data capture.",
-          source: "InfoQ Architecture",
-          url: "https://www.infoq.com/architecture-design/",
-          date: "2026-10-20",
-          logo: LOGO_AWS,
-          points: ["Replicates across regions in under 1 second.", "Last-write-wins handles concurrent conflict updates."],
-          why: "Delivers 99.999% availability for globally distributed SaaS architectures.",
-          concept: { term: "Change Data Capture (CDC)", explain: "Streaming every insert, update, and delete event from a database commit log directly into event brokers." }
-        },
-        {
-          title: "Discord migrates billions of messages to ScyllaDB for ultra-low latency",
-          summary: "Discord replaced its Cassandra clusters with ScyllaDB, cutting tail latency and stabilizing performance under peak voice and chat traffic.",
-          source: "InfoQ Architecture",
-          url: "https://www.infoq.com/architecture-design/",
-          date: "2026-10-19",
-          logo: LOGO_NETFLIX,
-          points: ["Eliminates JVM garbage collection pauses.", "C++ rewrite utilizes modern NVMe drive speeds."],
-          why: "Shows how choosing runtime architectures without GC pauses solves p99 latency spikes.",
-          concept: { term: "Tail latency (p99)", explain: "The latency experienced by the slowest 1% of users, representing the worst-case performance under heavy system load." }
+          why: "Reading real postmortems is the quickest way to learn reliability design for interviews and work.",
+          concept: { term: "Blast radius", explain: "How much of a system one failure can affect; cells, regions and staged rollouts keep it small." }
         }
       ]
     },
@@ -298,86 +254,62 @@ export const DEFAULT_LANDING_NEWS: LandingNews = {
       fresh: true,
       stories: [
         {
-          title: "Next.js 16 delivers lightning Partial Prerendering and optimized caching",
-          summary: "Vercel announced Next.js 16 featuring stable Partial Prerendering (PPR), instant client-side route transitions, and refined server actions caching defaults.",
-          source: "Next.js Blog",
-          url: "https://nextjs.org/blog",
-          date: "2026-10-24",
-          logo: LOGO_VERCEL,
+          title: "Next.js 16.4.6 is the latest stable release",
+          summary: "Next.js 16.4.6 shipped on 9 November, following the 16.4.5 security release, while 16.5 continues in canary.",
+          source: "Releases.sh",
+          url: "https://releases.sh/vercel/nextjs",
+          date: "2026-11-09",
+          logo: L("Vercel"),
           points: [
-            "Combines static shell rendering at build time with streaming dynamic components via React Suspense.",
-            "Turbopack is enabled by default for both development and production compilation with 5x speedups.",
-            "Refined Cache Components provide granular control over data tags without accidental stale responses."
+            "16.4.6 is the current stable version.",
+            "16.5.0 canaries were still shipping on 22 November.",
+            "Upgrade with npm i next@latest after reading the release notes."
           ],
-          why: "Web applications achieve the speed of static sites with the personalized capabilities of dynamic backends.",
-          concept: { term: "Partial Prerendering (PPR)", explain: "Serving a fast static HTML shell immediately from CDN edges while streaming dynamic user content into placeholder boundaries." }
+          why: "Staying on the latest patch keeps security fixes in and makes the next minor upgrade small.",
+          concept: { term: "Canary release", explain: "A pre-release build published often so early adopters can test features before a stable version." }
         },
         {
-          title: "React 19 stable release standardizes Actions, useActionState, and Assets",
-          summary: "The official React 19 release streamlines asynchronous state management, form handling, and document metadata injection without third-party libraries.",
-          source: "React Blog",
-          url: "https://react.dev/blog",
-          date: "2026-10-23",
-          logo: LOGO_REACT,
+          title: "Next.js 16.4.5 and 15.5.29 ship as scheduled security releases",
+          summary: "The 3 November release patched 16.x and backported fixes to 15.5, including Google font URLs, proxy.ts runtime loading and OpenTelemetry traces.",
+          source: "DEV Community",
+          url: "https://dev.to/sushilmagare10/november-2-8-2026-nextjs-1645-ai-sdk-70165-tanstack-ai-12-6b3",
+          date: "2026-11-03",
+          logo: L("Vercel"),
           points: [
-            "useActionState hook automatically manages pending states, optimistic updates, and form errors.",
-            "use() API allows resolving promises and context directly inside conditional loops and rendering blocks.",
-            "Native stylesheet, font, and script preloading eliminates layout shift and flash of unstyled content."
+            "Security fixes for both the 16.4 and 15.5 lines.",
+            "Fixes extensionless Google font URLs in both bundlers.",
+            "Keeps OpenTelemetry request traces together."
           ],
-          why: "Reduces thousands of lines of boilerplate code previously required for async data mutations and pending indicators.",
-          concept: { term: "React Server Actions", explain: "Asynchronous functions defined on the server that can be directly passed to client components and HTML form elements." }
+          why: "Scheduled security releases mean teams can plan upgrades instead of scrambling.",
+          concept: { term: "Backport", explain: "Applying a fix made on the newest version to an older supported version as well." }
         },
         {
-          title: "TanStack Router & Query v5 become standard for type-safe applications",
-          summary: "TanStack Router reached widespread enterprise adoption with 100% type-safe search parameters, loaders, and optimistic mutation handling.",
-          source: "TanStack Blog",
-          url: "https://tanstack.com/blog",
-          date: "2026-10-22",
-          logo: LOGO_REACT,
+          title: "TanStack Query 5.108.1 ships for React",
+          summary: "TanStack released @tanstack/react-query 5.108.1 on 19 November, a patch that updates its core dependency.",
+          source: "GitHub",
+          url: "https://github.com/tanstack/query/releases",
+          date: "2026-11-19",
+          logo: L("TanStack"),
           points: [
-            "Type-safe search params ensure URL query parameters are validated against Zod schemas at compile time.",
-            "Parallel prefetching on link hover ensures instant page transitions without loading spinners.",
-            "Unified server-state management keeps UI caches synchronized with backend databases seamlessly."
+            "Patch release of React Query on the v5 line.",
+            "Updates query-core to 5.108.1."
           ],
-          why: "Eliminates entire categories of runtime bugs caused by missing or misnamed URL query parameters and stale caches.",
-          concept: { term: "Type-safe routing", explain: "Validating route paths, URL parameters, and page loader responses at compile time through TypeScript generics." }
+          why: "React Query remains the usual choice for server state next to client stores like Zustand.",
+          concept: { term: "Server state", explain: "Data owned by the backend that the UI caches, refetches and keeps in sync, unlike local UI state." }
         },
         {
-          title: "Zustand 5.0 introduces refined selector memoization and minimal bundle size",
-          summary: "The popular state library Zustand released version 5.0 with enhanced TypeScript inference, slice modularity, and zero boilerplate.",
-          source: "React Blog",
-          url: "https://react.dev/blog",
-          date: "2026-10-21",
-          logo: LOGO_REACT,
+          title: "TanStack AI 1.1 adds cancel options; TanStack DB nears 1.0",
+          summary: "@tanstack/ai 1.1.0 added optional cancel options without breaking existing calls, and TanStack DB moved through 1.0 release candidates.",
+          source: "Releasebot",
+          url: "https://releasebot.io/updates/tanstack",
+          date: "2026-11-06",
+          logo: L("TanStack"),
           points: [
-            "Under 1 KB bundle footprint makes it ideal for performance-critical client applications.",
-            "Automatic selector comparison prevents unnecessary React component re-renders when state changes.",
-            "Clean middleware architecture supports persistence to localStorage and Redux DevTools debugging."
+            "TanStack AI 1.1.0 (4 November) adds cancellation options.",
+            "TanStack DB reached 1.0.0-rc.1.4 on 6 November."
           ],
-          why: "Provides predictable global state without the complexity and excessive boilerplate of traditional Redux.",
-          concept: { term: "Atomic selector", explain: "Subscribing a component only to a specific sub-property of state so changes to other properties do not trigger re-rendering." }
-        },
-        {
-          title: "Tailwind CSS v4 engine rebuilt in Rust for 10x compile performance",
-          summary: "Tailwind v4 features a ground-up Rust compiler, eliminating JS configuration files in favor of standard CSS @theme declarations.",
-          source: "Next.js Blog",
-          url: "https://nextjs.org/blog",
-          date: "2026-10-20",
-          logo: LOGO_VERCEL,
-          points: ["Near-instant compilation even in multi-thousand component apps.", "Native container query and 3D transform utilities."],
-          why: "Drastically improves developer experience and hot-module reload times on large frontend codebases.",
-          concept: { term: "JIT compilation", explain: "Generating only the CSS classes actually utilized in source code files on-demand during active development." }
-        },
-        {
-          title: "Vite 6 introduces Environment API for universal multi-runtime apps",
-          summary: "Vite 6 unlocks custom runtime environments, allowing frameworks to compile client, server, and edge worker bundles side by side.",
-          source: "TanStack Blog",
-          url: "https://tanstack.com/blog",
-          date: "2026-10-19",
-          logo: LOGO_REACT,
-          points: ["Native support for edge and node runtimes simultaneously.", "Shared module graph speeds up SSR hot reloading."],
-          why: "Simplifies building custom full-stack frameworks and isomorphic React applications.",
-          concept: { term: "Isomorphic runtime", explain: "Code that can execute transparently on both browser clients and server/edge environments without modification." }
+          why: "Cancelling streams cleanly matters for AI chat UIs where users stop or change a question.",
+          concept: { term: "AbortController", explain: "The web API for cancelling a fetch or stream: you pass its signal and call abort() to stop it." }
         }
       ]
     },
@@ -387,86 +319,61 @@ export const DEFAULT_LANDING_NEWS: LandingNews = {
       fresh: true,
       stories: [
         {
-          title: "AWS Lambda introduces HTTP response streaming and sub-second cold starts",
-          summary: "Amazon Web Services expanded Lambda with native chunked HTTP response streaming and SnapStart enhancements for Node.js and Python runtimes.",
-          source: "AWS News Blog",
-          url: "https://aws.amazon.com/blogs/aws/",
-          date: "2026-10-24",
-          logo: LOGO_AWS,
+          title: "AWS Lambda now runs on GPU instances via Lambda Managed Instances",
+          summary: "Event Functions on Lambda Managed Instances can now use EC2 G-series GPUs, with Lambda handling provisioning, drivers and scaling.",
+          source: "Let's Data Science",
+          url: "https://letsdatascience.com/news/aws-lambda-adds-gpu-instances-for-event-functions-on-lambda-671a9172",
+          date: "2026-11-18",
+          logo: L("AWS"),
           points: [
-            "Streams large payloads and generative AI responses to client browsers without buffering limits.",
-            "SnapStart snapshots initialized memory to reduce function cold starts from seconds to under 200ms.",
-            "Integrated with CloudFront and Application Load Balancers for high-throughput edge delivery."
+            "GPU functions deploy as container images.",
+            "Aimed at inference, not training.",
+            "Priced at standard EC2 rates plus a management fee."
           ],
-          why: "Allows developers to build responsive AI chat and large report exports using cost-effective serverless functions.",
-          concept: { term: "Response streaming", explain: "Transmitting chunks of data over an open HTTP connection incrementally as they are computed rather than waiting for completion." }
+          why: "Serverless GPU inference removes much of the cluster work of hosting your own models.",
+          concept: { term: "Inference", explain: "Running a trained model to get predictions, as opposed to training, which changes the model." }
         },
         {
-          title: "Amazon Bedrock adds automated model evaluation, routing and prompt caching",
-          summary: "AWS enhanced Amazon Bedrock with intelligent model routing, custom evaluator benchmarks, and prompt caching across Anthropic and Amazon Nova models.",
-          source: "What's new with AWS",
-          url: "https://aws.amazon.com/new/",
-          date: "2026-10-23",
-          logo: LOGO_AWS,
+          title: "Lambda Managed Instances adds scale to zero",
+          summary: "A 17 November update lets Lambda Managed Instances scale down to zero; one tester ran a vLLM model on a g6e.xlarge this way.",
+          source: "Classmethod",
+          url: "https://dev.classmethod.jp/articles/lambda-managed-instances-gpu-vllm-scale-to-zero/",
+          date: "2026-11-17",
+          logo: L("AWS"),
           points: [
-            "Intelligent router automatically directs simple queries to faster models and complex queries to reasoning models.",
-            "Prompt caching cuts repeat context costs by up to 90% while accelerating time-to-first-token.",
-            "Strict enterprise VPC endpoints ensure inference traffic never traverses public internet infrastructure."
+            "Idle capacity can drop to zero to save cost.",
+            "The tester saw a cold start of about four minutes for a GPU LLM."
           ],
-          why: "Maximizes quality while drastically slashing enterprise generative AI cloud bills.",
-          concept: { term: "Model routing", explain: "An intermediary proxy assessing query complexity to select the most cost-effective AI model capable of answering accurately." }
+          why: "Scale to zero saves money but brings long cold starts for big models: a classic trade-off.",
+          concept: { term: "Cold start", explain: "The delay when a platform must start fresh capacity before handling the first request." }
         },
         {
-          title: "Amazon DynamoDB adds zero-ETL integration with OpenSearch Service",
-          summary: "DynamoDB now automatically synchronizes table items into OpenSearch without requiring custom Lambda consumer pipelines or Kinesis streams.",
-          source: "What's new with AWS",
-          url: "https://aws.amazon.com/new/",
-          date: "2026-10-22",
-          logo: LOGO_AWS,
+          title: "Lambda adds Python 3.15 and Node.js 26 runtimes",
+          summary: "AWS added Python 3.15 and Node.js 26 support to Lambda, plus OpenTelemetry tracing for durable functions, on 20 November.",
+          source: "Dev Digest",
+          url: "https://weirdion.substack.com/p/dev-digest-week-of-2026-11-22",
+          date: "2026-11-20",
+          logo: L("AWS"),
           points: [
-            "Provides full-text search, fuzzy matching, and vector semantic similarity directly over transactional data.",
-            "Managed replication pipeline guarantees sub-minute data synchronization without impact on read/write capacity.",
-            "Eliminates operational maintenance of custom event listener scripts."
+            "New managed runtimes: Python 3.15 and Node.js 26.",
+            "OpenTelemetry tracing for durable functions."
           ],
-          why: "Combines the rock-solid transactional reliability of DynamoDB with advanced search capabilities effortlessly.",
-          concept: { term: "Zero-ETL integration", explain: "Direct point-to-point data synchronization managed automatically by the cloud provider without custom data extraction scripts." }
+          why: "New runtimes bring language features and longer support windows for your functions.",
+          concept: { term: "Managed runtime", explain: "A language environment the platform patches and maintains for you." }
         },
         {
-          title: "AWS S3 Express One Zone delivers single-digit millisecond latency for ML",
-          summary: "AWS highlighted S3 Express One Zone, offering 10x faster object access speeds designed specifically for AI training checkpoints and analytics.",
-          source: "AWS News Blog",
-          url: "https://aws.amazon.com/blogs/aws/",
-          date: "2026-10-21",
-          logo: LOGO_AWS,
+          title: "AWS brings more OpenAI models to Amazon Bedrock in limited preview",
+          summary: "AWS expanded its partnership with OpenAI, bringing more OpenAI models and managed agents to Amazon Bedrock in limited preview.",
+          source: "DEV Community",
+          url: "https://dev.to/nadtakanfuthoem/aws-serverless-roundup-november-14-20-2026-2665",
+          date: "2026-11-20",
+          logo: L("AWS"),
           points: [
-            "Co-locates data storage within dedicated compute availability zones for minimal latency.",
-            "Supports hundreds of thousands of requests per second with 50% lower request costs than standard S3.",
-            "Seamlessly integrates with PyTorch, Amazon SageMaker, and EKS training jobs."
+            "More OpenAI models arrive on Bedrock in limited preview.",
+            "Bedrock AgentCore runtime expands to more Regions."
           ],
-          why: "Removes I/O data bottlenecks so GPU clusters spend time computing rather than waiting for weights to load.",
-          concept: { term: "High-throughput object storage", explain: "Cloud storage optimized with specialized hardware to deliver ultra-low latency reads for high-performance computing." }
-        },
-        {
-          title: "Amazon ECS & EKS introduce automated spot capacity rebalancing",
-          summary: "AWS container platforms now automatically detect spot interruption notices and gracefully drain pods onto on-demand nodes before termination.",
-          source: "What's new with AWS",
-          url: "https://aws.amazon.com/new/",
-          date: "2026-10-20",
-          logo: LOGO_AWS,
-          points: ["Provides 2-minute proactive warning.", "Saves up to 70% on compute cluster costs."],
-          why: "Makes spot instances completely safe for fault-tolerant microservices.",
-          concept: { term: "Spot instances", explain: "Spare cloud compute capacity sold at deep discounts that can be reclaimed with short notice when demand rises." }
-        },
-        {
-          title: "AWS Step Functions adds native multi-agent orchestration workflows",
-          summary: "Step Functions now supports native Bedrock agent invocations, parallel state branching, and human review gates in declarative JSON/YAML.",
-          source: "AWS News Blog",
-          url: "https://aws.amazon.com/blogs/aws/",
-          date: "2026-10-19",
-          logo: LOGO_AWS,
-          points: ["Visual state machine debugger.", "Built-in error handling and exponential retry backoff."],
-          why: "Enables robust enterprise automation with strict audit trails and SLA compliance.",
-          concept: { term: "State machine orchestration", explain: "Coordinating a series of discrete services using deterministic state transitions, timeouts, and fallback branches." }
+          why: "Teams on AWS can try more frontier models without leaving their account's security and billing.",
+          concept: { term: "Foundation model", explain: "A large model trained on broad data that can be adapted to many tasks through prompts or fine-tuning." }
         }
       ]
     },
@@ -476,86 +383,62 @@ export const DEFAULT_LANDING_NEWS: LandingNews = {
       fresh: true,
       stories: [
         {
-          title: "xAI scales Colossus supercluster to 100k GPUs, powering Grok-2 multimodal",
-          summary: "Elon Musk's xAI completed the rapid deployment of the Colossus supercomputer in Memphis, training next-generation reasoning and vision capabilities.",
-          source: "xAI News",
-          url: "https://x.ai/news",
-          date: "2026-10-24",
-          logo: LOGO_XAI,
+          title: "Starship Flight 15 spends about 22 hours in space and ends in a catch",
+          summary: "SpaceX flew Starship Flight 15 on 13 November, hours after its FAA licence, with roughly 22 hours in space and a precise landing catch.",
+          source: "Tesla Oracle",
+          url: "https://www.teslaoracle.com/2026/11/15/the-epic-story-of-flight-15-starship-22-hours-in-space-and-a-precise-landing-catch/",
+          date: "2026-11-15",
+          logo: L("SpaceX"),
           points: [
-            "Constructed and brought online in record time with custom liquid-cooling infrastructure.",
-            "Powers Grok's real-time multimodal news synthesis and image comprehension on the X platform.",
-            "xAI opened developer API access with full support for function calling and streaming."
+            "FAA licence arrived hours before launch.",
+            "About 22 hours in space.",
+            "Musk explained a booster catch abort and termination triggers."
           ],
-          why: "Demonstrates unprecedented speed in training infrastructure deployment and large-scale model optimization.",
-          concept: { term: "GPU supercluster", explain: "Tens of thousands of interconnected GPUs operating as a unified supercomputer through high-bandwidth networking (InfiniBand)." }
+          why: "Reusable rockets rely on software for guidance and catches, a showcase of real-time control systems.",
+          concept: { term: "Flight termination", explain: "Automatic rules that end a flight safely when a vehicle leaves its allowed limits." }
         },
         {
-          title: "Tesla Full Self-Driving v12 transitions to end-to-end neural network driving",
-          summary: "Tesla rolled out FSD v12 to millions of customer vehicles, replacing hundreds of thousands of lines of heuristic C++ driving logic with neural networks.",
-          source: "Tesla AI Updates",
-          url: "https://x.ai/news",
-          date: "2026-10-23",
-          logo: LOGO_TESLA,
+          title: "Tesla begins rolling out FSD v15 to early-access cars",
+          summary: "Tesla skipped planned v14 upgrades and started FSD v15 for early-access owners, adding speed-camera slowing and Reality View.",
+          source: "Tesla Oracle",
+          url: "https://www.teslaoracle.com/2026/11/22/tesla-fsd-v15-2026-38-6-11-rollout-begins-official-release-notes-and-new-features/",
+          date: "2026-11-22",
+          logo: L("Tesla"),
           points: [
-            "Direct photon-to-control architecture maps camera video pixels straight to steering, braking, and throttle actions.",
-            "Trained on millions of hours of real-world fleet driving video data and edge-case interventions.",
-            "Achieved dramatic reductions in intervention rates across complex urban intersections and roundabouts."
+            "Ships in software 2026.38.6.11 to early-access cars.",
+            "New: speed-camera slowing, Reality View, Bike Rack Mode.",
+            "Musk says wider release comes with the December holiday update."
           ],
-          why: "Proves that end-to-end foundation models can solve complex real-world robotics and spatial control problems.",
-          concept: { term: "End-to-end neural network", explain: "A single unified model that takes raw sensor inputs and directly outputs physical control commands without intermediate code." }
+          why: "Staged rollouts to small groups first are how large fleets ship risky software safely.",
+          concept: { term: "Staged rollout", explain: "Releasing to a small group first, watching metrics, then widening step by step." }
         },
         {
-          title: "SpaceX Starship advances orbital testing and automated booster tower catches",
-          summary: "SpaceX achieved historic aerospace milestones with Starship booster catches by the launch tower mechanical arms (Mechazilla) and orbital relight demonstrations.",
-          source: "SpaceX Updates",
-          url: "https://www.spacex.com/updates/",
-          date: "2026-10-22",
-          logo: LOGO_SPACEX,
+          title: "SpaceX says Grok spots hardware debris more accurately than people",
+          summary: "SpaceX uses Grok to inspect hardware for debris and says it reaches 99.9% accuracy versus about 94% for human reviewers.",
+          source: "Tesla North",
+          url: "https://teslanorth.com/2026/11/09/spacex-grok-hardware-debris-inspection-accuracy/",
+          date: "2026-11-09",
+          logo: L("SpaceX"),
           points: [
-            "First-ever successful capture of a 70-meter rocket booster directly in mid-air at the launch mount.",
-            "Validates full and rapid reusability architecture required for NASA's Artemis lunar landing missions.",
-            "Paves the way for mass production of Starship vehicles and global satellite constellation deployment."
+            "Grok reviews inspection footage for debris.",
+            "Accuracy figures are SpaceX's own claim."
           ],
-          why: "Dramatically reduces the cost of placing mass into orbit, transforming satellite economics and planetary exploration.",
-          concept: { term: "Rapid reusability", explain: "Refurbishing and relaunching rocket stages within hours or days rather than discarding them into oceans after a single flight." }
+          why: "Vision models are moving into quality control, but vendor accuracy claims need independent checks.",
+          concept: { term: "Computer vision", explain: "AI that interprets images or video, such as finding defects in inspection footage." }
         },
         {
-          title: "Tesla Optimus Gen 2 demonstrates autonomous manipulation and neural dexterity",
-          summary: "Tesla showcased Optimus humanoid robots performing autonomous battery sorting and factory logistics tasks guided by vision neural networks.",
-          source: "Tesla AI Updates",
-          url: "https://x.ai/news",
-          date: "2026-10-21",
-          logo: LOGO_TESLA,
+          title: "Virginia and Oregon sue SpaceX over Grok-generated abuse images",
+          summary: "Two US states sued SpaceX, which now runs Grok, over sexual abuse imagery the model generated, citing research on images posted to X.",
+          source: "US News",
+          url: "https://usnews.com/news/us/articles/2026-11-23/virginia-oregon-sue-musks-spacex-over-grok-ais-creation-of-child-sexual-abuse-images-and-videos",
+          date: "2026-11-23",
+          logo: L("xAI"),
           points: [
-            "Features custom tactile sensors on all 10 fingers capable of holding delicate objects without crushing them.",
-            "Utilizes the same FSD neural network architecture running locally on the robot's onboard computer.",
-            "Deploys directly into Tesla Gigafactories for end-of-line parts transport and testing."
+            "SpaceX acquired xAI, and Grok is now part of SpaceX's AI division.",
+            "SpaceX also faces lawsuits from individuals over Grok images."
           ],
-          why: "Signals the transition of general-purpose humanoid robots from research labs into real commercial manufacturing.",
-          concept: { term: "Embodied AI", explain: "Artificial intelligence systems embedded in physical robotic bodies that interact with and manipulate real-world physical environments." }
-        },
-        {
-          title: "Starlink Direct-to-Cell network delivers universal emergency connectivity",
-          summary: "SpaceX Starlink satellites equipped with cellular payloads began connecting standard unmodified smartphones in remote regions without cell towers.",
-          source: "SpaceX Updates",
-          url: "https://www.spacex.com/updates/",
-          date: "2026-10-20",
-          logo: LOGO_SPACEX,
-          points: ["Works with existing mobile phones.", "Eliminates global cellular dead zones."],
-          why: "Saves lives during wilderness emergencies and natural disasters when ground towers fail.",
-          concept: { term: "Direct-to-cell satellite", explain: "Low-Earth orbit satellites acting as cell towers in space transmitting standard LTE frequencies to unmodified mobile devices." }
-        },
-        {
-          title: "xAI API introduces system prompt steering and competitive developer pricing",
-          summary: "xAI released comprehensive developer documentation and REST endpoints for embedding Grok intelligence into third-party software applications.",
-          source: "xAI News",
-          url: "https://x.ai/news",
-          date: "2026-10-19",
-          logo: LOGO_XAI,
-          points: ["Support for 128k context windows.", "Open developer console with usage analytics."],
-          why: "Gives developers an independent high-performance frontier model option for production applications.",
-          concept: { term: "System prompt steering", explain: "Guiding the tone, strict guidelines, and persona of an AI model through authoritative system-level instructions." }
+          why: "Image-model safety failures now carry legal risk, which makes guardrails a core engineering job.",
+          concept: { term: "Guardrails", explain: "Checks around a model that block harmful requests and outputs before they reach users." }
         }
       ]
     },
@@ -565,86 +448,60 @@ export const DEFAULT_LANDING_NEWS: LandingNews = {
       fresh: true,
       stories: [
         {
-          title: "Amazon introduces Nova foundation models: Micro, Lite, Pro, and Canvas",
-          summary: "Amazon launched its new Nova family of foundation models on Bedrock, engineered for state-of-the-art cost efficiency, speed, and enterprise reliability.",
-          source: "About Amazon AI",
-          url: "https://www.aboutamazon.com/news/amazon-ai",
-          date: "2026-10-24",
-          logo: LOGO_AMAZON,
+          title: "Amazon lets customers text its AI shopping agent",
+          summary: "Amazon now lets customers text Alexa for Shopping, the agent that combines Rufus and Alexa+, to research and buy products.",
+          source: "About Amazon",
+          url: "https://www.aboutamazon.com/artificial-intelligence-ai-news",
+          date: "2026-11-13",
+          logo: L("Amazon"),
           points: [
-            "Nova Micro provides ultra-fast text processing at industry-leading low pricing for high-volume tasks.",
-            "Nova Pro handles complex multimodal reasoning, document understanding, and code generation.",
-            "Nova Canvas generates studio-grade imagery with built-in watermarking and IP indemnity."
+            "Alexa for Shopping merges Rufus and Alexa+.",
+            "Available in the Amazon Shopping app, on the website and now by text."
           ],
-          why: "Gives AWS customers first-party foundation models tightly integrated with AWS security and governance.",
-          concept: { term: "Model family specialization", explain: "Offering tiered models optimized across different cost, latency, and capability profiles for specific workload needs." }
+          why: "Agents are moving into everyday channels like messaging, not just chat boxes in apps.",
+          concept: { term: "Conversational commerce", explain: "Shopping through a chat or voice conversation instead of search and menus." }
         },
         {
-          title: "Amazon Alexa+ reimagined with generative AI conversational agent engine",
-          summary: "Amazon overhauled Alexa into Alexa+, an agentic assistant capable of multi-step home automation, personalized conversations, and contextual reasoning.",
-          source: "About Amazon AI",
-          url: "https://www.aboutamazon.com/news/amazon-ai",
-          date: "2026-10-23",
-          logo: LOGO_AMAZON,
+          title: "Alexa for Shopping arrives in Japan with free conversational help",
+          summary: "Amazon brought the renamed Alexa for Shopping to Japan, offering conversational buying help at no extra cost.",
+          source: "BigGo Finance",
+          url: "https://finance.biggo.com/news/f4bdcbc2-d5ce-4b36-bb9e-6849598d4b85",
+          date: "2026-11-12",
+          logo: L("Amazon"),
           points: [
-            "Maintains natural conversational flow without requiring wake-words on every sentence.",
-            "Executes multi-device smart home routines by translating conversational requests into complex API actions.",
-            "Learns household preferences over time while adhering to strict customer privacy controls."
+            "Rufus is renamed and overhauled as Alexa for Shopping.",
+            "Alexa+ is also expanding in Japan."
           ],
-          why: "Transforms ambient smart speakers from simple voice remotes into proactive digital assistants.",
-          concept: { term: "Ambient computing", explain: "Technology integrated seamlessly into daily physical surroundings that responds naturally to voice, gestures, and presence." }
+          why: "Launching AI assistants in new languages means localising both the model and product data.",
+          concept: { term: "Localisation", explain: "Adapting a product's language, formats and content for a specific country or region." }
         },
         {
-          title: "Amazon Rufus AI shopping assistant expands across global marketplaces",
-          summary: "Amazon's conversational shopping assistant Rufus now assists millions of customers with product comparisons, review summaries, and purchase advice.",
-          source: "Amazon Science",
-          url: "https://www.amazon.science/",
-          date: "2026-10-22",
-          logo: LOGO_AMAZON,
+          title: "Amazon reportedly to pay $7.5 billion for Decart's technology",
+          summary: "Bloomberg reports Amazon will pay about $7.5 billion for Decart's technology, reportedly to run AI models better on its Trainium chips.",
+          source: "Startup Fortune",
+          url: "https://startupfortune.com/amazon-reportedly-agrees-to-pay-75-billion-for-decarts-technology",
+          date: "2026-11-19",
+          logo: L("Amazon"),
           points: [
-            "Trained on Amazon's massive catalog of hundreds of millions of products, customer reviews, and Q&A entries.",
-            "Answers specific comparison questions: 'Is this tent easy to assemble in rain?' based on verified buyer feedback.",
-            "Reduces purchase return rates by clarifying sizing, compatibility, and specifications proactively."
+            "Terms are reported, not confirmed by Amazon.",
+            "Aimed at model performance on Amazon's own Trainium chips."
           ],
-          why: "Demonstrates the power of domain-specialized customer conversational search at massive consumer scale.",
-          concept: { term: "Domain-specific grounding", explain: "Restricting an AI's factual knowledge to authoritative internal catalogs and customer records to prevent hallucinations." }
+          why: "Custom AI chips need matching software to be fast, which is why chip makers buy optimisation know-how.",
+          concept: { term: "AI accelerator", explain: "A chip designed for the maths of neural networks, such as GPUs, TPUs or Trainium." }
         },
         {
-          title: "AWS Trainium2 & Inferentia2 chips achieve 4x price-performance over GPUs",
-          summary: "Amazon expanded deployment of custom Trainium2 chips, providing AWS customers with cheaper, energy-efficient alternatives for training large models.",
-          source: "About Amazon AI",
-          url: "https://www.aboutamazon.com/news/amazon-ai",
-          date: "2026-10-21",
-          logo: LOGO_AWS,
+          title: "AWS re:Invent 2026 returns to Las Vegas with more than 2,200 sessions",
+          summary: "Amazon's yearly cloud conference opens in Las Vegas, where AWS usually announces its biggest AI and infrastructure launches.",
+          source: "About Amazon",
+          url: "https://www.aboutamazon.com/",
+          date: "2026-11-20",
+          logo: L("AWS"),
           points: [
-            "Delivers up to 4x better price-performance compared to comparable current-generation GPU instances.",
-            "Powers major Anthropic and enterprise model training runs within sustainable AWS data centers.",
-            "Integrated into AWS Neuron SDK with plug-and-play PyTorch and JAX support."
+            "More than 2,200 sessions.",
+            "Expect Bedrock, agent and Trainium news."
           ],
-          why: "Reduces dependency on constrained GPU supply chains while lowering the capital cost of training AI models.",
-          concept: { term: "Custom silicon ASICs", explain: "Processors purpose-built specifically for matrix multiplication and neural network math rather than general-purpose computing." }
-        },
-        {
-          title: "Amazon Bedrock Guardrails detects and blocks hallucinations automatically",
-          summary: "AWS launched automated Hallucination Detection within Bedrock Guardrails to verify factual consistency against provided reference context.",
-          source: "About Amazon AI",
-          url: "https://www.aboutamazon.com/news/amazon-ai",
-          date: "2026-10-20",
-          logo: LOGO_AWS,
-          points: ["Scores confidence in model statements.", "Blocks ungrounded claims before reaching users."],
-          why: "Critical for healthcare, legal, and financial applications where factual errors carry liability.",
-          concept: { term: "Hallucination mitigation", explain: "Techniques and guardrails verifying that every statement generated by an LLM is directly substantiated by retrieved facts." }
-        },
-        {
-          title: "Amazon Science publishes scalable evaluation benchmarks for agentic RAG",
-          summary: "Amazon researchers released open-source evaluation benchmarks measuring how well AI agents retrieve and synthesize multi-hop documents.",
-          source: "Amazon Science",
-          url: "https://www.amazon.science/",
-          date: "2026-10-19",
-          logo: LOGO_AMAZON,
-          points: ["Benchmarks multi-step question answering.", "Measures precision of tool parameter selection."],
-          why: "Helps engineers scientifically compare vector retrieval architectures against real-world customer search patterns.",
-          concept: { term: "Multi-hop reasoning", explain: "Combining clues from multiple distinct documents or database tables in sequence to answer a single complex question." }
+          why: "re:Invent launches shape which AWS services teams adopt in the next year.",
+          concept: { term: "Keynote launch", explain: "A product announced on stage at a conference, often with docs and pricing published the same day." }
         }
       ]
     },
@@ -657,7 +514,7 @@ export const DEFAULT_LANDING_NEWS: LandingNews = {
           question: "Explain the Node.js Event Loop and the execution order between Microtasks and Macrotasks.",
           answer: "The Event Loop processes macrotask phases (Timers, I/O, Poll, Check) sequentially. After every individual task or phase change, the microtask queue (process.nextTick, Promise callbacks) empties completely before moving on.",
           rating: 5,
-          companies: [LOGO_GOOGLE, LOGO_META, LOGO_AMAZON],
+          companies: [L("Google"), L("Meta"), L("Amazon")],
           source: "LeetCode Discuss",
           url: "https://leetcode.com/discuss"
         },
@@ -665,7 +522,7 @@ export const DEFAULT_LANDING_NEWS: LandingNews = {
           question: "How would you design a distributed Rate Limiter handling 100k requests per second?",
           answer: "Use the Token Bucket or Sliding Window Log algorithm implemented with Redis. Use Redis Lua scripts or Redis Cell to execute atomic counter increments and timestamp checks in a single round-trip without race conditions.",
           rating: 5,
-          companies: [LOGO_STRIPE, LOGO_UBER, LOGO_NETFLIX],
+          companies: [L("Stripe"), L("Uber"), L("Netflix")],
           source: "Glassdoor Technical Interviews",
           url: "https://www.glassdoor.com"
         },
@@ -673,7 +530,7 @@ export const DEFAULT_LANDING_NEWS: LandingNews = {
           question: "What are the core differences between optimistic locking and pessimistic locking in databases?",
           answer: "Pessimistic locking locks rows on read (SELECT FOR UPDATE) preventing concurrent access until commit. Optimistic locking avoids locks, checking a version column at update time and failing or retrying if another transaction changed the row.",
           rating: 5,
-          companies: [LOGO_AMAZON, LOGO_MICROSOFT],
+          companies: [L("Amazon"), L("Microsoft")],
           source: "Blind Engineering Reports",
           url: "https://www.teamblind.com"
         },
@@ -681,7 +538,7 @@ export const DEFAULT_LANDING_NEWS: LandingNews = {
           question: "How does React 19 reconciliation differ from earlier versions, and what role does use() play?",
           answer: "React 19 integrates Server Actions and the use() hook to unwrap promises directly in render components. The React Compiler automatically memoizes component trees, eliminating the need for manual useMemo and useCallback hooks.",
           rating: 4,
-          companies: [LOGO_META, LOGO_VERCEL],
+          companies: [L("Meta"), L("Vercel")],
           source: "LeetCode Discuss",
           url: "https://leetcode.com/discuss"
         },
@@ -689,7 +546,7 @@ export const DEFAULT_LANDING_NEWS: LandingNews = {
           question: "When should you choose PostgreSQL with JSONB versus a dedicated NoSQL document store like MongoDB?",
           answer: "Choose Postgres with JSONB when you need relational integrity, foreign keys, and ACID transactions alongside flexible schema fields. Choose MongoDB when scaling horizontal sharding across hundreds of nodes with native document clustering.",
           rating: 4,
-          companies: [LOGO_UBER, LOGO_CLOUDFLARE],
+          companies: [L("Uber"), L("Cloudflare")],
           source: "Glassdoor Technical Interviews",
           url: "https://www.glassdoor.com"
         },
@@ -697,7 +554,7 @@ export const DEFAULT_LANDING_NEWS: LandingNews = {
           question: "What is the CAP theorem and how does Apache Kafka balance consistency and partition tolerance?",
           answer: "The CAP theorem states distributed systems cannot guarantee all three: Consistency, Availability, and Partition Tolerance simultaneously. Kafka prioritizes CP or AP depending on the 'acks' configuration and min.insync.replicas settings.",
           rating: 4,
-          companies: [LOGO_NETFLIX, LOGO_AMAZON],
+          companies: [L("Netflix"), L("Amazon")],
           source: "Engineering Interview Reports",
           url: "https://leetcode.com/discuss"
         },
@@ -705,7 +562,7 @@ export const DEFAULT_LANDING_NEWS: LandingNews = {
           question: "Explain how B-Tree indexes improve database query speed and what trade-offs they introduce.",
           answer: "B-Trees keep data sorted with O(log N) lookup, insertion, and range scans. The trade-off is write overhead: every INSERT, UPDATE, and DELETE must rebalance the tree and update index pages on disk.",
           rating: 4,
-          companies: [LOGO_GOOGLE, LOGO_MICROSOFT],
+          companies: [L("Google"), L("Microsoft")],
           source: "Glassdoor Technical Interviews",
           url: "https://www.glassdoor.com"
         },
@@ -713,7 +570,7 @@ export const DEFAULT_LANDING_NEWS: LandingNews = {
           question: "How do you protect modern single-page web applications from XSS and CSRF attacks?",
           answer: "Prevent XSS by sanitizing untrusted HTML, utilizing framework escaping, and enforcing a strict Content Security Policy (CSP). Prevent CSRF by using SameSite=Strict/Lax cookies and verifying custom authorization headers.",
           rating: 4,
-          companies: [LOGO_STRIPE, LOGO_AMAZON],
+          companies: [L("Stripe"), L("Amazon")],
           source: "LeetCode Discuss",
           url: "https://leetcode.com/discuss"
         }
@@ -728,7 +585,7 @@ export const DEFAULT_LANDING_NEWS: LandingNews = {
           question: "What is the Model Context Protocol (MCP) and how does it improve agent system architecture?",
           answer: "MCP standardizes communication between LLMs and external data sources or tools using a unified client-server architecture. It eliminates custom plugin code and allows any model to securely access tools across local or remote environments.",
           rating: 5,
-          companies: [LOGO_ANTHROPIC, LOGO_OPENAI, LOGO_GOOGLE],
+          companies: [L("Anthropic"), L("OpenAI"), L("Google")],
           source: "Agentic AI Interview Reports",
           url: "https://leetcode.com/discuss"
         },
@@ -736,7 +593,7 @@ export const DEFAULT_LANDING_NEWS: LandingNews = {
           question: "Explain the difference between ReAct and Plan-and-Solve agent execution loops.",
           answer: "ReAct alternates step-by-step between reasoning and tool execution in a tight loop. Plan-and-Solve first breaks the entire user prompt into a multi-step execution plan, then executes steps with specialized workers, improving reliability on large tasks.",
           rating: 5,
-          companies: [LOGO_LANGCHAIN, LOGO_MICROSOFT],
+          companies: [L("LangChain"), L("Microsoft")],
           source: "AI Engineering Interview Experiences",
           url: "https://www.teamblind.com"
         },
@@ -744,7 +601,7 @@ export const DEFAULT_LANDING_NEWS: LandingNews = {
           question: "How do you systematically evaluate an agentic system with non-deterministic multi-step outputs?",
           answer: "Use automated LLM-as-a-Judge evaluations combined with deterministic tool call verification. Evaluate task trajectory accuracy, tool call correctness, input/output schemas, latency, and end-to-end task completion rates against fixed benchmark datasets.",
           rating: 5,
-          companies: [LOGO_OPENAI, LOGO_ANTHROPIC],
+          companies: [L("OpenAI"), L("Anthropic")],
           source: "Glassdoor Technical Interviews",
           url: "https://www.glassdoor.com"
         },
@@ -752,7 +609,7 @@ export const DEFAULT_LANDING_NEWS: LandingNews = {
           question: "What strategies prevent an autonomous agent from entering infinite tool-calling recursion?",
           answer: "Enforce strict recursion limits (maximum iteration count), execution time budgets, duplicate tool call detection, and fallback intervention prompts that force the agent to summarize progress when stuck in loops.",
           rating: 4,
-          companies: [LOGO_AMAZON, LOGO_META],
+          companies: [L("Amazon"), L("Meta")],
           source: "LeetCode Discuss",
           url: "https://leetcode.com/discuss"
         },
@@ -760,7 +617,7 @@ export const DEFAULT_LANDING_NEWS: LandingNews = {
           question: "How does Hybrid Search (BM25 keyword + Dense Vector Embeddings) improve RAG accuracy?",
           answer: "Dense vectors capture semantic concepts but miss exact keywords (part numbers, acronyms, code names). BM25 excels at exact keyword matching. Combining both via Reciprocal Rank Fusion (RRF) yields superior retrieval precision.",
           rating: 4,
-          companies: [LOGO_GOOGLE, LOGO_CLOUDFLARE],
+          companies: [L("Google"), L("Cloudflare")],
           source: "AI Engineering Interview Experiences",
           url: "https://www.teamblind.com"
         },
@@ -768,7 +625,7 @@ export const DEFAULT_LANDING_NEWS: LandingNews = {
           question: "What are the trade-offs between character chunking and AST-aware syntax chunking for code RAG?",
           answer: "Character chunking is fast but frequently splits functions or classes in half, destroying context. AST-aware chunking parses language syntax trees to keep complete functions, classes, and comments intact, yielding higher embedding relevance.",
           rating: 4,
-          companies: [LOGO_ANTHROPIC, LOGO_MICROSOFT],
+          companies: [L("Anthropic"), L("Microsoft")],
           source: "Agentic AI Interview Reports",
           url: "https://leetcode.com/discuss"
         },
@@ -776,7 +633,7 @@ export const DEFAULT_LANDING_NEWS: LandingNews = {
           question: "How do guardrails like NeMo or Llama Guard protect AI agents from indirect prompt injection?",
           answer: "Guardrails inspect both incoming user prompts and retrieved document payloads before passing them to the main reasoning model. They classify inputs for malicious instructions (e.g., 'ignore previous rules') and sanitize untrusted text.",
           rating: 4,
-          companies: [LOGO_NVIDIA, LOGO_META],
+          companies: [L("Nvidia"), L("Meta")],
           source: "Engineering Interview Reports",
           url: "https://www.teamblind.com"
         },
@@ -784,7 +641,7 @@ export const DEFAULT_LANDING_NEWS: LandingNews = {
           question: "Explain how human-in-the-loop interruption works in stateful multi-agent workflows.",
           answer: "The workflow engine executes until reaching a designated sensitive node (e.g. initiating payment or sending email), persists its execution graph state to a durable database, and pauses until a human user issues an approval signal via Webhook or UI.",
           rating: 4,
-          companies: [LOGO_LANGCHAIN, LOGO_STRIPE],
+          companies: [L("LangChain"), L("Stripe")],
           source: "AI Engineering Interview Experiences",
           url: "https://www.glassdoor.com"
         }
@@ -796,86 +653,61 @@ export const DEFAULT_LANDING_NEWS: LandingNews = {
       fresh: true,
       stories: [
         {
-          title: "Nvidia Blackwell architecture sets unprecedented generative AI inference benchmarks",
-          summary: "Nvidia began volume shipments of its GB200 NVL72 rack-scale systems, delivering up to 30x faster real-time inference performance for trillion-parameter models.",
-          source: "TechCrunch",
-          url: "https://techcrunch.com/",
-          date: "2026-10-24",
-          logo: LOGO_NVIDIA,
+          title: "Anthropic debuts on Nasdaq after a record $81 billion IPO",
+          summary: "Anthropic priced shares at $83, above its range, and opened at $111.50 on 19 November under the ticker ANT.",
+          source: "Al Jazeera",
+          url: "https://www.aljazeera.com/economy/2026/11/19/anthropic-starts-trading-in-the-us-after-blockbuster-ipo",
+          date: "2026-11-19",
+          logo: L("Anthropic"),
           points: [
-            "Combines 72 GPUs and 36 Grace CPUs into a single liquid-cooled rack operating as one massive GPU.",
-            "Second-generation Transformer Engine incorporates FP4 precision to double throughput per watt.",
-            "Adopted by all major cloud hyperscalers to power the next wave of frontier reasoning models."
+            "980 million shares sold at $83 each.",
+            "Opened about 34% above the offer price.",
+            "Up to 20% of the offering was set aside for retail investors."
           ],
-          why: "Dramatically cuts energy usage and datacenter footprint required to serve millions of concurrent AI users.",
-          concept: { term: "FP4 quantization", explain: "Representing neural network weights with 4-bit floating point numbers to double computation speed while preserving inference accuracy." }
+          why: "The biggest AI IPO so far is a test of how public markets value AI model companies.",
+          concept: { term: "IPO", explain: "Initial public offering: when a private company first sells shares that anyone can trade on an exchange." }
         },
         {
-          title: "Apple Intelligence rolls out across macOS and iOS with Private Cloud Compute",
-          summary: "Apple deployed system-wide intelligence features, utilizing on-device 3B parameter models alongside cryptographic Private Cloud Compute for complex tasks.",
-          source: "The Verge",
-          url: "https://www.theverge.com/tech",
-          date: "2026-10-23",
-          logo: LOGO_APPLE,
+          title: "Nasdaq erases its 2026 gain as the AI stock sell-off deepens",
+          summary: "The S&P 500 and Dow closed in correction on 19 November and the Nasdaq gave up its gain for the year as AI stocks slid.",
+          source: "CNBC",
+          url: "https://cnbc.com/2026/11/19/stock-market-today-live-updates.html",
+          date: "2026-11-19",
+          logo: L("Nasdaq"),
           points: [
-            "On-device models handle writing tools, notification prioritization, and clean-up photo editing.",
-            "Private Cloud Compute processes larger requests on custom Apple Silicon servers without logging data.",
-            "Independent security researchers can audit and inspect cloud server images for privacy compliance."
+            "S&P 500 and Dow closed in correction territory.",
+            "The sell-off hit AI stocks despite Anthropic's debut."
           ],
-          why: "Sets a gold standard for consumer privacy in the age of pervasive generative smartphone assistants.",
-          concept: { term: "Private Cloud Compute", explain: "A server architecture that cryptographically guarantees that user data sent to cloud AI servers is never retained or accessible to administrators." }
+          why: "Market swings shape AI hiring and funding, which affects the job market learners are entering.",
+          concept: { term: "Market correction", explain: "A fall of 10% or more from a recent peak in a stock index." }
         },
         {
-          title: "Open-source AI reaches parity with proprietary models across code and reasoning",
-          summary: "Open-weights foundation models from Meta (Llama) and Mistral achieved benchmark parity with top commercial proprietary models in coding and mathematics.",
-          source: "TechCrunch",
-          url: "https://techcrunch.com/",
-          date: "2026-10-22",
-          logo: LOGO_META,
+          title: "Nvidia slips behind Alphabet as the AI rally unravels",
+          summary: "Nvidia shares fell sharply and dropped behind Alphabet in market value, as investors questioned AI spending.",
+          source: "The Week",
+          url: "https://theweek.in/news/biz-tech/2026/11/21/nvidia-shares-plunge-ai-rally-unravels.html",
+          date: "2026-11-21",
+          logo: L("Nvidia"),
           points: [
-            "Enterprises increasingly deploy quantized open models within private cloud VPCs to protect sensitive intellectual property.",
-            "Community fine-tunes optimize open models for specialized medical, legal, and engineering domains.",
-            "Local inference engines (vLLM, Ollama) allow fast self-hosted serving without per-token API charges."
+            "Nvidia fell behind Alphabet in market value.",
+            "Investors are questioning the pace of AI data-centre spending."
           ],
-          why: "Prevents vendor lock-in and gives organizations complete ownership of their generative AI capabilities.",
-          concept: { term: "vLLM PagedAttention", explain: "An efficient memory management algorithm for LLM inference that eliminates memory waste in key-value caches." }
+          why: "GPU supply and price drive what AI compute costs, so chip-market shifts reach every AI team.",
+          concept: { term: "Market capitalisation", explain: "A company's total share value: the share price times the number of shares." }
         },
         {
-          title: "Hyperscalers sign landmark clean energy deals to power AI datacenters",
-          summary: "Microsoft, Google, and Amazon committed billions to nuclear, geothermal, and solar energy agreements to sustainably meet the massive power demands of AI clusters.",
-          source: "The Verge",
-          url: "https://www.theverge.com/tech",
-          date: "2026-10-21",
-          logo: LOGO_MICROSOFT,
+          title: "Meta re-evaluates its 2030 net-zero goal as AI data centres grow",
+          summary: "Meta is reconsidering its 2030 net-zero target after emissions rose sharply with its AI data-centre build-out.",
+          source: "DigiCrusader",
+          url: "https://digicrusader.com/ai-news-today-22-november-2026",
+          date: "2026-11-22",
+          logo: L("Meta"),
           points: [
-            "Restart of decommissioned zero-carbon nuclear facilities dedicated directly to AI compute campuses.",
-            "Next-generation modular nuclear reactors (SMRs) contracted for deployment by end of decade.",
-            "Ensures exponential AI computing expansion aligns with corporate net-zero carbon emission pledges."
+            "Emissions rose with AI data-centre construction.",
+            "The 2030 net-zero goal is under review."
           ],
-          why: "Secures reliable, clean baseload electrical power for the next decade of artificial intelligence breakthroughs.",
-          concept: { term: "Baseload power", explain: "Continuous, reliable electrical power supply that does not fluctuate with weather conditions like wind or direct sunlight." }
-        },
-        {
-          title: "DeepSeek releases high-performance Mixture of Experts architecture",
-          summary: "Open-source innovator DeepSeek unveiled breakthrough MoE models achieving frontier capabilities with a fraction of active compute parameters.",
-          source: "TechCrunch",
-          url: "https://techcrunch.com/",
-          date: "2026-10-20",
-          logo: LOGO_OPENAI,
-          points: ["Activates only 21B parameters out of 236B total per token.", "Significantly lowers inference hardware costs."],
-          why: "Proves that architectural innovation can reduce the raw compute power needed for frontier AI reasoning.",
-          concept: { term: "Mixture of Experts (MoE)", explain: "An architecture activating only a specialized subset of neural network parameters (experts) for each individual token processed." }
-        },
-        {
-          title: "GitHub Copilot Workspace transitions to general developer availability",
-          summary: "GitHub Copilot Workspace offers an integrated environment where agents review issue descriptions, plan file changes, and submit complete pull requests.",
-          source: "The Verge",
-          url: "https://www.theverge.com/tech",
-          date: "2026-10-19",
-          logo: LOGO_MICROSOFT,
-          points: ["Transforms bug reports directly into testable code plans.", "Allows developers to steer and refine edits step by step."],
-          why: "Reduces the latency between discovering a software bug and deploying a verified patch to production.",
-          concept: { term: "Agentic PR generation", explain: "An AI system autonomously formulating a multi-file code diff and test suite to satisfy an issue description." }
+          why: "AI's energy use is now a design constraint: efficient models and inference save money and carbon.",
+          concept: { term: "Energy efficiency", explain: "Getting the same work done with less power, such as smaller models or better hardware use." }
         }
       ]
     }

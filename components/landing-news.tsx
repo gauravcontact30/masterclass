@@ -98,16 +98,22 @@ export function LandingNews() {
       onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)} onFocus={() => setFocused(true)} onBlur={leaveFocus}>
       <div className={styles.inner}>
         <header className={styles.head}>
-          <p className={styles.eyebrow}><Newspaper size={14} aria-hidden="true" />{text("Fresh in tech", "टेक में नया")}
-            {news?.updatedAt && <span>{text("Updated", "अपडेट")} {istTime(news.updatedAt)}</span>}</p>
-          <h2 id="fresh-title">{text("What changed in tech this week", "इस हफ़्ते टेक में क्या बदला")}</h2>
-          <p className={styles.lede}>{text("Ten slides of real news explained for learners, the interview questions candidates are being asked right now, and a quick check on each subject. Everything here is refreshed every Monday at 00:00 IST.", "सीखने वालों के लिए समझाई गई असली खबरों की दस स्लाइड, वे इंटरव्यू प्रश्न जो अभी पूछे जा रहे हैं, और हर विषय पर एक त्वरित जाँच।")}</p>
+          <div className={styles.headText}>
+            <p className={styles.eyebrow}><span className={styles.live} aria-hidden="true" /><Newspaper size={14} aria-hidden="true" />{text("Fresh in tech", "टेक में नया")}
+              {news?.updatedAt && <span>{text("Updated", "अपडेट")} {istTime(news.updatedAt)}</span>}</p>
+            <h2 id="fresh-title">{hi ? "इस हफ़्ते टेक में क्या बदला" : <>What changed in tech <em>this week</em></>}</h2>
+          </div>
+          <p className={styles.lede}>{text("Real news explained for learners, the interview questions being asked right now, and a quick check on every subject. Refreshed every Monday.", "सीखने वालों के लिए समझाई गई असली खबरें, अभी पूछे जा रहे इंटरव्यू प्रश्न, और हर विषय पर एक त्वरित जाँच। हर सोमवार अपडेट।")}</p>
         </header>
         <div className={styles.bar}>
           {(() => {
             const current = NEWS_SLIDES[index], Icon = ICONS[current.id];
             return <p className={styles.current}><Icon size={15} aria-hidden="true" />{hi ? current.hiTitle : current.title}</p>;
           })()}
+          {/* Story-style progress: one segment per slide, filled behind, filling now, empty ahead. */}
+          <ol className={styles.rail} aria-hidden="true">{NEWS_SLIDES.map((slide, at) => <li key={slide.id} data-state={at < index ? "done" : at === index ? "now" : undefined}>
+            {at === index && <span key={index} data-running={rotating || undefined} style={{ animationDuration: `${NEWS_AUTOPLAY_MS}ms` }} />}
+          </li>)}</ol>
           <div className={styles.controls}>
             <button type="button" onClick={() => go(index - 1)} aria-label={text("Previous slide", "पिछली स्लाइड")}><ChevronLeft size={18} aria-hidden="true" /></button>
             <button type="button" onClick={() => { if (!playing) setFocused(false); setPlaying(!playing); }} aria-label={playing ? text("Pause slideshow", "स्लाइड शो रोकें") : text("Play slideshow", "स्लाइड शो चलाएँ")}>
@@ -117,8 +123,6 @@ export function LandingNews() {
             <span className={styles.count} aria-hidden="true">{two(index + 1)} / {two(total)}</span>
           </div>
         </div>
-        <div className={styles.progress} aria-hidden="true">{rotating && <span key={index} style={{ animationDuration: `${NEWS_AUTOPLAY_MS}ms` }} />}</div>
-
         <div className={styles.slides} aria-live={rotating ? "off" : "polite"}>
           {NEWS_SLIDES.map((meta, i) => {
             const fallbackSlide = DEFAULT_LANDING_NEWS.slides.find(s => s.id === meta.id);
@@ -145,11 +149,11 @@ export function LandingNews() {
 }
 
 function Cover({ meta, hi, eager, data }: { meta: NewsSlideMeta; hi: boolean; eager: boolean; data?: NewsSlideData }) {
-  // The cover's lower half indexes what the slide holds, sums it up, teaches the basics (as many as fit beside the
-  // stories) and ends with where to go deeper on MasterClass Buddy.
-  const items: { title: string; source: string | null; date: string | null; logo: NewsLogo | null }[] = data?.kind === "news"
-    ? data.stories.slice(0, NEWS_PER_SLIDE).map(story => ({ title: story.title, source: story.source, date: story.date, logo: story.logo }))
-    : data?.kind === "questions" ? data.questions.slice(0, QUESTIONS_PER_SLIDE).map(ask => ({ title: ask.question, source: ask.source, date: null, logo: ask.companies[0] ?? null })) : [];
+  // Under the picture: the slide's figures at a glance, the basics (as many as fit beside the stories) and where to
+  // go deeper on MasterClass Buddy.
+  const items: { source: string | null; date: string | null }[] = data?.kind === "news"
+    ? data.stories.slice(0, NEWS_PER_SLIDE).map(story => ({ source: story.source, date: story.date }))
+    : data?.kind === "questions" ? data.questions.slice(0, QUESTIONS_PER_SLIDE).map(ask => ({ source: ask.source, date: null })) : [];
   const sources = [...new Set(items.flatMap(item => item.source ? [item.source] : []))];
   const dates = items.flatMap(item => item.date ? [item.date] : []).sort();
   const companies = data?.kind === "questions" ? [...new Set(data.questions.flatMap(ask => ask.companies.map(company => company.name)))] : [];
@@ -168,7 +172,7 @@ function Cover({ meta, hi, eager, data }: { meta: NewsSlideMeta; hi: boolean; ea
   const Icon = ICONS[meta.id];
   const [failed, setFailed] = useState(false);
   return <div className={styles.cover}>
-    {/* Painted through the AI Gateway: this 21-day set's own cover when it has one, else the standing cover (scripts/generate-news-covers.ts). */}
+    {/* Painted through the AI Gateway: this week's own cover when it has one, else the standing cover (scripts/generate-news-covers.ts). */}
     <div className={styles.picture} data-empty={failed}>
       {!failed && <Image style={{ objectFit: "cover" }} src={data?.cover ?? `/images/news/${meta.id}.webp`} unoptimized={Boolean(data?.cover)} alt={meta.kind === "questions" ? (hi ? "इस सप्ताह के इंटरव्यू प्रश्नों का कवर चित्र" : "Cover illustration for this week's interview questions") : (hi ? "इस सप्ताह की टेक खबरों का कवर चित्र" : "Cover illustration for this week's tech news")} fill sizes="(max-width: 899px) calc(100vw - 60px), 480px" preload={eager} loading={eager ? undefined : "lazy"} onError={() => setFailed(true)} />}
       <Icon className={styles.pictureIcon} size={56} strokeWidth={1.2} aria-hidden="true" />
@@ -178,14 +182,7 @@ function Cover({ meta, hi, eager, data }: { meta: NewsSlideMeta; hi: boolean; ea
     <h3>{hi ? meta.hiTitle : meta.title}</h3>
     <p>{hi ? meta.hiBlurb : meta.blurb}</p>
     <ul className={styles.topics}>{meta.topics.map(topic => <li key={topic}>{topic}</li>)}</ul>
-    {items.length > 0 && <div className={styles.index}>
-      <dl className={styles.glance} aria-label={hi ? "एक नज़र में" : "At a glance"}>{glance.map(({ icon: TileIcon, label, value, note }) => <div key={label}><dt><TileIcon size={13} aria-hidden="true" />{label}</dt><dd>{value}</dd>{note && <dd className={styles.glanceNote}>{note}</dd>}</div>)}</dl>
-      <div className={styles.subhead}>{hi ? "इस स्लाइड में" : "In this slide"}</div>
-      <ol>{items.map(item => <li key={item.title}>
-        <span>{item.title}</span>
-        {(item.source || item.date) && <small>{item.logo && <Logo logo={item.logo} />}{[item.source, item.date ? shortDate(item.date) : null].filter(Boolean).join(" · ")}</small>}
-      </li>)}</ol>
-    </div>}
+    {items.length > 0 && <dl className={styles.glance} aria-label={hi ? "एक नज़र में" : "At a glance"}>{glance.map(({ icon: TileIcon, label, value, note }) => <div key={label}><dt><TileIcon size={13} aria-hidden="true" />{label}</dt><dd>{value}</dd>{note && <dd className={styles.glanceNote}>{note}</dd>}</div>)}</dl>}
     <Fit className={`${styles.extra} ${styles.basics}`} as="dl" keep={4} watch={hi}
       heading={<div className={styles.subhead}><Sparkles size={14} aria-hidden="true" />{hi ? "बुनियादी बातें समझें" : "Learn the basics"}</div>}>
       {[...NEWS_BASICS[meta.id], ...NEWS_MORE_BASICS[meta.id]].map(basic => <div key={basic.term}><dt>{basic.term}</dt><dd>{hi ? basic.hiExplain : basic.explain}</dd></div>)}
@@ -222,21 +219,24 @@ function Stories({ stories, hi, slide }: { stories: NewsStory[]; hi: boolean; sl
         <div className={styles.subhead}><ListChecks size={14} aria-hidden="true" />{hi ? "मुख्य बातें" : "Key facts"}</div>
         <ul>{lead.points.map(point => <li key={point}>{point}</li>)}</ul>
       </div>}
-      {lead.why && <p className={styles.why}><Lightbulb size={14} aria-hidden="true" /><span><b>{hi ? "क्यों ज़रूरी है" : "Why it matters"}:</b> {lead.why}</span></p>}
-      {lead.concept && <Concept concept={lead.concept} hi={hi} />}
+      {(lead.why || lead.concept) && <div className={styles.takeaways}>
+        {lead.why && <p className={styles.why}><Lightbulb size={14} aria-hidden="true" /><span><b>{hi ? "क्यों ज़रूरी है" : "Why it matters"}:</b> {lead.why}</span></p>}
+        {lead.concept && <Concept concept={lead.concept} hi={hi} />}
+      </div>}
     </div>
-    {rest.length > 0 && <ul className={styles.more}>{rest.map((story, k) => <li key={story.url} data-tone={cardTone(slide, k + 1)}>
-      {byline(story)}
-      <b className={styles.storyTitle}>{story.title}</b>
-      <p>{story.summary}</p>
-      {story.points.length > 0 && <ul className={styles.points}>{story.points.slice(0, 2).map(point => <li key={point}>{point}</li>)}</ul>}
-      {story.why && <p className={styles.why}><Lightbulb size={13} aria-hidden="true" /><span>{story.why}</span></p>}
-      {story.concept && <Concept concept={story.concept} hi={hi} />}
-    </li>)}</ul>}
+    {rest.length > 0 && <ol className={styles.more}>{rest.map((story, k) => <li key={story.url} data-tone={cardTone(slide, k + 1)}>
+      <span className={styles.moreNumber} aria-hidden="true">{two(k + 2)}</span>
+      <div>
+        {byline(story)}
+        <b className={styles.storyTitle}>{story.title}</b>
+        <p>{story.summary}</p>
+        {story.concept && <Concept concept={story.concept} hi={hi} />}
+      </div>
+    </li>)}</ol>}
   </>;
 }
 
-/** Stories beyond the slide's four cards: a compact two-column list, each naming its source, with its concept. */
+/** Stories beyond the slide's first four: a compact two-column list, each naming its source, with its concept. */
 function Headlines({ stories, hi }: { stories: NewsStory[]; hi: boolean }) {
   return <section className={styles.headlines} aria-label={hi ? "और सुर्ख़ियाँ" : "More headlines"}>
     <div className={styles.subhead}><Newspaper size={14} aria-hidden="true" />{hi ? "और सुर्ख़ियाँ" : "More headlines"}</div>

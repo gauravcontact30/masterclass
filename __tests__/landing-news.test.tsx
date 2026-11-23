@@ -101,7 +101,6 @@ describe("LandingNews carousel", () => {
     await renderLoaded();
     expect(screen.getByText("It runs in the terminal.")).toBeInTheDocument();
     expect(screen.getByText(/Learn: Agent loop/)).toBeInTheDocument();
-    expect(within(shown()[0]).getByText("In this slide")).toBeInTheDocument();
     expect(screen.getByText("Updated 22 Oct, 8:50 am IST")).toBeInTheDocument();
     expect(shown()).toHaveLength(1);
     expect(screen.getAllByText("Claude Code ships a thing").length).toBeGreaterThan(0);
@@ -121,7 +120,7 @@ describe("LandingNews carousel", () => {
     expect(screen.getByText("Most-asked agentic AI interview questions", { selector: "p" })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "What is MCP?" })).toBeVisible();
     expect(screen.getByRole("img", { name: "Asked often: 4 of 5" })).toBeInTheDocument();
-    expect(screen.getByText("Google")).toBeInTheDocument();
+    expect(screen.getByText("Google", { selector: "span" })).toBeInTheDocument();
     act(() => { jest.advanceTimersByTime(NEWS_AUTOPLAY_MS * 3); });
     expect(shown()[0]).toHaveAccessibleName(/^9 \/ 10/);
   });

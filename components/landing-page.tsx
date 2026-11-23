@@ -16,10 +16,8 @@ import { RouteH1 } from "./route-heading";
 import dynamic from "next/dynamic";
 import { loadPrices } from "./currency-picker";
 import type { Currency } from "@/lib/pricing";
-import { LibraryBig } from "lucide-react";
 import { landingFont } from "./landing-fonts";
 import { LandingNews } from "./landing-news";
-import { useReveal } from "./use-reveal";
 import { LearningSlot } from "./learning-slot";
 import type { LandingProPreview } from "@/lib/landing-pro-preview";
 import type { LandingFresh } from "@/lib/landing-fresh-types";
@@ -37,7 +35,6 @@ import type { BlogTeaser } from "@/lib/coffee-and-code";
 import { ContentProvider } from "./content-editing";
 import type { ContentOverrides } from "@/lib/content-overrides";
 import type { WorkflowPreview } from "@/lib/landing-workflows-preview";
-import frame from "./landing-section.module.css";
 import { useLanguage } from "./language-provider";
 import styles from "./learn-landing.module.css";
 import { LandingWorkflows } from "./landing-workflows";
@@ -50,19 +47,14 @@ import { CategoryBand, LandingCategories } from "./landing-categories";
 // what search engines read are unchanged); in the browser each hydrates on its own, so no single long task blocks input.
 // The interview, AI pulse and feature sections stay in the main chunk: the others share their carousel controls and
 // accordions, and a shared module imported only by split chunks is copied into each of them.
-const LibraryLedger = dynamic(() => import("./library-ledger").then(m => m.LibraryLedger));
 const LandingVocabulary = dynamic(() => import("./landing-vocabulary").then(m => m.LandingVocabulary));
 const StudentReviews = dynamic(() => import("./student-reviews").then(m => m.StudentReviews));
-// Technology docs on the landing page is the Search-page preview; the dashboard keeps LandingTechDocs (dashboard-learning.tsx).
-const LandingSearchDocs = dynamic(() => import("./landing-search-docs").then(m => m.LandingSearchDocs));
 const LandingCoffee = dynamic(() => import("./landing-coffee").then(m => m.LandingCoffee));
 const LandingApiDocs = dynamic(() => import("./landing-pro-sections").then(m => m.LandingApiDocs));
 const LandingBoardExams = dynamic(() => import("./landing-exams").then(m => m.LandingBoardExams));
 const LandingCompetitiveExams = dynamic(() => import("./landing-exams").then(m => m.LandingCompetitiveExams));
-const LandingTechy = dynamic(() => import("./landing-pro-sections").then(m => m.LandingTechy));
 const LandingBoardHighlights = dynamic(() => import("./landing-categories").then(m => m.LandingBoardHighlights));
 const LandingCompetitiveHighlights = dynamic(() => import("./landing-categories").then(m => m.LandingCompetitiveHighlights));
-const BoardFaq = dynamic(() => import("./landing-categories").then(m => m.BoardFaq));
 const CompetitiveFaq = dynamic(() => import("./landing-categories").then(m => m.CompetitiveFaq));
 
 /**
@@ -70,31 +62,6 @@ const CompetitiveFaq = dynamic(() => import("./landing-categories").then(m => m.
  * a Suspense boundary lets React yield to input between sections and hydrate first the one a visitor just tapped.
  */
 function Part({ children }: { children: ReactNode }) { return <Suspense fallback={null}>{children}</Suspense>; }
-
-/** Owns its reveal state: scrolling to the library must not re-render the rest of the page. */
-function LibrarySection({ library, hi }: { library: LandingLibrary; hi: boolean }) {
-  const text = (en: string, hindi: string) => hi ? hindi : en;
-  const format = (value: number) => new Intl.NumberFormat(hi ? "hi-IN" : "en-IN").format(value);
-  const [libraryRef, libraryReveal] = useReveal<HTMLElement>();
-  return <section ref={libraryRef} id="library" className={`${frame.section} ${home.library}`} data-ground="paper" data-reveal={libraryReveal} aria-labelledby="library-title"><div className={`${home.inner} ${home.libraryInner}`}>
-      <header className={frame.head}>
-        <div>
-          <p className={frame.kicker}><LibraryBig size={14} aria-hidden="true" />{text("Library", "लाइब्रेरी")}<span>{text(`${format(library.total)} sample rows`, `${format(library.total)} नमूना पंक्तियाँ`)}</span></p>
-        <h2 id="library-title">{text("Explore the dashboard library ", "जुड़ने से पहले ")}<em>{text("before you join.", "डैशबोर्ड लाइब्रेरी देखें।")}</em></h2>
-        </div>
-        <div>
-          <p className={frame.lede}>{text("Every row below is a real entry from the dashboard: technology handbooks, API references, System Design courses, vocabulary and Techy topics. Search for your subject and see exactly where it opens once you sign up.", "नीचे की हर पंक्ति डैशबोर्ड की असली प्रविष्टि है: तकनीकी हैंडबुक, API संदर्भ, सिस्टम डिज़ाइन कोर्स, शब्दावली और Techy विषय। अपना विषय खोजें और देखें कि साइन अप के बाद वह कहाँ खुलता है।")}</p>
-          <dl className={frame.facts}>
-            <div><dt>{text("Handbook topics", "हैंडबुक विषय")}</dt><dd>{format(library.counts.handbookTopics)}</dd></div>
-            <div><dt>{text("API references", "API संदर्भ")}</dt><dd>{format(library.counts.apiIdentifiers)}</dd></div>
-            <div><dt>{text("Words", "शब्द")}</dt><dd>{format(library.counts.word)}</dd></div>
-            <div><dt>{text("Courses", "कोर्स")}</dt><dd>{format(library.counts.course)}</dd></div>
-          </dl>
-        </div>
-      </header>
-      <LibraryLedger library={library} />
-    </div></section>;
-}
 
 /** Owns the monthly/yearly choice: tapping it must re-render the plans, not the whole page. */
 function MembershipSection({ prices, priceState, onCurrency }: { prices: LandingPrices; priceState: "loading" | "ready" | "error"; onCurrency: (currency: Currency) => void }) {
@@ -121,8 +88,7 @@ export function LandingPage({ features, answers, certifications, techBuzz, workf
   const navigation = [
     ["#interview-prep", t("interviewPrep") || "Interview prep", "/interview-questions"],
     ["#workflows", t("workflows") || "Workflows", "/workflows"],
-    ...(library ? [["#library", t("library") || "Library", "/library"]] : []),
-    ...(pro ? [["#techy", "Techy", "/learn"], ["#api-docs", "API Docs", "/api-reference"]] : []),
+    ...(pro ? [["#api-docs", "API Docs", "/api-reference"]] : []),
     ["#pricing", t("membership") || "Membership", "/subscribe"]
   ];
   const font = landingFont(hi);
@@ -140,8 +106,9 @@ export function LandingPage({ features, answers, certifications, techBuzz, workf
     {/* API Docs next, then Fresh in tech (user request 2026-11-03). */}
     {pro && <LandingApiDocs data={pro.api} />}
     <LearningSlot surface="landing" page="home" section="after-slider" className={styles.learningSlot} />
-    <Part><LandingNews /></Part>
+    {/* Plan your route above Fresh in tech (user request 2026-11-23). */}
     <Part><LandingPathFinder day={today} fresh={fresh?.goals} /></Part>
+    <Part><LandingNews /></Part>
     {library && <Part><SubjectRibbon entries={library.entries} /></Part>}
     <Part><LandingInterview preview day={today} fresh={fresh?.interview} /></Part>
     {daily && <Part><LandingAiPulse cards={daily.pulse} total={daily.totals?.pulse} day={daily.day} locked={daily.locked?.pulse} preview /></Part>}
@@ -150,17 +117,13 @@ export function LandingPage({ features, answers, certifications, techBuzz, workf
     {coffee && <LandingCoffee posts={coffee} />}
     <LearningSlot surface="landing" page="home" section="middle" className={styles.learningSlot} />
     <Part>{features}</Part>
-    {library && <Part><LibrarySection library={library} hi={hi} /></Part>}
     <Part><LandingComparisons preview official={techDocs} day={today} fresh={fresh?.difference} /></Part>
-    <LandingSearchDocs fresh={fresh?.doc} week={today} />
-    {pro && <LandingTechy data={pro.techy} />}
     {daily && <LandingVocabulary words={daily.words} total={daily.totals?.words} day={daily.day} locked={daily.locked?.word} preview />}
     {/* Board and Competitive Exams are for visitors in India only (server geo decision via /api/geo). */}
     {india && <>
     <CategoryBand id="board" india={india} />
     <Part><ExamLocaleProvider><LandingBoardExams /></ExamLocaleProvider></Part>
     <Part><LandingBoardHighlights /></Part>
-    <Part><BoardFaq /></Part>
     <CategoryBand id="competitive" india={india} />
     <Part><ExamLocaleProvider><LandingCompetitiveExams /></ExamLocaleProvider></Part>
     <Part><LandingCompetitiveHighlights /></Part>
@@ -168,7 +131,7 @@ export function LandingPage({ features, answers, certifications, techBuzz, workf
     </>}
     <StudentReviews />
     <LearningSlot surface="landing" page="home" section="before-plans" className={styles.learningSlot} />
-  </>, [india, today, hi, fresh, library, daily, workflows, certifications, techBuzz, coffee, features, techDocs, pro]);
+  </>, [india, today, fresh, library, daily, workflows, certifications, techBuzz, coffee, features, techDocs, pro]);
   return <ContentProvider overrides={overrides}><div className={`${styles.page} ${home.home} ${font.variable} ${font.className}`}><a className={styles.skip} href="#main-content">{t("skipToContent") || "Skip to content"}</a>
     <LandingNavbar links={navigation as [string, string, string][]} prices={priceState === "ready" ? prices : null} onCurrency={reprice} />
     <WelcomeModal />

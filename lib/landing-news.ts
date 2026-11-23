@@ -49,7 +49,7 @@ export type NewsStory = {
   points: string[]; why: string | null; concept: { term: string; explain: string } | null;
 };
 export type InterviewAsk = { question: string; answer: string; rating: number; companies: NewsLogo[]; url: string | null; source: string | null };
-/** `cover`: the picture painted for this 21-day set (lib/server/landing-news.ts refreshNews); the standing cover until then. */
+/** `cover`: the picture painted for this week's set (lib/server/landing-news.ts refreshNews); the standing cover until then. */
 export type NewsSlideData =
   | { id: NewsSlideId; kind: "news"; fresh: boolean; stories: NewsStory[]; cover?: string | null }
   | { id: NewsSlideId; kind: "questions"; fresh: boolean; questions: InterviewAsk[]; cover?: string | null };
@@ -93,15 +93,15 @@ export const NEWS_SLIDES: NewsSlideMeta[] = [
   },
   {
     id: "musk", kind: "news", short: "Musk, xAI & SpaceX", title: "Elon Musk: xAI, Tesla AI & SpaceX", hiTitle: "एलन मस्क: xAI, Tesla AI और SpaceX",
-    blurb: "Grok and xAI, Tesla's AI work, and SpaceX launches and Starship.", hiBlurb: "Grok और xAI, Tesla का AI काम, और SpaceX लॉन्च व Starship।",
-    topics: ["xAI · Grok", "Tesla AI", "SpaceX", "Starship"],
+    blurb: "Grok (now SpaceX's AI division), Tesla FSD and Optimus, and SpaceX launches and Starship.", hiBlurb: "Grok (अब SpaceX का AI विभाग), Tesla FSD और Optimus, और SpaceX लॉन्च व Starship।",
+    topics: ["Grok", "Tesla FSD", "Optimus", "Starship"],
     newsrooms: [{ label: "xAI news", href: "https://x.ai/news" }, { label: "SpaceX updates", href: "https://www.spacex.com/updates/" }],
     learn: [L.certAgentic, L.handbooks, L.library],
   },
   {
     id: "amazon-ai", kind: "news", short: "Amazon & AI", title: "Amazon with AI", hiTitle: "Amazon और AI",
-    blurb: "Alexa+, Nova models, Bedrock and how Amazon is putting AI into its products.", hiBlurb: "Alexa+, Nova मॉडल, Bedrock और Amazon अपने प्रोडक्ट्स में AI कैसे ला रहा है।",
-    topics: ["Alexa+", "Amazon Nova", "Bedrock", "Rufus"],
+    blurb: "Alexa+, Alexa for Shopping, Bedrock, Trainium chips and how Amazon is putting AI into its products.", hiBlurb: "Alexa+, Alexa for Shopping, Bedrock, Trainium चिप और Amazon अपने प्रोडक्ट्स में AI कैसे ला रहा है।",
+    topics: ["Alexa+", "Alexa for Shopping", "Bedrock", "Trainium"],
     newsrooms: [{ label: "About Amazon: AI", href: "https://www.aboutamazon.com/news/amazon-ai" }, { label: "Amazon Science", href: "https://www.amazon.science/" }],
     learn: [L.certAws, L.certAgentic, L.library],
   },

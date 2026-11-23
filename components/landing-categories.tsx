@@ -2,7 +2,7 @@
 import type { ReactNode } from "react";
 import Image from "@/components/responsive-image";
 import Link from "@/components/site-link";
-import { ArrowDown, ArrowRight, BookOpenCheck, Briefcase, CalendarClock, ChevronDown, ClipboardList, GraduationCap, History, Landmark, ListChecks, PencilLine, Scale, Star, Trophy, type LucideIcon } from "lucide-react";
+import { ArrowDown, ArrowRight, BookOpenCheck, Briefcase, CalendarClock, Check, ChevronDown, ClipboardList, GraduationCap, History, Landmark, LayoutDashboard, ListChecks, PencilLine, Scale, Star, Trophy, UserRound, type LucideIcon } from "lucide-react";
 import { BOARD_FAQ, CATEGORIES, COMPETITIVE_FAQ, EXAM_COUNT, type Category, type Faq } from "@/lib/landing-categories";
 import { UPCOMING_WINDOW } from "@/lib/board-exams/papers";
 import { MARKING } from "@/lib/competitive-exams/marking";
@@ -25,24 +25,39 @@ export function LandingCategories() {
   return <section id="categories" className={frame.section} data-ground="paper" aria-labelledby="categories-title"><div className={home.inner}>
     <header className={frame.head}>
       <div>
-        <p className={frame.kicker}><Trophy size={14} aria-hidden="true" />Three categories<span>One account per category</span></p>
+        <p className={frame.kicker}><Trophy size={14} aria-hidden="true" />Three categories<span>Choose your path</span></p>
         <h2 id="categories-title">What would you like to <em>prepare for?</em></h2>
       </div>
       <p className={frame.lede}>MasterClass Buddy is three learning spaces in one: <b>Tech</b> for professionals and college students worldwide, <b>Board Exams</b> for Class 10 and 12 students of UP Board, CBSE and ICSE, and <b>Competitive Exams</b> for government job aspirants, from NDA and TET to SSC, banks and UPSC.</p>
     </header>
     <ol className={styles.cards}>
-      {CATEGORIES.map(category => { const Icon = ICON[category.id]; return <li key={category.id} className={styles.card} data-category={category.id}>
-        <div className={styles.cardTop}><span className={styles.cardIcon} aria-hidden="true"><Icon size={22} /></span><span className={styles.cardNumber} aria-hidden="true">{category.number}</span></div>
-        <h3>{category.title}</h3>
-        <p className={styles.cardAudience}>{category.audience}</p>
-        <p className={styles.cardSummary}>{category.summary}</p>
-        <ul className={styles.cardPoints}>{category.points.map(point => <li key={point}>{point}</li>)}</ul>
-        <div className={styles.cardActions}>
-          <a className={styles.cardJump} href={`#${category.anchor}`} onClick={scrollTo(category.anchor)}>Explore {category.title}<ArrowDown size={15} aria-hidden="true" /></a>
-          <Link className={styles.cardOpen} href={category.href}>Open dashboard<ArrowRight size={14} aria-hidden="true" /></Link>
+      {CATEGORIES.map(category => { const Icon = ICON[category.id]; const [who, where] = category.audience.split(" · "); return <li key={category.id} className={styles.card} data-category={category.id}>
+        {/* The plate: a tinted header with the category's own pattern, its icon, an outlined number and the headline stat. */}
+        <div className={styles.cardPlate}>
+          <span className={styles.cardNumber} aria-hidden="true">{category.number}</span>
+          <span className={styles.cardIcon} aria-hidden="true"><Icon size={24} strokeWidth={1.8} /></span>
+          <p className={styles.cardStat}><b>{category.stat.value}</b><span>{category.stat.label}</span></p>
+        </div>
+        <div className={styles.cardBody}>
+          <div className={styles.cardHeading}>
+            <h3>{category.title}</h3>
+            <p className={styles.cardTagline}>{category.tagline}</p>
+          </div>
+          <p className={styles.cardAudience}><span>{who}</span>{where && <span className={styles.cardWhere}>{where}</span>}</p>
+          <p className={styles.cardSummary}>{category.summary}</p>
+          <ul className={styles.cardPoints}>{category.points.map(point => <li key={point}><Check size={14} strokeWidth={2.6} aria-hidden="true" />{point}</li>)}</ul>
+          <div className={styles.cardActions}>
+            <a className={styles.cardJump} href={`#${category.anchor}`} onClick={scrollTo(category.anchor)}>Explore {category.title}<ArrowDown size={15} aria-hidden="true" /></a>
+            <Link className={styles.cardOpen} href={category.href}>Open dashboard<ArrowRight size={14} aria-hidden="true" /></Link>
+          </div>
         </div>
       </li>; })}
     </ol>
+    <ul className={styles.promise} aria-label="How categories work">
+      <li><UserRound size={15} aria-hidden="true" />One account per category</li>
+      <li><LayoutDashboard size={15} aria-hidden="true" />Each with its own dashboard</li>
+      <li><Star size={15} aria-hidden="true" />Most important questions first</li>
+    </ul>
   </div></section>;
 }
 

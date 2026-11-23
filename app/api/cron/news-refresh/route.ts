@@ -5,8 +5,8 @@ import { cronAuthorized } from "@/lib/server/visit-retention";
 export const maxDuration = 300;
 
 /*
- * The "Fresh in tech" refresh (vercel.json, weekly on Monday at 00:00 IST; nightly until 2026-10-31): does nothing
- * until the stories are 21 days old, then searches all ten slides again and paints each a new cover; covers past the
+ * The "Fresh in tech" refresh (vercel.json, weekly on Monday at 00:00 IST): rebuilds the stories
+ * once they are 7 days old: searches all ten slides again and paints each a new cover; covers past the
  * time budget are painted the next week. `?force=1` refreshes now. Needs the cron secret.
  */
 export async function GET(request: Request) {

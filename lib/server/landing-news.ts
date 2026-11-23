@@ -16,7 +16,7 @@ import { DEFAULT_LANDING_NEWS } from "@/lib/landing-news-fallback";
  * Every story must link to a page Perplexity actually searched: an item whose URL is not among the search results
  * is dropped rather than shown with a link that may not exist.
  * The finished set is kept in Supabase Storage (lib/server/site-store.ts), shared by every server instance and surviving
- * deploys and restarts, so a visitor never waits for the searches. The set is rebuilt every 21 days by app/api/cron/news-refresh (refreshNews), which also
+ * deploys and restarts, so a visitor never waits for the searches. The set is rebuilt every week by app/api/cron/news-refresh (refreshNews), which also
  * paints each slide a new cover from its lead story; a slide whose new search comes back empty keeps its previous
  * stories and cover.
  */
@@ -55,8 +55,8 @@ const BRIEFS: Record<NewsSlideId, string> = {
   "system-design": "Software system design and architecture: engineering blog posts on scaling, databases, caching, distributed systems, notable outages and postmortems from well-known companies.",
   frontend: "Frontend web development: Next.js 16 releases and features, React 19 and later, Zustand, and TanStack (Query, Router, Start, Table) releases.",
   aws: "Amazon Web Services announcements for popular services such as Lambda, S3, EC2, DynamoDB, ECS, EKS, Bedrock, SageMaker, CloudFront and RDS.",
-  musk: "Elon Musk's AI and space ventures: xAI and Grok, Tesla's AI and autonomy work, Optimus, SpaceX launches, Starship and Starlink.",
-  "amazon-ai": "Amazon and artificial intelligence: Alexa+, Amazon Nova models, Amazon Bedrock, Rufus, Amazon's AI chips (Trainium) and its AI partnerships.",
+  musk: "Elon Musk's AI and space ventures: Grok (xAI, now SpaceX's AI division), Tesla's AI and autonomy work, Optimus, SpaceX launches, Starship and Starlink.",
+  "amazon-ai": "Amazon and artificial intelligence: Alexa+, Alexa for Shopping (formerly Rufus), Amazon Nova models, Amazon Bedrock, Amazon's AI chips (Trainium) and its AI partnerships.",
   "questions-tech": "core software engineering topics: JavaScript, React, Node.js, system design, SQL and data structures",
   "questions-agentic": "agentic AI and LLM engineering: AI agents, RAG, tool calling, MCP, LangChain/LangGraph, evaluation and guardrails",
   trending: "The biggest technology stories of the last three weeks across AI, AWS, Google, Microsoft, Amazon, OpenAI, Anthropic, Meta, Nvidia and Apple.",
@@ -163,8 +163,8 @@ async function storiesFor(id: NewsSlideId, now: number): Promise<NewsStory[]> {
   const prompt = (days: number) => `Find the ${NEWS_PER_SLIDE + NEWS_EXTRA + 2} most important, distinct news stories published in the last ${days} days about: ${BRIEFS[id]}
 Today is ${new Date(now).toISOString().slice(0, 10)}. No two stories about the same event. For each give: title (a plain headline, at most 90 characters), summary (two short sentences, at most 220 characters: what happened and why it matters to developers), source (the publisher's name), url (copied exactly from your search results), date (publication date, YYYY-MM-DD), company (the main organisation, preferably one of: ${BRAND_NAMES.join(", ")}; otherwise its name, or "other"),
 points (three short key facts from the article, each at most 110 characters), why (one sentence, at most 180 characters, on why it matters to software engineers and learners) and concept (one technical term from the story a learner should know: term at most 40 characters, explain is a plain one-sentence explanation of at most 180 characters).`;
-  // One refresh every 21 days covers those three weeks; a thin window widens to the month.
-  const tries: [number, "day" | "week" | "month"][] = [[21, "month"], [30, "month"]];
+  // One refresh a week covers that week; a thin week widens to the last two weeks, then the month.
+  const tries: [number, "day" | "week" | "month"][] = [[7, "week"], [14, "month"], [30, "month"]];
   let best: NewsStory[] = [];
   for (const [days, recency] of tries) {
     const reply = await ask(SYSTEM, prompt(days), STORY_SCHEMA, recency);
@@ -223,7 +223,7 @@ async function searchSlide(id: NewsSlideId): Promise<NewsSlideData> {
 
 const STORE_KEY = "landing:news:v2";
 /** How long a set counts as fresh (the refresh cycle), and how long Redis keeps one at all. */
-export const NEWS_REFRESH_DAYS = 21;
+export const NEWS_REFRESH_DAYS = 7;
 const FRESH_MS = NEWS_REFRESH_DAYS * 86_400_000;
 /** A rebuild started by a visit claims this long, across all instances, so a burst of visits pays for one set of searches. */
 const CLAIM_KEY = "landing-news-rebuild", CLAIM_MS = 30 * 60_000;
@@ -286,14 +286,14 @@ function coverPrompt(slide: NewsSlideData) {
 }
 
 /**
- * The 21-day refresh (app/api/cron/news-refresh): rebuilds the stories when the set is due (or `force`), then paints a
+ * The weekly refresh (app/api/cron/news-refresh): rebuilds the stories when the set is due (or `force`), then paints a
  * new cover for every slide that has none yet, within `budgetMs` so the function never runs out of time; covers it
  * does not reach are painted on the next run. Returns what it did.
  */
 export async function refreshNews({ force = false, budgetMs = 200_000 }: { force?: boolean; budgetMs?: number } = {}) {
   const started = Date.now();
   let set = await readStored<StoredNews>(STORE_KEY);
-  // The check runs weekly (Monday 00:00 IST), so a set built a few minutes after one run is due at the third run on.
+  // The check runs weekly (Monday 00:00 IST); the hour of slack keeps a set built just after one run due at the next.
   const due = force || !set?.slides?.length || Date.now() - set.builtAt > FRESH_MS - 3_600_000;
   if (due) set = await rebuild(set);
   if (!set?.slides?.length) return { rebuilt: due, covers: 0, pending: 0 };
