@@ -24,18 +24,19 @@ export async function GET(request: Request) {
     const started = performance.now();
     const cacheKey = `superadmin:snapshot:${days}`;
 
-    const data = await cacheFetch(
+    type Snapshot = Record<string, unknown> & { snapshotAt?: string; stale?: boolean };
+    const data = await cacheFetch<Snapshot>(
       cacheKey,
       async () => {
         // The report can hit the database's statement timeout on a busy or cold moment. The last good copy is a better
         // answer than a 500, but it is marked `stale` so the console says so instead of presenting it as live.
         const lastGood = `${cacheKey}:last-good`;
         try {
-          const fresh = { ...(check(await db().rpc("super_admin_snapshot", { p_days: days })) as Record<string, unknown>), snapshotAt: new Date().toISOString(), stale: false };
+          const fresh: Snapshot = { ...(check(await db().rpc("super_admin_snapshot", { p_days: days })) as Record<string, unknown>), snapshotAt: new Date().toISOString(), stale: false };
           await cacheSet(lastGood, fresh, 3600);
           return fresh;
         } catch (failure) {
-          const previous = await cacheGet<Record<string, unknown>>(lastGood);
+          const previous = await cacheGet<Snapshot>(lastGood);
           if (previous) return { ...previous, stale: true };
           throw failure;
         }
