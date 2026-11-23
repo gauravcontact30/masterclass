@@ -32,11 +32,11 @@ export function LandingCategories() {
     </header>
     <ol className={styles.cards}>
       {CATEGORIES.map(category => { const Icon = ICON[category.id]; const [who, where] = category.audience.split(" · "); return <li key={category.id} className={styles.card} data-category={category.id}>
-        {/* The plate: a tinted header with the category's own pattern, its icon, an outlined number and the headline stat. */}
+        {/* The plate: a tinted header with the category's own pattern, its icon, an outlined number and the headline figure. */}
         <div className={styles.cardPlate}>
           <span className={styles.cardNumber} aria-hidden="true">{category.number}</span>
           <span className={styles.cardIcon} aria-hidden="true"><Icon size={24} strokeWidth={1.8} /></span>
-          <p className={styles.cardStat}><b>{category.stat.value}</b><span>{category.stat.label}</span></p>
+          <p className={styles.cardStat}><b>{category.figure.value}</b><span>{category.figure.label}</span></p>
         </div>
         <div className={styles.cardBody}>
           <div className={styles.cardHeading}>

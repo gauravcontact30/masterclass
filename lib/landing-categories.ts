@@ -8,18 +8,18 @@ import { UPCOMING_WINDOW } from "./board-exams/papers";
  */
 export const EXAM_COUNT = GOVERNMENT_EXAM_IDS.length;
 
-/** `stat` is the headline figure on the landing card; `tagline` is the one-line promise under the title. */
-export type Category = { id: "tech" | "board" | "competitive"; anchor: string; number: string; title: string; tagline: string; audience: string; summary: string; points: string[]; stat: { value: string; label: string }; href: string };
+/** `figure` is the headline number on the landing card; `tagline` is the one-line promise under the title. */
+export type Category = { id: "tech" | "board" | "competitive"; anchor: string; number: string; title: string; tagline: string; audience: string; summary: string; points: string[]; figure: { value: string; label: string }; href: string };
 export const CATEGORIES: Category[] = [
   { id: "tech", anchor: "category-tech", number: "01", title: "Tech", tagline: "Get interview-ready and stay ahead of the stack.", audience: "Tech professionals, college students and IT employees · worldwide",
     summary: "Interview questions, system design, Agentic AI, LangChain, n8n, Next.js, Python, AWS and DSA, with weekly Tech Buzz blogs.",
-    points: ["Interview prep for 31 technologies", "System design and AI agent blueprints", "Weekly Tech Buzz and API docs"], stat: { value: "31", label: "technologies covered" }, href: "/learning" },
+    points: ["Interview prep for 31 technologies", "System design and AI agent blueprints", "Weekly Tech Buzz and API docs"], figure: { value: "31", label: "technologies covered" }, href: "/learning" },
   { id: "board", anchor: "category-board-exams", number: "02", title: "Board Exams", tagline: "Score higher in Class 10 and 12, chapter by chapter.", audience: "Class 10 and 12 students · UP Board, CBSE, ICSE / ISC",
     summary: "Maths, Physics, Chemistry and English, chapter and topic wise, with 400+ most important questions per subject, star ratings and the years they recur.",
-    points: ["400+ most important questions per subject", "Objective and subjective, with worked answers", "20 years of official papers and upcoming dates"], stat: { value: "400+", label: "important questions per subject" }, href: "/exams/board-exams" },
+    points: ["400+ most important questions per subject", "Objective and subjective, with worked answers", "20 years of official papers and upcoming dates"], figure: { value: "400+", label: "important questions per subject" }, href: "/exams/board-exams" },
   { id: "competitive", anchor: "category-competitive-exams", number: "03", title: "Competitive Exams", tagline: "Crack the government exam you are aiming for.", audience: "Government and competitive exam aspirants · India",
     summary: `NDA, TET, Defence, Banks, Railways, SSC, UPSC, CBI, Income Tax and more: ${EXAM_COUNT} exams with 410+ objective and 400+ subjective questions each.`,
-    points: ["TET and NDA with full pedagogy and GAT practice", "Marking scheme on every question", "Star-rated, most-asked questions first"], stat: { value: String(EXAM_COUNT), label: "government exams" }, href: "/exams/competitive-exams" },
+    points: ["TET and NDA with full pedagogy and GAT practice", "Marking scheme on every question", "Star-rated, most-asked questions first"], figure: { value: String(EXAM_COUNT), label: "government exams" }, href: "/exams/competitive-exams" },
 ];
 
 export type Faq = { question: string; answer: string };
