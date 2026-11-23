@@ -68,7 +68,7 @@ const SuperAdminStudents = dynamic(() => import("./super-admin-students").then(m
 
 type Row = Record<string, unknown>;
 type Snapshot = {
-  generatedAt: string; counts: { users: number; documents: number; activeSubscriptions: number; failedDocuments: number };
+  generatedAt: string; stale?: boolean; counts: { users: number; documents: number; activeSubscriptions: number; failedDocuments: number };
   users: Row[]; sessions: Row[]; logins: Row[]; subscriptions: Row[]; billing: Row[]; revenue: Row[]; events: Row[]; documents: Row[]; integrations: Row[];
   recurring: { monthly: number; yearly: number }; prices: { monthly: number; yearly: number };
   requests: { count: number; errors: number; p95: number | null };
@@ -177,9 +177,9 @@ export function SuperAdminDashboard({ userId = "admin", isOwner = false }: { use
         </div>
       </div>
       <div className={styles.headerActions}>
-        <span className={styles.syncStatus} data-state={error ? "error" : busy ? "busy" : "ready"} aria-live="polite">
+        <span className={styles.syncStatus} data-state={error || data?.stale ? "error" : busy ? "busy" : "ready"} aria-live="polite">
           <span className={styles.statusDot} aria-hidden="true" />
-          {busy ? t("refreshing") : error ? t("refreshUnavailable") : data ? `${t("updatedAt")} ${new Date(data.generatedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}` : t("awaitingData")}
+          {busy ? t("refreshing") : error ? t("refreshUnavailable") : data ? `${t("updatedAt")} ${new Date(data.generatedAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}${data.stale ? " · last good copy" : ""}` : t("awaitingData")}
         </span>
         <Button variant="outline" type="button" className={styles.headerRefresh} disabled={busy} onClick={() => void refresh()} aria-label={t("refreshMonitoring")} title={t("refreshMonitoring")}>
           <RefreshCw size={16} className={busy ? "spin" : ""} aria-hidden="true" />

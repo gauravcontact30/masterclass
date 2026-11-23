@@ -18,7 +18,9 @@ export async function GET(request: Request) {
     const rawDays = Number(url.searchParams.get("days"));
     const days = [1, 7, 30, 90].includes(rawDays) ? rawDays : 7;
 
-    // 3. Upstash / Redis Caching Layer (Cache snapshot for 30s to reduce DB load)
+    // 3. Upstash / Redis caching: 5 s, matching the Overview's 5-second re-read, so the console never shows figures older
+    // than one refresh while several open tabs still share one database read. `snapshotAt` is when the figures were read,
+    // so "Updated" on screen is their real age, not the time this cached copy was served.
     const started = performance.now();
     const cacheKey = `superadmin:snapshot:${days}`;
 
@@ -26,20 +28,21 @@ export async function GET(request: Request) {
       cacheKey,
       async () => {
         // The report can hit the database's statement timeout on a busy or cold moment. The last good copy is a better
-        // answer than a 500 for a screen that re-reads every few seconds.
+        // answer than a 500, but it is marked `stale` so the console says so instead of presenting it as live.
         const lastGood = `${cacheKey}:last-good`;
         try {
-          const fresh = check(await db().rpc("super_admin_snapshot", { p_days: days }));
+          const fresh = { ...(check(await db().rpc("super_admin_snapshot", { p_days: days })) as Record<string, unknown>), snapshotAt: new Date().toISOString(), stale: false };
           await cacheSet(lastGood, fresh, 3600);
           return fresh;
         } catch (failure) {
-          const previous = await cacheGet<Awaited<ReturnType<typeof check>>>(lastGood);
-          if (previous) return previous;
+          const previous = await cacheGet<Record<string, unknown>>(lastGood);
+          if (previous) return { ...previous, stale: true };
           throw failure;
         }
       },
-      30
+      5
     );
+    const snapshotAt = typeof data.snapshotAt === "string" ? data.snapshotAt : new Date().toISOString();
 
     // 4. Inngest Asynchronous Background Audit Logging
     void inngest.send({
@@ -55,7 +58,8 @@ export async function GET(request: Request) {
 
     return Response.json({
       ...data,
-      generatedAt: new Date().toISOString(),
+      generatedAt: snapshotAt,
+      stale: data.stale === true,
       health: {
         databaseMs: Math.round(performance.now() - started),
         ...(await runtimeHealth()),

@@ -5,20 +5,22 @@ import type { LocationReport } from "@/lib/visitor-location";
 import { AdminTable } from "./super-admin-table";
 import { AdminError, AdminLoading } from "./super-admin-feedback";
 import styles from "./super-admin-locations.module.css";
+import { useLiveTick } from "./use-live-tick";
 
 export function SuperAdminLocations({ days, query }: { days: number; query: string }) {
   const [data, setData] = useState<LocationReport | null>(null);
   const [error, setError] = useState(false);
   const [refresh, setRefresh] = useState(0);
+  const tick = useLiveTick();
   const [level, setLevel] = useState<"countries" | "regions" | "cities">("regions");
   useEffect(() => {
     const controller = new AbortController();
     fetch(`/api/super-admin/activity/locations?days=${days}`, { cache: "no-store", signal: controller.signal })
       .then(async response => { if (!response.ok) throw new Error(); return response.json(); })
       .then(body => { if (!controller.signal.aborted) { setData(body); setError(false); } })
-      .catch(() => { if (!controller.signal.aborted) setError(true); });
+      .catch(() => { if (!controller.signal.aborted) setData(previous => { if (!previous || previous.days !== days) setError(true); return previous; }); });
     return () => controller.abort();
-  }, [days, refresh]);
+  }, [days, refresh, tick]);
   const current = data?.days === days ? data : null;
   return <section className={styles.panel} aria-label="Visitor locations">
     <header><div><h2><MapPin size={18} aria-hidden="true" />Visitor locations</h2><p>Approximate IP-based location supplied by the hosting platform. State/region may be an ISO code. VPNs and mobile networks can affect accuracy; missing locations are not inferred.</p></div><button type="button" aria-label="Refresh visitor locations" onClick={() => setRefresh(value => value + 1)}><RefreshCw size={16}/></button></header>

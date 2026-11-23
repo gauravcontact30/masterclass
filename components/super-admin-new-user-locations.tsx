@@ -6,6 +6,7 @@ import { AdminTable } from "./super-admin-table";
 import { Pager } from "./super-admin-pager";
 import { AdminError, AdminLoading } from "./super-admin-feedback";
 import styles from "./super-admin-new-user-locations.module.css";
+import { useLiveTick } from "./use-live-tick";
 
 const ist = (iso: string) => new Date(iso).toLocaleString("en-IN", { timeZone: "Asia/Kolkata", dateStyle: "medium", timeStyle: "short" });
 const n = (value: number) => value.toLocaleString("en-IN");
@@ -35,14 +36,15 @@ export function SuperAdminNewUserLocations({ days, query = "" }: Readonly<{ days
   const [data, setData] = useState<NewUserLocationReport | null>(null);
   const [error, setError] = useState("");
   const [refresh, setRefresh] = useState(0);
+  const tick = useLiveTick();
   useEffect(() => {
     const controller = new AbortController();
     fetch(`/api/super-admin/activity/new-users?days=${span}`, { cache: "no-store", signal: controller.signal })
       .then(async response => { const body = await response.json().catch(() => ({})); if (!response.ok) throw new Error(body.error ?? "service_error"); return body; })
       .then(body => { if (!controller.signal.aborted) { setData(body); setError(""); } })
-      .catch(e => { if (!controller.signal.aborted) setError(e instanceof Error ? e.message : "service_error"); });
+      .catch(e => { if (!controller.signal.aborted) { setData(previous => { if (!previous || previous.days !== span) setError(e instanceof Error ? e.message : "service_error"); return previous; }); } });
     return () => controller.abort();
-  }, [span, refresh]);
+  }, [span, refresh, tick]);
   const current = data?.days === span ? data : null;
 
   return <section className={styles.panel} aria-labelledby="new-user-locations">

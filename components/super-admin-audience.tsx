@@ -5,6 +5,7 @@ import { Card } from "./ui/card";
 import { Pager } from "./super-admin-table";
 import shell from "./super-admin-dashboard.module.css";
 import styles from "./super-admin-audience.module.css";
+import { useLiveTick } from "./use-live-tick";
 
 type Row = Record<string, unknown>;
 export type AudienceData = { countries: Row[]; cities: Row[]; pages: Row[]; referrers: Row[] };
@@ -93,15 +94,18 @@ export function AudienceExplorer({ days, fallback }: { days: number; fallback: A
   const [suggestOpen, setSuggestOpen] = useState(false);
   const [highlight, setHighlight] = useState(-1);
   const listId = useId();
+  const tick = useLiveTick();
   const inputRef = useRef<HTMLInputElement>(null);
 
+  // The window the complete lists on screen belong to: a failed background re-read keeps them rather than falling back.
+  const loadedDays = useRef<number | null>(null);
   useEffect(() => {
     const controller = new AbortController();
     fetch(`/api/super-admin/activity?days=${days}&view=breakdowns`, { cache: "no-store", signal: controller.signal })
-      .then(async response => { const body = await response.json().catch(() => ({})); if (!response.ok) throw new Error(body.error ?? "service_error"); setFull(body); setLegacy(false); })
-      .catch(e => { if (!controller.signal.aborted) { setFull(null); setLegacy(e instanceof Error && e.message === "migration_required"); } });
+      .then(async response => { const body = await response.json().catch(() => ({})); if (!response.ok) throw new Error(body.error ?? "service_error"); if (controller.signal.aborted) return; loadedDays.current = days; setFull(body); setLegacy(false); })
+      .catch(e => { if (!controller.signal.aborted && loadedDays.current !== days) { setFull(null); setLegacy(e instanceof Error && e.message === "migration_required"); } });
     return () => controller.abort();
-  }, [days]);
+  }, [days, tick]);
 
   const data = full ?? fallback;
   const meta = TABS.find(item => item.id === tab)!;

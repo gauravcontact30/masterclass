@@ -81,8 +81,8 @@ export function SuperAdminWeek() {
       } finally { if (!controller.signal.aborted) setBusy(false); }
     };
     void load();
-    // A week changes slowly: refresh every five minutes while the tab is visible.
-    const timer = setInterval(() => { if (document.visibilityState === "visible") void load(); }, 300_000);
+    // Every minute while the tab is visible, so today's bar and the totals stay current (user request 2026-11-23).
+    const timer = setInterval(() => { if (document.visibilityState === "visible") void load(); }, 60_000);
     return () => { controller.abort(); clearInterval(timer); };
   }, [reload]);
 
