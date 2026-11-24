@@ -41,7 +41,7 @@ import { LandingWorkflows } from "./landing-workflows";
 import { LandingComparisons } from "./landing-comparisons";
 import { LandingInterview } from "./landing-interview";
 import { LandingAiPulse } from "./landing-ai-pulse";
-import { CategoryBand, LandingCategories } from "./landing-categories";
+import { CategoryBand } from "./landing-categories";
 
 // Sections below the first screens are split into their own chunks. They still render on the server (the HTML and
 // what search engines read are unchanged); in the browser each hydrates on its own, so no single long task blocks input.
@@ -56,6 +56,10 @@ const LandingCompetitiveExams = dynamic(() => import("./landing-exams").then(m =
 const LandingBoardHighlights = dynamic(() => import("./landing-categories").then(m => m.LandingBoardHighlights));
 const LandingCompetitiveHighlights = dynamic(() => import("./landing-categories").then(m => m.LandingCompetitiveHighlights));
 const CompetitiveFaq = dynamic(() => import("./landing-categories").then(m => m.CompetitiveFaq));
+// The three showcases right under the slider (user request 2026-11-24): Tech for everyone, the two exam ones in India.
+const LandingTechShowcase = dynamic(() => import("./landing-showcase").then(m => m.LandingTechShowcase));
+const LandingBoardShowcase = dynamic(() => import("./landing-showcase-exams").then(m => m.LandingBoardShowcase));
+const LandingGovtShowcase = dynamic(() => import("./landing-showcase-exams").then(m => m.LandingGovtShowcase));
 
 /**
  * Each section hydrates on its own instead of in one long task: nothing here suspends, so the fallback never shows, but
@@ -99,7 +103,9 @@ export function LandingPage({ features, answers, certifications, techBuzz, workf
   // Competitive Exams. A navigator lists the three; a band opens each, followed by that category's sections in their
   // existing order. The exam categories (navigator, bands, sections) render only for visitors in India; everyone else sees Tech.
   const beforePlans = useMemo(() => <>
-    {india && <LandingCategories />}
+    {/* Three showcases straight under the slider (user request 2026-11-24): autoplay carousel beside sample papers and Q&A. */}
+    <Part><LandingTechShowcase /></Part>
+    {india && <><Part><LandingBoardShowcase /></Part><Part><LandingGovtShowcase /></Part></>}
     <CategoryBand id="tech" india={india} />
     {/* Tech Buzz right under the sale (user request 2026-11-01): the newest stories and the way into /tech-buzz. */}
     <Part>{techBuzz}</Part>

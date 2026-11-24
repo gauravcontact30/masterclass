@@ -83,7 +83,9 @@ function describe(tab: Tab, row: Row) {
  * Super admin → User activities: the complete audience by country (full name + flag), city, page and traffic
  * source, with suggestion search, icon filters and sorts, share bars, 10-row pages and a CSV of the current view.
  */
-export function AudienceExplorer({ days, fallback }: { days: number; fallback: AudienceData }) {
+/** `exclude` drops tabs another panel on the page already covers (User activities shows sources in Traffic sources). */
+export function AudienceExplorer({ days, fallback, exclude = [] }: { days: number; fallback: AudienceData; exclude?: Tab[] }) {
+  const tabs = TABS.filter(item => !exclude.includes(item.id));
   const [full, setFull] = useState<AudienceData | null>(null);
   const [legacy, setLegacy] = useState(false);
   const [tab, setTab] = useState<Tab>("countries");
@@ -186,7 +188,7 @@ export function AudienceExplorer({ days, fallback }: { days: number; fallback: A
     {legacy && <p className={styles.legacy} role="note">Showing the top 12 per list. Apply <code>supabase/migrations/0027_activity_breakdowns.sql</code> for complete lists with signed-in, new-visitor, read-time and last-seen figures.</p>}
 
     <div className={styles.tabs} role="tablist" aria-label="Audience dimension">
-      {TABS.map(({ id, label, icon: Icon, key }) => <button key={id} type="button" role="tab" aria-selected={tab === id} className={styles.tab} onClick={() => reset(id)}><Icon size={15} aria-hidden="true" />{label}<span>{fmt((data[key] ?? []).length)}</span></button>)}
+      {tabs.map(({ id, label, icon: Icon, key }) => <button key={id} type="button" role="tab" aria-selected={tab === id} className={styles.tab} onClick={() => reset(id)}><Icon size={15} aria-hidden="true" />{label}<span>{fmt((data[key] ?? []).length)}</span></button>)}
     </div>
 
     <div className={styles.summary}>

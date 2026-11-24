@@ -5,9 +5,8 @@ import { Card } from "./ui/card";
 import { Button } from "./ui/button";
 import { AdminError, AdminLoading } from "./super-admin-feedback";
 import { AdminTable } from "./super-admin-table";
-import { SuperAdminHourly } from "./super-admin-hourly";
-import { SuperAdminLocations } from "./super-admin-locations";
 import { SuperAdminNewUserLocations } from "./super-admin-new-user-locations";
+import { SuperAdminTrafficSources } from "./super-admin-traffic-sources";
 import { locationLabel } from "@/lib/visitor-location";
 import { VISIT_RETENTION_DAYS } from "@/lib/visit-retention";
 import { AudienceExplorer } from "./super-admin-audience";
@@ -18,10 +17,13 @@ import { siAndroid, siApple, siBrave, siFacebook, siFirefoxbrowser, siGoogle, si
 import shell from "./super-admin-dashboard.module.css";
 import styles from "./super-admin-activity.module.css";
 
-/** Page order; every section is about visitors only. */
+/**
+ * Page order. User activities is the reporting window and the people in it; everything live (who is here now, today,
+ * the last three days) is on the Overview, so nothing here repeats it (user request 2026-11-24).
+ */
 const NAV = [
-  { id: "ac-now", label: "Right now", icon: Radio }, { id: "ac-audience", label: "Audience", icon: Users }, { id: "ac-traffic", label: "Traffic", icon: Activity },
-  { id: "ac-places", label: "Places", icon: MapPin }, { id: "ac-tech", label: "Devices & sources", icon: MonitorSmartphone }, { id: "ac-people", label: "People & visits", icon: UserRound },
+  { id: "ac-audience", label: "Audience", icon: Users }, { id: "ac-traffic", label: "Daily traffic", icon: Activity }, { id: "ac-sources", label: "Sources", icon: Megaphone },
+  { id: "ac-places", label: "Places & pages", icon: MapPin }, { id: "ac-tech", label: "Devices & campaigns", icon: MonitorSmartphone }, { id: "ac-people", label: "People & visits", icon: UserRound },
 ];
 const LIGHT_TONES = ["sky", "mint", "lavender", "peach", "butter", "rose", "sage", "aqua"] as const;
 
@@ -62,7 +64,6 @@ export function SuperAdminActivity({ days, query }: { days: number; query: strin
   // Visits are kept VISIT_RETENTION_DAYS days: a longer window can only ever show those.
   const span = Math.min(days, stream.days || VISIT_RETENTION_DAYS);
   const sum = useMemo(() => stream.everyone && !stream.capped ? periodSummary(stream.everyone, stream.now - span * 86_400_000) : null, [stream, span]);
-  const live = useMemo(() => stream.everyone ? { now: stream.everyone.filter(v => v.live).length, signed: stream.everyone.filter(v => v.live && v.signedIn).length } : null, [stream]);
 
   const refresh = useCallback(async (signal?: AbortSignal) => {
     setBusy(true);
@@ -94,10 +95,11 @@ export function SuperAdminActivity({ days, query }: { days: number; query: strin
   return <div className={styles.activity}>
     <SectionNav label="User activity sections" items={NAV} />
     {error && <AdminError>{error} Showing the last successful snapshot; figures may be out of date.</AdminError>}
-    <SectionHead id="ac-now" index={1} title="Right now" question="Who has a page open at this moment, and how fresh is this data?" icon={Radio} tone="mint" live />
     <div className={styles.liveBar}>
-      <span className={styles.livePulse} aria-hidden="true" />
-      <strong>{number(live?.now ?? t.liveNow)}</strong> on the site now <span className={styles.liveSub}>({number(live?.signed ?? t.liveSignedIn)} signed in · a page open in the last 100 seconds)</span>
+      <Calendar size={15} aria-hidden="true" />
+      <span>{days > span
+        ? <>The <b>last {span} days</b>: visits are kept for {VISIT_RETENTION_DAYS} days, so a {days}-day window has nothing older.</>
+        : <>The <b>last {span === 1 ? "24 hours" : `${span} days`}</b>, from your Supabase visit records.</>}</span>
       <span className={styles.liveActions}>
         <span className={styles.updated}>Updated {ago(data.generatedAt)}</span>
         <Button variant="outline" size="sm" disabled={busy} onClick={() => void refresh()}><RefreshCw size={14} />Refresh</Button>
@@ -105,14 +107,7 @@ export function SuperAdminActivity({ days, query }: { days: number; query: strin
       </span>
     </div>
 
-    <p className={styles.windowNote} role="status">
-      <Calendar size={14} aria-hidden="true" />
-      {days > span
-        ? <>Showing the <b>last {span} days</b>: visits are kept for {VISIT_RETENTION_DAYS} days, so a {days}-day window has nothing older to show.</>
-        : <>Showing the <b>last {span === 1 ? "24 hours" : `${span} days`}</b>.</>}
-      {" "}{sum ? "Visitor figures match the Overview's Live visitor stream." : "Counting visitors from the database report until the visitor stream loads."}
-    </p>
-    <SectionHead id="ac-audience" index={2} title="Audience" question="How many people came, how long they stayed and how many were new." icon={Users} tone="lavender" />
+    <SectionHead id="ac-audience" index={1} title="Audience" question="How many people came in this window, how long they stayed and how many were new." icon={Users} tone="lavender" />
     <div className={styles.metrics}>
       <Stat tone="lavender" index={0} icon={<Users size={16} />} label="Visitors" value={number(visitors)} note="People: a signed-in account, or one device (cookie resets linked)" />
       <Stat tone="sky" index={1} icon={<MousePointerClick size={16} />} label="Page views" value={number(sum ? sum.views : t.pageViews)} note={`${(sum ? sum.pagesPerSession : t.pagesPerSession) ?? "—"} pages per visit · on screen ≥ 1 s`} />
@@ -121,24 +116,22 @@ export function SuperAdminActivity({ days, query }: { days: number; query: strin
       <Stat tone="butter" index={4} icon={<Radio size={16} />} label="Visits" value={number(sum ? sum.sessions : t.sessions)} note="A visit ends after 30 minutes without activity" />
       <Stat tone="rose" index={5} icon={<Clock size={16} />} label="Avg. visit length" value={duration(sum ? (sum.avgStayMs == null ? null : sum.avgStayMs / 1000) : t.avgSessionSeconds)} note={sum?.readingPerPersonMs != null ? `${duration(sum.readingPerPersonMs / 1000)} reading per visitor` : "Arrival to last activity"} />
       <Stat tone="sage" index={6} icon={<ArrowLeft size={16} />} label="Bounce rate" value={(sum ? sum.bounceRate : t.bounceRate) == null ? "—" : `${sum ? sum.bounceRate : t.bounceRate}%`} note="Visits that opened a single page" />
-      <Stat tone="aqua" index={7} icon={<MonitorSmartphone size={16} />} label="Bot sessions filtered" value={number(t.bots)} note="Crawlers and automated browsers, kept out of every figure" />
     </div>
 
-    <SectionHead id="ac-traffic" index={3} title="Traffic over time" question="Page views, visitors and new visitors by day, and busy hours." icon={Activity} tone="sky" />
-    <div className={styles.charts}>
-      <Card className={`${shell.panel} ${styles.chartCard}`}>
-        <div className={shell.panelHeading}><h2>Daily traffic (IST)</h2><span className={styles.legend}><i data-key="views" />Page views <i data-key="visitors" />Visitors <i data-key="new" />New</span></div>
-        <DailyChart rows={daily} />
-      </Card>
-      <SuperAdminHourly />
-    </div>
+    <SectionHead id="ac-traffic" index={2} title="Daily traffic" question="Page views, visitors and new visitors on each day of the window." icon={Activity} tone="sky" />
+    <Card className={`${shell.panel} ${styles.chartCard}`}>
+      <div className={shell.panelHeading}><h2>Daily traffic (IST)</h2><span className={styles.legend}><i data-key="views" />Page views <i data-key="visitors" />Visitors <i data-key="new" />New</span></div>
+      <DailyChart rows={daily} />
+    </Card>
 
-    <SectionHead id="ac-places" index={4} title="Where visitors are" question="Countries, cities and first-time visitors on the map." icon={MapPin} tone="peach" />
-    <SuperAdminLocations days={days} query={query} />
+    <SectionHead id="ac-sources" index={3} title="Where visits came from" question="Sessions per platform: search, social, AI assistants, referrals and direct." icon={Megaphone} tone="butter" />
+    <SuperAdminTrafficSources days={days} />
+
+    <SectionHead id="ac-places" index={4} title="Places & pages" question="Countries, cities and pages in this window, and where first-time visitors are." icon={MapPin} tone="peach" />
+    <AudienceExplorer days={days} exclude={["sources"]} fallback={{ countries: data.countries, cities: data.cities, pages: data.pages, referrers: data.referrers }} />
     <SuperAdminNewUserLocations days={days} query={query} />
-    <AudienceExplorer days={days} fallback={{ countries: data.countries, cities: data.cities, pages: data.pages, referrers: data.referrers }} />
 
-    <SectionHead id="ac-tech" index={5} title="Devices & sources" question="What visitors browse with and which links brought them." icon={MonitorSmartphone} tone="butter" />
+    <SectionHead id="ac-tech" index={5} title="Devices & campaigns" question="What visitors browse with, and which tagged links brought them." icon={MonitorSmartphone} tone="mint" />
     <div className={styles.breakdowns}>
       <Breakdown title="Devices" icon={<MonitorSmartphone size={16} />} tone="sky" rows={rows(sum?.devices, "device", data.devices)} label="device" value="visitors" heads={["Device", "Visitors"]} rowIcon={row => deviceIcon(show(row.device))} />
       <Breakdown title="Browsers" icon={<Compass size={16} />} tone="lavender" rows={rows(sum?.browsers, "browser", data.browsers)} label="browser" value="visitors" heads={["Browser", "Visitors"]} rowIcon={row => brandIcon(show(row.browser), BROWSER_MARKS, <Globe size={15} />)} />

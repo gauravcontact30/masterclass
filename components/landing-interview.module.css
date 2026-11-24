@@ -77,3 +77,14 @@
   .picture { aspect-ratio: 16 / 10; min-height: 0; }
   .lede { font-size: 16px; }
 }
+
+/* Question of the week (landing preview): one card at a time, Agentic AI → Next.js 16+ → AWS every five seconds. */
+.weekly { margin: 0 0 22px; }
+.weekly > div > article { margin-bottom: 10px; }
+.weeklyPicks { display: flex; flex-wrap: wrap; gap: 8px; }
+.weeklyPicks button { position: relative; overflow: hidden; padding: 6px 14px; border: 1px solid #ecdccf; border-radius: 999px; background: #fff; font: inherit; font-size: 13px; font-weight: 600; color: #6b4a3c; cursor: pointer; }
+.weeklyPicks button[aria-pressed="true"] { border-color: #b65334; background: #fff4ec; color: #8f3f23; }
+.weeklyPicks button:focus-visible { outline: 2px solid #b65334; outline-offset: 2px; }
+.weeklyTimer { position: absolute; left: 0; bottom: 0; height: 3px; width: 100%; background: #b65334; transform-origin: left; animation: weekly-fill linear forwards; }
+@keyframes weekly-fill { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+@media (prefers-reduced-motion: reduce) { .weeklyTimer { animation: none; } }

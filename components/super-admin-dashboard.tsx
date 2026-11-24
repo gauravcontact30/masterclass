@@ -15,14 +15,13 @@ import { Input } from "@/components/ui/input";
 import { useCallback, useEffect, useState, useRef } from "react";
 import Link from "@/components/site-link";
 import { useRouter } from "next/navigation";
-import { Briefcase, GraduationCap, Landmark, School, CalendarDays, CalendarRange, Gauge, MapPin, Radio as RadioIcon, Sparkles, Zap, MessageSquarePlus, Newspaper, Radar, Activity, HeartPulse, ArrowLeft, Bot, Layers, Receipt, LifeBuoy, Megaphone, MousePointerClick, TrendingUp, ChevronDown, ChevronRight, CreditCard, Database, ExternalLink, LogOut, RefreshCw, PanelLeftClose, PanelLeftOpen, Server, ShieldCheck, UploadCloud, UserRound, Users } from "lucide-react";
+import { Briefcase, GraduationCap, Landmark, School, CalendarDays, Gauge, Radio as RadioIcon, Sparkles, Zap, MessageSquarePlus, Newspaper, Radar, Activity, HeartPulse, ArrowLeft, Bot, Layers, Receipt, LifeBuoy, Megaphone, MousePointerClick, TrendingUp, ChevronDown, ChevronRight, CreditCard, Database, ExternalLink, LogOut, RefreshCw, PanelLeftClose, PanelLeftOpen, Server, ShieldCheck, UploadCloud, UserRound, Users } from "lucide-react";
 import { SidebarTooltips } from "./sidebar-tooltips";
 import { DashboardPageHeader } from "./dashboard-page-header";
 import { LiveVisitorsBadge } from "./super-admin-traffic-sources";
 import { Wordmark } from "./brand-mark";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "./ui/dropdown-menu";
 import { OverviewLive } from "./super-admin-overview-live";
-import { SuperAdminWeek } from "./super-admin-week";
 import { SectionHead, SectionNav } from "./super-admin-section-head";
 import { AdminTable } from "./super-admin-table";
 import { LearningSlot } from "./learning-slot";
@@ -33,8 +32,6 @@ import { useLanguage } from "./language-provider";
 import { COPILOT_META, isCopilotPage } from "@/lib/admin-pages";
 
 const sectionLoading = () => <AdminLoading>Loading section...</AdminLoading>;
-// Traffic sources (Overview and User activities): loaded with those sections only.
-const SuperAdminTrafficSources = dynamic(() => import("./super-admin-traffic-sources").then(module => module.SuperAdminTrafficSources), { loading: sectionLoading });
 // Overview → "Three days, hour by hour" (day before yesterday, yesterday, today), loaded with the Overview only.
 const SuperAdminThreeDays = dynamic(() => import("./super-admin-three-days").then(module => module.SuperAdminThreeDays), { loading: sectionLoading });
 const SuperAdminSecurityCenter = dynamic(() => import("./super-admin-security").then(module => module.SuperAdminSecurityCenter), { loading: sectionLoading });
@@ -51,7 +48,6 @@ const SuperAdminBilling = dynamic(() => import("./super-admin-billing").then(mod
 const SuperAdminInfrastructure = dynamic(() => import("./super-admin-infrastructure").then(module => module.SuperAdminInfrastructure), { loading: sectionLoading });
 const SuperAdminSuggestions = dynamic(() => import("./super-admin-suggestions").then(module => module.SuperAdminSuggestions), { loading: sectionLoading });
 const SuperAdminTraces = dynamic(() => import("./super-admin-traces").then(module => module.SuperAdminTraces), { loading: sectionLoading });
-const SuperAdminNewUserLocations = dynamic(() => import("./super-admin-new-user-locations").then(module => module.SuperAdminNewUserLocations), { loading: sectionLoading });
 const SuperAdminActivity = dynamic(() => import("./super-admin-activity").then(module => module.SuperAdminActivity), { loading: sectionLoading });
 const SuperAdminTransactions = dynamic(() => import("./super-admin-transactions").then(module => module.SuperAdminTransactions), { loading: sectionLoading });
 /** The "SEO Audit" page: site audit, rank tracker, Ahrefs site and keyword explorers, competitors and AI visibility. */
@@ -86,10 +82,14 @@ const groups = [
   { label: "System", key: "system" as const, items: [{ id: "infra", key: "infrastructure" as const, label: "Infrastructure", icon: Server }, { id: "logs-health", key: "logsAndHealth" as const, label: "Logs & Health", icon: HeartPulse }, { id: "security", key: "security" as const, label: "Security", icon: ShieldCheck }] },
 ] as const;
 type SectionItem = (typeof groups)[number]["items"][number];
-/** The Overview's sections, in page order: every one is about visitors (migration-backed Supabase visit tables). */
+/**
+ * The Overview's sections, in page order: what is happening now and today, live from the Supabase visit tables. The
+ * reporting window (traffic sources, places, devices, people) is on User activities, so the two pages never repeat
+ * each other (user request 2026-11-24).
+ */
 const OVERVIEW_NAV = [
   { id: "ov-glance", label: "At a glance", icon: Gauge }, { id: "ov-stream", label: "Live stream", icon: RadioIcon }, { id: "ov-first", label: "First visits", icon: Sparkles },
-  { id: "ov-today", label: "Today", icon: Zap }, { id: "ov-days", label: "3 days", icon: CalendarDays }, { id: "ov-week", label: "7 days", icon: CalendarRange }, { id: "ov-places", label: "Places", icon: MapPin },
+  { id: "ov-today", label: "Reading now", icon: Zap }, { id: "ov-days", label: "3 days", icon: CalendarDays },
 ];
 const sections: readonly SectionItem[] = groups.flatMap((group): readonly SectionItem[] => group.items);
 type Section = typeof sections[number]["id"];
@@ -201,7 +201,7 @@ export function SuperAdminDashboard({ userId = "admin", isOwner = false }: { use
         </DropdownMenu>
       </div>
     </header>
-      <PageBack /><main className={styles.main}><DashboardPageHeader actions={<LiveVisitorsBadge />} eyebrow={section === "tech-buzz" ? "Content · Blogs" : section === "upload-learning" ? "Content · Publishing" : section === "notepad" ? "Writing workspace" : section === "suggestions" ? "People · Feedback" : section === "seo-audit" ? "Growth · Search & AI visibility" : "Application monitoring"} title={section === "overview" ? "Your visitors, live." : sections.find(s => s.id === section)?.label} description={section === "tech-buzz" ? "Track /tech-buzz end to end: every page and section, the daily 5:00 AM edition, Community favourites topics and every story's reactions." : section === "upload-learning" ? "Publish your Notepad documents to any page of the Learning Dashboard, the landing page, sign in, sign up or this console, and add your own Learning Dashboard pages." : section === "notepad" ? "Write, format and export documents. Drafts autosave in this browser every two minutes." : section === "suggestions" ? "Listen, triage and keep contributors informed. Replies appear in each contributor’s private tracking view." : section === "seo-audit" ? "Make the site discoverable in search and AI answers: audit every page, track rankings, research keywords and backlinks with Ahrefs, watch competitors and see when AI search cites you." : isCopilotPage(section) ? COPILOT_META[section].description : section === "overview" ? "Everyone who is on the site, has just left or is about to arrive, counted live from your own visit records." : section === "activity" ? "Every visit, in sections: who is here now, the audience, traffic over time, where they are, what they use and who they are." : "Keep a pulse on your learners, subscriptions, and platform."} icon={section === "tech-buzz" ? <Newspaper/> : section === "suggestions" ? <MessageSquarePlus/> : section === "upload-learning" ? <UploadCloud/> : <ShieldCheck/>}/>
+      <PageBack /><main className={styles.main}><DashboardPageHeader actions={<LiveVisitorsBadge />} eyebrow={section === "tech-buzz" ? "Content · Blogs" : section === "upload-learning" ? "Content · Publishing" : section === "notepad" ? "Writing workspace" : section === "suggestions" ? "People · Feedback" : section === "seo-audit" ? "Growth · Search & AI visibility" : "Application monitoring"} title={section === "overview" ? "Your visitors, live." : sections.find(s => s.id === section)?.label} description={section === "tech-buzz" ? "Track /tech-buzz end to end: every page and section, the daily 5:00 AM edition, Community favourites topics and every story's reactions." : section === "upload-learning" ? "Publish your Notepad documents to any page of the Learning Dashboard, the landing page, sign in, sign up or this console, and add your own Learning Dashboard pages." : section === "notepad" ? "Write, format and export documents. Drafts autosave in this browser every two minutes." : section === "suggestions" ? "Listen, triage and keep contributors informed. Replies appear in each contributor’s private tracking view." : section === "seo-audit" ? "Make the site discoverable in search and AI answers: audit every page, track rankings, research keywords and backlinks with Ahrefs, watch competitors and see when AI search cites you." : isCopilotPage(section) ? COPILOT_META[section].description : section === "overview" ? "Who is on the site now and how today is going, counted live from your Supabase visit records every 5 seconds." : section === "activity" ? "The reporting window and the people in it: audience, daily traffic, sources, places, devices, and every visitor's own trail." : "Keep a pulse on your learners, subscriptions, and platform."} icon={section === "tech-buzz" ? <Newspaper/> : section === "suggestions" ? <MessageSquarePlus/> : section === "upload-learning" ? <UploadCloud/> : <ShieldCheck/>}/>
       <LearningSlot surface="super_admin" page={section} section="top" />
       {section !== "suggestions" && !writing && <div className={styles.toolbar}><div className={styles.reportFilter}><Label htmlFor="admin-report-window">Reporting window</Label><AdminSelect id="admin-report-window" label="Reporting window" value={String(days)} onValueChange={value=>setDays(Number(value))} options={[{value:"1",label:"Last 24 hours"},{value:"7",label:"Last 7 days"},{value:"30",label:"Last 30 days"},{value:"90",label:"Last 90 days"}]} /></div><Input aria-label="Search displayed records" placeholder="Search displayed records…" value={query} onChange={e => setQuery(e.target.value)} /></div>}
       {accountError && <Alert variant="destructive" className={styles.error}><AlertDescription>{accountError}</AlertDescription></Alert>}
@@ -213,7 +213,6 @@ export function SuperAdminDashboard({ userId = "admin", isOwner = false }: { use
       {section === "logs-health" && <SuperAdminLogsHealth />}
       {section === "billing" && <SuperAdminBilling />}
       {section === "infra" && <SuperAdminInfrastructure />}
-      {(section === "overview" || section === "activity") && <SuperAdminTrafficSources days={days} />}
       {section === "activity" && <SuperAdminActivity days={days} query={query} />}
       {section === "insights" && <SuperAdminInsights days={days} />}
       {section === "suggestions" && <SuperAdminSuggestions />}
@@ -234,10 +233,6 @@ export function SuperAdminDashboard({ userId = "admin", isOwner = false }: { use
       {section === "overview" && <div className={styles.visitorSections}>
         <SectionHead id="ov-days" index={5} title="Last three days" question="How today compares with yesterday and the day before, hour by hour." icon={CalendarDays} tone="sky" />
         <SuperAdminThreeDays />
-        <SectionHead id="ov-week" index={6} title="Last seven days" question="Day-by-day visitors, new against returning, and what drove them." icon={CalendarRange} tone="lavender" />
-        <SuperAdminWeek />
-        <SectionHead id="ov-places" index={7} title="Where new visitors are" question="Cities and countries of people visiting for the first time." icon={MapPin} tone="peach" />
-        <SuperAdminNewUserLocations days={days} query={query} />
       </div>}
       {["live","analytics","moderation","security"].includes(section)&&<SuperAdminOperations section={section} days={days} query={query}/>}
       {section==="ai"&&<SuperAdminAi days={days} query={query}/>}

@@ -1,6 +1,6 @@
 "use client";
 import { ContentImage } from "./content-image";
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore, type ReactNode } from "react";
 import { GraduationCap } from "lucide-react";
 import type { FreshQuestion } from "@/lib/landing-fresh-types";
 import { DailyCard, DailyChoice } from "./landing-daily-card";
@@ -8,6 +8,8 @@ import { bankIds, INTERVIEW_TECHS, loadInterviewBank, type InterviewTech } from 
 import type { QuestionSet } from "@/lib/interview-questions";
 import { learningImageUrl } from "@/lib/learning-image";
 import { takeDaily } from "@/lib/daily-rotation";
+import { weeklyQuestions } from "@/lib/question-of-the-week";
+import { useVisiblePlayback } from "./use-visible-playback";
 import { AUTOPLAY_MS, Controls, Dots, PREVIEW_COUNT } from "./landing-ai-pulse";
 import { DashboardMore } from "./dashboard-more";
 import { InterviewQuestions, StarRow } from "./interview-accordion";
@@ -47,6 +49,14 @@ export function LandingInterview({ expanded = false, preview = false, day = 0, f
   // The open library tab per tabbed technology, shared by the navigator and the slide.
   const [tabs, setTabs] = useState<Record<string, number>>({});
   const chooseTab = (id: string, tab: number) => setTabs(all => ({ ...all, [id]: tab }));
+  // The Question of the week card (preview only): Agentic AI, Next.js 16+ and AWS, turning every five seconds.
+  // The header arrows step it along with the technology track, so a click always changes what is in view.
+  const weekly = preview ? weeklyQuestions(day, fresh) : [];
+  const [question, setQuestion] = useState(0);
+  const step = (next: number) => {
+    if (weekly.length) setQuestion(q => (((q + next - page) % weekly.length) + weekly.length) % weekly.length);
+    goTo(next);
+  };
   if (section.hidden) return null;
   return <section id="interview-prep" className={styles.section} aria-labelledby="interview-title" {...section.props}>{section.toolbar}<div className={home.inner}>
     {preview && <DashboardMore href="/learning" title={text(`See all ${INTERVIEW_TECHS.length} technologies`, `सभी ${INTERVIEW_TECHS.length} तकनीकें देखें`)} detail={text("30+ subjective and 30+ objective questions for every technology, with search and filters.", "हर तकनीक के लिए 30+ विषयगत और 30+ वस्तुनिष्ठ प्रश्न, खोज और फ़िल्टर के साथ।")} />}
@@ -58,13 +68,10 @@ export function LandingInterview({ expanded = false, preview = false, day = 0, f
           "Subjective and objective questions for every technology on this platform, from LangChain and Next.js to Git and AWS, each rated by how often it comes up. Open one to see a model answer, or the right option and why.",
           "इस प्लेटफ़ॉर्म की हर तकनीक के लिए विषयगत और वस्तुनिष्ठ प्रश्न, LangChain और Next.js से Git और AWS तक, हर एक पर रेटिंग कि वह कितनी बार पूछा जाता है। मॉडल उत्तर या सही विकल्प और उसका कारण देखने के लिए प्रश्न खोलें।")}</p>
       </div>
-      <Controls text={text} playing={playing} onPlay={() => setPlaying(p => !p)} page={page} pages={pages} goTo={goTo} previous={text("Previous technology", "पिछली तकनीक")} next={text("Next technology", "अगली तकनीक")} />
+      <Controls text={text} playing={playing} onPlay={() => setPlaying(p => !p)} page={page} pages={pages} goTo={step} previous={text("Previous technology", "पिछली तकनीक")} next={text("Next technology", "अगली तकनीक")} />
     </div>
-    {/* This week's AI-written question (lib/server/landing-fresh.ts), above the bank. */}
-    {preview && fresh && <DailyCard kicker={text(`Question of the week · ${fresh.tech}`, `इस हफ़्ते का प्रश्न · ${fresh.tech}`)} title={fresh.question} image={fresh.image} icon={<GraduationCap size={44} strokeWidth={1.3} />} day={fresh.day}>
-      <details><summary>{text("Show the model answer", "मॉडल उत्तर देखें")}</summary><p>{fresh.answer}</p></details>
-      <DailyChoice question={fresh.objective.question} options={fresh.objective.options} answer={fresh.objective.answer} why={fresh.objective.why} reveal={text("Why:", "क्यों:")} />
-    </DailyCard>}
+    {/* Question of the week for Agentic AI, Next.js 16+ and AWS (lib/question-of-the-week.ts), above the bank. */}
+    {weekly.length > 0 && <WeeklyQuestion questions={weekly} index={question} onPick={setQuestion} playing={playing} text={text} />}
     {!preview && <InterviewTechNav techs={techs} current={page} onPick={goTo} tones={TONES} text={text} tab={tabs[current?.id] ?? 0} onTab={tab => chooseTab(current.id, tab)} />}
     <p className={styles.now} aria-live="polite"><b>{current?.title}</b><span aria-hidden="true">·</span>{text(`Topic ${page + 1} of ${techs.length}`, `विषय ${page + 1} / ${techs.length}`)}</p>
     <ul ref={track} className={styles.track} aria-roledescription="carousel" aria-label={text("Interview questions by technology", "तकनीक के अनुसार इंटरव्यू प्रश्न")} {...holdProps}>
@@ -73,6 +80,47 @@ export function LandingInterview({ expanded = false, preview = false, day = 0, f
     <Dots pages={pages} page={page} running={running} goTo={goTo} label={n => text(`Show technology ${n}`, `तकनीक ${n} दिखाएँ`)} />
     {expanded && <DashboardLessons section="interview" />}
   </div></section>;
+}
+
+/** Interval between Question of the week cards. */
+const WEEKLY_MS = 5000;
+const motionQuery = "(prefers-reduced-motion: reduce)";
+const subscribeMotion = (update: () => void) => { const query = window.matchMedia?.(motionQuery); query?.addEventListener("change", update); return () => query?.removeEventListener("change", update); };
+const readMotion = () => window.matchMedia?.(motionQuery).matches ?? false;
+
+/**
+ * This week's question for each of Agentic AI, Next.js 16+ and AWS, one at a time. It turns every five seconds while
+ * the section's autoplay is on, holds while the reader hovers or focuses it (or the card is out of view), and stays put
+ * for reduced motion. The technology chips pick one directly and show the time left on the current one.
+ */
+function WeeklyQuestion({ questions, index, onPick, playing, text }: Readonly<{ questions: ReturnType<typeof weeklyQuestions>; index: number; onPick: (index: number) => void; playing: boolean; text: Text }>) {
+  const ref = useRef<HTMLDivElement>(null);
+  const visible = useVisiblePlayback(ref);
+  const reduced = useSyncExternalStore(subscribeMotion, readMotion, () => false);
+  const [held, setHeld] = useState(false);
+  const running = playing && !held && visible && !reduced && questions.length > 1;
+  useEffect(() => {
+    if (!running) return;
+    const timer = setTimeout(() => onPick((index + 1) % questions.length), WEEKLY_MS);
+    return () => clearTimeout(timer);
+  }, [running, index, questions.length, onPick]);
+  const current = questions[index] ?? questions[0];
+  return <div ref={ref} className={styles.weekly} aria-roledescription="carousel" aria-label={text("Question of the week", "इस हफ़्ते का प्रश्न")}
+    onMouseEnter={() => setHeld(true)} onMouseLeave={() => setHeld(false)} onFocus={() => setHeld(true)}
+    onBlur={event => { if (!event.currentTarget.contains(event.relatedTarget as Node)) setHeld(false); }}>
+    <div aria-live={running ? "off" : "polite"}>
+      <DailyCard key={current.techId} kicker={text(`Question of the week · ${current.tech}`, `इस हफ़्ते का प्रश्न · ${current.tech}`)} title={current.question} image={current.image} icon={<GraduationCap size={44} strokeWidth={1.3} />} day={current.day}>
+        <details><summary>{text("Show the model answer", "मॉडल उत्तर देखें")}</summary><p>{current.answer}</p></details>
+        <DailyChoice question={current.objective.question} options={current.objective.options} answer={current.objective.answer} why={current.objective.why} reveal={text("Why:", "क्यों:")} />
+      </DailyCard>
+    </div>
+    <div className={styles.weeklyPicks} role="group" aria-label={text("Question of the week technology", "इस हफ़्ते के प्रश्न की तकनीक")}>
+      {questions.map((q, i) => <button key={q.techId} type="button" aria-pressed={i === index} onClick={() => onPick(i)}>
+        {q.tech}
+        {i === index && running && <span key={index} className={styles.weeklyTimer} style={{ animationDuration: `${WEEKLY_MS}ms` }} aria-hidden="true" />}
+      </button>)}
+    </div>
+  </div>;
 }
 
 function InterviewSlide({ tech, index, tone, total, near, text, tab, onTab, preview = false }: Readonly<{ tech: InterviewTech; index: number; tone: number; total: number; near: boolean; text: Text; tab: number; onTab: (tab: number) => void; preview?: boolean }>) {

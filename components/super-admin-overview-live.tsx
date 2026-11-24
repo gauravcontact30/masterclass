@@ -768,9 +768,10 @@ export function OverviewLive({ snapshot, onRefreshSnapshot, visitorsOnly = false
         <Pager page={Math.min(tracePage, pagesOf(traces, TRACE_PAGE))} pages={pagesOf(traces, TRACE_PAGE)} total={traces.length} size={TRACE_PAGE} onPage={setTracePage} />
       </article>}
 
-      <SectionHead id="ov-today" index={4} title="Today's pattern" question="When visitors arrive, which pages they read and what they use." icon={Zap} tone="peach" />
+      <SectionHead id="ov-today" index={4} title={visitorsOnly ? "Reading now" : "Today's pattern"} question={visitorsOnly ? "Which pages people have been reading in the last 30 minutes, and on what." : "When visitors arrive, which pages they read and what they use."} icon={Zap} tone="peach" />
 
-      <article className={styles.panel} data-tone="peach">
+      {/* The Overview's At a glance already shows today's hours, audience, top page, source, country and devices. */}
+      {!visitorsOnly && <article className={styles.panel} data-tone="peach">
         <h3><Zap size={16} aria-hidden="true" />{day === "today" ? "Today" : "Last 24 hours"}<span>page views by hour (IST){day === "today" ? " since midnight" : ""}, bots excluded{exact ? "" : " · from the database report until the visitor stream loads"}</span></h3>
         <div className={styles.spark} role="img" aria-label={`Hourly page views, peak ${n(peak)}`}>{hours.map((views, hour) => { return <span key={hour} style={{ height: `${Math.max(4, (views / peak) * 100)}%` }} data-now={istHour(clockNow) === hour || undefined} title={`${hourLabel(hour)} IST — ${views} page views`} />; })}</div>
         <div className={styles.sparkAxis}><span>00</span><span>06</span><span>12</span><span>18</span><span>23</span></div>
@@ -795,9 +796,9 @@ export function OverviewLive({ snapshot, onRefreshSnapshot, visitorsOnly = false
           const tones = ["sky", "lavender", "mint", "peach", "butter", "rose", "sage"];
           return <dl className={styles.facts}>{facts.map(([label, value, note, Icon], i) => <div key={label} data-tone={tones[i % tones.length]} style={{ "--i": i } as React.CSSProperties}><dt><Icon size={12} aria-hidden="true" />{label}</dt><dd title={value}>{value}</dd>{note && <small>{note}</small>}</div>)}</dl>;
         })()}
-      </article>
+      </article>}
 
-      <article className={styles.panel} data-tone="sky">
+      <article className={`${styles.panel}${visitorsOnly ? ` ${styles.full}` : ""}`} data-tone="sky">
         <h3><BookOpenText size={16} aria-hidden="true" />Pages read, last 30 min<span>most visitors first · avg. read per finished page view</span></h3>
         {reading.length ? <><div className={`${styles.listHead} ${styles.readingHead}`} aria-hidden="true"><span>Page</span><span>Visitors</span><span>Views</span><span>Avg. read</span></div><ul className={styles.reading}>{readRows.map(p => <li key={p.path}><code title={`${p.title} · ${p.path}`}>{p.path}</code><span title="Different people"><Users size={12} aria-hidden="true" />{p.people}</span><span title="Times opened"><MousePointerClick size={12} aria-hidden="true" />{p.views}</span><span title={p.avgReadMs == null ? "Still open, or closed without a recorded time" : "Average visible time per finished view"}><Timer size={12} aria-hidden="true" />{p.avgReadMs == null ? "—" : spent(p.avgReadMs / 1000)}</span></li>)}</ul></> : <p className={styles.empty}>Nobody has opened a page in the last 30 minutes.</p>}
         {reading.length > READING_PAGE && <Pager page={Math.min(readPage, pagesOf(reading, READING_PAGE))} pages={pagesOf(reading, READING_PAGE)} total={reading.length} size={READING_PAGE} onPage={setReadPage} />}

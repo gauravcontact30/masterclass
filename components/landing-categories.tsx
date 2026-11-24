@@ -2,7 +2,7 @@
 import type { ReactNode } from "react";
 import Image from "@/components/responsive-image";
 import Link from "@/components/site-link";
-import { ArrowDown, ArrowRight, BookOpenCheck, Briefcase, CalendarClock, Check, ChevronDown, ClipboardList, GraduationCap, History, Landmark, LayoutDashboard, ListChecks, PencilLine, Scale, Star, Trophy, UserRound, type LucideIcon } from "lucide-react";
+import { ArrowRight, BookOpenCheck, Briefcase, CalendarClock, ChevronDown, ClipboardList, GraduationCap, History, Landmark, ListChecks, PencilLine, Scale, Star, type LucideIcon } from "lucide-react";
 import { BOARD_FAQ, CATEGORIES, COMPETITIVE_FAQ, EXAM_COUNT, type Category, type Faq } from "@/lib/landing-categories";
 import { UPCOMING_WINDOW } from "@/lib/board-exams/papers";
 import { MARKING } from "@/lib/competitive-exams/marking";
@@ -11,55 +11,13 @@ import frame from "./landing-section.module.css";
 import styles from "./landing-categories.module.css";
 
 /*
- * The landing page's three categories after the main slider: a navigator (Tech · Board Exams · Competitive Exams),
- * a band that opens each category, and the two exam categories' own sections (what each includes, sample
+ * The landing page's three categories: a band that opens each category (Tech · Board Exams · Competitive Exams),
+ * and the two exam categories' own sections (what each includes, sample
  * most-important questions, TET and NDA spotlights, marking schemes and FAQs). All of it is static copy; the exam
  * parts mount only for visitors in India (components/landing-page.tsx).
  */
 const ICON: Record<Category["id"], LucideIcon> = { tech: Briefcase, board: GraduationCap, competitive: Landmark };
-const scrollTo = (anchor: string) => (event: React.MouseEvent) => { const target = document.getElementById(anchor); if (!target) return; event.preventDefault(); target.scrollIntoView({ behavior: "smooth", block: "start" }); };
 const Stars = ({ count }: { count: number }) => <span className={styles.stars} role="img" aria-label={`${count} out of 5 stars`}>{[1, 2, 3, 4, 5].map(n => <i key={n} aria-hidden="true" data-on={n <= count || undefined}>★</i>)}</span>;
-
-/** The three categories, right under the slider. Each card jumps to its band and links to its dashboard. */
-export function LandingCategories() {
-  return <section id="categories" className={frame.section} data-ground="paper" aria-labelledby="categories-title"><div className={home.inner}>
-    <header className={frame.head}>
-      <div>
-        <p className={frame.kicker}><Trophy size={14} aria-hidden="true" />Three categories<span>Choose your path</span></p>
-        <h2 id="categories-title">What would you like to <em>prepare for?</em></h2>
-      </div>
-      <p className={frame.lede}>MasterClass Buddy is three learning spaces in one: <b>Tech</b> for professionals and college students worldwide, <b>Board Exams</b> for Class 10 and 12 students of UP Board, CBSE and ICSE, and <b>Competitive Exams</b> for government job aspirants, from NDA and TET to SSC, banks and UPSC.</p>
-    </header>
-    <ol className={styles.cards}>
-      {CATEGORIES.map(category => { const Icon = ICON[category.id]; const [who, where] = category.audience.split(" · "); return <li key={category.id} className={styles.card} data-category={category.id}>
-        {/* The plate: a tinted header with the category's own pattern, its icon, an outlined number and the headline figure. */}
-        <div className={styles.cardPlate}>
-          <span className={styles.cardNumber} aria-hidden="true">{category.number}</span>
-          <span className={styles.cardIcon} aria-hidden="true"><Icon size={24} strokeWidth={1.8} /></span>
-          <p className={styles.cardStat}><b>{category.figure.value}</b><span>{category.figure.label}</span></p>
-        </div>
-        <div className={styles.cardBody}>
-          <div className={styles.cardHeading}>
-            <h3>{category.title}</h3>
-            <p className={styles.cardTagline}>{category.tagline}</p>
-          </div>
-          <p className={styles.cardAudience}><span>{who}</span>{where && <span className={styles.cardWhere}>{where}</span>}</p>
-          <p className={styles.cardSummary}>{category.summary}</p>
-          <ul className={styles.cardPoints}>{category.points.map(point => <li key={point}><Check size={14} strokeWidth={2.6} aria-hidden="true" />{point}</li>)}</ul>
-          <div className={styles.cardActions}>
-            <a className={styles.cardJump} href={`#${category.anchor}`} onClick={scrollTo(category.anchor)}>Explore {category.title}<ArrowDown size={15} aria-hidden="true" /></a>
-            <Link className={styles.cardOpen} href={category.href}>Open dashboard<ArrowRight size={14} aria-hidden="true" /></Link>
-          </div>
-        </div>
-      </li>; })}
-    </ol>
-    <ul className={styles.promise} aria-label="How categories work">
-      <li><UserRound size={15} aria-hidden="true" />One account per category</li>
-      <li><LayoutDashboard size={15} aria-hidden="true" />Each with its own dashboard</li>
-      <li><Star size={15} aria-hidden="true" />Most important questions first</li>
-    </ul>
-  </div></section>;
-}
 
 /** Opens one category: its number, name and audience, then the category's sections follow. */
 export function CategoryBand({ id }: { id: Category["id"]; india?: boolean }) {

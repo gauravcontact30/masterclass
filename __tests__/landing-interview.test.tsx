@@ -1,4 +1,4 @@
-import { fireEvent, render, screen, within } from "@testing-library/react";
+import { act, fireEvent, render, screen, within } from "@testing-library/react";
 import { LandingInterview } from "@/components/landing-interview";
 import { NAV_PAGE_SIZE } from "@/components/interview-tech-nav";
 import { LanguageProvider } from "@/components/language-provider";
@@ -83,4 +83,26 @@ test("Key TanStack libraries switches between a tab per library", async () => {
   fireEvent.click(tabs[3]);
   expect(within(slide).getByRole("tab", { name: "Table" })).toHaveAttribute("aria-selected", "true");
   expect(within(slide).getByRole("tabpanel")).toHaveAttribute("aria-labelledby", tabs[3].id);
+});
+
+test("the preview's Question of the week cycles Agentic AI, Next.js 16+ and AWS every 5 s and follows the arrows", () => {
+  jest.useFakeTimers();
+  Element.prototype.scrollTo ??= function scrollTo() {};
+  try {
+    render(<LanguageProvider><LandingInterview preview /></LanguageProvider>);
+    const kicker = () => screen.getByText(/^Question of the week · /).textContent;
+    const picks = within(screen.getByRole("group", { name: "Question of the week technology" }));
+    expect(picks.getAllByRole("button").map(b => b.textContent)).toEqual(["Agentic AI", "Next.js 16+", "AWS"]);
+    expect(kicker()).toBe("Question of the week · Agentic AI");
+    act(() => { jest.advanceTimersByTime(5000); });
+    expect(kicker()).toBe("Question of the week · Next.js 16+");
+    fireEvent.click(screen.getByRole("button", { name: "Next technology" }));
+    expect(kicker()).toBe("Question of the week · AWS");
+    fireEvent.click(screen.getByRole("button", { name: "Previous technology" }));
+    expect(kicker()).toBe("Question of the week · Next.js 16+");
+    fireEvent.click(picks.getByRole("button", { name: "Agentic AI" }));
+    expect(kicker()).toBe("Question of the week · Agentic AI");
+  } finally {
+    jest.useRealTimers();
+  }
 });
