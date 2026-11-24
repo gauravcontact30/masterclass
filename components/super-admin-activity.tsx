@@ -1,17 +1,17 @@
 "use client";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Activity, AppWindow, ArrowLeft, Calendar, Clock, Compass, Download, ExternalLink, Eye, Globe, Laptop, LogOut, MapPin, Megaphone, Monitor, MonitorSmartphone, MousePointerClick, Radio, RefreshCw, ShieldCheck, Smartphone, Tablet, Terminal, UserPlus, UserRound, Users } from "lucide-react";
 import { Card } from "./ui/card";
 import { Button } from "./ui/button";
 import { AdminError, AdminLoading } from "./super-admin-feedback";
 import { AdminTable } from "./super-admin-table";
 import { SuperAdminNewUserLocations } from "./super-admin-new-user-locations";
-import { SuperAdminTrafficSources } from "./super-admin-traffic-sources";
 import { locationLabel } from "@/lib/visitor-location";
 import { VISIT_RETENTION_DAYS } from "@/lib/visit-retention";
-import { AudienceExplorer } from "./super-admin-audience";
+import { countryName } from "./super-admin-audience";
 import { SectionHead, SectionNav } from "./super-admin-section-head";
 import { periodSummary } from "@/lib/live-visits";
+import { uncountedBrowsers, visitorReport, type Count, type PersonRow, type VisitRow } from "@/lib/visitor-report";
 import { useStreamVisitors } from "./use-stream-visitors";
 import { siAndroid, siApple, siBrave, siFacebook, siFirefoxbrowser, siGoogle, siGooglechrome, siInstagram, siIos, siLinux, siMacos, siOpera, siSafari, siSamsung, siUbuntu, siWhatsapp, siYoutube, type SimpleIcon } from "simple-icons";
 import shell from "./super-admin-dashboard.module.css";
@@ -22,8 +22,9 @@ import styles from "./super-admin-activity.module.css";
  * the last three days) is on the Overview, so nothing here repeats it (user request 2026-11-24).
  */
 const NAV = [
-  { id: "ac-audience", label: "Audience", icon: Users }, { id: "ac-traffic", label: "Daily traffic", icon: Activity }, { id: "ac-sources", label: "Sources", icon: Megaphone },
-  { id: "ac-places", label: "Places & pages", icon: MapPin }, { id: "ac-tech", label: "Devices & campaigns", icon: MonitorSmartphone }, { id: "ac-people", label: "People & visits", icon: UserRound },
+  { id: "ac-audience", label: "Audience", icon: Users }, { id: "ac-traffic", label: "Daily traffic", icon: Activity }, { id: "ac-new", label: "New visitors", icon: UserPlus },
+  { id: "ac-sources", label: "Sources", icon: Megaphone }, { id: "ac-places", label: "Places & pages", icon: MapPin }, { id: "ac-tech", label: "Devices", icon: MonitorSmartphone },
+  { id: "ac-accounts", label: "New accounts", icon: UserRound }, { id: "ac-people", label: "People & visits", icon: Users },
 ];
 const LIGHT_TONES = ["sky", "mint", "lavender", "peach", "butter", "rose", "sage", "aqua"] as const;
 
@@ -51,72 +52,71 @@ const errorText = (code: string) => code === "migration_required"
   ? "User activity is not set up in the database yet. Apply supabase/migrations/0023_user_activity.sql (and 0020 for the support tools), then reload."
   : "User activity could not be loaded. Check the database connection and try again.";
 
-/** The super admin's User activities page: every visit by anonymous visitors and signed-in learners, live and over time. */
+/**
+ * The super admin's User activities page: the reporting window and the people in it. Every visitor figure, list and
+ * breakdown here is counted from the Live visitor stream's people (lib/visitor-report.ts), the same people the
+ * Overview counts, read from the site_visits table; nothing is counted from the per-browser SQL report, which also
+ * counted scrapers and page loads that were never on screen (user request 2026-11-24). Only "new accounts created"
+ * comes from the SQL report: it counts accounts, not visits.
+ */
 export function SuperAdminActivity({ days, query }: { days: number; query: string }) {
-  const [data, setData] = useState<Activity | null>(null);
-  const [error, setError] = useState("");
-  const [busy, setBusy] = useState(true);
+  const [accounts, setAccounts] = useState<number | null>(null);
   const [person, setPerson] = useState<{ key: string; label: string } | null>(null);
-  // Headline figures, daily traffic and the device/browser/OS splits are counted from the Live visitor stream's
-  // visitors (one person per account or linked device, under-a-second visitors left out), as on the Overview. The SQL
-  // report counted each browser cookie as a visitor, so the same people read as more visitors here than there.
   const stream = useStreamVisitors(15_000);
   // Visits are kept VISIT_RETENTION_DAYS days: a longer window can only ever show those.
   const span = Math.min(days, stream.days || VISIT_RETENTION_DAYS);
-  const sum = useMemo(() => stream.everyone && !stream.capped ? periodSummary(stream.everyone, stream.now - span * 86_400_000) : null, [stream, span]);
+  const from = stream.now - span * 86_400_000;
+  const ownHosts = useMemo(() => typeof window === "undefined" ? [] : [window.location.hostname.replace(/^www\./, "")], []);
+  const sum = useMemo(() => stream.everyone ? periodSummary(stream.everyone, from, Infinity, ownHosts) : null, [stream, from, ownHosts]);
+  const report = useMemo(() => stream.everyone ? visitorReport(stream.everyone, from, Infinity, ownHosts) : null, [stream, from, ownHosts]);
+  const left = useMemo(() => stream.everyone ? uncountedBrowsers(stream.rows, stream.everyone, from) : 0, [stream, from]);
 
-  const refresh = useCallback(async (signal?: AbortSignal) => {
-    setBusy(true);
-    try {
-      const response = await fetch(`/api/super-admin/activity?days=${days}`, { cache: "no-store", signal });
-      const body = await response.json().catch(() => ({}));
-      if (response.status === 401 || response.status === 403) setData(null);
-      if (!response.ok) throw new Error(body.error ?? "service_error");
-      if (!signal?.aborted) { setData(body); setError(""); }
-    } catch (e) { if (!signal?.aborted && !(e instanceof DOMException)) setError(errorText(e instanceof Error ? e.message : "")); }
-    finally { if (!signal?.aborted) setBusy(false); }
-  }, [days]);
-  // Live figures move quickly, so this page (and its visitor stream) refreshes every 15 seconds while it is visible.
+  // New accounts created in the window: accounts, not visits, so they come from the database report. Read once per
+  // window and every minute after.
   useEffect(() => {
-    const controller = new AbortController(); queueMicrotask(() => { if (!controller.signal.aborted) void refresh(controller.signal); });
-    const timer = setInterval(() => { if (document.visibilityState === "visible") void refresh(controller.signal); }, 15_000);
+    const controller = new AbortController();
+    const load = () => fetch(`/api/super-admin/activity?days=${days}`, { cache: "no-store", signal: controller.signal })
+      .then(response => response.ok ? response.json() : null).then(body => { if (body?.totals) setAccounts(Number(body.totals.newAccounts) || 0); }).catch(() => {});
+    void load();
+    const timer = setInterval(() => { if (document.visibilityState === "visible") void load(); }, 60_000);
     return () => { controller.abort(); clearInterval(timer); };
-  }, [refresh]);
+  }, [days]);
 
   if (person) return <PersonTimeline person={person} onBack={() => setPerson(null)} />;
-  if (error && !data) return <AdminError>{error}<Button variant="outline" disabled={busy} onClick={() => void refresh()}>Retry activity</Button></AdminError>;
-  if (!data) return <AdminLoading>Loading user activity…</AdminLoading>;
-  const t = data.totals;
-  const visitors = sum ? sum.people : t.people ?? t.visitors, fresh = sum ? sum.newVisitors : t.newVisitors;
-  const returning = Math.max(0, visitors - fresh);
-  const daily = sum ? sum.daily.map(d => ({ day: d.day, views: d.views, visitors: d.people, new_visitors: d.newVisitors, users: d.signedIn })) : data.daily;
-  const rows = <K extends string>(list: ({ people: number } & Record<K, string>)[] | undefined, key: K, fallback: Row[]) => list ? list.map(item => ({ [key]: item[key], visitors: item.people }) as Row) : fallback;
+  if (stream.failed && !stream.everyone) return <AdminError>{errorText("")}<Button variant="outline" onClick={stream.reload}>Retry activity</Button></AdminError>;
+  if (!sum || !report) return <AdminLoading>Loading user activity…</AdminLoading>;
+  const daily = sum.daily.map(d => ({ day: d.day, views: d.views, visitors: d.people, new_visitors: d.newVisitors, users: d.signedIn }));
+  const toRows = <K extends string>(list: ({ people: number } & Record<K, string>)[], key: K) => list.map(item => ({ [key]: item[key], visitors: item.people }) as Row);
+  const counts = (list: Count[], label = (c: Count) => c.label) => list.map(c => ({ name: label(c), visitors: c.people, visits: c.visits }) as Row);
+  const ns = report.newSummary;
 
   return <div className={styles.activity}>
     <SectionNav label="User activity sections" items={NAV} />
-    {error && <AdminError>{error} Showing the last successful snapshot; figures may be out of date.</AdminError>}
+    {stream.failed && <AdminError>The latest read failed; showing the last successful one. Figures may be up to a minute old.</AdminError>}
     <div className={styles.liveBar}>
       <Calendar size={15} aria-hidden="true" />
       <span>{days > span
         ? <>The <b>last {span} days</b>: visits are kept for {VISIT_RETENTION_DAYS} days, so a {days}-day window has nothing older.</>
-        : <>The <b>last {span === 1 ? "24 hours" : `${span} days`}</b>, from your Supabase visit records.</>}</span>
+        : <>The <b>last {span === 1 ? "24 hours" : `${span} days`}</b>, live from your Supabase visit records.</>}</span>
       <span className={styles.liveActions}>
-        <span className={styles.updated}>Updated {ago(data.generatedAt)}</span>
-        <Button variant="outline" size="sm" disabled={busy} onClick={() => void refresh()}><RefreshCw size={14} />Refresh</Button>
-        <a className={styles.export} href={`/api/super-admin/activity/export?days=${days}`} download><Download size={14} />Export CSV</a>
+        <span className={styles.updated}>Updated {ago(new Date(stream.now).toISOString())}</span>
+        <Button variant="outline" size="sm" onClick={stream.reload}><RefreshCw size={14} />Refresh</Button>
+        <button type="button" className={styles.export} onClick={() => downloadVisits(report.visits, span)}><Download size={14} />Export CSV</button>
       </span>
     </div>
+    {stream.capped && <AdminError>This window holds more than 20,000 page views; only the newest 20,000 are counted.</AdminError>}
 
     <SectionHead id="ac-audience" index={1} title="Audience" question="How many people came in this window, how long they stayed and how many were new." icon={Users} tone="lavender" />
     <div className={styles.metrics}>
-      <Stat tone="lavender" index={0} icon={<Users size={16} />} label="Visitors" value={number(visitors)} note="People: a signed-in account, or one device (cookie resets linked)" />
-      <Stat tone="sky" index={1} icon={<MousePointerClick size={16} />} label="Page views" value={number(sum ? sum.views : t.pageViews)} note={`${(sum ? sum.pagesPerSession : t.pagesPerSession) ?? "—"} pages per visit · on screen ≥ 1 s`} />
-      <Stat tone="mint" index={2} icon={<UserPlus size={16} />} label="New vs returning" value={`${number(fresh)} / ${number(returning)}`} note="First visit ever in this window vs came before" />
-      <Stat tone="peach" index={3} icon={<UserRound size={16} />} label="Signed-in learners" value={number(sum ? sum.signedIn : t.signedInUsers)} note={`${number(t.newAccounts)} new accounts created`} />
-      <Stat tone="butter" index={4} icon={<Radio size={16} />} label="Visits" value={number(sum ? sum.sessions : t.sessions)} note="A visit ends after 30 minutes without activity" />
-      <Stat tone="rose" index={5} icon={<Clock size={16} />} label="Avg. visit length" value={duration(sum ? (sum.avgStayMs == null ? null : sum.avgStayMs / 1000) : t.avgSessionSeconds)} note={sum?.readingPerPersonMs != null ? `${duration(sum.readingPerPersonMs / 1000)} reading per visitor` : "Arrival to last activity"} />
-      <Stat tone="sage" index={6} icon={<ArrowLeft size={16} />} label="Bounce rate" value={(sum ? sum.bounceRate : t.bounceRate) == null ? "—" : `${sum ? sum.bounceRate : t.bounceRate}%`} note="Visits that opened a single page" />
+      <Stat tone="lavender" index={0} icon={<Users size={16} />} label="Visitors" value={number(sum.people)} note="People: a signed-in account, or one device (cookie resets linked)" />
+      <Stat tone="sky" index={1} icon={<MousePointerClick size={16} />} label="Page views" value={number(sum.views)} note={`${sum.pagesPerSession ?? "—"} pages per visit · on screen ≥ 1 s`} />
+      <Stat tone="mint" index={2} icon={<UserPlus size={16} />} label="New vs returning" value={`${number(sum.newVisitors)} / ${number(sum.returning)}`} note="Guests: first visit ever in this window vs came before" />
+      <Stat tone="peach" index={3} icon={<UserRound size={16} />} label="Signed-in learners" value={number(sum.signedIn)} note={`${accounts == null ? "—" : number(accounts)} new accounts created`} />
+      <Stat tone="butter" index={4} icon={<Radio size={16} />} label="Visits" value={number(sum.sessions)} note="A visit ends after 30 minutes without activity" />
+      <Stat tone="rose" index={5} icon={<Clock size={16} />} label="Avg. visit length" value={duration(sum.avgStayMs == null ? null : sum.avgStayMs / 1000)} note={sum.readingPerPersonMs != null ? `${duration(sum.readingPerPersonMs / 1000)} reading per visitor` : "Arrival to last activity"} />
+      <Stat tone="sage" index={6} icon={<ArrowLeft size={16} />} label="Bounce rate" value={sum.bounceRate == null ? "—" : `${sum.bounceRate}%`} note="Visits that opened a single page" />
     </div>
+    {left > 0 && <p className={styles.windowNote} role="status"><ShieldCheck size={14} aria-hidden="true" /><span><b>{number(left)}</b> more {left === 1 ? "browser" : "browsers"} loaded a page in this window but never showed it on screen (scrapers, link prefetchers, tabs closed at once). They are left out of every figure on this page and the Overview.</span></p>}
 
     <SectionHead id="ac-traffic" index={2} title="Daily traffic" question="Page views, visitors and new visitors on each day of the window." icon={Activity} tone="sky" />
     <Card className={`${shell.panel} ${styles.chartCard}`}>
@@ -124,26 +124,59 @@ export function SuperAdminActivity({ days, query }: { days: number; query: strin
       <DailyChart rows={daily} />
     </Card>
 
-    <SectionHead id="ac-sources" index={3} title="Where visits came from" question="Sessions per platform: search, social, AI assistants, referrals and direct." icon={Megaphone} tone="butter" />
-    <SuperAdminTrafficSources days={days} />
-
-    <SectionHead id="ac-places" index={4} title="Places & pages" question="Countries, cities and pages in this window, and where first-time visitors are." icon={MapPin} tone="peach" />
-    <AudienceExplorer days={days} exclude={["sources"]} fallback={{ countries: data.countries, cities: data.cities, pages: data.pages, referrers: data.referrers }} />
-    <SuperAdminNewUserLocations days={days} query={query} />
-
-    <SectionHead id="ac-tech" index={5} title="Devices & campaigns" question="What visitors browse with, and which tagged links brought them." icon={MonitorSmartphone} tone="mint" />
+    <SectionHead id="ac-new" index={3} title="New visitors" question="Who came for the first time in this window: where from, where they landed, and how many stayed or signed up." icon={UserPlus} tone="mint" />
+    <div className={styles.metrics}>
+      <Stat tone="mint" index={0} icon={<UserPlus size={16} />} label="New visitors" value={number(ns.total)} note={`${number(ns.guests)} still guests · ${number(ns.signedUp)} signed up`} />
+      <Stat tone="sky" index={1} icon={<MousePointerClick size={16} />} label="Explored past the first page" value={ns.total ? `${Math.round(((ns.total - ns.bounced) / ns.total) * 100)}%` : "—"} note={`${number(ns.total - ns.bounced)} of ${number(ns.total)} opened a second page`} />
+      <Stat tone="lavender" index={2} icon={<Radio size={16} />} label="Came back" value={number(ns.returnedAgain)} note="New visitors who returned for another visit" />
+      <Stat tone="peach" index={3} icon={<Clock size={16} />} label="Reading per new visitor" value={ns.avgReadingMs == null ? "—" : duration(ns.avgReadingMs / 1000)} note="Time their pages were on screen" />
+    </div>
     <div className={styles.breakdowns}>
-      <Breakdown title="Devices" icon={<MonitorSmartphone size={16} />} tone="sky" rows={rows(sum?.devices, "device", data.devices)} label="device" value="visitors" heads={["Device", "Visitors"]} rowIcon={row => deviceIcon(show(row.device))} />
-      <Breakdown title="Browsers" icon={<Compass size={16} />} tone="lavender" rows={rows(sum?.browsers, "browser", data.browsers)} label="browser" value="visitors" heads={["Browser", "Visitors"]} rowIcon={row => brandIcon(show(row.browser), BROWSER_MARKS, <Globe size={15} />)} />
-      <Breakdown title="Operating systems" icon={<Terminal size={16} />} tone="mint" rows={rows(sum?.systems, "os", data.systems)} label="os" value="visitors" heads={["Operating system", "Visitors"]} rowIcon={row => brandIcon(show(row.os), OS_MARKS, <AppWindow size={15} />)} />
-      <Breakdown title="Campaigns (UTM)" icon={<Megaphone size={16} />} tone="peach" rowIcon={row => brandIcon(show(row.source), CAMPAIGN_MARKS, <Megaphone size={15} />)} rows={data.campaigns} label="source" value="views" heads={["Source · medium · campaign", "Views"]} extra={row => `${show(row.medium)} · ${show(row.campaign)}`} empty="No tagged links visited yet. Add ?utm_source=… to links you share." />
+      <Breakdown title="New visitors came from" icon={<Megaphone size={16} />} tone="butter" rows={counts(report.newSources)} label="name" value="visitors" heads={["Source", "New visitors"]} rowIcon={row => brandIcon(show(row.name), CAMPAIGN_MARKS, <Globe size={15} />)} empty="No new visitors in this window yet." />
+      <Breakdown title="First page they landed on" icon={<Compass size={16} />} tone="sky" rows={counts(report.newLandings)} label="name" value="visitors" heads={["Landing page", "New visitors"]} empty="No new visitors in this window yet." />
     </div>
 
-    <SectionHead id="ac-people" index={6} title="People & visits" question="Each account or browser, and every individual visit. Open one to see its full timeline." icon={UserRound} tone="rose" />
-    <People rows={data.people} query={query} onOpen={(key, label) => setPerson({ key, label })} />
-    <VisitLog rows={data.recent} query={query} onOpen={(key, label) => setPerson({ key, label })} />
-    <p className={shell.note}>Visits are recorded by a first-party beacon on every page (super admin pages excluded). Crawlers, automated browsers, this site&apos;s own machines and anyone on screen for under a second are left out. A visitor is one person: their signed-in account, or one device (an in-app browser that drops its cookie still counts once). The People list and visit log below are per account or browser. IP addresses are stored masked. Visits are kept for {VISIT_RETENTION_DAYS} days, so no window reaches further back than that.</p>
+    <SectionHead id="ac-sources" index={4} title="Where visits came from" question="Every visit in the window by platform: search, social, AI assistants, referrals and direct." icon={Megaphone} tone="butter" />
+    <div className={styles.breakdowns}>
+      <Breakdown title="Sources" icon={<Megaphone size={16} />} tone="butter" rows={counts(report.sources)} label="name" value="visits" heads={["Platform", "Visits"]} extra={row => `${number(Number(row.visitors))} ${Number(row.visitors) === 1 ? "visitor" : "visitors"}`} rowIcon={row => brandIcon(show(row.name), CAMPAIGN_MARKS, <Globe size={15} />)} />
+      <Breakdown title="Campaigns (UTM)" icon={<Megaphone size={16} />} tone="peach" rows={counts(report.campaigns)} label="name" value="visits" heads={["Source · campaign", "Visits"]} rowIcon={row => brandIcon(show(row.name), CAMPAIGN_MARKS, <Megaphone size={15} />)} empty="No tagged links visited yet. Add ?utm_source=… to links you share." />
+    </div>
+
+    <SectionHead id="ac-places" index={5} title="Places & pages" question="Where visitors are, the pages they entered on and the pages they read." icon={MapPin} tone="peach" />
+    <div className={styles.breakdowns}>
+      <Breakdown title="Countries" icon={<Globe size={16} />} tone="peach" rows={counts(report.countries, c => c.key === "Unknown" ? "Not resolved" : countryName(c.key) || c.key)} label="name" value="visitors" heads={["Country", "Visitors"]} />
+      <Breakdown title="Cities" icon={<MapPin size={16} />} tone="rose" rows={counts(report.cities, c => { const [city, code] = c.key.split("|"); return [city, code ? countryName(code) || code : ""].filter(Boolean).join(", "); })} label="name" value="visitors" heads={["City", "Visitors"]} empty="No city resolved for this window's visitors." />
+      <Breakdown title="Entry pages" icon={<Compass size={16} />} tone="sky" rows={counts(report.landings)} label="name" value="visitors" heads={["First page of a visit", "Visitors"]} />
+      <Breakdown title="Pages read" icon={<Eye size={16} />} tone="lavender" rows={sum.pages.map(p => ({ name: p.title || p.path, visitors: p.people, path: p.path, read: p.avgReadMs }) as Row)} label="name" value="visitors" heads={["Page", "Visitors"]} extra={row => `${show(row.path)}${row.read != null ? ` · ${duration(Number(row.read) / 1000)} avg read` : ""}`} />
+    </div>
+
+    <SectionHead id="ac-tech" index={6} title="Devices" question="What visitors browse with." icon={MonitorSmartphone} tone="mint" />
+    <div className={styles.breakdowns}>
+      <Breakdown title="Devices" icon={<MonitorSmartphone size={16} />} tone="sky" rows={toRows(sum.devices, "device")} label="device" value="visitors" heads={["Device", "Visitors"]} rowIcon={row => deviceIcon(show(row.device))} />
+      <Breakdown title="Browsers" icon={<Compass size={16} />} tone="lavender" rows={toRows(sum.browsers, "browser")} label="browser" value="visitors" heads={["Browser", "Visitors"]} rowIcon={row => brandIcon(show(row.browser), BROWSER_MARKS, <Globe size={15} />)} />
+      <Breakdown title="Operating systems" icon={<Terminal size={16} />} tone="mint" rows={toRows(sum.systems, "os")} label="os" value="visitors" heads={["Operating system", "Visitors"]} rowIcon={row => brandIcon(show(row.os), OS_MARKS, <AppWindow size={15} />)} />
+    </div>
+
+    <SectionHead id="ac-accounts" index={7} title="New accounts" question="Accounts created in this window: where each person was and how much they have used the site since." icon={UserRound} tone="lavender" />
+    <SuperAdminNewUserLocations days={days} query={query} />
+
+    <SectionHead id="ac-people" index={8} title="People & visits" question="Each person and every individual visit in the window. Open one to see their full timeline." icon={UserRound} tone="rose" />
+    <People rows={report.people_} query={query} onOpen={(key, label) => setPerson({ key, label })} />
+    <VisitLog rows={report.visits} query={query} onOpen={(key, label) => setPerson({ key, label })} />
+    <p className={shell.note}>Visits are recorded by a first-party beacon on every page (super admin pages excluded). Crawlers, automated browsers, this site&apos;s own machines and page loads that were never on screen are left out. A visitor is one person: their signed-in account, or one device (an in-app browser that drops its cookie still counts once). IP addresses are stored masked. Visits are kept for {VISIT_RETENTION_DAYS} days, so no window reaches further back than that.</p>
   </div>;
+}
+
+/** The window's visits as a CSV file, built from the same rows the Visits table shows. */
+function downloadVisits(rows: VisitRow[], span: number) {
+  const cell = (value: unknown) => { const text = value == null ? "" : String(value); return /[",\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text; };
+  const iso = (ms: number) => new Date(ms).toISOString();
+  const lines = [["started_at", "ended_at", "on_site_now", "visitor", "entry_page", "exit_page", "page_views", "reading_seconds", "source", "campaign", "location", "device"].join(","),
+    ...rows.map(r => [iso(r.start), iso(r.end), r.open, r.who, r.entry, r.exit ?? "", r.views, Math.round(r.readingMs / 1000), r.source, r.campaign ?? "", r.place, r.device].map(cell).join(","))];
+  const url = URL.createObjectURL(new Blob([lines.join("\n")], { type: "text/csv;charset=utf-8" }));
+  const link = Object.assign(document.createElement("a"), { href: url, download: `visits-last-${span}-days.csv` });
+  link.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
 /** A headline figure on its own light tone, with its icon in a chip; `index` staggers the entrance. */
@@ -203,39 +236,36 @@ function Breakdown({ title, icon, rows, label, value, heads, extra, empty, rowIc
   </Card>;
 }
 
-function People({ rows, query, onOpen }: { rows: Row[]; query: string; onOpen: (key: string, label: string) => void }) {
+function People({ rows, query, onOpen }: { rows: PersonRow[]; query: string; onOpen: (key: string, label: string) => void }) {
   // Flattened so search, suggestions and filters see what the table shows.
-  const view = useMemo(() => rows.map(row => ({
-    ...row, person_label: row.email ? String(row.email) : `Visitor ${String(row.person).slice(8, 16)}`,
-    location: locationLabel(row), device_info: [row.device, row.browser, row.os].filter(Boolean).join(" · ") || null,
-    time_on_site: duration(Number(row.engaged_seconds)),
-  })), [rows]);
+  const view = useMemo(() => rows.map(row => ({ ...row, last_seen: new Date(row.lastSeen).toISOString(), first_seen: row.firstSeen, reading: duration(row.readingMs / 1000) }) as Row), [rows]);
   return <AdminTable title="People" rows={view} query={query}
-    note="Every signed-in learner and anonymous visitor in this window, most recent first. Open anyone for their full activity trail."
-    rowKey={row => String(row.person)}
+    note="Everyone who visited in this window, most recent first: the same people every figure above counts. Open anyone for their full activity trail."
+    rowKey={row => String(row.key)}
     columns={[
-      { key: "person_label", label: "Person", render: row => <button type="button" className={styles.personLink} onClick={() => onOpen(String(row.person).startsWith("visitor:") ? String(row.person) : String(row.user_id), String(row.person_label))}>{String(row.person_label)}</button> },
-      { key: "status", label: "Status", render: row => <span className={styles.status} data-status={String(row.status)}>{show(row.status)}</span> },
+      { key: "label", label: "Person", render: row => <button type="button" className={styles.personLink} onClick={() => onOpen(String(row.timelineKey), String(row.label))}>{String(row.label)}</button> },
+      { key: "kind", label: "Type", render: row => <span className={styles.status} data-status={String(row.kind) === "New" ? "new visitor" : String(row.kind) === "Signed in" ? "signed in" : "returning visitor"}>{show(row.kind)}</span> },
+      { key: "status", label: "Now", render: row => <span className={styles.status} data-status={row.status === "On the site" ? "online" : "offline"}>{show(row.status)}</span> },
       { key: "last_seen", label: "Last seen", render: row => <span title={when(row.last_seen)}>{ago(row.last_seen)}</span> },
-      "first_seen", { key: "views", label: "Views", filter: false }, { key: "sessions", label: "Sessions", filter: false }, { key: "time_on_site", label: "Time on site", filter: false },
-      { key: "last_path", label: "Last page", filter: false, render: row => <span className={styles.path}>{show(row.last_path)}</span> },
-      "location", { key: "device_info", label: "Device" },
+      { key: "first_seen", label: "First seen", render: row => <span title={when(row.first_seen)}>{when(row.first_seen)}</span> },
+      { key: "visits", label: "Visits", filter: false }, { key: "views", label: "Views", filter: false }, { key: "reading", label: "Reading", filter: false },
+      { key: "lastPage", label: "Last page", filter: false, render: row => <span className={styles.path}>{show(row.lastPage)}</span> },
+      { key: "source", label: "Came from" }, { key: "place", label: "Location" }, { key: "device", label: "Device" },
     ]} />;
 }
 
-function VisitLog({ rows, query, onOpen }: { rows: Row[]; query: string; onOpen: (key: string, label: string) => void }) {
-  const view = useMemo(() => rows.map(row => ({
-    ...row, who: row.email ? String(row.email) : `Visitor ${String(row.visitor_id).slice(0, 8)}`, kind: row.event === "page_view" ? "view" : "exit",
-    source: row.utm_source ?? row.referrer_host ?? null, location: locationLabel(row),
-    device_info: [row.device, row.browser, row.os].filter(Boolean).join(" · ") || null, read_for: row.duration_ms == null ? null : duration(Number(row.duration_ms) / 1000),
-  })), [rows]);
-  return <AdminTable title="Visit log" rows={view} query={query} note="The latest 500 page views and page exits (with time read). Export CSV for the whole window."
+function VisitLog({ rows, query, onOpen }: { rows: VisitRow[]; query: string; onOpen: (key: string, label: string) => void }) {
+  const view = useMemo(() => rows.map(row => ({ ...row, started: new Date(row.start).toISOString(), reading: duration(row.readingMs / 1000), state: row.open ? "on the site" : "ended" }) as Row), [rows]);
+  return <AdminTable title="Visits" rows={view} query={query} note="Every visit in the window, newest first: entry and exit page, pages viewed and reading time. Export CSV downloads exactly these rows."
+    rowKey={row => String(row.key)}
     columns={[
-      { key: "created_at", label: "Time", render: row => <span title={when(row.created_at)}>{ago(row.created_at)}</span> },
-      { key: "who", label: "Who", filter: false, render: row => <><button type="button" className={styles.personLink} onClick={() => onOpen(row.user_id ? String(row.user_id) : `visitor:${String(row.visitor_id)}`, String(row.who))}>{String(row.who)}</button>{row.new_visitor ? <span className={styles.newTag}>new</span> : null}</> },
-      { key: "kind", label: "Event", render: row => <span className={styles.event} data-event={String(row.event)}>{String(row.kind)}</span> },
-      { key: "path", label: "Page", render: row => <span className={styles.path} title={show(row.title)}>{show(row.path)}</span> },
-      "source", "location", { key: "ip_masked", label: "IP (masked)", filter: false }, { key: "device_info", label: "Device" }, { key: "screen", label: "Screen", filter: false }, "language", { key: "read_for", label: "Read for", filter: false },
+      { key: "started", label: "Started", render: row => <span title={when(row.started)}>{ago(row.started)}</span> },
+      { key: "who", label: "Who", filter: false, render: row => <button type="button" className={styles.personLink} onClick={() => onOpen(String(row.timelineKey), String(row.who))}>{String(row.who)}</button> },
+      { key: "state", label: "State", render: row => <span className={styles.event} data-event={row.open ? "page_view" : "page_leave"}>{show(row.state)}</span> },
+      { key: "entry", label: "Entry page", render: row => <span className={styles.path}>{show(row.entry)}</span> },
+      { key: "exit", label: "Exit page", filter: false, render: row => <span className={styles.path}>{show(row.exit)}</span> },
+      { key: "views", label: "Views", filter: false }, { key: "reading", label: "Reading", filter: false },
+      "source", "campaign", { key: "place", label: "Location" }, { key: "device", label: "Device" },
     ]} />;
 }
 

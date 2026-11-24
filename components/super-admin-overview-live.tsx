@@ -9,7 +9,7 @@ import { indexVisits, periodSummary, streamVisitors, type Presence, type StreamA
 import { verifyLiveFigures, MAX_READ_AGE_MS } from "@/lib/live-verify";
 import { localityPin } from "@/lib/new-user-locations";
 import { VisitorRoutes } from "./super-admin-visitor-routes";
-import { FirstLookVisitors } from "./super-admin-first-look";
+import { NewVisitorsToday } from "./super-admin-new-visitors";
 import { PrivateVisitors } from "./super-admin-private-visitors";
 import { SectionHead } from "./super-admin-section-head";
 import { SuperAdminGoals } from "./super-admin-goals";
@@ -737,9 +737,9 @@ export function OverviewLive({ snapshot, onRefreshSnapshot, visitorsOnly = false
         {stream?.capped && <p className={styles.streamNote}>Showing the newest 20,000 events of the window; older visitors are left out.</p>}
       </article>
 
-      {/* Anonymous visitors whose whole stay is one page view, from the same visitor list as the stream above. */}
-      <SectionHead id="ov-first" index={3} title="First visits & private windows" question="Who is new, what they opened first, and who browses in a private window." icon={Sparkles} tone="lavender" />
-      <FirstLookVisitors everyone={everyone} now={clockNow} days={streamDays} />
+      {/* Everyone whose first page view ever was today, from the same visitor list as the stream above (user request 2026-11-24). */}
+      <SectionHead id="ov-first" index={3} title="New visitors today" question="Who came for the first time today, where from, what they read and whether they signed up." icon={Sparkles} tone="lavender" live />
+      <NewVisitorsToday everyone={everyone} rows={streamRows} dayStart={dayStart} now={clockNow} ownHosts={ownHosts} />
 
       {/* Visitors in a private (incognito) window: reported by the browser, or inferred from a fresh cookie on a known device. */}
       <PrivateVisitors everyone={everyone} now={clockNow} days={streamDays} />

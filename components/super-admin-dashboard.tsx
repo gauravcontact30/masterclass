@@ -88,7 +88,7 @@ type SectionItem = (typeof groups)[number]["items"][number];
  * each other (user request 2026-11-24).
  */
 const OVERVIEW_NAV = [
-  { id: "ov-glance", label: "At a glance", icon: Gauge }, { id: "ov-stream", label: "Live stream", icon: RadioIcon }, { id: "ov-first", label: "First visits", icon: Sparkles },
+  { id: "ov-glance", label: "At a glance", icon: Gauge }, { id: "ov-stream", label: "Live stream", icon: RadioIcon }, { id: "ov-first", label: "New visitors", icon: Sparkles },
   { id: "ov-today", label: "Reading now", icon: Zap }, { id: "ov-days", label: "3 days", icon: CalendarDays },
 ];
 const sections: readonly SectionItem[] = groups.flatMap((group): readonly SectionItem[] => group.items);

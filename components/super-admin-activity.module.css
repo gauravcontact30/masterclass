@@ -77,6 +77,9 @@
 .status[data-status="existing account"] { background: #d6e7fa; color: #24508a; }
 .status[data-status="new visitor"] { background: #f8ecc4; color: #765510; }
 .status[data-status="returning visitor"] { background: #e3dbf7; color: #4d3a8c; }
+.status[data-status="signed in"] { background: #d5efe0; color: #24613f; }
+.status[data-status="online"] { background: #dff3e4; color: #1f6b35; font-weight: 600; }
+.status[data-status="offline"] { background: #f0efea; color: #5e5d59; }
 .newTag { margin-left: 6px; padding: 1px 6px; border-radius: 999px; background: #f8ecc4; color: #765510; font-size: 11px; }
 .event { padding: 1px 8px; border-radius: 999px; font-size: 12px; background: #f3dccd; }
 .event[data-event="page_leave"] { background: #e8e6dc; }
