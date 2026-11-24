@@ -37,3 +37,47 @@
 /* From the second section on (2026-11-06; it was the fourth): the hero fills the first screen on every device, so the
    Tech Buzz (≈800 nodes, the largest section) were laid out on load with nobody looking at them. */
 .page main > section:nth-of-type(n+2) { content-visibility: auto; contain-intrinsic-size: auto 900px; }
+/* Each section's own placeholder height (measured 2026-11-24 on the production build, 1350 px and 412 px wide): one 900 px
+   guess for every section was off by up to 3,400 px on phones, so sections jumped as they first rendered (CLS). */
+.page main > section[id="showcase-tech"] { contain-intrinsic-size: auto 1150px; }
+.page main > section[id="showcase-board"] { contain-intrinsic-size: auto 1350px; }
+.page main > section[id="showcase-govt"] { contain-intrinsic-size: auto 1350px; }
+.page main > section[id="tech-buzz"] { contain-intrinsic-size: auto 1100px; }
+.page main > section[id="api-docs"] { contain-intrinsic-size: auto 1400px; }
+.page main > section[id="path-finder"] { contain-intrinsic-size: auto 1120px; }
+.page main > section[id="fresh-in-tech"] { contain-intrinsic-size: auto 1600px; }
+.page main > section[id="interview-prep"] { contain-intrinsic-size: auto 1420px; }
+.page main > section[id="ai-pulse"] { contain-intrinsic-size: auto 1190px; }
+.page main > section[id="workflows"] { contain-intrinsic-size: auto 2500px; }
+.page main > section[id="certifications"] { contain-intrinsic-size: auto 900px; }
+.page main > section[id="coffee-and-code"] { contain-intrinsic-size: auto 820px; }
+.page main > section[id="ai-search"] { contain-intrinsic-size: auto 800px; }
+.page main > section[id="lesson-packs"] { contain-intrinsic-size: auto 800px; }
+.page main > section[id="notes-bookmarks"] { contain-intrinsic-size: auto 800px; }
+.page main > section[id="tech-comparisons"] { contain-intrinsic-size: auto 2070px; }
+.page main > section[id="vocabulary"] { contain-intrinsic-size: auto 1030px; }
+.page main > section[id="reviews"] { contain-intrinsic-size: auto 830px; }
+.page main > section[id="pricing"] { contain-intrinsic-size: auto 1270px; }
+.page main > section[id="questions"] { contain-intrinsic-size: auto 1350px; }
+@media (max-width: 640px) {
+  .page main > section[id="showcase-tech"] { contain-intrinsic-size: auto 1800px; }
+  .page main > section[id="showcase-board"] { contain-intrinsic-size: auto 2300px; }
+  .page main > section[id="showcase-govt"] { contain-intrinsic-size: auto 2300px; }
+  .page main > section[id="tech-buzz"] { contain-intrinsic-size: auto 2200px; }
+  .page main > section[id="api-docs"] { contain-intrinsic-size: auto 2500px; }
+  .page main > section[id="path-finder"] { contain-intrinsic-size: auto 1800px; }
+  .page main > section[id="fresh-in-tech"] { contain-intrinsic-size: auto 3740px; }
+  .page main > section[id="interview-prep"] { contain-intrinsic-size: auto 2270px; }
+  .page main > section[id="ai-pulse"] { contain-intrinsic-size: auto 1400px; }
+  .page main > section[id="workflows"] { contain-intrinsic-size: auto 4260px; }
+  .page main > section[id="certifications"] { contain-intrinsic-size: auto 1870px; }
+  .page main > section[id="coffee-and-code"] { contain-intrinsic-size: auto 1730px; }
+  .page main > section[id="ai-search"] { contain-intrinsic-size: auto 1740px; }
+  .page main > section[id="lesson-packs"] { contain-intrinsic-size: auto 1780px; }
+  .page main > section[id="notes-bookmarks"] { contain-intrinsic-size: auto 1760px; }
+  .page main > section[id="tech-comparisons"] { contain-intrinsic-size: auto 4050px; }
+  .page main > section[id="vocabulary"] { contain-intrinsic-size: auto 1120px; }
+  .page main > section[id="reviews"] { contain-intrinsic-size: auto 1260px; }
+  .page main > section[id="pricing"] { contain-intrinsic-size: auto 2090px; }
+  .page main > section[id="questions"] { contain-intrinsic-size: auto 2750px; }
+}

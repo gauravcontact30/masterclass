@@ -1,4 +1,5 @@
 "use client";
+import { CountryFlag } from "./country-flag";
 import { useEffect, useId, useMemo, useRef, useState, type ReactNode } from "react";
 import { ArrowDownAZ, Building2, Clock, Compass, Download, EyeOff, FileText, Globe2, Home, LayoutDashboard, Library, Link2, LogIn, MapPin, MousePointerClick, Search, Share2, Sparkles, UserPlus, UserRound, Users, X, type LucideIcon } from "lucide-react";
 import { Card } from "./ui/card";
@@ -30,12 +31,9 @@ export function countryName(code: string) {
   try { regionNames ??= new Intl.DisplayNames(["en"], { type: "region" }); return regionNames.of(code.toUpperCase()) ?? code; } catch { return code; }
 }
 /** A flag image (Windows shows flag emoji as bare letters, so emoji are not used). Hidden if it cannot load. */
+/** A country's flag (components/country-flag.tsx: bundled flag-icons SVGs, no third-party CDN). */
 export function Flag({ code }: { code: string }) {
-  const [failed, setFailed] = useState(false);
-  if (!/^[A-Z]{2}$/i.test(code) || failed) return <span className={styles.flagless} aria-hidden="true"><Globe2 size={13} /></span>;
-  const lower = code.toLowerCase();
-  // eslint-disable-next-line @next/next/no-img-element -- 20×15 flag thumbnails from a flag CDN; next/image adds nothing at this size.
-  return <img className={styles.flag} src={`https://flagcdn.com/w20/${lower}.png`} srcSet={`https://flagcdn.com/w40/${lower}.png 2x`} width={20} height={15} alt="" loading="lazy" decoding="async" onError={() => setFailed(true)} />;
+  return <CountryFlag code={code} />;
 }
 
 const SEARCH = /(^|\.)(google|bing|duckduckgo|yahoo|yandex|baidu|ecosia|search\.brave)\.|^com\.google\.android/;

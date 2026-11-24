@@ -1,5 +1,6 @@
 "use client";
-import { AlertTriangle, ArrowDownRight, ArrowUpRight, Bot, CheckCircle2, Clock, Eye, FileText, Globe2, Hourglass, Link2, Minus, MousePointerClick, Radio, ShieldCheck, Sparkles, UserPlus, Users, type LucideIcon } from "lucide-react";
+import { CountryFlag } from "./country-flag";
+import { AlertTriangle, ArrowDownRight, ArrowUpRight, Bot, CheckCircle2, Clock, Eye, FileText, Globe2, Hourglass, Link2, Minus, MousePointerClick, Radio, ShieldCheck, Sparkles, UserPlus, UserRound, Users, type LucideIcon } from "lucide-react";
 import styles from "./super-admin-glance.module.css";
 
 /*
@@ -15,6 +16,8 @@ export type GlanceProps = {
   exact: boolean;
   live: { now: number; signed: number; last30: number; last30Signed: number; viewsLastHour: number; peopleLastHour: number };
   today: { people: number | null | undefined; views: number | null | undefined; sessions: number | null | undefined; signedIn: number | null | undefined; newVisitors: number | null | undefined; returning: number | null; bounceRate: number | null | undefined; avgVisitSeconds: number | null | undefined; pagesPerVisit: number | null | undefined; readingPerPersonSeconds: number | null | undefined };
+  /** Today's people in the three visitor groups (lib/visitor-report.ts) and how many of them are signed in. */
+  groups?: { new: number; returning: number; old: number; signedIn: number } | null;
   /** Everything above, for the same stretch of yesterday (00:00 IST up to this time of day). Null before the stream holds it. */
   yesterday: { people: number; views: number; sessions: number } | null;
   hours: number[];
@@ -22,7 +25,7 @@ export type GlanceProps = {
   devices: { device: string; people: number }[];
   topSource: { name: string; people: number } | null;
   topPage: { path: string; views: number; people: number } | null;
-  topCountry: { country: string; people: number } | null;
+  topCountry: { country: string; code?: string; people: number } | null;
   newAccounts: number | null | undefined;
   bots: number | null | undefined;
   verified: { passed: number; total: number } | null;
@@ -76,7 +79,8 @@ export function SuperAdminGlance(props: GlanceProps) {
   const peak = Math.max(1, ...hours);
   const peakHour = hours.indexOf(Math.max(...hours));
   const people = t.people ?? 0;
-  const guests = t.newVisitors ?? 0, signed = t.signedIn ?? 0, returning = t.returning ?? Math.max(0, people - guests - signed);
+  const groups = props.groups;
+  const guests = groups ? groups.new : t.newVisitors ?? 0, signed = groups ? groups.old : t.signedIn ?? 0, returning = groups ? groups.returning : t.returning ?? Math.max(0, people - guests - signed);
   const deviceTotal = devices.reduce((sum, d) => sum + d.people, 0);
   const insights = insightsFor(props);
   const bounceTone = t.bounceRate == null ? "none" : t.bounceRate >= 70 ? "bad" : t.bounceRate >= 50 ? "mid" : "good";
@@ -124,19 +128,20 @@ export function SuperAdminGlance(props: GlanceProps) {
     <article className={styles.card} data-tone="lavender">
       <header><span className={styles.cardIcon} aria-hidden="true"><Users size={16} /></span><h3>Audience, {props.day}</h3></header>
       <p className={styles.big}><strong>{n(t.people)}</strong><span>{t.people === 1 ? "visitor" : "visitors"}</span></p>
-      <div className={styles.split} role="img" aria-label={`${n(guests)} new guests, ${n(returning)} returning, ${n(signed)} signed in`}>
+      <div className={styles.split} role="img" aria-label={groups ? `${n(guests)} new, ${n(returning)} returning, ${n(signed)} old` : `${n(guests)} new guests, ${n(returning)} returning, ${n(signed)} signed in`}>
         <i style={{ flexGrow: guests }} data-part="new" /><i style={{ flexGrow: returning }} data-part="returning" /><i style={{ flexGrow: signed }} data-part="signed" />
       </div>
       <ul className={styles.legend}>
-        <li data-part="new"><i />{n(guests)} new guests <small>{share(guests, people)}%</small></li>
+        <li data-part="new"><i />{n(guests)} {groups ? "new" : "new guests"} <small>{share(guests, people)}%</small></li>
         <li data-part="returning"><i />{n(returning)} returning <small>{share(returning, people)}%</small></li>
-        <li data-part="signed"><i />{n(signed)} signed in <small>{share(signed, people)}%</small></li>
+        <li data-part="signed"><i />{n(signed)} {groups ? "old" : "signed in"} <small>{share(signed, people)}%</small></li>
       </ul>
+      {groups && <p className={styles.line}><UserRound size={13} aria-hidden="true" /><b>{n(groups.signedIn)}</b>&nbsp;of them signed in</p>}
       {deviceTotal > 0 && <>
         <div className={styles.split} role="img" aria-label={`Devices: ${devices.map(d => `${d.people} ${d.device}`).join(", ")}`}>{devices.map(d => <i key={d.device} style={{ flexGrow: d.people, background: DEVICE_COLOR[d.device] ?? "#9b978a" }} />)}</div>
         <ul className={styles.legend}>{devices.slice(0, 3).map(d => <li key={d.device}><i style={{ background: DEVICE_COLOR[d.device] ?? "#9b978a" }} />{share(d.people, deviceTotal)}% {d.device}</li>)}</ul>
       </>}
-      {props.topCountry && <p className={styles.line}><Globe2 size={13} aria-hidden="true" />Most visitors from <b>{props.topCountry.country}</b> ({n(props.topCountry.people)})</p>}
+      {props.topCountry && <p className={styles.line}>{props.topCountry.code ? <CountryFlag code={props.topCountry.code} size={16} /> : <Globe2 size={13} aria-hidden="true" />}Most visitors from <b>{props.topCountry.country}</b> ({n(props.topCountry.people)})</p>}
     </article>
 
     {/* 4. Engagement */}

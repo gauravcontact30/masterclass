@@ -228,7 +228,8 @@ a:hover .cover > img, a:focus-visible .cover > img { transform: scale(1.05); }
 .lede, .dailyHead > p, .dailyLead p, .groupHead p { font-size: 15px; }
 
 /* Each technology group renders only near the viewport (≈2,000 of the page's nodes sit in these groups). */
-.group { content-visibility: auto; contain-intrinsic-size: auto 720px; }
+.group { content-visibility: auto; contain-intrinsic-size: auto 1100px; }
+@media (max-width: 640px) { .group { contain-intrinsic-size: auto 3300px; } }
 .groupPlaceholder { height: 720px; border-radius: 20px; }
 
 /* ── 5. Community favourites: topic tabs, a featured #1 and the ranked rest ── */
@@ -280,7 +281,8 @@ a:hover .cover > img, a:focus-visible .cover > img { transform: scale(1.05); }
 /* Below-the-fold sections skip style, layout and paint until they near the viewport (mobile main thread spent ~2.8 s on
    style and layout for the whole page); `auto` remembers each section's real height once it has rendered. */
 .stars, .n8n { content-visibility: auto; contain-intrinsic-size: auto 640px; }
-.favourites { content-visibility: auto; contain-intrinsic-size: auto 760px; }
+.favourites { content-visibility: auto; contain-intrinsic-size: auto 1010px; }
+@media (max-width: 640px) { .favourites { contain-intrinsic-size: auto 1670px; } }
 
 /* -- Story tile: the blog card shared by Fresh & Latest and Blogs by Technology --
    Three per row; two when the section is tablet-width; one on phones (container queries on the section). */

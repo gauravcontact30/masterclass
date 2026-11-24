@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
-import { Activity, AppWindow, ArrowLeft, Calendar, Clock, Compass, Download, ExternalLink, Eye, Globe, Laptop, LogOut, MapPin, Megaphone, Monitor, MonitorSmartphone, MousePointerClick, Radio, RefreshCw, ShieldCheck, Smartphone, Tablet, Terminal, UserPlus, UserRound, Users } from "lucide-react";
+import { History, Repeat, Activity, AppWindow, ArrowLeft, Calendar, Clock, Compass, Download, ExternalLink, Eye, Globe, Laptop, LogOut, MapPin, Megaphone, Monitor, MonitorSmartphone, MousePointerClick, Radio, RefreshCw, ShieldCheck, Smartphone, Tablet, Terminal, UserPlus, UserRound, Users } from "lucide-react";
 import { Card } from "./ui/card";
 import { Button } from "./ui/button";
 import { AdminError, AdminLoading } from "./super-admin-feedback";
@@ -11,7 +11,8 @@ import { VISIT_RETENTION_DAYS } from "@/lib/visit-retention";
 import { countryName } from "./super-admin-audience";
 import { SectionHead, SectionNav } from "./super-admin-section-head";
 import { periodSummary } from "@/lib/live-visits";
-import { uncountedBrowsers, visitorReport, type Count, type PersonRow, type VisitRow } from "@/lib/visitor-report";
+import { GROUP_LABEL, uncountedBrowsers, visitorReport, type Count, type PersonRow, type VisitorGroup, type VisitRow } from "@/lib/visitor-report";
+import { CountryFlag } from "./country-flag";
 import { useStreamVisitors } from "./use-stream-visitors";
 import { siAndroid, siApple, siBrave, siFacebook, siFirefoxbrowser, siGoogle, siGooglechrome, siInstagram, siIos, siLinux, siMacos, siOpera, siSafari, siSamsung, siUbuntu, siWhatsapp, siYoutube, type SimpleIcon } from "simple-icons";
 import shell from "./super-admin-dashboard.module.css";
@@ -48,6 +49,10 @@ const ago = (value: unknown) => {
 };
 const duration = (seconds: number | null | undefined) => seconds == null ? "—" : seconds < 60 ? `${Math.round(seconds)} s` : `${Math.floor(seconds / 60)} m ${Math.round(seconds % 60)} s`;
 const number = (value: number | null | undefined) => value == null ? "—" : new Intl.NumberFormat("en-IN").format(value);
+const pct = (part: number, whole: number) => whole ? `${Math.round((part / whole) * 100)}%` : "—";
+const gapText = (ms: number) => ms < 3600_000 ? `${Math.max(1, Math.round(ms / 60_000))} min` : ms < 86_400_000 ? `${Math.round(ms / 3600_000)} h` : `${Math.round(ms / 86_400_000)} d`;
+/** Two count lists as one, people added per key (a person is in only one group, so nobody is counted twice). */
+const merge = (a: Count[], b: Count[]): Count[] => { const map = new Map<string, Count>(); for (const c of [...a, ...b]) { const e = map.get(c.key); map.set(c.key, e ? { ...e, people: e.people + c.people, visits: e.visits + c.visits } : { ...c }); } return [...map.values()].sort((x, y) => y.people - x.people); };
 const errorText = (code: string) => code === "migration_required"
   ? "User activity is not set up in the database yet. Apply supabase/migrations/0023_user_activity.sql (and 0020 for the support tools), then reload."
   : "User activity could not be loaded. Check the database connection and try again.";
@@ -88,7 +93,7 @@ export function SuperAdminActivity({ days, query }: { days: number; query: strin
   const daily = sum.daily.map(d => ({ day: d.day, views: d.views, visitors: d.people, new_visitors: d.newVisitors, users: d.signedIn }));
   const toRows = <K extends string>(list: ({ people: number } & Record<K, string>)[], key: K) => list.map(item => ({ [key]: item[key], visitors: item.people }) as Row);
   const counts = (list: Count[], label = (c: Count) => c.label) => list.map(c => ({ name: label(c), visitors: c.people, visits: c.visits }) as Row);
-  const ns = report.newSummary;
+  const recordsStart = new Date(stream.now - stream.days * 86_400_000).toLocaleDateString("en-IN", { day: "numeric", month: "short", timeZone: "Asia/Kolkata" });
 
   return <div className={styles.activity}>
     <SectionNav label="User activity sections" items={NAV} />
@@ -110,7 +115,7 @@ export function SuperAdminActivity({ days, query }: { days: number; query: strin
     <div className={styles.metrics}>
       <Stat tone="lavender" index={0} icon={<Users size={16} />} label="Visitors" value={number(sum.people)} note="People: a signed-in account, or one device (cookie resets linked)" />
       <Stat tone="sky" index={1} icon={<MousePointerClick size={16} />} label="Page views" value={number(sum.views)} note={`${sum.pagesPerSession ?? "—"} pages per visit · on screen ≥ 1 s`} />
-      <Stat tone="mint" index={2} icon={<UserPlus size={16} />} label="New vs returning" value={`${number(sum.newVisitors)} / ${number(sum.returning)}`} note="Guests: first visit ever in this window vs came before" />
+      <Stat tone="mint" index={2} icon={<UserPlus size={16} />} label="New · returning · old" value={`${number(report.groups.new.people)} · ${number(report.groups.returning.people)} · ${number(report.groups.old.people)}`} note="First visit ever here · first came earlier · known from before the records" />
       <Stat tone="peach" index={3} icon={<UserRound size={16} />} label="Signed-in learners" value={number(sum.signedIn)} note={`${accounts == null ? "—" : number(accounts)} new accounts created`} />
       <Stat tone="butter" index={4} icon={<Radio size={16} />} label="Visits" value={number(sum.sessions)} note="A visit ends after 30 minutes without activity" />
       <Stat tone="rose" index={5} icon={<Clock size={16} />} label="Avg. visit length" value={duration(sum.avgStayMs == null ? null : sum.avgStayMs / 1000)} note={sum.readingPerPersonMs != null ? `${duration(sum.readingPerPersonMs / 1000)} reading per visitor` : "Arrival to last activity"} />
@@ -124,16 +129,22 @@ export function SuperAdminActivity({ days, query }: { days: number; query: strin
       <DailyChart rows={daily} />
     </Card>
 
-    <SectionHead id="ac-new" index={3} title="New visitors" question="Who came for the first time in this window: where from, where they landed, and how many stayed or signed up." icon={UserPlus} tone="mint" />
+    <SectionHead id="ac-new" index={3} title="New, returning and old visitors" question="Who came for the first time, who came back and who has been coming from before: how often, how soon and through what." icon={UserPlus} tone="mint" />
     <div className={styles.metrics}>
-      <Stat tone="mint" index={0} icon={<UserPlus size={16} />} label="New visitors" value={number(ns.total)} note={`${number(ns.guests)} still guests · ${number(ns.signedUp)} signed up`} />
-      <Stat tone="sky" index={1} icon={<MousePointerClick size={16} />} label="Explored past the first page" value={ns.total ? `${Math.round(((ns.total - ns.bounced) / ns.total) * 100)}%` : "—"} note={`${number(ns.total - ns.bounced)} of ${number(ns.total)} opened a second page`} />
-      <Stat tone="lavender" index={2} icon={<Radio size={16} />} label="Came back" value={number(ns.returnedAgain)} note="New visitors who returned for another visit" />
-      <Stat tone="peach" index={3} icon={<Clock size={16} />} label="Reading per new visitor" value={ns.avgReadingMs == null ? "—" : duration(ns.avgReadingMs / 1000)} note="Time their pages were on screen" />
+      {(["new", "returning", "old"] as VisitorGroup[]).map((group, i) => { const g = report.groups[group]; return <Stat key={group} tone={["mint", "sky", "lavender"][i]} index={i} icon={group === "new" ? <UserPlus size={16} /> : group === "returning" ? <Repeat size={16} /> : <History size={16} />}
+        label={`${GROUP_LABEL[group]} visitors`} value={number(g.people)}
+        note={group === "new" ? `First visit ever in this window · ${number(g.signedIn)} signed up · ${pct(g.explored, g.people)} opened a second page`
+          : group === "returning" ? `First came earlier in the records · back after ${g.medianGapMs == null ? "—" : gapText(g.medianGapMs)} (median) · ${g.avgVisitsBefore ?? 0} earlier visits each`
+          : `Known before ${recordsStart} or signed in on their first visit · ${number(g.signedIn)} signed in`} />; })}
+      <Stat tone="peach" index={3} icon={<UserRound size={16} />} label="Signed in" value={number(report.signedIn)} note="Across all three groups" />
     </div>
     <div className={styles.breakdowns}>
-      <Breakdown title="New visitors came from" icon={<Megaphone size={16} />} tone="butter" rows={counts(report.newSources)} label="name" value="visitors" heads={["Source", "New visitors"]} rowIcon={row => brandIcon(show(row.name), CAMPAIGN_MARKS, <Globe size={15} />)} empty="No new visitors in this window yet." />
-      <Breakdown title="First page they landed on" icon={<Compass size={16} />} tone="sky" rows={counts(report.newLandings)} label="name" value="visitors" heads={["Landing page", "New visitors"]} empty="No new visitors in this window yet." />
+      <Breakdown title="Visits per person (in the records)" icon={<Repeat size={16} />} tone="sky" rows={counts(report.frequency)} label="name" value="visitors" heads={["Visits so far", "People"]} />
+      <Breakdown title="How long they stayed away" icon={<History size={16} />} tone="lavender" rows={counts(report.gaps)} label="name" value="visitors" heads={["Time since last visit", "People"]} empty="No returning or old visitors in this window yet." />
+      <Breakdown title="New visitors came from" icon={<Megaphone size={16} />} tone="butter" rows={counts(report.groupSources.new)} label="name" value="visitors" heads={["Source", "New visitors"]} rowIcon={row => brandIcon(show(row.name), CAMPAIGN_MARKS, <Globe size={15} />)} empty="No new visitors in this window yet." />
+      <Breakdown title="Returning and old visitors came back through" icon={<Megaphone size={16} />} tone="peach" rows={counts(merge(report.groupSources.returning, report.groupSources.old))} label="name" value="visitors" heads={["Source", "People"]} rowIcon={row => brandIcon(show(row.name), CAMPAIGN_MARKS, <Globe size={15} />)} empty="No returning or old visitors in this window yet." />
+      <Breakdown title="First page new visitors landed on" icon={<Compass size={16} />} tone="mint" rows={counts(report.groupLandings.new)} label="name" value="visitors" heads={["Landing page", "New visitors"]} empty="No new visitors in this window yet." />
+      <Breakdown title="What returning and old visitors came back to" icon={<Compass size={16} />} tone="rose" rows={counts(merge(report.groupLandings.returning, report.groupLandings.old))} label="name" value="visitors" heads={["Page", "People"]} empty="No returning or old visitors in this window yet." />
     </div>
 
     <SectionHead id="ac-sources" index={4} title="Where visits came from" question="Every visit in the window by platform: search, social, AI assistants, referrals and direct." icon={Megaphone} tone="butter" />
@@ -144,8 +155,8 @@ export function SuperAdminActivity({ days, query }: { days: number; query: strin
 
     <SectionHead id="ac-places" index={5} title="Places & pages" question="Where visitors are, the pages they entered on and the pages they read." icon={MapPin} tone="peach" />
     <div className={styles.breakdowns}>
-      <Breakdown title="Countries" icon={<Globe size={16} />} tone="peach" rows={counts(report.countries, c => c.key === "Unknown" ? "Not resolved" : countryName(c.key) || c.key)} label="name" value="visitors" heads={["Country", "Visitors"]} />
-      <Breakdown title="Cities" icon={<MapPin size={16} />} tone="rose" rows={counts(report.cities, c => { const [city, code] = c.key.split("|"); return [city, code ? countryName(code) || code : ""].filter(Boolean).join(", "); })} label="name" value="visitors" heads={["City", "Visitors"]} empty="No city resolved for this window's visitors." />
+      <Breakdown title="Countries" icon={<Globe size={16} />} tone="peach" rows={report.countries.map(c => ({ name: c.key === "Unknown" ? "Not resolved" : countryName(c.key) || c.key, code: c.key, visitors: c.people, visits: c.visits }) as Row)} label="name" value="visitors" heads={["Country", "Visitors"]} extra={row => `${number(Number(row.visits))} ${Number(row.visits) === 1 ? "visit" : "visits"}`} rowIcon={row => <CountryFlag code={String(row.code)} size={18} />} />
+      <Breakdown title="Cities" icon={<MapPin size={16} />} tone="rose" rows={report.cities.map(c => { const [city, code] = c.key.split("|"); return { name: [city, code ? countryName(code) || code : ""].filter(Boolean).join(", "), code, visitors: c.people, visits: c.visits } as Row; })} label="name" value="visitors" heads={["City", "Visitors"]} rowIcon={row => <CountryFlag code={String(row.code)} size={18} />} empty="No city resolved for this window's visitors." />
       <Breakdown title="Entry pages" icon={<Compass size={16} />} tone="sky" rows={counts(report.landings)} label="name" value="visitors" heads={["First page of a visit", "Visitors"]} />
       <Breakdown title="Pages read" icon={<Eye size={16} />} tone="lavender" rows={sum.pages.map(p => ({ name: p.title || p.path, visitors: p.people, path: p.path, read: p.avgReadMs }) as Row)} label="name" value="visitors" heads={["Page", "Visitors"]} extra={row => `${show(row.path)}${row.read != null ? ` · ${duration(Number(row.read) / 1000)} avg read` : ""}`} />
     </div>
@@ -238,19 +249,24 @@ function Breakdown({ title, icon, rows, label, value, heads, extra, empty, rowIc
 
 function People({ rows, query, onOpen }: { rows: PersonRow[]; query: string; onOpen: (key: string, label: string) => void }) {
   // Flattened so search, suggestions and filters see what the table shows.
-  const view = useMemo(() => rows.map(row => ({ ...row, last_seen: new Date(row.lastSeen).toISOString(), first_seen: row.firstSeen, reading: duration(row.readingMs / 1000) }) as Row), [rows]);
+  const view = useMemo(() => rows.map(row => ({ ...row, type: GROUP_LABEL[row.group], account: row.signedIn ? "Signed in" : "Guest", status: row.live ? "On the site" : "Left",
+    last_seen: new Date(row.lastAt).toISOString(), first_seen: row.firstSeen ?? "", reading: duration(row.readingInPeriodMs / 1000),
+    country_name: row.country ? countryName(row.country) || row.country : "Not resolved" }) as Row), [rows]);
   return <AdminTable title="People" rows={view} query={query}
-    note="Everyone who visited in this window, most recent first: the same people every figure above counts. Open anyone for their full activity trail."
+    note="Everyone who visited in this window, most recent first: the same people every figure above counts. New: first visit ever in the window. Returning: first came earlier in the records. Old: known from before the records begin. Open anyone for their full activity trail."
     rowKey={row => String(row.key)}
     columns={[
       { key: "label", label: "Person", render: row => <button type="button" className={styles.personLink} onClick={() => onOpen(String(row.timelineKey), String(row.label))}>{String(row.label)}</button> },
-      { key: "kind", label: "Type", render: row => <span className={styles.status} data-status={String(row.kind) === "New" ? "new visitor" : String(row.kind) === "Signed in" ? "signed in" : "returning visitor"}>{show(row.kind)}</span> },
-      { key: "status", label: "Now", render: row => <span className={styles.status} data-status={row.status === "On the site" ? "online" : "offline"}>{show(row.status)}</span> },
+      { key: "type", label: "Type", render: row => <span className={styles.status} data-status={row.group === "new" ? "new visitor" : row.group === "returning" ? "returning visitor" : "existing account"}>{show(row.type)}</span> },
+      { key: "account", label: "Account", render: row => <span className={styles.status} data-status={row.signedIn ? "signed in" : "offline"}>{show(row.account)}</span> },
+      { key: "status", label: "Now", render: row => <span className={styles.status} data-status={row.live ? "online" : "offline"}>{show(row.status)}</span> },
       { key: "last_seen", label: "Last seen", render: row => <span title={when(row.last_seen)}>{ago(row.last_seen)}</span> },
-      { key: "first_seen", label: "First seen", render: row => <span title={when(row.first_seen)}>{when(row.first_seen)}</span> },
-      { key: "visits", label: "Visits", filter: false }, { key: "views", label: "Views", filter: false }, { key: "reading", label: "Reading", filter: false },
+      { key: "first_seen", label: "First seen", render: row => row.first_seen ? <span title={when(row.first_seen)}>{when(row.first_seen)}</span> : <span>Before the records</span> },
+      { key: "visitsInPeriod", label: "Visits", filter: false }, { key: "visitsBefore", label: "Earlier visits", filter: false }, { key: "viewsInPeriod", label: "Views", filter: false }, { key: "reading", label: "Reading", filter: false },
       { key: "lastPage", label: "Last page", filter: false, render: row => <span className={styles.path}>{show(row.lastPage)}</span> },
-      { key: "source", label: "Came from" }, { key: "place", label: "Location" }, { key: "device", label: "Device" },
+      { key: "sourceLabel", label: "Came from" },
+      { key: "country_name", label: "Country", render: row => <span><CountryFlag code={row.country as string | null} size={18} />{show(row.country_name)}</span> },
+      { key: "city", label: "City" }, { key: "device", label: "Device" },
     ]} />;
 }
 

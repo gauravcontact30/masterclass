@@ -1,4 +1,5 @@
 "use client";
+import { CountryFlag } from "./country-flag";
 import { useEffect, useId, useState } from "react";
 import { Building2, Clock, Globe2, Home, List, Map as MapIcon, MapPin, MapPinned, Navigation, Plane, RefreshCw, Search, Timer, UserPlus, Users, X } from "lucide-react";
 import type { NewUserLocation, NewUserLocationReport, Tally } from "@/lib/new-user-locations";
@@ -79,7 +80,7 @@ export function SuperAdminNewUserLocations({ days, query = "" }: Readonly<{ days
         columns={[
           "name",
           { key: "joinedAt", label: "Joined (IST)", render: row => ist(String(row.joinedAt)) },
-          { key: "location", label: "City, state, country", render: row => String(row.location || "Not available") },
+          { key: "location", label: "City, state, country", render: row => <span>{row.countryCode ? <CountryFlag code={String(row.countryCode)} size={18} /> : null}{String(row.location || "Not available")}</span> },
           { key: "postalCode", label: "Village / PIN area", render: row => row.postalCode ? `PIN ${row.postalCode}` : row.cityLevelPin ? "City-level only (exact PIN not known)" : "Not available from IP" },
           { key: "nearbyCity", label: "Nearby city", render: row => String(row.nearbyCity ?? "Not available") },
           { key: "firstSeenAt", label: "First seen (IST)", render: row => row.firstSeenAt ? ist(String(row.firstSeenAt)) : "No visit recorded" },
@@ -135,7 +136,7 @@ function Card({ tone, icon: Icon, title, purpose, rows, total, empty }: Readonly
       </div>
       <div className={styles.filters} role="group" aria-label={`Filter ${title.toLowerCase()}`}>{FILTERS.map(f => <button key={f.id} type="button" aria-pressed={filter === f.id} title={f.label} onClick={() => { setFilter(f.id); setPage(1); }}><f.icon size={12} aria-hidden="true" />{f.label}</button>)}</div>
       {shown.length ? <><div className={styles.listHead} aria-hidden="true"><span>{title}</span><span>Share</span><span>Users</span></div><ol className={styles.list}>{shown.slice((at - 1) * CARD_PAGE, at * CARD_PAGE).map(row => <li key={row.name}>
-        <span title={row.name}>{row.name}{row.detail && <small>{row.detail}</small>}</span><i aria-hidden="true"><b style={{ width: `${(row.count / top) * 100}%` }} /></i><strong>{row.count}<small>{pct(row.count, total)}</small></strong>
+        <span title={row.name}>{row.country && <CountryFlag code={row.country} size={18} />}{row.name}{row.detail && <small>{row.detail}</small>}</span><i aria-hidden="true"><b style={{ width: `${(row.count / top) * 100}%` }} /></i><strong>{row.count}<small>{pct(row.count, total)}</small></strong>
       </li>)}</ol>
       <Pager page={at} pages={pages} total={shown.length} size={CARD_PAGE} onPage={setPage} /></> : <p className={styles.empty} role="status">Nothing matches this search or filter.</p>}
     </> : <p className={styles.empty}>{empty}</p>}

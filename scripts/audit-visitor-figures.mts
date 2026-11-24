@@ -95,3 +95,11 @@ if (process.argv.includes("--dropped")) {
   console.log("REPORT", JSON.stringify({ people: report.people, newSummary: report.newSummary, newSources: report.newSources, sources: report.sources.slice(0, 6), countries: report.countries.slice(0, 6),
     uncounted: uncountedBrowsers(rows as unknown as StreamVisit[], everyone, dayStart), rawBrowsers: raw.browsers }, null, 1));
 }
+
+// Today's people in the three groups, with what each row knows.
+{
+  const { visitorReport } = await import("@/lib/visitor-report");
+  const report = visitorReport(everyone, dayStart);
+  console.log("GROUPS", JSON.stringify({ groups: Object.fromEntries(Object.entries(report.groups).map(([k, g]) => [k, { people: g.people, signedIn: g.signedIn, cameBack: g.cameBack, medianGapMin: g.medianGapMs == null ? null : Math.round(g.medianGapMs / 60000) }])),
+    returningAndOld: report.rows.filter(r => r.group !== "new").map(r => ({ group: r.group, firstSeen: r.firstSeen, visitsBefore: r.visitsBefore, lastVisitBefore: r.lastVisitBefore && new Date(r.lastVisitBefore).toISOString(), via: r.sourceLabel, to: r.landing, place: r.place })) }, null, 1));
+}

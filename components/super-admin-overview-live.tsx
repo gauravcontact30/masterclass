@@ -10,6 +10,7 @@ import { verifyLiveFigures, MAX_READ_AGE_MS } from "@/lib/live-verify";
 import { localityPin } from "@/lib/new-user-locations";
 import { VisitorRoutes } from "./super-admin-visitor-routes";
 import { NewVisitorsToday } from "./super-admin-new-visitors";
+import { visitorReport } from "@/lib/visitor-report";
 import { PrivateVisitors } from "./super-admin-private-visitors";
 import { SectionHead } from "./super-admin-section-head";
 import { SuperAdminGoals } from "./super-admin-goals";
@@ -329,8 +330,10 @@ export function OverviewLive({ snapshot, onRefreshSnapshot, visitorsOnly = false
 
   // Today against the same stretch of yesterday (00:00 IST to this time of day), so the two are the same length.
   const sameTimeYesterday = useMemo(() => periodSummary(everyone, dayStart - 86_400_000, clockNow - 86_400_000, ownHosts), [everyone, dayStart, clockNow, ownHosts]);
+  // Today's people in the three groups (new, returning, old), counted exactly as the Visitors today panel counts them.
+  const groupsToday = useMemo(() => { if (!exact) return null; const r = visitorReport(everyone, dayStart, Infinity, ownHosts); return { new: r.groups.new.people, returning: r.groups.returning.people, old: r.groups.old.people, signedIn: r.signedIn }; }, [exact, everyone, dayStart, ownHosts]);
   const glance: GlanceProps = {
-    day, exact,
+    day, exact, groups: groupsToday,
     live: heartbeats ? { now: counts.live, signed: counts.liveSigned, last30: counts.recent, last30Signed: counts.recentSigned, viewsLastHour: hourSum.views, peopleLastHour: hourSum.people }
       : { now: report?.totals.liveNow ?? 0, signed: report?.totals.liveSignedIn ?? 0, last30: counts.recent, last30Signed: counts.recentSigned, viewsLastHour: hourSum.views, peopleLastHour: hourSum.people },
     today: { people: fig.people, views: fig.views, sessions: fig.sessions, signedIn: fig.signedIn, newVisitors: fig.newVisitors, returning: exact ? todaySum.returning : null, bounceRate: fig.bounceRate, avgVisitSeconds: fig.avgSessionSeconds, pagesPerVisit: fig.pagesPerSession, readingPerPersonSeconds: fig.readingPerPerson == null ? null : fig.readingPerPerson / 1000 },
@@ -338,7 +341,7 @@ export function OverviewLive({ snapshot, onRefreshSnapshot, visitorsOnly = false
     hours, hourNow: istHour(clockNow),
     devices: fig.devices.map(d => ({ device: d.device, people: d.people })),
     topSource: fig.topSource, topPage: fig.topPage ? { path: fig.topPage.path, views: fig.topPage.views, people: fig.topPage.people } : null,
-    topCountry: fig.topCountry ? { country: countryName(fig.topCountry.country) || fig.topCountry.country, people: fig.topCountry.people } : null,
+    topCountry: fig.topCountry ? { country: countryName(fig.topCountry.country) || fig.topCountry.country, code: fig.topCountry.country, people: fig.topCountry.people } : null,
     newAccounts: t?.newAccounts, bots: live?.totals.bots,
     verified: checks ? { passed: checks.length - failed.length, total: checks.length } : null,
     paused, updatedAt: readAt ? clockMinute(readAt + offset) : null,
@@ -738,8 +741,8 @@ export function OverviewLive({ snapshot, onRefreshSnapshot, visitorsOnly = false
       </article>
 
       {/* Everyone whose first page view ever was today, from the same visitor list as the stream above (user request 2026-11-24). */}
-      <SectionHead id="ov-first" index={3} title="New visitors today" question="Who came for the first time today, where from, what they read and whether they signed up." icon={Sparkles} tone="lavender" live />
-      <NewVisitorsToday everyone={everyone} rows={streamRows} dayStart={dayStart} now={clockNow} ownHosts={ownHosts} />
+      <SectionHead id="ov-first" index={3} title="Visitors today: new, returning and old" question="Who came for the first time, who came back and who has been here before: where from, what they read, how often they return." icon={Sparkles} tone="lavender" live />
+      <NewVisitorsToday everyone={everyone} rows={streamRows} dayStart={dayStart} now={clockNow} ownHosts={ownHosts} recordsFrom={clockNow - streamDays * 86_400_000} />
 
       {/* Visitors in a private (incognito) window: reported by the browser, or inferred from a fresh cookie on a known device. */}
       <PrivateVisitors everyone={everyone} now={clockNow} days={streamDays} />

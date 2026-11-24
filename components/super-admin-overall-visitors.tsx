@@ -1,4 +1,5 @@
 "use client";
+import { CountryFlag } from "./country-flag";
 import { useEffect, useState } from "react";
 import { RefreshCw, Users } from "lucide-react";
 import type { OverallVisitors } from "@/lib/overall-visitors";
@@ -43,7 +44,7 @@ export function SuperAdminOverallVisitors({ query = "" }: { query?: string }) {
       <AdminTable title="Overall daily visitors (IST)" rows={data.daily} query={query} columns={["day", "visitors", "sessions", "views"]} empty="No visitor activity has been recorded." />
       <AdminTable title="Overall traffic sources" rows={data.sources} query={query} columns={["source", "visitors", "views"]} note="Top 50 recorded UTM sources or referrer hosts. Direct / unknown means no source was available. A browser may appear under multiple sources; use the overall total for distinct browsers." />
       <AdminTable title="Overall pages visited" rows={data.pages} query={query} columns={["path", "visitors", "views"]} note="Top 50 pages by recorded page views. Totals above include every page." />
-      <AdminTable title="Overall visitor countries" rows={data.countries.map(row => ({ ...row, country: countryLabel(row.country) }))} query={query} columns={["country", "visitors", "views"]} note="Top 50 countries from approximate network location. Unknown locations are not guessed." />
+      <AdminTable title="Overall visitor countries" rows={data.countries.map(row => ({ ...row, code: row.country, country: countryLabel(row.country) }))} query={query} columns={[{ key: "country", label: "Country", render: row => <span><CountryFlag code={row.code as string | null} size={18} />{String(row.country)}</span> }, "visitors", "views"]} note="Top 50 countries from approximate network location. Unknown locations are not guessed." />
     </>}
   </section>;
 }
