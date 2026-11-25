@@ -15,6 +15,8 @@ import { PrivateVisitors } from "./super-admin-private-visitors";
 import { SectionHead } from "./super-admin-section-head";
 import { SuperAdminGoals } from "./super-admin-goals";
 import { SuperAdminGlance, type GlanceProps } from "./super-admin-glance";
+import { SuperAdminHourlyVisitors } from "./super-admin-hourly-visitors";
+import { SuperAdminTimeOnSite } from "./super-admin-time-on-site";
 
 type Row = Record<string, unknown>;
 type Visit = { id?: number; created_at: string; event: string; utm_medium?: string | null; utm_campaign?: string | null; person?: string; email?: string | null; user_id?: string | null; visitor_id: string; session_id: string; new_visitor?: boolean; path: string; title?: string | null; country?: string | null; city?: string | null; region?: string | null; postal_code?: string | null; device?: string | null; browser?: string | null; os?: string | null; duration_ms?: number | null; referrer_host?: string | null; utm_source?: string | null; screen?: string | null; timezone?: string | null; language?: string | null; ip_masked?: string | null; private_mode?: boolean | null };
@@ -380,8 +382,15 @@ export function OverviewLive({ snapshot, onRefreshSnapshot, visitorsOnly = false
       </ul>
     </details>
 
+    {visitorsOnly && <>
+      <SectionHead id="ov-hours" index={2} title="Visitors by hour" question="How many people visited in each hour of the 24-hour clock (IST), and which hour brought the most." icon={Clock} tone="peach" live />
+      <SuperAdminHourlyVisitors everyone={everyone} now={clockNow} exact={exact} ownHosts={ownHosts} />
+      <SectionHead id="ov-time" index={3} title="Time on site" question="Who is on the site now and for how long, how long today's visitors stay, which pages and sources hold them, and where they leave." icon={Timer} tone="sky" live />
+      <SuperAdminTimeOnSite everyone={everyone} from={dayStart} now={clockNow} ownHosts={ownHosts} windowLabel="today since 00:00 IST" exact={exact} />
+    </>}
+
     <div className={styles.grid}>
-      <SectionHead id="ov-stream" index={2} title="Live visitor stream" question="Who is on the site, where they came from and what they are reading, newest first." icon={Radio} tone="sky" live />
+      <SectionHead id="ov-stream" index={visitorsOnly ? 4 : 2} title="Live visitor stream" question="Who is on the site, where they came from and what they are reading, newest first." icon={Radio} tone="sky" live />
       <article className={`${styles.panel} ${styles.full}`} data-tone="mint">
         <h3><Radio size={16} aria-hidden="true" />Live visitor stream<span>{everyone.length ? `${n(everyone.length)} ${everyone.length === 1 ? "visitor" : "visitors"} · ${n(counts.views)} views in ${stream ? `the last ${streamDays} ${streamDays === 1 ? "day" : "days"}` : "the 24 h report's newest events (full stream loading)"} · newest first` : ""}</span></h3>
         {everyone.length > 0 && <div className={styles.streamBar}>
@@ -741,7 +750,7 @@ export function OverviewLive({ snapshot, onRefreshSnapshot, visitorsOnly = false
       </article>
 
       {/* Everyone whose first page view ever was today, from the same visitor list as the stream above (user request 2026-11-24). */}
-      <SectionHead id="ov-first" index={3} title="Visitors today: new, returning and old" question="Who came for the first time, who came back and who has been here before: where from, what they read, how often they return." icon={Sparkles} tone="lavender" live />
+      <SectionHead id="ov-first" index={visitorsOnly ? 5 : 3} title="Visitors today: new, returning and old" question="Who came for the first time, who came back and who has been here before: where from, what they read, how often they return." icon={Sparkles} tone="lavender" live />
       <NewVisitorsToday everyone={everyone} rows={streamRows} dayStart={dayStart} now={clockNow} ownHosts={ownHosts} recordsFrom={clockNow - streamDays * 86_400_000} />
 
       {/* Visitors in a private (incognito) window: reported by the browser, or inferred from a fresh cookie on a known device. */}
@@ -771,7 +780,7 @@ export function OverviewLive({ snapshot, onRefreshSnapshot, visitorsOnly = false
         <Pager page={Math.min(tracePage, pagesOf(traces, TRACE_PAGE))} pages={pagesOf(traces, TRACE_PAGE)} total={traces.length} size={TRACE_PAGE} onPage={setTracePage} />
       </article>}
 
-      <SectionHead id="ov-today" index={4} title={visitorsOnly ? "Reading now" : "Today's pattern"} question={visitorsOnly ? "Which pages people have been reading in the last 30 minutes, and on what." : "When visitors arrive, which pages they read and what they use."} icon={Zap} tone="peach" />
+      <SectionHead id="ov-today" index={visitorsOnly ? 6 : 4} title={visitorsOnly ? "Reading now" : "Today's pattern"} question={visitorsOnly ? "Which pages people have been reading in the last 30 minutes, and on what." : "When visitors arrive, which pages they read and what they use."} icon={Zap} tone="peach" />
 
       {/* The Overview's At a glance already shows today's hours, audience, top page, source, country and devices. */}
       {!visitorsOnly && <article className={styles.panel} data-tone="peach">

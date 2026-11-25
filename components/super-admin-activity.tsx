@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
-import { History, Repeat, Activity, AppWindow, ArrowLeft, Calendar, Clock, Compass, Download, ExternalLink, Eye, Globe, Laptop, LogOut, MapPin, Megaphone, Monitor, MonitorSmartphone, MousePointerClick, Radio, RefreshCw, ShieldCheck, Smartphone, Tablet, Terminal, UserPlus, UserRound, Users } from "lucide-react";
+import { Timer, History, Repeat, Activity, AppWindow, ArrowLeft, Calendar, Clock, Compass, Download, ExternalLink, Eye, Globe, Laptop, LogOut, MapPin, Megaphone, Monitor, MonitorSmartphone, MousePointerClick, Radio, RefreshCw, ShieldCheck, Smartphone, Tablet, Terminal, UserPlus, UserRound, Users } from "lucide-react";
 import { Card } from "./ui/card";
 import { Button } from "./ui/button";
 import { AdminError, AdminLoading } from "./super-admin-feedback";
@@ -14,6 +14,7 @@ import { periodSummary } from "@/lib/live-visits";
 import { GROUP_LABEL, uncountedBrowsers, visitorReport, type Count, type PersonRow, type VisitorGroup, type VisitRow } from "@/lib/visitor-report";
 import { CountryFlag } from "./country-flag";
 import { useStreamVisitors } from "./use-stream-visitors";
+import { SuperAdminTimeOnSite } from "./super-admin-time-on-site";
 import { siAndroid, siApple, siBrave, siFacebook, siFirefoxbrowser, siGoogle, siGooglechrome, siInstagram, siIos, siLinux, siMacos, siOpera, siSafari, siSamsung, siUbuntu, siWhatsapp, siYoutube, type SimpleIcon } from "simple-icons";
 import shell from "./super-admin-dashboard.module.css";
 import styles from "./super-admin-activity.module.css";
@@ -23,7 +24,7 @@ import styles from "./super-admin-activity.module.css";
  * the last three days) is on the Overview, so nothing here repeats it (user request 2026-11-24).
  */
 const NAV = [
-  { id: "ac-audience", label: "Audience", icon: Users }, { id: "ac-traffic", label: "Daily traffic", icon: Activity }, { id: "ac-new", label: "New visitors", icon: UserPlus },
+  { id: "ac-audience", label: "Audience", icon: Users }, { id: "ac-time", label: "Time on site", icon: Timer }, { id: "ac-traffic", label: "Daily traffic", icon: Activity }, { id: "ac-new", label: "New visitors", icon: UserPlus },
   { id: "ac-sources", label: "Sources", icon: Megaphone }, { id: "ac-places", label: "Places & pages", icon: MapPin }, { id: "ac-tech", label: "Devices", icon: MonitorSmartphone },
   { id: "ac-accounts", label: "New accounts", icon: UserRound }, { id: "ac-people", label: "People & visits", icon: Users },
 ];
@@ -123,13 +124,16 @@ export function SuperAdminActivity({ days, query }: { days: number; query: strin
     </div>
     {left > 0 && <p className={styles.windowNote} role="status"><ShieldCheck size={14} aria-hidden="true" /><span><b>{number(left)}</b> more {left === 1 ? "browser" : "browsers"} loaded a page in this window but never showed it on screen (scrapers, link prefetchers, tabs closed at once). They are left out of every figure on this page and the Overview.</span></p>}
 
-    <SectionHead id="ac-traffic" index={2} title="Daily traffic" question="Page views, visitors and new visitors on each day of the window." icon={Activity} tone="sky" />
+    <SectionHead id="ac-time" index={2} title="Time on site" question="Who is on the site now and for how long, how long this window's visitors stayed, which pages and sources held them, and where they left." icon={Timer} tone="sky" live />
+    <SuperAdminTimeOnSite everyone={stream.everyone!} from={from} now={stream.now} ownHosts={ownHosts} windowLabel={span === 1 ? "last 24 hours" : `last ${span} days`} exact />
+
+    <SectionHead id="ac-traffic" index={3} title="Daily traffic" question="Page views, visitors and new visitors on each day of the window." icon={Activity} tone="sky" />
     <Card className={`${shell.panel} ${styles.chartCard}`}>
       <div className={shell.panelHeading}><h2>Daily traffic (IST)</h2><span className={styles.legend}><i data-key="views" />Page views <i data-key="visitors" />Visitors <i data-key="new" />New</span></div>
       <DailyChart rows={daily} />
     </Card>
 
-    <SectionHead id="ac-new" index={3} title="New, returning and old visitors" question="Who came for the first time, who came back and who has been coming from before: how often, how soon and through what." icon={UserPlus} tone="mint" />
+    <SectionHead id="ac-new" index={4} title="New, returning and old visitors" question="Who came for the first time, who came back and who has been coming from before: how often, how soon and through what." icon={UserPlus} tone="mint" />
     <div className={styles.metrics}>
       {(["new", "returning", "old"] as VisitorGroup[]).map((group, i) => { const g = report.groups[group]; return <Stat key={group} tone={["mint", "sky", "lavender"][i]} index={i} icon={group === "new" ? <UserPlus size={16} /> : group === "returning" ? <Repeat size={16} /> : <History size={16} />}
         label={`${GROUP_LABEL[group]} visitors`} value={number(g.people)}
@@ -147,13 +151,13 @@ export function SuperAdminActivity({ days, query }: { days: number; query: strin
       <Breakdown title="What returning and old visitors came back to" icon={<Compass size={16} />} tone="rose" rows={counts(merge(report.groupLandings.returning, report.groupLandings.old))} label="name" value="visitors" heads={["Page", "People"]} empty="No returning or old visitors in this window yet." />
     </div>
 
-    <SectionHead id="ac-sources" index={4} title="Where visits came from" question="Every visit in the window by platform: search, social, AI assistants, referrals and direct." icon={Megaphone} tone="butter" />
+    <SectionHead id="ac-sources" index={5} title="Where visits came from" question="Every visit in the window by platform: search, social, AI assistants, referrals and direct." icon={Megaphone} tone="butter" />
     <div className={styles.breakdowns}>
       <Breakdown title="Sources" icon={<Megaphone size={16} />} tone="butter" rows={counts(report.sources)} label="name" value="visits" heads={["Platform", "Visits"]} extra={row => `${number(Number(row.visitors))} ${Number(row.visitors) === 1 ? "visitor" : "visitors"}`} rowIcon={row => brandIcon(show(row.name), CAMPAIGN_MARKS, <Globe size={15} />)} />
       <Breakdown title="Campaigns (UTM)" icon={<Megaphone size={16} />} tone="peach" rows={counts(report.campaigns)} label="name" value="visits" heads={["Source · campaign", "Visits"]} rowIcon={row => brandIcon(show(row.name), CAMPAIGN_MARKS, <Megaphone size={15} />)} empty="No tagged links visited yet. Add ?utm_source=… to links you share." />
     </div>
 
-    <SectionHead id="ac-places" index={5} title="Places & pages" question="Where visitors are, the pages they entered on and the pages they read." icon={MapPin} tone="peach" />
+    <SectionHead id="ac-places" index={6} title="Places & pages" question="Where visitors are, the pages they entered on and the pages they read." icon={MapPin} tone="peach" />
     <div className={styles.breakdowns}>
       <Breakdown title="Countries" icon={<Globe size={16} />} tone="peach" rows={report.countries.map(c => ({ name: c.key === "Unknown" ? "Not resolved" : countryName(c.key) || c.key, code: c.key, visitors: c.people, visits: c.visits }) as Row)} label="name" value="visitors" heads={["Country", "Visitors"]} extra={row => `${number(Number(row.visits))} ${Number(row.visits) === 1 ? "visit" : "visits"}`} rowIcon={row => <CountryFlag code={String(row.code)} size={18} />} />
       <Breakdown title="Cities" icon={<MapPin size={16} />} tone="rose" rows={report.cities.map(c => { const [city, code] = c.key.split("|"); return { name: [city, code ? countryName(code) || code : ""].filter(Boolean).join(", "), code, visitors: c.people, visits: c.visits } as Row; })} label="name" value="visitors" heads={["City", "Visitors"]} rowIcon={row => <CountryFlag code={String(row.code)} size={18} />} empty="No city resolved for this window's visitors." />
@@ -161,17 +165,17 @@ export function SuperAdminActivity({ days, query }: { days: number; query: strin
       <Breakdown title="Pages read" icon={<Eye size={16} />} tone="lavender" rows={sum.pages.map(p => ({ name: p.title || p.path, visitors: p.people, path: p.path, read: p.avgReadMs }) as Row)} label="name" value="visitors" heads={["Page", "Visitors"]} extra={row => `${show(row.path)}${row.read != null ? ` · ${duration(Number(row.read) / 1000)} avg read` : ""}`} />
     </div>
 
-    <SectionHead id="ac-tech" index={6} title="Devices" question="What visitors browse with." icon={MonitorSmartphone} tone="mint" />
+    <SectionHead id="ac-tech" index={7} title="Devices" question="What visitors browse with." icon={MonitorSmartphone} tone="mint" />
     <div className={styles.breakdowns}>
       <Breakdown title="Devices" icon={<MonitorSmartphone size={16} />} tone="sky" rows={toRows(sum.devices, "device")} label="device" value="visitors" heads={["Device", "Visitors"]} rowIcon={row => deviceIcon(show(row.device))} />
       <Breakdown title="Browsers" icon={<Compass size={16} />} tone="lavender" rows={toRows(sum.browsers, "browser")} label="browser" value="visitors" heads={["Browser", "Visitors"]} rowIcon={row => brandIcon(show(row.browser), BROWSER_MARKS, <Globe size={15} />)} />
       <Breakdown title="Operating systems" icon={<Terminal size={16} />} tone="mint" rows={toRows(sum.systems, "os")} label="os" value="visitors" heads={["Operating system", "Visitors"]} rowIcon={row => brandIcon(show(row.os), OS_MARKS, <AppWindow size={15} />)} />
     </div>
 
-    <SectionHead id="ac-accounts" index={7} title="New accounts" question="Accounts created in this window: where each person was and how much they have used the site since." icon={UserRound} tone="lavender" />
+    <SectionHead id="ac-accounts" index={8} title="New accounts" question="Accounts created in this window: where each person was and how much they have used the site since." icon={UserRound} tone="lavender" />
     <SuperAdminNewUserLocations days={days} query={query} />
 
-    <SectionHead id="ac-people" index={8} title="People & visits" question="Each person and every individual visit in the window. Open one to see their full timeline." icon={UserRound} tone="rose" />
+    <SectionHead id="ac-people" index={9} title="People & visits" question="Each person and every individual visit in the window. Open one to see their full timeline." icon={UserRound} tone="rose" />
     <People rows={report.people_} query={query} onOpen={(key, label) => setPerson({ key, label })} />
     <VisitLog rows={report.visits} query={query} onOpen={(key, label) => setPerson({ key, label })} />
     <p className={shell.note}>Visits are recorded by a first-party beacon on every page (super admin pages excluded). Crawlers, automated browsers, this site&apos;s own machines and page loads that were never on screen are left out. A visitor is one person: their signed-in account, or one device (an in-app browser that drops its cookie still counts once). IP addresses are stored masked. Visits are kept for {VISIT_RETENTION_DAYS} days, so no window reaches further back than that.</p>

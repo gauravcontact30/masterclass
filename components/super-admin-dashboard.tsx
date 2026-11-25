@@ -15,7 +15,7 @@ import { Input } from "@/components/ui/input";
 import { useCallback, useEffect, useState, useRef } from "react";
 import Link from "@/components/site-link";
 import { useRouter } from "next/navigation";
-import { Briefcase, GraduationCap, Landmark, School, CalendarDays, Gauge, Radio as RadioIcon, Sparkles, Zap, MessageSquarePlus, Newspaper, Radar, Activity, HeartPulse, ArrowLeft, Bot, Layers, Receipt, LifeBuoy, Megaphone, MousePointerClick, TrendingUp, ChevronDown, ChevronRight, CreditCard, Database, ExternalLink, LogOut, RefreshCw, PanelLeftClose, PanelLeftOpen, Server, ShieldCheck, UploadCloud, UserRound, Users } from "lucide-react";
+import { Clock, Timer, Briefcase, GraduationCap, Landmark, School, CalendarDays, Gauge, Radio as RadioIcon, Sparkles, Zap, MessageSquarePlus, Newspaper, Radar, Activity, HeartPulse, ArrowLeft, Bot, Layers, Receipt, LifeBuoy, Megaphone, MousePointerClick, TrendingUp, ChevronDown, ChevronRight, CreditCard, Database, ExternalLink, LogOut, RefreshCw, PanelLeftClose, PanelLeftOpen, Server, ShieldCheck, UploadCloud, UserRound, Users } from "lucide-react";
 import { SidebarTooltips } from "./sidebar-tooltips";
 import { DashboardPageHeader } from "./dashboard-page-header";
 import { LiveVisitorsBadge } from "./super-admin-traffic-sources";
@@ -88,7 +88,7 @@ type SectionItem = (typeof groups)[number]["items"][number];
  * each other (user request 2026-11-24).
  */
 const OVERVIEW_NAV = [
-  { id: "ov-glance", label: "At a glance", icon: Gauge }, { id: "ov-stream", label: "Live stream", icon: RadioIcon }, { id: "ov-first", label: "New & returning", icon: Sparkles },
+  { id: "ov-glance", label: "At a glance", icon: Gauge }, { id: "ov-hours", label: "By hour", icon: Clock }, { id: "ov-time", label: "Time on site", icon: Timer }, { id: "ov-stream", label: "Live stream", icon: RadioIcon }, { id: "ov-first", label: "New & returning", icon: Sparkles },
   { id: "ov-today", label: "Reading now", icon: Zap }, { id: "ov-days", label: "3 days", icon: CalendarDays },
 ];
 const sections: readonly SectionItem[] = groups.flatMap((group): readonly SectionItem[] => group.items);
@@ -231,7 +231,7 @@ export function SuperAdminDashboard({ userId = "admin", isOwner = false }: { use
       {section === "overview" && <SectionNav label="Overview sections" items={OVERVIEW_NAV} />}
       {(section === "overview" || section === "live") && <OverviewLive snapshot={data} onRefreshSnapshot={refreshSilently} visitorsOnly={section === "overview"} />}
       {section === "overview" && <div className={styles.visitorSections}>
-        <SectionHead id="ov-days" index={5} title="Last three days" question="How today compares with yesterday and the day before, hour by hour." icon={CalendarDays} tone="sky" />
+        <SectionHead id="ov-days" index={7} title="Last three days" question="How today compares with yesterday and the day before, hour by hour." icon={CalendarDays} tone="sky" />
         <SuperAdminThreeDays />
       </div>}
       {["live","analytics","moderation","security"].includes(section)&&<SuperAdminOperations section={section} days={days} query={query}/>}
