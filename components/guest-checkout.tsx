@@ -27,7 +27,7 @@ type Outcome = { status: "active" | "processing" | "conflict"; email: string; ne
  * the server then finds or creates the account for the email given here.
  */
 export function GuestCheckout({ initialTier, enabled, prices: located }: { initialTier: Tier; enabled: boolean; prices: Pick<VisitorPrices, "monthly" | "yearly"> & Partial<VisitorPrices> }) {
-  const { t, language, setLanguage } = useLanguage();
+  const { t, language } = useLanguage();
   const hi = language === "hi";
   const text = (en: string, hindi: string) => hi ? hindi : en;
   const [tier, setTier] = useState<Tier>(initialTier);

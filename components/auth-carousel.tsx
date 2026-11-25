@@ -1,6 +1,7 @@
 "use client";
 import { PORTALS, type Portal } from "@/lib/portal";
 import { localImage } from "@/lib/responsive-image-loader";
+import { ieltsTopicImage } from "@/lib/exam-images";
 import Image from "@/components/responsive-image";
 import { useEffect, useRef, useState, type FocusEvent } from "react";
 import { useVisiblePlayback } from "./use-visible-playback";
@@ -77,6 +78,13 @@ export function AuthCarousel({ slides, labels, intervalMs = 5000 }: { slides: Au
 }
 
 /** Slides for the two exam portals: [id, English title, English body, Hindi title, Hindi body]. Photos: public/images/auth/<id>.webp. */
+/* IELTS Achievers: the IELTS topic pictures (npm run images:ielts), by topic: [topic, title, body, Hindi title, Hindi body]. */
+const IELTS_SLIDES: [string, string, string, string, string][] = [
+  ["Education", "Academic or General Training.", "Reading, vocabulary, grammar, Writing Task 2 and Speaking Part 3, with a model answer for every question.", "Academic या General Training.", "रीडिंग, शब्दावली, व्याकरण, राइटिंग टास्क 2 और स्पीकिंग पार्ट 3, हर प्रश्न के मॉडल उत्तर के साथ।"],
+  ["Work", "Sample papers and timed mock tests.", "Practise in test order, against the clock, and see your score and every answer when you submit.", "सैंपल पेपर और समयबद्ध मॉक टेस्ट।", "टेस्ट के क्रम में, घड़ी के साथ अभ्यास करें और सबमिट करने पर स्कोर और हर उत्तर देखें।"],
+  ["Travel and Tourism", "The topics candidates report most.", "Thirty recurring themes with topic vocabulary, essay plans and discussion answers, rated by how often they come up.", "सबसे अधिक आने वाले विषय।", "तीस बार-बार आने वाले विषय, शब्दावली, निबंध योजना और चर्चा के उत्तरों के साथ।"],
+  ["Language and Communication", "Know your band before test day.", "Raw-score conversions and the overall band rule, so you know what each section is worth.", "परीक्षा से पहले अपना बैंड जानें।", "रॉ स्कोर से बैंड और ओवरऑल बैंड का नियम, ताकि आप हर सेक्शन का महत्व जानें।"],
+];
 const EXAM_SLIDES: Record<"boards" | "competitive", [string, string, string, string, string][]> = {
   boards: [
     ["boards-chapters", "Every chapter, topic by topic.", "UP Board, CBSE and ICSE / ISC for Class 10 and 12: Maths, Physics, Chemistry and English, with questions and answers for every topic.", "हर अध्याय, टॉपिक दर टॉपिक।", "कक्षा 10 और 12 के लिए UP Board, CBSE और ICSE / ISC: गणित, भौतिकी, रसायन और अंग्रेज़ी, हर टॉपिक के प्रश्न-उत्तर के साथ।"],
@@ -104,13 +112,15 @@ export function AuthStory({ mode = "signin", portal = "tech" }: { mode?: "signin
   };
   if (portal !== "tech") {
     const hi = language === "hi";
-    const slides: AuthSlide[] = EXAM_SLIDES[portal].map(([id, title, body, hiTitle, hiBody]) => ({ id, title: hi ? hiTitle : title, body: hi ? hiBody : body, image: `/images/auth/${id}.webp` }));
+    const slides: AuthSlide[] = portal === "ielts"
+      ? IELTS_SLIDES.map(([topic, title, body, hiTitle, hiBody]) => ({ id: `ielts-${topic}`, title: hi ? hiTitle : title, body: hi ? hiBody : body, image: ieltsTopicImage(topic) ?? "/images/auth/guide.webp" }))
+      : EXAM_SLIDES[portal].map(([id, title, body, hiTitle, hiBody]) => ({ id, title: hi ? hiTitle : title, body: hi ? hiBody : body, image: `/images/auth/${id}.webp` }));
     return (
       <aside className={styles.story} data-portal={portal}>
-        <p className={styles.tagline}><span aria-hidden="true">✦</span>{PORTALS[portal].name} · {hi ? "परीक्षा तैयारी" : "Exam preparation"}</p>
+        <p className={styles.tagline}><span aria-hidden="true">✦</span>{PORTALS[portal].name} · {portal === "ielts" ? (hi ? "IELTS तैयारी" : "IELTS preparation") : hi ? "परीक्षा तैयारी" : "Exam preparation"}</p>
         {/* Keyed by portal: switching portals starts the new portal's slides from the first. */}
         <AuthCarousel key={portal} slides={slides} labels={labels} />
-        <p className={styles.libraryNote}><Library size={16} aria-hidden="true" />{hi ? "यह खाता Tech Pro और दूसरे परीक्षा पोर्टल से अलग है, अपने ट्रायल और सदस्यता के साथ।" : "This account is separate from Tech Pro and the other exam portal, with its own trial and membership."}</p>
+        <p className={styles.libraryNote}><Library size={16} aria-hidden="true" />{hi ? "यह खाता Tech Pro और दूसरे पोर्टलों से अलग है, अपने ट्रायल और सदस्यता के साथ।" : "This account is separate from Tech Pro and the other portals, with its own trial and membership."}</p>
       </aside>
     );
   }

@@ -22,6 +22,8 @@ export function SuperAdminGoals() {
         const response = await fetch("/api/super-admin/goals", { cache: "no-store", signal: controller.signal });
         const body = await response.json().catch(() => ({}));
         if (!response.ok) { setError(body.error === "migration_required" ? "migration" : "failed"); return; }
+        // A response without the expected lists (a proxy error page, a partial deploy) counts as unavailable, not a crash.
+        if (!Array.isArray(body.goals) || !Array.isArray(body.recent) || !Array.isArray(body.days)) { setError("failed"); return; }
         setData(body as Data); setError("");
       } catch { if (!controller.signal.aborted) setError(current => current || "failed"); }
     };

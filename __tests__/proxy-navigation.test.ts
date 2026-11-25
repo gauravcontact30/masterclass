@@ -29,7 +29,8 @@ test.each(["/", "/sign-in", "/sign-up", "/api/catalog"])("anonymous %s avoids re
 });
 test("anonymous dashboard navigation still redirects", async () => {
   const response = await proxy(new NextRequest("https://example.com/learning/techy"));
-  expect(response.headers.get("location")).toBe("https://example.com/sign-in");
+  // Sign-in carries the page that was asked for, so the visitor returns there (lib/auth-routes.ts).
+  expect(response.headers.get("location")).toBe("https://example.com/sign-in?redirect=%2Flearning%2Ftechy");
   expect(getClaims).not.toHaveBeenCalled();
 });
 test.each([true, false])("validates chunked auth cookies before routing (valid=%s)", async valid => {

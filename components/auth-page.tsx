@@ -17,7 +17,7 @@ import { ArrowLeft, ArrowUpRight, Eye, EyeOff, Globe2, MailCheck, Settings2, Spa
 import { browserAuth, preloadSupabaseBrowser } from "@/lib/supabase-browser-lazy";
 import { hardNavigate } from "@/lib/hard-navigate";
 import { isSafeRedirect } from "@/lib/safe-redirect";
-import { PORTALS, isExamPortal, otherPortals, type Portal } from "@/lib/portal";
+import { PORTALS, isExamPortal, isScopedPortal, otherPortals, type Portal } from "@/lib/portal";
 import { en, TranslationKey } from "@/lib/i18n";
 import { useLanguage } from "./language-provider";
 import { Button } from "./ui/button";
@@ -76,7 +76,7 @@ async function openPortal(portal: Portal, intent: "signin" | "signup"): Promise<
   const response = await fetch("/api/portal/enter", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ portal, intent }) });
   if (response.ok) return { ok: true };
   const body = await response.json().catch(() => ({})) as { error?: string; hasOther?: boolean };
-  return { ok: false, error: body.error === "no_portal_account" ? (isExamPortal(portal) ? "no_exams_account" : "no_tech_account") : body.error === "portal_unavailable" ? "portal_unavailable" : "service_error", hasOther: Boolean(body.hasOther) };
+  return { ok: false, error: body.error === "no_portal_account" ? (isScopedPortal(portal) ? "no_exams_account" : "no_tech_account") : body.error === "portal_unavailable" ? "portal_unavailable" : "service_error", hasOther: Boolean(body.hasOther) };
 }
 
 /**
@@ -85,16 +85,17 @@ async function openPortal(portal: Portal, intent: "signin" | "signup"): Promise<
  */
 export function AuthPage({ mode, enabled, initialEmail = "", redirectTo, linkError, portal = "tech" }: { mode: "signin" | "signup"; enabled: boolean; initialEmail?: string; redirectTo?: string; linkError?: LinkError; portal?: Portal }) {
   const india = useIndiaAccess();
-  const here = PORTALS[portal]; const exam = isExamPortal(portal);
+  // `exam`: an India-only exam portal. `scoped`: any portal with its own account (the exam portals and IELTS Achievers).
+  const here = PORTALS[portal]; const exam = isExamPortal(portal); const scoped = isScopedPortal(portal);
   // The other portals offered at the foot of the form: the exam portals only where they are available (India).
-  const others = otherPortals(portal).filter(other => india || exam ? true : other === "tech");
+  const others = otherPortals(portal).filter(other => india || exam || !isExamPortal(other));
   /** Where a finished sign-in lands: the page that asked for it, else this portal's dashboard. */
   const [selectedDestination, setSelectedDestination] = useState<string | null>(null);
   const destination = selectedDestination ?? (isSafeRedirect(redirectTo) ? redirectTo : here.home);
   /** Where emailed links and Google return. An exam portal goes through /portal/enter, which opens that portal first. */
-  const returnTo = (intent: "signin" | "signup") => exam ? `/portal/enter?portal=${portal}&intent=${intent}&next=${encodeURIComponent(destination)}` : destination;
+  const returnTo = (intent: "signin" | "signup") => scoped ? `/portal/enter?portal=${portal}&intent=${intent}&next=${encodeURIComponent(destination)}` : destination;
   const query = `?redirect=${encodeURIComponent(destination)}`;
-  const { t, language, setLanguage } = useLanguage();
+  const { t, language } = useLanguage();
   // False in the server HTML, true once React has hydrated. Until then the submit button stays disabled, so a tap
   // on a slow phone connection cannot fall through to a native form submit that silently reloads the page.
   const hydrated = useSyncExternalStore(noSubscribe, () => true, () => false);
@@ -181,7 +182,7 @@ export function AuthPage({ mode, enabled, initialEmail = "", redirectTo, linkErr
         // Only a confirmed email may enter, even if the project ever issues a session before confirmation.
         if (!data.user?.email_confirmed_at) { await auth.signOut(); setError("email_not_confirmed"); return; }
         // The login is right; now this portal must hold an account for it. No account opens another portal.
-        if (exam) {
+        if (scoped) {
           const opened = await openPortal(portal, "signin");
           if (!opened.ok) { if (!opened.hasOther) await auth.signOut(); setError(opened.error); return; }
         }
@@ -292,6 +293,7 @@ export function AuthPage({ mode, enabled, initialEmail = "", redirectTo, linkErr
               </div>
               <RouteH1 className={styles.title}><ExpandedText text={t(mode === "signin" ? "signinTitle" : "signupTitle")} /></RouteH1>
               <p className={styles.lead}><ExpandedText text={portal === "boards" ? (mode === "signin" ? (hi ? "अपनी बोर्ड परीक्षा की तैयारी जारी रखने के लिए साइन इन करें।" : "Sign in to continue your Class 10 or 12 board preparation.") : (hi ? "अपना बोर्ड और कक्षा चुनें, फिर Board Scholars खाता बनाएँ।" : "Choose your board and class, then create your Board Scholars account."))
+                : portal === "ielts" ? (mode === "signin" ? (hi ? "अपनी IELTS तैयारी जारी रखने के लिए साइन इन करें।" : "Sign in to continue your IELTS preparation.") : (hi ? "Academic या General Training: सैंपल पेपर, मॉक टेस्ट और हर प्रश्न के उत्तर के लिए अपना IELTS Achievers खाता बनाएँ।" : "Academic or General Training: create your IELTS Achievers account for sample papers, mock tests and an answer to every question."))
                 : portal === "competitive" ? (mode === "signin" ? (hi ? "अपनी प्रतियोगी परीक्षा की तैयारी जारी रखने के लिए साइन इन करें।" : "Sign in to continue your government and competitive exam preparation.") : (hi ? "अपनी लक्ष्य परीक्षा चुनें, फिर Exam Aspirants खाता बनाएँ।" : "Choose your target exam, then create your Exam Aspirants account."))
                 : t(mode === "signin" ? "signinHelp" : "signupHelp")} /></p>
               {mode === "signup" && <p className={styles.trial}><ExpandedText text={hi ? "हर नया खाता 1 दिन के निःशुल्क ट्रायल से शुरू होता है: पूरी पहुँच, कोई कार्ड नहीं।" : "Every new account starts with a 1-day free trial: full access, no card needed."} /></p>}
@@ -337,7 +339,7 @@ export function AuthPage({ mode, enabled, initialEmail = "", redirectTo, linkErr
               {mode === "signin" && <p className={styles.switchRow}><Button type="button" variant="link" className={styles.switchLink} disabled={busy} onClick={() => void sendLink()}><ExpandedText text={hi ? "पासवर्ड नहीं है? मुझे साइन-इन लिंक ईमेल करें" : "No password? Email me a sign-in link"} /></Button></p>}
               <p className={styles.switchRow}><Link className={styles.switchLink} href={`${mode === "signin" ? here.signUp : here.signIn}${query}`}><ExpandedText text={t(mode === "signin" ? "noAccount" : "haveAccount")} /></Link></p>
               {(error === "no_exams_account" || error === "no_tech_account") && <p className={styles.switchRow}><Link className={styles.switchLink} href={`${here.signUp}?email=${encodeURIComponent(email.trim())}`}>Create your {here.name} account<ArrowUpRight size={15} aria-hidden="true" /></Link></p>}
-              {others.length > 0 && <p className={styles.otherPortal}>{others.map((other, index) => <span key={other}>{index > 0 && " "}Looking for {PORTALS[other].tagline.split(" · ")[0]}? <Link href={mode === "signin" ? PORTALS[other].signIn : PORTALS[other].signUp}>Go to {PORTALS[other].name}</Link>.</span>)} Tech Pro, Board Scholars and Exam Aspirants use separate accounts.</p>}
+              {others.length > 0 && <p className={styles.otherPortal}>{others.map((other, index) => <span key={other}>{index > 0 && " "}Looking for {PORTALS[other].tagline.split(" · ")[0]}? <Link href={mode === "signin" ? PORTALS[other].signIn : PORTALS[other].signUp}>Go to {PORTALS[other].name}</Link>.</span>)} {others.length > 1 ? "Each portal uses a separate account." : "The portals use separate accounts."}</p>}
               {mode === "signup" && <p className={styles.hint}>{language === "hi"
                 ? <>खाता बनाकर आप हमारे <Link href="/terms">नियम और शर्तें</Link> और <Link href="/privacy">गोपनीयता नीति</Link> स्वीकार करते हैं।</>
                 : <>By creating an account you agree to our <Link href="/terms">Terms &amp; conditions</Link> and <Link href="/privacy">Privacy policy</Link>.</>}</p>}

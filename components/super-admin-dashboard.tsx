@@ -106,7 +106,7 @@ function Metric({ label, value, note }: { label: string; value: string | number;
 /** `isOwner` unlocks Upload Learning, which only the owner account may use (the API enforces it as well). */
 export function SuperAdminDashboard({ userId = "admin", isOwner = false }: { userId?: string; isOwner?: boolean }) {
   const router = useRouter();
-  const { t, language, setLanguage } = useLanguage();
+  const { t } = useLanguage();
   const [signingOut, setSigningOut] = useState(false);
   const [accountError, setAccountError] = useState("");
   async function signOut() {

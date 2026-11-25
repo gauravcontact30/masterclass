@@ -45,9 +45,11 @@ const KIND_LABEL: Record<WorkflowNodeKind, string> = { actor: "Person / client",
  * `preview` (the landing page) shows the first three blueprints of each category, each with its 7 most asked
  * subjective and 7 most asked objective interview questions; /learning carries every blueprint with its full set.
  */
-export function LandingWorkflows({ workflows: initial, total = initial.length, industries: industryCount, groups: groupCounts, expanded = false, preview = false }: Readonly<{
+/** No blueprints (a failed load): the section renders empty instead of breaking the page. */
+const NONE: Workflow[] = [];
+export function LandingWorkflows({ workflows: initial = NONE, total = initial.length, industries: industryCount, groups: groupCounts, expanded = false, preview = false }: Readonly<{
   /** Every blueprint on /learning; on the landing page only the "All" tab's first screen (lib/landing-workflows-preview.ts). */
-  workflows: Workflow[]; total?: number; industries?: number; expanded?: boolean; preview?: boolean;
+  workflows?: Workflow[]; total?: number; industries?: number; expanded?: boolean; preview?: boolean;
   /** The landing page's blueprints per category; the rest of them are fetched the first time a tab is picked. */
   groups?: Partial<Record<Group, number>>;
 }>) {

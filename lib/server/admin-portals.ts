@@ -7,7 +7,7 @@ import { OBJECTIVE_MINIMUM } from "@/lib/competitive-exams/practice";
 import { BOARDS, SUBJECTS } from "@/lib/board-exams/boards";
 
 /*
- * Super Admin → Portals: one report per audience (Tech Pro, Board Scholars, Exam Aspirants). Accounts come from
+ * Super Admin → Portals: one report per audience (Tech Pro, Board Scholars, Exam Aspirants, IELTS Achievers). Accounts come from
  * portal_accounts (migrations 0054 and 0055); legacy 'exams' accounts, which open both exam portals, are reported on
  * their own line so no account is counted twice. Traffic counts page views by path, from site_visits.
  */
@@ -15,6 +15,7 @@ const AREAS: Record<Portal, { pages: string; blog: string }> = {
   tech: { pages: "/learning", blog: "/tech-buzz" },
   boards: { pages: "/exams/board-exams", blog: "/exams/board-exams/blog" },
   competitive: { pages: "/exams/competitive-exams", blog: "/exams/competitive-exams/blog" },
+  ielts: { pages: "/ielts/dashboard", blog: "/ielts-preparation" },
 };
 const daysAgo = (days: number) => new Date(Date.now() - days * 86400000).toISOString();
 
@@ -57,6 +58,7 @@ export async function portalReports(days: number): Promise<{ portals: PortalRepo
     tech: [{ label: "Blog", value: PORTALS.tech.blogName }, { label: "Dashboard", value: "Learning Dashboard" }],
     boards: [{ label: "Boards", value: String(BOARDS.length) }, { label: "Subjects", value: String(SUBJECTS.length) }, { label: "Classes", value: "10 and 12" }, { label: "Journal posts", value: String(postsFor("boards").length) }],
     competitive: [{ label: "Exams", value: String(EXAMS.length) }, { label: "Objective questions", value: `${(EXAMS.length * OBJECTIVE_MINIMUM).toLocaleString("en-IN")}+` }, { label: "Digest posts", value: String(postsFor("competitive").length) }],
+    ielts: [{ label: "Questions with answers", value: "480" }, { label: "Papers", value: "24 (sample, mock, 12 years)" }, { label: "Guide", value: PORTALS.ielts.blogName }],
   };
   const portals = await Promise.all(PORTAL_ORDER.map(async (portal): Promise<PortalReport> => {
     const info = PORTALS[portal]; const area = AREAS[portal];

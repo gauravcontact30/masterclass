@@ -2608,15 +2608,15 @@
 /* Below-the-fold sections skip style, layout and paint until they near the viewport; see tech-buzz-showcase.module.css. */
 /* Placeholder heights measured 2026-11-24 on the production build (desktop 1350 px, phone 412 px); the old guesses were
    off by up to 6,000 px on phones, so the list jumped as these sections first rendered (CLS 0.4). */
-.techTracksSection { content-visibility: auto; contain-intrinsic-size: auto 140px; }
-.roadmapsSection { content-visibility: auto; contain-intrinsic-size: auto 520px; }
-.feed { content-visibility: auto; contain-intrinsic-size: auto 3520px; }
-.categorySection { content-visibility: auto; contain-intrinsic-size: auto 280px; }
+.techTracksSection { content-visibility: auto; contain-intrinsic-size: auto 102px; }
+.roadmapsSection { content-visibility: auto; contain-intrinsic-size: auto 451px; }
+.feed { content-visibility: auto; contain-intrinsic-size: auto 3550px; }
+.categorySection { content-visibility: auto; contain-intrinsic-size: auto 244px; }
 @media (max-width: 640px) {
-  .techTracksSection { contain-intrinsic-size: auto 310px; }
-  .roadmapsSection { contain-intrinsic-size: auto 1170px; }
-  .feed { contain-intrinsic-size: auto 8700px; }
-  .categorySection { contain-intrinsic-size: auto 940px; }
+  .techTracksSection { contain-intrinsic-size: auto 377px; }
+  .roadmapsSection { contain-intrinsic-size: auto 1320px; }
+  .feed { contain-intrinsic-size: auto 9000px; }
+  .categorySection { contain-intrinsic-size: auto 1428px; }
 }
 
 /* What the reader muted or hid, each chip undoing itself. */

@@ -9,7 +9,7 @@ import { ExamsPlans } from "@/components/exams-plans";
 import { authConfigured } from "@/lib/server/config";
 import { requireExamUser } from "@/lib/server/portal";
 import { examPost, postsFor } from "@/lib/exams-blog";
-import { PORTALS, type ExamPortal } from "@/lib/portal";
+import { PORTALS, type ExamPortal, type ScopedPortal } from "@/lib/portal";
 import styles from "@/components/exams-shell.module.css";
 
 /*
@@ -19,17 +19,17 @@ import styles from "@/components/exams-shell.module.css";
 const LINK_ERRORS: LinkError[] = ["link_expired", "reset_expired", "link_invalid", "link_other_device", "oauth_failed", "oauth_unavailable", "no_portal_account", "portal_unavailable"];
 type SearchParams = Promise<{ [key: string]: string | string[] | undefined }>;
 
-async function AuthForm({ portal, mode, searchParams }: { portal: ExamPortal; mode: "signin" | "signup"; searchParams: SearchParams }) {
+async function AuthForm({ portal, mode, searchParams }: { portal: ScopedPortal; mode: "signin" | "signup"; searchParams: SearchParams }) {
   const { email, redirect, error } = await searchParams;
   const home = PORTALS[portal].home;
   return <AuthPage portal={portal} mode={mode} enabled={authConfigured()} initialEmail={typeof email === "string" ? email.slice(0, 254) : ""}
     redirectTo={typeof redirect === "string" && redirect.startsWith(home) ? redirect : undefined} linkError={LINK_ERRORS.find(known => known === error)} />;
 }
 /** A portal's own sign-in or sign-up page. It opens that portal's account, separate from the other two. */
-export function ExamAuthPage({ portal, mode, searchParams }: { portal: ExamPortal; mode: "signin" | "signup"; searchParams: SearchParams }) {
+export function ExamAuthPage({ portal, mode, searchParams }: { portal: ScopedPortal; mode: "signin" | "signup"; searchParams: SearchParams }) {
   return <Suspense fallback={<AuthPage portal={portal} mode={mode} enabled={authConfigured()} />}><AuthForm portal={portal} mode={mode} searchParams={searchParams} /></Suspense>;
 }
-export const authMetadata = (portal: ExamPortal, mode: "signin" | "signup") => ({ title: mode === "signin" ? `Sign in to ${PORTALS[portal].name}` : `Join ${PORTALS[portal].name}` });
+export const authMetadata = (portal: ScopedPortal, mode: "signin" | "signup") => ({ title: mode === "signin" ? `Sign in to ${PORTALS[portal].name}` : `Join ${PORTALS[portal].name}` });
 
 const day = (iso: string, month: "short" | "long" = "short") => new Intl.DateTimeFormat("en-IN", { day: "numeric", month, year: "numeric", timeZone: "Asia/Kolkata" }).format(new Date(iso));
 const BLOG_INTRO: Record<ExamPortal, { heading: [string, string]; lead: string }> = {
@@ -79,15 +79,15 @@ export async function ExamBlogPost({ portal, params }: { portal: ExamPortal; par
   </ExamsShell>;
 }
 
-export async function ExamPlansPage({ portal }: { portal: ExamPortal }) {
+export async function ExamPlansPage({ portal }: { portal: ScopedPortal }) {
   const info = PORTALS[portal];
   const { user } = await requireExamUser(portal, info.plans, { member: false });
   return <ExamsShell portal={portal} active="plans" email={user.email}>
     <div className={styles.stack}>
       <header className={styles.hero}>
         <p className={styles.eyebrow}><Wallet size={13} aria-hidden="true" />{info.name} membership</p>
-        <h1>One plan for <em>{portal === "boards" ? "every board, class and subject." : "every government and competitive exam."}</em></h1>
-        <p>A {info.name} membership opens all of {portal === "boards" ? "Board Exams" : "Competitive Exams"} for this account. It does not cover the other portals, which have their own accounts.</p>
+        <h1>One plan for <em>{portal === "boards" ? "every board, class and subject." : portal === "ielts" ? "every part of IELTS." : "every government and competitive exam."}</em></h1>
+        <p>A {info.name} membership opens all of {portal === "boards" ? "Board Exams" : portal === "ielts" ? "the IELTS Dashboard" : "Competitive Exams"} for this account. It does not cover the other portals, which have their own accounts.</p>
       </header>
       <ExamsPlans portal={portal} />
     </div>

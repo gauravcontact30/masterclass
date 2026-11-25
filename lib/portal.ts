@@ -4,14 +4,18 @@
  *   - Tech Pro: tech professionals, college students and IT employees, worldwide (/learning, Tech Buzz).
  *   - Board Scholars: Class 10 and 12 students on UP Board, CBSE and ICSE / ISC, India only (/exams/board-exams).
  *   - Exam Aspirants: government and competitive exam candidates, India only (/exams/competitive-exams).
+ *   - IELTS Achievers: IELTS Academic and General Training candidates, worldwide (/ielts/dashboard), 2026-11-24.
  * Safe to import from client components.
  */
-export type Portal = "tech" | "boards" | "competitive";
+export type Portal = "tech" | "boards" | "competitive" | "ielts";
 /** The two India-only exam portals. Both live under /exams and share the Exams session cookie. */
-export type ExamPortal = Exclude<Portal, "tech">;
-export const PORTAL_ORDER: readonly Portal[] = ["tech", "boards", "competitive"];
-export const isPortal = (value: unknown): value is Portal => value === "tech" || value === "boards" || value === "competitive";
+export type ExamPortal = Exclude<Portal, "tech" | "ielts">;
+/** Every portal with an account of its own, apart from Tech (whose account id is the login's own id). */
+export type ScopedPortal = Exclude<Portal, "tech">;
+export const PORTAL_ORDER: readonly Portal[] = ["tech", "boards", "competitive", "ielts"];
+export const isPortal = (value: unknown): value is Portal => value === "tech" || value === "boards" || value === "competitive" || value === "ielts";
 export const isExamPortal = (value: unknown): value is ExamPortal => value === "boards" || value === "competitive";
+export const isScopedPortal = (value: unknown): value is ScopedPortal => isExamPortal(value) || value === "ielts";
 
 export type PortalInfo = {
   /** The name of the portal's members, used on buttons and headings ("Create my Board Scholars account"). */
@@ -35,16 +39,22 @@ export const PORTALS: Record<Portal, PortalInfo> = {
     name: "Exam Aspirants", audience: "Government and competitive exam candidates: NDA, Banks, Railways, SSC, UPSC and more", tagline: "Competitive and government job exams · TET included",
     home: "/exams/competitive-exams", signIn: "/exams/competitive-exams/sign-in", signUp: "/exams/competitive-exams/sign-up", blog: "/exams/competitive-exams/blog", blogName: "Aspirants Digest", plans: "/exams/competitive-exams/plans",
   },
+  ielts: {
+    name: "IELTS Achievers", audience: "IELTS Academic and General Training candidates, for study, work and migration", tagline: "IELTS preparation · Worldwide",
+    home: "/ielts/dashboard", signIn: "/ielts/sign-in", signUp: "/ielts/sign-up", blog: "/ielts-preparation", blogName: "IELTS Guide", plans: "/ielts/plans",
+  },
 };
 /** The other portals, for the "looking for …?" links. */
 export const otherPortals = (portal: Portal): Portal[] => PORTAL_ORDER.filter(other => other !== portal);
 /** The exam portal a path belongs to, or null for the shared /exams pages (the chooser) and every non-exam path. */
 export const examPortalOfPath = (pathname: string): ExamPortal | null =>
   /^\/exams\/board-exams(\/|$)/.test(pathname) ? "boards" : /^\/exams\/competitive-exams(\/|$)/.test(pathname) ? "competitive" : null;
+/** The portal with its own account that a path belongs to: an exam portal, or IELTS under /ielts/. */
+export const scopedPortalOfPath = (pathname: string): ScopedPortal | null => examPortalOfPath(pathname) ?? (/^\/ielts\/(dashboard|plans|sign-in|sign-up)(\/|$)/.test(pathname) ? "ielts" : null);
 /** The portal a page belongs to, by its path. The shared /exams chooser counts as neither exam portal. */
-export const portalOfPath = (pathname: string): Portal => examPortalOfPath(pathname) ?? "tech";
+export const portalOfPath = (pathname: string): Portal => scopedPortalOfPath(pathname) ?? "tech";
 
-/** Marks this browser as signed in to the exam portals; holds the login identity it was issued for. httpOnly. */
+/** Marks this browser as signed in to the portals with their own accounts (the exam portals and IELTS); holds the login identity it was issued for. httpOnly. */
 export const EXAMS_COOKIE = "mc_exams_session";
-/** Client requests made from an exam portal's pages carry this header ("boards" or "competitive"), so shared APIs act on that account. */
+/** Client requests made from a scoped portal's pages carry this header ("boards", "competitive" or "ielts"), so shared APIs act on that account. */
 export const PORTAL_HEADER = "x-portal";

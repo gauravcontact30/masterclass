@@ -28,7 +28,8 @@ test("a shelf tab narrows the rows and previews the first entry with where it op
   const rows = within(screen.getByRole("list", { name: "Library entries" })).getAllByRole("button");
   expect(rows).toHaveLength(1);
   const preview = screen.getByRole("article", { name: "Preview: succinct" });
-  expect(within(preview).getByText("संक्षिप्त")).toHaveAttribute("lang", "hi");
+  // Entries read in English; the Hindi gloss still counts for search but is not shown.
+  expect(within(preview).queryByText("संक्षिप्त")).not.toBeInTheDocument();
   expect(within(preview).getByRole("link", { name: /Vocabulary/ })).toHaveAttribute("href", "/sign-up");
 });
 
@@ -69,15 +70,16 @@ test("typing offers suggestions that pick an entry by keyboard, and the clear bu
   expect(search).toHaveValue("");
 });
 
-test("the filters panel opens and closes, and its Hindi filter narrows the shelf and can be reset", async () => {
+test("the filters panel opens and closes, and its sort order can be changed and reset", async () => {
   const user = userEvent.setup();
   render(<LibraryLedger library={library} />);
   const toggle = screen.getByRole("button", { name: /Filters/ });
   expect(toggle).toHaveAttribute("aria-expanded", "false");
   await user.click(toggle);
   expect(toggle).toHaveAttribute("aria-expanded", "true");
-  await user.click(screen.getByRole("button", { name: "Has a Hindi meaning" }));
-  expect(within(screen.getByRole("list", { name: "Library entries" })).getAllByRole("button").map(row => row.textContent)).toEqual(["SSC CGLSSC & Recruitment", "succinctWorkplace speaking"]);
+  // The panel holds the sort order (the Hindi-meaning filter went with the English-only reading).
+  await user.click(screen.getByRole("button", { name: "Z to A" }));
+  expect(within(screen.getByRole("list", { name: "Library entries" })).getAllByRole("button").map(row => row.textContent?.split(/(?=[A-Z0-9])/)[0])[0]).toBe("succinct");
   expect(toggle).toHaveTextContent("1");
   await user.click(screen.getByRole("button", { name: "Reset filters" }));
   expect(within(screen.getByRole("list", { name: "Library entries" })).getAllByRole("button")).toHaveLength(4);
@@ -89,7 +91,7 @@ test("try chips offer only searches that match a real entry, and run one when cl
   const user = userEvent.setup();
   render(<LibraryLedger library={library} />);
   const chips = within(screen.getByRole("group", { name: "Try a search" })).getAllByRole("button");
-  expect(chips.map(chip => chip.textContent)).toEqual(["react", "succinct", "SSC CGL", "boto3"]);
+  expect(chips.map(chip => chip.textContent)).toEqual(["react", "succinct", "boto3"]);
   await user.click(chips[1]);
   expect(screen.getByRole("combobox", { name: "Search the library" })).toHaveValue("succinct");
   expect(screen.getByRole("article", { name: "Preview: succinct" })).toBeInTheDocument();

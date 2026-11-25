@@ -20,7 +20,7 @@ test("verified owner can read the snapshot and invalid windows are bounded",asyn
   const rpc=jest.fn().mockResolvedValue({data:{counts:{users:12}},error:null});
   (db as jest.Mock).mockReturnValue({rpc});
   const response=await GET(request());
-  expect(response.status).toBe(200);expect(rpc).toHaveBeenCalledWith("super_admin_snapshot",{p_days:30});
+  expect(response.status).toBe(200);expect(rpc).toHaveBeenCalledWith("super_admin_snapshot",{p_days:7});
   expect((await response.json()).counts.users).toBe(12);
   expect(response.headers.get("cache-control")).toContain("no-store");
 });

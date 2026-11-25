@@ -73,7 +73,8 @@
   .triggerLabel { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
   .liveDot { position: absolute; top: 4px; right: 4px; width: 8px; height: 8px; border: 1.5px solid #fff; }
 }
-@media (max-width: 420px) { .triggerIcon { width: 28px; height: 28px; } }
+/* The icon circle follows the header's control height (40 → 30px on the smallest phones), so it never spills out. */
+@media (max-width: 640px) { .triggerIcon { width: calc(var(--nav-control-h, 40px) - 8px); height: calc(var(--nav-control-h, 40px) - 8px); } .triggerIcon svg { width: 60%; height: 60%; } }
 @media (prefers-reduced-motion: reduce) {
   .trigger::after, .triggerIcon, .liveDot, .triggerLabel { animation: none; }
   .trigger::after { display: none; }

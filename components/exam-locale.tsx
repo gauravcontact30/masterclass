@@ -53,7 +53,8 @@ const englishOf = (dictionary: ExamDictionary, value: string) => {
 
 export function useExamLocale() {
   const { dictionary } = useContext(Context);
-  return { dictionary, localize: <T,>(value: T): T => localizeExamData(value, dictionary), english: (value: string) => englishOf(dictionary, value) };
+  // Stable while the dictionary is, so callers can list `localize` as a memo dependency without recomputing every render.
+  return useMemo(() => ({ dictionary, localize: <T,>(value: T): T => localizeExamData(value, dictionary), english: (value: string) => englishOf(dictionary, value) }), [dictionary]);
 }
 /** Translate React text and accessibility labels without mutating DOM, controls, links or event handlers. */
 export function ExamContent({ children }: { children: ReactNode }) {

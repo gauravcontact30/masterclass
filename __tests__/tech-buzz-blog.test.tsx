@@ -328,12 +328,9 @@ describe("TechBuzzBlog Component", () => {
     expect(listBtn).toHaveAttribute("aria-pressed", "true");
   });
 
-  test("searches stories across titles, technologies, and tags", () => {
+  test("the feed itself has no search box: search lives on the Tech Buzz page", () => {
     render(<TechBuzzBlog cards={MOCK_CARDS} groups={MOCK_GROUPS} />);
-
-    const searchInput = screen.getByPlaceholderText(/Search technologies|Search Agentic AI/i);
-    fireEvent.change(searchInput, { target: { value: "Rate Limiter" } });
-
+    expect(screen.queryByRole("searchbox")).not.toBeInTheDocument();
     expect(screen.getAllByText(/System Design: Rate Limiter and Distributed Scaling/i).length).toBeGreaterThan(0);
   });
 
@@ -367,20 +364,12 @@ describe("TechBuzzBlog Component", () => {
     expect(screen.getByText(/Showing 11–15 of 18/i)).toBeInTheDocument();
   });
 
-  test("updates text when language is changed via LanguageProvider", () => {
-    localStorage.setItem("masterclass:language", "es");
-    render(
-      <LanguageProvider>
-        <TechBuzzBlog cards={MOCK_CARDS} groups={MOCK_GROUPS} />
-      </LanguageProvider>
-    );
-
-    // Spanish title and tracks header should render
-    expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent(
-      "Domina la tecnología moderna"
-    );
-    expect(screen.getByText(/Rutas de aprendizaje populares/i)).toBeInTheDocument();
-    expect(screen.getByPlaceholderText(/Buscar tecnologías/i)).toBeInTheDocument();
+  test("an unsupported saved language falls back to English", () => {
+    // The interface is English and Hindi only (lib/i18n.ts); a choice saved by the old switcher reads in English.
+    localStorage.setItem("mc-language", "es");
+    render(<LanguageProvider><TechBuzzBlog cards={MOCK_CARDS} groups={MOCK_GROUPS} /></LanguageProvider>);
+    expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent("Master Modern Tech");
+    localStorage.removeItem("mc-language");
   });
 
   test("renders Explore By Category in tabs format with 5 tabs per page and handles pagination", () => {
@@ -575,20 +564,13 @@ describe("TechBuzzBlog Component", () => {
     const options = fontSelect.querySelectorAll("option");
     expect(options.length).toBeGreaterThanOrEqual(25);
 
-    // Verify key popular reading fonts are present
-    expect(screen.getByRole("option", { name: /Georgia/i })).toBeInTheDocument();
-    expect(screen.getByRole("option", { name: /Merriweather/i })).toBeInTheDocument();
-    expect(screen.getByRole("option", { name: /Lora/i })).toBeInTheDocument();
-    expect(screen.getByRole("option", { name: /Inter/i })).toBeInTheDocument();
-    expect(screen.getByRole("option", { name: /JetBrains Mono/i })).toBeInTheDocument();
-
-    // Default value is georgia
-    expect(fontSelect.value).toBe("georgia");
-
-    // Change font to inter
-    fireEvent.change(fontSelect, { target: { value: "inter" } });
+    // A set of clean sans-serif reading fonts, Inter by default.
+    for (const name of ["Inter", "Roboto", "Open Sans", "IBM Plex Sans", "Geist", "System UI"]) expect(screen.getByRole("option", { name })).toBeInTheDocument();
     expect(fontSelect.value).toBe("inter");
-    expect(localStorage.getItem("masterclass:tech-buzz-reading-font")).toBe("inter");
+
+    fireEvent.change(fontSelect, { target: { value: "roboto" } });
+    expect(fontSelect.value).toBe("roboto");
+    expect(localStorage.getItem("masterclass:tech-buzz-reading-font")).toBe("roboto");
 
     // Featured Masterclass badge and heading are rendered
     expect(screen.getByText("Featured Masterclass")).toBeInTheDocument();

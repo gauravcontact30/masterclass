@@ -11,6 +11,11 @@ const eslintConfig = defineConfig([
     files: ["**/*.cjs"],
     rules: { "@typescript-eslint/no-require-imports": "off" },
   },
+  // The usual convention: a leading underscore marks an argument or variable kept on purpose (a mock's signature, a
+  // destructured field left out of a rest object), so it is not reported as unused.
+  {
+    rules: { "@typescript-eslint/no-unused-vars": ["warn", { argsIgnorePattern: "^_", varsIgnorePattern: "^_", caughtErrorsIgnorePattern: "^_", ignoreRestSiblings: true }] },
+  },
   // A test renders plain anchors as fixtures; the Link rule is about pages.
   {
     files: ["__tests__/**"],

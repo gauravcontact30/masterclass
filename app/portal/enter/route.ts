@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { authUser } from "@/lib/server/auth";
 import { enterPortal, startExamsSession } from "@/lib/server/portal";
 import { isSafeRedirect } from "@/lib/safe-redirect";
-import { PORTALS, isExamPortal, isPortal, type Portal } from "@/lib/portal";
+import { PORTALS, isPortal, isScopedPortal, type Portal } from "@/lib/portal";
 
 // Emailed links (/auth/callback) and Google sign-in return here when they were started from a portal's own sign-in
 // or sign-up page: the session cookies are set by then, so this opens the portal and goes on to the page asked for.
@@ -19,6 +19,6 @@ export async function GET(request: NextRequest) {
   const entered = await enterPortal(user, portal, intent);
   if (!entered.ok && entered.reason === "region_unavailable") return to("/");
   if (!entered.ok) return to(`${entered.reason === "no_portal_account" ? PORTALS[portal].signUp : PORTALS[portal].signIn}?error=${entered.reason}`);
-  if (isExamPortal(portal)) await startExamsSession(user.id);
+  if (isScopedPortal(portal)) await startExamsSession(user.id);
   return to(isSafeRedirect(next) && !next.startsWith("/portal") ? next : PORTALS[portal].home);
 }

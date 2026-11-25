@@ -118,7 +118,7 @@ export function LandingPage({ features, answers, certifications, techBuzz, workf
     {library && <Part><SubjectRibbon entries={library.entries} /></Part>}
     <Part><LandingInterview preview day={today} fresh={fresh?.interview} /></Part>
     {daily && <Part><LandingAiPulse cards={daily.pulse} total={daily.totals?.pulse} day={daily.day} locked={daily.locked?.pulse} preview /></Part>}
-    <Part><LandingWorkflows {...workflows} preview /></Part>
+    <Part><LandingWorkflows {...(workflows ?? {})} preview /></Part>
     <Part>{certifications}</Part>
     {coffee && <LandingCoffee posts={coffee} />}
     <LearningSlot surface="landing" page="home" section="middle" className={styles.learningSlot} />

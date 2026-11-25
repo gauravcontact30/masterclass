@@ -1,7 +1,7 @@
 "use client";
 import Link from "@/components/site-link";
 import type { ReactNode } from "react";
-import { Briefcase, Check, Compass, GraduationCap, Landmark } from "lucide-react";
+import { Briefcase, Check, Compass, GraduationCap, Landmark, Languages } from "lucide-react";
 import { useIndiaAccess } from "./audience-provider";
 import { useLanguage } from "./language-provider";
 import { PORTALS, type Portal } from "@/lib/portal";
@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import styles from "./auth-audience-picker.module.css";
 
 /** One option's inside: tinted icon tile, title over its note, and a check that shows on the active option. */
-const Option = ({ icon, title, note, tone }: { icon: ReactNode; title: ReactNode; note: ReactNode; tone: "tech" | "boards" | "government" }) => <>
+const Option = ({ icon, title, note, tone }: { icon: ReactNode; title: ReactNode; note: ReactNode; tone: "tech" | "boards" | "government" | "ielts" }) => <>
   <span className={styles.icon} data-tone={tone} aria-hidden="true">{icon}</span>
   <span className={styles.text}>{title}<small>{note}</small></span>
   <span className={styles.check} aria-hidden="true"><Check size={12} strokeWidth={3} /></span>
@@ -34,7 +34,7 @@ function Choice({ id, label, value, items, onChange }: { id: string; label: stri
 }
 
 /**
- * The three portals, each a separate account: Tech Pro (worldwide), Board Scholars and Exam Aspirants (India only).
+ * The four portals, each a separate account: Tech Pro and IELTS Achievers (worldwide), Board Scholars and Exam Aspirants (India only).
  * The current portal is marked; the others link to their own sign-in or sign-up. Board Scholars also asks for the
  * board and class, Exam Aspirants for the target exam, so the first visit opens the right tab.
  */
@@ -54,6 +54,8 @@ export function AuthAudiencePicker({ mode, portal, destination, onDestination }:
         {door("boards", <Option tone="boards" icon={<GraduationCap size={16} strokeWidth={2} />} title="Board Scholars" note={hi ? "कक्षा 10 और 12 · UP Board / CBSE / ICSE" : "Class 10 & 12 · UP Board / CBSE / ICSE / ISC"} />)}
         {door("competitive", <Option tone="government" icon={<Landmark size={16} strokeWidth={2} />} title="Exam Aspirants" note={hi ? "सरकारी और प्रतियोगी परीक्षाएँ · NDA, बैंक, रेलवे, SSC, UPSC" : "Govt. & competitive exams · NDA, Banks, Railways, SSC, UPSC"} />)}
       </>}
+      {/* IELTS Achievers is worldwide, so it is offered everywhere (2026-11-24). */}
+      {door("ielts", <Option tone="ielts" icon={<Languages size={16} strokeWidth={2} />} title="IELTS Achievers" note={hi ? "IELTS Academic और General Training · दुनिया भर" : "IELTS Academic & General Training · Worldwide"} />)}
     </nav>
     {portal === "boards" && <div className={styles.options}>
       <Choice id="auth-board" label={hi ? "आपका बोर्ड" : "Your board"} value={query.get("board") ?? "up"} items={[["up", "UP Board"], ["cbse", "CBSE"], ["icse", "ICSE / ISC"]]} onChange={value => change("board", value)} />
@@ -62,6 +64,6 @@ export function AuthAudiencePicker({ mode, portal, destination, onDestination }:
     {portal === "competitive" && <div className={styles.options}>
       <Choice id="auth-exam" label={hi ? "आपका लक्ष्य" : "Your target exam"} value={query.get("exam") ?? "nda"} items={TARGETS} onChange={value => change("exam", value)} />
     </div>}
-    {portal !== "tech" && <FieldDescription className={styles.hint}>{hi ? "हर पोर्टल का खाता अलग है, अपने ट्रायल और सदस्यता के साथ। एक ही ईमेल से तीनों में जुड़ सकते हैं।" : "Each portal is a separate account with its own trial and membership. You can join all three with the same email."}</FieldDescription>}
+    {portal !== "tech" && <FieldDescription className={styles.hint}>{hi ? "हर पोर्टल का खाता अलग है, अपने ट्रायल और सदस्यता के साथ। एक ही ईमेल से सभी पोर्टल में जुड़ सकते हैं।" : "Each portal is a separate account with its own trial and membership. You can join every portal with the same email."}</FieldDescription>}
   </div>;
 }

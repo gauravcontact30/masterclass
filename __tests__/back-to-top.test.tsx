@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from "@testing-library/react";
+import { render, fireEvent } from "@testing-library/react";
 import { BackToTop } from "@/components/back-to-top";
 import { usePathname } from "next/navigation";
 
@@ -82,9 +82,9 @@ describe("BackToTop", () => {
     expect(window.scrollTo).toHaveBeenCalledWith({ top: 0, behavior: "auto" });
   });
 
-  test("does not render on non-dashboard, non-landing pages", () => {
+  test("is on every page (user request 2026-11-01), hidden until the first screen is scrolled", () => {
     jest.mocked(usePathname).mockReturnValue("/sign-in");
     const { container } = render(<BackToTop />);
-    expect(container.firstChild).toBeNull();
+    expect(container.querySelector('button[aria-label="Move to top"]')).toHaveAttribute("aria-hidden", "true");
   });
 });

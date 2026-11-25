@@ -1,4 +1,5 @@
 "use client";
+import Image from "@/components/responsive-image";
 import { ExamContent } from "./exam-locale";
 import { useExamLocale, useExamShard } from "./exam-locale";
 import { LanguageSwitch } from "./language-switch";
@@ -22,6 +23,10 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "./
 import { ExamSelect } from "./exam-select";
 import shared from "./board-exams.module.css";
 import styles from "./competitive-exams.module.css";
+import dynamic from "next/dynamic";
+import { buildExamPapers, COMPETITIVE_YEARS } from "@/lib/competitive-exams/papers";
+// Sample Papers loads with its tab, so the other question types do not ship it.
+const ExamSamplePapers = dynamic(() => import("./exam-sample-papers").then(m => m.ExamSamplePapers), { loading: () => <div className={shared.skeleton} aria-busy="true" aria-label="Loading papers"><span /><span /><span /></div> });
 
 /*
  * The Learning Dashboard's Competitive Exams page. Each exam family is a tab, four tabs to a page. Inside an exam the
@@ -29,11 +34,11 @@ import styles from "./competitive-exams.module.css";
  * year it was asked in. Content is hand-authored in lib/competitive-exams and loads one exam at a time.
  * The layout shares the Board Exams page's styles, so the two exam pages read as one family.
  */
-type Kind = "topics" | "objective" | "subjective" | "quick" | "calendar";
+type Kind = "topics" | "papers" | "objective" | "subjective" | "quick" | "calendar";
 /** An exam's picture (npm run images:competitive); until it exists, the exam's code shows. */
 function ExamArt({ id, code }: { id: string; code: string }) {
   const [failed, setFailed] = useState(false); const src = competitiveExamImage(id);
-  return src && !failed ? <img className={styles.examArt} src={src} alt="" aria-hidden="true" loading="lazy" decoding="async" width={52} height={52} onError={() => setFailed(true)} />
+  return src && !failed ? <Image className={styles.examArt} src={src} alt="" aria-hidden="true" width={52} height={52} sizes="52px" onError={() => setFailed(true)} />
     : <span className={styles.examCode} aria-hidden="true">{code}</span>;
 }
 const PER_PAGE = 5;
@@ -42,7 +47,7 @@ const PER_PAGE = 5;
 function SubjectArt({ src }: { src: string | null }) {
   const [failed, setFailed] = useState(false);
   return <span className={shared.chapterArt} aria-hidden="true">
-    {src && !failed ? <img src={src} alt="" loading="lazy" decoding="async" width={320} height={213} onError={() => setFailed(true)} /> : <BookOpen size={30} />}
+    {src && !failed ? <Image src={src} alt="" width={320} height={213} sizes="(max-width: 640px) 50vw, 320px" onError={() => setFailed(true)} /> : <BookOpen size={30} />}
   </span>;
 }
 type SubjectCard = { name: string; objective: number; subjective: number; popular: number; top: string | null };
@@ -159,12 +164,12 @@ function SubjectiveList({ items, terms, start, exam }: { items: Subjective[]; te
 
 /** `context`: which dashboard hosts the page (Exams portal or Learning Dashboard), for the eyebrow label. */
 export function CompetitiveExams({ initial, context = "exams" }: { initial?: { exam?: string; type?: string }; context?: "exams" | "learning" }) {
-  const { localize, dictionary, english } = useExamLocale();
+  const { localize, english } = useExamLocale();
   const first = Math.max(0, EXAMS.findIndex(e => e.id === initial?.exam));
   const [examId, setExamId] = useState<ExamId>(EXAMS[first].id);
   useExamShard(`exam-${examId}`);
   const [tabPage, setTabPage] = useState(Math.floor(first / TABS_PER_PAGE));
-  const [kind, setKind] = useState<Kind>(initial?.type === "topics" || initial?.type === "subjective" || initial?.type === "quick" || initial?.type === "calendar" ? initial.type : "objective");
+  const [kind, setKind] = useState<Kind>(initial?.type === "topics" || initial?.type === "papers" || initial?.type === "subjective" || initial?.type === "quick" || initial?.type === "calendar" ? initial.type : "objective");
   const [quickSet, setQuickSet] = useState<{ id: ExamId; items: QuickItem[] } | null>(null);
   const [loaded, setLoaded] = useState<{ id: ExamId; pack: Pack } | null>(null);
   const [query, setQuery] = useState("");
@@ -190,8 +195,10 @@ export function CompetitiveExams({ initial, context = "exams" }: { initial?: { e
   }, [examId, kind]);
 
   const exam = EXAMS.find(e => e.id === examId)!;
-  const quickItems = useMemo(() => quickSet?.id === examId ? localize(quickSet.items) : null, [quickSet, examId, dictionary]);
-  const source = useMemo(() => loaded?.id === examId ? localize(loaded.pack) : null, [loaded, examId, dictionary]);
+  const quickItems = useMemo(() => quickSet?.id === examId ? localize(quickSet.items) : null, [quickSet, examId, localize]);
+  const source = useMemo(() => loaded?.id === examId ? localize(loaded.pack) : null, [loaded, examId, localize]);
+  /** Sample papers, mock tests and year papers of this exam (lib/competitive-exams/papers.ts), built when their tab opens. */
+  const paperSet = useMemo(() => kind === "papers" && source ? buildExamPapers(source, examId, exam.name) : null, [kind, source, examId, exam.name]);
   const terms = useMemo(() => words(deferred), [deferred]);
   const all = useMemo<(Objective | Subjective)[]>(() => source && (kind === "objective" || kind === "subjective") ? source[kind] : [], [source, kind]);
   const subjects = useMemo(() => [...new Set(all.map(item => item.subject))], [all]);
@@ -232,6 +239,7 @@ export function CompetitiveExams({ initial, context = "exams" }: { initial?: { e
   const openSubject = (name: string, next: "objective" | "subjective") => { pickKind(next); setSubject(name); requestAnimationFrame(toPanel); };
   const KINDS: { id: Kind; label: string; hint: string; icon: typeof ListChecks; count: number | null }[] = [
     { id: "topics", label: "Subjects & Topics", hint: "Every subject as a picture card", icon: LayoutGrid, count: source ? subjectCards.length : null },
+    { id: "papers", label: "Sample Papers", hint: `Sample, mock & ${COMPETITIVE_YEARS.length} years`, icon: FileText, count: source ? 12 + COMPETITIVE_YEARS.length : null },
     { id: "objective", label: "Objective", hint: "Multiple choice with explanations", icon: ListChecks, count: source?.objective.length ?? null },
     { id: "subjective", label: "Subjective", hint: `${SUBJECTIVE_MINIMUM}+ descriptive, short and one-line answers`, icon: PencilLine, count: source?.subjective.length ?? null },
     { id: "quick", label: "Quick Q&A", hint: "200+ short, to-the-point answers", icon: Zap, count: quickItems?.length ?? null },
@@ -313,6 +321,15 @@ export function CompetitiveExams({ initial, context = "exams" }: { initial?: { e
       </> : kind === "topics" ? (!source ? <div className={shared.skeleton} aria-busy="true" aria-label="Loading subjects"><span /><span /><span /></div> : <>
         <div className={shared.panelHead}><h2>{exam.name} · Subjects &amp; Topics</h2><p aria-live="polite">{subjectCards.length} subjects</p></div>
         <SubjectGrid key={examId} cards={subjectCards} texts={subjectTexts} examName={exam.name} onOpen={openSubject} art={name => <SubjectArt key={name} src={competitiveSubjectImage(english(name))} />} />
+      </>) : kind === "papers" ? (!paperSet ? <div className={shared.skeleton} aria-busy="true" aria-label="Loading papers"><span /><span /><span /></div> : <>
+        <div className={shared.panelHead}><h2>{exam.name} · Sample Papers</h2><p>{paperSet.unique}+ questions with answers</p></div>
+        <ExamSamplePapers key={examId} set={paperSet} boardName={exam.name} title={exam.name} copy={{
+          yearsTab: `Previous ${COMPETITIVE_YEARS.length} years`,
+          lede: <>{exam.name}: {paperSet.unique}+ different objective questions with answers across {paperSet.sample.length + paperSet.mock.length + paperSet.years.length} papers of {paperSet.sample[0]?.questions.length} questions, plus {paperSet.asked.length} most asked questions (objective and written) rated by stars. Marking: {MARKING[examId].basis}.</>,
+          yearNote: paper => paper.note,
+          askedNote: "Highest rated first. Stars, and the exam and years under each answer, are our editorial rating of how regularly a question or a close variant recurs, from released and memory-based papers as best recalled. A study guide, not an official count.",
+          mockNote: <>Timed at the exam&apos;s own pace and marked with its scheme ({MARKING[examId].basis}). Start the test, pick an option for each question, then submit (or let the clock run out) to see your net score after negative marking and every answer.</>,
+        }} />
       </>) : kind === "quick" ? (!quickItems ? <div className={shared.skeleton} aria-busy="true" aria-label="Loading questions"><span /><span /><span /></div> : <>
         <div className={shared.panelHead}><h2>{exam.name} · Quick questions and answers</h2></div>
         <QuickQa key={examId} items={quickItems} panelId="competitive-panel" />

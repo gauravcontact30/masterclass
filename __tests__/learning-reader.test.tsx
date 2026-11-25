@@ -71,13 +71,14 @@ test("completion and personal notes survive closing and reopening the sample", a
   const user = userEvent.setup();
   const close = jest.fn();
   const { unmount } = render(<NotesModal sample document={document} onClose={close} />);
-  await user.click(screen.getByText("Your notes", { selector: "summary" }));
-  await user.type(screen.getByRole("textbox", { name: "Your notes" }), "Practice later");
+  // The personal notes sit under the contents rail, labelled "Notes" (components/notes-modal.tsx).
+  await user.click(screen.getByText("Notes", { selector: "summary span, summary" }));
+  await user.type(screen.getByRole("textbox", { name: "Notes" }), "Practice later");
   await user.click(screen.getByRole("button", { name: "Mark complete" }));
   await user.click(screen.getByRole("button", { name: "Close" }));
   await waitFor(() => expect(close).toHaveBeenCalled());
   unmount();
   render(<NotesModal sample document={document} onClose={jest.fn()} />);
-  expect(screen.getByRole("textbox", { name: "Your notes" })).toHaveValue("Practice later");
+  expect(screen.getByRole("textbox", { name: "Notes", hidden: true })).toHaveValue("Practice later");
   expect(screen.getByRole("button", { name: "Completed" })).toHaveAttribute("aria-pressed", "true");
 });

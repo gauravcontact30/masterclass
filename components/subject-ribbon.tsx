@@ -59,7 +59,8 @@ const TECH_PILLS: TechPill[] = [
  * perfectly centered and aligned with technology names.
  * Clicking any pill opens a professional detailed modal dialog.
  */
-export function SubjectRibbon({ entries }: { entries?: LibraryEntry[] }) {
+/** `_entries` is accepted for the landing page's call but unused: the ribbon shows its own fixed technology list. */
+export function SubjectRibbon(_props: { entries?: LibraryEntry[] }) {
   const { language } = useLanguage();
   const hi = language === "hi";
   const [activeTech, setActiveTech] = useState<TechnologyInfo | null>(null);
@@ -106,6 +107,7 @@ export function SubjectRibbon({ entries }: { entries?: LibraryEntry[] }) {
   return (
     <>
       <section
+        id="subject-ribbon"
         className={styles.ribbon}
         aria-label={hi ? "लोकप्रिय तकनीकें और कौशल" : "Popular technologies and skills"}
       >

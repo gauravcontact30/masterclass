@@ -19,7 +19,6 @@ export function LearningLibraryHeading({ id, total }: { id: string; total: numbe
 /** Shared notebook presentation for saved guides and every study category. */
 export function LearningCard({
   title,
-  titleId,
   accentId,
   label,
   status = "ready",

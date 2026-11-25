@@ -74,7 +74,10 @@ test("technology tabs paginate six at a time and follow platform navigation and 
   expect(tabs()[0]).toHaveTextContent(TECH_DOCS[6].name);
   // Paging the tab list keeps the open document and its height unchanged.
   expect(screen.getByRole("article", { name: new RegExp(TECH_DOCS[0].name) })).toBeInTheDocument();
-  expect(within(nav).getByRole("button", { name: "Next technology tabs" })).toBeDisabled();
+  // Next is disabled only on the last page; the list has grown past two pages.
+  const pages = Math.ceil(TECH_DOCS.length / 6);
+  expect(within(nav).getByRole("status")).toHaveTextContent(`Page 2 of ${pages}`);
+  if (pages === 2) expect(within(nav).getByRole("button", { name: "Next technology tabs" })).toBeDisabled();
   fireEvent.click(within(nav).getByRole("button", { name: "Technology tabs page 1" }));
   expect(tabs()).toHaveLength(6);
   fireEvent.click(within(nav).getByRole("button", { name: "Next technology tabs" }));

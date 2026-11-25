@@ -537,7 +537,7 @@ const TECH_TABS_PER_PAGE = 4;
 const EAGER_GROUPS = 2;
 
 /** Renders its children once the placeholder comes within 600 px of the viewport; the placeholder holds their space. */
-function WhenNear({ id, children }: { id: string; children: ReactNode }) {
+function WhenNear({ id, tiles, children }: { id: string; tiles: number; children: ReactNode }) {
   const [near, setNear] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -548,7 +548,8 @@ function WhenNear({ id, children }: { id: string; children: ReactNode }) {
     return () => observer.disconnect();
   }, [near]);
   // The placeholder keeps the group's id, so a link to #tb-group-… still lands in the right place.
-  return near ? children : <div ref={ref} id={id} className={styles.groupPlaceholder} aria-hidden="true" />;
+  // `--tiles` (the first page holds at most 6) sizes it like the group it stands for, so nothing jumps when it renders.
+  return near ? children : <div ref={ref} id={id} className={styles.groupPlaceholder} style={{ "--tiles": Math.min(6, tiles) } as CSSProperties} aria-hidden="true" />;
 }
 function TechnologySections({ cards }: { cards: TechBuzzCard[] }) {
   const groups = useMemo(() => {
@@ -596,7 +597,7 @@ function TechnologySections({ cards }: { cards: TechBuzzCard[] }) {
     </div>
     <div id="tb-tabpanel" role="tabpanel" aria-labelledby={`tb-tab-${tab}`} className={styles.groupPanel}>
       {shown.map(({ group, items }, index) => index < EAGER_GROUPS ? <TechGroupSection key={group.id} group={group} items={items} />
-        : <WhenNear key={group.id} id={`tb-group-${group.id}`}><TechGroupSection group={group} items={items} /></WhenNear>)}
+        : <WhenNear key={group.id} id={`tb-group-${group.id}`} tiles={items.length}><TechGroupSection group={group} items={items} /></WhenNear>)}
     </div>
   </section>;
 }

@@ -7,7 +7,7 @@ import type { User } from "@supabase/supabase-js";
 import { db } from "./db";
 import { currentUser } from "./auth";
 import { account } from "./repository";
-import { EXAMS_COOKIE, PORTALS, isExamPortal, isPortal, type ExamPortal, type Portal } from "@/lib/portal";
+import { EXAMS_COOKIE, PORTALS, isExamPortal, isPortal, type ExamPortal, type Portal, type ScopedPortal } from "@/lib/portal";
 import { isSuperAdminUser } from "@/lib/study/preparations";
 
 /*
@@ -34,7 +34,8 @@ const uuidV5 = (...parts: string[]) => {
 /** The legacy shared Exams account id for a login identity: UUID v5 of the auth user id. */
 export const examsAccountId = (authUserId: string): string => uuidV5(authUserId);
 /** A new exam portal's own account id: UUID v5 of the portal and the auth user id, never equal to the legacy id. */
-export const examPortalAccountId = (authUserId: string, portal: ExamPortal): string => uuidV5(`${portal}:`, authUserId);
+/** Also IELTS Achievers' account id (2026-11-24): the same derivation, with its own portal name. */
+export const examPortalAccountId = (authUserId: string, portal: ScopedPortal): string => uuidV5(`${portal}:`, authUserId);
 
 /** What an identity holds: the portals it can open, and whether its exam access comes from a legacy Exams account. */
 export type Holdings = { portals: Portal[]; legacyExams: boolean };
@@ -54,7 +55,8 @@ export async function portalsOf(authUserId: string): Promise<Portal[] | null> {
 }
 /** The account id `portal` uses for this identity. */
 export const accountIdFor = (authUserId: string, portal: Portal, holdings?: Holdings | null) =>
-  portal === "tech" ? authUserId : holdings?.legacyExams ? examsAccountId(authUserId) : examPortalAccountId(authUserId, portal);
+  // A legacy Exams account opens only the two exam portals; IELTS always has its own account.
+  portal === "tech" ? authUserId : holdings?.legacyExams && isExamPortal(portal) ? examsAccountId(authUserId) : examPortalAccountId(authUserId, portal);
 
 /** The portal a brand-new identity signed up through (sent with sign-up); Tech for accounts older than the portals. */
 const firstPortal = (user: User): Portal => {
@@ -94,14 +96,15 @@ export async function startExamsSession(authUserId: string) {
 export async function endExamsSession() { (await cookies()).delete(EXAMS_COOKIE); }
 
 /** The account id of `portal` when `authUserId` is signed in to the exam portals in this browser and holds that account. */
-export async function examAccountOf(authUserId: string, portal: ExamPortal): Promise<string | null> {
-  if (!await indiaAccess()) return null;
+export async function examAccountOf(authUserId: string, portal: ScopedPortal): Promise<string | null> {
+  // The exam portals are India only; IELTS Achievers is worldwide.
+  if (isExamPortal(portal) && !await indiaAccess()) return null;
   if ((await cookies()).get(EXAMS_COOKIE)?.value !== authUserId) return null;
   const holdings = await holdingsOf(authUserId);
   return holdings?.portals.includes(portal) ? accountIdFor(authUserId, portal, holdings) : null;
 }
 /** The signed-in user of an exam portal and that portal's account id, or null. */
-export async function examSession(portal: ExamPortal) {
+export async function examSession(portal: ScopedPortal) {
   const user = await currentUser();
   if (!user) return null;
   const accountId = await examAccountOf(user.id, portal);
@@ -119,8 +122,8 @@ export async function openExamPortals(): Promise<{ user: User; portals: ExamPort
  * Gate an exam portal page on the server. `member`: the page shows paid material, so an ended trial goes to Plans.
  * A login signed in to the other exam portal only is offered this portal's own account (/portal/join).
  */
-export async function requireExamUser(portal: ExamPortal, path: string, { member = true }: { member?: boolean } = {}) {
-  if (!await indiaAccess()) redirect("/");
+export async function requireExamUser(portal: ScopedPortal, path: string, { member = true }: { member?: boolean } = {}) {
+  if (isExamPortal(portal) && !await indiaAccess()) redirect("/");
   const session = await examSession(portal);
   if (!session) {
     const user = await currentUser();

@@ -79,6 +79,7 @@ export const DASHBOARD_PAGES: PageOption[] = [
   page("learning", "coffee-and-code", "Coffee & Code", "blog articles posts"),
   page("learning", "board-exams", "Board Exams", "up board cbse icse class 10 12 high school intermediate"),
   page("learning", "competitive-exams", "Competitive Exams", "defence bank railway tet isro upsc ssc jee neet gate government entrance"),
+  page("learning", "ielts", "IELTS Preparation", "ielts english band academic general training listening reading writing speaking"),
   page("learning", "bookmark", "Bookmark", "saved favourites"),
   page("professional", "official-docs", "Official Docs", "documentation reference"), page("professional", "techy", "Techy", "technology"),
   page("professional", "api-docs", "API Docs", "reference endpoints"), page("professional", "workflow", "Workflow", "agents langchain"),

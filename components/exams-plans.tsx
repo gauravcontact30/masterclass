@@ -6,7 +6,7 @@ import { openSubscriptionCheckout } from "@/lib/razorpay-checkout";
 import { loadPrices, type VisitorPrices } from "./currency-picker";
 import { formatPrice } from "@/lib/pricing";
 import type { Tier } from "@/lib/domain";
-import { PORTALS, type ExamPortal } from "@/lib/portal";
+import { PORTALS, type ScopedPortal } from "@/lib/portal";
 import styles from "./exams-shell.module.css";
 
 /*
@@ -24,13 +24,14 @@ const MESSAGES: Record<string, string> = {
   setup_required: "Payments are not enabled yet. Please check back soon.",
   payment_unavailable: "The payment window could not open. Check your connection and try again.",
 };
-const INCLUDED: Record<ExamPortal, string[]> = {
+const INCLUDED: Record<ScopedPortal, string[]> = {
+  ielts: ["IELTS Academic and General Training", "Sample papers, timed mock tests and 12 years of practice sets", "480 questions with answers: Reading, vocabulary, grammar, band scores, Writing Task 2 and Speaking Part 3", "Topic vocabulary, essay plans and model answers for 30 recurring themes"],
   boards: ["UP Board, CBSE and ICSE / ISC, Class 10 and 12", "Maths, Physics, Chemistry and English, chapter and topic wise", "Most asked questions with year asked and star ratings", "Official past papers for 20 years, upcoming exam dates and the Scholars Journal"],
   competitive: ["NDA, Defence, Banks, Railways, SSC, UPSC, CBI, Income Tax and more", "400+ objective questions per exam with answers and short explanations", "Subjective answers and 200+ quick answers per exam", "Exam calendar with official sites, and the Aspirants Digest"],
 };
 const day = (iso: string) => new Intl.DateTimeFormat("en-IN", { day: "numeric", month: "long", year: "numeric", timeZone: "Asia/Kolkata" }).format(new Date(iso));
 
-export function ExamsPlans({ portal }: { portal: ExamPortal }) {
+export function ExamsPlans({ portal }: { portal: ScopedPortal }) {
   const name = PORTALS[portal].name;
   const [plan, setPlan] = useState<Plan | null>(null);
   const [prices, setPrices] = useState<VisitorPrices | null>(null);
@@ -68,7 +69,7 @@ export function ExamsPlans({ portal }: { portal: ExamPortal }) {
     {plan && <p className={styles.status} data-tone={plan.tier === "free" ? "warn" : undefined} role="status">
       {active ? <><b>{name} membership: {plan.subscription?.tier === "yearly" ? "Yearly" : "Monthly"}.</b>{plan.subscription?.current_period_end && <span>{plan.subscription.cancel_at_cycle_end ? "Access until" : "Renews on"} {day(plan.subscription.current_period_end)}.</span>}</>
         : plan.tier === "trial" && plan.trialEndsAt ? <><b>Free trial is running.</b><span>Full access until {day(plan.trialEndsAt)}. Choose a plan to keep it.</span></>
-        : <><b>Your {name} trial has ended.</b><span>Choose a plan to open {portal === "boards" ? "Board Exams" : "Competitive Exams"} again.</span></>}
+        : <><b>Your {name} trial has ended.</b><span>Choose a plan to open {portal === "boards" ? "Board Exams" : portal === "ielts" ? "the IELTS Dashboard" : "Competitive Exams"} again.</span></>}
     </p>}
     <div className={styles.plans}>
       {(["monthly", "yearly"] as const).map(tier => <section key={tier} className={styles.plan} data-best={tier === "yearly" || undefined} aria-label={`${tier} plan`}>

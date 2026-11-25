@@ -11,11 +11,14 @@ function mockMotion(reduce: boolean) {
 beforeEach(() => { jest.useFakeTimers(); mockMotion(false); });
 afterEach(() => jest.useRealTimers());
 
+// Eight full-bleed scenes (components/landing-slider.tsx): the first is an artwork poster, the others carry a headline
+// and actions. Each holds 15 s; the next image is requested 4 s before it is due.
+const at = () => active().getAttribute("aria-label");
 describe("hero slider", () => {
-  test("requests only the first image initially and warms the next after load", async () => {
+  test("requests only the first image initially and warms the next shortly before it is due", () => {
     const { container } = render(<LandingSlider />);
     expect(container.querySelectorAll("img")).toHaveLength(1);
-    await act(async () => { fireEvent.load(container.querySelector("img")!); });
+    act(() => { jest.advanceTimersByTime(11000); });
     expect(container.querySelectorAll("img")).toHaveLength(2);
     fireEvent.click(screen.getByRole("button", { name: /Technology courses/ }));
     expect(within(active()).getByRole("img")).toHaveAttribute("alt", expect.stringContaining("young developer"));
@@ -25,23 +28,23 @@ describe("hero slider", () => {
     render(<LandingSlider />);
     Object.defineProperty(document, "visibilityState", { configurable: true, value: "hidden" });
     fireEvent(document, new Event("visibilitychange"));
-    act(() => { jest.advanceTimersByTime(14000); });
-    expect(active()).toHaveTextContent("Your campus for the skills");
+    act(() => { jest.advanceTimersByTime(30000); });
+    expect(at()).toBe("1 / 8");
     Object.defineProperty(document, "visibilityState", { configurable: true, value: "visible" });
     fireEvent(document, new Event("visibilitychange"));
-    act(() => { jest.advanceTimersByTime(10000); });
-    expect(active()).toHaveTextContent("Learn to code by building real projects");
+    act(() => { jest.advanceTimersByTime(15000); });
+    expect(at()).toBe("2 / 8");
   });
 
-  test("four full-bleed HD scenes, each with its own headline, image and actions", () => {
+  test("eight full-bleed scenes; hidden ones are inert, and a scene carries its own actions", () => {
     render(<LandingSlider technologies={61} />);
-    expect(slides()).toHaveLength(4);
-    expect(within(active()).getByRole("heading", { level: 2 })).toHaveTextContent("Your campus for the skills companies hire for.");
-    expect(within(active()).getByRole("img")).toHaveAttribute("alt", expect.stringContaining("www.masterclassbuddy.com"));
-    expect(within(active()).getByRole("link", { name: /Start learning/ })).toHaveAttribute("href", "/sign-up");
-    expect(within(active()).getByRole("link", { name: "Explore the free library" })).toHaveAttribute("href", "/library");
+    expect(slides()).toHaveLength(8);
+    expect(at()).toBe("1 / 8");
     // Hidden slides are inert, so their links can't be tabbed to.
-    expect(slides().filter(slide => slide.hasAttribute("inert"))).toHaveLength(3);
+    expect(slides().filter(slide => slide.hasAttribute("inert"))).toHaveLength(7);
+    fireEvent.click(screen.getByRole("button", { name: /Technology courses/ }));
+    expect(within(active()).getByRole("link", { name: /Start learning/ })).toHaveAttribute("href", "/sign-up");
+    expect(within(active()).getByRole("link", { name: "Browse technology" })).toHaveAttribute("href", "/courses#technology");
   });
 
   test("the technology slide quotes the real technology count", () => {
@@ -52,33 +55,32 @@ describe("hero slider", () => {
 
   test("autoplays; arrows step both ways and wrap; pause stops it", () => {
     render(<LandingSlider />);
-    // Each slide holds for 10 seconds.
-    act(() => { jest.advanceTimersByTime(9900); });
-    expect(active()).toHaveTextContent("Your campus for the skills");
+    act(() => { jest.advanceTimersByTime(14900); });
+    expect(at()).toBe("1 / 8");
     act(() => { jest.advanceTimersByTime(100); });
-    expect(active()).toHaveTextContent("Learn to code by building real projects");
+    expect(at()).toBe("2 / 8");
     fireEvent.click(screen.getByRole("button", { name: "Previous slide" }));
-    expect(active()).toHaveTextContent("Your campus for the skills");
+    expect(at()).toBe("1 / 8");
     fireEvent.click(screen.getByRole("button", { name: "Previous slide" }));
-    expect(active()).toHaveTextContent("From learning to certified");
+    expect(at()).toBe("8 / 8");
     fireEvent.click(screen.getByRole("button", { name: "Next slide" }));
-    expect(active()).toHaveTextContent("Your campus for the skills");
+    expect(at()).toBe("1 / 8");
     fireEvent.click(screen.getByRole("button", { name: "Pause slides" }));
-    act(() => { jest.advanceTimersByTime(30000); });
-    expect(active()).toHaveTextContent("Your campus for the skills");
+    act(() => { jest.advanceTimersByTime(45000); });
+    expect(at()).toBe("1 / 8");
   });
 
   test("keyboard and swipe navigate, and reduced motion never autoplays", () => {
     mockMotion(true);
     render(<LandingSlider />);
-    act(() => { jest.advanceTimersByTime(30000); });
-    expect(active()).toHaveTextContent("Your campus for the skills");
+    act(() => { jest.advanceTimersByTime(45000); });
+    expect(at()).toBe("1 / 8");
     const region = screen.getByRole("region", { name: "Learning with MasterClass" });
     fireEvent.keyDown(region, { key: "ArrowRight" });
-    expect(active()).toHaveTextContent("Learn to code by building real projects");
+    expect(at()).toBe("2 / 8");
     fireEvent.touchStart(region, { touches: [{ clientX: 300 }] });
     fireEvent.touchEnd(region, { changedTouches: [{ clientX: 120 }] });
-    expect(active()).toHaveTextContent("Walk into your interview confident and ready");
+    expect(at()).toBe("3 / 8");
   });
 });
 
@@ -103,18 +105,18 @@ describe("navbar", () => {
     expect(toggle).toHaveAttribute("aria-expanded", "false");
   });
 
-  test("the account dropdown holds the language toggle, Sign in and Sign up", () => {
+  test("the header carries the language switch; the account dropdown holds Sign in and Sign up", () => {
     render(<LandingNavbar links={links} />);
+    // The A / अ switch sits in the header itself (components/language-switch.tsx).
+    expect(screen.getByRole("switch", { name: "Hindi language" })).toHaveAttribute("aria-checked", "false");
     const trigger = screen.getByRole("button", { name: "Account" });
     expect(trigger).toHaveAttribute("aria-expanded", "false");
-    expect(screen.queryByRole("link", { name: "Sign in" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: /Sign in/ })).not.toBeInTheDocument();
     fireEvent.click(trigger);
     expect(trigger).toHaveAttribute("aria-expanded", "true");
-    expect(screen.getByRole("group", { name: "Language" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "EN" })).toHaveAttribute("aria-pressed", "true");
-    expect(screen.getByRole("button", { name: "हिन्दी" })).toHaveAttribute("aria-pressed", "false");
-    expect(screen.getByRole("link", { name: "Sign in" })).toHaveAttribute("href", "/sign-in");
-    expect(screen.getByRole("link", { name: "Sign up" })).toHaveAttribute("href", "/sign-up");
+    expect(screen.getByRole("tablist", { name: "Account menu" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /Sign in/ })).toHaveAttribute("href", "/sign-in");
+    expect(screen.getByRole("link", { name: /Create free account/ })).toHaveAttribute("href", "/sign-up");
     fireEvent.keyDown(window, { key: "Escape" });
     expect(trigger).toHaveAttribute("aria-expanded", "false");
     expect(trigger).toHaveFocus();
@@ -181,6 +183,8 @@ describe("navbar subscribe menu", () => {
     render(<LandingNavbar links={links} />);
     fireEvent.click(screen.getByRole("button", { name: "Subscribe" }));
     fireEvent.click(screen.getByRole("button", { name: "Account" }));
-    expect(screen.queryByRole("tablist")).toBeNull();
+    // The account menu has tabs of its own; the plans menu's billing tabs are gone.
+    expect(screen.queryByRole("tablist", { name: "Billing period" })).toBeNull();
+    expect(screen.getByRole("tablist", { name: "Account menu" })).toBeInTheDocument();
   });
 });

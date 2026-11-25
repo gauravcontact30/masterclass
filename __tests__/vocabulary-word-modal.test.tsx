@@ -30,7 +30,7 @@ describe("VocabularyWordModal & Storage", () => {
     jest.clearAllMocks();
   });
 
-  test("renders all required details in VocabularyWordModal: English meaning, Hindi meaning, sentence, synonyms, antonyms", () => {
+  test("renders all required details in VocabularyWordModal, in English: meaning, sentence, synonyms, antonyms", () => {
     const handleClose = jest.fn();
     render(
       <VocabularyWordModal
@@ -43,7 +43,8 @@ describe("VocabularyWordModal & Storage", () => {
 
     // Title and Hindi badge
     expect(screen.getByRole("heading", { name: /Meticulous/i })).toBeInTheDocument();
-    expect(screen.getAllByText("अति सावधान, सूक्ष्म").length).toBeGreaterThanOrEqual(1);
+    // The meaning reads in English only (components/vocabulary-word-modal.tsx); the Hindi gloss is not shown.
+    expect(screen.queryByText("अति सावधान, सूक्ष्म")).not.toBeInTheDocument();
     expect(screen.getByText(/\/muh-TIK-yuh-luhs\//)).toBeInTheDocument();
 
     // English meaning and Hindi translation
@@ -55,18 +56,14 @@ describe("VocabularyWordModal & Storage", () => {
     expect(
       screen.getByText(/She was meticulous about keeping her research records/i)
     ).toBeInTheDocument();
-    expect(
-      screen.getByText(/वह अपने शोध रिकॉर्ड को अद्यतन रखने के बारे में अति सावधान थी।/i)
-    ).toBeInTheDocument();
+    expect(screen.queryByText(/वह अपने शोध रिकॉर्ड/)).not.toBeInTheDocument();
 
     // Synonyms with Hindi
     expect(screen.getByText("thorough")).toBeInTheDocument();
-    expect(screen.getByText("(पूरी तरह से)")).toBeInTheDocument();
     expect(screen.getByText("diligent")).toBeInTheDocument();
 
     // Antonyms with Hindi
     expect(screen.getByText("careless")).toBeInTheDocument();
-    expect(screen.getByText("(लापरवाह)")).toBeInTheDocument();
     expect(screen.getByText("sloppy")).toBeInTheDocument();
 
     // Audio (Hear it) icons for Main word, synonyms, antonyms

@@ -78,7 +78,8 @@ const nextConfig: NextConfig = {
       // A page-level redirect() here was prerendered as a 200 shell, which Google saw as a duplicate of the home page.
       { source: "/notes", destination: "/learning/notes", permanent: true },
       // The IELTS preparation hub lives inside the Learning Dashboard only (user request 2026-11-21).
-      { source: "/ielts", destination: "/learning/ielts", permanent: true },
+      // /ielts opens the IELTS Achievers portal (2026-11-24); Tech Pro still has its hub at /learning/ielts.
+      { source: "/ielts", destination: "/ielts/dashboard", permanent: false },
     ];
   },
   async headers() {

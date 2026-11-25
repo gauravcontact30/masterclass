@@ -1,10 +1,11 @@
 import { ExamContent } from "./exam-locale";
 import type { ReactNode } from "react";
 import { ExamsFrame, type ExamsTab } from "./exams-frame";
-import type { ExamPortal } from "@/lib/portal";
+import type { ScopedPortal } from "@/lib/portal";
 
 /*
- * The frame of an exam portal: Board Scholars (/exams/board-exams) or Exam Aspirants (/exams/competitive-exams).
+ * The frame of a portal with its own account: Board Scholars (/exams/board-exams), Exam Aspirants
+ * (/exams/competitive-exams) or IELTS Achievers (/ielts/dashboard, 2026-11-24).
  * Since 2026-11-22 it has the Tech Learning Dashboard's look (components/exams-frame.tsx): dark sidebar, top bar and
  * workspace. Each portal keeps its own navigation, blog and plans, separate from the other and from Tech Pro.
  * `email` is the signed-in account; without it (the public blogs) the top bar offers that portal's sign-in and sign-up.
@@ -12,6 +13,6 @@ import type { ExamPortal } from "@/lib/portal";
  */
 export type { ExamsTab };
 
-export function ExamsShell({ portal, active, email, children }: { portal: ExamPortal | null; active: ExamsTab; email?: string | null; children: ReactNode }) {
+export function ExamsShell({ portal, active, email, children }: { portal: ScopedPortal | null; active: ExamsTab; email?: string | null; children: ReactNode }) {
   return <ExamContent><ExamsFrame portal={portal} active={active} email={email}>{children}</ExamsFrame></ExamContent>;
 }

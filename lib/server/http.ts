@@ -8,7 +8,7 @@ import { recordEvent } from "./monitoring";
 import { UNTRACKED_COOKIE } from "./tracking-exclusions";
 import { AUTH_USER, requestOnce, withRequestCache } from "./request-cache";
 import { headers } from "next/headers";
-import { PORTAL_HEADER, isExamPortal } from "@/lib/portal";
+import { PORTAL_HEADER, isExamPortal, isScopedPortal } from "@/lib/portal";
 import { HttpError } from "./http-error";
 export { HttpError };
 export async function userId() {
@@ -25,8 +25,9 @@ export async function userId() {
  */
 async function portalScoped(authUserId: string) {
   const portal = (await headers()).get(PORTAL_HEADER);
-  if (!isExamPortal(portal)) return authUserId;
-  if (!await indiaAccess()) throw new HttpError(403, "region_unavailable");
+  if (!isScopedPortal(portal)) return authUserId;
+  // The exam portals are India only; IELTS Achievers (x-portal: ielts) is worldwide.
+  if (isExamPortal(portal) && !await indiaAccess()) throw new HttpError(403, "region_unavailable");
   // Loaded here, not at the top: portal.ts → repository.ts → … import this module back, and a static import made
   // that cycle leave exports uninitialised for whichever module loaded first.
   const { examAccountOf } = await import("./portal");

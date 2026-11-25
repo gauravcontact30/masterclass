@@ -1,98 +1,49 @@
-import { render, screen, waitFor, fireEvent } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { LanguageProvider, useLanguage } from "@/components/language-provider";
-import { LanguageSwitcher } from "@/components/language-switcher";
-import { en, SUPPORTED_LANGUAGES } from "@/lib/i18n";
-import { hi, es, ja, de, fr, zh } from "@/lib/i18n-locales";
+import { HeaderLanguageSwitch } from "@/components/language-switch";
+import { en, SUPPORTED_LANGUAGES, usableLanguage } from "@/lib/i18n";
+import hindi from "@/lib/locales/ui-hi.json";
 
+/*
+ * The interface is in English and Hindi (lib/i18n.ts). The Hindi strings load only for readers who choose Hindi
+ * (lib/locales/ui-hi.json, keyed by the English text), and the choice is kept in this browser.
+ */
 function Probe() {
-  const { language, setLanguage, t } = useLanguage();
-  return (
-    <>
-      <h1>{t("welcome")}</h1>
-      <p data-testid="slider-title">{t("campusSlideTitle")}</p>
-      <button onClick={() => setLanguage(language === "en" ? "hi" : "en")}>Switch</button>
-      <LanguageSwitcher />
-    </>
-  );
+  const { language, t } = useLanguage();
+  return <><h1>{t("welcome")}</h1><p data-testid="language">{language}</p><HeaderLanguageSwitch /></>;
 }
 
-test("all visible translation keys have valid strings across all 7 supported languages", () => {
-  const expectedKeys = Object.keys(en).sort();
-  expect(Object.keys(hi).sort()).toEqual(expectedKeys);
-  expect(Object.values(hi).every(Boolean)).toBe(true);
-
-  expect(Object.keys(es).sort()).toEqual(expectedKeys);
-  expect(Object.values(es).every(Boolean)).toBe(true);
-
-  expect(Object.keys(ja).sort()).toEqual(expectedKeys);
-  expect(Object.values(ja).every(Boolean)).toBe(true);
-
-  expect(Object.keys(de).sort()).toEqual(expectedKeys);
-  expect(Object.values(de).every(Boolean)).toBe(true);
-
-  expect(Object.keys(fr).sort()).toEqual(expectedKeys);
-  expect(Object.values(fr).every(Boolean)).toBe(true);
-
-  expect(Object.keys(zh).sort()).toEqual(expectedKeys);
-  expect(Object.values(zh).every(Boolean)).toBe(true);
+test("every English interface string has its Hindi translation", () => {
+  const missing = (Object.values(en) as string[]).filter(text => !(text in (hindi as Record<string, string>)));
+  expect(missing).toEqual([]);
+  expect(Object.values(hindi).every(Boolean)).toBe(true);
 });
 
-test("SUPPORTED_LANGUAGES contains all 7 countries shown in the screenshot", () => {
-  const codes = SUPPORTED_LANGUAGES.map(l => l.countryCode);
-  expect(codes).toEqual(["US", "IN", "ES", "JP", "DE", "FR", "CN"]);
+test("English and Hindi are offered; any other code falls back to English", () => {
+  expect(SUPPORTED_LANGUAGES.map(language => language.code).sort()).toEqual(["en", "hi"]);
+  expect(SUPPORTED_LANGUAGES.every(language => language.available)).toBe(true);
+  expect(usableLanguage("hi")).toBe("hi");
+  expect(usableLanguage("es")).toBe("en");
+  expect(usableLanguage(null)).toBe("en");
 });
 
-test("defaults to English, updates document lang and persists Hindi", async () => {
+test("defaults to English, switches to Hindi from the header switch and remembers it", async () => {
   localStorage.clear();
-  global.fetch = jest.fn().mockResolvedValue({ ok: true });
-  render(
-    <LanguageProvider>
-      <Probe />
-    </LanguageProvider>
-  );
+  render(<LanguageProvider><Probe /></LanguageProvider>);
   expect(screen.getByRole("heading")).toHaveTextContent(en.welcome);
-  await userEvent.click(screen.getByRole("button", { name: "Switch" }));
-  expect(screen.getByRole("heading")).toHaveTextContent(hi.welcome);
-  expect(localStorage.getItem("masterclass:language")).toBe("hi");
+  const toggle = screen.getByRole("switch", { name: "Hindi language" });
+  expect(toggle).toHaveAttribute("aria-checked", "false");
+  await userEvent.click(toggle);
+  expect(toggle).toHaveAttribute("aria-checked", "true");
+  expect(localStorage.getItem("mc-language")).toBe("hi");
   await waitFor(() => expect(document.documentElement.lang).toBe("hi"));
-  expect(fetch).toHaveBeenCalledWith("/api/account", expect.objectContaining({ body: JSON.stringify({ language: "hi" }) }));
+  // The Hindi dictionary arrives as its own chunk, then replaces the English text.
+  await waitFor(() => expect(screen.getByRole("heading")).toHaveTextContent((hindi as Record<string, string>)[en.welcome]));
 });
 
-test("LanguageSwitcher opens popover with country codes and changes language to Spanish and Japanese", async () => {
-  localStorage.clear();
-  global.fetch = jest.fn().mockResolvedValue({ ok: true });
-  render(
-    <LanguageProvider>
-      <Probe />
-    </LanguageProvider>
-  );
-
-  // Open language switcher
-  const trigger = screen.getByRole("button", { expanded: false });
-  fireEvent.click(trigger);
-
-  // Check that all language badges EN, HI, ES, JA, DE, FR, ZH are in popover
-  expect(screen.getByText("EN")).toBeInTheDocument();
-  expect(screen.getByText("HI")).toBeInTheDocument();
-  expect(screen.getByText("ES")).toBeInTheDocument();
-  expect(screen.getByText("JA")).toBeInTheDocument();
-  expect(screen.getByText("DE")).toBeInTheDocument();
-  expect(screen.getByText("FR")).toBeInTheDocument();
-  expect(screen.getByText("ZH")).toBeInTheDocument();
-
-  // Click Spanish (ES)
-  const esButton = screen.getByRole("option", { name: /Español/i });
-  fireEvent.click(esButton);
-
-  expect(localStorage.getItem("masterclass:language")).toBe("es");
-  expect(screen.getByTestId("slider-title")).toHaveTextContent(es.campusSlideTitle);
-
-  // Re-open and select Japanese (JP)
-  fireEvent.click(screen.getByRole("button", { expanded: false }));
-  const jaButton = screen.getByRole("option", { name: /日本語/i });
-  fireEvent.click(jaButton);
-
-  expect(localStorage.getItem("masterclass:language")).toBe("ja");
-  expect(screen.getByTestId("slider-title")).toHaveTextContent(ja.campusSlideTitle);
+test("a saved choice is restored on the next visit", async () => {
+  localStorage.setItem("mc-language", "hi");
+  render(<LanguageProvider><Probe /></LanguageProvider>);
+  await waitFor(() => expect(screen.getByTestId("language")).toHaveTextContent("hi"));
 });

@@ -72,5 +72,5 @@ test("browser and console output appear only once the runtime is started", async
   await user.click(screen.getByRole("button", { name: "Run" }));
   expect(screen.getByTestId("preview")).toBeVisible();
   expect(screen.getByTestId("console")).toBeVisible();
-  expect(screen.getByRole("heading", { name: "Console output" })).toBeVisible();
+  expect(screen.getByRole("heading", { name: "Console" })).toBeVisible();
 });

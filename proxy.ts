@@ -19,7 +19,7 @@ const PUBLIC_DATA = new Set(["/api/landing/news", "/api/landing/library", "/api/
 
 /** The routes this proxy guards (Arcjet, rate limit, session, headers). The matcher below is wider so AI crawler
  *  visits to every public page, robots.txt, llms.txt and sitemaps are tracked; those pass straight through. */
-const GUARDED = /^\/(?:$|learning(?:\/|$)|super-admin(?:\/|$)|sign-in(?:\/|$)|sign-up(?:\/|$)|exams(?:\/|$)|portal(?:\/|$)|api(?:\/|$))/;
+const GUARDED = /^\/(?:$|learning(?:\/|$)|super-admin(?:\/|$)|sign-in(?:\/|$)|sign-up(?:\/|$)|exams(?:\/|$)|ielts(?:\/|$)|portal(?:\/|$)|api(?:\/|$))/;
 
 export default async function proxy(request: NextRequest, event: NextFetchEvent) {
   const startTime = Date.now();

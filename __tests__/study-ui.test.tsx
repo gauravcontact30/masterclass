@@ -3,6 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { StudyReader } from "@/components/study-reader";
 import { Membership } from "@/components/membership";
 import { LandingPage } from "@/components/landing-page";
+import { previewWorkflows } from "@/lib/landing-workflows-preview";
 import { buildStudyPack } from "@/lib/study/content";
 import { findStudyCourse } from "@/lib/study/catalog";
 import { requestJson } from "@/lib/client";
@@ -49,9 +50,11 @@ test("membership requires preparation before checkout and provides monthly/yearl
 });
 test("landing learning sections remain available and pricing follows the billing toggle", async () => {
   const user = userEvent.setup();
-  render(<LandingPage prices={{monthly:299,yearly:2999,enabled:true}} />);
+  // The landing sections that load after the page (Fresh in tech) fetch directly; jsdom has no fetch of its own.
+  global.fetch = jest.fn().mockResolvedValue({ ok: true, json: async () => ({}) }) as unknown as typeof fetch;
+  render(<LandingPage prices={{monthly:299,yearly:2999,enabled:true}} workflows={previewWorkflows()} />);
   // Lower sections are split into their own chunks (next/dynamic), so they arrive a tick after the first render.
-  expect(await screen.findByRole("heading", {name:/How real systems and AI agents get work done/})).toBeVisible();
+  expect(await screen.findByRole("heading", {name:/how real systems and AI agents get work done/i})).toBeVisible();
   await user.click(screen.getByRole("button", { name: /yearly/i }));
   expect(screen.getByText(/2,999/, {selector:"p.price b"})).toBeVisible();
   expect(screen.getByRole("link", {name:"Subscribe now"})).toHaveAttribute("href", "/subscribe?plan=yearly");

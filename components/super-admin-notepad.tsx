@@ -11,7 +11,7 @@ import {
   ChevronUp, Wrench, Maximize2, Minimize2, FolderOpen,
   AArrowUp, AArrowDown, Baseline, CaseUpper, CaseLower, WrapText,
   AlertCircle, SquareCheck, Code, Code2, Clock, Sparkles, Search, Replace,
-  Rows, Columns, BarChart2
+  Rows, Rows3, Columns, BarChart2
 } from "lucide-react";
 import { sanitizeNotepadHtml, notepadDocument, PAPER_COLORS } from "@/lib/notepad";
 import { newNotepadFile, readNotepadCollection, workflowHtml, type NotepadFile } from "@/lib/notepad-library";
@@ -47,32 +47,6 @@ const COMMAND_ICONS: Record<string, LucideIcon> = {
   insertHorizontalRule: Minus,
   unlink: Unlink
 };
-
-const FONT_FAMILIES = [
-  "Arial",
-  "Inter",
-  "Roboto",
-  "Calibri",
-  "Segoe UI",
-  "Helvetica",
-  "Trebuchet MS",
-  "Verdana",
-  "Tahoma",
-  "Georgia",
-  "Times New Roman",
-  "Garamond",
-  "Merriweather",
-  "Playfair Display",
-  "Palatino",
-  "Book Antiqua",
-  "Courier New",
-  "Consolas",
-  "Monaco",
-  "Fira Code",
-  "Impact",
-  "Century Gothic",
-  "Comic Sans MS"
-];
 
 const FONT_SIZES = [9, 10, 11, 12, 13, 14, 16, 18, 20, 22, 24, 28, 32, 36, 40, 48, 56, 64, 72];
 
@@ -859,6 +833,7 @@ export function SuperAdminNotepad({ userId }: { userId: string }) {
         <IconButton type="button" label="Insert table" icon={Table2} onClick={() => setTableOpen(value => !value)} />
         <IconButton label="Add table row" icon={Rows} onMouseDown={e => e.preventDefault()} onClick={addTableRow} />
         <IconButton label="Add table column" icon={Columns} onMouseDown={e => e.preventDefault()} onClick={addTableColumn} />
+        <IconButton label="Delete table row" icon={Rows3} onMouseDown={e => e.preventDefault()} onClick={deleteTableRow} />
         <IconButton label="Insert callout box" icon={AlertCircle} onClick={() => setCalloutOpen(v => !v)} />
         <IconButton label="Insert code block" icon={Code2} onMouseDown={e => e.preventDefault()} onClick={insertCodeBlock} />
         <IconButton label="Insert special symbol" icon={Sparkles} onClick={() => setSymbolsOpen(v => !v)} />

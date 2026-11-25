@@ -1,7 +1,10 @@
 /** @jest-environment node */
 const lt = jest.fn(async () => ({ count: 42, error: null }));
-const del = jest.fn(() => ({ lt }));
-const from = jest.fn(() => ({ delete: del }));
+// The same chain as Supabase's builder: delete() then optional .in(...) filters, ending in .lt(...). site_visits is
+// deleted first; the presence, monitoring and zero-engagement clean-ups follow (lib/server/visit-retention.ts).
+const del = jest.fn(() => { const chain = { lt, in: jest.fn(() => chain) }; return chain; });
+const select = jest.fn(() => { const chain: Record<string, unknown> = {}; for (const key of ["eq", "lt", "gt", "is", "in", "lte", "gte", "limit", "order"]) chain[key] = jest.fn(() => chain); (chain as { then: unknown }).then = (resolve: (value: unknown) => unknown) => resolve({ data: [], error: null }); return chain; });
+const from = jest.fn(() => ({ delete: del, select }));
 jest.mock("@/lib/server/db", () => ({ db: () => ({ from }) }));
 import { GET } from "@/app/api/cron/visit-retention/route";
 
@@ -25,6 +28,6 @@ test("deletes site_visits rows older than five days", async () => {
   expect(response.status).toBe(200);
   expect(from).toHaveBeenCalledWith("site_visits");
   expect(del).toHaveBeenCalledWith({ count: "exact" });
-  expect(lt).toHaveBeenCalledWith("created_at", "2026-10-17T20:30:00.000Z");
+  expect(lt).toHaveBeenNthCalledWith(1, "created_at", "2026-10-17T20:30:00.000Z");
   expect(await response.json()).toMatchObject({ ok: true, deleted: 42 });
 });

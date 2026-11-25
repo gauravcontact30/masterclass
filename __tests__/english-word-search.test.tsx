@@ -8,16 +8,17 @@ const submit = (word: string) => {
 };
 beforeEach(() => { global.fetch = jest.fn().mockResolvedValue({ ok: true, json: async () => ({ entry, source: "ai" }) }); });
 
-test("looks up a word and renders bilingual meaning, sentence and separate related-word sections", async () => {
+test("looks up a word and renders its meaning, sentence and separate related-word sections", async () => {
   render(<EnglishWordSearch />); submit("resilient");
   expect(await screen.findByText(entry.meaning)).toBeVisible();
-  expect(screen.getByText(entry.hindi)).toHaveAttribute("lang", "hi");
+  // Word cards read in English only (components/vocabulary-word-card.tsx).
+  expect(screen.queryByText(entry.hindi)).not.toBeInTheDocument();
   expect(screen.getByText(entry.pronunciation)).toBeVisible();
   expect(screen.getByText(entry.sentence)).toBeVisible();
   const synonyms = screen.getByRole("heading", { name: /Synonyms/ }).closest("section")!;
   const antonyms = screen.getByRole("heading", { name: /Antonyms/ }).closest("section")!;
-  expect(within(synonyms).getByText("अनुकूलनीय")).toBeVisible();
-  expect(within(antonyms).getByText("नाज़ुक")).toBeVisible();
+  expect(within(synonyms).getByText("Adaptable")).toBeVisible();
+  expect(within(antonyms).getByText("Fragile")).toBeVisible();
   expect(global.fetch).toHaveBeenCalledWith("/api/pro-learn/word", expect.objectContaining({ method: "POST", body: JSON.stringify({ word: "resilient" }) }));
 });
 

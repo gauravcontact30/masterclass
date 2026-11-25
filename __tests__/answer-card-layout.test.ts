@@ -123,9 +123,11 @@ test("the answer's entrance and the page-turn wave are both dropped for reduced 
 });
 
 test("the shell column can shrink, so a wide answer cannot drag the page sideways", () => {
-  const globals = read("app/globals.css");
+  // The dashboard frame rules live in app/dashboard.css (loaded by the dashboards only) since the CSS split.
+  const globals = read("app/globals.css") + read("app/dashboard.css");
   expect(globals).toContain(".compact-workspace .main-shell{margin-left:216px;width:calc(100% - 216px);min-width:0}");
-  expect(globals).toContain(".main-shell{margin-left:235px;width:calc(100% - 235px);min-width:0}");
+  // The base rule also sets the flex column and height; what matters here is the width and the zero floor.
+  expect(globals).toMatch(/\.main-shell\{[^}]*margin-left:235px;width:calc\(100% - 235px\);min-width:0\}/);
 });
 
 test("every code surface clips its shell and scrolls its source", () => {

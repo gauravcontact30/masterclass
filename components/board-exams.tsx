@@ -1,24 +1,30 @@
 "use client";
+import Image from "@/components/responsive-image";
 import { ExamContent } from "./exam-locale";
 import { useExamLocale, useExamShard } from "./exam-locale";
 import { LanguageSwitch } from "./language-switch";
 import { RouteH1 } from "@/components/route-heading";
 import { Pager } from "@/components/pager";
 import { useDeferredValue, useEffect, useId, useMemo, useRef, useState, type ReactNode } from "react";
-import { ArrowDownWideNarrow, ArrowRight, Atom, ListOrdered, BookOpenCheck, CalendarClock, CalendarDays, Check, CircleCheck, ClipboardList, Clock, Copy, ExternalLink, FileText, FlaskConical, GraduationCap, History, Languages, LayoutGrid, Lightbulb, ListChecks, PencilLine, RotateCcw, Sigma, Star, Timer, Trophy, X, Zap } from "lucide-react";
+import { ArrowDownWideNarrow, Atom, ListOrdered, BookOpenCheck, CalendarClock, CalendarDays, Check, CircleCheck, ClipboardList, Clock, Copy, ExternalLink, FileText, FlaskConical, GraduationCap, History, Languages, LayoutGrid, Lightbulb, ListChecks, PencilLine, ScrollText, RotateCcw, Sigma, Star, Timer, Trophy, X, Zap } from "lucide-react";
 import { QuickQa } from "@/components/quick-qa";
 import type { QuickItem } from "@/lib/quick-qa";
 import { BOARDS, CLASSES, SUBJECTS, buildTests, loadPack, loadQuick, packOf, patternOf, type Test } from "@/lib/board-exams/boards";
 import { OFFICIAL, PAST_YEARS, UPCOMING_WINDOW, archiveNote, askedBand, upcomingFor } from "@/lib/board-exams/papers";
 import { boardChapterImage } from "@/lib/exam-images";
 import { useExamAnswers } from "@/lib/use-exam-answers";
-import { mostImportant, type Ranked } from "@/lib/board-exams/importance";
+import { mostImportant, rankAll, type Ranked } from "@/lib/board-exams/importance";
 import { ExamSearch } from "./exam-search";
 import { useGridColumns } from "./use-grid-columns";
 import { forBoard, type BoardId, type ClassId, type Item, type Mcq, type Pack, type PackSubject, type Sheet, type SubjectId } from "@/lib/board-exams/types";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "./ui/accordion";
 import { ExamSelect } from "./exam-select";
+import dynamic from "next/dynamic";
+import { buildPapers } from "@/lib/board-exams/sample-papers";
+import { loadOfficial, officialYears, toPaper } from "@/lib/board-exams/official-papers";
 import styles from "./board-exams.module.css";
+// Sample Papers loads with its tab, so the other views do not ship it.
+const ExamSamplePapers = dynamic(() => import("./exam-sample-papers").then(m => m.ExamSamplePapers), { loading: () => <div className={styles.skeleton} aria-busy="true" aria-label="Loading papers"><span /><span /><span /></div> });
 import choice from "./competitive-exams.module.css";
 
 /*
@@ -28,9 +34,10 @@ import choice from "./competitive-exams.module.css";
  * Math, Physics and Chemistry are set in a light code-editor window, one step per numbered line.
  * Content is hand-authored in lib/board-exams and loads one subject pack at a time.
  */
-export type View = "chapters" | "bank" | "objective" | "important" | "practice" | "tests" | "papers" | "upcoming" | "sheets" | "quick";
+export type View = "chapters" | "samples" | "bank" | "objective" | "important" | "practice" | "tests" | "papers" | "upcoming" | "sheets" | "quick";
 const VIEWS: { id: View; label: string; hint: string; icon: typeof FileText }[] = [
   { id: "chapters", label: "Chapters & Topics", hint: "Chapter-wise, with pictures", icon: LayoutGrid },
+  { id: "samples", label: "Sample Papers", hint: "Sample, mock & 20 years", icon: ScrollText },
   { id: "bank", label: "Question Bank", hint: "Questions with answers", icon: BookOpenCheck },
   { id: "important", label: "Most Important", hint: "400+ star rated, year asked", icon: Star },
   { id: "objective", label: "Objective MCQs", hint: "500+ with instant answers", icon: ListChecks },
@@ -50,7 +57,7 @@ const daysUntil = (iso: string) => Math.ceil((new Date(`${iso}T00:00:00+05:30`).
 function ChapterArt({ src, icon: Icon }: { src: string | null; icon: typeof FileText }) {
   const [failed, setFailed] = useState(false);
   return <span className={styles.chapterArt} aria-hidden="true">
-    {src && !failed ? <img src={src} alt="" loading="lazy" decoding="async" width={320} height={213} onError={() => setFailed(true)} /> : <Icon size={30} />}
+    {src && !failed ? <Image src={src} alt="" width={320} height={213} sizes="(max-width: 640px) 50vw, 320px" onError={() => setFailed(true)} /> : <Icon size={30} />}
   </span>;
 }
 const PER_PAGE = 6;
@@ -317,7 +324,7 @@ function TestRunner({ test, prose, onExit }: { test: Test; prose: boolean; onExi
 
 /** `context`: which dashboard hosts the page (Exams portal or Learning Dashboard), for the eyebrow label. */
 export function BoardExams({ initial, context = "exams" }: { initial?: { board?: string; cls?: string; subject?: string; view?: string }; context?: "exams" | "learning" }) {
-  const { localize, dictionary, english } = useExamLocale();
+  const { localize, english } = useExamLocale();
   const [boardId, setBoardId] = useState<BoardId>(BOARDS.find(b => b.id === initial?.board)?.id ?? "up");
   const [cls, setCls] = useState<ClassId>(initial?.cls === "12" ? "12" : "10");
   // Old links used subject=chemistry, which is now split: they open Inorganic Chemistry.
@@ -348,10 +355,10 @@ export function BoardExams({ initial, context = "exams" }: { initial?: { board?:
     void loadQuick(cls, subject).then(items => { if (live) setQuickSet({ key: `${cls}-${subject}`, items }); });
     return () => { live = false; };
   }, [cls, subject]);
-  const quickItems = useMemo(() => quickSet?.key === key ? localize(quickSet.items) : null, [quickSet, key, dictionary]);
+  const quickItems = useMemo(() => quickSet?.key === key ? localize(quickSet.items) : null, [quickSet, key, localize]);
 
   const board = BOARDS.find(b => b.id === boardId)!;
-  const source = useMemo(() => loaded?.key === key ? localize(loaded.pack) : null, [loaded, key, dictionary]);
+  const source = useMemo(() => loaded?.key === key ? localize(loaded.pack) : null, [loaded, key, localize]);
   const pattern = patternOf(board, cls, subject);
   const prose = subject === "english";
   const items = useMemo(() => source ? forBoard(source.items, boardId) : [], [source, boardId]);
@@ -383,10 +390,18 @@ export function BoardExams({ initial, context = "exams" }: { initial?: { board?:
   /** Question texts of the current view, for search suggestions. */
   const suggestionTexts = useMemo(() => view === "objective" ? mcqs.map(m => m.q) : view === "important" ? ranked.map(row => row.type === "subjective" ? row.item.q : row.mcq.q) : inView.map(item => item.q), [view, mcqs, ranked, inView]);
   const mcqRows = useMemo(() => view !== "objective" ? [] : mcqs.filter(m => (!safeChapter || m.ch === safeChapter) && (!terms.length || terms.every(term => `${m.q} ${m.options.join(" ")} ${m.ch}`.toLowerCase().includes(term)))), [mcqs, view, safeChapter, terms]);
+  /** Sample papers, mock tests and year-wise papers of this board, class and subject (lib/board-exams/sample-papers.ts). */
+  const paperPrefix = boardId === "icse" ? board.exams[cls].short : `${board.code} ${board.exams[cls].short}`;
+  const paperSet = useMemo(() => view === "samples" && ranked.length ? buildPapers(rankAll(items, mcqs, cls, subject), boardId, cls, subject,
+    marks => Math.max(15, Math.ceil((marks * pattern.minutes) / pattern.marks / 5) * 5), paperPrefix, pattern.marks, ranked) : null,
+  [view, ranked, items, mcqs, boardId, cls, subject, pattern, paperPrefix]);
+  /** The board's own past papers we hold for this subject (lib/board-exams/official-papers). */
+  const realYears = useMemo(() => officialYears(boardId, cls, packOf(subject)), [boardId, cls, subject]);
+  const loadReal = useMemo(() => (year: number) => loadOfficial(boardId, cls, packOf(subject), year).then(paper => paper ? toPaper(paper, `${paperPrefix} ${year} board paper`) : null), [boardId, cls, subject, paperPrefix]);
   const counts: Record<View, number> = {
     bank: items.filter(i => i.kind === "bank").length, objective: mcqs.length, important: ranked.length,
     practice: items.filter(i => i.kind === "solved" || i.kind === "unsolved").length, tests: tests.length, sheets: source?.sheets.length ?? 0, quick: quickItems?.length ?? 0,
-    chapters: chapterCards.length, papers: PAST_YEARS.length, upcoming: 4,
+    chapters: chapterCards.length, papers: PAST_YEARS.length, upcoming: 4, samples: paperSet ? paperSet.sample.length + paperSet.mock.length + paperSet.years.length : 32,
   };
   const activeTest = tests.find(test => test.id === testId) ?? null;
 
@@ -525,6 +540,9 @@ export function BoardExams({ initial, context = "exams" }: { initial?: { board?:
             </li></ExamContent>; })}</ul>
           <p className={styles.note}><CalendarDays size={14} aria-hidden="true" />Dates are shown only once the board publishes them. Always confirm with your admit card and the board&apos;s latest notice.</p>
         </>}
+        {view === "samples" && paperSet && <ExamSamplePapers key={`${boardId}-${key}`} set={paperSet} boardName={board.name}
+          title={`${board.name} · ${board.exams[cls].short} · ${SUBJECTS.find(s => s.id === subject)!.name}`}
+          officialHref={OFFICIAL[boardId].links[0].href} archiveNote={year => archiveNote(boardId, year)} officialYears={realYears} loadOfficial={loadReal} />}
         {view === "objective" && <p className={styles.note}><ListChecks size={14} aria-hidden="true" />Choose an option to see at once whether it is right and why. Many numerical questions are generated from hand-checked formulas with fresh values, so each answer is computed exactly.</p>}
         {view === "objective" && <ObjectiveList key={`${boardId}-${key}-${safeChapter}-${terms.join(" ")}`} items={mcqRows} terms={terms} scope={`${boardId}-${key}`} stars={starMap} emptyReset={() => { setQuery(""); setChapter(""); }} />}
         {view === "important" && <ImportantList key={`${boardId}-${key}-${kind}-${minStars}-${safeChapter}-${terms.join(" ")}`} rows={importantRows} prose={prose} terms={terms} scope={`${boardId}-${key}`} emptyReset={clearFilters} />}

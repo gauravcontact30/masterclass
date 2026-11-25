@@ -4,6 +4,8 @@ import StudentChatPanel from "@/components/student-chat-panel";
 import { LanguageProvider } from "@/components/language-provider";
 
 jest.mock("next/navigation", () => ({ usePathname: () => "/learning/workflow" }));
+// Study Buddy is part of membership (lib/study-buddy-access.ts); these tests ask as a member.
+jest.mock("@/lib/study-buddy-access", () => ({ ...jest.requireActual("@/lib/study-buddy-access"), useStudyBuddyAccess: () => "member" }));
 Object.assign(globalThis, { ReadableStream, TextDecoderStream });
 
 /** An NDJSON reply whose lines arrive one by one, released by `next()`. */

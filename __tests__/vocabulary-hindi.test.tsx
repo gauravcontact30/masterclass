@@ -1,5 +1,4 @@
 import { render, screen } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
 import { CatalogBrowser } from "@/components/catalog-browser";
 import { ENGLISH_EXAM_VOCABULARY } from "@/lib/pro-learn/english-exam-vocabulary";
 
@@ -23,38 +22,15 @@ function renderCards(words: string[]) {
     question={row => row.name} onAsk={() => {}} />);
 }
 
-test("a card's Hindi meaning replaces its English one when the card is switched", async () => {
-  const user = userEvent.setup();
-  const succinct = item("succinct");
-  renderCards(["succinct"]);
-
-  // The gloss is swapped in, not revealed below: an appended panel grew the
-  // card and, through the grid's equal-height rows, every card beside it.
-  expect(screen.queryByText(succinct.vocabulary.hindi!)).not.toBeInTheDocument();
-  expect(screen.getByText(succinct.vocabulary.meaning)).toBeVisible();
-
-  await user.click(screen.getByRole("button", { name: "Hi" }));
-  expect(screen.getByText(succinct.vocabulary.hindi!)).toBeVisible();
-  expect(screen.queryByText(succinct.vocabulary.meaning)).not.toBeInTheDocument();
-
-  // The same switch puts it back.
-  await user.click(screen.getByRole("button", { name: "En" }));
-  expect(screen.getByText(succinct.vocabulary.meaning)).toBeVisible();
-});
-
-test("each card switches only its own language", async () => {
-  const user = userEvent.setup();
+// Vocabulary cards read in English only (components/catalog-browser.tsx): the per-card Hindi switch was retired,
+// and the Hindi meaning stays in the data for search and for the word lookups that still use it.
+test("cards show the English meaning and offer no per-card Hindi switch", () => {
   const [first, second] = [item("succinct"), item("candid")];
   renderCards(["succinct", "candid"]);
-
-  const switches = screen.getAllByRole("button", { name: "Hi" });
-  expect(switches).toHaveLength(2);
-  await user.click(switches[0]);
-
-  expect(screen.getByText(first.vocabulary.hindi!)).toBeVisible();
-  // Its neighbour is untouched, still showing the English meaning.
-  expect(screen.queryByText(second.vocabulary.hindi!)).not.toBeInTheDocument();
+  expect(screen.getByText(first.vocabulary.meaning)).toBeVisible();
   expect(screen.getByText(second.vocabulary.meaning)).toBeVisible();
+  expect(screen.queryByText(first.vocabulary.hindi!)).not.toBeInTheDocument();
+  expect(screen.queryByRole("button", { name: "Hi" })).not.toBeInTheDocument();
 });
 
 test("a vocabulary card shows its word with a capital first letter", () => {

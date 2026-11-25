@@ -8,7 +8,7 @@ import { technologyTopicNotes } from "@/lib/technology-topics";
 import { requestJson } from "@/lib/client";
 
 jest.mock("@/lib/client", () => ({ requestJson: jest.fn(), errorKey: () => "service_error" }));
-jest.mock("next/navigation", () => ({ useRouter: () => ({ replace: jest.fn(), refresh: jest.fn() }) }));
+jest.mock("next/navigation", () => ({ useRouter: () => ({ replace: jest.fn(), refresh: jest.fn() }), usePathname: () => "/learning", useSearchParams: () => new URLSearchParams() }));
 const document: DocumentRecord = { id: "redux-notes", user_id: "student", title: redux.curriculum.title,
   request: { technologyId: "redux", topicId: "redux-full", format: "notes", language: "en", level: "beginner" },
   status: "ready", curriculum: redux.curriculum, created_at: "2026-09-12T00:00:00Z", error_code: null, page_titles: [], storage_path: null, preview_paths: [] };

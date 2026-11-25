@@ -44,7 +44,7 @@ export function ClientMonitor() {
 
   const report = useCallback<Parameters<typeof useReportWebVitals>[0]>(metric => {
     if (metric.name in { LCP: 1, INP: 1, CLS: 1, FCP: 1, TTFB: 1 }) navigation.current.vitals[metric.name as keyof Vitals] = Math.round(metric.value * (metric.name === "CLS" ? 1000 : 1)) / (metric.name === "CLS" ? 1000 : 1);
-    if (metric.name === "INP") navigation.current.inp = inpDetail(metric.entries[0] as PerformanceEventTiming | undefined) ?? navigation.current.inp;
+    if (metric.name === "INP") navigation.current.inp = inpDetail(metric.entries?.[0] as PerformanceEventTiming | undefined) ?? navigation.current.inp;
   }, []);
   useReportWebVitals(report);
 

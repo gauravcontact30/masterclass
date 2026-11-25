@@ -1,7 +1,8 @@
 import { act, fireEvent, render, screen, within } from "@testing-library/react";
 import { StudentReviews } from "@/components/student-reviews";
 import { LanguageProvider } from "@/components/language-provider";
-const INTERVAL=5500;
+// Each review stays 8 s (components/student-reviews.tsx STORY_MS).
+const INTERVAL=8000;
 const advance=(ms:number)=>act(()=>{jest.advanceTimersByTime(ms);});
 const current=()=>screen.getByRole("group",{name:/Sample review \d of 5/});
 beforeEach(()=>{localStorage.clear();jest.useFakeTimers();window.matchMedia=jest.fn().mockReturnValue({matches:false,addEventListener:jest.fn(),removeEventListener:jest.fn()});});
@@ -49,7 +50,7 @@ test("each selector opens its review and arrows wrap",()=>{
  expect(buttons[4]).toHaveAttribute("aria-pressed","true");
 });
 test("Hindi preference renders translated review controls",()=>{
- localStorage.setItem("masterclass:language","hi");render(<LanguageProvider><StudentReviews/></LanguageProvider>);
+ localStorage.setItem("mc-language","hi");render(<LanguageProvider><StudentReviews/></LanguageProvider>);
  expect(screen.queryByRole("region",{name:"Sample student reviews"})).not.toBeInTheDocument();
  expect(screen.getByRole("region")).toHaveAttribute("aria-roledescription","carousel");
  expect(screen.getByRole("group",{name:/1 \/ 5/})).toHaveTextContent("Aditi S.");

@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useState, useSyncExternalStore, type ReactNode } from "react";
 
 const IndiaAccess = createContext(false);
 
@@ -29,4 +29,14 @@ export function AudienceProvider({ children }: { children: ReactNode }) {
   return <IndiaAccess.Provider value={india}>{children}</IndiaAccess.Provider>;
 }
 
-export const useIndiaAccess = () => useContext(IndiaAccess);
+const noSubscribe = () => () => {};
+/**
+ * Whether India content may show. While a part of the page hydrates it is always false, as in the server HTML: a part
+ * that hydrates late (the footer, inside a Suspense boundary) would otherwise render the India links before React has
+ * matched it against HTML that has none, and React reported a hydration mismatch. It turns true right after.
+ */
+export const useIndiaAccess = () => {
+  const india = useContext(IndiaAccess);
+  const hydrated = useSyncExternalStore(noSubscribe, () => true, () => false);
+  return india && hydrated;
+};

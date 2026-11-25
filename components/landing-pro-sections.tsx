@@ -70,8 +70,10 @@ export function LandingTechy({ data }: Readonly<{ data: LandingProPreview["techy
   const polyglot = data.polyglot;
   useEffect(() => { if (langPinned || !visible || !polyglot) return; const timer = setTimeout(() => setLang(value => (value + 1) % polyglot.snippets.length), LANGUAGE_MS); return () => clearTimeout(timer); }, [lang, langPinned, visible, polyglot]);
   const topic = data.topics.find(item => item.id === topicId) ?? data.topics[0];
-  const quiz = data.puzzles[puzzle];
-  const goPuzzle = (index: number) => { setPuzzle(Math.max(0, Math.min(data.puzzles.length - 1, index))); setSolved(false); };
+  // A cached preview from before the puzzles existed has none; the section then simply shows no puzzle.
+  const puzzles = data.puzzles ?? [];
+  const quiz = puzzles[puzzle];
+  const goPuzzle = (index: number) => { setPuzzle(Math.max(0, Math.min(puzzles.length - 1, index))); setSolved(false); };
   const snippet = polyglot?.snippets[lang];
   if (!topic) return null;
   const filter = (next: () => void) => { next(); setPage(0); };
@@ -133,11 +135,11 @@ export function LandingTechy({ data }: Readonly<{ data: LandingProPreview["techy
         <CodeFiles key={quiz.title} files={[{ path: "puzzle.js", code: quiz.code, note: quiz.title }]} label={quiz.title} skin="apple" annotate={false} explainFormatting={false} className={styles.editor} />
         <button type="button" className={styles.reveal} aria-expanded={solved} aria-controls="landing-techy-output" onClick={() => setSolved(value => !value)}>{solved ? text("Hide output", "आउटपुट छिपाएँ") : text("I have a guess: show the output", "आउटपुट दिखाएँ")}</button>
         <div id="landing-techy-output" className={styles.output} hidden={!solved}><code>{quiz.output}</code><p>{quiz.explanation}</p></div>
-        {data.puzzles.length > 1 && <nav className={styles.puzzlePager} aria-label={text("This week's puzzles", "इस सप्ताह की पहेलियाँ")}>
+        {puzzles.length > 1 && <nav className={styles.puzzlePager} aria-label={text("This week's puzzles", "इस सप्ताह की पहेलियाँ")}>
           <button type="button" className={styles.step} onClick={() => goPuzzle(puzzle - 1)} disabled={puzzle === 0} aria-label={text("Previous puzzle", "पिछली पहेली")}><ChevronLeft size={16} /></button>
-          <div className={styles.puzzleTabs}>{data.puzzles.map((item, i) => <button type="button" key={item.title} aria-pressed={puzzle === i} aria-label={`${text("Puzzle", "पहेली")} ${i + 1}: ${item.title}`} title={item.title} onClick={() => goPuzzle(i)}>{i + 1}</button>)}</div>
-          <button type="button" className={styles.step} onClick={() => goPuzzle(puzzle + 1)} disabled={puzzle === data.puzzles.length - 1} aria-label={text("Next puzzle", "अगली पहेली")}><ChevronRight size={16} /></button>
-          <span role="status">{text(`Puzzle ${puzzle + 1} of ${data.puzzles.length}`, `पहेली ${puzzle + 1} / ${data.puzzles.length}`)}</span>
+          <div className={styles.puzzleTabs}>{puzzles.map((item, i) => <button type="button" key={item.title} aria-pressed={puzzle === i} aria-label={`${text("Puzzle", "पहेली")} ${i + 1}: ${item.title}`} title={item.title} onClick={() => goPuzzle(i)}>{i + 1}</button>)}</div>
+          <button type="button" className={styles.step} onClick={() => goPuzzle(puzzle + 1)} disabled={puzzle === puzzles.length - 1} aria-label={text("Next puzzle", "अगली पहेली")}><ChevronRight size={16} /></button>
+          <span role="status">{text(`Puzzle ${puzzle + 1} of ${puzzles.length}`, `पहेली ${puzzle + 1} / ${puzzles.length}`)}</span>
         </nav>}
       </article>}
     </div>

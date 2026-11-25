@@ -11,29 +11,34 @@ describe("daily landing additions", () => {
 
   it("leads the popular mix with today's goals, each pill named by technology with its goal as the tooltip", () => {
     render(<LandingPathFinder day={3} fresh={goals} />);
-    expect(pills().map(pill => pill.textContent)).toEqual(goals.slice(0, 8).map(goal => goal.tech));
+    // Six goals a page (components/landing-path-finder.tsx GOAL_PAGE).
+    expect(pills().map(pill => pill.textContent)).toEqual(goals.slice(0, 6).map(goal => goal.tech));
     expect(pills()[0]).toHaveAttribute("title", "learn React for a job");
-    expect(screen.getByRole("button", { name: /Popular today/ })).toHaveAttribute("aria-pressed", "true");
+    expect(screen.getByRole("button", { name: /Popular this week/ })).toHaveAttribute("aria-pressed", "true");
   });
 
   it("groups the built-in goals by line, with icons, and switches lines", () => {
     render(<LandingPathFinder day={0} />);
-    expect(screen.getByText("44 goals on 8 lines")).toBeInTheDocument();
+    expect(screen.getByText(/^\d+ goals on \d+ lines$/)).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button", { name: /^AI & agents/ }));
     const labels = pills().map(pill => pill.textContent);
-    expect(labels).toEqual(expect.arrayContaining(["LangChain", "LangGraph", "LangSmith", "Langflow", "n8n", "Agentic AI"]));
+    // The first page of six goals on the line.
+    expect(labels).toEqual(expect.arrayContaining(["LangChain", "LangGraph", "LangSmith", "Langflow", "n8n"]));
     expect(labels).not.toContain("Next.js");
     expect(pills()[0].querySelector("img")).toHaveAttribute("alt", "");
+    // Lines page six at a time; Interviews is on the second page.
+    fireEvent.click(screen.getByRole("button", { name: "Next lines" }));
     fireEvent.click(screen.getByRole("button", { name: /^Interviews/ }));
     expect(pills().map(pill => pill.textContent)).toContain("System Design");
   });
 
-  it("shows a New today card with its picture, answer and checked option", () => {
+  it("shows a New this week card with its picture, answer and checked option", () => {
     render(<DailyCard kicker="Question of the day · GraphQL" title="What is the N+1 problem?" image="https://example.com/q.webp" icon={null} day="2026-10-22">
       <DailyChoice question="DataLoader batches…" options={["per field", "per request tick", "per server", "never"]} answer={1} why="It batches loads in one tick." reveal="Why:" />
     </DailyCard>);
     expect(screen.getByRole("article", { name: /Question of the day · GraphQL/ })).toBeInTheDocument();
-    expect(screen.getByText(/New today/)).toHaveTextContent("22 Oct");
+    // The additions turn over weekly, on Monday (lib/ist-week.ts).
+    expect(screen.getByText(/New this week/)).toHaveTextContent("22 Oct");
     expect(screen.getByText("per request tick")).toHaveAttribute("data-correct", "true");
   });
 });

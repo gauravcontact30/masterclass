@@ -10,7 +10,8 @@ import { existsSync, readdirSync, readFileSync, statSync } from "node:fs";
 import { dirname, join, sep } from "node:path";
 
 // (exams) loads dashboard.css in app/(exams)/exams/layout.tsx: the exam portals share the dashboard shell.
-const DASHBOARD_GROUPS = new Set(["(learning)", "(admin)", "(exams)"]);
+// (ielts) does the same in app/(ielts)/ielts/layout.tsx for the IELTS Achievers portal (2026-11-24).
+const DASHBOARD_GROUPS = new Set(["(learning)", "(admin)", "(exams)", "(ielts)"]);
 const slash = (path: string) => path.split(sep).join("/");
 
 function sourceFiles(dir: string, out: string[] = []) {

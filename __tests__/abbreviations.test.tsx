@@ -2,23 +2,23 @@ import { render } from "@testing-library/react";
 import { ExpandedText } from "@/components/expanded-text";
 import { compactAbbreviations, expandAbbreviations } from "@/lib/abbreviations";
 
-test("known terms show their full forms in visible meaning pills", () => {
+// The full form shows only in the tooltip, on hover or focus (user rule 2026-11-01): a pill beside the short form
+// stretched lines and broke cards into several rows. components/expanded-text.tsx
+const titles = (container: HTMLElement) => [...container.querySelectorAll("abbr")].map(abbr => [abbr.textContent, abbr.title]);
+test("known terms are marked with their full forms as tooltips, leaving the text unchanged", () => {
   const { container } = render(<p><ExpandedText text="Use AWS EC2, S3 and a JWT API." /></p>);
-  expect(container.textContent).toContain("Use AWS EC2Elastic Compute Cloud");
-  expect(container.textContent).toContain("S3Simple Storage Service");
-  expect(container.textContent).toContain("JWTJSON Web Token");
-  expect(container.textContent).toContain("APIApplication Programming Interface");
-  expect(container.querySelector('abbr[title="Application Programming Interface"]')).toHaveTextContent("API");
-  expect(container.querySelector('[aria-label="stands for Application Programming Interface"]')).toHaveTextContent("Application Programming Interface");
+  expect(container.textContent).toBe("Use AWS EC2, S3 and a JWT API.");
   // "AWS EC2" is one term, not two, so four marks cover the five names.
-  expect(container.querySelector('abbr[title="Elastic Compute Cloud"]')).toHaveTextContent("AWS EC2");
-  expect(container.querySelectorAll("abbr")).toHaveLength(4);
+  expect(titles(container)).toEqual([
+    ["AWS EC2", "AWS EC2 stands for Elastic Compute Cloud"], ["S3", "S3 stands for Simple Storage Service"],
+    ["JWT", "JWT stands for JSON Web Token"], ["API", "API stands for Application Programming Interface"],
+  ]);
 });
-test("an author's own parenthetical is absorbed into the title; code, URLs, unknown and ambiguous terms remain intact", () => {
+test("an author's own parenthetical is absorbed into the tooltip; code, URLs, unknown and ambiguous terms remain intact", () => {
   const { container } = render(<ExpandedText text="EC2 (Elastic Compute Cloud). API at https://host.test/API and `AWS S3`. npm V8 UNKNOWN." />);
   // The spelled-out form moves into the mark rather than being repeated beside it.
-  expect(container.textContent).toContain("EC2Elastic Compute Cloud. APIApplication Programming Interface at https://host.test/API and `AWS S3`. npm V8 UNKNOWN.");
-  expect(container.querySelector('abbr[title="Elastic Compute Cloud"]')).toHaveTextContent("EC2");
+  expect(container.textContent).toBe("EC2. API at https://host.test/API and `AWS S3`. npm V8 UNKNOWN.");
+  expect(titles(container)).toEqual([["EC2", "EC2 stands for Elastic Compute Cloud"], ["API", "API stands for Application Programming Interface"]]);
   const parts = expandAbbreviations("https://host.test/API `AWS S3` npm V8 UNKNOWN");
   expect(parts.filter(part => part.fullForm)).toHaveLength(0);
   expect(parts.map(part => part.text).join("")).toBe("https://host.test/API `AWS S3` npm V8 UNKNOWN");

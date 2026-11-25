@@ -6,7 +6,7 @@ import type { DocumentRecord } from "@/lib/domain";
 jest.mock("@/lib/client",()=>({requestJson:jest.fn(),errorKey:()=>"service_error"}));
 jest.mock("@/lib/supabase-browser",()=>({supabaseBrowser:()=>({auth:{signOut:jest.fn()}})}));
 const mockRouterPush = jest.fn();
-jest.mock("next/navigation",()=>({useRouter:()=>({push:mockRouterPush,replace:jest.fn(),refresh:jest.fn()})}));
+jest.mock("next/navigation",()=>({useRouter:()=>({push:mockRouterPush,replace:jest.fn(),refresh:jest.fn()}),usePathname:()=>"/learning",useSearchParams:()=>new URLSearchParams()}));
 jest.mock("@/components/learning-presence",()=>({LearningPresence:()=>null}));
 jest.mock("@/components/membership",()=>({Membership:()=> <h2>Membership settings</h2>}));
 jest.mock("@/components/study-catalog",()=>({StudyCatalog:({beforeLibrary}:{beforeLibrary:React.ReactNode})=><>{beforeLibrary}</>}));

@@ -2,7 +2,6 @@ import Image from "@/components/responsive-image";
 import Link from "@/components/site-link";
 import { ArrowRight, CheckCircle2, MessageSquareText, Sparkles } from "lucide-react";
 import { PageAnswers } from "@/components/page-answers";
-import { JsonLd } from "@/components/json-ld";
 import { EXAM_GUIDES, type ExamGuidePath } from "@/lib/exam-guides";
 import { INDIA_ONLY_PAGES, publicPage, siteName, siteUrl } from "@/lib/seo";
 import { IndiaOnly } from "./india-only";

@@ -1,5 +1,6 @@
 import { fireEvent, render, screen, within } from "@testing-library/react";
 import { LandingWorkflows } from "@/components/landing-workflows";
+import { WORKFLOWS } from "@/lib/landing-workflows";
 import { WORKFLOW_LESSONS } from "@/lib/workflow-learning";
 import { WORKFLOW_CURRICULUM } from "@/lib/workflow-curriculum";
 import { WORKFLOW_LESSON_GUIDES } from "@/lib/workflow-lesson-guides";
@@ -11,7 +12,7 @@ jest.mock("next/dynamic", () => ({ __esModule: true, default: (loader: () => unk
 jest.mock("@/components/dashboard-lessons", () => ({ DashboardLessons: () => null }));
 
 test("dashboard filters switch between new learning paths and existing diagram blueprints", () => {
-  render(<LandingWorkflows expanded />);
+  render(<LandingWorkflows workflows={WORKFLOWS} expanded />);
   const filters = screen.getByRole("group", { name: "Filter workflows" });
   fireEvent.click(within(filters).getByRole("button", { name: /^React 19\+/ }));
   expect(screen.getByText("Build a form with Actions and optimistic feedback")).toBeInTheDocument();
@@ -30,13 +31,13 @@ test("dashboard filters switch between new learning paths and existing diagram b
 });
 
 test("the landing preview keeps its existing category selection", () => {
-  render(<LandingWorkflows preview />);
+  render(<LandingWorkflows workflows={WORKFLOWS} preview />);
   expect(screen.queryByRole("region", { name: "Official documentation learning paths" })).not.toBeInTheDocument();
   expect(screen.queryByRole("button", { name: /^React 19\+/ })).not.toBeInTheDocument();
 });
 
 test("interview stars distinguish core essentials from extended practice with an honest legend", () => {
-  render(<LandingWorkflows expanded />);
+  render(<LandingWorkflows workflows={WORKFLOWS} expanded />);
   fireEvent.click(screen.getByRole("button", { name: /^React 19\+/ }));
   expect(screen.getByText(/Editorial study guidance, not measured interview frequency/)).toBeVisible();
   expect(screen.getAllByRole("img", { name: "Interview prep priority: 5 out of 5 stars" })).toHaveLength(10);
@@ -54,7 +55,7 @@ test("pointwise presentation preserves every interview answer and numeric values
 });
 
 test("topic search reveals a matching path, answers, empty state and reset", () => {
-  render(<LandingWorkflows expanded />);
+  render(<LandingWorkflows workflows={WORKFLOWS} expanded />);
   const search = screen.getByRole("searchbox", { name: "Search core features and interview topics" });
   expect(within(screen.getByRole("region", { name: "Official documentation learning paths" })).getByRole("status")).toHaveTextContent("624 interview topics");
   fireEvent.change(search, { target: { value: "Reducers and concurrent updates" } });
@@ -88,7 +89,7 @@ test("every learning category has a complete interview curriculum and official r
 });
 
 test("long topic lists reveal more entries and search includes topics beyond the first batch", () => {
-  render(<LandingWorkflows expanded />);
+  render(<LandingWorkflows workflows={WORKFLOWS} expanded />);
   fireEvent.click(screen.getByRole("button", { name: /^React 19\+/ }));
   expect(screen.getByText("Showing 10 of 52 topics")).toBeVisible();
   expect(screen.queryByText("JSX and component composition")).not.toBeInTheDocument();
@@ -125,7 +126,7 @@ test("dashboard shows definitions immediately and expands lessons and answers on
 });
 
 test.each(WORKFLOW_LESSONS)("$group has an in-app guide, image, workflow and practice panel", lesson => {
-  render(<LandingWorkflows expanded />);
+  render(<LandingWorkflows workflows={WORKFLOWS} expanded />);
   const filters = screen.getByRole("group", { name: "Filter workflows" });
   const button = within(filters).getAllByRole("button").find(button => button.getAttribute("data-group") === lesson.group)!;
   fireEvent.click(button);

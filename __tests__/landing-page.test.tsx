@@ -1,6 +1,10 @@
 import { fireEvent, render, screen, within } from "@testing-library/react";
 import { LandingPage } from "@/components/landing-page";
 import { LanguageProvider } from "@/components/language-provider";
+import { previewWorkflows } from "@/lib/landing-workflows-preview";
+
+// The landing page always receives its workflow blueprints from the server (app/(landing)/page.tsx).
+const workflows = previewWorkflows();
 
 beforeEach(() => {
   localStorage.clear();
@@ -9,9 +13,11 @@ beforeEach(() => {
 const ready = () => screen.findByText(/349/, {selector:"p.price b"});
 
 test("offers signup, sign-in and current section navigation", async () => {
-  render(<LandingPage/>); await ready();
-  expect(screen.getByRole("heading",{level:1})).toHaveTextContent("technology learning for professionals");
-  expect(screen.getByRole("heading",{name:/How real systems and AI agents get work done/})).toBeInTheDocument();
+  render(<LandingPage workflows={workflows}/>); await ready();
+  // The page's one h1 names the site and what it teaches (lib/i18n.ts siteHeadline).
+  expect(screen.getByRole("heading",{level:1})).toHaveTextContent(/MasterClass Buddy: read, code and learn Agentic AI/);
+  // The blueprints section renders inside its own Suspense boundary, a moment after the page.
+  expect(await screen.findByRole("heading",{name:/how real systems and AI agents get work done/i},{timeout:4000})).toBeInTheDocument();
   expect(screen.queryByRole("link",{name:"Build my learning space"})).not.toBeInTheDocument();
   fireEvent.click(screen.getByRole("button", { name: "Account" }));
   expect(within(screen.getByRole("banner", {name:"Site header"})).getByRole("link",{name:/Sign in/})).toHaveAttribute("href","/sign-in");
@@ -28,12 +34,11 @@ test("opens navigation and closes it on selection or Escape", async () => {
   expect(toggle).toHaveAttribute("aria-expanded","false");
 });
 
-test("footer navigation points to real routes and existing page sections", async () => {
-  render(<LandingPage/>); await ready();
-  const footer=within(screen.getByRole("contentinfo"));
-  expect(footer.getAllByRole("navigation")).toHaveLength(6);
-  expect(footer.getByRole("link",{name:"My Library"})).toHaveAttribute("href","/learning/library");
-  for(const link of footer.getAllByRole("link")) {
+test("in-page links point at sections that exist", async () => {
+  // The footer is the site layout's (app/(site)/site-footer.tsx), so the landing page renders none of its own.
+  render(<LandingPage workflows={workflows}/>); await ready();
+  expect(screen.queryByRole("contentinfo")).toBeNull();
+  for(const link of within(screen.getByRole("navigation",{name:"Main navigation"})).getAllByRole("link")) {
     const href=link.getAttribute("href")!;
     if(href.startsWith("#")) expect(document.getElementById(href.slice(1))).not.toBeNull();
   }
@@ -58,11 +63,12 @@ test("live pricing switches billing cycles and leads to membership setup", async
 });
 
 test("language changes stay local for a public visitor", async () => {
-  render(<LanguageProvider><LandingPage/></LanguageProvider>); await ready();
+  render(<LanguageProvider><LandingPage workflows={workflows}/></LanguageProvider>); await ready();
   (fetch as jest.Mock).mockClear();
-  fireEvent.click(screen.getByRole("button",{name:"Account"}));
-  fireEvent.click(within(screen.getByRole("group",{name:"Language"})).getByRole("button",{name:"हिन्दी"}));
-  expect(screen.getByRole("heading",{level:1})).not.toHaveTextContent("school, exam and technology learning");
+  // The header's A / अ switch (components/language-switch.tsx) changes the language without touching the account.
+  const toggle = screen.getByRole("switch",{name:"Hindi language"});
+  fireEvent.click(toggle);
+  expect(toggle).toHaveAttribute("aria-checked","true");
   expect(fetch).not.toHaveBeenCalledWith("/api/account",expect.anything());
 });
 
@@ -76,8 +82,9 @@ test("server prices render immediately without an extra request", () => {
 
 test("failed pricing is disclosed while learning navigation remains available", async () => {
   (fetch as jest.Mock).mockRejectedValue(new Error("offline"));
-  render(<LandingPage/>);
+  render(<LandingPage workflows={workflows}/>);
   expect(await screen.findByText("Current pricing is temporarily unavailable.")).toBeInTheDocument();
-  expect(screen.getByRole("heading",{name:/How real systems and AI agents get work done/})).toBeInTheDocument();
+  // The blueprints section renders inside its own Suspense boundary, a moment after the page.
+  expect(await screen.findByRole("heading",{name:/how real systems and AI agents get work done/i},{timeout:4000})).toBeInTheDocument();
   expect(screen.queryByRole("link",{name:"Build my learning space"})).not.toBeInTheDocument();
 });

@@ -271,3 +271,157 @@ class PricingTests(unittest.TestCase):
         with self.assertRaises(ValueError): Checkout(FixedDiscount(0)).total(-1)
 `) ] },
 };
+
+/* Projects for TanStack Start, Zustand and n8n (2026-11-24), so every technology in Official Docs has one. */
+TECH_PROJECTS.zustand = { title: "Reading list on a Zustand store", description: "Keep app state in a vanilla Zustand store, read it in React through selectors, and test the store without React.", prerequisites: "Node.js 22.12+ and npm.", commands: "npm install\n# The store has no React in it, so Node's test runner checks it directly:\nnpm test\nnpm run dev\n# Open the localhost URL printed by Vite.", expected: "npm test passes three checks. In the browser, adding a title and ticking its checkbox updates the remaining count; blank titles are ignored.", files: [
+  pkg({ dev: "vite", build: "vite build", test: "node --test" }, { react: "^19.0.0", "react-dom": "^19.0.0", zustand: "^5.0.0" }, { vite: "^7.0.0", "@vitejs/plugin-react": "^5.0.0" }),
+  html("/src/main.jsx"),
+  file("src/store.js", `import { createStore } from 'zustand/vanilla';
+
+// A vanilla store: plain JavaScript, usable from React, tests or any other code.
+export const createBooksStore = () => createStore((set) => ({
+  books: [],
+  add: (title) => {
+    const clean = title.trim();
+    if (!clean) return;
+    // Return new arrays and objects: subscribers compare by reference.
+    set((state) => ({ books: [...state.books, { id: crypto.randomUUID(), title: clean, done: false }] }));
+  },
+  toggle: (id) => set((state) => ({ books: state.books.map((book) => book.id === id ? { ...book, done: !book.done } : book) })),
+}));
+export const booksStore = createBooksStore();
+`),
+  file("src/main.jsx", `import React, { useState } from 'react';
+import { createRoot } from 'react-dom/client';
+import { useStore } from 'zustand';
+import { booksStore } from './store.js';
+
+function App() {
+  // Each selector subscribes to one slice, so a component re-renders only when that slice changes.
+  const books = useStore(booksStore, (state) => state.books);
+  const remaining = useStore(booksStore, (state) => state.books.filter((book) => !book.done).length);
+  const add = useStore(booksStore, (state) => state.add);
+  const toggle = useStore(booksStore, (state) => state.toggle);
+  const [title, setTitle] = useState('');
+  return <main><h1>Reading list</h1>
+    <form onSubmit={(event) => { event.preventDefault(); add(title); setTitle(''); }}>
+      <label htmlFor="title">Book title</label><input id="title" value={title} onChange={(event) => setTitle(event.target.value)} maxLength={120} />
+      <button>Add book</button></form>
+    <p aria-live="polite">{remaining} remaining</p>
+    <ul>{books.map((book) => <li key={book.id}><label><input type="checkbox" checked={book.done} onChange={() => toggle(book.id)} /> {book.title}</label></li>)}</ul></main>;
+}
+createRoot(document.getElementById('app')).render(<App />);
+`),
+  file("store.test.js", `import test from 'node:test';
+import assert from 'node:assert/strict';
+import { createBooksStore } from './src/store.js';
+
+test('adds trimmed titles and ignores blank ones', () => {
+  const store = createBooksStore();
+  store.getState().add('  Dune  ');
+  store.getState().add('   ');
+  assert.deepEqual(store.getState().books.map((book) => book.title), ['Dune']);
+});
+test('toggle replaces the book instead of mutating it', () => {
+  const store = createBooksStore();
+  store.getState().add('Dune');
+  const before = store.getState().books[0];
+  store.getState().toggle(before.id);
+  assert.equal(store.getState().books[0].done, true);
+  assert.equal(before.done, false);
+});
+test('subscribers hear every change', () => {
+  const store = createBooksStore();
+  let calls = 0;
+  const unsubscribe = store.subscribe(() => { calls += 1; });
+  store.getState().add('Dune');
+  unsubscribe();
+  assert.equal(calls, 1);
+});
+`),
+] };
+
+TECH_PROJECTS["tanstack-start"] = { title: "Type-safe reading list with a server function", description: "Build a TanStack Start app with file-based routes, a route loader and a server function that runs only on the server.", prerequisites: "Node.js 22.12+ and npm.", commands: "npm install\nnpm run dev\n# The Vite plugin writes src/routeTree.gen.ts from src/routes on first start.\n# Open http://localhost:3000\n# Verify the production build:\nnpm run build", expected: "The home page lists three books loaded on the server before render. View source shows them in the HTML (server rendered), and the server function's code never reaches the browser bundle.", files: [
+  pkg({ dev: "vite dev --port 3000", build: "vite build", start: "node .output/server/index.mjs" }, { "@tanstack/react-router": "^1.130.0", "@tanstack/react-start": "^1.130.0", react: "^19.0.0", "react-dom": "^19.0.0" }, { vite: "^7.0.0", "@vitejs/plugin-react": "^5.0.0", typescript: "^5.9.0" }),
+  file("vite.config.ts", `import { defineConfig } from 'vite';
+import { tanstackStart } from '@tanstack/react-start/plugin/vite';
+import viteReact from '@vitejs/plugin-react';
+
+// TanStack Start's plugin comes before the React plugin.
+export default defineConfig({ plugins: [tanstackStart(), viteReact()] });
+`),
+  file("src/router.tsx", `import { createRouter } from '@tanstack/react-router';
+import { routeTree } from './routeTree.gen';
+
+export function getRouter() {
+  return createRouter({ routeTree, scrollRestoration: true });
+}
+`),
+  file("src/routes/__root.tsx", `/// <reference types="vite/client" />
+import type { ReactNode } from 'react';
+import { HeadContent, Outlet, Scripts, createRootRoute } from '@tanstack/react-router';
+
+export const Route = createRootRoute({
+  head: () => ({ meta: [{ charSet: 'utf-8' }, { name: 'viewport', content: 'width=device-width, initial-scale=1' }, { title: 'Reading list' }] }),
+  component: () => <Document><Outlet /></Document>,
+});
+function Document({ children }: { children: ReactNode }) {
+  return <html lang="en"><head><HeadContent /></head><body>{children}<Scripts /></body></html>;
+}
+`),
+  file("src/routes/index.tsx", `import { createFileRoute } from '@tanstack/react-router';
+import { createServerFn } from '@tanstack/react-start';
+
+type Book = { id: number; title: string; done: boolean };
+
+// Runs only on the server; the client calls it through an RPC the build generates.
+const getBooks = createServerFn({ method: 'GET' }).handler(async (): Promise<Book[]> => [
+  { id: 1, title: 'Dune', done: true },
+  { id: 2, title: 'Project Hail Mary', done: false },
+  { id: 3, title: 'The Pragmatic Programmer', done: false },
+]);
+
+export const Route = createFileRoute('/')({
+  // The loader finishes before the route renders, on the server for the first request.
+  loader: () => getBooks(),
+  component: Home,
+});
+function Home() {
+  const books = Route.useLoaderData(); // typed as Book[] from the server function
+  return <main><h1>Reading list</h1><p>{books.filter((book) => !book.done).length} remaining</p>
+    <ul>{books.map((book) => <li key={book.id}>{book.done ? '✓ ' : ''}{book.title}</li>)}</ul></main>;
+}
+`),
+] };
+
+TECH_PROJECTS.n8n = { title: "Webhook that classifies support messages", description: "Run n8n locally with Docker, import a workflow (Webhook → Code → Respond to Webhook) and call it with curl.", prerequisites: "Docker with Docker Compose, and curl.", commands: "docker compose up -d\n# Open http://localhost:5678 and create the owner account.\n# Workflows → Import from File → workflow.json, then Save and switch it to Active.\nsh call.sh\n# Stop n8n (your data stays in the n8n_data volume):\ndocker compose down", expected: "call.sh prints {\"category\":\"billing\",\"priority\":\"high\"} for the refund message and {\"category\":\"general\",\"priority\":\"normal\"} for the greeting. The Executions tab shows both runs.", files: [
+  file("docker-compose.yml", `services:
+  n8n:
+    image: docker.n8n.io/n8nio/n8n
+    ports:
+      - "5678:5678"
+    environment:
+      - GENERIC_TIMEZONE=Asia/Kolkata
+      - N8N_SECURE_COOKIE=false # local http only; keep the default (true) behind https
+    volumes:
+      - n8n_data:/home/node/.n8n
+volumes:
+  n8n_data:
+`),
+  file("workflow.json", JSON.stringify({
+    name: "Classify support message",
+    nodes: [
+      { parameters: { httpMethod: "POST", path: "classify", responseMode: "responseNode", options: {} }, name: "Webhook", type: "n8n-nodes-base.webhook", typeVersion: 2, position: [0, 0], webhookId: "classify" },
+      { parameters: { jsCode: "// One item per request; the JSON body is under body.\nconst text = String($input.first().json.body?.message ?? '').toLowerCase();\nconst billing = /refund|invoice|payment|charged/.test(text);\nreturn [{ json: { category: billing ? 'billing' : 'general', priority: billing ? 'high' : 'normal' } }];" }, name: "Classify", type: "n8n-nodes-base.code", typeVersion: 2, position: [220, 0] },
+      { parameters: { respondWith: "json", responseBody: "={{ $json }}", options: {} }, name: "Respond to Webhook", type: "n8n-nodes-base.respondToWebhook", typeVersion: 1.1, position: [440, 0] },
+    ],
+    connections: { Webhook: { main: [[{ node: "Classify", type: "main", index: 0 }]] }, Classify: { main: [[{ node: "Respond to Webhook", type: "main", index: 0 }]] } },
+    settings: { executionOrder: "v1" },
+  }, null, 2)),
+  file("call.sh", `#!/bin/sh
+# Production URL of an active workflow: /webhook/<path>. (Use /webhook-test/<path> while "Listen for test event" runs.)
+URL=http://localhost:5678/webhook/classify
+curl -s -X POST "$URL" -H 'Content-Type: application/json' -d '{"message":"I was charged twice, please refund me"}'; echo
+curl -s -X POST "$URL" -H 'Content-Type: application/json' -d '{"message":"Hello, how do I change my email?"}'; echo
+`),
+] };

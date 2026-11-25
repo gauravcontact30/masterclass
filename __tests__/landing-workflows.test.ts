@@ -1,8 +1,8 @@
 import { WORKFLOWS, WORKFLOW_HEIGHT, WORKFLOW_WIDTH, NODE_WIDTH, NODE_HEIGHT } from "@/lib/landing-workflows";
 
-test("the closing slider covers system design and every Lang* tool", () => {
+test("the closing slider covers system design, every Lang* tool and n8n", () => {
   expect(WORKFLOWS.length).toBeGreaterThanOrEqual(10);
-  expect(new Set(WORKFLOWS.map(w => w.group))).toEqual(new Set(["System Design", "LangChain", "LangGraph", "LangFlow", "LangSmith", "Companies"]));
+  expect(new Set(WORKFLOWS.map(w => w.group))).toEqual(new Set(["System Design", "LangChain", "LangGraph", "LangFlow", "LangSmith", "n8n", "Companies"]));
   expect(new Set(WORKFLOWS.map(w => w.id)).size).toBe(WORKFLOWS.length);
 });
 

@@ -37,13 +37,14 @@ test("deleting the only word clears saved history and Undo restores its preferen
   await lookup("apple");
   const card = within(screen.getByRole("article", { name: "Apple" }));
   fireEvent.click(card.getByRole("checkbox"));
-  fireEvent.click(card.getByRole("switch"));
+  // Cards read in English only (components/vocabulary-word-card.tsx): there is no language switch to set.
+  expect(card.queryByRole("switch")).toBeNull();
   fireEvent.click(card.getByRole("button", { name: "Delete apple" }));
   expect(readWordHistory(key)).toEqual([]);
   expect(screen.getByText(/Look up your first word below/)).toBeVisible();
   const undo = (toast as unknown as jest.Mock).mock.calls[0][1].action.onClick;
   act(() => undo());
-  expect(readWordHistory(key)[0]).toMatchObject({ checked: true, language: "hi" });
+  expect(readWordHistory(key)[0]).toMatchObject({ checked: true });
   fireEvent.click(screen.getByRole("button", { name: "Delete apple" }));
   view.unmount();
   render(<EnglishWordSearch historyKey={key} />);
@@ -105,7 +106,7 @@ test("ignores malformed saved data and does not save failed lookups", async () =
   expect(screen.queryByRole("button", { name: "Open unknown" })).toBeNull();
 });
 
-test("cards show complete word details and preserve their language and learned state", async () => {
+test("cards show complete word details and preserve their learned state", async () => {
   const rich = { ...entry("resilient"), pronunciation: "ri-ZIL-yuhnt", synonyms: [{ word: "strong", hindi: "मजबूत" }, { word: "adaptable", hindi: "अनुकूलनीय" }], antonyms: [{ word: "fragile", hindi: "नाज़ुक" }] };
   (global.fetch as jest.Mock).mockResolvedValue({ ok: true, json: async () => ({ entry: rich, source: "library" }) });
   const speak = jest.fn();
@@ -123,19 +124,16 @@ test("cards show complete word details and preserve their language and learned s
   for (const pair of [...rich.synonyms, ...rich.antonyms]) expect(card.getByText(pair.word.charAt(0).toUpperCase() + pair.word.slice(1))).toBeVisible();
   fireEvent.click(card.getByRole("button", { name: "Hear it: resilient" }));
   expect(speak).toHaveBeenCalledWith(expect.objectContaining({ text: "resilient", lang: "en-US" }));
-  fireEvent.click(card.getByRole("switch", { name: "Hindi for resilient" }));
-  expect(card.getByText(rich.hindi, { selector: "p" })).toBeVisible();
-  for (const pair of [...rich.synonyms, ...rich.antonyms]) expect(card.getByText(pair.hindi)).toBeVisible();
+  // English only: the Hindi gloss is not shown on the card.
+  expect(card.queryByText(rich.hindi, { selector: "p" })).toBeNull();
   fireEvent.click(card.getByRole("checkbox"));
-  expect(readWordHistory(key)[0]).toMatchObject({ checked: true, language: "hi" });
+  expect(readWordHistory(key)[0]).toMatchObject({ checked: true });
   await lookup("resilient");
-  expect(readWordHistory(key)[0]).toMatchObject({ checked: true, language: "hi" });
+  expect(readWordHistory(key)[0]).toMatchObject({ checked: true });
   view.unmount();
   render(<EnglishWordSearch historyKey={key} />);
   const restored = within(await screen.findByRole("article", { name: "Resilient" }));
   expect(restored.getByRole("checkbox")).toBeChecked();
-  expect(restored.getByRole("switch")).toBeChecked();
   fireEvent.click(restored.getByRole("checkbox"));
-  fireEvent.click(restored.getByRole("switch"));
-  expect(readWordHistory(key)[0]).toMatchObject({ checked: false, language: "en" });
+  expect(readWordHistory(key)[0]).toMatchObject({ checked: false });
 });

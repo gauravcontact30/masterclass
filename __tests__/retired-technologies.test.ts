@@ -13,7 +13,8 @@ test.each(retired)("%s has no package, learning track, dedicated lesson or searc
 });
 test("cleans retired browser content without deleting unrelated learning progress",()=>{
   localStorage.clear();
-  localStorage.setItem("masterclass:pro-track","django");
+  // Django came back as a course on 2026-10-27, so a retired track here is Flask.
+  localStorage.setItem("masterclass:pro-track","flask");
   localStorage.setItem("masterclass:lessons-generated",JSON.stringify([{track:"flask",title:"Old lesson"},{track:"react",title:"Keep"}]));
   localStorage.setItem("masterclass:quiz-history",JSON.stringify([{trackId:"rich"},{trackId:"python"}]));
   localStorage.setItem("masterclass:lessons-done",JSON.stringify(["tqdm:progress","react:hooks"]));

@@ -1,7 +1,7 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import { SuperAdminDashboard } from "@/components/super-admin-dashboard";
 
-jest.mock("next/navigation", () => ({ useRouter: () => ({ replace: jest.fn(), refresh: jest.fn() }) }));
+jest.mock("next/navigation", () => ({ useRouter: () => ({ replace: jest.fn(), refresh: jest.fn() }), usePathname: () => "/super-admin", useSearchParams: () => new URLSearchParams() }));
 jest.mock("@/components/super-admin-overview-live", () => ({ OverviewLive: () => null }));
 jest.mock("@/components/super-admin-notepad", () => ({ SuperAdminNotepad: () => <input aria-label="Test document" defaultValue="Draft" /> }));
 

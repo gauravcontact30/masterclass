@@ -35,7 +35,7 @@ describe("new user locations", () => {
   ];
   const visits = [
     { user_id: "a", created_at: "2026-10-18T10:01:00Z" },
-    { user_id: "a", created_at: "2026-10-18T10:02:00Z", country: "IN", region: "MH", city: "Pune", postal_code: "411001", latitude: 18.52, longitude: 73.86 },
+    { user_id: "a", created_at: "2026-10-18T10:02:00Z", country: "IN", region: "MH", city: "Pune", postal_code: "411038", latitude: 18.52, longitude: 73.86 },
     { user_id: "a", created_at: "2026-10-19T09:00:00Z", country: "IN", region: "KA", city: "Bengaluru" },
     { user_id: "b", created_at: "2026-10-19T10:05:00Z", country: "IN", region: "UP", city: "Lucknow" },
   ];
@@ -43,7 +43,7 @@ describe("new user locations", () => {
 
   test("location from the first located visit, first seen at the very first visit, newest users first", () => {
     expect(report.users.map(u => u.id)).toEqual(["b", "a", "c"]);
-    expect(report.users[1]).toMatchObject({ country: "India", state: "Maharashtra", city: "Pune", postalCode: "411001", firstSeenAt: "2026-10-18T10:01:00Z", nearby: { name: "Mumbai" } });
+    expect(report.users[1]).toMatchObject({ country: "India", state: "Maharashtra", city: "Pune", postalCode: "411038", firstSeenAt: "2026-10-18T10:01:00Z", nearby: { name: "Mumbai" } });
   });
   test("no location is invented: missing data stays empty", () => {
     expect(report.users[0]).toMatchObject({ name: "Unnamed learner", city: "Lucknow", postalCode: null, nearby: null });
@@ -53,7 +53,7 @@ describe("new user locations", () => {
     expect(report).toMatchObject({ total: 3, located: 2 });
     expect(report.countries).toEqual([{ name: "India", count: 2, country: "IN" }]);
     expect(report.states.map(({ name, count }) => ({ name, count }))).toEqual([{ name: "Maharashtra, India", count: 1 }, { name: "Uttar Pradesh, India", count: 1 }]);
-    expect(report.postalAreas).toEqual([{ name: "PIN 411001", count: 1, country: "IN", detail: "Pune, Maharashtra" }]);
+    expect(report.postalAreas).toEqual([{ name: "PIN 411038", count: 1, country: "IN", detail: "Pune, Maharashtra" }]);
     expect(report.nearby).toEqual([expect.objectContaining({ name: "Mumbai", count: 1, country: "IN", detail: expect.stringMatching(/^Maharashtra · avg \d+ km$/) })]);
     expect(report.coverage).toEqual({ postal: 1, nearby: 1 });
   });

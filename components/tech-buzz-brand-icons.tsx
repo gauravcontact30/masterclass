@@ -117,7 +117,8 @@ export function MatrixFormatIcon({ size = 16, className }: IconProps) {
 }
 
 // 1. daily.dev Official Brand Logo
-export function DailyDevBrandIcon({ size = 16, className, color = "currentColor" }: IconProps) {
+// Brand logos keep their own brand colours, so `color` is not used.
+export function DailyDevBrandIcon({ size = 16, className }: IconProps) {
   return (
     <svg
       width={size}
@@ -138,7 +139,7 @@ export function DailyDevBrandIcon({ size = 16, className, color = "currentColor"
 }
 
 // 2. Medium Official Monogram Brand Logo
-export function MediumBrandIcon({ size = 16, className, color = "currentColor" }: IconProps) {
+export function MediumBrandIcon({ size = 16, className }: IconProps) {
   return (
     <svg
       width={size}

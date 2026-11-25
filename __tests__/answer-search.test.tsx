@@ -41,8 +41,9 @@ const answerCalls = () => (global.fetch as jest.Mock).mock.calls.filter(([url]) 
 
 test("requested agentic concepts have individual cards and open authored lessons without generation", async () => {
   const book = AUTOMATION_HANDBOOKS.find(item => item.title === "Agentic AI")!;
-  expect(AGENTIC_FOUNDATIONS).toHaveLength(65);
-  expect(new Set(AGENTIC_FOUNDATIONS.map(item => item.name)).size).toBe(65);
+  // 64 since the duplicate "Context engineering" (also in agentic-ai-concepts) was removed.
+  expect(AGENTIC_FOUNDATIONS).toHaveLength(64);
+  expect(new Set(AGENTIC_FOUNDATIONS.map(item => item.name)).size).toBe(AGENTIC_FOUNDATIONS.length);
   for (const topic of AGENTIC_FOUNDATIONS) {
     expect(book.topics).toContain(topic);
     expect(topic.prepared?.answer.steps).toHaveLength(2);
@@ -179,7 +180,7 @@ test("the code example lists every file and opens the one that is clicked", asyn
   respond({ answer, provider: "perplexity", sources: [], matches: [] });
   render(<AnswerSearch initialQuestion="How do I upgrade to Next.js 16?" />);
   await screen.findByRole("heading", { level: 2, name: /Run next upgrade/ });
-  unfold("Worked example");
+  // The worked example is always open (it is not a folded block), so its files are listed at once.
 
   const tree = screen.getByRole("navigation", { name: "Example files" });
   expect(within(tree).getAllByRole("button").map(button => button.textContent)).toEqual(["layout.tsx", "page.tsx", "package.json"]);
@@ -425,9 +426,10 @@ test("a question naming several services gets one section per service, each with
   // One section per service, in the order asked, each named.
   const names = within(region).getAllByRole("heading", { level: 4 });
   expect(names).toHaveLength(3);
-  expect(names[0]).toHaveTextContent(/Amazon S3.*Simple Storage Service/);
-  expect(names[1]).toHaveTextContent(/Amazon EC2.*Elastic Compute Cloud/);
-  expect(names[2]).toHaveTextContent(/AWS.*Amazon Web Services.*Lambda/);
+  // Full forms are tooltips on the short names (components/expanded-text.tsx), not text beside them.
+  expect(names[0]).toHaveTextContent(/Amazon S3/); expect(names[0].querySelector("abbr")?.title).toMatch(/Simple Storage Service/);
+  expect(names[1]).toHaveTextContent(/Amazon EC2/); expect(names[1].querySelector("abbr")?.title).toMatch(/Elastic Compute Cloud/);
+  expect(names[2]).toHaveTextContent(/AWS.*Lambda/); expect(names[2].querySelector("abbr")?.title).toMatch(/Amazon Web Services/);
   const sections = names.map(heading => heading.closest("li") as HTMLElement);
 
   // Each section carries its own detail list and its own key points, not a shared one.

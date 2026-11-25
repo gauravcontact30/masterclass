@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-require-imports -- This standalone CommonJS verifier registers a TypeScript require hook before loading the authored fixtures. */
+/* This standalone CommonJS verifier registers a TypeScript require hook before loading the authored fixtures. */
 const fs = require('node:fs');
 const path = require('node:path');
 const ts = require('typescript');

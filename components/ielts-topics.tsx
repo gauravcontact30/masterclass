@@ -1,4 +1,5 @@
 "use client";
+import Image from "@/components/responsive-image";
 import { useMemo, useRef, useState } from "react";
 import { ArrowDownAZ, BookOpenText, Flame, GraduationCap, LayoutGrid, Lightbulb, Mic, PenLine, X } from "lucide-react";
 import { Pager } from "@/components/pager";
@@ -26,7 +27,7 @@ const searchText = (topic: IeltsTopic) => [topic.topic, topic.task2, ...topic.id
 function TopicArt({ topic }: { topic: string }) {
   const [failed, setFailed] = useState(false); const src = ieltsTopicImage(topic);
   return <span className={styles.art} aria-hidden="true">
-    {src && !failed ? <img src={src} alt="" loading="lazy" decoding="async" width={320} height={213} onError={() => setFailed(true)} /> : <GraduationCap size={30} />}
+    {src && !failed ? <Image src={src} alt="" width={320} height={213} sizes="(max-width: 640px) 50vw, 320px" onError={() => setFailed(true)} /> : <GraduationCap size={30} />}
   </span>;
 }
 

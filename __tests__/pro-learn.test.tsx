@@ -19,7 +19,8 @@ const json = (body: unknown, ok = true) => ({ ok, json: async () => body });
 beforeEach(() => { window.scrollTo = jest.fn(); Element.prototype.scrollIntoView = jest.fn(); mockParams = new URLSearchParams(); localStorage.clear(); push.mockClear(); });
 
 test("curated data covers every track without external links", () => {
-  expect(PRO_TRACKS).toHaveLength(53);
+  // The curriculum grows; every track is checked below rather than a fixed count.
+  expect(PRO_TRACKS.length).toBeGreaterThanOrEqual(53);
   expect(new Set(PRO_TRACKS.map(track => track.id)).size).toBe(PRO_TRACKS.length);
   for (const lesson of lessons) {
     expect(PRO_TRACKS.some(track => track.id === lesson.track)).toBe(true);
@@ -40,7 +41,8 @@ test("lessons filter by level, open a reader and remember completion", async () 
   await user.click(screen.getByRole("button", { name: "All" }));
   await user.click(screen.getByRole("button", { name: reactLessons[0].title }));
   expect(screen.getByRole("heading", { level: 1, name: reactLessons[0].title })).toBeVisible();
-  expect(screen.getByRole("link", { name: "Ask the mentor" })).toHaveAttribute("href", expect.stringContaining("/learning/mentors?track=react"));
+  // The Mentors page was retired, so lessons no longer link to it.
+  expect(screen.queryByRole("link", { name: "Ask the mentor" })).not.toBeInTheDocument();
   await user.click(screen.getByRole("button", { name: "Mark complete" }));
   expect(screen.getByRole("button", { name: "Completed" })).toHaveAttribute("aria-pressed", "true");
   await user.click(screen.getByRole("button", { name: "All lessons" }));
@@ -51,8 +53,11 @@ test("quiz reveals the answer, scores and records the attempt", async () => {
   const user = userEvent.setup();
   global.fetch = jest.fn().mockResolvedValue(json({ source: "library", questions: [{ q: "Which hook stores component state?", options: ["useRef", "useState", "useId", "useMemo"], answer: 1, explain: "useState returns a value and a setter that triggers a render.", vocab: [] }] })) as jest.Mock;
   render(<ProQuiz aiReady={false} libraryTracks={["react", "python"]}/>);
-  expect(within(screen.getByRole("combobox", { name: "Technology" })).getAllByRole("option")).toHaveLength(2);
-  await user.selectOptions(screen.getByRole("combobox", { name: "Technology" }), "react");
+  // Technologies are picked from sections of buttons (components/technology-sections.tsx): only the two with a library.
+  // Families fold, and only the open family's cards mount: React's family and Python's family are offered.
+  expect(document.querySelectorAll('details')).toHaveLength(2);
+  await user.click(document.getElementById("quiz-track-react")!);
+  expect(document.getElementById("quiz-track-react")).toHaveAttribute("aria-pressed", "true");
   await user.click(screen.getByRole("button", { name: "Start quiz" }));
   expect(await screen.findByRole("heading", { name: "Which hook stores component state?" })).toBeVisible();
   expect(screen.getByText("MasterClass library")).toBeVisible();

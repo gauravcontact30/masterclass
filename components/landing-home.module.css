@@ -800,9 +800,9 @@
   .home :where(p) { text-align: start; }
 }
 
-/* Keep language available in the header without squeezing mobile navigation. */
-.headerSuggestion { display: inline-flex; }
-@media(max-width:640px) { .headerSuggestion { display: none; } }
+/* The Suggestion Box stays in the header on every width (2026-11-24: it was hidden on phones, so they had no way to
+   send one); below 640px it is a round icon button sized by --nav-control-h like the other header controls. */
+.headerSuggestion { display: inline-flex; flex-shrink: 0; }
 @media(max-width:480px) { .navbar .brand :global(.brand-name) { display: none; } }
 
 /* ---------- Header: language toggle (icon style) ----------

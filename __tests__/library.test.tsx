@@ -183,7 +183,7 @@ describe("Library", () => {
   });
 
   test("renders Hindi technology names and dates when the language is Hindi", () => {
-    localStorage.setItem("masterclass:language", "hi");
+    localStorage.setItem("mc-language", "hi");
     try {
       setup({ documents: [doc({ title: "Hooks", page_titles: undefined as never }), doc({ title: "Odd", technologyId: "--" }), doc({ title: "Loops", technologyId: "python", topicId: "py-loops" })] });
       expect(screen.getAllByText("रिएक्ट").length).toBeGreaterThan(0);
@@ -192,6 +192,6 @@ describe("Library", () => {
       const odd = screen.getByRole("heading", { name: "Odd" }).closest("li")!;
       expect(within(odd).getAllByText("--").length).toBeGreaterThan(0);
       expect(screen.getByRole("heading", { name: "Hooks" }).closest("li")!.textContent).not.toMatch(/lessons|पाठ/);
-    } finally { localStorage.removeItem("masterclass:language"); }
+    } finally { localStorage.removeItem("mc-language"); }
   });
 });

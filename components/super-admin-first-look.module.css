@@ -34,3 +34,13 @@
 .place, .device { display: inline-flex; align-items: flex-start; gap: 7px; }
 .device > svg { margin-top: 2px; color: var(--c); flex-shrink: 0; }
 .empty { display: flex; align-items: center; gap: 7px; margin: 0; font-size: 13px; color: var(--soft, #73726c); }
+
+/* Visitor group tabs (New / Returning / Old) in components/super-admin-new-visitors.tsx. */
+.groupTabs { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 190px), 1fr)); gap: 8px; }
+.groupTabs button { display: grid; grid-template-columns: auto 1fr auto; align-items: center; column-gap: 7px; row-gap: 2px; min-height: 44px; padding: 9px 12px; border-radius: 12px; border: 1px solid var(--c-soft); background: #fff; color: #3d3d3a; font: inherit; font-size: 13px; font-weight: 700; text-align: left; cursor: pointer; transition: background .15s, border-color .15s, box-shadow .15s; }
+.groupTabs button svg { color: var(--c); }
+.groupTabs button b { font-family: Georgia, "Times New Roman", serif; font-size: 18px; color: var(--c); }
+.groupTabs button small { grid-column: 1 / -1; font-size: 11.5px; font-weight: 500; color: var(--soft, #73726c); }
+.groupTabs button:hover { background: var(--c-wash); }
+.groupTabs button[aria-selected="true"] { background: var(--c-wash); border-color: var(--c); box-shadow: 0 0 0 3px var(--c-soft); }
+.groupTabs button:focus-visible { outline: 2px solid var(--c); outline-offset: 2px; }

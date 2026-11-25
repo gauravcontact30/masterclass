@@ -1,0 +1,40 @@
+{
+  "board": "cbse",
+  "cls": "10",
+  "subjects": ["math"],
+  "year": 0,
+  "paper": "<printed title, e.g. Mathematics (Standard) 041>",
+  "set": "<set or series as printed, e.g. Set 1 · 30/1/1; delete this line if none>",
+  "marks": 80,
+  "minutes": 180,
+  "source": {
+    "label": "<where it came from, e.g. CBSE question paper 2024, file supplied by the school>",
+    "url": "<the board page it was downloaded from; delete if none>",
+    "file": "<the file name it was copied from; delete if none>",
+    "entered": "<date entered, YYYY-MM-DD>"
+  },
+  "questions": [
+    {
+      "no": "1",
+      "section": "A",
+      "marks": 1,
+      "q": "<objective question exactly as printed>",
+      "options": ["<option (a) without its letter>", "<option (b)>", "<option (c)>", "<option (d)>"],
+      "correct": 0,
+      "steps": ["<optional working, one line per step>"],
+      "answer": "<the right option's text>",
+      "answerBy": "board",
+      "ch": "<chapter, optional>"
+    },
+    {
+      "no": "21",
+      "section": "B",
+      "marks": 2,
+      "q": "<written question exactly as printed>",
+      "figure": { "src": "/images/board-papers/<file>.png", "alt": "<what the figure shows>" },
+      "steps": ["<step 1>", "// <why, optional>", "<step 2>"],
+      "answer": "<final answer>",
+      "answerBy": "ours"
+    }
+  ]
+}

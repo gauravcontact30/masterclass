@@ -1,7 +1,7 @@
 "use client";
 import { startTransition, useEffect, useState, type ReactNode } from "react";
 import Link from "@/components/site-link";
-import { ArrowLeftRight, ArrowUpRight, ChevronRight, GraduationCap, Laptop, Newspaper, PanelLeftClose, PanelLeftOpen, School, Trophy, Wallet, type LucideIcon } from "lucide-react";
+import { ArrowLeftRight, ArrowUpRight, ChevronRight, GraduationCap, Languages, Laptop, Newspaper, PanelLeftClose, PanelLeftOpen, School, Trophy, Wallet, type LucideIcon } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { Wordmark } from "./brand-mark";
 import { AppFootline } from "./app-footline";
@@ -9,7 +9,7 @@ import { ExamsSignOut } from "./exams-sign-out";
 import { HeaderLanguageSwitch } from "./language-switch";
 import { useMobileNav } from "./mobile-nav";
 import { SidebarTooltips } from "./sidebar-tooltips";
-import { PORTALS, type ExamPortal } from "@/lib/portal";
+import { PORTALS, type ScopedPortal } from "@/lib/portal";
 import styles from "./exams-shell.module.css";
 
 /*
@@ -21,8 +21,9 @@ const COLLAPSE_KEY = "masterclass:sidebar-collapsed";
 export type ExamsTab = "home" | "tet" | "blog" | "plans" | "choose";
 type Item = { id: ExamsTab | "boards" | "competitive"; href: string; label: string; icon: LucideIcon };
 
-const portalNav = (portal: ExamPortal): Item[] => [
-  { id: "home", href: PORTALS[portal].home, label: portal === "boards" ? "Board Exams" : "Competitive Exams", icon: portal === "boards" ? GraduationCap : Trophy },
+const HOME: Record<ScopedPortal, { label: string; icon: LucideIcon }> = { boards: { label: "Board Exams", icon: GraduationCap }, competitive: { label: "Competitive Exams", icon: Trophy }, ielts: { label: "IELTS Dashboard", icon: Languages } };
+const portalNav = (portal: ScopedPortal): Item[] => [
+  { id: "home", href: PORTALS[portal].home, label: HOME[portal].label, icon: HOME[portal].icon },
   // TET lives inside Competitive Exams; this opens it straight on its Subjects & Topics grid.
   ...(portal === "competitive" ? [{ id: "tet" as const, href: `${PORTALS.competitive.home}?exam=tet&type=topics`, label: "TET Exams", icon: School }] : []),
   { id: "blog", href: PORTALS[portal].blog, label: PORTALS[portal].blogName, icon: Newspaper },
@@ -42,7 +43,7 @@ function NavLink({ item, current, collapsed }: { item: Item; current: boolean; c
 }
 
 /** The account menu, as in the Tech dashboard's top bar: an avatar that opens the email, the portal's pages and sign out. */
-function Identity({ email, nav, portal, signInTo }: { email: string; nav: Item[]; portal: ExamPortal | null; signInTo: string }) {
+function Identity({ email, nav, portal, signInTo }: { email: string; nav: Item[]; portal: ScopedPortal | null; signInTo: string }) {
   const [open, setOpen] = useState(false);
   return <Popover open={open} onOpenChange={setOpen}>
     <PopoverTrigger className="profile-trigger" aria-label="Account"><span className="profile-avatar" aria-hidden="true">{email.charAt(0).toUpperCase()}</span></PopoverTrigger>
@@ -57,7 +58,7 @@ function Identity({ email, nav, portal, signInTo }: { email: string; nav: Item[]
   </Popover>;
 }
 
-export function ExamsFrame({ portal, active, email, children }: { portal: ExamPortal | null; active: ExamsTab; email?: string | null; children: ReactNode }) {
+export function ExamsFrame({ portal, active, email, children }: { portal: ScopedPortal | null; active: ExamsTab; email?: string | null; children: ReactNode }) {
   const info = portal ? PORTALS[portal] : null;
   // Like the Tech dashboard: collapsed by default, the choice kept for the visit under the same key, and always
   // expanded inside the phone drawer (where the labels are the whole point).
@@ -87,7 +88,8 @@ export function ExamsFrame({ portal, active, email, children }: { portal: ExamPo
         </nav>
         <div className="sidebar-label">More</div>
         <nav aria-label="More" className="sidebar-pro-nav">
-          {portal && <NavLink item={{ id: "choose", href: "/exams", label: "Switch portal", icon: ArrowLeftRight }} current={active === "choose"} collapsed={collapsed} />}
+          {/* The /exams chooser lists the two exam portals (India); IELTS Achievers links to Tech Pro only. */}
+          {portal && portal !== "ielts" && <NavLink item={{ id: "choose", href: "/exams", label: "Switch portal", icon: ArrowLeftRight }} current={active === "choose"} collapsed={collapsed} />}
           <NavLink item={{ id: "home", href: PORTALS.tech.signIn, label: "Tech Pro", icon: Laptop }} current={false} collapsed={collapsed} />
         </nav>
       </div>

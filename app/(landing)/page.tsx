@@ -10,7 +10,7 @@ import { LANDING_TECH_DOC_IDS, TECH_DOCS } from "@/lib/tech-docs";
 import { billingConfigured } from "@/lib/server/config";
 import { internationalBilling } from "@/lib/server/pricing";
 import { officialTechDocs, previewTechDocs } from "@/lib/server/official-tech-docs";
-import { organizationSchema, pageMetadata, siteUrl, webPageSchema, websiteSchema } from "@/lib/seo";
+import { organizationSchema, pageMetadata, webPageSchema, websiteSchema } from "@/lib/seo";
 import { weekStartDate } from "@/lib/ist-week";
 import { contentOverrides } from "@/lib/server/content-overrides";
 import { blogTeasers } from "@/lib/coffee-and-code";

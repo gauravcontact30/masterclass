@@ -61,40 +61,15 @@ test("one catalogue's ticks never show up in another", () => {
   expect(screen.getByRole("checkbox", { name: /succinct/ })).toHaveAttribute("aria-checked", "false");
 });
 
-const langSwitch = (word: string) => within(within(card(word)).getByRole("group", { name: `Language for ${word}` }));
-
-test("each card's own header switches that card between English and Hindi", () => {
+// Vocabulary cards read in English only (components/catalog-browser.tsx): the per-card En/Hi switch was retired.
+test("each card shows its English meaning and labels, with no per-card language switch", () => {
   renderCards();
   const entry = ENGLISH_EXAM_VOCABULARY.find(row => row.word === "succinct")!;
-
-  // English is the default, and the En option shows as the pressed one.
   expect(screen.getByText(entry.meaning)).toBeVisible();
-  expect(langSwitch("succinct").getByRole("button", { name: "En" })).toHaveAttribute("aria-pressed", "true");
   expect(card("succinct").textContent).toContain("synonyms");
   expect(card("succinct").textContent).toContain("Open word");
-
-  fireEvent.click(langSwitch("succinct").getByRole("button", { name: "Hi" }));
-  // The gloss replaces the English meaning, and the labels follow it over.
-  expect(screen.getByText(entry.hindi!)).toBeVisible();
-  expect(screen.queryByText(entry.meaning)).not.toBeInTheDocument();
-  expect(card("succinct").textContent).toContain("पर्यायवाची");
-  expect(card("succinct").textContent).toContain("शब्द खोलें");
-  // The headword itself stays English — it is the word being learned.
   expect(card("succinct").textContent).toContain("Succinct");
-
-  fireEvent.click(langSwitch("succinct").getByRole("button", { name: "En" }));
-  expect(screen.getByText(entry.meaning)).toBeVisible();
-});
-
-test("switching one card's language leaves every other card in English", () => {
-  renderCards();
-  const candid = ENGLISH_EXAM_VOCABULARY.find(row => row.word === "candid")!;
-
-  fireEvent.click(langSwitch("succinct").getByRole("button", { name: "Hi" }));
-  // The neighbour is untouched: the switch is per card, not per catalogue.
-  expect(screen.getByText(candid.meaning)).toBeVisible();
-  expect(langSwitch("candid").getByRole("button", { name: "En" })).toHaveAttribute("aria-pressed", "true");
-  expect(card("candid").textContent).toContain("Open word");
+  expect(within(card("succinct")).queryByRole("group", { name: "Language for succinct" })).not.toBeInTheDocument();
 });
 
 test("a catalogue with no Hindi glosses offers no language switch", () => {

@@ -62,6 +62,13 @@ export const MOST_IMPORTANT_MINIMUM = 400;
  * objective questions are interleaved chapter by chapter, so no single chapter fills the first pages.
  */
 export function mostImportant(items: Item[], mcqs: Mcq[], cls: ClassId, subject: SubjectId): Ranked[] {
+  const ordered = rankAll(items, mcqs, cls, subject);
+  const strong = ordered.filter(row => row.stars >= 4).length;
+  return ordered.slice(0, Math.max(strong, Math.min(MOST_IMPORTANT_MINIMUM + 50, ordered.length)));
+}
+
+/** Every question of the subject with its star rating, in the Most Important order (the list above is its head). */
+export function rankAll(items: Item[], mcqs: Mcq[], cls: ClassId, subject: SubjectId): Ranked[] {
   const scored = [
     ...items.map(item => ({ score: item.stars ? 100 + item.stars : scoreItem(item, cls, subject), row: { type: "subjective" as const, id: item.id, ch: item.ch, boards: boardsOf(item.b), item } })),
     ...mcqs.map(mcq => ({ score: scoreMcq(mcq, cls, subject), row: { type: "objective" as const, id: mcq.id, ch: mcq.ch, boards: boardsOf(mcq.b), mcq } })),
@@ -83,8 +90,7 @@ export function mostImportant(items: Item[], mcqs: Mcq[], cls: ClassId, subject:
       for (let index = 0; queues.some(queue => index < queue.length); index++) for (const queue of queues) if (index < queue.length) ordered.push(queue[index]);
     }
   }
-  const strong = ordered.filter(row => row.stars >= 4).length;
-  return ordered.slice(0, Math.max(strong, Math.min(MOST_IMPORTANT_MINIMUM + 50, ordered.length)));
+  return ordered;
 }
 
 /** The stars of every question of a subject, by id (the same ratings the Most Important list uses). */

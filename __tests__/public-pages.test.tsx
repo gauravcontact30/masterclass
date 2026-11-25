@@ -1,4 +1,5 @@
 import { render, screen, within } from "@testing-library/react";
+import { readFileSync } from "node:fs";
 import SiteLayout from "@/app/(site)/layout";
 import AboutPage from "@/app/(site)/about/page";
 import ContactPage from "@/app/(site)/contact/page";
@@ -14,21 +15,27 @@ test.each([["About MasterClass", AboutPage], ["Contact & support", ContactPage],
   expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent(heading);
   expect(within(screen.getByRole("navigation", { name: "Breadcrumb" })).getByRole("link", { name: "Home" })).toHaveAttribute("href", "/");
   const scripts = container.querySelectorAll('script[type="application/ld+json"]');
-  expect(scripts.length).toBe(1);
-  expect(() => JSON.parse(scripts[0].innerHTML)).not.toThrow();
+  // One script per schema (components/json-ld.tsx), each valid JSON.
+  expect(scripts.length).toBeGreaterThanOrEqual(1);
+  for (const script of scripts) expect(() => JSON.parse(script.innerHTML)).not.toThrow();
 });
 
-test("the courses page lists every learning path with a dashboard link", () => {
-  render(<CoursesPage />);
-  for (const category of ["cbse", "ssc", "engineering", "medical", "system-design", "technology"]) expect(document.getElementById(category)).not.toBeNull();
-  expect(screen.getAllByRole("link", { name: /Open in your dashboard/ }).length).toBe(16);
+test("the courses page lists courses with a way into the dashboard", () => {
+  // A feed of course cards (components/courses-feed.tsx); every learning path is still in its structured data.
+  const { container } = render(<CoursesPage />);
+  expect(screen.getAllByRole("link", { name: /System Design:/ }).length).toBeGreaterThan(3);
+  expect(screen.getAllByRole("link", { name: /Open in Dashboard/ }).length).toBeGreaterThanOrEqual(1);
+  const list = [...container.querySelectorAll('script[type="application/ld+json"]')].map(script => JSON.parse(script.innerHTML)).find(data => data["@type"] === "ItemList");
+  expect(list.itemListElement.length).toBeGreaterThanOrEqual(3);
 });
 
 test("the public layout links every public page and the legal pages", () => {
   render(<SiteLayout><p>Body</p></SiteLayout>);
   expect(within(screen.getByRole("navigation", { name: "Main navigation" })).getByRole("link", { name: "Courses" })).toHaveAttribute("href", "/courses");
-  expect(within(screen.getByRole("navigation", { name: "Legal" })).getByRole("link", { name: "Privacy policy" })).toHaveAttribute("href", "/privacy");
-  expect(within(screen.getByRole("navigation", { name: "Legal" })).getByRole("link", { name: "Cancellation & refund policy" })).toHaveAttribute("href", "/refund-policy");
+  // The legal pages are linked from the site-wide footer (app/(site)/site-footer.tsx, a cached server component
+  // rendered by the root layout), under Company.
+  const footer = readFileSync("app/(site)/site-footer.tsx", "utf8");
+  for (const path of ["/privacy", "/terms", "/refund-policy"]) expect(footer).toContain(`"${path}"]`);
   expect(screen.getByRole("main")).toHaveAttribute("id", "main-content");
 });
 

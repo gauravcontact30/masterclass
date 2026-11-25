@@ -228,9 +228,24 @@ a:hover .cover > img, a:focus-visible .cover > img { transform: scale(1.05); }
 .lede, .dailyHead > p, .dailyLead p, .groupHead p { font-size: 15px; }
 
 /* Each technology group renders only near the viewport (≈2,000 of the page's nodes sit in these groups). */
-.group { content-visibility: auto; contain-intrinsic-size: auto 1100px; }
-@media (max-width: 640px) { .group { contain-intrinsic-size: auto 3300px; } }
+/* Placeholder heights are content-box (the group's padding comes on top); measured per group 2026-11-24 because the
+   groups differ by up to 2,000 px, so one shared guess shifted the page as each first rendered. */
+.group { content-visibility: auto; contain-intrinsic-size: auto 1070px; }
+.group[id="tb-path-panel"] { contain-intrinsic-size: auto 1195px; }
+.group[id="tb-group-automation"] { contain-intrinsic-size: auto 496px; }
+@media (max-width: 640px) {
+  .group { contain-intrinsic-size: auto 3040px; }
+  .group[id="tb-path-panel"] { contain-intrinsic-size: auto 3490px; }
+  .group[id="tb-group-automation"] { contain-intrinsic-size: auto 1000px; }
+}
 .groupPlaceholder { height: 720px; border-radius: 20px; }
+/* Placeholder as tall as the group will be (measured 2026-11-24: a tile row is ≈530 px on 3 columns, a tile ≈480 px on
+   one column), so a group rendering on scroll doesn't push the page (a fixed 720 px gave CLS 0.3 on phones). */
+@supports (width: calc(round(up, 1.5, 1) * 1px)) {
+  .groupPlaceholder { height: calc(60px + round(up, calc(var(--tiles, 6) / 3), 1) * 530px); }
+  @container (max-width: 820px) { .groupPlaceholder { height: calc(160px + round(up, calc(var(--tiles, 6) / 2), 1) * 490px); } }
+  @container (max-width: 500px) { .groupPlaceholder { height: calc(160px + var(--tiles, 6) * 480px); } }
+}
 
 /* ── 5. Community favourites: topic tabs, a featured #1 and the ranked rest ── */
 .favourites { min-width: 0; padding: clamp(18px, 2.6vw, 30px); border-radius: 24px; border: 1px solid #f3d3d8;
@@ -281,8 +296,8 @@ a:hover .cover > img, a:focus-visible .cover > img { transform: scale(1.05); }
 /* Below-the-fold sections skip style, layout and paint until they near the viewport (mobile main thread spent ~2.8 s on
    style and layout for the whole page); `auto` remembers each section's real height once it has rendered. */
 .stars, .n8n { content-visibility: auto; contain-intrinsic-size: auto 640px; }
-.favourites { content-visibility: auto; contain-intrinsic-size: auto 1010px; }
-@media (max-width: 640px) { .favourites { contain-intrinsic-size: auto 1670px; } }
+.favourites { content-visibility: auto; contain-intrinsic-size: auto 950px; }
+@media (max-width: 640px) { .favourites { contain-intrinsic-size: auto 1720px; } }
 
 /* -- Story tile: the blog card shared by Fresh & Latest and Blogs by Technology --
    Three per row; two when the section is tablet-width; one on phones (container queries on the section). */

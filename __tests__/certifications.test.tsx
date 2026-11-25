@@ -32,11 +32,13 @@ describe("Certifications", () => {
   it("keeps the landing cards in step with the dashboard paths", () => {
     const { container } = render(<LandingCertifications />);
     const section = container.querySelector("section#certifications")!;
-    expect(section.querySelector("h2")?.id).toBe("certifications-title");
+    expect(section.getAttribute("aria-labelledby")).toBe("certifications-title");
+    expect(section.querySelector("#certifications-title")?.matches("h2, h3[data-h2]")).toBe(true);
     const slides = within(section as HTMLElement).getAllByRole("article", { hidden: true });
     expect(slides).toHaveLength(CERTIFICATION_TRACKS.length);
     CERTIFICATION_TRACKS.forEach((track, at) => {
-      expect(slides[at].querySelector("a")?.getAttribute("href")).toBe(`/sign-in?redirect=${encodeURIComponent(`/learning/certifications?track=${track.id}`)}`);
+      // A direct link: signed-out visitors are sent through sign-in and back by the proxy (lib/auth-routes.ts).
+      expect(slides[at].querySelector("a")?.getAttribute("href")).toBe(`/learning/certifications?track=${track.id}`);
       expect(slides[at].textContent).toContain(`${track.steps.length} steps`);
     });
   });

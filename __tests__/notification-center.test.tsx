@@ -1,5 +1,6 @@
 import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { NotificationCenter } from "@/components/notification-center";
+import { AuthNoticeToast } from "@/components/auth-notice-toast";
 import { LanguageProvider } from "@/components/language-provider";
 import { setAuthNotice } from "@/lib/auth-notice";
 
@@ -13,14 +14,16 @@ beforeEach(() => { sessionStorage.clear(); window.history.replaceState(null, "",
 
 test("the sign-in confirmation toast shows once, from the auth page's notice", async () => {
   setAuthNotice("signed_in");
-  renderCenter();
+  // The confirmation toast is its own component (components/auth-notice-toast.tsx), mounted beside the bell.
+  render(<LanguageProvider><AuthNoticeToast /><NotificationCenter /></LanguageProvider>);
   await waitFor(() => expect(toast.success).toHaveBeenCalledWith("Signed in successfully", expect.anything()));
   expect(sessionStorage.getItem("mc:auth-notice")).toBeNull();
 });
 
 test("an emailed link's ?notice=verified toasts and is removed from the address bar", async () => {
   window.history.replaceState(null, "", "/learning?notice=verified&tab=1");
-  renderCenter();
+  // The confirmation toast is its own component (components/auth-notice-toast.tsx), mounted beside the bell.
+  render(<LanguageProvider><AuthNoticeToast /><NotificationCenter /></LanguageProvider>);
   await waitFor(() => expect(toast.success).toHaveBeenCalledWith("Email verified. You are signed in", expect.anything()));
   expect(window.location.search).toBe("?tab=1");
 });

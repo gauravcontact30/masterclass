@@ -1,5 +1,5 @@
 /** @jest-environment node */
-import { attribute, campaignSlug, classifyPlatform, derivedRates, utmLink, type Promotion, type VisitRow } from "@/lib/promotions";
+import { PLATFORMS, attribute, campaignSlug, classifyPlatform, derivedRates, utmLink, type Promotion, type VisitRow } from "@/lib/promotions";
 
 const visit = (over: Partial<VisitRow>): VisitRow => ({ created_at: "2026-10-10T10:00:00Z", visitor_id: "v1", session_id: "s1", user_id: null, path: "/", referrer_host: null, utm_source: null, utm_medium: null, utm_campaign: null, ...over });
 const promotion = (over: Partial<Promotion>): Promotion => ({ id: "p1", created_at: "2026-10-01T00:00:00Z", updated_at: "2026-10-01T00:00:00Z", platform: "instagram", title: "Reel", format: "reel", status: "live", url: null, utm_campaign: "react-week", audience: null, owner: null, starts_on: null, ends_on: null, budget_inr: 0, spend_inr: 1000, reach: 5000, impressions: 9000, engagements: 300, followers_gained: 20, notes: null, ...over });
@@ -57,7 +57,8 @@ test("deduplicates browsers across platforms and never attributes earlier direct
   ] });
   expect(result.totals).toMatchObject({ visitors: 1, visits: 2, sessions: 2 });
   expect(result.platforms.find(row => row.platform === "instagram")?.visits).toBe(1);
-  expect(result.platforms).toHaveLength(12);
+  // One row per known platform (lib/promotions.ts PLATFORMS), Google Search included.
+  expect(result.platforms).toHaveLength(PLATFORMS.length);
   expect(result.landingPages.some(row => row.platform === "instagram")).toBe(false);
 });
 

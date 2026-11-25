@@ -4145,7 +4145,8 @@ export const EXTRA_WORKFLOWS: Workflow[] = [
       {
         "from": "other-devices",
         "to": "object-store",
-        "label": "GET chunks, signed URL"
+        "label": "GET chunks, signed URL",
+        "via": [80, 240]
       },
       {
         "from": "trash-gc",
@@ -14893,7 +14894,8 @@ export const EXTRA_WORKFLOWS: Workflow[] = [
       {
         "from": "gmail-draft",
         "to": "support-agent",
-        "label": "draft in thread"
+        "label": "draft in thread",
+        "via": [920, 240]
       },
       {
         "from": "slack-page",

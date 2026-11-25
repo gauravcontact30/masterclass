@@ -2,7 +2,7 @@ import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import type { ComponentType } from "react";
 import { SuperAdminDashboard } from "@/components/super-admin-dashboard";
 import { dailySocial } from "@/lib/daily-social";
-jest.mock("next/navigation", () => ({ useRouter: () => ({ replace: jest.fn(), refresh: jest.fn() }) }));
+jest.mock("next/navigation", () => ({ useRouter: () => ({ replace: jest.fn(), refresh: jest.fn() }), usePathname: () => "/super-admin", useSearchParams: () => new URLSearchParams() }));
 jest.mock("next/dynamic", () => ({ __esModule: true, default: (loader: () => Promise<ComponentType>) => {
   const React = jest.requireActual("react");
   const Lazy = React.lazy(async () => ({ default: await loader() }));
@@ -24,12 +24,13 @@ const directory = {
 test("loads real API shape, searches users and preserves labels when collapsed",async()=>{
   global.fetch=jest.fn().mockImplementation((url:string)=>Promise.resolve({ok:true,status:200,json:async()=>url.includes("/users?")?{...directory,users:url.includes("q=missing")?[]:directory.users}:url.includes("/promotions/daily")?{...dailySocial([], "2026-10-19"),generatedAt:"2026-10-19T06:00:00Z",capped:false}:url.includes("/operations")?operations:snapshot}));
   render(<SuperAdminDashboard/>);
-  expect(await screen.findByText("Registered users")).toBeVisible();
-  fireEvent.click(screen.getByRole("button",{name:"Users & access"}));
+  // The Overview loads first; Users & access is one click away in the sidebar.
+  fireEvent.click(await screen.findByRole("button",{name:"Users & access"}));
   expect(await screen.findByText("learner@example.com")).toBeVisible();
   fireEvent.change(screen.getByRole("searchbox",{name:"Search users"}),{target:{value:"missing"}});
   await waitFor(() => expect(screen.queryByText("learner@example.com")).not.toBeInTheDocument());
-  fireEvent.click(screen.getByRole("button",{name:"Collapse sidebar"}));
+  // Dashboards open with the sidebar collapsed; its labels then show as tooltips.
+  expect(screen.getByRole("button",{name:"Expand sidebar"})).toBeInTheDocument();
   fireEvent.mouseOver(screen.getByRole("button",{name:"Security"}));
   expect(await screen.findByRole("tooltip")).toHaveTextContent("Security");
 });

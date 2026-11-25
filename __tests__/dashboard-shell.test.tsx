@@ -45,7 +45,7 @@ test("sidebar has learning navigation only and keeps account access in the heade
   for(const gone of ["Govt. Exams","Entrance Exams","Board Exams","Language Preparation","Courses & Interviews"]) expect(sidebar.queryByRole("button",{name:gone})).not.toBeInTheDocument();
   expect(sidebar.queryByRole("link",{name:"Mentors"})).not.toBeInTheDocument();
   expect(sidebar.queryByRole("link",{name:"Class Room"})).not.toBeInTheDocument();
-  expect(sidebar.getByRole("button",{name:"Collapse sidebar"}).closest(".sidebar-brand-row")).not.toBeNull();
+  expect(sidebar.getByRole("button",{name:/^(Expand|Collapse) sidebar$/}).closest(".sidebar-brand-row")).not.toBeNull();
   expect(screen.getByRole("button",{name:"Your account"}).closest(".topbar")).not.toBeNull();
 });
 
