@@ -114,7 +114,8 @@ type ImageSlide = SlideBase & { imageOnly: true; portrait: string };
 type Slide = StorySlide | ImageSlide;
 
 /**
- * Two supplied interview posters lead the hero, then the supplied Board Exams and Government Exams artwork, two Tech Buzz scenes and four study scenes.
+ * Two supplied interview posters lead the hero, then the Board Exams and Government Exams scenes (photographs with
+ * their own headline and copy, shown in India only), two Tech Buzz scenes and four study scenes.
  * Each slide stays for 15 seconds. Playback pauses for keyboard focus, the pause button, hidden tabs, and reduced motion.
  */
 const EXAM_SLIDES = new Set(["board-exams", "government-exams"]);
@@ -144,22 +145,64 @@ function slidesFor(technologies: number | undefined): Slide[] {
     {
       id: "board-exams",
       src: "/images/landing/hero-board-exams.webp",
-      portrait: "/images/landing/hero-board-exams-portrait.webp",
-      imageOnly: true,
-      focus: "50% 50%",
+      // The students fill the frame; phones keep the middle rows, clear of the copy on the left.
+      focus: "60% 55%",
       tone: "violet",
       tool: { en: "Board exams", hi: "बोर्ड परीक्षा", es: "Exámenes de bachillerato", ja: "ボード試験", de: "Abschlussprüfungen", fr: "Examens du bac", zh: "毕业会考" },
-      alt: "Three groups of students in school uniforms studying together under state board, CBSE and ICSE style emblems, with textbooks, notebooks, a calculator, tablets and laptops on their desks"
+      title: {
+        en: "Walk into your board exams ready.",
+        hi: "बोर्ड परीक्षा में पूरी तैयारी के साथ बैठें।",
+        es: "Llega listo a tus exámenes de bachillerato.",
+        ja: "準備万端でボード試験に臨もう。",
+        de: "Gut vorbereitet in die Abschlussprüfungen.",
+        fr: "Abordez vos examens du bac en confiance.",
+        zh: "从容走进毕业会考考场。"
+      },
+      body: {
+        en: "CBSE and ICSE chapters, sample papers and timed practice, so exam day feels like one more revision.",
+        hi: "CBSE और ICSE के अध्याय, सैंपल पेपर और समयबद्ध अभ्यास, ताकि परीक्षा का दिन बस एक और रिवीज़न लगे।",
+        es: "Temas de CBSE e ICSE, exámenes de muestra y práctica cronometrada, para que el examen sea un repaso más.",
+        ja: "CBSE・ICSE の単元、サンプル問題、時間を計った演習で、試験当日をもう一度の復習のように。",
+        de: "CBSE- und ICSE-Kapitel, Musterprüfungen und Übungen auf Zeit: Der Prüfungstag wird zur nächsten Wiederholung.",
+        fr: "Chapitres CBSE et ICSE, sujets types et entraînement chronométré : le jour J devient une révision de plus.",
+        zh: "CBSE 与 ICSE 各章节、样卷和限时练习，让考试当天就像又一次复习。"
+      },
+      link: {
+        label: { en: "Explore board exams", hi: "बोर्ड परीक्षाएँ देखें", es: "Explorar exámenes de bachillerato", ja: "ボード試験を見る", de: "Abschlussprüfungen entdecken", fr: "Découvrir les examens du bac", zh: "探索毕业会考" },
+        href: "/exams/board-exams"
+      },
+      alt: "Students in white shirts and navy ties writing a board exam at individual desks in a bright, air-conditioned classroom, with large windows looking out onto a green school campus"
     },
     {
       id: "government-exams",
+      // Mirrored so the two aspirants training on the lawn sit on the right, clear of the copy on the left.
       src: "/images/landing/hero-government-exams.webp",
-      portrait: "/images/landing/hero-government-exams-portrait.webp",
-      imageOnly: true,
-      focus: "50% 50%",
+      focus: "72% 60%",
       tone: "honey",
       tool: { en: "Government exams", hi: "सरकारी परीक्षाएँ", es: "Oposiciones", ja: "公務員試験", de: "Staatliche Prüfungen", fr: "Concours de la fonction publique", zh: "公职考试" },
-      alt: "Aspirants preparing for defence, banking, railway and civil services exams: cadets in uniform, a candidate studying market charts on a laptop, a student writing beside trains, and two candidates solving papers in front of the Indian flag"
+      title: {
+        en: "Train for the uniform, in mind and body.",
+        hi: "वर्दी के लिए तैयारी, तन और मन दोनों से।",
+        es: "Prepárate para el uniforme, en cuerpo y mente.",
+        ja: "制服を目指して、心も体も鍛えよう。",
+        de: "Fit für die Uniform, im Kopf und im Körper.",
+        fr: "Préparez-vous à l'uniforme, de corps et d'esprit.",
+        zh: "为戎装而备，身心同练。"
+      },
+      body: {
+        en: "NDA and defence exam preparation with practice questions and sample papers, plus UPSC, SSC, banking and railways.",
+        hi: "NDA और रक्षा परीक्षाओं की तैयारी, अभ्यास प्रश्नों और सैंपल पेपर के साथ, साथ ही UPSC, SSC, बैंकिंग और रेलवे।",
+        es: "Preparación para NDA y defensa con preguntas de práctica y exámenes de muestra, además de UPSC, SSC, banca y ferrocarril.",
+        ja: "NDA や防衛関連試験の対策を練習問題とサンプル問題で。UPSC、SSC、銀行、鉄道にも対応。",
+        de: "Vorbereitung auf NDA und Verteidigungsprüfungen mit Übungsfragen und Musterprüfungen, dazu UPSC, SSC, Banken und Bahn.",
+        fr: "Préparation au NDA et aux concours de la défense avec exercices et sujets types, plus UPSC, SSC, banque et chemins de fer.",
+        zh: "以练习题和样卷备考 NDA 及国防类考试，同时覆盖 UPSC、SSC、银行和铁路考试。"
+      },
+      link: {
+        label: { en: "Explore government exams", hi: "सरकारी परीक्षाएँ देखें", es: "Explorar oposiciones", ja: "公務員試験を見る", de: "Staatliche Prüfungen entdecken", fr: "Découvrir les concours", zh: "探索公职考试" },
+        href: "/exams/competitive-exams"
+      },
+      alt: "Defence exam aspirants in black tracksuits doing push-ups, lunges and a morning run on a misty lawn in front of stone colonial buildings and deodar trees in the hills"
     },
     {
       id: "buzz-cafe",

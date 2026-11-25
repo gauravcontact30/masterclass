@@ -10,13 +10,14 @@ type Feed = { visits: StreamVisit[]; presence: Presence[] | null; clicks: Stream
  * report's distinct browser ids, keeps every super admin page on one definition of a visitor.
  * `everyone` is null until the first read succeeds; callers fall back to the SQL report until then.
  */
-export function useStreamVisitors(refreshMs = 30_000) {
+export function useStreamVisitors(refreshMs = 30_000, enabled = true) {
   const [feed, setFeed] = useState<Feed | null>(null);
   // The newest read failed (the last good feed stays on screen); `tick` forces a read now (the Refresh button).
   const [failed, setFailed] = useState(false);
   const [tick, setTick] = useState(0);
   const reload = useCallback(() => setTick(t => t + 1), []);
   useEffect(() => {
+    if (!enabled) return;
     const controller = new AbortController();
     const load = async () => {
       try {
@@ -31,7 +32,7 @@ export function useStreamVisitors(refreshMs = 30_000) {
     void load();
     const timer = setInterval(() => { if (document.visibilityState === "visible") void load(); }, refreshMs);
     return () => { controller.abort(); clearInterval(timer); };
-  }, [refreshMs, tick]);
+  }, [refreshMs, tick, enabled]);
   return useMemo(() => {
     if (!feed) return { everyone: null, rows: [] as StreamVisit[], now: 0, capped: false, days: 5, failed, reload };
     // Timed on the server's clock, so "on the site now" agrees with the rows' stamps.

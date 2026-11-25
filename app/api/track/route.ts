@@ -10,6 +10,7 @@ import { isUntrackedEmail, UNTRACKED_COOKIE } from "@/lib/server/tracking-exclus
 import { HttpError, jsonBody, sameOrigin } from "@/lib/server/http";
 import { recordEvent } from "@/lib/server/monitoring";
 import { isOwnTraffic, looksAutomated } from "@/lib/visit-quality";
+import { signalVisit } from "@/lib/server/visit-signal";
 import { nextTrafficSource } from "@/lib/traffic-attribution";
 
 /*
@@ -159,6 +160,8 @@ export async function POST(request: Request) {
       if (error && missingColumn(error.code)) ({ error } = await db().from("site_visits").insert({ ...row, ...point }));
       if (error && missingColumn(error.code)) ({ error } = await db().from("site_visits").insert(row));
       if (error && error.code !== "42P01" && error.code !== "PGRST205") console.error("visit_write_failed", error.code);
+      // Stored: tell an open Super Admin Overview to read it now (lib/server/visit-signal.ts). Bots never signal.
+      else if (!error && !row.is_bot) await signalVisit();
     } catch { console.error("visit_write_unavailable"); }
   });
   return noContent();

@@ -22,7 +22,7 @@ import { LiveVisitorsBadge } from "./super-admin-traffic-sources";
 import { Wordmark } from "./brand-mark";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "./ui/dropdown-menu";
 import { OverviewLive } from "./super-admin-overview-live";
-import { SectionHead, SectionNav } from "./super-admin-section-head";
+import { SectionNav } from "./super-admin-section-head";
 import { AdminTable } from "./super-admin-table";
 import { LearningSlot } from "./learning-slot";
 import styles from "./super-admin-dashboard.module.css";
@@ -33,7 +33,6 @@ import { COPILOT_META, isCopilotPage } from "@/lib/admin-pages";
 
 const sectionLoading = () => <AdminLoading>Loading section...</AdminLoading>;
 // Overview → "Three days, hour by hour" (day before yesterday, yesterday, today), loaded with the Overview only.
-const SuperAdminThreeDays = dynamic(() => import("./super-admin-three-days").then(module => module.SuperAdminThreeDays), { loading: sectionLoading });
 const SuperAdminSecurityCenter = dynamic(() => import("./super-admin-security").then(module => module.SuperAdminSecurityCenter), { loading: sectionLoading });
 const SuperAdminUploadLearning = dynamic(() => import("./super-admin-upload-learning").then(module => module.SuperAdminUploadLearning), { loading: sectionLoading });
 const SuperAdminTechBuzzAnalytics = dynamic(() => import("./super-admin-tech-buzz-analytics").then(module => module.SuperAdminTechBuzzAnalytics), { loading: sectionLoading });
@@ -230,10 +229,6 @@ export function SuperAdminDashboard({ userId = "admin", isOwner = false }: { use
       {section === "portal-tet" && <SuperAdminStudents segment="tet" days={days} />}
       {section === "overview" && <SectionNav label="Overview sections" items={OVERVIEW_NAV} />}
       {(section === "overview" || section === "live") && <OverviewLive snapshot={data} onRefreshSnapshot={refreshSilently} visitorsOnly={section === "overview"} />}
-      {section === "overview" && <div className={styles.visitorSections}>
-        <SectionHead id="ov-days" index={7} title="Last three days" question="How today compares with yesterday and the day before, hour by hour." icon={CalendarDays} tone="sky" />
-        <SuperAdminThreeDays />
-      </div>}
       {["live","analytics","moderation","security"].includes(section)&&<SuperAdminOperations section={section} days={days} query={query}/>}
       {section==="ai"&&<SuperAdminAi days={days} query={query}/>}
       {data && <>

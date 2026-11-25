@@ -1,6 +1,7 @@
 "use client";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Activity, AlertTriangle, BookOpen, BookOpenText, Bot, CheckCircle2, Clock, Cpu, Database, EyeOff, Flame, Gauge, Globe2, Languages, Laptop, Link2, LogIn, LogOut, MapPin, Monitor, MousePointerClick, Network, Pause, Play, Radio, RefreshCw, Route, Server, Smartphone, Sparkles, Tablet, Target, Timer, UserRound, Users, Zap, type LucideIcon } from "lucide-react";
+import dynamic from "next/dynamic";
+import { Activity, AlertTriangle, CalendarDays, BookOpen, BookOpenText, Bot, CheckCircle2, Clock, Cpu, Database, EyeOff, Flame, Gauge, Globe2, Languages, Laptop, Link2, LogIn, LogOut, MapPin, Monitor, MousePointerClick, Network, Pause, Play, Radio, RefreshCw, Route, Server, Smartphone, Sparkles, Tablet, Target, Timer, UserRound, Users, Zap, type LucideIcon } from "lucide-react";
 import { Flag, countryName } from "./super-admin-audience";
 import { Pager } from "./super-admin-table";
 import styles from "./super-admin-overview-live.module.css";
@@ -17,6 +18,8 @@ import { SuperAdminGoals } from "./super-admin-goals";
 import { SuperAdminGlance, type GlanceProps } from "./super-admin-glance";
 import { SuperAdminHourlyVisitors } from "./super-admin-hourly-visitors";
 import { SuperAdminTimeOnSite } from "./super-admin-time-on-site";
+// Its charts (Recharts) load with this section only, not with the console's first paint.
+const SuperAdminThreeDays = dynamic(() => import("./super-admin-three-days").then(module => module.SuperAdminThreeDays), { ssr: false });
 
 type Row = Record<string, unknown>;
 type Visit = { id?: number; created_at: string; event: string; utm_medium?: string | null; utm_campaign?: string | null; person?: string; email?: string | null; user_id?: string | null; visitor_id: string; session_id: string; new_visitor?: boolean; path: string; title?: string | null; country?: string | null; city?: string | null; region?: string | null; postal_code?: string | null; device?: string | null; browser?: string | null; os?: string | null; duration_ms?: number | null; referrer_host?: string | null; utm_source?: string | null; screen?: string | null; timezone?: string | null; language?: string | null; ip_masked?: string | null; private_mode?: boolean | null };
@@ -138,6 +141,9 @@ export function OverviewLive({ snapshot, onRefreshSnapshot, visitorsOnly = false
   const [readAt, setReadAt] = useState<number | null>(null);
   const feed = useRef<StreamFeed | null>(null);
   const streamBusy = useRef(false);
+  // The Realtime topic the stream read hands out, and whether this page is subscribed to it.
+  const [signalTopic, setSignalTopic] = useState<string | null>(null);
+  const [instant, setInstant] = useState(false);
 
   // Set when the server refuses this session: the 5-second reads stop until Refresh is pressed.
   const refused = useRef(false);
@@ -155,6 +161,7 @@ export function OverviewLive({ snapshot, onRefreshSnapshot, visitorsOnly = false
       if (response.status === 401 || response.status === 403) refused.current = true;
       const body = await response.json().catch(() => ({}));
       if (!response.ok || !Array.isArray(body?.visits)) { setStreamStale(true); if (!feed.current) setStreamFailed(true); return; }
+      if (typeof body.signal === "string") setSignalTopic(body.signal);
       const days = Number(body.days) || VISIT_RETENTION_DAYS, generatedAt = typeof body.generatedAt === "string" ? body.generatedAt : new Date().toISOString();
       const windowStart = Date.parse(generatedAt) - days * 86_400_000;
       const rows = new Map(incremental ? prior.rows : []);
@@ -216,6 +223,29 @@ export function OverviewLive({ snapshot, onRefreshSnapshot, visitorsOnly = false
     return () => { controller.abort(); clearInterval(timer); document.removeEventListener("visibilitychange", onVisible); };
   }, [load, paused, onRefreshSnapshot]);
 
+  // Instant updates (Supabase Realtime, lib/server/visit-signal.ts): /api/track signals this topic after storing a visit,
+  // and the stream reads the new rows at once. Signals arriving together (a view and its leave) make one read; a read
+  // already running is followed by another, so no signal is lost. The 5-second reads above stay as the fallback.
+  useEffect(() => {
+    if (!signalTopic || paused) return;
+    let cancelled = false, pending: ReturnType<typeof setTimeout> | null = null;
+    const readNow = () => {
+      pending = null;
+      if (cancelled || refused.current) return;
+      if (streamBusy.current) { pending = setTimeout(readNow, 400); return; }
+      void loadStream();
+    };
+    let remove: (() => void) | null = null;
+    void import("@/lib/supabase-browser").then(({ supabaseBrowser }) => {
+      if (cancelled) return;
+      const client = supabaseBrowser();
+      const channel = client.channel(signalTopic).on("broadcast", { event: "visit" }, () => { if (!pending) pending = setTimeout(readNow, 250); })
+        .subscribe(status => { if (!cancelled) setInstant(status === "SUBSCRIBED"); });
+      remove = () => { void client.removeChannel(channel); };
+    }).catch(() => setInstant(false));
+    return () => { cancelled = true; if (pending) clearTimeout(pending); remove?.(); setInstant(false); };
+  }, [signalTopic, paused, loadStream]);
+
   // The SQL report counts each browser cookie as a visitor and the stream counts each person, so showing the report while
   // the stream loads made figures jump (Visitors, today read one too many for a moment). It stands in only if the stream
   // cannot load; until then the visitor figures stay blank, so the first number on screen is the right one.
@@ -256,6 +286,8 @@ export function OverviewLive({ snapshot, onRefreshSnapshot, visitorsOnly = false
   // side by side disagreed. The SQL report stands in only while the stream is loading or capped.
   const ownHosts = useMemo(() => typeof window === "undefined" ? [] : [window.location.hostname.replace(/^www\./, "")], []);
   const exact = Boolean(stream && !stream.capped);
+  // "Last three days" counts from this same read, so it can never disagree with the panels above it.
+  const daysFeed = useMemo(() => ({ everyone: stream ? everyone : null, now: clockNow, capped: Boolean(stream?.capped) }), [stream, everyone, clockNow]);
   const todaySum = useMemo(() => periodSummary(everyone, dayStart, Infinity, ownHosts), [everyone, dayStart, ownHosts]);
   const hourSum = useMemo(() => periodSummary(everyone, clockNow - 3600_000, Infinity, ownHosts), [everyone, clockNow, ownHosts]);
   const readSum = useMemo(() => periodSummary(everyone, clockNow - 30 * 60_000, Infinity, ownHosts), [everyone, clockNow, ownHosts]);
@@ -351,7 +383,7 @@ export function OverviewLive({ snapshot, onRefreshSnapshot, visitorsOnly = false
 
   return <section className={styles.live} aria-label="Live command centre">
     <header className={styles.head}>
-      <div><p className={styles.kicker}><span className={styles.dot} data-paused={paused || undefined} aria-hidden="true" />{paused ? "Live updates paused" : "Live"}</p><h2>Live command centre</h2></div>
+      <div><p className={styles.kicker}><span className={styles.dot} data-paused={paused || undefined} aria-hidden="true" />{paused ? "Live updates paused" : instant ? "Live · instant updates from Supabase" : "Live · updates every 5 s"}</p><h2>Live command centre</h2></div>
       <div className={styles.actions}>
         <button type="button" className={styles.button} onClick={() => { refused.current = false; void load(); onRefreshSnapshot(); }}><RefreshCw size={14} aria-hidden="true" />Refresh</button>
         <button type="button" className={styles.button} aria-pressed={paused} onClick={() => setPaused(p => !p)}>{paused ? <Play size={14} aria-hidden="true" /> : <Pause size={14} aria-hidden="true" />}{paused ? "Resume" : "Pause"}</button>
@@ -830,6 +862,10 @@ export function OverviewLive({ snapshot, onRefreshSnapshot, visitorsOnly = false
       </article>}
     </div>
     {!visitorsOnly && <p className={styles.note}><Globe2 size={13} aria-hidden="true" /> Request figures marked “shown” and the busiest routes come from the latest {n(requests.length)} logged requests; totals, error rate and p95 cover the whole window. Visits come from the first-party page beacon (bots excluded, IPs masked); traces come from the API request log, which never stores query strings, bodies or credentials. <UserRound size={13} aria-hidden="true" /> Emails show only for signed-in learners.</p>}
+    {visitorsOnly && <>
+      <SectionHead id="ov-days" index={7} title="Last three days" question="How today compares with yesterday and the day before, hour by hour." icon={CalendarDays} tone="sky" live />
+      <SuperAdminThreeDays feed={daysFeed} />
+    </>}
     {visitorsOnly && <p className={styles.note}><UserRound size={13} aria-hidden="true" /> Visits come from the first-party page beacon in your Supabase database (bots excluded, IPs masked). Emails show only for signed-in learners.</p>}
   </section>;
 }

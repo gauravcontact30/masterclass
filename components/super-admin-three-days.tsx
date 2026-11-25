@@ -2,7 +2,7 @@
 import { useMemo, useState } from "react";
 import dynamic from "next/dynamic";
 import { ArrowDownRight, ArrowUpRight, BarChart3, CalendarClock, Clock, Eye, Flame, LineChart as LineIcon, Minus, MousePointerClick, Repeat, Timer, TrendingDown, UserCheck, UserPlus, Users } from "lucide-react";
-import { periodSummary, type PeriodSummary } from "@/lib/live-visits";
+import { periodSummary, type PeriodSummary, type StreamVisitor } from "@/lib/live-visits";
 import { countryName } from "./super-admin-audience";
 import { useStreamVisitors } from "./use-stream-visitors";
 import { AdminLoading } from "./super-admin-feedback";
@@ -54,8 +54,10 @@ type Breakdown = "pages" | "sources" | "countries" | "devices";
  * second left out, one person per account or linked device. Today is compared with yesterday *up to the same time*,
  * which is the only fair comparison while the day is still running.
  */
-export function SuperAdminThreeDays() {
-  const stream = useStreamVisitors(60_000);
+export function SuperAdminThreeDays({ feed }: Readonly<{ feed?: { everyone: StreamVisitor[] | null; now: number; capped: boolean } }> = {}) {
+  // On the Overview the section counts from the page's own live feed (one read for every panel); alone, it reads its own.
+  const own = useStreamVisitors(60_000, !feed);
+  const stream = feed ?? own;
   const [metric, setMetric] = useState<"views" | "people">("views");
   const [mode, setMode] = useState<"lines" | "bars">("lines");
   const [breakdown, setBreakdown] = useState<Breakdown>("pages");

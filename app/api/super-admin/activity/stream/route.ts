@@ -5,6 +5,7 @@ import { adminError } from "@/lib/server/admin-rpc";
 import { VISIT_RETENTION_DAYS } from "@/lib/visit-retention";
 import { isLocalAddress, looksAutomated } from "@/lib/visit-quality";
 import { isUntrackedEmail } from "@/lib/server/tracking-exclusions";
+import { visitTopic } from "@/lib/server/visit-signal";
 
 /*
  * The Overview's Live visitor stream: every page view and leave beacon of the last VISIT_RETENTION_DAYS days (bots
@@ -89,7 +90,9 @@ export async function GET(request: Request) {
     const clicks = clickRows.filter(click => !automated.has(click.session_id));
     const apiCalls = apiRows.filter(call => !automated.has(call.session_id));
     return Response.json({ days: VISIT_RETENTION_DAYS, since, incremental: Boolean(asked), visits, emails, presence, clicks, apiCalls, automated: [...automated], hidden: rows.length - genuine.length,
-      capped: (head.count ?? 0) > LIMIT || presenceRead.full, generatedAt: new Date().toISOString() }, { headers: { "Cache-Control": "private, no-store" } });
+      capped: (head.count ?? 0) > LIMIT || presenceRead.full, generatedAt: new Date().toISOString(),
+      // The Supabase Realtime topic /api/track signals after storing a visit (lib/server/visit-signal.ts).
+      signal: visitTopic() }, { headers: { "Cache-Control": "private, no-store" } });
   }, request);
 }
 
