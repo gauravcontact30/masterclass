@@ -21,8 +21,15 @@ export function looksAutomated(visit: VisitSignals): boolean {
   // A desktop operating system reporting a phone-width screen is browser device emulation (DevTools device mode,
   // responsive testing), not a visitor: no Windows, macOS or Linux display is narrower than 600 px (2026-11-01 audit:
   // one such page view in five days; Lighthouse runs were already caught by their user agent).
-  const width = Number(visit.screen?.split("x")[0]);
-  return visit.device === "Desktop" && Number.isFinite(width) && width > 0 && width < 600;
+  const [width, height] = (visit.screen ?? "").split("x").map(Number);
+  if (visit.device === "Desktop" && Number.isFinite(width) && width > 0 && width < 600) return true;
+  // A desktop reporting a near-square physical display (screen.width × screen.height, not the window) is a crawler
+  // fleet's emulated screen: real desktop displays run from 16:9 to 5:4 (height ≤ 0.8 × width), or portrait when
+  // rotated (height ≥ 1.25 × width). The 2026-11-25 audit found 561 of 734 unflagged sessions in five days with such a
+  // screen (1280x1200 and 1366x1366 on Asia/Shanghai time from US, CA and SG addresses; randomised ~1390x1270 on zh-CN
+  // from Beijing, Hong Kong and Singapore), every one with no referrer, one or two pages and one heartbeat. They passed
+  // the under-a-second rule, so they were counted as new visitors on the Overview and User activities.
+  return visit.device === "Desktop" && width > 0 && height > 0 && height / width >= 0.85 && height / width <= 1.2;
 }
 
 /**
