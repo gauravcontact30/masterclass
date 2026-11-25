@@ -2,7 +2,8 @@
 import { useEffect, useMemo, useState } from "react";
 import { BookOpenText, Clock, DoorOpen, Gauge, Globe2, Hourglass, Megaphone, MonitorSmartphone, Radio, ShieldCheck, Sigma, Timer, Trophy, UserCheck } from "lucide-react";
 import type { StreamVisitor } from "@/lib/live-visits";
-import { DEEP_MS, ENGAGED_MS, stayClock, stayText, timeOnSite, type Engagement } from "@/lib/time-on-site";
+import { DEEP_MS, ENGAGED_MS, stayClock, stayText, timeLeaders, timeOnSite, type Engagement } from "@/lib/time-on-site";
+import { PillPager } from "./pill-pager";
 import { GROUP_LABEL } from "@/lib/visitor-report";
 import { LIVE_MS } from "@/lib/live-visits";
 import { countryName } from "./super-admin-audience";
@@ -20,7 +21,7 @@ const placeOf = (city: string | null, country: string | null) => [city, country 
  * site right now get running clocks: between reads they advance with the wall clock (only while their page is being
  * read, and for at most the heartbeat window), and every read resets them to the recorded figures.
  */
-export function SuperAdminTimeOnSite({ everyone, from, now, ownHosts, windowLabel, exact }: Readonly<{ everyone: StreamVisitor[]; from: number; now: number; ownHosts: readonly string[]; windowLabel: string; exact: boolean }>) {
+export function SuperAdminTimeOnSite({ everyone, from, now, ownHosts, windowLabel, exact, recordsFrom, recordsLabel }: Readonly<{ everyone: StreamVisitor[]; from: number; now: number; ownHosts: readonly string[]; windowLabel: string; exact: boolean; recordsFrom?: number; recordsLabel?: string }>) {
   const data = useMemo(() => exact ? timeOnSite(everyone, from, Infinity, ownHosts) : null, [exact, everyone, from, ownHosts]);
   // Time since this read landed, ticking each second while anyone is on the site; a new read starts it again at zero.
   const [elapsed, setElapsed] = useState({ now, ms: 0 });
@@ -54,6 +55,8 @@ export function SuperAdminTimeOnSite({ everyone, from, now, ownHosts, windowLabe
         </tr>)}</tbody>
       </table></div> : <p className={styles.empty}>No page has sent a heartbeat in the last {Math.round(LIVE_MS / 1000)} seconds. Visitors appear here the moment they open a page.</p>}
     </article>
+
+    <TimeLeaderboard everyone={everyone} from={from} windowLabel={windowLabel} recordsFrom={recordsFrom} recordsLabel={recordsLabel} ownHosts={ownHosts} />
 
     <dl className={styles.kpis}>
       <Kpi icon={Timer} tone="sky" label="Avg. time on screen" value={stayText(data.avgOnScreenMs)} note={`per visitor · median ${stayText(data.medianOnScreenMs)}`} />
@@ -96,6 +99,52 @@ export function SuperAdminTimeOnSite({ everyone, from, now, ownHosts, windowLabe
 
     <p className={styles.note}><ShieldCheck size={14} aria-hidden="true" /><span><b>How the time is measured.</b> Time on screen is the time a page was visible (a hidden tab or a second window is not counted twice), from each page&apos;s leave beacon and the heartbeat of pages still open. Visit length runs from arrival to the last activity. Of {n(timed)} visits, <b>{n(data.timing.recorded)}</b> are fully recorded, <b>{n(data.timing.live)}</b> are still running and <b>{n(data.timing.partial)}</b> lost a beacon (only the recorded time is counted, nothing is guessed). Crawlers, automated browsers and visits under a second are left out.</span></p>
   </section>;
+}
+
+const LEADERS_PER_PAGE = 10;
+const MEDAL = ["Gold", "Silver", "Bronze"];
+
+/**
+ * Every visitor ranked by the time they spent on the site, most first (lib/time-on-site.ts timeLeaders): the window the
+ * section shows, or, when `recordsFrom` is given, every day the visitor stream still holds.
+ */
+function TimeLeaderboard({ everyone, from, windowLabel, recordsFrom, recordsLabel, ownHosts }: Readonly<{ everyone: StreamVisitor[]; from: number; windowLabel: string; recordsFrom?: number; recordsLabel?: string; ownHosts: readonly string[] }>) {
+  const [range, setRange] = useState<"window" | "records">("window");
+  const [page, setPage] = useState(0);
+  const start = range === "records" && recordsFrom != null ? recordsFrom : from;
+  const leaders = useMemo(() => timeLeaders(everyone, start, Infinity, ownHosts), [everyone, start, ownHosts]);
+  const pages = Math.max(1, Math.ceil(leaders.length / LEADERS_PER_PAGE));
+  const shown = Math.min(page, pages - 1);
+  const rows = leaders.slice(shown * LEADERS_PER_PAGE, (shown + 1) * LEADERS_PER_PAGE);
+  const total = leaders.reduce((sum, l) => sum + l.onScreenMs, 0);
+  const label = range === "records" ? recordsLabel ?? "all records" : windowLabel;
+
+  return <article className={styles.card} data-tone="rank">
+    <div className={styles.cardHead}>
+      <h3><Trophy size={16} aria-hidden="true" />Visitors ranked by time spent<span>{label} · most time on screen first · {n(leaders.length)} {leaders.length === 1 ? "visitor" : "visitors"}</span></h3>
+      {recordsFrom != null && <div className={styles.toggle} role="group" aria-label="Ranking window">
+        <button type="button" aria-pressed={range === "window"} onClick={() => { setRange("window"); setPage(0); }}>{windowLabel.replace(/ since.*/, "").replace(/^./, c => c.toUpperCase())}</button>
+        <button type="button" aria-pressed={range === "records"} onClick={() => { setRange("records"); setPage(0); }}>{(recordsLabel ?? "All records").replace(/^./, c => c.toUpperCase())}</button>
+      </div>}
+    </div>
+    {rows.length ? <><div className={styles.tableWrap}><table>
+      <thead><tr><th scope="col">Rank</th><th scope="col">Visitor</th><th scope="col">Time spent</th><th scope="col">Share</th><th scope="col">Visit length</th><th scope="col">Visits</th><th scope="col">Pages</th><th scope="col">Most read page</th><th scope="col">Came from</th><th scope="col">Location</th><th scope="col">Last seen (IST)</th></tr></thead>
+      <tbody>{rows.map(l => <tr key={l.key} data-rank={l.rank <= 3 ? l.rank : undefined}>
+        <td className={styles.rankCell}>{l.rank <= 3 ? <span className={styles.medal} data-rank={l.rank} title={`${MEDAL[l.rank - 1]} · rank ${l.rank}`}>{l.rank}</span> : <span className={styles.rankNo}>{l.rank}</span>}</td>
+        <th scope="row">{l.live && <span className={styles.pulse} aria-label="On the site now" />}{l.who}<small>{l.signedIn ? "Signed in" : GROUP_LABEL[l.group]} · {[l.device].filter(Boolean).join("")}</small></th>
+        <td className={styles.clock}>{stayClock(l.onScreenMs)}<small className={styles.sub}>{stayText(l.onScreenMs)}</small></td>
+        <td className={styles.shareCell}><span className={styles.shareBar} aria-hidden="true"><i style={{ width: `${total ? (l.onScreenMs / total) * 100 : 0}%` }} /></span>{pct(l.onScreenMs, total)}</td>
+        <td className={styles.clock}>{stayClock(l.stayMs)}</td>
+        <td>{n(l.visits)}</td><td>{n(l.views)}</td>
+        <td className={styles.page}>{l.topPage ? <><code title={l.topPage}>{l.topPage}</code><small>{stayText(l.topPageMs)} on it</small></> : "—"}</td>
+        <td>{l.source}</td>
+        <td><span className={styles.place}><CountryFlag code={l.country} size={16} />{placeOf(l.city, l.country)}</span></td>
+        <td>{l.live ? <em className={styles.liveTag}>on site now</em> : `${new Intl.DateTimeFormat("en-IN", { day: "numeric", month: "short", timeZone: "Asia/Kolkata" }).format(new Date(l.lastAt))} ${clockIST(l.lastAt)}`}</td>
+      </tr>)}</tbody>
+    </table></div>
+    {pages > 1 && <PillPager page={shown} pages={pages} total={leaders.length} perPage={LEADERS_PER_PAGE} onPage={setPage} label="Ranking" noun="visitors" />}</>
+      : <p className={styles.empty}>No visitors in this window yet.</p>}
+  </article>;
 }
 
 function Kpi({ icon: Icon, tone, label, value, note }: Readonly<{ icon: typeof Timer; tone: string; label: string; value: string; note: string }>) {

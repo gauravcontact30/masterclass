@@ -67,3 +67,18 @@ describe("timeOnSite", () => {
     expect(stayClock(3_725_000)).toBe("01:02:05");
   });
 });
+
+describe("timeLeaders", () => {
+  it("ranks every visitor by total time on screen, most first", async () => {
+    const { timeLeaders } = await import("@/lib/time-on-site");
+    const rows = [
+      ...visit("x", NOW - 5 * 3600_000, [["/a", 50]]), ...visit("x", NOW - 4 * 3600_000, [["/b", 100]]),
+      ...visit("y", NOW - 3 * 3600_000, [["/c", 120]]),
+      ...visit("z", NOW - 2 * 3600_000, [["/d", 5]]),
+    ];
+    const leaders = timeLeaders(streamVisitors(indexVisits(rows, []), NOW), FROM);
+    expect(leaders.map(l => [l.rank, l.key.replace(/^visitor:/, "")])).toEqual([[1, "x"], [2, "y"], [3, "z"]]);
+    expect(leaders[0]).toMatchObject({ visits: 2, views: 2, topPage: "/b" });
+    expect(Math.round(leaders[0].onScreenMs / 1000)).toBe(150);
+  });
+});

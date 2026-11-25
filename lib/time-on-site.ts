@@ -120,6 +120,45 @@ export function timeOnSite(everyone: StreamVisitor[], from: number, to = Infinit
   };
 }
 
+export type TimeLeader = {
+  rank: number; key: string; who: string; signedIn: boolean; group: VisitorGroup; live: boolean;
+  /** Time on screen over every visit in the window, and those visits' lengths added up. */
+  onScreenMs: number; stayMs: number; visits: number; views: number;
+  firstAt: number; lastAt: number;
+  /** The page they spent the most time on in the window. */
+  topPage: string | null; topPageMs: number;
+  source: string; country: string | null; city: string | null; device: string;
+};
+
+/**
+ * Every visitor in the window ranked by the time they spent on the site (time on screen over all their visits), most
+ * first; ties go to the longer visits, then to whoever came first. Ranks are 1, 2, 3… with no gaps.
+ */
+export function timeLeaders(everyone: StreamVisitor[], from: number, to = Infinity, ownHosts: readonly string[] = []): TimeLeader[] {
+  const inPeriod = (ms: number) => ms >= from && ms < to;
+  return everyone.flatMap(v => {
+    const mine = v.visits.filter(visit => visit.steps.some(step => inPeriod(step.at)));
+    if (!mine.length) return [];
+    const perPage = new Map<string, number>();
+    let views = 0;
+    for (const visit of mine) for (const step of visit.steps) {
+      if (!inPeriod(step.at)) continue;
+      views++;
+      if (step.ms != null) perPage.set(step.path, (perPage.get(step.path) ?? 0) + step.ms);
+    }
+    const [topPage, topPageMs] = [...perPage].sort((a, b) => b[1] - a[1])[0] ?? [null, 0];
+    const first = mine[0];
+    return [{
+      rank: 0, key: v.key, who: whoOf(v), signedIn: v.signedIn, group: visitorGroup(v, from), live: v.live,
+      onScreenMs: mine.reduce((sum, visit) => sum + visit.readingMs, 0), stayMs: mine.reduce((sum, visit) => sum + visit.stayMs, 0),
+      visits: mine.length, views, firstAt: first.start, lastAt: Math.max(...mine.map(visit => visit.end)), topPage, topPageMs,
+      source: SOURCE_LABEL[visitSource(first, first === v.visits[0] ? v.first : null, ownHosts)] ?? "Other",
+      country: v.current.country ?? v.first.country ?? null, city: v.current.city ?? v.first.city ?? null, device: v.current.device || "Desktop",
+    }];
+  }).sort((a, b) => b.onScreenMs - a.onScreenMs || b.stayMs - a.stayMs || a.firstAt - b.firstAt)
+    .map((leader, i) => ({ ...leader, rank: i + 1 }));
+}
+
 type Agg = { people: Set<string>; visits: number; onScreen: Map<string, number>; bounced: number };
 function add(map: Map<string, Agg>, key: string, person: string, visit: VisitSummary) {
   const agg = map.get(key) ?? { people: new Set<string>(), visits: 0, onScreen: new Map<string, number>(), bounced: 0 };

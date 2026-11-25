@@ -384,9 +384,9 @@ export function OverviewLive({ snapshot, onRefreshSnapshot, visitorsOnly = false
 
     {visitorsOnly && <>
       <SectionHead id="ov-hours" index={2} title="Visitors by hour" question="How many people visited in each hour of the 24-hour clock (IST), and which hour brought the most." icon={Clock} tone="peach" live />
-      <SuperAdminHourlyVisitors everyone={everyone} now={clockNow} exact={exact} ownHosts={ownHosts} />
+      <SuperAdminHourlyVisitors everyone={everyone} now={clockNow} exact={exact} ownHosts={ownHosts} days={streamDays} />
       <SectionHead id="ov-time" index={3} title="Time on site" question="Who is on the site now and for how long, how long today's visitors stay, which pages and sources hold them, and where they leave." icon={Timer} tone="sky" live />
-      <SuperAdminTimeOnSite everyone={everyone} from={dayStart} now={clockNow} ownHosts={ownHosts} windowLabel="today since 00:00 IST" exact={exact} />
+      <SuperAdminTimeOnSite everyone={everyone} from={dayStart} now={clockNow} ownHosts={ownHosts} windowLabel="today since 00:00 IST" exact={exact} recordsFrom={clockNow - streamDays * 86_400_000} recordsLabel={`all ${streamDays} days on record`} />
     </>}
 
     <div className={styles.grid}>
