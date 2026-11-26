@@ -24,6 +24,8 @@ export type PaperQuestion = {
   figure?: { src: string; alt: string };
   /** A passage the question is about (IELTS Reading), shown above it. */
   context?: string;
+  /** What the passage box is called (default "Passage"), e.g. a Listening transcript. */
+  contextLabel?: string;
   /** What the marks box says instead of marks, for unscored questions ("Writing Task 2 · 40 min"). */
   pill?: string;
   /** Marks taken off for a wrong answer (negative marking), when the exam has it. */

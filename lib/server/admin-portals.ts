@@ -58,7 +58,7 @@ export async function portalReports(days: number): Promise<{ portals: PortalRepo
     tech: [{ label: "Blog", value: PORTALS.tech.blogName }, { label: "Dashboard", value: "Learning Dashboard" }],
     boards: [{ label: "Boards", value: String(BOARDS.length) }, { label: "Subjects", value: String(SUBJECTS.length) }, { label: "Classes", value: "10 and 12" }, { label: "Journal posts", value: String(postsFor("boards").length) }],
     competitive: [{ label: "Exams", value: String(EXAMS.length) }, { label: "Objective questions", value: `${(EXAMS.length * OBJECTIVE_MINIMUM).toLocaleString("en-IN")}+` }, { label: "Digest posts", value: String(postsFor("competitive").length) }],
-    ielts: [{ label: "Questions with answers", value: "480" }, { label: "Papers", value: "24 (sample, mock, 12 years)" }, { label: "Guide", value: PORTALS.ielts.blogName }],
+    ielts: [{ label: "Questions with answers", value: "860+" }, { label: "Papers", value: "39 (sample, mock, 12 years, 15 practice tests)" }, { label: "Guide", value: PORTALS.ielts.blogName }],
   };
   const portals = await Promise.all(PORTAL_ORDER.map(async (portal): Promise<PortalReport> => {
     const info = PORTALS[portal]; const area = AREAS[portal];

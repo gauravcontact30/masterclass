@@ -1,0 +1,104 @@
+/* Streams playlist explorer (streams-explorer.tsx): light theme, one accent per playlist (--accent). */
+.explorer { --x-ink: #141413; --x-read: #3d3d3a; --x-muted: #5e5d59; --x-line: #e8e4d8; --x-soft: #f6f4ee; --x-clay: #c96442;
+  display: grid; gap: 14px; min-width: 0; color: var(--x-ink); }
+
+/* Playlist rail: wraps into rows where it does not fit; a swipeable strip on phones. */
+.rail { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; padding: 2px; }
+.rail button { --accent: #3d3d3a; position: relative; display: flex; align-items: center; gap: 10px; min-height: 58px; padding: 9px 12px; border: 1px solid var(--x-line); border-radius: 14px;
+  background: linear-gradient(180deg, #ffffff, #fbfaf6); font: inherit; text-align: left; color: var(--x-ink); cursor: pointer; scroll-snap-align: start; transition: border-color .15s, box-shadow .15s, transform .15s; }
+.rail button:hover { border-color: color-mix(in srgb, var(--accent) 35%, var(--x-line)); transform: translateY(-1px); }
+.rail button[aria-selected="true"] { border-color: var(--accent); background: linear-gradient(180deg, color-mix(in srgb, var(--accent) 7%, #fff), #fff); box-shadow: 0 10px 24px -18px color-mix(in srgb, var(--accent) 80%, transparent), inset 0 0 0 1px var(--accent); }
+.rail button > span:last-child { display: grid; min-width: 0; }
+.rail b { overflow: hidden; font-size: 14px; line-height: 1.2; text-overflow: ellipsis; white-space: nowrap; }
+.rail small { font-size: 11.5px; color: var(--x-muted); white-space: nowrap; }
+.railIcon { display: grid; place-items: center; flex: none; width: 34px; height: 34px; border-radius: 10px; background: color-mix(in srgb, var(--accent) 12%, #fff); color: var(--accent); }
+.rail button[aria-selected="true"] .railIcon { background: var(--accent); color: #fff; }
+
+/* Panel */
+.panel { --accent: #3d3d3a; display: grid; gap: 14px; padding: clamp(12px, 2vw, 18px); border: 1px solid var(--x-line); border-radius: 20px;
+  background: radial-gradient(120% 140% at 0% 0%, color-mix(in srgb, var(--accent) 6%, #fff) 0%, transparent 45%), radial-gradient(120% 140% at 100% 0%, #f1f5ff 0%, transparent 45%), #fffdf9; box-shadow: 0 24px 48px -40px rgba(20, 20, 19, .45); }
+.toolbar { display: grid; gap: 10px; }
+
+/* Search with suggestions */
+.search { position: relative; display: flex; align-items: center; }
+.searchIcon { position: absolute; left: 14px; color: var(--x-muted); pointer-events: none; }
+.search input { width: 100%; min-height: 48px; padding: 10px 48px 10px 42px; border: 1px solid var(--x-line); border-radius: 14px; background: #fff; font: inherit; font-size: 15px; color: var(--x-ink); box-shadow: 0 1px 0 rgba(20, 20, 19, .03); transition: border-color .15s, box-shadow .15s; }
+.search input:focus { outline: none; border-color: var(--x-clay); box-shadow: 0 0 0 4px rgba(201, 100, 66, .14); }
+.kbd { position: absolute; right: 12px; display: grid; place-items: center; min-width: 24px; height: 24px; padding: 0 6px; border: 1px solid var(--x-line); border-bottom-width: 2px; border-radius: 6px; background: var(--x-soft); font: 600 12px ui-monospace, Menlo, Consolas, monospace; color: var(--x-muted); }
+.clearSearch { position: absolute; right: 8px; display: grid; place-items: center; width: 32px; height: 32px; border: 0; border-radius: 8px; background: transparent; color: var(--x-muted); cursor: pointer; }
+.clearSearch:hover { background: var(--x-soft); color: var(--x-ink); }
+.suggestions { position: absolute; z-index: 30; top: calc(100% + 6px); left: 0; right: 0; display: grid; gap: 2px; max-height: 360px; margin: 0; padding: 6px; overflow-y: auto; list-style: none;
+  border: 1px solid var(--x-line); border-radius: 14px; background: #fff; box-shadow: 0 24px 48px -20px rgba(20, 20, 19, .35); }
+.suggestions li { --accent: #3d3d3a; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 10px; cursor: pointer; }
+.suggestions li[aria-selected="true"] { background: color-mix(in srgb, var(--accent) 8%, #fff); }
+.sugIcon { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 8px; background: color-mix(in srgb, var(--accent) 12%, #fff); color: var(--accent); }
+.sugText { display: grid; min-width: 0; }
+.sugText b { overflow: hidden; font-size: 14px; font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
+.sugText b mark { padding: 0 1px; border-radius: 3px; background: #fde7d9; color: inherit; }
+.sugText small { overflow: hidden; font-size: 12px; color: var(--x-muted); text-overflow: ellipsis; white-space: nowrap; }
+.sugEnter { color: var(--x-muted); }
+
+/* Icon filters: each option is an icon tile with a label; the tile fills with the playlist colour when it is on. */
+.filters { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.filterLead { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 10px; background: var(--x-ink); color: #fff; }
+.group { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; margin: 0; padding: 3px; border: 1px solid var(--x-line); border-radius: 12px; background: #fff; }
+.group legend { float: left; margin: 0 4px 0 6px; padding: 0; font-size: 10.5px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--x-muted); }
+.group button { display: inline-flex; align-items: center; gap: 6px; min-height: 32px; padding: 3px 10px 3px 3px; border: 0; border-radius: 9px; background: transparent; font: inherit; font-size: 13px; color: var(--x-read); cursor: pointer; }
+.group button:hover { background: var(--x-soft); }
+.chipIcon { display: grid; place-items: center; width: 26px; height: 26px; border-radius: 7px; background: color-mix(in srgb, var(--accent) 10%, #fff); color: var(--accent); transition: background .15s, color .15s; }
+.group button[aria-pressed="true"] { background: color-mix(in srgb, var(--accent) 10%, #fff); color: var(--x-ink); font-weight: 600; box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 45%, transparent); }
+.group button[aria-pressed="true"] .chipIcon { background: var(--accent); color: #fff; }
+.reset { display: inline-flex; align-items: center; gap: 5px; min-height: 34px; padding: 4px 12px; border: 1px dashed #d6cfbf; border-radius: 999px; background: transparent; font: inherit; font-size: 13px; color: var(--x-read); cursor: pointer; }
+.reset b { display: grid; place-items: center; min-width: 18px; height: 18px; border-radius: 999px; background: var(--x-clay); color: #fff; font-size: 11px; }
+
+.listHead { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 16px; }
+.listTitle { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; margin: 0; }
+.listTitle b { font-size: 16px; }
+.listTitle span, .count { font-size: 13px; color: var(--x-muted); }
+.count { margin: 0; }
+
+/* Step cards */
+.cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 0; padding: 0; list-style: none; }
+.card { --accent: #3d3d3a; display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: auto 1fr; width: 100%; height: 100%; padding: 0; overflow: hidden; border: 1px solid var(--x-line); border-radius: 16px;
+  background: #fff; font: inherit; text-align: left; color: var(--x-ink); text-decoration: none; cursor: pointer; transition: border-color .15s, box-shadow .15s, transform .15s; }
+.cards li { --accent: #3d3d3a; }
+.cards li .card { --accent: inherit; }
+.card:hover { transform: translateY(-2px); box-shadow: 0 16px 32px -24px rgba(20, 20, 19, .6); border-color: color-mix(in srgb, var(--accent) 30%, var(--x-line)); }
+.card[aria-pressed="true"] { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent), 0 16px 32px -24px color-mix(in srgb, var(--accent) 90%, transparent); }
+.card:focus-visible { outline: 3px solid var(--x-clay); outline-offset: 2px; }
+.cardPoster { position: relative; display: block; }
+.cardBody { display: grid; grid-template-columns: minmax(0, 1fr); align-content: start; gap: 5px; min-width: 0; padding: 12px 14px 14px; }
+.cardStep { overflow: hidden; font-size: 11.5px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; text-overflow: ellipsis; white-space: nowrap; color: var(--accent); }
+.cardBody b { font-size: 15px; line-height: 1.35; }
+.cardMeta { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin-top: 2px; }
+.cardMeta > span { display: inline-flex; align-items: center; gap: 4px; padding: 2px 8px; border-radius: 999px; background: var(--x-soft); font-size: 12px; color: var(--x-muted); }
+.cardMeta .free { background: #eaf5e6; color: #2f6b2a; font-weight: 700; }
+.cardMeta .watched { background: #eef3e6; color: #45592a; }
+.cardMeta .lockedNote { background: #fff4ea; color: #7a3d14; }
+
+/* Quality badge (player meta line) */
+.quality { display: inline-flex; align-items: center; padding: 2px 7px; border-radius: 6px; background: rgba(20, 20, 19, .78); color: #fff; font-size: 11px; font-weight: 800; letter-spacing: .02em; }
+.quality[data-q="4K"] { background: linear-gradient(135deg, #e0803c, #a94f31); }
+.quality[data-q="1440p"] { background: #2f6fb0; }
+
+/* Pagination */
+.pager { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; }
+.pager button { display: grid; place-items: center; min-width: 38px; height: 38px; padding: 0 10px; border: 1px solid var(--x-line); border-radius: 10px; background: #fff; font: inherit; font-size: 14px; font-weight: 600; color: var(--x-read); cursor: pointer; }
+.pager button:hover:not(:disabled) { border-color: #d6cfbf; }
+.pager button[aria-current="page"] { border-color: var(--x-ink); background: var(--x-ink); color: #fff; }
+.pager button:disabled { opacity: .4; cursor: default; }
+.gap { display: grid; place-items: end center; min-width: 22px; height: 38px; padding-bottom: 8px; color: var(--x-muted); }
+
+@media (max-width: 980px) { .cards { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 600px) {
+  .cards { grid-template-columns: minmax(0, 1fr); }
+  .rail { grid-template-columns: none; grid-auto-flow: column; grid-auto-columns: minmax(140px, 46%); overflow-x: auto; padding-bottom: 6px; scroll-snap-type: x proximity; scrollbar-width: none; }
+  /* Phones: filters become one swipeable row of icon tiles; labels stay available to screen readers and as tooltips. */
+  .filters { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; padding-bottom: 2px; }
+  .group { flex: none; flex-wrap: nowrap; }
+  .group button { padding-right: 3px; }
+  .chipLabel { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  .group button[aria-pressed="true"] .chipLabel { position: static; width: auto; height: auto; clip: auto; padding-right: 7px; }
+  .search input { font-size: 16px; }
+}
+@media (prefers-reduced-motion: reduce) { .rail button, .card { transition: none; } .card:hover, .rail button:hover { transform: none; } }

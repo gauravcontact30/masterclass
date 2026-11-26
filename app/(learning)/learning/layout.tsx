@@ -1,16 +1,11 @@
-import { LearningMarksProvider } from "@/components/learning-marks";
-import { Suspense } from "react";
 import { privateMetadata } from "@/lib/seo";
-import { AnnouncementBanner } from "@/components/announcement-banner";
-import { AuthNoticeToast } from "@/components/auth-notice-toast";
+import { DashboardFrame } from "@/components/dashboard-frame";
+import { StudentChatbot } from "@/components/student-chatbot";
 // The dashboards' own global styles (app shell, sidebar, workspace), split out of globals.css so public pages skip them.
-// app/(admin)/super-admin/layout.tsx re-exports this layout, so the console gets them too.
+// app/(admin)/super-admin/layout.tsx imports them too.
 import "@/app/dashboard.css";
 export const metadata = { ...privateMetadata, title: "Your learning dashboard" };
-// The banner reads usePathname(), which is request data on /learning/[category]; its own boundary keeps it out of
-// the page's render. Dashboard pages render once the signed-in user and their content are ready, with no loading screen.
-// AuthNoticeToast sits outside the page, so the sign-in toast no longer waits for the whole dashboard to hydrate.
+// Dashboard pages render once the signed-in user and their content are ready, with no loading screen.
 export const instant = false;
-// Highlighting and personal text edits (LearningRegion) exist only in the dashboard, so their provider and its ~30 KB of
-// client code load here instead of on every public page.
-export default function Layout({ children }: { children: React.ReactNode }) { return <><AuthNoticeToast /><LearningMarksProvider>{children}</LearningMarksProvider><Suspense fallback={null}><AnnouncementBanner /></Suspense></>; }
+// Study Buddy is in the server HTML here, so it paints with the page instead of after hydration (components/student-chatbot.tsx).
+export default function Layout({ children }: { children: React.ReactNode }) { return <DashboardFrame>{children}<StudentChatbot /></DashboardFrame>; }

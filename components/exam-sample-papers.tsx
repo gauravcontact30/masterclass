@@ -39,17 +39,20 @@ const Worked = ({ q }: { q: PaperQuestion }) => <div className={styles.worked}>
  * One question. In a mock test (`exam`) options are picked while the clock runs and marked only on submit, and
  * answers stay hidden until then, as in the examination hall.
  */
-function QuestionCard({ n, q, exam, chosen, onChoose, freshContext = true }: { n: number; q: PaperQuestion; freshContext?: boolean; exam?: { running: boolean; submitted: boolean }; chosen?: number; onChoose: (option: number) => void }) {
+function QuestionCard({ n, q, exam, chosen, onChoose, freshContext = true, freshFigure = true }: { n: number; q: PaperQuestion; freshContext?: boolean; freshFigure?: boolean; exam?: { running: boolean; submitted: boolean }; chosen?: number; onChoose: (option: number) => void }) {
   const [open, setOpen] = useState(false);
   const graded = Boolean(exam?.submitted);
   const shown = exam ? graded && (open || Boolean(q.options)) : open;
   return <li className={styles.q}>
     <p className={styles.meta}><span className={styles.qNo}>Q{q.no ?? n}</span>{q.stars && <StarRow count={q.stars} />}<small>{q.ch}</small><em className={styles.marks}>{q.pill ?? (q.marks > 0 ? <>{q.marks} {q.marks === 1 ? "mark" : "marks"}{q.negative ? <span className={styles.negative}> · −{q.negative} if wrong</span> : null}</> : "Written answer")}</em></p>
     {/* A passage shows once; the next questions on the same passage keep it folded. */}
-    {q.context && <details className={styles.context} open={freshContext}><summary>{freshContext ? "Passage" : "Passage (same as above)"}</summary><p>{q.context}</p></details>}
+    {q.context && <details className={styles.context} open={freshContext}><summary>{q.contextLabel ?? "Passage"}{freshContext ? "" : " (same as above)"}</summary><p>{q.context}</p></details>}
     <p className={styles.text}>{q.q}</p>
     {/* eslint-disable-next-line @next/next/no-img-element -- figures from scanned papers have no fixed size */}
-    {q.figure && <img className={styles.figure} src={q.figure.src} alt={q.figure.alt} loading="lazy" />}
+    {q.figure && freshFigure && <img className={styles.figure} src={q.figure.src} alt={q.figure.alt} loading="lazy" decoding="async" />}
+    {/* The same picture as the question above (a chart with several questions) stays folded. */}
+    {/* eslint-disable-next-line @next/next/no-img-element -- as above */}
+    {q.figure && !freshFigure && <details className={styles.context}><summary>Figure (same as above)</summary><img className={styles.figure} src={q.figure.src} alt={q.figure.alt} loading="lazy" decoding="async" /></details>}
     {q.options && (exam
       ? <div className={styles.options} role="group" aria-label={`Options for question ${n}`}>{q.options.map((option, i) => <button key={i} type="button" disabled={!exam.running}
           aria-pressed={chosen === i} data-state={graded ? (i === q.correct ? "right" : i === chosen ? "wrong" : undefined) : chosen === i ? "chosen" : undefined} onClick={() => onChoose(i)}>
@@ -74,6 +77,8 @@ function PrintPaper({ paper, answers, boardName }: { paper: Paper; answers: bool
     <ol>{paper.questions.map((q, i) => <li key={q.id}>
       {q.context && (i === 0 || paper.questions[i - 1].context !== q.context) && <blockquote className={styles.printPassage}>{q.context}</blockquote>}
       <p><b>Q{q.no ?? i + 1}.</b> {q.q} <i>[{q.pill ?? q.marks}]</i></p>
+      {/* eslint-disable-next-line @next/next/no-img-element -- printed figures */}
+      {q.figure && (i === 0 || paper.questions[i - 1].figure?.src !== q.figure.src) && <img className={styles.figure} src={q.figure.src} alt={q.figure.alt} />}
       {q.options && <ol className={styles.printOptions}>{q.options.map((o, k) => <li key={k}>({LETTER[k]}) {o}</li>)}</ol>}
       {answers && <p className={styles.printAnswer}><b>Answer:</b> {q.answer}{q.steps.length > 0 && <> — {q.steps.filter(st => !st.startsWith("// ")).join("; ")}</>}</p>}
     </li>)}</ol>
@@ -81,7 +86,7 @@ function PrintPaper({ paper, answers, boardName }: { paper: Paper; answers: bool
 }
 
 /** Wording that differs between dashboards (Board Exams is the default). */
-export type PapersCopy = { yearsTab?: string; lede?: ReactNode; yearNote?: (paper: Paper) => ReactNode; askedNote?: ReactNode; mockNote?: ReactNode };
+export type PapersCopy = { yearsTab?: string; sampleTab?: string; mockTab?: string; askedTab?: string; lede?: ReactNode; yearNote?: (paper: Paper) => ReactNode; askedNote?: ReactNode; mockNote?: ReactNode };
 
 export function ExamSamplePapers({ set, title, boardName, officialHref = "", archiveNote = () => "", officialYears = [], loadOfficial, copy = {} }: {
   /** `boardName` names whose questions these are (a board, an exam or "IELTS"). */
@@ -176,12 +181,14 @@ export function ExamSamplePapers({ set, title, boardName, officialHref = "", arc
   const sections = paper ? [...new Set(paper.questions.map(q => q.section))].map(s => [s, paper.questions.filter(q => q.section === s).length] as const) : [];
   const yearPages = Math.ceil(set.years.length / YEARS_PER_PAGE);
 
-  const TABS: { id: Tab; label: string; count: number; icon: typeof ScrollText }[] = [
-    { id: "sample", label: "Sample papers", count: set.sample.length, icon: ScrollText },
-    { id: "mock", label: "Mock tests", count: set.mock.length, icon: ClipboardList },
+  const ALL_TABS: { id: Tab; label: string; count: number; icon: typeof ScrollText }[] = [
+    { id: "sample", label: copy.sampleTab ?? "Sample papers", count: set.sample.length, icon: ScrollText },
+    { id: "mock", label: copy.mockTab ?? "Mock tests", count: set.mock.length, icon: ClipboardList },
     { id: "years", label: copy.yearsTab ?? `Previous ${set.years.length} years`, count: set.years.length, icon: History },
-    { id: "asked", label: "Most asked", count: set.asked.length, icon: Star },
+    { id: "asked", label: copy.askedTab ?? "Most asked", count: set.asked.length, icon: Star },
   ];
+  // A set without year papers (IELTS Practice Tests) shows no years tab.
+  const TABS = ALL_TABS.filter(t => t.count > 0);
 
   return <ExamContent><div id="sample-papers" className={styles.wrap}>
     <p className={styles.lede}>{copy.lede ?? <>{title}: {set.unique}+ different questions with answers across {set.sample.length + set.mock.length + set.years.length} papers, plus {set.asked.length} most asked questions rated by stars. All are {boardName} questions for this subject.</>}</p>
@@ -245,7 +252,7 @@ export function ExamSamplePapers({ set, title, boardName, officialHref = "", arc
     <p className={styles.count} aria-live="polite">{rows.length ? `Showing ${safePage * PAPER_PAGE_SIZE + 1}–${safePage * PAPER_PAGE_SIZE + visible.length} of ${rows.length} ${rows.length === 1 ? "question" : "questions"}` : "No question matches."}
       {!rows.length && <button type="button" onClick={clearAll}>Clear search and filters</button>}</p>
     <ol className={styles.list} key={`${tab}-${paper?.id ?? "asked"}-${safePage}`}>
-      {visible.map(({ q, n }, i) => <QuestionCard key={q.id} n={n} q={q} freshContext={i === 0 || visible[i - 1].q.context !== q.context} exam={tab === "mock" ? { running, submitted: test.submittedAt !== null } : undefined} chosen={chosen[q.id]} onChoose={option => setChosen(c => ({ ...c, [q.id]: option }))} />)}
+      {visible.map(({ q, n }, i) => <QuestionCard key={q.id} n={n} q={q} freshContext={i === 0 || visible[i - 1].q.context !== q.context} freshFigure={i === 0 || visible[i - 1].q.figure?.src !== q.figure?.src} exam={tab === "mock" ? { running, submitted: test.submittedAt !== null } : undefined} chosen={chosen[q.id]} onChoose={option => setChosen(c => ({ ...c, [q.id]: option }))} />)}
     </ol>
     {pages > 1 && <Pager page={safePage} pages={pages} label="Question pages" onPage={next => { setPage(next); toPanel(); }} />}
     {printing && paper && <PrintPaper paper={paper} answers={printing === "answers"} boardName={boardName} />}

@@ -288,6 +288,7 @@ export const en = {
   "onTheGo": "On The Go",
   "vocabulary": "Vocabulary",
   "coffeeAndCode": "Coffee & Code",
+  "streams": "Streams",
   "boardExams": "Board Exams",
   "competitiveExams": "Competitive Exams",
   "examsPortal": "Exam portals",

@@ -1,7 +1,7 @@
 "use client";
 import { useMemo, useState } from "react";
 import dynamic from "next/dynamic";
-import { BookOpenCheck, FileText, Globe2, Languages, Mic, PenLine, Timer } from "lucide-react";
+import { BookOpenCheck, ClipboardList, FileText, Globe2, Languages, Library, Mic, PenLine, Timer } from "lucide-react";
 import { RouteH1 } from "@/components/route-heading";
 import { buildIeltsPapers, IELTS_YEARS } from "@/lib/ielts/bank";
 import { useLanguage } from "./language-provider";
@@ -13,10 +13,15 @@ import shared from "./board-exams.module.css";
  * Preparation Hub (format, practice, topics and band calculator, components/ielts-preparation.tsx).
  */
 const ExamSamplePapers = dynamic(() => import("./exam-sample-papers").then(m => m.ExamSamplePapers), { loading: () => <Loading /> });
+const IeltsPracticeTests = dynamic(() => import("./ielts-practice-tests").then(m => m.IeltsPracticeTests), { loading: () => <Loading /> });
+const IeltsLibrary = dynamic(() => import("./ielts-library").then(m => m.IeltsLibrary), { loading: () => <Loading /> });
 const IeltsPreparation = dynamic(() => import("./ielts-preparation").then(m => m.IeltsPreparation), { loading: () => <Loading /> });
 function Loading() { return <div className={shared.skeleton} aria-busy="true" aria-label="Loading"><span /><span /><span /></div>; }
 
-type View = "papers" | "hub";
+export type IeltsView = "papers" | "practice" | "library" | "hub";
+type View = IeltsView;
+/** Questions with answers across both banks (lib/ielts/bank.ts 480, lib/ielts/practice.ts 380+); tests keep it current. */
+export const IELTS_QUESTION_TOTAL = "860+";
 
 export function IeltsDashboard({ initialView = "papers" }: { initialView?: View }) {
   const { language } = useLanguage(); const tr = (en: string, hindi: string) => language === "hi" ? hindi : en;
@@ -28,6 +33,8 @@ export function IeltsDashboard({ initialView = "papers" }: { initialView?: View 
   };
   const VIEWS: { id: View; label: string; hint: string; icon: typeof FileText }[] = [
     { id: "papers", label: tr("Sample Papers", "नमूना प्रश्न-पत्र"), hint: tr(`Sample, mock & ${IELTS_YEARS.length} years · 480 Q&A`, `नमूना, मॉक और ${IELTS_YEARS.length} वर्ष · 480 प्रश्नोत्तर`), icon: FileText },
+    { id: "practice", label: tr("Practice Tests", "अभ्यास टेस्ट"), hint: tr("380+ Q&A · charts, maps, essays, letters", "380+ प्रश्नोत्तर · चार्ट, मानचित्र, निबंध, पत्र"), icon: ClipboardList },
+    { id: "library", label: tr("Learning Library", "अध्ययन सामग्री"), hint: tr("Words, idioms, collocations & model answers", "शब्द, मुहावरे, कोलोकेशन और आदर्श उत्तर"), icon: Library },
     { id: "hub", label: tr("Preparation Hub", "तैयारी केंद्र"), hint: tr("Format, practice, topics & band calculator", "प्रारूप, अभ्यास, विषय और बैंड कैलकुलेटर"), icon: BookOpenCheck },
   ];
 
@@ -46,8 +53,8 @@ export function IeltsDashboard({ initialView = "papers" }: { initialView?: View 
         </ul>
       </div>
       <dl className={shared.stats}>
-        <div><dt>{tr("Questions with answers", "उत्तर सहित प्रश्न")}</dt><dd>480</dd></div>
-        <div><dt>{tr("Papers", "पेपर")}</dt><dd>{12 + IELTS_YEARS.length}</dd></div>
+        <div><dt>{tr("Questions with answers", "उत्तर सहित प्रश्न")}</dt><dd>{IELTS_QUESTION_TOTAL}</dd></div>
+        <div><dt>{tr("Papers and tests", "पेपर और टेस्ट")}</dt><dd>{12 + IELTS_YEARS.length + 15}</dd></div>
         <div><dt>{tr("Topics", "विषय")}</dt><dd>30</dd></div>
       </dl>
     </header>
@@ -70,6 +77,14 @@ export function IeltsDashboard({ initialView = "papers" }: { initialView?: View 
           askedNote: "Highest rated first. Five stars marks the themes candidates report most often in recent tests; it is our editorial rating, not an official count.",
           mockNote: <>Timed at {set.mock[0]?.minutes} minutes. Start the test, answer the Reading, vocabulary, grammar and band questions, write the Task 2 essay and speak the Part 3 answers aloud, then submit to see your score and every model answer.</>,
         }} />
+      </>}
+      {view === "practice" && <>
+        <div className={shared.panelHead}><h2>IELTS · {tr("Practice Tests", "अभ्यास टेस्ट")}</h2><p>{tr("Objective and written questions with model answers", "वस्तुनिष्ठ और लिखित प्रश्न, आदर्श उत्तरों के साथ")}</p></div>
+        <IeltsPracticeTests />
+      </>}
+      {view === "library" && <>
+        <div className={shared.panelHead}><h2>IELTS · {tr("Learning Library", "अध्ययन सामग्री")}</h2><p>{tr("Vocabulary, idioms and model answers", "शब्दावली, मुहावरे और आदर्श उत्तर")}</p></div>
+        <IeltsLibrary />
       </>}
       {view === "hub" && <IeltsPreparation />}
     </section>

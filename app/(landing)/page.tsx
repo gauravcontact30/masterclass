@@ -20,6 +20,7 @@ import { LandingFeatures } from "@/components/landing-features";
 import { LandingCertifications } from "@/components/landing-certifications";
 import { LandingAnswers } from "@/components/landing-answers";
 import { LandingTechBuzz } from "@/components/landing-tech-buzz";
+import { StudentChatbot } from "@/components/student-chatbot";
 export const metadata = pageMetadata("/");
 /** The pulse and Word power previews show three cards each (PREVIEW_COUNT in components/landing-ai-pulse.tsx). */
 const DAILY_PREVIEW = 3;
@@ -57,5 +58,5 @@ export default async function Home() {
   const updated = weekStartDate(today);
   // Exam categories and their FAQs are India-only client content (components/landing-page.tsx), so the globally cached
   // HTML carries no structured data for them.
-  return <><JsonLd data={[websiteSchema(), webPageSchema("/", updated), organizationSchema({ monthly:prices.monthly, yearly:prices.yearly })]} /><LandingPage features={features} answers={<LandingAnswers monthly={prices.monthly} yearly={prices.yearly} updated={updated} />} certifications={<LandingCertifications />} techBuzz={<LandingTechBuzz stories={buzz} topics={buzzTopics} week={today} />} workflows={previewWorkflows(overrides)} pro={pro} library={previewLibrary(landingLibrary(pro), today)} prices={prices} daily={daily} techDocs={previewTechDocs(docs, featuredDoc)} featuredDoc={featuredDoc} fresh={fresh} today={today} overrides={overrides} coffee={blogTeasers(8, today)} /></>;
+  return <><JsonLd data={[websiteSchema(), webPageSchema("/", updated), organizationSchema({ monthly:prices.monthly, yearly:prices.yearly })]} /><LandingPage features={features} answers={<LandingAnswers monthly={prices.monthly} yearly={prices.yearly} updated={updated} />} certifications={<LandingCertifications />} techBuzz={<LandingTechBuzz stories={buzz} topics={buzzTopics} week={today} />} workflows={previewWorkflows(overrides)} pro={pro} library={previewLibrary(landingLibrary(pro), today)} prices={prices} daily={daily} techDocs={previewTechDocs(docs, featuredDoc)} featuredDoc={featuredDoc} fresh={fresh} today={today} overrides={overrides} coffee={blogTeasers(8, today)} /><StudentChatbot /></>;
 }

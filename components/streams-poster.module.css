@@ -1,0 +1,31 @@
+/* Master Class Buddy thumbnails (streams-poster.tsx). Sizes are in cqw: a share of the thumbnail's own width. */
+.poster { --accent: #3d3d3a; position: relative; display: block; width: 100%; aspect-ratio: 16 / 9; overflow: hidden; container-type: inline-size; isolation: isolate; color: #fff; text-align: left;
+  background: radial-gradient(90% 120% at 100% 100%, color-mix(in srgb, var(--accent) 40%, #000) 0%, transparent 70%),
+    radial-gradient(80% 90% at 0% 0%, color-mix(in srgb, var(--accent) 70%, #fff) 0%, transparent 60%),
+    linear-gradient(135deg, color-mix(in srgb, var(--accent) 92%, #fff), color-mix(in srgb, var(--accent) 55%, #0d0d0c)); }
+/* A faint grid, fading in towards the lower right. */
+.poster::before { content: ""; position: absolute; inset: 0; z-index: -1; background-image: linear-gradient(rgba(255, 255, 255, .08) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, .08) 1px, transparent 1px);
+  background-size: 6cqw 6cqw; -webkit-mask-image: linear-gradient(125deg, transparent 25%, #000 85%); mask-image: linear-gradient(125deg, transparent 25%, #000 85%); }
+.brand { position: absolute; left: 4.5cqw; top: 4.5cqw; display: flex; align-items: center; gap: 2cqw; }
+.mark { display: grid; place-items: center; width: 9cqw; height: 9cqw; border-radius: 2.4cqw; background: #fff; box-shadow: 0 1cqw 3cqw rgba(0, 0, 0, .25); }
+.mark svg { width: 74%; height: 74%; }
+.brandText { display: grid; line-height: 1.1; }
+.brandText b { font-size: 3.5cqw; font-weight: 800; }
+.brandText small { font-size: 2.5cqw; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; opacity: .82; }
+.quality { position: absolute; right: 4.5cqw; top: 4.5cqw; padding: .8cqw 2cqw; border: 1px solid rgba(255, 255, 255, .3); border-radius: 1.4cqw; background: rgba(0, 0, 0, .3); font-size: 2.9cqw; font-weight: 800; letter-spacing: .02em; }
+.quality[data-q="4K"] { border-color: transparent; background: linear-gradient(135deg, #f6c453, #e0803c); color: #2a1503; }
+.watermark { position: absolute; right: -7cqw; bottom: -11cqw; width: 54cqw; height: 54cqw; opacity: .17; }
+.body { position: absolute; left: 4.5cqw; right: 22cqw; bottom: 6cqw; display: grid; gap: 1.3cqw; }
+.body small { font-size: 3cqw; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; opacity: .88; }
+.body b { display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; font-size: 6.2cqw; font-weight: 800; line-height: 1.12; letter-spacing: -.01em; text-wrap: balance; text-shadow: 0 .3cqw 1.6cqw rgba(0, 0, 0, .25); }
+.body em { overflow: hidden; font-size: 2.9cqw; font-style: normal; text-overflow: ellipsis; white-space: nowrap; opacity: .86; }
+.time { position: absolute; right: 4.5cqw; bottom: 5cqw; padding: .6cqw 1.8cqw; border-radius: 1.2cqw; background: rgba(0, 0, 0, .5); font-size: 3cqw; font-weight: 700; font-variant-numeric: tabular-nums; }
+.lock { position: absolute; inset: 0; display: grid; place-items: center end; padding-right: 9cqw; background: rgba(20, 20, 19, .42); }
+.lock svg { width: 11cqw; height: 11cqw; padding: 2.6cqw; border-radius: 50%; background: rgba(255, 255, 255, .92); color: #141413; }
+/* Thumbnails in a playlist row: just the mark, the step number and the title. */
+.poster[data-size="thumb"] .brand { left: 5cqw; top: 6cqw; }
+.poster[data-size="thumb"] .mark { width: 15cqw; height: 15cqw; border-radius: 4cqw; }
+.poster[data-size="thumb"] .body { left: 6cqw; right: 6cqw; bottom: 7cqw; gap: 2cqw; }
+.poster[data-size="thumb"] .body small { display: none; }
+.poster[data-size="thumb"] .body b { -webkit-line-clamp: 2; font-size: 10cqw; }
+.poster[data-size="thumb"] .watermark { right: -12cqw; bottom: -16cqw; width: 70cqw; height: 70cqw; }

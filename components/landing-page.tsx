@@ -57,6 +57,8 @@ const LandingBoardHighlights = dynamic(() => import("./landing-categories").then
 const LandingCompetitiveHighlights = dynamic(() => import("./landing-categories").then(m => m.LandingCompetitiveHighlights));
 const CompetitiveFaq = dynamic(() => import("./landing-categories").then(m => m.CompetitiveFaq));
 // The three showcases right under the slider (user request 2026-11-24): Tech for everyone, the two exam ones in India.
+// Streams (2026-11-26): video courses below the fold; nothing from YouTube loads until a visitor presses play.
+const LandingStreams = dynamic(() => import("./landing-streams").then(m => m.LandingStreams));
 const LandingTechShowcase = dynamic(() => import("./landing-showcase").then(m => m.LandingTechShowcase));
 const LandingBoardShowcase = dynamic(() => import("./landing-showcase-exams").then(m => m.LandingBoardShowcase));
 const LandingGovtShowcase = dynamic(() => import("./landing-showcase-exams").then(m => m.LandingGovtShowcase));
@@ -90,6 +92,7 @@ export function LandingPage({ features, answers, certifications, techBuzz, workf
   // [section on this page, label, the section's own crawlable page]: links are real URLs for search engines and
   // new tabs, and smooth-scroll to the section here without a #fragment.
   const navigation = [
+    ["#streams", "MCB Streams", "/streams"],
     ["#interview-prep", t("interviewPrep") || "Interview prep", "/interview-questions"],
     ["#workflows", t("workflows") || "Workflows", "/workflows"],
     ...(pro ? [["#api-docs", "API Docs", "/api-reference"]] : []),
@@ -103,7 +106,10 @@ export function LandingPage({ features, answers, certifications, techBuzz, workf
   // Competitive Exams. A navigator lists the three; a band opens each, followed by that category's sections in their
   // existing order. The exam categories (navigator, bands, sections) render only for visitors in India; everyone else sees Tech.
   const beforePlans = useMemo(() => <>
-    {/* Three showcases straight under the slider (user request 2026-11-24): autoplay carousel beside sample papers and Q&A. */}
+    {/* MCB Streams first, straight under the slider (user request 2026-11-26): three sample playlists here, the whole
+        catalogue on /streams and every step in /learning/streams. */}
+    <Part><LandingStreams /></Part>
+    {/* Three showcases under the slider (user request 2026-11-24): autoplay carousel beside sample papers and Q&A. */}
     <Part><LandingTechShowcase /></Part>
     {india && <><Part><LandingBoardShowcase /></Part><Part><LandingGovtShowcase /></Part></>}
     <CategoryBand id="tech" india={india} />

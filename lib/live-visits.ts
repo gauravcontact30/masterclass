@@ -257,6 +257,7 @@ export function getLearningCategory(path: string): string {
   if (p.includes("/notes") || p.includes("/notepad")) return "Notes & Notepad";
   if (p.includes("/certifications")) return "Certification";
   if (p.includes("/coffee-and-code")) return "Coffee & Code";
+  if (p.includes("/streams")) return "Streams";
   if (p.includes("/board-exams")) return "Board Exams";
   if (p.includes("/competitive-exams")) return "Competitive Exams";
   if (p.includes("/bookmark")) return "Bookmarks";

@@ -10,7 +10,9 @@ beforeEach(() => {
   localStorage.clear();
   global.fetch = jest.fn().mockResolvedValue({ok:true,json:async()=>({monthly:349,yearly:3499,enabled:true})});
 });
-const ready = () => screen.findByText(/349/, {selector:"p.price b"});
+// The first render of a test file also transforms the landing page's modules (Streams added ~110 videos of data, 2026-11-26),
+// so a cold start can take longer than findBy's 1 s default; the price is still the signal that the page has settled.
+const ready = () => screen.findByText(/349/, {selector:"p.price b"}, {timeout:10000});
 
 test("offers signup, sign-in and current section navigation", async () => {
   render(<LandingPage workflows={workflows}/>); await ready();

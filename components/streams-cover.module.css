@@ -1,0 +1,29 @@
+/* Master Class Buddy covers (streams-cover.tsx). Sizes are cqw: a share of the cover's own width. */
+.cover { --accent: #3d3d3a; position: relative; display: block; width: 100%; aspect-ratio: 16 / 9; overflow: hidden; container-type: inline-size; isolation: isolate; border-radius: inherit; color: #fff;
+  background: radial-gradient(70% 90% at 50% 45%, color-mix(in srgb, var(--accent) 55%, #fff) 0%, transparent 70%),
+    linear-gradient(145deg, color-mix(in srgb, var(--accent) 85%, #fff), color-mix(in srgb, var(--accent) 70%, #101010)); }
+/* A fine grid and a soft light from the top. */
+.cover::before { content: ""; position: absolute; inset: 0; z-index: -1; background-image: linear-gradient(rgba(255, 255, 255, .09) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, .09) 1px, transparent 1px);
+  background-size: 7cqw 7cqw; -webkit-mask-image: radial-gradient(80% 80% at 50% 50%, #000, transparent); mask-image: radial-gradient(80% 80% at 50% 50%, #000, transparent); }
+.cover::after { content: ""; position: absolute; inset: 0; z-index: -1; background: linear-gradient(180deg, rgba(255, 255, 255, .14), transparent 40%, rgba(0, 0, 0, .18)); }
+
+.brand { position: absolute; left: 4.5cqw; top: 4.5cqw; display: inline-flex; align-items: center; gap: 1.8cqw; padding: 1cqw 2.6cqw 1cqw 1cqw; border-radius: 999px; background: rgba(255, 255, 255, .16); backdrop-filter: blur(6px); }
+.brand b { font-size: 3.6cqw; font-weight: 800; letter-spacing: .08em; }
+.mark { display: grid; place-items: center; width: 7cqw; height: 7cqw; border-radius: 50%; background: #fff; }
+.mark svg { width: 76%; height: 76%; }
+.quality { position: absolute; right: 4.5cqw; top: 4.5cqw; padding: 1cqw 2.4cqw; border: 1px solid rgba(255, 255, 255, .35); border-radius: 999px; background: rgba(0, 0, 0, .22); font-size: 3.1cqw; font-weight: 800; letter-spacing: .03em; backdrop-filter: blur(6px); }
+.quality[data-q="4K"] { border-color: transparent; background: linear-gradient(135deg, #ffd36b, #f08a3c); color: #2a1503; }
+.icon { position: absolute; left: 50%; top: 47%; display: grid; place-items: center; width: 26cqw; height: 26cqw; border: 1px solid rgba(255, 255, 255, .4); border-radius: 30%;
+  background: rgba(255, 255, 255, .16); box-shadow: 0 3cqw 8cqw -3cqw rgba(0, 0, 0, .45), inset 0 1px 0 rgba(255, 255, 255, .35); transform: translate(-50%, -50%); backdrop-filter: blur(8px); }
+.icon svg { width: 52%; height: 52%; }
+.label { position: absolute; left: 4.5cqw; bottom: 4.5cqw; padding: 1cqw 2.6cqw; border-radius: 999px; background: rgba(0, 0, 0, .32); font-size: 3.2cqw; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; }
+.time { position: absolute; right: 4.5cqw; bottom: 4.5cqw; padding: 1cqw 2.4cqw; border-radius: 999px; background: rgba(0, 0, 0, .5); font-size: 3.2cqw; font-weight: 700; font-variant-numeric: tabular-nums; }
+.cover[data-locked] { filter: saturate(.7); }
+.cover[data-locked] .icon { background: rgba(255, 255, 255, .9); color: #141413; }
+.cover[data-locked] .icon svg { width: 40%; height: 40%; }
+
+/* Small covers (playlist rows): the mark, the icon and the step number, a little larger. */
+.cover[data-size="sm"] .brand { padding: 1.4cqw; left: 5cqw; top: 5cqw; }
+.cover[data-size="sm"] .mark { width: 12cqw; height: 12cqw; }
+.cover[data-size="sm"] .icon { width: 34cqw; height: 34cqw; left: 62%; }
+.cover[data-size="sm"] .label { left: 5cqw; bottom: 5cqw; padding: 1.4cqw 3.4cqw; font-size: 6.4cqw; }

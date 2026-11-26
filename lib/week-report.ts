@@ -55,6 +55,7 @@ export function learningPath(path: string): string {
   if (/vocab/.test(p)) return "Vocabulary";
   if (/^\/tech-buzz(\/|$)/.test(p)) return "Tech Buzz";
   if (/^\/learning\/coffee-and-code(\/|$)/.test(p)) return "Coffee & Code";
+  if (/^\/learning\/streams(\/|$)/.test(p)) return "Streams";
   if (/^\/learning\/board-exams(\/|$)/.test(p)) return "Board Exams";
   if (/^\/learning\/competitive-exams(\/|$)/.test(p)) return "Competitive Exams";
   if (/^\/learning\/compiler(\/|$)/.test(p)) return "Compiler";

@@ -1,0 +1,66 @@
+/* IELTS Learning Library (components/ielts-library.tsx). Colours come from the dashboard page (board-exams.module.css .page). */
+.wrap { display: grid; gap: 14px; min-width: 0; }
+.lede { margin: 0; max-width: 72ch; font-size: 14.5px; line-height: 1.65; color: var(--muted, #5e5d59); }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+.shelfRow { display: grid; gap: 6px; }
+.shelfLabel { font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--clay-deep, #a94f31); }
+.shelves { display: flex; flex-wrap: wrap; gap: 6px; }
+.shelves button { display: inline-flex; align-items: center; gap: 6px; min-height: 36px; padding: 6px 12px; border: 1px solid var(--line, #e6e2d6); border-radius: 999px; background: #fff; font: inherit; font-size: 13.5px; color: var(--ink, #262624); cursor: pointer; }
+.shelves button b { padding: 0 7px; border-radius: 999px; background: var(--oat, #f5f4ed); font-size: 11.5px; font-variant-numeric: tabular-nums; }
+.shelves button[aria-selected="true"] { border-color: var(--ink, #262624); background: var(--ink, #262624); color: #fff; }
+.shelves button[aria-selected="true"] b { background: rgba(255, 255, 255, .18); }
+
+.tools { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 4px; }
+.search { position: relative; flex: 1 1 240px; display: flex; align-items: center; }
+.search svg { position: absolute; left: 11px; color: var(--muted, #5e5d59); pointer-events: none; }
+.search input { width: 100%; min-height: 38px; padding: 7px 12px 7px 34px; border: 1px solid var(--line, #e6e2d6); border-radius: 10px; background: #fff; font: inherit; font-size: 14px; color: var(--ink, #262624); }
+.tools > button { display: inline-flex; align-items: center; gap: 6px; min-height: 38px; padding: 6px 12px; border: 1px solid var(--line, #e6e2d6); border-radius: 10px; background: #fff; font: inherit; font-size: 13px; color: var(--ink, #262624); cursor: pointer; }
+.tools > button[aria-pressed="true"] { border-color: var(--sage, #45592a); background: var(--sage-soft, #eef3e6); color: var(--sage, #45592a); }
+.progress { position: relative; display: inline-flex; align-items: center; min-height: 38px; padding: 0 12px; overflow: hidden; border: 1px solid var(--line, #e6e2d6); border-radius: 10px; background: #fff; font-size: 12.5px; font-weight: 600; font-variant-numeric: tabular-nums; color: var(--sage, #45592a); }
+.progress span { position: absolute; inset: 0 auto 0 0; background: var(--sage-soft, #eef3e6); z-index: 0; transition: width .2s; }
+.progress { isolation: isolate; }
+.progress span { z-index: -1; }
+.hint { margin: 0; font-size: 13px; line-height: 1.55; color: var(--muted, #5e5d59); }
+.empty { margin: 8px 0; color: var(--muted, #5e5d59); }
+
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr)); gap: 10px; margin: 10px 0 0; padding: 0; list-style: none; }
+.card { display: grid; grid-template-rows: 1fr auto; border: 1px solid var(--line, #e6e2d6); border-radius: 14px; background: #fff; overflow: hidden; content-visibility: auto; contain-intrinsic-size: auto 150px; }
+.card[data-learnt] { border-color: #c9d8b4; background: #fbfdf8; }
+.face { display: grid; align-content: start; gap: 5px; padding: 12px 14px; border: 0; background: none; font: inherit; text-align: left; color: var(--ink, #262624); cursor: pointer; }
+.face:disabled { cursor: default; color: inherit; opacity: 1; }
+.face strong { font-size: 15.5px; }
+.meaning { font-size: 13.5px; line-height: 1.5; color: var(--read, #3d3d3a); }
+.face em { font-size: 13px; line-height: 1.5; color: var(--muted, #5e5d59); }
+.face small { font-size: 11.5px; font-weight: 600; color: var(--clay-deep, #a94f31); }
+.tap { font-size: 12.5px; color: var(--muted, #5e5d59); }
+.tick { display: inline-flex; align-items: center; gap: 6px; padding: 8px 14px; border: 0; border-top: 1px solid var(--line, #e6e2d6); background: var(--oat, #f5f4ed); font: inherit; font-size: 12.5px; color: var(--muted, #5e5d59); cursor: pointer; }
+.tick[aria-pressed="true"] { color: var(--sage, #45592a); }
+.more { justify-self: center; margin-top: 12px; min-height: 38px; padding: 6px 16px; border: 1px solid var(--line, #e6e2d6); border-radius: 999px; background: #fff; font: inherit; font-size: 13.5px; cursor: pointer; }
+
+.data { display: grid; gap: 14px; margin-top: 6px; }
+.figure { margin: 0; display: grid; gap: 8px; }
+.figure img, .chart { display: block; width: 100%; max-width: 640px; height: auto; border: 1px solid var(--line, #e6e2d6); border-radius: 12px; background: #fff; }
+.figure figcaption { font-size: 13px; line-height: 1.55; color: var(--muted, #5e5d59); font-style: italic; }
+.trends { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 260px), 1fr)); gap: 10px; margin: 0; }
+.trends div { padding: 12px 14px; border: 1px solid var(--line, #e6e2d6); border-radius: 14px; background: #fff; }
+.trends dt { font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--clay-deep, #a94f31); }
+.trends dd { display: flex; flex-wrap: wrap; gap: 5px; margin: 8px 0 0; }
+.trends dd span { padding: 3px 9px; border-radius: 999px; background: var(--oat, #f5f4ed); font-size: 13px; }
+
+.answers { display: grid; gap: 12px; margin: 6px 0 0; padding: 0; list-style: none; }
+.answer { display: grid; gap: 8px; padding: 14px 16px; border: 1px solid var(--line, #e6e2d6); border-radius: 16px; background: #fff; content-visibility: auto; contain-intrinsic-size: auto 260px; }
+.tag { margin: 0; font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--clay-deep, #a94f31); }
+.answer h3 { margin: 0; font-size: 16px; line-height: 1.45; }
+.prompt { margin: 0; font-size: 13.5px; line-height: 1.55; color: var(--muted, #5e5d59); }
+.notes { margin: 0; padding-left: 18px; font-size: 13px; line-height: 1.55; color: var(--read, #3d3d3a); }
+.reveal { justify-self: start; min-height: 36px; padding: 6px 14px; border: 1px solid var(--ink, #262624); border-radius: 999px; background: #fff; font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; }
+.reveal[aria-expanded="true"] { background: var(--ink, #262624); color: #fff; }
+.model { padding: 12px 14px; border-left: 3px solid var(--sage, #45592a); border-radius: 0 12px 12px 0; background: var(--sage-soft, #eef3e6); }
+.model p { margin: 0; font-size: 14.5px; line-height: 1.7; white-space: pre-line; }
+.model small { display: block; margin-top: 8px; font-size: 12px; color: var(--muted, #5e5d59); }
+
+@media (max-width: 640px) {
+  .tools > button { flex: 1 1 auto; justify-content: center; }
+  .progress { flex: 1 1 100%; justify-content: center; }
+}

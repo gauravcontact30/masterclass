@@ -25,7 +25,7 @@ const MESSAGES: Record<string, string> = {
   payment_unavailable: "The payment window could not open. Check your connection and try again.",
 };
 const INCLUDED: Record<ScopedPortal, string[]> = {
-  ielts: ["IELTS Academic and General Training", "Sample papers, timed mock tests and 12 years of practice sets", "480 questions with answers: Reading, vocabulary, grammar, band scores, Writing Task 2 and Speaking Part 3", "Topic vocabulary, essay plans and model answers for 30 recurring themes"],
+  ielts: ["IELTS Academic and General Training", "Sample papers, timed mock tests and 12 years of practice sets", "860+ questions with answers: Reading, Listening, Task 1 charts and maps, vocabulary, idioms, grammar, band scores, Writing and Speaking", "Learning Library: academic words, idioms, phrasal verbs, collocations and band 8–9 model answers"],
   boards: ["UP Board, CBSE and ICSE / ISC, Class 10 and 12", "Maths, Physics, Chemistry and English, chapter and topic wise", "Most asked questions with year asked and star ratings", "Official past papers for 20 years, upcoming exam dates and the Scholars Journal"],
   competitive: ["NDA, Defence, Banks, Railways, SSC, UPSC, CBI, Income Tax and more", "400+ objective questions per exam with answers and short explanations", "Subjective answers and 200+ quick answers per exam", "Exam calendar with official sites, and the Aspirants Digest"],
 };

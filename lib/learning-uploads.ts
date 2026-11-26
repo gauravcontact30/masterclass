@@ -77,6 +77,7 @@ export const DASHBOARD_PAGES: PageOption[] = [
   page("learning", "search", "Search (AI)", "ai ask find"), page("learning", "step-by-step", "On The Go", "step by step guide"),
   page("learning", "notes", "Notes", "topic cards"), page("learning", "vocabulary", "Vocabulary", "words english hindi"),
   page("learning", "coffee-and-code", "Coffee & Code", "blog articles posts"),
+  page("learning", "streams", "Streams", "video playlists step by step nextjs next.js react langchain langgraph n8n aws system design watch"),
   page("learning", "board-exams", "Board Exams", "up board cbse icse class 10 12 high school intermediate"),
   page("learning", "competitive-exams", "Competitive Exams", "defence bank railway tet isro upsc ssc jee neet gate government entrance"),
   page("learning", "ielts", "IELTS Preparation", "ielts english band academic general training listening reading writing speaking"),

@@ -4,7 +4,7 @@ import { memo, useCallback, useEffect, useId, useMemo, useRef, useState } from "
 import { preload } from "react-dom";
 import { getImageProps } from "next/image";
 import Image from "@/components/responsive-image";
-import { losslessImageLoader } from "@/lib/responsive-image-loader";
+import { localImage, losslessImageLoader } from "@/lib/responsive-image-loader";
 import Link from "@/components/site-link";
 import { Bell, ChevronLeft, ChevronRight, Flame, Pause, Play } from "lucide-react";
 import { useLanguage } from "./language-provider";
@@ -483,11 +483,30 @@ function slidesFor(technologies: number | undefined): Slide[] {
   ];
 }
 
+/**
+ * A srcset with each file listed once, at its real width. Next.js writes one entry per configured width, and the
+ * loader answers each with the nearest file it has: past the widest variant that is the original ("960.webp 1080w …
+ * 3840w"), and below the narrowest it is the 320 px variant ("320.webp 32w … 256w"). The browser took the 960 px
+ * portrait for a 3840 px file and gave it a natural width of 131 CSS px (measured 2026-11-26), which also shrinks the
+ * size it credits the image with for LCP. Variants are named by width; an original's width is in the manifest.
+ */
+export function uniqueSrcSet(srcSet: string | undefined, original: string) {
+  if (!srcSet) return srcSet;
+  const width = (url: string) => Number(/\/images\/responsive\/[^/]+\/(\d+)\.webp$/.exec(url)?.[1] ?? (url === original ? localImage(original)?.width : NaN));
+  const out = new Map<string, number>();
+  for (const entry of srcSet.split(", ")) {
+    const at = entry.lastIndexOf(" "), url = entry.slice(0, at), real = width(url);
+    if (!out.has(url)) out.set(url, Number.isFinite(real) ? real : Number(entry.slice(at + 1, -1)));
+  }
+  return [...out].map(([url, w]) => `${url} ${w}w`).join(", ");
+}
+
 /** An artwork slide's picture: the centre crop on portrait phones, the full picture everywhere else. */
 function HeroArtwork({ slide, first }: { slide: ImageSlide; first: boolean }) {
   const shared = { alt: slide.alt, fill: true, loader: losslessImageLoader, fetchPriority: first ? "high" : undefined, loading: first ? "eager" : undefined } as const;
-  const { props: wide } = getImageProps({ ...shared, src: slide.src, sizes: "(max-aspect-ratio: 4/5) 180svh, 100vw" });
-  const { props: tall } = getImageProps({ ...shared, src: slide.portrait, sizes: "62.5svh" });
+  const { props: wideProps } = getImageProps({ ...shared, src: slide.src, sizes: "(max-aspect-ratio: 4/5) 180svh, 100vw" });
+  const { props: tallProps } = getImageProps({ ...shared, src: slide.portrait, sizes: "62.5svh" });
+  const wide = { ...wideProps, srcSet: uniqueSrcSet(wideProps.srcSet, slide.src) }, tall = { ...tallProps, srcSet: uniqueSrcSet(tallProps.srcSet, slide.portrait) };
   if (first) {
     preload(tall.src, { as: "image", media: PORTRAIT, imageSrcSet: tall.srcSet, imageSizes: tall.sizes, fetchPriority: "high" });
     preload(wide.src, { as: "image", media: `not all and ${PORTRAIT}`, imageSrcSet: wide.srcSet, imageSizes: wide.sizes, fetchPriority: "high" });

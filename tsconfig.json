@@ -36,7 +36,11 @@
     "**/*.mts",
     ".next/dev/types/**/*.ts",
     ".next-perf/types/**/*.ts",
-    ".next-perf/dev/types/**/*.ts"
+    ".next-perf/dev/types/**/*.ts",
+    ".next-footer/types/**/*.ts",
+    ".next-footer/dev/types/**/*.ts",
+    ".next-streams/types/**/*.ts",
+    ".next-streams/dev/types/**/*.ts"
   ],
   "//": "__tests__ and old .next-* build folders are excluded so stale files cannot break `next build`. Tests are checked by running them, and tsconfig.test.json type-checks them on demand.",
   "exclude": [
