@@ -29,5 +29,6 @@ export const HINDI_SHARDS: Record<string, () => Promise<{ default: Record<string
   "exam-tet": () => import("./exam-tet.json"),
   "exam-ugc-net": () => import("./exam-ugc-net.json"),
   "exam-upsc": () => import("./exam-upsc.json"),
+  "ielts": () => import("./ielts.json"),
 };
 export type HindiShard = string;

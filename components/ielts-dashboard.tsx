@@ -4,6 +4,7 @@ import dynamic from "next/dynamic";
 import { BookOpenCheck, FileText, Globe2, Languages, Mic, PenLine, Timer } from "lucide-react";
 import { RouteH1 } from "@/components/route-heading";
 import { buildIeltsPapers, IELTS_YEARS } from "@/lib/ielts/bank";
+import { useLanguage } from "./language-provider";
 import shared from "./board-exams.module.css";
 
 /*
@@ -18,6 +19,7 @@ function Loading() { return <div className={shared.skeleton} aria-busy="true" ar
 type View = "papers" | "hub";
 
 export function IeltsDashboard({ initialView = "papers" }: { initialView?: View }) {
+  const { language } = useLanguage(); const tr = (en: string, hindi: string) => language === "hi" ? hindi : en;
   const [view, setView] = useState<View>(initialView);
   const set = useMemo(() => view === "papers" ? buildIeltsPapers() : null, [view]);
   const pick = (next: View) => {
@@ -25,32 +27,33 @@ export function IeltsDashboard({ initialView = "papers" }: { initialView?: View 
     const url = new URL(window.location.href); url.searchParams.set("view", next); window.history.replaceState(window.history.state, "", url);
   };
   const VIEWS: { id: View; label: string; hint: string; icon: typeof FileText }[] = [
-    { id: "papers", label: "Sample Papers", hint: `Sample, mock & ${IELTS_YEARS.length} years · 480 Q&A`, icon: FileText },
-    { id: "hub", label: "Preparation Hub", hint: "Format, practice, topics & band calculator", icon: BookOpenCheck },
+    { id: "papers", label: tr("Sample Papers", "नमूना प्रश्न-पत्र"), hint: tr(`Sample, mock & ${IELTS_YEARS.length} years · 480 Q&A`, `नमूना, मॉक और ${IELTS_YEARS.length} वर्ष · 480 प्रश्नोत्तर`), icon: FileText },
+    { id: "hub", label: tr("Preparation Hub", "तैयारी केंद्र"), hint: tr("Format, practice, topics & band calculator", "प्रारूप, अभ्यास, विषय और बैंड कैलकुलेटर"), icon: BookOpenCheck },
   ];
 
   return <div className={shared.page}>
     <header className={shared.hero}>
       <div className={shared.heroText}>
         <p className={shared.eyebrow}><Languages size={14} aria-hidden="true" />IELTS Achievers · IELTS Dashboard</p>
-        <RouteH1>IELTS preparation, <em>paper by paper</em></RouteH1>
-        <p>Academic and General Training: sample papers and timed mock tests in test order, practice sets for the last {IELTS_YEARS.length} years and the most asked questions, rated by stars. Reading, vocabulary, grammar, band scores, Writing Task 2 and Speaking Part 3, with an answer for every question.</p>
-        <ul className={shared.highlights} aria-label="What you get">
+        <RouteH1>{tr("IELTS preparation, ", "IELTS की तैयारी, ")}<em>{tr("paper by paper", "पेपर दर पेपर")}</em></RouteH1>
+        <p>{tr(`Academic and General Training: sample papers and timed mock tests in test order, practice sets for the last ${IELTS_YEARS.length} years and the most asked questions, rated by stars. Reading, vocabulary, grammar, band scores, Writing Task 2 and Speaking Part 3, with an answer for every question.`,
+          `Academic और General Training: परीक्षा के क्रम में नमूना पेपर और समयबद्ध मॉक टेस्ट, पिछले ${IELTS_YEARS.length} वर्षों के अभ्यास सेट और सितारों से रेटेड सबसे अधिक पूछे जाने वाले प्रश्न। Reading, शब्दावली, व्याकरण, बैंड स्कोर, Writing Task 2 और Speaking Part 3, हर प्रश्न के उत्तर के साथ। प्रश्न अंग्रेज़ी में हैं, क्योंकि IELTS अंग्रेज़ी की परीक्षा है।`)}</p>
+        <ul className={shared.highlights} aria-label={tr("What you get", "आपको क्या मिलेगा")}>
           <li><Globe2 size={14} aria-hidden="true" />Academic · General Training</li>
-          <li><Timer size={14} aria-hidden="true" />Timed mock tests</li>
-          <li><PenLine size={14} aria-hidden="true" />Writing Task 2 plans</li>
-          <li><Mic size={14} aria-hidden="true" />Speaking model answers</li>
+          <li><Timer size={14} aria-hidden="true" />{tr("Timed mock tests", "समयबद्ध मॉक टेस्ट")}</li>
+          <li><PenLine size={14} aria-hidden="true" />{tr("Writing Task 2 plans", "Writing Task 2 की योजनाएँ")}</li>
+          <li><Mic size={14} aria-hidden="true" />{tr("Speaking model answers", "Speaking के आदर्श उत्तर")}</li>
         </ul>
       </div>
       <dl className={shared.stats}>
-        <div><dt>Questions with answers</dt><dd>480</dd></div>
-        <div><dt>Papers</dt><dd>{12 + IELTS_YEARS.length}</dd></div>
-        <div><dt>Topics</dt><dd>30</dd></div>
+        <div><dt>{tr("Questions with answers", "उत्तर सहित प्रश्न")}</dt><dd>480</dd></div>
+        <div><dt>{tr("Papers", "पेपर")}</dt><dd>{12 + IELTS_YEARS.length}</dd></div>
+        <div><dt>{tr("Topics", "विषय")}</dt><dd>30</dd></div>
       </dl>
     </header>
 
     <section className={shared.step} aria-labelledby="ielts-view">
-      <h2 id="ielts-view"><span>1</span>Choose what to study</h2>
+      <h2 id="ielts-view"><span>1</span>{tr("Choose what to study", "चुनें कि क्या पढ़ना है")}</h2>
       <div className={shared.views} role="tablist" aria-label="IELTS dashboard">
         {VIEWS.map(v => <button key={v.id} type="button" role="tab" aria-selected={v.id === view} aria-controls="ielts-panel" className={shared.view} onClick={() => pick(v.id)}>
           <v.icon size={18} aria-hidden="true" /><span><strong>{v.label}</strong><small>{v.hint}</small></span></button>)}
@@ -59,7 +62,7 @@ export function IeltsDashboard({ initialView = "papers" }: { initialView?: View 
 
     <section id="ielts-panel" className={shared.panel} role="tabpanel" aria-label={VIEWS.find(v => v.id === view)!.label}>
       {view === "papers" && set && <>
-        <div className={shared.panelHead}><h2>IELTS · Sample Papers</h2><p>{set.asked.length} questions with answers</p></div>
+        <div className={shared.panelHead}><h2>IELTS · {tr("Sample Papers", "नमूना प्रश्न-पत्र")}</h2><p>{set.asked.length} {tr("questions with answers", "उत्तर सहित प्रश्न")}</p></div>
         <ExamSamplePapers set={set} boardName="IELTS" title="IELTS" copy={{
           yearsTab: `Previous ${IELTS_YEARS.length} years`,
           lede: <>IELTS Academic and General Training: {set.unique} different questions across {set.sample.length + set.mock.length + set.years.length} papers of {set.sample[0]?.questions.length} questions, in test order (Reading, vocabulary, grammar and linking, band scores, Writing Task 2, Speaking Part 3), plus all {set.asked.length} questions by star rating. Original practice material, not official IELTS questions.</>,

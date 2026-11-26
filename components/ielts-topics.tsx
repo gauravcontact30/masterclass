@@ -6,6 +6,7 @@ import { Pager } from "@/components/pager";
 import { Tabs, TabsList, TabsPanel, TabsTab } from "./ui/tabs";
 import { ExamSearch } from "./exam-search";
 import { useGridColumns } from "./use-grid-columns";
+import { useExamLocale } from "./exam-locale";
 import { IELTS_TOPICS, type IeltsTopic } from "@/lib/ielts-topics";
 import { ieltsTopicImage } from "@/lib/exam-images";
 import styles from "./ielts-topics.module.css";
@@ -33,6 +34,8 @@ function TopicArt({ topic }: { topic: string }) {
 
 export function IeltsTopics({ hi }: { hi: boolean }) {
   const tr = (en: string, hindi: string) => hi ? hindi : en;
+  // Word meanings and essay idea points come from the "ielts" Hindi shard; questions and example sentences stay English.
+  const { dictionary } = useExamLocale(); const g = (text: string) => dictionary[text] ?? text;
   const [query, setQuery] = useState(""); const [filter, setFilter] = useState<Filter>("all"); const [sort, setSort] = useState<"common" | "az">("common"); const [page, setPage] = useState(0);
   const [open, setOpen] = useState<{ topic: string; part: Part } | null>(null);
   const grid = useRef<HTMLUListElement>(null); const columns = useGridColumns(grid); const perPage = columns * ROWS;
@@ -93,11 +96,11 @@ export function IeltsTopics({ hi }: { hi: boolean }) {
           <TabsTab value="writing"><PenLine size={14} aria-hidden="true" />{tr("Writing Task 2", "लेखन टास्क 2")}</TabsTab>
           <TabsTab value="speaking"><Mic size={14} aria-hidden="true" />{tr("Speaking", "बोलना")}</TabsTab>
         </TabsList>
-        <TabsPanel value="words"><ul className={styles.words}>{active.words.map(([word, meaning, example]) => <li key={word}><b lang="en">{word}</b><span>{meaning}</span><i lang="en">{example}</i></li>)}</ul></TabsPanel>
+        <TabsPanel value="words"><ul className={styles.words}>{active.words.map(([word, meaning, example]) => <li key={word}><b lang="en">{word}</b><span>{g(meaning)}</span><i lang="en">{example}</i></li>)}</ul></TabsPanel>
         <TabsPanel value="writing"><div className={styles.task}>
           <p className={styles.question} lang="en">{active.task2}</p>
           <h4><Lightbulb size={14} aria-hidden="true" />{tr("Ideas to develop", "विकसित करने के विचार")}</h4>
-          <ul>{active.ideas.map(idea => <li key={idea} lang="en">{idea}</li>)}</ul>
+          <ul>{active.ideas.map(idea => <li key={idea} lang={g(idea) === idea ? "en" : "hi"}>{g(idea)}</li>)}</ul>
           <p className={styles.hint}>{tr("Plan for 5 minutes, write at least 250 words in 40 minutes, and give a clear position in the introduction and conclusion.", "5 मिनट योजना बनाएँ, 40 मिनट में कम से कम 250 शब्द लिखें, और भूमिका व निष्कर्ष में अपनी राय स्पष्ट रखें।")}</p>
         </div></TabsPanel>
         <TabsPanel value="speaking"><div className={styles.speaking}>

@@ -35,7 +35,13 @@ NUMBER = re.compile(r'\d+(?:[.,]\d+)*')
 DEVANAGARI = re.compile('[ऀ-ॿ]')
 # Numbers, operators, sub/superscripts, Greek letters, arrows and relations.
 MATHY = re.compile('[0-9=+−×÷√π∞≤≥<>±%₹°′″^∑∫∆²³¹'
-                   '⁰-₟α-ωΑ-Ω←-⇿≈≠≡∝∠⊥∥∴∵]')
+                   '⁰-₟α-ωΑ-Ω←-⇿≈≠≡∝∠⊥∥∴∵'
+                   # |x| and set, logic, geometry symbols; modifier and phonetic super/subscripts (xˣ, aᵢ, Aᵀ); vector hats (î, ĵ, k̂).
+                   '|∀-⋿△▲□ʰ-˿ᴀ-ᶿîĵ̂]')
+# Upper-case words that are emphasis in a question, not abbreviations: they must be translated, never masked.
+EMPHASIS = {'NOT', 'ALL', 'AND', 'OR', 'NO', 'ONLY', 'TRUE', 'FALSE', 'EXCEPT', 'CORRECT', 'INCORRECT', 'BOTH', 'NONE', 'NEITHER', 'NOR',
+            'NEVER', 'ALWAYS', 'LEAST', 'MOST', 'BEST', 'WRONG', 'RIGHT', 'ONE', 'TWO', 'THREE', 'MORE', 'THAN', 'WORDS', 'WORD', 'NUMBER'}
+ACRONYM = re.compile(r'[A-Z][A-Z0-9&]*[A-Z0-9]')
 UNITS = {'cm', 'mm', 'km', 'm', 's', 'kg', 'g', 'mg', 'mol', 'h', 'hr', 'hrs', 'min', 'L', 'mL', 'N', 'J', 'W', 'V', 'A', 'K', 'Pa', 'Hz',
          'C', 'kJ', 'kW', 'eV', 'dm', 'mA', 'kV', 'atm', 'cal', 'kcal', 'Wb', 'T', 'F', 'H', 'S', 'D', 'mph', 'kmph', 'sec', 'secs'}
 MATH_EDGE = re.compile(r'''^(["'‘“]*)(.*?)([.,;:?!"'’”]*)$''', re.S)
@@ -68,6 +74,9 @@ def is_mathy(core: str, previous: bool) -> bool:
     if PLACEHOLDER.search(core) or MATHY.search(core) or '_' in core or core in FUNCTIONS or re.search(r'\w\(', core):
         return True
     if re.fullmatch(r'[A-Za-z]', core) and (core not in ('a', 'A', 'I') or previous):
+        return True
+    # Abbreviations (CBI, GNP, RNA, CTET) stay in Latin script; the model otherwise copies them with invented letters ("GNPHI").
+    if ACRONYM.fullmatch(core) and core not in EMPHASIS:
         return True
     if re.fullmatch('[/|·…:\\-–()]+', core):
         return True
@@ -125,6 +134,8 @@ def mask(text: str):
 def unmask(text: str, mapping: dict, masked_source: str) -> str:
     # The model may only copy Latin words that the masked source already contains (it otherwise invents "HI", transliterated keys, ...).
     text = re.sub(r'<\s*ID\s*(\d+)\s*[>′]', lambda m: f'<ID{m.group(1)}>', text)
+    # Damaged keys the model writes when a key ends the sentence: "<ID1 ]", "<ID1 .", "<ID1 }", "< आई . डी . 1 .".
+    text = re.sub(r'<\s*(?:ID|आई\s*\.?\s*डी)\s*\.?\s*(\d+)(?!\d)(?!\s*>)\s*[\]\}\.|।]?', lambda m: f'<ID{m.group(1)}>', text)
     allowed = set(re.findall(r'[A-Za-z]+', re.sub(r'<ID\d+>', ' ', masked_source)))
     if any(word not in allowed for word in re.findall(r'[A-Za-z]+', re.sub(r'<ID\d+>', ' ', text))):
         return text + BROKEN
@@ -169,6 +180,13 @@ def postprocess(source: str, hindi: str) -> str:
     out = re.sub(r'\(\s+', '(', out)
     out = re.sub(r'\s+\)', ')', out)
     src = source.rstrip()
+    # The model doubles a bracket after a unit ("(kWh))") or drops the one that closes the sentence ("(23 pairs).").
+    if '))' not in source and out.count(')') > source.count(')'):
+        out = out.replace('))', ')')
+    if (source.count('(') == source.count(')') and out.count('(') == out.count(')') + 1 and re.search(r'\)[.?!]?$', src)
+            and ')' not in out[out.rfind('('):]):
+        body = re.match(r'^(.*?)([।.?!]?)$', out, re.S)
+        out = body.group(1).rstrip() + ')' + body.group(2)
     tail = src[-1:]
     if tail == '?' and not out.endswith('?'):
         out = out.rstrip('।.').rstrip() + '?'
@@ -189,7 +207,10 @@ def problems(source: str, hindi: str) -> list[str]:
         issues.append('no_devanagari')
     # Single-letter variables left outside the masks (text such as "point P") must survive.
     masked_source = mask(prepare(source))[0]
-    for letter in set(re.findall(r'(?<![A-Za-z])([B-HJ-Zb-z])(?![A-Za-z])', masked_source)):
+    # The "s" of a possessive or the "t" of a contraction ("A's", "don't") is not a variable.
+    # Accented letters belong to the word ("Döbereiner"); "e-Shram", "i.e." and "e.g." are a prefix and abbreviations, not variables.
+    scan = re.sub(r'(?<![A-Za-z])(?:i\.e\.|e\.g\.|e-(?=[A-Za-z]))', ' ', masked_source)
+    for letter in set(re.findall(r'(?<![A-Za-zÀ-ɏ\'’])([B-HJ-Zb-z])(?![A-Za-zÀ-ɏ])', scan)):
         if not re.search(rf'(?<![A-Za-z]){letter}(?![A-Za-z])', hindi):
             issues.append('variable')
             break
@@ -201,11 +222,23 @@ def problems(source: str, hindi: str) -> list[str]:
         issues.append('symbols')
     if any(ch not in source and ch not in HINDI_EXTRA and not DEVANAGARI.match(ch) for ch in hindi):
         issues.append('stray')
+    # Every formula-like token ("|A|", "nh/2π", "C₆H₁₂O₆", "x²") must survive verbatim; plain words may be translated.
+    for token in re.findall(r"[^\s,;:?!()\[\]{}\"“”‘’]+", source):
+        # A word suffix after a formula prefix may be translated ("β-D-ribose" → "β-D-राइबोस", "24-carat" → "24 कैरेट").
+        token = re.sub(r"(?:-[A-Za-zÀ-ɏ]{2,})+$", "", token.strip(".'"))
+        if token and re.search(r"[^A-Za-zÀ-ɏ0-9'’\-/&.…–—]", token) and token not in hindi:
+            issues.append('math_tokens')
+            break
+    # Letter-by-letter transliteration ("एम . वी . आर .") is the model spelling out a formula it lost.
+    if re.search(r'(?:[ऀ-ॿ]{1,7} \. ?){2,}', hindi) or re.search(r'(?<=[A-Za-z0-9]) [ऀ-ॿ]{1,7} \.(?= )', hindi):
+        issues.append('spelled_out')
     ratio = len(hindi) / max(1, len(source))
     if len(source) > 12 and not 0.45 <= ratio <= 3.2:
         issues.append('length')
-    words = hindi.split()
-    if any(words[i] == words[i + 1] == words[i + 2] for i in range(len(words) - 2)):
+    words, source_words = hindi.split(), source.split()
+    # A run the source itself repeats ("3d: ↑↓ ↑↓ ↑↓") is copied, not a decoding loop.
+    repeated = lambda items: {items[i] for i in range(len(items) - 2) if items[i] == items[i + 1] == items[i + 2]}
+    if repeated(words) - repeated(source_words):
         issues.append('repetition')
     return issues
 

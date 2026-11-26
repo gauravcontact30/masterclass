@@ -4,6 +4,7 @@ import { BookOpen, Calculator, LayoutGrid, CalendarCheck, CheckCircle2, ChevronD
 import { RouteH1 } from "@/components/route-heading";
 import { useLanguage } from "./language-provider";
 import { LanguageSwitch } from "./language-switch";
+import { useExamLocale, useExamShard } from "./exam-locale";
 import {
   FACTS, FORMAT, LINKING, LISTENING, LISTENING_TIPS, MISTAKES, OFFICIAL_LINKS, RAW_TABLES, READING, READING_TIPS, SKILLS, SPEAKING_CRITERIA,
   SPEAKING_CUE_CARDS, SPEAKING_PART1, STRATEGIES, STUDY_PLAN, TEST_DAY, TOPIC_VOCAB, UPGRADES, WRITING, WRITING_CRITERIA,
@@ -54,6 +55,9 @@ function useCountdown(initial: number, onDone?: () => void) {
   };
 }
 const noSubscribe = () => () => {};
+/** IELTS guidance (format notes, tips, strategies, explanations, meanings, plan) in the reader's language, from the "ielts"
+ *  Hindi shard (lib/ielts-guidance.ts lists it). Passages, questions, prompts and model phrases stay English: it is an English test. */
+export function useGuide() { const { dictionary } = useExamLocale(); return (text: string) => dictionary[text] ?? text; }
 
 /**
  * The IELTS preparation hub inside the Learning Dashboard (/learning/ielts): the test format, an interactive practice
@@ -63,6 +67,7 @@ const noSubscribe = () => () => {};
 export function IeltsPreparation() {
   const { language } = useLanguage(); const hi = language === "hi";
   const tr = (en: string, hindi: string) => hi ? hindi : en;
+  useExamShard("ielts"); const g = useGuide();
   const [type, setType] = useState<TestType>("academic");
   const [skill, setSkill] = useState<Skill>("Listening");
 
@@ -83,7 +88,7 @@ export function IeltsPreparation() {
           <b>General Training</b><small>{tr("Everyday English, training and migration", "रोज़मर्रा की अंग्रेज़ी, प्रशिक्षण और प्रवास")}</small>
         </button>
       </div>
-      <dl className={styles.facts}>{FACTS.map(fact => <div key={fact.label}><dt>{fact.label}</dt><dd>{fact.value}</dd></div>)}</dl>
+      <dl className={styles.facts}>{FACTS.map(fact => <div key={fact.label}><dt>{g(fact.label)}</dt><dd>{fact.value}</dd></div>)}</dl>
     </header>
 
     <nav className={styles.sectionNav} aria-label={tr("IELTS hub sections", "IELTS केंद्र के भाग")}>
@@ -98,9 +103,9 @@ export function IeltsPreparation() {
         {SKILLS.map(item => { const Icon = SKILL_ICON[item]; const f = FORMAT[item]; return <li key={item} style={{ "--tone": SKILL_TONE[item] } as CSSProperties}>
           <span className={styles.formatIcon} aria-hidden="true"><Icon size={18} /></span>
           <h3>{item}{hi && <small lang="hi">{f.hi}</small>}</h3>
-          <p className={styles.formatMeta}><span><Clock size={12} aria-hidden="true" />{f.minutes}</span><span>{f.parts}</span><span>{f.questions}</span></p>
-          <p>{f.tests}</p>
-          <p className={styles.formatDiff}>{f.diff}</p>
+          <p className={styles.formatMeta}><span><Clock size={12} aria-hidden="true" />{g(f.minutes)}</span><span>{g(f.parts)}</span><span>{g(f.questions)}</span></p>
+          <p>{g(f.tests)}</p>
+          <p className={styles.formatDiff}>{g(f.diff)}</p>
         </li>; })}
       </ul>
     </section>
@@ -143,11 +148,11 @@ export function IeltsPreparation() {
       <div className={styles.strategyGrid}>
         {SKILLS.map(item => { const Icon = SKILL_ICON[item]; return <details key={item} className={styles.strategy} style={{ "--tone": SKILL_TONE[item] } as CSSProperties} open={item === "Listening"}>
           <summary><span className={styles.formatIcon} aria-hidden="true"><Icon size={16} /></span>{item}<ChevronDown size={16} aria-hidden="true" className={styles.chevron} /></summary>
-          <dl>{STRATEGIES[item].map(row => <div key={row.type}><dt>{row.type}</dt><dd>{row.how}</dd></div>)}</dl>
+          <dl>{STRATEGIES[item].map(row => <div key={row.type}><dt>{g(row.type)}</dt><dd>{g(row.how)}</dd></div>)}</dl>
         </details>; })}
       </div>
       <h3 className={styles.subhead}>{tr("Common mistakes to avoid", "आम गलतियाँ जिनसे बचें")}</h3>
-      <ul className={styles.mistakes}>{MISTAKES.map(item => <li key={item.mistake}><XCircle size={16} aria-hidden="true" /><div><b>{item.mistake}</b><span>{item.fix}</span></div></li>)}</ul>
+      <ul className={styles.mistakes}>{MISTAKES.map(item => <li key={item.mistake}><XCircle size={16} aria-hidden="true" /><div><b>{g(item.mistake)}</b><span>{g(item.fix)}</span></div></li>)}</ul>
     </section>
 
     {/* 5. Vocabulary and language */}
@@ -158,7 +163,7 @@ export function IeltsPreparation() {
       <div className={styles.languageGrid}>
         <div className={styles.card}>
           <h3>{tr("Linking words by purpose", "उद्देश्य के अनुसार जोड़ने वाले शब्द")}</h3>
-          <dl className={styles.linking}>{LINKING.map(group => <div key={group.purpose}><dt>{group.purpose}</dt><dd>{group.phrases.map(phrase => <span key={phrase}>{phrase}</span>)}</dd></div>)}</dl>
+          <dl className={styles.linking}>{LINKING.map(group => <div key={group.purpose}><dt>{g(group.purpose)}</dt><dd>{group.phrases.map(phrase => <span key={phrase}>{phrase}</span>)}</dd></div>)}</dl>
         </div>
         <div className={styles.card}>
           <h3>{tr("Upgrade everyday words", "सामान्य शब्दों को बेहतर बनाएँ")}</h3>
@@ -180,11 +185,11 @@ export function IeltsPreparation() {
       <SectionHead id="ielts-test-day-h" icon={<ClipboardCheck size={16} />} kicker={tr("Test day", "परीक्षा दिवस")} title={tr("Be ready on the day", "परीक्षा के दिन के लिए तैयार रहें")}
         lede={tr("Check the latest rules with your test centre when you book.", "बुकिंग के समय अपने परीक्षा केंद्र से नवीनतम नियम जाँच लें।")} />
       <div className={styles.languageGrid}>
-        <ul className={`${styles.card} ${styles.checklist}`}>{TEST_DAY.map(item => <li key={item}><CheckCircle2 size={16} aria-hidden="true" />{item}</li>)}</ul>
+        <ul className={`${styles.card} ${styles.checklist}`}>{TEST_DAY.map(item => <li key={item}><CheckCircle2 size={16} aria-hidden="true" />{g(item)}</li>)}</ul>
         <div className={`${styles.card} ${styles.official}`}>
           <h3>{tr("Official practice and formats", "आधिकारिक अभ्यास और प्रारूप")}</h3>
           <p className={styles.small}>{tr("Use official sample questions for timed practice once you know the format.", "प्रारूप समझने के बाद समयबद्ध अभ्यास के लिए आधिकारिक नमूना प्रश्नों का उपयोग करें।")}</p>
-          {OFFICIAL_LINKS.map(link => <a key={link.href} href={link.href} target="_blank" rel="noreferrer">{link.label}<ExternalLink size={13} aria-hidden="true" /></a>)}
+          {OFFICIAL_LINKS.map(link => <a key={link.href} href={link.href} target="_blank" rel="noreferrer">{g(link.label)}<ExternalLink size={13} aria-hidden="true" /></a>)}
         </div>
       </div>
     </section>
@@ -203,6 +208,7 @@ function SectionHead({ id, icon, kicker, title, lede }: { id: string; icon: Reac
 
 /* ── Listening: browser text-to-speech, typed answers checked against accepted forms, transcripts after. ───────── */
 function ListeningLab({ tr }: { tr: Tr }) {
+  const g = useGuide();
   const supported = useSyncExternalStore(noSubscribe, () => "speechSynthesis" in window, () => false);
   const [speaking, setSpeaking] = useState<string | null>(null);
   const [answers, setAnswers] = useState<Record<string, string>>({});
@@ -220,7 +226,7 @@ function ListeningLab({ tr }: { tr: Tr }) {
     {!supported && <p className={styles.notice}>{tr("Voice playback is unavailable in this browser. Read the transcript instead, or use the official sample tests below.", "इस ब्राउज़र में आवाज़ उपलब्ध नहीं है। पाठ पढ़ें या नीचे आधिकारिक नमूना परीक्षा देखें।")}</p>}
     {LISTENING.map(exercise => { const done = checked[exercise.id]; const score = exercise.blanks.filter(blank => blank.accept.test((answers[`${exercise.id}:${blank.label}`] ?? "").trim())).length;
       return <article key={exercise.id} className={styles.exercise}>
-        <header><h3>{exercise.title}</h3><p>{exercise.context}</p></header>
+        <header><h3>{g(exercise.title)}</h3><p>{g(exercise.context)}</p></header>
         <button type="button" className={styles.primary} disabled={!supported} onClick={() => play(exercise.id, exercise.script)} aria-pressed={speaking === exercise.id}>
           {speaking === exercise.id ? <Square size={14} aria-hidden="true" /> : <Play size={14} aria-hidden="true" />}{speaking === exercise.id ? tr("Stop audio", "ऑडियो रोकें") : tr("Play English audio", "अंग्रेज़ी ऑडियो सुनें")}
         </button>
@@ -233,7 +239,7 @@ function ListeningLab({ tr }: { tr: Tr }) {
           <button type="button" onClick={() => setChecked(current => ({ ...current, [exercise.id]: true }))}>{tr("Check answers", "उत्तर जाँचें")}</button>
           {done && <p role="status" className={styles.score}>{score} / {exercise.blanks.length} {tr("correct", "सही")}</p>}
         </div>
-        {done && <p className={styles.tip}><Lightbulb size={14} aria-hidden="true" />{exercise.tip}</p>}
+        {done && <p className={styles.tip}><Lightbulb size={14} aria-hidden="true" />{g(exercise.tip)}</p>}
         <details className={styles.transcript}><summary>{tr("Show transcript", "अंग्रेज़ी पाठ देखें")}</summary><p lang="en">{exercise.script}</p></details>
       </article>; })}
     <Tips items={LISTENING_TIPS} tr={tr} />
@@ -242,6 +248,7 @@ function ListeningLab({ tr }: { tr: Tr }) {
 
 /* ── Reading: True / False / Not given plus a gap fill, from the passage for the chosen test type. ─────────────── */
 function ReadingLab({ type, tr }: { type: TestType; tr: Tr }) {
+  const g = useGuide();
   const set = READING[type];
   const [answers, setAnswers] = useState<Record<number, string>>({});
   const [gap, setGap] = useState(""); const [gapChecked, setGapChecked] = useState(false);
@@ -249,7 +256,7 @@ function ReadingLab({ type, tr }: { type: TestType; tr: Tr }) {
   return <>
     <LabIntro title="Reading · practice" text={tr("Answer using only evidence from the passage. Do not use your own knowledge.", "केवल दिए गए पाठ के प्रमाण से उत्तर दें। अपनी जानकारी का उपयोग न करें।")} />
     <article className={styles.exercise}>
-      <header><h3>{set.title}</h3><p>{set.source}</p></header>
+      <header><h3>{set.title}</h3><p>{g(set.source)}</p></header>
       <blockquote lang="en">{set.passage}</blockquote>
       <h4>{tr("Do the statements agree with the information in the passage?", "क्या कथन पाठ की जानकारी से मेल खाते हैं?")}</h4>
       {set.tfng.map((item, index) => <fieldset key={item.q} className={styles.tfng}><legend lang="en"><span>{index + 1}</span>{item.q}</legend>
@@ -257,7 +264,7 @@ function ReadingLab({ type, tr }: { type: TestType; tr: Tr }) {
           data-state={answers[index] === option ? (option === item.answer ? "right" : "wrong") : undefined} onClick={() => setAnswers(current => ({ ...current, [index]: option }))}>{option}</button>)}</div>
         {answers[index] && <p role="status" className={styles.feedback} data-state={answers[index] === item.answer ? "right" : "wrong"}>
           {answers[index] === item.answer ? <CheckCircle2 size={14} aria-hidden="true" /> : <XCircle size={14} aria-hidden="true" />}
-          <span><b>{answers[index] === item.answer ? tr("Correct", "सही") : tr("Review", "फिर विचार करें")} — {item.answer}.</b> {item.why}</span></p>}
+          <span><b>{answers[index] === item.answer ? tr("Correct", "सही") : tr("Review", "फिर विचार करें")} — {item.answer}.</b> {g(item.why)}</span></p>}
       </fieldset>)}
       {Object.keys(answers).length === set.tfng.length && <p className={styles.score} role="status">{score} / {set.tfng.length} {tr("correct", "सही")}</p>}
       <h4>{tr("Sentence completion", "वाक्य पूर्ति")}</h4>
@@ -266,7 +273,7 @@ function ReadingLab({ type, tr }: { type: TestType; tr: Tr }) {
       </label>
       <div className={styles.row}><button type="button" onClick={() => setGapChecked(true)}>{tr("Check answer", "उत्तर देखें")}</button></div>
       {gapChecked && <p role="status" className={styles.feedback} data-state={set.completion.accept.test(gap.trim()) ? "right" : "wrong"}>
-        <span><b>{set.completion.accept.test(gap.trim()) ? tr("Correct", "सही") : `${tr("Answer", "उत्तर")}: ${set.completion.answer}.`}</b> {set.completion.why}</span></p>}
+        <span><b>{set.completion.accept.test(gap.trim()) ? tr("Correct", "सही") : `${tr("Answer", "उत्तर")}: ${set.completion.answer}.`}</b> {g(set.completion.why)}</span></p>}
     </article>
     <Tips items={READING_TIPS} tr={tr} />
   </>;
@@ -274,6 +281,7 @@ function ReadingLab({ type, tr }: { type: TestType; tr: Tr }) {
 
 /* ── Writing: Task 1 / Task 2 for the chosen test type, a separate draft each, word target, timer and a plan. ──── */
 function WritingLab({ type, tr }: { type: TestType; tr: Tr }) {
+  const g = useGuide();
   const [task, setTask] = useState<WritingTask>("task1");
   const [drafts, setDrafts] = useState<Record<string, string>>({});
   const current = WRITING[type][task]; const key = `${type}:${task}`; const draft = drafts[key] ?? ""; const words = countWords(draft);
@@ -304,17 +312,18 @@ function WritingLab({ type, tr }: { type: TestType; tr: Tr }) {
             </div>
           </div>
           <h4>{tr("Suggested plan", "सुझाई गई योजना")}</h4>
-          <ol className={styles.plan}>{current.plan.map(step => <li key={step}>{step}</li>)}</ol>
+          <ol className={styles.plan}>{current.plan.map(step => <li key={step}>{g(step)}</li>)}</ol>
         </aside>
       </div>
       <h4>{tr("Self-check against the four criteria", "चार मानदंडों पर स्वयं जाँचें")}</h4>
-      <ul className={styles.criteria}>{WRITING_CRITERIA.map(item => <li key={item.name}><b>{item.name}</b><span>{item.note}</span></li>)}</ul>
+      <ul className={styles.criteria}>{WRITING_CRITERIA.map(item => <li key={item.name}><b>{g(item.name)}</b><span>{g(item.note)}</span></li>)}</ul>
     </article>
   </>;
 }
 
 /* ── Speaking: Part 1 questions, a Part 2 cue card with 1-minute preparation then a 2-minute talk, Part 3 questions. */
 function SpeakingLab({ tr }: { tr: Tr }) {
+  const g = useGuide();
   const [topic, setTopic] = useState(0);
   const [card, setCard] = useState(0);
   const [phase, setPhase] = useState<"idle" | "prepare" | "speak" | "done">("idle");
@@ -331,7 +340,7 @@ function SpeakingLab({ tr }: { tr: Tr }) {
     <LabIntro title="Speaking · practice" text={tr("Answer out loud, in full sentences. Use your own experience instead of a memorised script.", "पूरे वाक्यों में ज़ोर से उत्तर दें। रटे हुए उत्तर के बजाय अपने अनुभव का उपयोग करें।")} />
     <div className={styles.speakGrid}>
       <article className={styles.exercise}>
-        <header><h3>Part 1 · {part1.topic}</h3><p>{tr("4–5 minutes of short questions about familiar topics.", "परिचित विषयों पर 4–5 मिनट के छोटे प्रश्न।")}</p></header>
+        <header><h3>Part 1 · {g(part1.topic)}</h3><p>{tr("4–5 minutes of short questions about familiar topics.", "परिचित विषयों पर 4–5 मिनट के छोटे प्रश्न।")}</p></header>
         <ol className={styles.questions}>{part1.questions.map(question => <li key={question} lang="en">{question}</li>)}</ol>
         <button type="button" onClick={() => setTopic(index => (index + 1) % SPEAKING_PART1.length)}><Shuffle size={14} aria-hidden="true" />{tr("Another topic", "दूसरा विषय")}</button>
       </article>
@@ -354,12 +363,13 @@ function SpeakingLab({ tr }: { tr: Tr }) {
       </article>
     </div>
     <h4 className={styles.subhead}>{tr("How speaking is assessed", "बोलने का मूल्यांकन कैसे होता है")}</h4>
-    <ul className={styles.criteria}>{SPEAKING_CRITERIA.map(item => <li key={item.name}><b>{item.name}</b><span>{item.note}</span></li>)}</ul>
+    <ul className={styles.criteria}>{SPEAKING_CRITERIA.map(item => <li key={item.name}><b>{g(item.name)}</b><span>{g(item.note)}</span></li>)}</ul>
   </>;
 }
 
 /* ── Band calculator: overall band from four skills, and an approximate raw-score converter. ───────────────────── */
 function BandCalculator({ type, tr }: { type: TestType; tr: Tr }) {
+  const g = useGuide();
   const [scores, setScores] = useState<Record<Skill, number>>({ Listening: 6.5, Reading: 6.5, Writing: 6, Speaking: 6.5 });
   const overall = overallBand(SKILLS.map(item => scores[item]));
   const average = SKILLS.reduce((sum, item) => sum + scores[item], 0) / 4;
@@ -380,8 +390,8 @@ function BandCalculator({ type, tr }: { type: TestType; tr: Tr }) {
       <h3>{tr("Raw score to band", "सही उत्तर से बैंड")}</h3>
       <label className={styles.fieldLabel}>{tr("Paper", "पेपर")}
         <select value={table} onChange={event => setTable(event.target.value as "listening" | "reading")}>
-          <option value="listening">{RAW_TABLES.listening.label}</option>
-          <option value="reading">{RAW_TABLES[type === "academic" ? "academicReading" : "generalReading"].label}</option>
+          <option value="listening">{g(RAW_TABLES.listening.label)}</option>
+          <option value="reading">{g(RAW_TABLES[type === "academic" ? "academicReading" : "generalReading"].label)}</option>
         </select>
       </label>
       <label className={styles.fieldLabel}>{tr("Correct answers out of 40", "40 में से सही उत्तर")}: <b>{correct}</b>
@@ -394,17 +404,19 @@ function BandCalculator({ type, tr }: { type: TestType; tr: Tr }) {
 }
 
 function VocabularyBank() {
+  const g = useGuide();
   const [topic, setTopic] = useState(TOPIC_VOCAB[0].topic);
   const active = TOPIC_VOCAB.find(group => group.topic === topic) ?? TOPIC_VOCAB[0];
   return <div className={styles.vocab}>
     <div className={styles.vocabTabs} role="group" aria-label="Vocabulary topics">
-      {TOPIC_VOCAB.map(group => <button type="button" key={group.topic} aria-pressed={group.topic === topic} onClick={() => setTopic(group.topic)}>{group.topic}</button>)}
+      {TOPIC_VOCAB.map(group => <button type="button" key={group.topic} aria-pressed={group.topic === topic} onClick={() => setTopic(group.topic)}>{g(group.topic)}</button>)}
     </div>
-    <ul className={styles.vocabGrid}>{active.words.map(item => <li key={item.word}><b lang="en">{item.word}</b><span>{item.meaning}</span><i lang="en">{item.example}</i></li>)}</ul>
+    <ul className={styles.vocabGrid}>{active.words.map(item => <li key={item.word}><b lang="en">{item.word}</b><span>{g(item.meaning)}</span><i lang="en">{item.example}</i></li>)}</ul>
   </div>;
 }
 
 function StudyPlan({ tr }: { tr: Tr }) {
+  const g = useGuide();
   const [done, setDone] = useState<Record<string, boolean>>({});
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- restores the saved checklist after hydration.
@@ -416,9 +428,9 @@ function StudyPlan({ tr }: { tr: Tr }) {
   return <>
     <div className={styles.progress}><div aria-hidden="true"><i style={{ width: `${(finished / total) * 100}%` }} /></div><p>{finished} / {total} {tr("tasks done", "काम पूरे")}</p></div>
     <ol className={styles.weeks}>{STUDY_PLAN.map((week, weekIndex) => <li key={week.week} className={styles.card}>
-      <p className={styles.weekLabel}>{week.week}</p><h3>{week.focus}</h3>
+      <p className={styles.weekLabel}>{g(week.week)}</p><h3>{g(week.focus)}</h3>
       <ul>{week.tasks.map((task, taskIndex) => { const id = `${weekIndex}-${taskIndex}`; return <li key={id}>
-        <label><input type="checkbox" checked={!!done[id]} onChange={() => toggle(id)} /><span>{task}</span></label>
+        <label><input type="checkbox" checked={!!done[id]} onChange={() => toggle(id)} /><span>{g(task)}</span></label>
       </li>; })}</ul>
     </li>)}</ol>
   </>;
@@ -428,5 +440,6 @@ function LabIntro({ title, text }: { title: string; text: string }) {
   return <header className={styles.labIntro}><h3>{title}</h3><p>{text}</p></header>;
 }
 function Tips({ items, tr }: { items: string[]; tr: Tr }) {
-  return <aside className={styles.tips}><h4><Lightbulb size={15} aria-hidden="true" />{tr("Tips", "सुझाव")}</h4><ul>{items.map(item => <li key={item}>{item}</li>)}</ul></aside>;
+  const g = useGuide();
+  return <aside className={styles.tips}><h4><Lightbulb size={15} aria-hidden="true" />{tr("Tips", "सुझाव")}</h4><ul>{items.map(item => <li key={item}>{g(item)}</li>)}</ul></aside>;
 }

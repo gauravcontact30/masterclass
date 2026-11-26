@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { Workspace } from "@/components/workspace";
 import { IeltsPreparation } from "@/components/ielts-preparation";
+import { ExamLocaleProvider } from "@/components/exam-locale";
 import { requireLearningUser as currentUser } from "@/lib/server/subscription-access";
 import { authConfigured, billingConfigured, databaseConfigured } from "@/lib/server/config";
 import { signInFor } from "@/lib/safe-redirect";
@@ -17,5 +18,5 @@ export default async function IeltsPage() {
   if (authEnabled && !user) redirect(signInFor("/learning/ielts"));
   return <Workspace initialCategory="ielts" authEnabled={authEnabled}
     configured={databaseConfigured()} billingEnabled={billingConfigured()} userEmail={user?.email ?? null} initialSuperAdmin={isSuperAdminUser(user)}
-    notesContent={<IeltsPreparation />} />;
+    notesContent={<ExamLocaleProvider><IeltsPreparation /></ExamLocaleProvider>} />;
 }
