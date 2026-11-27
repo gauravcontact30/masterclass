@@ -32,6 +32,19 @@
 .meta { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 0; }
 .meta > span:not([data-q]) { padding: 2px 9px; border-radius: 999px; background: var(--s-soft); font-size: 12px; color: var(--s-muted); }
 .notesHead { margin: 6px 0 0 !important; font-size: 12px !important; letter-spacing: .08em; text-transform: uppercase; color: var(--s-clay-deep); }
+/* Landing: the lesson under the player, its notes point by point */
+.lessonCard { display: grid; align-content: start; gap: 12px; padding: clamp(16px, 2.4vw, 22px); border: 1px solid var(--s-line); border-radius: 16px; background: var(--s-paper); box-shadow: 0 10px 28px -22px rgba(20, 20, 19, .45); }
+.lessonCard h3 { margin: 0; font-size: clamp(19px, 2.2vw, 24px); line-height: 1.3; letter-spacing: -.01em; }
+.lessonSummary { display: flex; gap: 8px; align-items: flex-start; margin: 0; font-size: 14.5px; line-height: 1.6; color: var(--s-muted); }
+.lessonSummary svg { flex: none; margin-top: 3px; color: var(--s-clay); }
+.learnBlock { display: grid; gap: 10px; padding: 14px; border-radius: 12px; background: var(--s-soft); }
+.learnHead { display: inline-flex; align-items: center; gap: 6px; margin: 0; font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--s-clay-deep); }
+.learnList { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; counter-reset: none; }
+.learnList li { display: flex; gap: 12px; align-items: flex-start; padding: 10px 12px; border: 1px solid var(--s-line); border-radius: 10px; background: #fff; font-size: 14.5px; line-height: 1.55; color: var(--s-read); }
+.learnNo { flex: none; display: grid; place-items: center; min-width: 30px; height: 24px; border-radius: 7px; background: var(--accent, var(--s-clay)); color: #fff; font-size: 12px; font-weight: 800; font-variant-numeric: tabular-nums; }
+.upNext { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 0; padding-top: 10px; border-top: 1px dashed var(--s-line); font-size: 13.5px; color: var(--s-muted); }
+.upNext svg { color: var(--s-clay); }
+.upNext b { color: var(--s-ink); font-weight: 600; }
 .points { margin: 0; padding-left: 20px; display: grid; gap: 4px; font-size: 14.5px; line-height: 1.55; color: var(--s-read); }
 .note { margin: 0; padding: 8px 12px; border-left: 3px solid #b7791f; border-radius: 0 8px 8px 0; background: #fdf6e7; font-size: 13px; line-height: 1.5; color: #6b4e16; }
 .warn { display: flex; gap: 8px; align-items: flex-start; margin: 0; padding: 10px 12px; border: 1px solid #f0c9a6; border-radius: 10px; background: #fff4ea; font-size: 13px; line-height: 1.5; color: #7a3d14; }
@@ -139,9 +152,17 @@
 .headActions { display: flex; flex-wrap: wrap; gap: 10px; }
 .headActions .cta { width: fit-content; }
 :is(.landing) .ghost { display: inline-flex; align-items: center; gap: 8px; max-width: 100%; min-height: 44px; padding: 8px 16px; overflow: hidden; border: 1px solid var(--s-line); border-radius: 12px; background: #fff; color: var(--s-ink); font-size: 14px; font-weight: 600; text-decoration: none; text-overflow: ellipsis; white-space: nowrap; }
-.railsHead { display: grid; gap: 4px; margin-top: 6px; }
-.railsHead h3 { margin: 0; font-size: clamp(20px, 2.4vw, 26px); letter-spacing: -.01em; }
-.railsHead p { margin: 0; font-size: 14.5px; color: var(--s-muted); }
+.lessonRow { display: grid; grid-template-columns: minmax(0, 1.75fr) minmax(280px, 1fr); gap: 18px; align-items: stretch; }
+.lessonRow > * { height: 100%; box-sizing: border-box; }
+@media (max-width: 900px) { .lessonRow { grid-template-columns: minmax(0, 1fr); } }
+.railsAnchor { scroll-margin-top: 90px; }
+.railsHead { display: grid; align-content: center; gap: 10px; margin: 0; padding: clamp(18px, 3vw, 28px); border: 1px solid var(--s-line); border-radius: 18px; background: linear-gradient(135deg, var(--s-paper), var(--s-soft)); scroll-margin-top: 90px; }
+.railsHead h3 { margin: 0; font-size: clamp(22px, 2.8vw, 30px); line-height: 1.2; letter-spacing: -.015em; }
+.railsHead h3 em { font-style: normal; color: var(--s-clay); }
+.railsHead > p:not(.kicker) { margin: 0; max-width: 78ch; font-size: 15px; line-height: 1.65; color: var(--s-muted); }
+.perks { display: flex; flex-wrap: wrap; gap: 8px; margin: 2px 0 0; padding: 0; list-style: none; }
+.perks li { display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border: 1px solid var(--s-line); border-radius: 999px; background: #fff; font-size: 13px; font-weight: 600; color: var(--s-read); }
+.perks svg { color: var(--s-clay); flex: none; }
 
 /* Members-only steps: the badge before play, and the panel when the server refuses */
 .memberBadge { position: absolute; left: 50%; bottom: 12%; display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 999px; background: linear-gradient(135deg, #ffd36b, #f08a3c); color: #2a1503; font-size: 13px; font-weight: 800; transform: translateX(-50%); box-shadow: 0 8px 20px -8px rgba(0, 0, 0, .5); }

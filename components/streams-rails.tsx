@@ -59,10 +59,10 @@ function Rail({ tech, onPick, active, done, tr }: { tech: StreamTech; onPick: (s
         </button>
       </li>)}
       {more > 0 && <li>
-        <Link href={`/streams?playlist=${tech}&step=${p.steps[SAMPLE_STEPS]?.id ?? ""}`} className={styles.moreCard} aria-label={tr(`${more} more steps of ${p.info.playlist} on MCB Streams`, `${p.info.playlist} के ${more} और चरण MCB Streams पर`)}>
+        <Link href={`/streams?playlist=${tech}&step=${p.steps[SAMPLE_STEPS]?.id ?? ""}`} className={styles.moreCard} aria-label={tr(`${more} more steps of ${p.info.playlist} in the full MCB course`, `पूरे MCB कोर्स में ${p.info.playlist} के ${more} और चरण`)}>
           <span className={styles.moreIcon}><ListVideo size={26} aria-hidden="true" /></span>
           <b>+{more} {tr("more steps", "और चरण")}</b>
-          <span>{tr("Watch the whole course on MCB Streams", "पूरा कोर्स MCB Streams पर देखें")}</span>
+          <span>{tr("Unlock the complete MCB course", "पूरा MCB कोर्स अनलॉक करें")}</span>
           <span className={styles.moreGo}>{tr("Continue", "जारी रखें")}<ArrowRight size={14} aria-hidden="true" /></span>
         </Link>
       </li>}

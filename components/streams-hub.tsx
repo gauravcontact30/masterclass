@@ -20,16 +20,20 @@ import player from "./streams.module.css";
  * previous/next, "mark as watched", an up-next list and every step by chapter in numbered pages.
  */
 const GROUP_COPY: Record<StreamGroup, { lede: string; parts?: { title: string; ids: StreamTech[] }[] }> = {
-  tech: { lede: "For tech professionals: frameworks, AI agents, the cloud and system design, from zero to production.",
+  tech: { lede: "For tech professionals: languages, frameworks, testing, backends, AI agents, the cloud, DevOps and system design, from zero to production.",
     parts: [
-      { title: "Web development", ids: ["nextjs", "react"] },
+      { title: "Web development", ids: ["nextjs", "react", "typescript", "modernjs", "tanstack", "zustand"] },
+      { title: "Testing", ids: ["testing", "playwright"] },
+      { title: "Python and backend", ids: ["python", "fastapi", "nestjs"] },
       { title: "AI agents", ids: ["langchain", "langgraph", "langsmith", "langflow", "langserve", "n8n"] },
-      { title: "Cloud and architecture", ids: ["aws", "sysdesign"] },
+      { title: "Cloud, DevOps and architecture", ids: ["aws", "devops-aws", "sysdesign"] },
     ] },
-  board: { lede: "For Class 10 and 12 board exam students: Maths, Physics, Chemistry and English, chapter by chapter.",
+  board: { lede: "For CBSE, ICSE and ISC Class 10 and 12 board exam students: Maths, Physics, Chemistry and English, chapter by chapter.",
     parts: [
-      { title: "Class 10", ids: ["board10-maths", "board10-physics", "board10-chemistry", "board10-english"] },
-      { title: "Class 12", ids: ["board12-maths", "board12-physics", "board12-chemistry", "board12-english"] },
+      { title: "CBSE Class 10", ids: ["board10-maths", "board10-physics", "board10-chemistry", "board10-english"] },
+      { title: "CBSE Class 12", ids: ["board12-maths", "board12-physics", "board12-chemistry", "board12-english"] },
+      { title: "ICSE Class 10", ids: ["icse10-maths", "icse10-physics", "icse10-chemistry", "icse10-english"] },
+      { title: "ISC Class 12", ids: ["isc12-maths", "isc12-physics", "isc12-chemistry", "isc12-english"] },
     ] },
   exams: { lede: "For government and professional exam aspirants: civil services, SSC, defence, banking, railways, police, teaching and CA.",
     parts: [

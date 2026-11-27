@@ -1,5 +1,5 @@
 /*
- * Streams' study playlists (2026-11-26): Board Exams (Class 10 and 12: Maths, Physics, Chemistry and English), government and
+ * Streams' study playlists (2026-11-26): Board Exams (CBSE Class 10 and 12, ICSE Class 10 and ISC Class 12: Maths, Physics, Chemistry and English), government and
  * professional exams (UPSC, IAS, State PCS, SSC, NDA, Defence, Bank PO, Railways, Police, CBI, Income Tax, CTET/TET and CA)
  * and IELTS. Board and government-exam playlists are
  * shown only where exam content is offered (useIndiaAccess); IELTS is for everyone.
@@ -15,7 +15,7 @@ export type ExamPlaylist = { id: string; group: ExamGroup; name: string; playlis
 
 export const EXAM_PLAYLISTS = [
   /* ---------- Board Exams: Class 10 ---------- */
-  { id: "board10-maths", group: "board", name: "Class 10 Maths", playlist: "Class 10 Maths: every chapter", color: "#2f6fb0", tagline: "The full Class 10 Maths syllabus, chapter by chapter, for the board exam.",
+  { id: "board10-maths", group: "board", name: "CBSE Class 10 Maths", playlist: "CBSE Class 10 Maths: every chapter", color: "#2f6fb0", tagline: "The full Class 10 Maths syllabus, chapter by chapter, for the board exam.",
     chapters: [
       { title: "Number systems and algebra", level: "Beginner", summary: "Real numbers, polynomials, linear and quadratic equations and arithmetic progressions.", topics: [
         ["Real Numbers", ["The Fundamental Theorem of Arithmetic", "HCF and LCM by prime factorisation", "Proving numbers such as √2 are irrational"]],
@@ -38,7 +38,7 @@ export const EXAM_PLAYLISTS = [
         ["Probability", ["Theoretical probability of an event", "Complementary events: P(E) + P(not E) = 1", "Coins, dice and cards questions"]],
       ] },
     ] },
-  { id: "board10-physics", group: "board", name: "Class 10 Physics", playlist: "Class 10 Physics: light, eye, electricity, magnetism", color: "#2f6fb0", tagline: "The physics chapters of Class 10 Science, with numericals, for the board exam.",
+  { id: "board10-physics", group: "board", name: "CBSE Class 10 Physics", playlist: "CBSE Class 10 Physics: light, eye, electricity, magnetism", color: "#2f6fb0", tagline: "The physics chapters of Class 10 Science, with numericals, for the board exam.",
     chapters: [
       { title: "Light", level: "Beginner", summary: "Mirrors, lenses and the human eye.", topics: [
         ["Light: Reflection and Refraction", ["Images formed by spherical mirrors", "Refraction and the refractive index", "Lens formula and magnification"]],
@@ -52,7 +52,7 @@ export const EXAM_PLAYLISTS = [
         ["Physics Numericals for the Board Exam", ["Mirror and lens numericals", "Circuit and power numericals", "Showing working for full marks"]],
       ] },
     ] },
-  { id: "board10-chemistry", group: "board", name: "Class 10 Chemistry", playlist: "Class 10 Chemistry: reactions to carbon", color: "#1c7c6c", tagline: "The chemistry chapters of Class 10 Science, with important questions, for the board exam.",
+  { id: "board10-chemistry", group: "board", name: "CBSE Class 10 Chemistry", playlist: "CBSE Class 10 Chemistry: reactions to carbon", color: "#1c7c6c", tagline: "The chemistry chapters of Class 10 Science, with important questions, for the board exam.",
     chapters: [
       { title: "Reactions, acids and bases", level: "Beginner", summary: "Chemical reactions and the pH scale.", topics: [
         ["Chemical Reactions and Equations", ["Writing and balancing chemical equations", "Combination, decomposition, displacement and redox reactions", "Corrosion and rancidity"]],
@@ -66,7 +66,7 @@ export const EXAM_PLAYLISTS = [
         ["Chemistry Important Questions", ["Equation-based questions", "Reasoning and assertion questions", "Revision of every chapter"]],
       ] },
     ] },
-  { id: "board10-english", group: "board", name: "Class 10 English", playlist: "Class 10 English: literature and writing", color: "#7a5ea8", tagline: "First Flight lessons, letter writing and grammar for the Class 10 board exam.",
+  { id: "board10-english", group: "board", name: "CBSE Class 10 English", playlist: "CBSE Class 10 English: literature and writing", color: "#7a5ea8", tagline: "First Flight lessons, letter writing and grammar for the Class 10 board exam.",
     chapters: [
       { title: "First Flight: prose", level: "Beginner", summary: "The main prose lessons, explained.", topics: [
         ["A Letter to God", ["Lencho's faith and the hailstorm", "The postmaster's kindness and the irony of the ending", "Likely board questions"]],
@@ -81,7 +81,7 @@ export const EXAM_PLAYLISTS = [
     ] },
 
   /* ---------- Board Exams: Class 12 ---------- */
-  { id: "board12-physics", group: "board", name: "Class 12 Physics", playlist: "Class 12 Physics: every unit", color: "#2f6fb0", tagline: "Electrostatics to semiconductors, the full Class 12 Physics syllabus for the board exam.",
+  { id: "board12-physics", group: "board", name: "CBSE Class 12 Physics", playlist: "CBSE Class 12 Physics: every unit", color: "#2f6fb0", tagline: "Electrostatics to semiconductors, the full Class 12 Physics syllabus for the board exam.",
     chapters: [
       { title: "Electrostatics", level: "Intermediate", summary: "Charges, fields, potential and capacitance.", topics: [
         ["Electric Charges and Fields", ["Coulomb's law and superposition", "Electric field lines and dipoles", "Gauss's law and its applications"]],
@@ -100,7 +100,7 @@ export const EXAM_PLAYLISTS = [
         ["Semiconductor Electronics", ["Intrinsic and extrinsic semiconductors", "The p-n junction diode", "Diodes as rectifiers"]],
       ] },
     ] },
-  { id: "board12-chemistry", group: "board", name: "Class 12 Chemistry", playlist: "Class 12 Chemistry: physical, inorganic, organic", color: "#1c7c6c", tagline: "Physical, inorganic and organic chemistry for the Class 12 board exam.",
+  { id: "board12-chemistry", group: "board", name: "CBSE Class 12 Chemistry", playlist: "CBSE Class 12 Chemistry: physical, inorganic, organic", color: "#1c7c6c", tagline: "Physical, inorganic and organic chemistry for the Class 12 board exam.",
     chapters: [
       { title: "Physical chemistry", level: "Intermediate", summary: "Solutions, electrochemistry and kinetics.", topics: [
         ["Solutions", ["Concentration terms", "Raoult's law and ideal solutions", "Colligative properties"]],
@@ -119,7 +119,7 @@ export const EXAM_PLAYLISTS = [
         ["Biomolecules", ["Carbohydrates", "Proteins and enzymes", "Vitamins and nucleic acids"]],
       ] },
     ] },
-  { id: "board12-maths", group: "board", name: "Class 12 Maths", playlist: "Class 12 Maths: algebra, calculus, vectors", color: "#4a5bd4", tagline: "Relations to probability, the full Class 12 Maths syllabus for the board exam.",
+  { id: "board12-maths", group: "board", name: "CBSE Class 12 Maths", playlist: "CBSE Class 12 Maths: algebra, calculus, vectors", color: "#4a5bd4", tagline: "Relations to probability, the full Class 12 Maths syllabus for the board exam.",
     chapters: [
       { title: "Relations, functions and algebra", level: "Intermediate", summary: "Relations, inverse trigonometric functions, matrices and determinants.", topics: [
         ["Relations and Functions", ["Reflexive, symmetric, transitive and equivalence relations", "One-one and onto functions", "Composition and invertible functions"]],
@@ -138,7 +138,7 @@ export const EXAM_PLAYLISTS = [
         ["Probability", ["Conditional probability", "Multiplication theorem and independent events", "Bayes' theorem"]],
       ] },
     ] },
-  { id: "board12-english", group: "board", name: "Class 12 English", playlist: "Class 12 English: Flamingo, Vistas and writing", color: "#7a5ea8", tagline: "Flamingo and Vistas lessons, poetry and writing skills for the Class 12 board exam.",
+  { id: "board12-english", group: "board", name: "CBSE Class 12 English", playlist: "CBSE Class 12 English: Flamingo, Vistas and writing", color: "#7a5ea8", tagline: "Flamingo and Vistas lessons, poetry and writing skills for the Class 12 board exam.",
     chapters: [
       { title: "Flamingo: prose", level: "Intermediate", summary: "The main prose lessons, explained.", topics: [
         ["The Last Lesson", ["M. Hamel's last French lesson", "Language, identity and loss", "Character and theme questions"]],
@@ -153,6 +153,165 @@ export const EXAM_PLAYLISTS = [
       ] },
       { title: "Writing skills", level: "All levels", summary: "Formats that earn full marks.", topics: [
         ["Writing Skills: Notice, Invitation and Letter", ["Notice and invitation formats", "Formal letters and job applications", "Word limits and marking"]],
+      ] },
+    ] },
+
+  /* ---------- Board Exams: ICSE Class 10 ---------- */
+  { id: "icse10-maths", group: "board", name: "ICSE Class 10 Maths", playlist: "ICSE Class 10 Maths: every chapter", color: "#2f6fb0", tagline: "The ICSE Class 10 Mathematics syllabus, from commercial maths to probability, for the board exam.",
+    chapters: [
+      { title: "Commercial mathematics and algebra", level: "Beginner", summary: "GST, banking, inequations, quadratics and progressions.", topics: [
+        ["GST", ["Input and output tax", "Computing GST across a supply chain", "Board-style GST problems"]],
+        ["Banking: Recurring Deposit Accounts", ["How a recurring deposit grows", "Interest and maturity value", "Solving for the monthly instalment"]],
+        ["Linear Inequations", ["Solving inequations in one variable", "Solution sets on the number line", "Replacement sets"]],
+        ["Quadratic Equations", ["Factorisation and the formula", "Nature of roots", "Word problems"]],
+        ["Factorisation and the Remainder Theorem", ["The remainder and factor theorems", "Factorising cubic polynomials", "Finding unknown coefficients"]],
+        ["Matrices", ["Order and types of matrices", "Addition and multiplication", "Solving matrix equations"]],
+        ["Arithmetic and Geometric Progression", ["nth term and sum of an AP", "nth term and sum of a GP", "Word problems"]],
+      ] },
+      { title: "Geometry and coordinate geometry", level: "Intermediate", summary: "Reflection, the section formula, straight lines, similarity, loci and circles.", topics: [
+        ["Reflection", ["Reflection in the axes and the origin", "Invariant points", "Figures under reflection"]],
+        ["Section and Mid-Point Formula", ["Internal division of a line", "The mid-point and centroid", "Finding a ratio of division"]],
+        ["Equation of a Straight Line", ["Slope and inclination", "Slope-intercept and two-point forms", "Parallel and perpendicular lines"]],
+        ["Similarity", ["Conditions for similar triangles", "Areas of similar triangles", "Maps and models"]],
+        ["Loci", ["Locus as a set of points", "Standard loci theorems", "Constructing a locus"]],
+        ["Circles", ["Angle properties of circles", "Cyclic quadrilaterals", "Tangents and intersecting chords"]],
+      ] },
+      { title: "Mensuration, trigonometry and statistics", level: "Intermediate", summary: "Solids, identities, heights and distances, data and chance.", topics: [
+        ["Mensuration: Cylinder, Cone and Sphere", ["Surface area and volume", "Combined solids", "Melting and recasting"]],
+        ["Trigonometric Identities", ["The three fundamental identities", "Proving identities", "Complementary angles"]],
+        ["Heights and Distances", ["Angles of elevation and depression", "Using tables of values", "Two-triangle problems"]],
+        ["Statistics: Mean, Median, Quartiles and Mode", ["Mean of grouped data", "Ogives, median and quartiles", "Mode from a histogram"]],
+        ["Probability", ["Sample space and events", "Cards, dice and coins", "Board-style questions"]],
+      ] },
+    ] },
+  { id: "icse10-physics", group: "board", name: "ICSE Class 10 Physics", playlist: "ICSE Class 10 Physics: every chapter", color: "#2f6fb0", tagline: "The ICSE Class 10 Physics syllabus with numericals, from force to radioactivity.",
+    chapters: [
+      { title: "Mechanics", level: "Beginner", summary: "Force, work, energy, power and machines.", topics: [
+        ["Force: Moment of Force and Centre of Gravity", ["Moment of a force and couples", "The principle of moments", "Centre of gravity and uniform circular motion"]],
+        ["Work, Energy and Power", ["Work done by a force", "Kinetic and potential energy", "Conservation of energy and power"]],
+        ["Machines", ["Mechanical advantage, velocity ratio and efficiency", "The three classes of levers", "Pulley systems"]],
+      ] },
+      { title: "Light and sound", level: "Intermediate", summary: "Refraction, lenses, the spectrum and sound.", topics: [
+        ["Refraction of Light at Plane Surfaces", ["Laws of refraction and refractive index", "Critical angle and total internal reflection", "Refraction through a prism"]],
+        ["Refraction through a Lens", ["Convex and concave lenses", "Ray diagrams and the lens formula", "Magnification and power"]],
+        ["Spectrum", ["Dispersion of white light", "The electromagnetic spectrum", "Scattering of light"]],
+        ["Sound", ["Reflection of sound and echoes", "Natural, forced and resonant vibrations", "Loudness, pitch and quality"]],
+      ] },
+      { title: "Electricity, heat and the nucleus", level: "Intermediate", summary: "Current, household circuits, electromagnetism, calorimetry and radioactivity.", topics: [
+        ["Current Electricity", ["Ohm's law and resistance", "Series and parallel combinations", "Electrical energy and power"]],
+        ["Household Circuits", ["Ring and tree systems", "Fuses, MCBs and earthing", "Colour coding and safety"]],
+        ["Electromagnetism", ["Magnetic effect of a current", "Electromagnetic induction", "The DC motor and AC generator"]],
+        ["Calorimetry", ["Specific heat capacity", "Latent heat", "The principle of calorimetry"]],
+        ["Radioactivity", ["Alpha, beta and gamma radiation", "Nuclear fission and fusion", "Uses and safety"]],
+      ] },
+    ] },
+  { id: "icse10-chemistry", group: "board", name: "ICSE Class 10 Chemistry", playlist: "ICSE Class 10 Chemistry: every chapter", color: "#1c7c6c", tagline: "The ICSE Class 10 Chemistry syllabus, from the periodic table to organic chemistry.",
+    chapters: [
+      { title: "Physical and general chemistry", level: "Beginner", summary: "Periodic properties, bonding, acids, analysis, moles and electrolysis.", topics: [
+        ["Periodic Table and Periodic Properties", ["Groups and periods", "Atomic size, ionisation energy and electron affinity", "Trends across and down"]],
+        ["Chemical Bonding", ["Electrovalent and covalent bonds", "Coordinate bonds", "Properties of ionic and covalent compounds"]],
+        ["Acids, Bases and Salts", ["Definitions and properties", "Preparation of salts", "Normal, acid and basic salts"]],
+        ["Analytical Chemistry", ["Action of NaOH and ammonium hydroxide on salts", "Colours of precipitates", "Amphoteric metals"]],
+        ["Mole Concept and Stoichiometry", ["Gay-Lussac's law and Avogadro's law", "The mole and molar volume", "Empirical and molecular formulae"]],
+        ["Electrolysis", ["Electrolytes and electrodes", "Electrolysis of molten lead bromide and copper sulphate", "Electroplating and refining"]],
+      ] },
+      { title: "Metals, compounds and organic chemistry", level: "Intermediate", summary: "Metallurgy, important compounds and organic chemistry.", topics: [
+        ["Metallurgy", ["Occurrence of metals", "Extraction of aluminium", "Alloys and their uses"]],
+        ["Study of Compounds: Hydrogen Chloride", ["Preparation of HCl gas", "Properties and tests", "Hydrochloric acid"]],
+        ["Study of Compounds: Ammonia", ["Laboratory and Haber process preparation", "Properties and the fountain experiment", "Uses of ammonia"]],
+        ["Study of Compounds: Nitric Acid", ["Laboratory and Ostwald process", "Properties as an acid and oxidiser", "Tests for nitrates"]],
+        ["Study of Compounds: Sulphuric Acid", ["The contact process", "Properties as acid, oxidiser and dehydrating agent", "Uses"]],
+        ["Organic Chemistry", ["Homologous series and isomerism", "IUPAC naming", "Alkanes, alkenes, alkynes, alcohols and carboxylic acids"]],
+      ] },
+    ] },
+  { id: "icse10-english", group: "board", name: "ICSE Class 10 English", playlist: "ICSE Class 10 English: language and literature", color: "#7a5ea8", tagline: "ICSE English Language composition, letters and grammar, with the literature syllabus, for the board exam.",
+    chapters: [
+      { title: "English Language", level: "All levels", summary: "Paper 1: writing tasks, comprehension and grammar.", topics: [
+        ["ICSE English Composition", ["Choosing the right composition topic", "Narrative, descriptive and argumentative essays", "Structure and marking"]],
+        ["ICSE Letter Writing", ["Formal and informal letter formats", "Tone and content", "Common mistakes"]],
+        ["ICSE Notice and Email Writing", ["Notice format", "Email format", "Writing to the word limit"]],
+        ["ICSE English Comprehension", ["Reading the passage for meaning", "Vocabulary questions", "Writing the summary"]],
+        ["ICSE English Grammar", ["Prepositions and tenses", "Transformation of sentences", "Joining sentences"]],
+      ] },
+      { title: "English Literature", level: "Intermediate", summary: "Paper 2: poetry, prose and drama.", topics: [
+        ["ICSE Class 10 English Literature: Poems", ["Reading the prescribed poems", "Themes and poetic devices", "Context questions"]],
+        ["ICSE Class 10 English Literature: Short Stories", ["The prescribed stories", "Characters and themes", "Long-answer questions"]],
+        ["ICSE Class 10 English Literature: Drama", ["The prescribed play, act by act", "Characters and key scenes", "Extract-based questions"]],
+      ] },
+    ] },
+
+  /* ---------- Board Exams: ISC Class 12 ---------- */
+  { id: "isc12-maths", group: "board", name: "ISC Class 12 Maths", playlist: "ISC Class 12 Maths: Sections A, B and C", color: "#4a5bd4", tagline: "The ISC Class 12 Mathematics syllabus: algebra, calculus, probability, vectors and applied maths.",
+    chapters: [
+      { title: "Section A: algebra", level: "Intermediate", summary: "Relations, functions, inverse trigonometry, matrices and determinants.", topics: [
+        ["Relations and Functions", ["Types of relations and equivalence", "One-one, onto and inverse functions", "Composition of functions"]],
+        ["Inverse Trigonometric Functions", ["Domains and principal values", "Properties and identities", "Solving equations"]],
+        ["Matrices and Determinants", ["Matrix operations and inverses", "Properties of determinants", "Solving equations by Cramer's rule and matrices"]],
+      ] },
+      { title: "Section A: calculus and probability", level: "Advanced", summary: "Continuity, derivatives, integrals, differential equations and probability.", topics: [
+        ["Continuity and Differentiability", ["Limits and continuity", "Differentiating implicit and parametric functions", "Rolle's and Lagrange's theorems"]],
+        ["Applications of Derivatives", ["Rate of change and tangents", "Increasing and decreasing functions", "Maxima and minima"]],
+        ["Indefinite Integrals", ["Substitution and partial fractions", "Integration by parts", "Standard integrals"]],
+        ["Definite Integrals and Area under a Curve", ["Properties of definite integrals", "Area between curves", "Board-style problems"]],
+        ["Differential Equations", ["Order and degree", "Variable separable and homogeneous equations", "Linear differential equations"]],
+        ["Probability", ["Conditional probability", "Bayes' theorem", "Random variables and distributions"]],
+      ] },
+      { title: "Sections B and C", level: "Advanced", summary: "Vectors and 3D geometry, and applied mathematics.", topics: [
+        ["Vectors", ["Scalar and vector products", "Scalar triple product", "Geometric applications"]],
+        ["Three-Dimensional Geometry", ["Lines in space", "Planes", "Angles and distances"]],
+        ["Application of Calculus in Commerce and Economics", ["Cost, revenue and profit functions", "Average and marginal functions", "Break-even point"]],
+        ["Linear Regression", ["Lines of regression", "Regression coefficients", "Estimating values"]],
+        ["Linear Programming", ["Formulating a problem", "The graphical method", "Feasible regions and optimal solutions"]],
+      ] },
+    ] },
+  { id: "isc12-physics", group: "board", name: "ISC Class 12 Physics", playlist: "ISC Class 12 Physics: every unit", color: "#2f6fb0", tagline: "The ISC Class 12 Physics syllabus, from electrostatics to semiconductor electronics, with numericals.",
+    chapters: [
+      { title: "Electricity and magnetism", level: "Intermediate", summary: "Electrostatics, current, magnetism, induction and AC.", topics: [
+        ["Electrostatics: Electric Charges and Fields", ["Coulomb's law", "Electric field and dipoles", "Gauss's theorem"]],
+        ["Electric Potential and Capacitance", ["Potential and equipotential surfaces", "Capacitors and dielectrics", "Energy stored"]],
+        ["Current Electricity", ["Drift velocity and Ohm's law", "Kirchhoff's laws and the Wheatstone bridge", "The potentiometer and meter bridge"]],
+        ["Magnetic Effects of Current and Magnetism", ["Biot-Savart and Ampere's laws", "Force on a current and the moving coil galvanometer", "Magnetic materials"]],
+        ["Electromagnetic Induction and Alternating Current", ["Faraday's and Lenz's laws", "Self and mutual induction", "LCR circuits and transformers"]],
+      ] },
+      { title: "Waves, optics and modern physics", level: "Advanced", summary: "Electromagnetic waves, optics, dual nature, atoms, nuclei and electronics.", topics: [
+        ["Electromagnetic Waves", ["Displacement current", "The electromagnetic spectrum", "Properties of EM waves"]],
+        ["Ray Optics and Optical Instruments", ["Reflection and refraction at curved surfaces", "Lenses and prisms", "Microscopes and telescopes"]],
+        ["Wave Optics", ["Huygens' principle", "Young's double-slit experiment", "Diffraction and polarisation"]],
+        ["Dual Nature of Radiation and Matter", ["The photoelectric effect", "Einstein's equation", "de Broglie waves"]],
+        ["Atoms and Nuclei", ["The Bohr model and hydrogen spectrum", "Mass defect and binding energy", "Radioactive decay, fission and fusion"]],
+        ["Semiconductor Electronics", ["Energy bands and p-n junctions", "Diodes and rectifiers", "Logic gates"]],
+      ] },
+    ] },
+  { id: "isc12-chemistry", group: "board", name: "ISC Class 12 Chemistry", playlist: "ISC Class 12 Chemistry: physical, inorganic, organic", color: "#1c7c6c", tagline: "The ISC Class 12 Chemistry syllabus, from solutions to biomolecules.",
+    chapters: [
+      { title: "Physical chemistry", level: "Intermediate", summary: "Solutions, electrochemistry and chemical kinetics.", topics: [
+        ["Solutions and Colligative Properties", ["Concentration terms", "Raoult's law", "Colligative properties and van't Hoff factor"]],
+        ["Electrochemistry", ["Conductance and Kohlrausch's law", "Electrochemical cells and the Nernst equation", "Electrolysis and Faraday's laws"]],
+        ["Chemical Kinetics", ["Rate laws and order", "Integrated rate equations and half-life", "Arrhenius equation"]],
+      ] },
+      { title: "Inorganic chemistry", level: "Intermediate", summary: "The d- and f-block elements and coordination compounds.", topics: [
+        ["d and f Block Elements", ["Properties of transition elements", "Potassium dichromate and permanganate", "Lanthanoids and actinoids"]],
+        ["Coordination Compounds", ["Werner's theory and IUPAC naming", "Isomerism", "Valence bond and crystal field theory"]],
+      ] },
+      { title: "Organic chemistry", level: "Advanced", summary: "Functional groups, their reactions and biomolecules.", topics: [
+        ["Haloalkanes and Haloarenes", ["Preparation and properties", "SN1 and SN2 mechanisms", "Uses and environmental effects"]],
+        ["Alcohols, Phenols and Ethers", ["Preparation and properties", "Acidity of alcohols and phenols", "Important reactions"]],
+        ["Aldehydes, Ketones and Carboxylic Acids", ["Nucleophilic addition", "Named reactions", "Acidity of carboxylic acids"]],
+        ["Amines", ["Classification and basicity", "Preparation and reactions", "Diazonium salts"]],
+        ["Biomolecules", ["Carbohydrates", "Proteins and enzymes", "Vitamins and nucleic acids"]],
+      ] },
+    ] },
+  { id: "isc12-english", group: "board", name: "ISC Class 12 English", playlist: "ISC Class 12 English: language and literature", color: "#7a5ea8", tagline: "ISC English Language writing tasks and grammar, with the literature syllabus, for the board exam.",
+    chapters: [
+      { title: "English Language", level: "All levels", summary: "Paper 1: composition, directed writing, proposals and grammar.", topics: [
+        ["ISC English Composition", ["Choosing a topic", "Planning and structuring the essay", "What examiners reward"]],
+        ["ISC Directed Writing and Proposal Writing", ["Article, speech and report formats", "Writing a proposal", "Word limits and marking"]],
+        ["ISC English Grammar", ["Sentence transformation", "Prepositions and phrasal verbs", "Common errors"]],
+      ] },
+      { title: "English Literature", level: "Intermediate", summary: "Paper 2: poetry, short stories and drama.", topics: [
+        ["ISC Class 12 English Literature: Poems", ["The prescribed poems", "Themes and literary devices", "Answering critical questions"]],
+        ["ISC Class 12 English Literature: Short Stories", ["The prescribed stories", "Characters and themes", "Long-answer questions"]],
+        ["ISC Class 12 English Literature: Drama", ["The prescribed play", "Key scenes and characters", "Extract and essay questions"]],
       ] },
     ] },
 

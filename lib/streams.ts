@@ -2,6 +2,8 @@ import { STREAM_VIDEOS, type StreamVideoId } from "./streams-videos";
 import { LESSON_TITLES } from "./streams-titles";
 import { EXAM_PLAYLISTS, type ExamPlaylistId } from "./streams-exams";
 import { EXAM_VIDEO } from "./streams-exam-videos";
+import { SYSDESIGN_TOPIC_CHAPTERS, TECH_TOPIC_PLAYLISTS, type TopicPlaylistId } from "./streams-topics";
+import { TOPIC_VIDEO } from "./streams-topic-videos";
 
 /*
  * Streams (2026-11-26): course-wise video study for Next.js 16+, React 19+, LangChain, LangGraph, LangSmith, Langflow,
@@ -14,7 +16,7 @@ import { EXAM_VIDEO } from "./streams-exam-videos";
  * lib/streams-videos.ts; only 1080p and above are used. Course grouping, summaries and study notes are ours, written from
  * each video's title and official description.
  */
-export type StreamTech = "nextjs" | "react" | "langchain" | "langgraph" | "langsmith" | "langflow" | "langserve" | "n8n" | "aws" | "sysdesign" | ExamPlaylistId;
+export type StreamTech = "nextjs" | "react" | "langchain" | "langgraph" | "langsmith" | "langflow" | "langserve" | "n8n" | "aws" | "sysdesign" | TopicPlaylistId | ExamPlaylistId;
 export type StreamLevel = "Beginner" | "Intermediate" | "Advanced" | "All levels";
 /** A lesson: its video and our study notes; `title` is set where the title is not in lib/streams-titles.ts (exam topics). */
 export type StreamLesson = { id: StreamVideoId; points: readonly string[]; title?: string };
@@ -41,6 +43,7 @@ export const STREAM_TECHS: StreamTechInfo[] = [
   { id: "n8n", group: "tech", playlist: "n8n: automation to AI agents", name: "n8n", color: "#d6345c", tagline: "Workflow automation from first workflow to advanced builds, then AI agents, MCP and self-hosting." },
   { id: "aws", group: "tech", playlist: "AWS: cloud from the ground up", name: "AWS", color: "#c2620a", tagline: "Cloud foundations, serverless, databases, Kubernetes and AI agents on AWS." },
   { id: "sysdesign", group: "tech", playlist: "System Design: concepts to interviews", name: "System Design", color: "#4a5bd4", tagline: "Scaling, networking, data, APIs, distributed systems and interview case studies." },
+  ...TECH_TOPIC_PLAYLISTS.map(({ id, group, name, playlist, tagline, color }) => ({ id, group, name, playlist, tagline, color })),
   ...EXAM_PLAYLISTS.map(({ id, group, name, playlist, tagline, color }) => ({ id, group, name, playlist, tagline, color })),
 ];
 
@@ -510,12 +513,16 @@ export const STREAM_COURSES: StreamCourse[] = [
     ] },
 ];
 
-/* Board, government-exam and IELTS chapters (lib/streams-exams.ts), each topic with its generated video; a topic without a
-   video of 1080p or more is left out. */
-STREAM_COURSES.push(...EXAM_PLAYLISTS.flatMap(p => { let topic = 0; return p.chapters.map((chapter, c) => ({
-  id: `${p.id}-${c + 1}`, tech: p.id as StreamTech, title: chapter.title, summary: chapter.summary, level: chapter.level,
-  lessons: chapter.topics.flatMap(([title, points]) => { const id = EXAM_VIDEO[`${p.id}#${topic++}`]; return id ? [{ id, title, points }] : []; }),
-})).filter(course => course.lessons.length > 0); }));
+/* Topic-led chapters: Board, government-exam and IELTS (lib/streams-exams.ts), the newer tech playlists and further System
+   Design chapters (lib/streams-topics.ts), each topic with its generated video (lib/streams-exam-videos.ts,
+   lib/streams-topic-videos.ts); a topic without a video of 1080p or more is left out. */
+const topicVideo = (key: string) => EXAM_VIDEO[key] ?? TOPIC_VIDEO[key];
+type TopicChapter = { title: string; level: StreamLevel; summary: string; topics: readonly (readonly [string, readonly string[]])[] };
+const topicCourses = (tech: string, chapters: readonly TopicChapter[], firstChapter = 1, idPrefix = tech) => { let topic = 0; return chapters.map((chapter, c) => ({
+  id: `${idPrefix}-${c + firstChapter}`, tech: tech as StreamTech, title: chapter.title, summary: chapter.summary, level: chapter.level,
+  lessons: chapter.topics.flatMap(([title, points]) => { const id = topicVideo(`${tech}#${topic++}`); return id ? [{ id, title, points }] : []; }),
+})).filter(course => course.lessons.length > 0); };
+STREAM_COURSES.push(...[...EXAM_PLAYLISTS, ...TECH_TOPIC_PLAYLISTS].flatMap(p => topicCourses(p.id, p.chapters)), ...topicCourses("sysdesign", SYSDESIGN_TOPIC_CHAPTERS, 1, "sd-topics"));
 
 /* ---------- Playlists: one step-by-step playlist per technology ---------- */
 export const video = (id: StreamVideoId) => STREAM_VIDEOS[id];

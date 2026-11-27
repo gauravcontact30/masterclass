@@ -30,15 +30,19 @@ const THIRD_PARTY = /youtube|youtu\.be|ytimg|re:invent|re:inforce|react conf|ver
 const EVERYONE = techsIn(visibleGroups(false));
 
 test("four categories of step-by-step playlists; every step is a measured video of 1080p or more with our own title and notes", () => {
-  expect(techsIn(["tech"])).toEqual(["nextjs", "react", "langchain", "langgraph", "langsmith", "langflow", "langserve", "n8n", "aws", "sysdesign"]);
-  for (const id of ["board10-maths", "board10-physics", "board10-chemistry", "board10-english", "board12-maths", "board12-physics", "board12-chemistry", "board12-english"]) expect(techInfo(id as never).group).toBe("board");
+  // Topic-led tech playlists appear once their topics have verified videos.
+  expect(techsIn(["tech"]).slice(0, 10)).toEqual(["nextjs", "react", "langchain", "langgraph", "langsmith", "langflow", "langserve", "n8n", "aws", "sysdesign"]);
+  for (const id of techsIn(["tech"]).slice(10)) expect(["typescript", "testing", "tanstack", "zustand", "playwright", "fastapi", "python", "nestjs", "modernjs", "devops-aws"]).toContain(id);
+  for (const id of ["board10-maths", "board10-physics", "board10-chemistry", "board10-english", "board12-maths", "board12-physics", "board12-chemistry", "board12-english",
+    "icse10-maths", "icse10-physics", "icse10-chemistry", "icse10-english", "isc12-maths", "isc12-physics", "isc12-chemistry", "isc12-english"]) expect(techInfo(id as never).group).toBe("board");
   for (const id of ["upsc", "ias", "pcs", "ssc", "nda", "bankpo", "railways", "police", "cbi", "incometax", "ctet", "ca"]) expect(techsIn(["exams"])).toContain(id);
   expect(techsIn(["ielts"])).toEqual(["ielts"]);
   const ids = STREAM_COURSES.flatMap(c => c.lessons.map(l => l.id));
   expect(new Set(ids).size).toBe(ids.length);
   expect([...ids].sort()).toEqual(Object.keys(STREAM_VIDEOS).sort());
   expect(ids.length).toBeGreaterThanOrEqual(400);
-  for (const tech of STREAM_TECHS) {
+  // A playlist whose topics have no verified video yet has no steps and is not shown (techsIn).
+  for (const tech of STREAM_TECHS.filter(t => playlist(t.id).steps.length > 0)) {
     const p = playlist(tech.id);
     expect(p.steps.map(s => s.step)).toEqual(p.steps.map((_, i) => i + 1));
     expect(p.steps.length).toBeGreaterThan(SAMPLE_STEPS);
@@ -49,7 +53,8 @@ test("four categories of step-by-step playlists; every step is a measured video 
       expect(s.points.join(" ")).not.toMatch(THIRD_PARTY);
       expect(s.points.length).toBeGreaterThanOrEqual(3);
       expect(STREAM_VIDEOS[s.id].maxHeight).toBeGreaterThanOrEqual(1080);
-      if (tech.group === "tech") { expect(TECH_CHANNEL[tech.id]).toContain(STREAM_SOURCES[s.id].channel); expect(LESSON_TITLES[s.id]).toBe(s.title); }
+      // Hand-picked tech steps come from the official channel and carry our own title; topic-led steps (lib/streams-topics.ts) name the topic.
+      if (tech.group === "tech" && LESSON_TITLES[s.id]) { expect(TECH_CHANNEL[tech.id]).toContain(STREAM_SOURCES[s.id].channel); expect(LESSON_TITLES[s.id]).toBe(s.title); }
     }
   }
   for (const c of STREAM_COURSES) expect(`${c.title} ${c.summary} ${c.note ?? ""}`).not.toMatch(THIRD_PARTY);
@@ -82,7 +87,7 @@ test("landing: MCB covers, no third-party names or images, and the player only o
   expect(container.textContent).not.toMatch(THIRD_PARTY);
   expect(container.querySelectorAll("a[href*='youtube']")).toHaveLength(0);
   expect(screen.getAllByText("MCB").length).toBeGreaterThan(3);
-  expect(screen.getByRole("link", { name: /Open MCB Streams/ })).toHaveAttribute("href", "/streams");
+  expect(screen.getByRole("link", { name: /Explore every MCB course/ })).toHaveAttribute("href", "/streams");
   expect(container.querySelector("iframe")).toBeNull();
   fireEvent.click(screen.getByRole("button", { name: /^Play: Next\.js 16: the big picture/ }));
   await waitFor(() => expect(container.querySelector("iframe")?.getAttribute("src")).toBe(FREE_SRC));
@@ -99,9 +104,9 @@ test("landing: the course library pages through every course, by category and by
   fireEvent.click(screen.getByRole("button", { name: "Courses page 2" }));
   expect(cards()[0]).toHaveAttribute("aria-label", `${playlist(all[8]).info.playlist}: ${playlist(all[8]).steps.length} steps`);
   fireEvent.click(screen.getByRole("button", { name: /^Board Exams/ }));
-  expect(cards()).toHaveLength(techsIn(["board"]).length);
+  expect(cards()).toHaveLength(Math.min(8, techsIn(["board"]).length));
   fireEvent.change(screen.getByRole("searchbox", { name: "Find a course" }), { target: { value: "physics" } });
-  expect(cards().map(b => b.getAttribute("aria-label"))).toEqual(["board10-physics", "board12-physics"].map(id => `${playlist(id as never).info.playlist}: ${playlist(id as never).steps.length} steps`));
+  expect(cards().map(b => b.getAttribute("aria-label"))).toEqual(techsIn(["board"]).filter(id => /physics/.test(id)).slice(0, 8).map(id => `${playlist(id).info.playlist}: ${playlist(id).steps.length} steps`));
 });
 
 test("landing: complete courses in pages, each with three sample steps that play here and the rest on /streams", () => {
