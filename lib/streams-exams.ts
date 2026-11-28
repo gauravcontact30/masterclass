@@ -1,5 +1,5 @@
 /*
- * Streams' study playlists (2026-11-26): Board Exams (CBSE Class 10 and 12, ICSE Class 10 and ISC Class 12: Maths, Physics, Chemistry and English), government and
+ * Streams' study playlists (2026-11-26): Board Exams (UP Board, CBSE Class 10 and 12, ICSE Class 10 and ISC Class 12: Maths, Physics, Chemistry and English), government and
  * professional exams (UPSC, IAS, State PCS, SSC, NDA, Defence, Bank PO, Railways, Police, CBI, Income Tax, CTET/TET and CA)
  * and IELTS. Board and government-exam playlists are
  * shown only where exam content is offered (useIndiaAccess); IELTS is for everyone.
@@ -312,6 +312,267 @@ export const EXAM_PLAYLISTS = [
         ["ISC Class 12 English Literature: Poems", ["The prescribed poems", "Themes and literary devices", "Answering critical questions"]],
         ["ISC Class 12 English Literature: Short Stories", ["The prescribed stories", "Characters and themes", "Long-answer questions"]],
         ["ISC Class 12 English Literature: Drama", ["The prescribed play", "Key scenes and characters", "Extract and essay questions"]],
+      ] },
+    ] },
+
+  /* ---------- Board Exams: UP Board High School (Class 10), NCERT syllabus (user request 2026-11-28) ---------- */
+  { id: "up10-maths", group: "board", name: "UP Board Class 10 Maths", playlist: "UP Board High School Maths: every topic", color: "#c2410c", tagline: "UP Board High School Mathematics (गणित), every chapter topic by topic, for Part A objective and Part B descriptive questions.",
+    chapters: [
+      { title: "Number systems and algebra", level: "Beginner", summary: "Real numbers, polynomials, linear and quadratic equations and arithmetic progressions.", topics: [
+        ["Fundamental Theorem of Arithmetic, HCF and LCM", ["Prime factorisation of a number", "HCF × LCM = product of two numbers", "Board questions on HCF and LCM"]],
+        ["Irrational Numbers: proving √2, √3 and √5 irrational", ["Proof by contradiction", "Sums and products with irrational numbers", "The four-mark proof format"]],
+        ["Zeroes of a Polynomial and their Geometrical Meaning", ["Reading zeroes from a graph", "Linear, quadratic and cubic graphs", "Number of zeroes from a graph"]],
+        ["Relation between Zeroes and Coefficients", ["α + β = −b/a and αβ = c/a", "Finding a quadratic from its zeroes", "Expressions such as α² + β²"]],
+        ["Pair of Linear Equations: Graphical Method", ["Consistent and inconsistent pairs", "Ratios a₁/a₂, b₁/b₂ and c₁/c₂", "Unique, no and infinitely many solutions"]],
+        ["Pair of Linear Equations: Substitution and Elimination", ["The substitution method", "The elimination method", "Word problems on age, money and digits"]],
+        ["Quadratic Equations by Factorisation", ["Standard form ax² + bx + c = 0", "Splitting the middle term", "Word problems that give a quadratic"]],
+        ["Quadratic Formula and Nature of Roots", ["x = (−b ± √D) / 2a", "The discriminant D = b² − 4ac", "Finding k for equal roots"]],
+        ["Arithmetic Progressions: nth Term", ["Common difference", "aₙ = a + (n − 1)d", "Which term of an AP is a given number"]],
+        ["Arithmetic Progressions: Sum of n Terms", ["Sₙ = n/2 [2a + (n − 1)d]", "Sₙ = n/2 (a + l)", "Word problems on savings and instalments"]],
+      ] },
+      { title: "Geometry and coordinate geometry", level: "Intermediate", summary: "Similar triangles, the coordinate plane and tangents to a circle.", topics: [
+        ["Similar Triangles and the Basic Proportionality Theorem", ["Similar figures", "Proof of the BPT (Thales theorem)", "Using the converse"]],
+        ["Criteria for Similarity of Triangles", ["AAA, SSS and SAS similarity", "Proving triangles similar", "Finding unknown sides"]],
+        ["Distance Formula", ["Distance between two points", "Checking collinearity", "Showing a figure is a square, rhombus or triangle type"]],
+        ["Section Formula", ["Internal division in a ratio m : n", "The mid-point formula", "Finding the ratio of division"]],
+        ["Tangent to a Circle", ["A tangent is perpendicular to the radius", "Tangents from an external point are equal", "Five-mark tangent proofs"]],
+      ] },
+      { title: "Trigonometry", level: "Intermediate", summary: "Ratios, identities and heights and distances.", topics: [
+        ["Trigonometric Ratios", ["sin, cos, tan, cosec, sec and cot", "Finding all ratios from one", "Ratios in a right triangle"]],
+        ["Trigonometric Ratios of Specific Angles", ["Values at 0°, 30°, 45°, 60° and 90°", "Evaluating expressions", "Finding an angle from a value"]],
+        ["Trigonometric Identities", ["sin²A + cos²A = 1", "1 + tan²A = sec²A and 1 + cot²A = cosec²A", "Proving identities step by step"]],
+        ["Heights and Distances", ["Angles of elevation and depression", "Towers, buildings and shadows", "Two-angle problems"]],
+      ] },
+      { title: "Mensuration", level: "Intermediate", summary: "Areas related to circles and surface areas and volumes.", topics: [
+        ["Areas Related to Circles: Sectors and Segments", ["Length of an arc", "Area of a sector", "Area of a minor segment"]],
+        ["Surface Areas of Combined Solids", ["Cylinder, cone, sphere and hemisphere", "Solids joined together", "Toys, tents and capsules"]],
+        ["Volumes of Combined Solids", ["Volume of each solid", "Adding and subtracting volumes", "Word problems"]],
+      ] },
+      { title: "Statistics and probability", level: "Intermediate", summary: "Grouped data and the probability of an event.", topics: [
+        ["Mean of Grouped Data", ["Direct method", "Assumed mean method", "Step deviation method"]],
+        ["Mode and Median of Grouped Data", ["Mode = l + [(f₁ − f₀)/(2f₁ − f₀ − f₂)] × h", "Median from the cumulative frequency", "3 Median = Mode + 2 Mean"]],
+        ["Probability", ["Theoretical probability", "Complementary events", "Coins, dice and playing cards"]],
+      ] },
+    ] },
+  { id: "up10-physics", group: "board", name: "UP Board Class 10 Physics", playlist: "UP Board High School Science: Physics, every topic", color: "#1d4ed8", tagline: "The Physics part of UP Board High School Science (विज्ञान): light, the human eye, electricity and magnetism, topic by topic.",
+    chapters: [
+      { title: "Light: reflection and refraction", level: "Beginner", summary: "Mirrors, lenses and their formulas.", topics: [
+        ["Reflection of Light and Spherical Mirrors", ["Laws of reflection", "Pole, centre of curvature and focus", "R = 2f"]],
+        ["Image Formation by Concave and Convex Mirrors", ["Ray diagrams for each object position", "Uses of concave and convex mirrors", "Sign convention"]],
+        ["Mirror Formula and Magnification", ["1/v + 1/u = 1/f", "m = −v/u", "Numericals on mirrors"]],
+        ["Refraction of Light and Refractive Index", ["Laws of refraction (Snell's law)", "Refraction through a glass slab", "Absolute and relative refractive index"]],
+        ["Image Formation by Lenses", ["Convex and concave lens ray diagrams", "Nature, position and size of image", "Uses of lenses"]],
+        ["Lens Formula, Magnification and Power", ["1/v − 1/u = 1/f", "Power P = 1/f in dioptre", "Numericals on lenses"]],
+      ] },
+      { title: "The human eye and the colourful world", level: "Beginner", summary: "The eye, its defects and dispersion.", topics: [
+        ["The Human Eye and Power of Accommodation", ["Parts of the eye", "Near point and far point", "Power of accommodation"]],
+        ["Defects of Vision and their Correction", ["Myopia and its correction", "Hypermetropia and its correction", "Presbyopia"]],
+        ["Refraction through a Prism and Dispersion", ["Angle of deviation", "Dispersion of white light", "The rainbow"]],
+        ["Atmospheric Refraction and Scattering of Light", ["Twinkling of stars", "Advanced sunrise and delayed sunset", "Why the sky is blue and the sun red at sunset"]],
+      ] },
+      { title: "Electricity", level: "Intermediate", summary: "Current, resistance, circuits and heating.", topics: [
+        ["Electric Current and Potential Difference", ["Charge, current and the ampere", "Potential difference and the volt", "Circuit symbols"]],
+        ["Ohm's Law and Resistance", ["V = IR", "Factors affecting resistance", "Resistivity"]],
+        ["Resistors in Series and Parallel", ["Equivalent resistance in series", "Equivalent resistance in parallel", "Mixed circuit numericals"]],
+        ["Heating Effect of Electric Current and Electric Power", ["Joule's law H = I²Rt", "Power P = VI = I²R = V²/R", "Kilowatt hour and electricity bills"]],
+      ] },
+      { title: "Magnetic effects of electric current", level: "Intermediate", summary: "Fields, forces and domestic circuits.", topics: [
+        ["Magnetic Field and Field Lines", ["Properties of magnetic field lines", "Field due to a straight conductor", "Right-hand thumb rule"]],
+        ["Magnetic Field due to a Circular Loop and a Solenoid", ["Field of a circular coil", "Solenoid and electromagnet", "Factors affecting the field"]],
+        ["Force on a Current-carrying Conductor and Fleming's Left-hand Rule", ["Direction of force", "Fleming's left-hand rule", "Electric motor principle"]],
+        ["Domestic Electric Circuits", ["Live, neutral and earth wires", "Fuse and MCB", "Overloading and short circuit"]],
+      ] },
+    ] },
+  { id: "up10-inorganic", group: "board", name: "UP Board Class 10 Inorganic Chemistry", playlist: "UP Board High School Science: Inorganic Chemistry, every topic", color: "#0f766e", tagline: "Inorganic Chemistry of UP Board High School Science: reactions and equations, acids, bases and salts, and metals and non-metals.",
+    chapters: [
+      { title: "Chemical reactions and equations", level: "Beginner", summary: "Writing, balancing and classifying reactions.", topics: [
+        ["Chemical Equations and Balancing", ["Word and skeletal equations", "Balancing by the hit and trial method", "States of matter in an equation"]],
+        ["Types of Chemical Reactions", ["Combination and decomposition", "Displacement and double displacement", "Exothermic and endothermic reactions"]],
+        ["Oxidation and Reduction, Corrosion and Rancidity", ["Oxidation and reduction as oxygen gain or loss", "Redox reactions", "Corrosion and rancidity and their prevention"]],
+      ] },
+      { title: "Acids, bases and salts", level: "Beginner", summary: "Properties, pH and important salts.", topics: [
+        ["Acids and Bases: Properties and Indicators", ["Litmus, phenolphthalein and methyl orange", "Reactions with metals and carbonates", "Neutralisation"]],
+        ["The pH Scale and its Importance", ["pH from 0 to 14", "Universal indicator", "pH in digestion, soil and tooth decay"]],
+        ["Important Salts: Common Salt, Baking Soda, Washing Soda, Bleaching Powder and Plaster of Paris", ["Preparation of each salt", "Formulae and uses", "Water of crystallisation"]],
+      ] },
+      { title: "Metals and non-metals", level: "Intermediate", summary: "Properties, reactivity and extraction.", topics: [
+        ["Physical and Chemical Properties of Metals and Non-metals", ["Lustre, malleability and conductivity", "Reactions with oxygen, water and acids", "Amphoteric oxides"]],
+        ["Reactivity Series and Ionic Compounds", ["The reactivity series", "Formation of ionic bonds", "Properties of ionic compounds"]],
+        ["Occurrence and Extraction of Metals", ["Ores and minerals", "Roasting, calcination and reduction", "Electrolytic refining"]],
+        ["Corrosion and its Prevention", ["Rusting of iron", "Galvanisation and painting", "Alloys"]],
+      ] },
+    ] },
+  { id: "up10-organic", group: "board", name: "UP Board Class 10 Organic Chemistry", playlist: "UP Board High School Science: Organic Chemistry (Carbon and its Compounds)", color: "#7c3aed", tagline: "Carbon and its compounds for UP Board High School Science, from covalent bonds to soaps and detergents.",
+    chapters: [
+      { title: "Carbon and its compounds", level: "Intermediate", summary: "Bonding, naming and reactions of carbon compounds.", topics: [
+        ["Covalent Bonding in Carbon Compounds", ["Tetravalency of carbon", "Single, double and triple bonds", "Electron dot structures"]],
+        ["Versatile Nature of Carbon: Catenation and Isomerism", ["Catenation", "Saturated and unsaturated hydrocarbons", "Straight chain, branched and ring structures"]],
+        ["Homologous Series and Functional Groups", ["Alkanes, alkenes and alkynes", "Functional groups", "Properties across a homologous series"]],
+        ["Nomenclature of Carbon Compounds", ["IUPAC naming rules", "Prefixes and suffixes", "Naming compounds with functional groups"]],
+        ["Chemical Properties of Carbon Compounds", ["Combustion and oxidation", "Addition reaction (hydrogenation)", "Substitution reaction"]],
+        ["Ethanol and Ethanoic Acid", ["Properties of ethanol", "Properties of ethanoic acid", "Esterification and saponification"]],
+        ["Soaps and Detergents", ["Structure of a soap molecule", "Micelle formation and cleansing action", "Hard water and detergents"]],
+      ] },
+    ] },
+  { id: "up10-english", group: "board", name: "UP Board Class 10 English", playlist: "UP Board High School English: grammar, writing and translation", color: "#9d174d", tagline: "UP Board High School English (अंग्रेजी): grammar, letter and essay writing, Hindi to English translation and reading, for the board paper.",
+    chapters: [
+      { title: "Grammar", level: "All levels", summary: "The grammar topics set in the UP Board paper every year.", topics: [
+        ["Tenses in English Grammar", ["Present, past and future forms", "Uses of each tense", "Common errors"]],
+        ["Active and Passive Voice", ["Rules of voice change", "Voice in each tense", "Imperative and interrogative sentences"]],
+        ["Direct and Indirect Speech (Narration)", ["Change of pronouns and tenses", "Assertive, interrogative and imperative sentences", "Exclamatory sentences"]],
+        ["Articles, Prepositions and Determiners", ["Use of a, an and the", "Prepositions of time and place", "Determiners"]],
+        ["Synonyms, Antonyms and One-word Substitution", ["Word meanings", "Opposites", "One word for many"]],
+      ] },
+      { title: "Writing and translation", level: "All levels", summary: "Formats and practice for the writing section.", topics: [
+        ["Hindi to English Translation", ["Translating each tense", "Sentence structure", "Practice sentences from board papers"]],
+        ["Letter and Application Writing", ["Formal letter format", "Application to the principal", "Informal letters"]],
+        ["Essay Writing for the Board Exam", ["Planning an essay", "Introduction, body and conclusion", "Popular board essay topics"]],
+      ] },
+      { title: "Reading", level: "All levels", summary: "Unseen passages and comprehension.", topics: [
+        ["Unseen Passage (Reading Comprehension)", ["Reading for the main idea", "Answering in your own words", "Vocabulary questions"]],
+      ] },
+    ] },
+
+  /* ---------- Board Exams: UP Board Intermediate (Class 12), NCERT syllabus ---------- */
+  { id: "up12-maths", group: "board", name: "UP Board Class 12 Maths", playlist: "UP Board Intermediate Maths: every topic", color: "#b45309", tagline: "UP Board Intermediate Mathematics (गणित), from relations to probability, topic by topic.",
+    chapters: [
+      { title: "Relations, functions and algebra", level: "Intermediate", summary: "Relations, inverse trigonometric functions, matrices and determinants.", topics: [
+        ["Types of Relations and Equivalence Relations", ["Reflexive, symmetric and transitive", "Equivalence relations", "Proving a relation is an equivalence"]],
+        ["Types of Functions: One-one and Onto", ["Injective and surjective functions", "Bijective functions", "Composition of functions"]],
+        ["Inverse Trigonometric Functions: Principal Values", ["Domain and range", "Principal value branches", "Graphs"]],
+        ["Properties of Inverse Trigonometric Functions", ["sin⁻¹x + cos⁻¹x = π/2", "tan⁻¹x + tan⁻¹y", "Simplification questions"]],
+        ["Matrices: Types and Operations", ["Types of matrices", "Addition and multiplication", "Transpose, symmetric and skew-symmetric"]],
+        ["Determinants and their Properties", ["Expanding a determinant", "Area of a triangle", "Minors and cofactors"]],
+        ["Adjoint, Inverse and Solving Linear Equations", ["Adjoint of a matrix", "A⁻¹ = adj A / |A|", "Solving equations by the matrix method"]],
+      ] },
+      { title: "Differential calculus", level: "Advanced", summary: "Continuity, differentiation and its applications.", topics: [
+        ["Continuity of a Function", ["Continuity at a point", "Continuity of composite functions", "Finding k for continuity"]],
+        ["Differentiability and the Chain Rule", ["Derivatives of composite functions", "Implicit differentiation", "Derivatives of inverse trigonometric functions"]],
+        ["Logarithmic and Parametric Differentiation", ["Logarithmic differentiation", "Parametric forms", "Second-order derivatives"]],
+        ["Rate of Change and Increasing and Decreasing Functions", ["Rate of change of quantities", "Increasing and decreasing intervals", "Strictly monotonic functions"]],
+        ["Maxima and Minima", ["First derivative test", "Second derivative test", "Word problems on maxima and minima"]],
+      ] },
+      { title: "Integral calculus", level: "Advanced", summary: "Integrals, area and differential equations.", topics: [
+        ["Integration by Substitution", ["Standard integrals", "Substitution method", "Trigonometric substitutions"]],
+        ["Integration by Parts and Partial Fractions", ["The ILATE rule", "Integration by parts", "Partial fractions"]],
+        ["Definite Integrals and their Properties", ["Fundamental theorem of calculus", "Properties of definite integrals", "Evaluating definite integrals"]],
+        ["Application of Integrals: Area under Curves", ["Area under a curve", "Area of a circle and an ellipse", "Area between a line and a curve"]],
+        ["Differential Equations: Order, Degree and Variable Separable", ["Order and degree", "Forming a differential equation", "Variable separable method"]],
+        ["Homogeneous and Linear Differential Equations", ["Homogeneous equations", "Linear equations dy/dx + Py = Q", "Integrating factor"]],
+      ] },
+      { title: "Vectors and three-dimensional geometry", level: "Advanced", summary: "Vector algebra, lines in space and linear programming.", topics: [
+        ["Vector Algebra: Types and Components", ["Types of vectors", "Position vector and components", "Section formula in vectors"]],
+        ["Dot Product and Cross Product of Vectors", ["Scalar product and the angle between vectors", "Vector product", "Area of a parallelogram and triangle"]],
+        ["Three-dimensional Geometry: Direction Cosines and Lines", ["Direction cosines and ratios", "Equation of a line", "Angle between two lines"]],
+        ["Shortest Distance between Two Lines", ["Skew lines", "Shortest distance formula", "Parallel lines"]],
+        ["Linear Programming Problems", ["Objective function and constraints", "Graphical method", "Corner point method"]],
+      ] },
+      { title: "Probability", level: "Intermediate", summary: "Conditional probability and Bayes' theorem.", topics: [
+        ["Conditional Probability and the Multiplication Theorem", ["P(A|B) = P(A∩B)/P(B)", "Multiplication theorem", "Independent events"]],
+        ["Bayes' Theorem", ["Total probability theorem", "Bayes' theorem", "Board-style Bayes problems"]],
+        ["Random Variables and Probability Distribution", ["Random variables", "Probability distribution", "Mean of a distribution"]],
+      ] },
+    ] },
+  { id: "up12-physics", group: "board", name: "UP Board Class 12 Physics", playlist: "UP Board Intermediate Physics: every topic", color: "#1e40af", tagline: "UP Board Intermediate Physics (भौतिक विज्ञान), from electrostatics to semiconductors, topic by topic with numericals.",
+    chapters: [
+      { title: "Electrostatics", level: "Intermediate", summary: "Charges, fields, potential and capacitance.", topics: [
+        ["Coulomb's Law and Electric Charge", ["Properties of charge", "Coulomb's law", "Superposition principle"]],
+        ["Electric Field and Electric Dipole", ["Electric field lines", "Field of a dipole", "Torque on a dipole"]],
+        ["Gauss's Law and its Applications", ["Electric flux", "Gauss's law", "Field of a wire, sheet and shell"]],
+        ["Electric Potential and Potential Energy", ["Potential due to a point charge", "Potential of a dipole", "Equipotential surfaces"]],
+        ["Capacitors and Capacitance", ["Parallel plate capacitor", "Series and parallel combination", "Energy stored and dielectrics"]],
+      ] },
+      { title: "Current electricity", level: "Intermediate", summary: "Ohm's law, cells and Kirchhoff's laws.", topics: [
+        ["Drift Velocity, Ohm's Law and Resistivity", ["Drift velocity and mobility", "Ohm's law", "Temperature dependence of resistance"]],
+        ["Cells, EMF and Internal Resistance", ["EMF and terminal voltage", "Cells in series and parallel", "Internal resistance"]],
+        ["Kirchhoff's Laws and the Wheatstone Bridge", ["Junction and loop rules", "Wheatstone bridge", "The metre bridge"]],
+      ] },
+      { title: "Magnetism", level: "Advanced", summary: "Magnetic effects of current and magnetism in matter.", topics: [
+        ["Biot-Savart Law and Ampere's Circuital Law", ["Field of a circular loop", "Ampere's law", "Field of a solenoid"]],
+        ["Force on a Moving Charge and the Cyclotron", ["Lorentz force", "Motion in a magnetic field", "Cyclotron"]],
+        ["Moving Coil Galvanometer", ["Torque on a current loop", "Galvanometer", "Conversion to ammeter and voltmeter"]],
+        ["Magnetism and Matter", ["Bar magnet as a solenoid", "Dia, para and ferromagnetism", "Magnetic properties of materials"]],
+      ] },
+      { title: "Electromagnetic induction and alternating current", level: "Advanced", summary: "Induction, AC circuits and EM waves.", topics: [
+        ["Faraday's and Lenz's Laws of Electromagnetic Induction", ["Magnetic flux", "Faraday's laws", "Lenz's law"]],
+        ["Self and Mutual Inductance", ["Motional EMF", "Self inductance", "Mutual inductance"]],
+        ["Alternating Current and LCR Circuits", ["RMS and peak values", "Reactance and impedance", "Resonance"]],
+        ["Power in AC Circuits and the Transformer", ["Power factor", "Wattless current", "Transformer"]],
+        ["Electromagnetic Waves", ["Displacement current", "Properties of EM waves", "Electromagnetic spectrum"]],
+      ] },
+      { title: "Optics", level: "Advanced", summary: "Ray optics, instruments and wave optics.", topics: [
+        ["Refraction and Total Internal Reflection", ["Refraction at spherical surfaces", "Total internal reflection", "Optical fibres"]],
+        ["Lenses, Lens Maker's Formula and Prism", ["Lens maker's formula", "Combination of lenses", "Refraction through a prism"]],
+        ["Optical Instruments: Microscope and Telescope", ["Simple and compound microscope", "Astronomical telescope", "Magnifying power"]],
+        ["Huygens' Principle and Young's Double Slit Experiment", ["Wavefronts", "Interference", "Fringe width"]],
+        ["Diffraction and Polarisation", ["Single-slit diffraction", "Polarisation", "Brewster's law"]],
+      ] },
+      { title: "Modern physics", level: "Advanced", summary: "Dual nature, atoms, nuclei and semiconductors.", topics: [
+        ["Photoelectric Effect and Dual Nature of Matter", ["Photoelectric effect", "Einstein's equation", "De Broglie wavelength"]],
+        ["Atoms: Bohr Model and Hydrogen Spectrum", ["Rutherford's model", "Bohr's postulates", "Spectral series"]],
+        ["Nuclei: Mass Defect, Binding Energy, Fission and Fusion", ["Nuclear size and density", "Mass defect and binding energy", "Fission and fusion"]],
+        ["Semiconductors and the p-n Junction Diode", ["Intrinsic and extrinsic semiconductors", "p-n junction", "Forward and reverse bias"]],
+        ["Diode as a Rectifier", ["Half-wave rectifier", "Full-wave rectifier", "Characteristics of a diode"]],
+      ] },
+    ] },
+  { id: "up12-inorganic", group: "board", name: "UP Board Class 12 Inorganic & Physical Chemistry", playlist: "UP Board Intermediate Chemistry: Inorganic and Physical, every topic", color: "#047857", tagline: "UP Board Intermediate Chemistry (रसायन विज्ञान): solutions, electrochemistry, kinetics, the d- and f-block and coordination compounds.",
+    chapters: [
+      { title: "Physical chemistry", level: "Intermediate", summary: "Solutions, electrochemistry and chemical kinetics.", topics: [
+        ["Solutions: Concentration Terms and Raoult's Law", ["Molarity, molality and mole fraction", "Raoult's law", "Ideal and non-ideal solutions"]],
+        ["Colligative Properties and Van't Hoff Factor", ["Relative lowering of vapour pressure", "Elevation of boiling point and depression of freezing point", "Osmotic pressure and the van't Hoff factor"]],
+        ["Electrochemical Cells and the Nernst Equation", ["Galvanic cells", "Standard electrode potential", "Nernst equation"]],
+        ["Conductance, Kohlrausch's Law and Electrolysis", ["Molar conductivity", "Kohlrausch's law", "Faraday's laws of electrolysis"]],
+        ["Chemical Kinetics: Rate, Order and Molecularity", ["Rate of reaction", "Rate law", "Order and molecularity"]],
+        ["Integrated Rate Equations and Half-life", ["Zero and first-order reactions", "Half-life", "Arrhenius equation"]],
+      ] },
+      { title: "Inorganic chemistry", level: "Intermediate", summary: "Transition elements and coordination compounds.", topics: [
+        ["d-Block Elements: Properties of Transition Metals", ["Electronic configuration", "Variable oxidation states", "Coloured ions and catalytic properties"]],
+        ["Potassium Dichromate and Potassium Permanganate", ["Preparation", "Properties", "Structures"]],
+        ["f-Block Elements: Lanthanoids and Actinoids", ["Lanthanoid contraction", "Actinoids", "Comparison"]],
+        ["Coordination Compounds: Werner's Theory and IUPAC Naming", ["Werner's theory", "Ligands and coordination number", "IUPAC nomenclature"]],
+        ["Isomerism in Coordination Compounds", ["Structural isomerism", "Geometrical isomerism", "Optical isomerism"]],
+        ["Valence Bond and Crystal Field Theory", ["Hybridisation and magnetic properties", "Crystal field splitting", "Colour of complexes"]],
+      ] },
+    ] },
+  { id: "up12-organic", group: "board", name: "UP Board Class 12 Organic Chemistry", playlist: "UP Board Intermediate Chemistry: Organic, every topic", color: "#6d28d9", tagline: "UP Board Intermediate Organic Chemistry, from haloalkanes to biomolecules, with named reactions and conversions.",
+    chapters: [
+      { title: "Haloalkanes, alcohols and ethers", level: "Advanced", summary: "Halogen and oxygen compounds.", topics: [
+        ["Haloalkanes: Nomenclature and Preparation", ["Classification", "IUPAC names", "Preparation from alcohols and alkenes"]],
+        ["SN1 and SN2 Reaction Mechanisms", ["SN2 mechanism", "SN1 mechanism", "Optical activity and stereochemistry"]],
+        ["Haloarenes and their Reactions", ["Preparation of haloarenes", "Electrophilic substitution", "Wurtz-Fittig reaction"]],
+        ["Alcohols: Preparation and Properties", ["Preparation of alcohols", "Physical and chemical properties", "Lucas test"]],
+        ["Phenols: Acidity and Reactions", ["Acidity of phenol", "Kolbe's and Reimer-Tiemann reactions", "Electrophilic substitution"]],
+        ["Ethers: Williamson Synthesis and Reactions", ["Williamson synthesis", "Properties of ethers", "Reaction with HI"]],
+      ] },
+      { title: "Carbonyl compounds and amines", level: "Advanced", summary: "Aldehydes, ketones, acids and amines.", topics: [
+        ["Aldehydes and Ketones: Preparation", ["Rosenmund and Stephen reductions", "Etard reaction", "Friedel-Crafts acylation"]],
+        ["Nucleophilic Addition, Aldol and Cannizzaro Reactions", ["Nucleophilic addition", "Aldol condensation", "Cannizzaro reaction"]],
+        ["Carboxylic Acids: Acidity and Reactions", ["Preparation", "Acidity and the effect of substituents", "HVZ reaction"]],
+        ["Amines: Classification, Preparation and Basicity", ["Classification and nomenclature", "Gabriel phthalimide and Hoffmann bromamide", "Basic character"]],
+        ["Diazonium Salts and their Reactions", ["Preparation of diazonium salts", "Sandmeyer reaction", "Coupling reactions"]],
+      ] },
+      { title: "Biomolecules", level: "Intermediate", summary: "The chemistry of life.", topics: [
+        ["Carbohydrates: Glucose and Fructose", ["Classification of carbohydrates", "Structure of glucose", "Disaccharides and polysaccharides"]],
+        ["Proteins, Enzymes and Amino Acids", ["Amino acids and the peptide bond", "Structure of proteins", "Enzymes"]],
+        ["Vitamins, Nucleic Acids and Hormones", ["Vitamins and their deficiency", "DNA and RNA", "Hormones"]],
+      ] },
+    ] },
+  { id: "up12-english", group: "board", name: "UP Board Class 12 English", playlist: "UP Board Intermediate English: grammar, writing and translation", color: "#831843", tagline: "UP Board Intermediate English (अंग्रेजी): grammar, letter and essay writing, Hindi to English translation and reading, for the board paper.",
+    chapters: [
+      { title: "Grammar", level: "All levels", summary: "The grammar section of the Intermediate paper.", topics: [
+        ["Transformation of Sentences", ["Simple, compound and complex sentences", "Affirmative and negative", "Degrees of comparison"]],
+        ["Synthesis of Sentences", ["Joining with conjunctions", "Using participles and infinitives", "Relative clauses"]],
+        ["Correction of Sentences (Common Errors)", ["Subject-verb agreement", "Errors with tenses and prepositions", "Errors with articles"]],
+        ["Phrasal Verbs and Idioms", ["Common phrasal verbs", "Idioms and their meanings", "Using them in sentences"]],
+        ["Figures of Speech", ["Simile and metaphor", "Personification and alliteration", "Identifying figures of speech in poems"]],
+      ] },
+      { title: "Writing and translation", level: "All levels", summary: "The writing section, with translation.", topics: [
+        ["Hindi to English Translation for Class 12", ["Complex sentence translation", "Passages from board papers", "Common mistakes"]],
+        ["Essay Writing for Class 12", ["Essay structure", "Current affairs topics", "Scoring tips"]],
+        ["Formal Letter and Application Writing for Class 12", ["Letters to editors and officials", "Job applications", "Format and layout"]],
+      ] },
+      { title: "Reading", level: "All levels", summary: "Unseen passages and précis.", topics: [
+        ["Unseen Passage and Précis Writing", ["Comprehension questions", "Writing a précis", "Giving a title"]],
       ] },
     ] },
 

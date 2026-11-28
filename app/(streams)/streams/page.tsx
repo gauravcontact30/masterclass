@@ -3,6 +3,7 @@ import { PageAnswers } from "@/components/page-answers";
 import { StreamsHub } from "@/components/streams-hub";
 import { HUB_ANSWERS } from "@/lib/page-answers";
 import { pageMetadata, siteName, siteUrl } from "@/lib/seo";
+import styles from "./page.module.css";
 import { QUALITY_NAME, playlist, playlistQuality, streamTotals, techInfo, techNames, techsIn } from "@/lib/streams";
 
 export const metadata = pageMetadata("/streams");
@@ -30,6 +31,6 @@ export default function StreamsPage() {
         } }; }) },
     ]} />
     <StreamsHub />
-    <PageAnswers answers={answers} />
+    <div className={styles.answers}><PageAnswers answers={answers} /></div>
   </div>;
 }

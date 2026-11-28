@@ -29,8 +29,10 @@ const GROUP_COPY: Record<StreamGroup, { lede: string; parts?: { title: string; i
       { title: "Cloud and DevOps", ids: ["aws", "devops-aws", "devops"] },
       { title: "Problem solving and architecture", ids: ["dsa", "sysdesign"] },
     ] },
-  board: { lede: "For CBSE, ICSE and ISC Class 10 and 12 board exam students: Maths, Physics, Chemistry and English, chapter by chapter.",
+  board: { lede: "For UP Board, CBSE, ICSE and ISC Class 10 and 12 board exam students: Maths, Physics, Organic and Inorganic Chemistry and English, topic by topic.",
     parts: [
+      { title: "UP Board · Class 10th (High School)", ids: ["up10-maths", "up10-physics", "up10-inorganic", "up10-organic", "up10-english"] },
+      { title: "UP Board · Class 12th (Intermediate)", ids: ["up12-maths", "up12-physics", "up12-inorganic", "up12-organic", "up12-english"] },
       { title: "CBSE Class 10", ids: ["board10-maths", "board10-physics", "board10-chemistry", "board10-english"] },
       { title: "CBSE Class 12", ids: ["board12-maths", "board12-physics", "board12-chemistry", "board12-english"] },
       { title: "ICSE Class 10", ids: ["icse10-maths", "icse10-physics", "icse10-chemistry", "icse10-english"] },

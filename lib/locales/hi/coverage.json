@@ -1,14 +1,14 @@
 {
-  "sourceHash": "b4d0a603af50a066779d4361cc47055a8166493549cc13407a202ab5ac0aafed",
-  "sourceStrings": 47602,
-  "translatable": 36367,
-  "keptEnglish": 4079,
-  "noProse": 2426,
-  "translatedStrings": 36376,
+  "sourceHash": "1982ba1ed914e0abcacab0967f4f0b73e4bd0855cbb0f7bfbca094d03f48c48a",
+  "sourceStrings": 48121,
+  "translatable": 36698,
+  "keptEnglish": 4219,
+  "noProse": 2436,
+  "translatedStrings": 36709,
   "shards": 30,
-  "uiStrings": 491,
-  "uiTranslated": 470,
-  "reviewedOverrides": 2975,
+  "uiStrings": 492,
+  "uiTranslated": 471,
+  "reviewedOverrides": 3311,
   "rejectedPendingReview": 0,
   "method": "local IndicTrans2 (dist-200M, CTranslate2), math masked, validated; reviewed overrides win"
 }

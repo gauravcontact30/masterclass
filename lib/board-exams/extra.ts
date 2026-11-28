@@ -6,6 +6,7 @@ import { X_CHEMISTRY } from "./bank/x-chemistry";
 import { XII_MATH } from "./bank/xii-math";
 import { XII_PHYSICS } from "./bank/xii-physics";
 import { XII_CHEMISTRY } from "./bank/xii-chemistry";
+import { upFor } from "./up-board";
 
 /*
  * Extra hand-authored board questions (2026-11-22): frequently set short answers, worked problems and MCQs for each
@@ -157,11 +158,17 @@ const BANK: Record<string, BankRow[]> = {
 export function extraFor(cls: string, pack: string): { items: Item[]; mcqs: Mcq[] } {
   const extra = EXTRA[`${cls}-${pack}`] ?? { items: [], mcqs: [] };
   const rows = (BANK[`${cls}-${pack}`] ?? []).map(([ch, q, a, marks, b]) => bank(ch, q, a, marks, b));
+  // UP Board only questions (lib/board-exams/up-board.ts), with ids of their own.
+  const up = upFor(cls, pack);
   return {
     items: [
       ...extra.items.map((item, index) => ({ ...item, id: `${cls}-${pack}-x${index + 1}` })),
       ...rows.map((item, index) => ({ ...item, id: `${cls}-${pack}-qb${index + 1}` })),
+      ...up.items.map((item, index) => ({ ...item, id: `${cls}-${pack}-up${index + 1}` })),
     ],
-    mcqs: extra.mcqs.map((item, index) => ({ ...item, id: `${cls}-${pack}-xm${index + 1}` })),
+    mcqs: [
+      ...extra.mcqs.map((item, index) => ({ ...item, id: `${cls}-${pack}-xm${index + 1}` })),
+      ...up.mcqs.map((item, index) => ({ ...item, id: `${cls}-${pack}-upm${index + 1}` })),
+    ],
   };
 }

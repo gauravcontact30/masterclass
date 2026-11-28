@@ -30,7 +30,7 @@ export function StudentChatbot() {
     return () => window.removeEventListener(STUDY_BUDDY_EVENT, onAsk);
   }, []);
   return <>
-    <button className={styles.launcher} onClick={() => { setLoaded(true); setOpen(true); }} aria-label="Open Study Buddy" aria-haspopup="dialog" aria-expanded={open}>
+    <button data-study-buddy="" className={styles.launcher} onClick={() => { setLoaded(true); setOpen(true); }} aria-label="Open Study Buddy" aria-haspopup="dialog" aria-expanded={open}>
       <span className={styles.launcherMark} aria-hidden="true">✻</span><span>Study Buddy<small>Ask. Understand. Practice.</small></span><MessageCircle size={18} />
     </button>
     {loaded && <StudentChatPanel open={open} onOpenChange={setOpen} prompt={prompt} />}

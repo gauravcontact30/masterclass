@@ -7,8 +7,13 @@
 .icon { display: none; }
 .how li { counter-increment: step; display: grid; gap: 8px; align-content: start; padding: 14px; border: 1px solid #e8e6dc; border-radius: 14px; background: #fff; font-size: 14.5px; line-height: 1.5; color: #3d3d3a; }
 .how li::before { content: counter(step); display: grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; background: #141413; color: #fff; font-size: 13px; font-weight: 700; }
-.list { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr)); gap: 12px; }
-.item { display: grid; gap: 8px; align-content: start; min-width: 0; padding: 18px; border: 1px solid #e8e6dc; border-radius: 14px; background: #fff; }
+/* Balanced columns, not a grid: each card is as tall as its answer, so short answers leave no empty block beside a long one
+   and an odd card never sits alone on a row. Cards are numbered so the reading order stays clear down each column. */
+.list { columns: 3 300px; column-gap: 14px; counter-reset: faq; }
+.item { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 8px 12px; align-content: start; min-width: 0; margin: 0 0 14px; padding: 18px; border: 1px solid #e8e6dc; border-radius: 14px; background: #fff; break-inside: avoid; counter-increment: faq; }
+.item::before { content: counter(faq); display: grid; place-items: center; width: 28px; height: 28px; border-radius: 9px; background: #fff; border: 1px solid currentColor; color: #8f3f23; font-size: 13px; font-weight: 700; line-height: 1; }
+.item > h3 { align-self: center; }
+.item > p { grid-column: 1 / -1; }
 /* A different light colour per card, repeating after six. */
 .item:nth-child(6n + 1) { border-color: #e2daf3; background: #f7f4fd; }
 .item:nth-child(6n + 2) { border-color: #d4e8da; background: #f1f8f3; }
@@ -36,7 +41,9 @@
 .landing .how li { position: relative; gap: 10px; padding: 0; border: 0; background: none; color: #3d3d3a; font-size: 15px; }
 .landing .how li::before { position: absolute; z-index: 1; top: -5px; left: 50px; width: 22px; height: 22px; background: #8f3f23; font-size: 12px; font-weight: 500; }
 .landing .how .icon { position: relative; border-color: #f1d9cc; }
-.landing .list { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+.landing .list { display: grid; columns: auto; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+.landing .item { margin: 0; }
+.landing .item::before { content: none; }
 .landing .item { --tone-edge: #e2daf3; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 12px 14px; padding: 20px; border-radius: 18px; transition: border-color .18s ease; }
 .landing .item:hover { border-color: var(--tone-ink, #8f3f23); }
 .landing .item > h3, .askTitle { font-size: 17px; font-weight: 600; line-height: 1.3; letter-spacing: -.01em; color: var(--tone-ink); text-align: start; }

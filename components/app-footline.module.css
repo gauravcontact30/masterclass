@@ -8,3 +8,10 @@
 .links a:focus-visible { outline: 2px solid #bb5834; outline-offset: 2px; border-radius: 4px; }
 @media (max-width: 640px) { .tagline { display: none; } }
 @media print { .line { display: none; } }
+/* Where the Study Buddy launcher floats in the bottom-right corner (the Learning Dashboard), the footer keeps clear of it so
+   Support, Privacy and Terms are never under the button: room on its right on wide screens, a band under the links on
+   narrow ones, where the launcher is as wide as the links. */
+:global(body:has([data-study-buddy])) .line { padding-right: 310px; }
+@media (max-width: 760px) {
+  :global(body:has([data-study-buddy])) .line { flex-wrap: wrap; row-gap: 4px; padding: 8px clamp(12px, 2vw, 24px) 76px; white-space: normal; }
+}

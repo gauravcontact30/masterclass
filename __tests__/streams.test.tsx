@@ -34,7 +34,8 @@ test("four categories of step-by-step playlists; every step is a measured video 
   expect(techsIn(["tech"]).slice(0, 10)).toEqual(["nextjs", "react", "langchain", "langgraph", "langsmith", "langflow", "langserve", "n8n", "aws", "sysdesign"]);
   for (const id of techsIn(["tech"]).slice(10)) expect(["typescript", "testing", "tanstack", "zustand", "playwright", "fastapi", "python", "nestjs", "modernjs", "devops-aws", "dsa", "devops"]).toContain(id);
   for (const id of ["board10-maths", "board10-physics", "board10-chemistry", "board10-english", "board12-maths", "board12-physics", "board12-chemistry", "board12-english",
-    "icse10-maths", "icse10-physics", "icse10-chemistry", "icse10-english", "isc12-maths", "isc12-physics", "isc12-chemistry", "isc12-english"]) expect(techInfo(id as never).group).toBe("board");
+    "icse10-maths", "icse10-physics", "icse10-chemistry", "icse10-english", "isc12-maths", "isc12-physics", "isc12-chemistry", "isc12-english",
+    "up10-maths", "up10-physics", "up10-inorganic", "up10-organic", "up10-english", "up12-maths", "up12-physics", "up12-inorganic", "up12-organic", "up12-english"]) expect(techInfo(id as never).group).toBe("board");
   for (const id of ["upsc", "ias", "pcs", "ssc", "nda", "bankpo", "railways", "police", "cbi", "incometax", "ctet", "ca"]) expect(techsIn(["exams"])).toContain(id);
   expect(techsIn(["ielts"])).toEqual(["ielts"]);
   const ids = STREAM_COURSES.flatMap(c => c.lessons.map(l => l.id));
