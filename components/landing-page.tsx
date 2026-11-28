@@ -113,24 +113,25 @@ export function LandingPage({ features, answers, certifications, techBuzz, workf
     <Part><LandingTechShowcase /></Part>
     {india && <><Part><LandingBoardShowcase /></Part><Part><LandingGovtShowcase /></Part></>}
     <CategoryBand id="tech" india={india} />
-    {/* Tech Buzz right under the sale (user request 2026-11-01): the newest stories and the way into /tech-buzz. */}
-    <Part>{techBuzz}</Part>
-    {/* API Docs next, then Fresh in tech (user request 2026-11-03). */}
-    {pro && <LandingApiDocs data={pro.api} />}
-    <LearningSlot surface="landing" page="home" section="after-slider" className={styles.learningSlot} />
-    {/* Plan your route above Fresh in tech (user request 2026-11-23). */}
-    <Part><LandingPathFinder day={today} fresh={fresh?.goals} /></Part>
-    <Part><LandingNews /></Part>
-    {library && <Part><SubjectRibbon entries={library.entries} /></Part>}
+    {/* Tech sections ordered by how long they hold visitors (user request 2026-11-28): the deep, interactive ones first
+        (interview prep, the daily AI pulse, workflow blueprints, comparisons), then the stories and docs that bring
+        people back, then the shorter reads (path finder, vocabulary, library, blog), and the quick-scan sections last
+        (news, certifications, features). Nothing removed or changed, only moved. */}
     <Part><LandingInterview preview day={today} fresh={fresh?.interview} /></Part>
     {daily && <Part><LandingAiPulse cards={daily.pulse} total={daily.totals?.pulse} day={daily.day} locked={daily.locked?.pulse} preview /></Part>}
     <Part><LandingWorkflows {...(workflows ?? {})} preview /></Part>
-    <Part>{certifications}</Part>
+    <Part><LandingComparisons preview official={techDocs} day={today} fresh={fresh?.difference} /></Part>
+    <LearningSlot surface="landing" page="home" section="after-slider" className={styles.learningSlot} />
+    <Part>{techBuzz}</Part>
+    {pro && <LandingApiDocs data={pro.api} />}
+    <Part><LandingPathFinder day={today} fresh={fresh?.goals} /></Part>
+    {daily && <LandingVocabulary words={daily.words} total={daily.totals?.words} day={daily.day} locked={daily.locked?.word} preview />}
+    {library && <Part><SubjectRibbon entries={library.entries} /></Part>}
     {coffee && <LandingCoffee posts={coffee} />}
     <LearningSlot surface="landing" page="home" section="middle" className={styles.learningSlot} />
+    <Part><LandingNews /></Part>
+    <Part>{certifications}</Part>
     <Part>{features}</Part>
-    <Part><LandingComparisons preview official={techDocs} day={today} fresh={fresh?.difference} /></Part>
-    {daily && <LandingVocabulary words={daily.words} total={daily.totals?.words} day={daily.day} locked={daily.locked?.word} preview />}
     {/* Board and Competitive Exams are for visitors in India only (server geo decision via /api/geo). */}
     {india && <>
     <CategoryBand id="board" india={india} />

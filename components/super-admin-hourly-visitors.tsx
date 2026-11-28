@@ -23,7 +23,6 @@ const RANK = { 1: { title: "Busiest hour", medal: "Gold" }, 2: { title: "Second 
 export function SuperAdminHourlyVisitors({ everyone, now, exact, ownHosts, days = 5 }: Readonly<{ everyone: StreamVisitor[]; now: number; exact: boolean; ownHosts: string[]; days?: number }>) {
   const [daysAgo, setDaysAgo] = useState(0);
   const data = useMemo(() => exact ? hourlyVisitors(everyone, daysAgo, now, ownHosts) : null, [exact, everyone, daysAgo, now, ownHosts]);
-  const liveNow = useMemo(() => everyone.filter(v => v.live).length, [everyone]);
   // Seconds since this read landed, so the clock runs between reads; each read starts it again from the server's time.
   const [elapsed, setElapsed] = useState({ now, ms: 0 });
   useEffect(() => {
@@ -56,18 +55,17 @@ export function SuperAdminHourlyVisitors({ everyone, now, exact, ownHosts, days 
       <span className={styles.liveDot} aria-hidden="true" /><b>Live</b>
       <span className={styles.liveClock}>{istClock(clockNow)} IST</span>
       <span className={styles.liveSep} aria-hidden="true" />
-      <span><Radio size={13} aria-hidden="true" />{n(liveNow)} on the site now</span>
-      <span className={styles.liveSep} aria-hidden="true" />
       <span>This hour {hourSpan(new Date(istHourStart(clockNow) + 19_800_000).getUTCHours())}</span>
       <span className={styles.hourProgress} role="presentation"><i style={{ width: `${(intoHour / HOUR_MS) * 100}%` }} /></span>
       <span className={styles.liveLeft}>{mmss(HOUR_MS - intoHour)} left</span>
     </div>}
 
     <div className={styles.totals}>
-      <Total icon={Users} label={today ? "Visitors today" : "Visitors"} value={n(data.people)} />
+      {!today && <><Total icon={Users} label="Visitors" value={n(data.people)} />
       <Total icon={UserPlus} label="New" value={n(data.newVisitors)} note={pct(data.newVisitors, data.people)} />
-      <Total icon={Eye} label="Page views" value={n(data.views)} />
+      <Total icon={Eye} label="Page views" value={n(data.views)} /></>}
       <Total icon={CalendarDays} label="Hours with visitors" value={`${data.activeHours} / ${today ? slots.filter(s => !s.future).length : 24}`} />
+      {today && <Total icon={Radio} label="Busiest hour so far" value={top[0] ? hourSpan(top[0].hour) : "—"} note={top[0] ? `${n(top[0].people)} visitors` : undefined} />}
     </div>
 
     <div className={styles.podium} aria-label="Top three hours by visitors">
@@ -100,7 +98,7 @@ export function SuperAdminHourlyVisitors({ everyone, now, exact, ownHosts, days 
       <table>
         <caption className={styles.srOnly}>Visitors in each hour of {dayName(data.dayStart)}, 00:00:00 to 24:00:00 IST</caption>
         <thead><tr><th scope="col">Rank</th><th scope="col">Hour span (IST)</th><th scope="col">Visitors</th><th scope="col">New</th><th scope="col">Returning</th><th scope="col">Signed in</th><th scope="col">Page views</th><th scope="col">Reading</th><th scope="col">Top country</th><th scope="col">Top source</th></tr></thead>
-        <tbody>{slots.map(s => <Row key={s.start} slot={s} max={maxPeople} clockNow={clockNow} liveNow={liveNow} />)}</tbody>
+        <tbody>{slots.map(s => <Row key={s.start} slot={s} max={maxPeople} clockNow={clockNow} />)}</tbody>
         <tfoot><tr><th scope="row" colSpan={2}>Whole day</th><td><b>{n(data.people)}</b><small>different people</small></td><td>{n(data.newVisitors)}</td><td colSpan={2} /><td>{n(data.views)}</td><td>{stayText(slots.reduce((sum, s) => sum + s.readingMs, 0))}</td><td colSpan={2} /></tr></tfoot>
       </table>
     </div>
@@ -112,13 +110,13 @@ function Total({ icon: Icon, label, value, note }: Readonly<{ icon: typeof Users
   return <div className={styles.total}><dt><Icon size={12} aria-hidden="true" />{label}</dt><dd>{value}{note && <small>{note}</small>}</dd></div>;
 }
 
-function Row({ slot: s, max, clockNow, liveNow }: Readonly<{ slot: HourSlot; max: number; clockNow: number; liveNow: number }>) {
+function Row({ slot: s, max, clockNow }: Readonly<{ slot: HourSlot; max: number; clockNow: number }>) {
   const into = clockNow - s.start;
   return <tr data-rank={s.rank ?? undefined} data-now={s.current || undefined} data-future={s.future || undefined} data-empty={!s.future && !s.people ? "" : undefined}>
     <td className={styles.rankCell}>{s.rank ? <span className={styles.medal} data-rank={s.rank} title={`${RANK[s.rank].medal}: ${RANK[s.rank].title}`}>{s.rank}</span> : <span className={styles.noRank}>·</span>}</td>
     <th scope="row">
       <span className={styles.span}>{hourSpan(s.hour)}</span>
-      {s.current && <span className={styles.rowLive}><em><Timer size={11} aria-hidden="true" />Live · {istClock(clockNow)}</em><span className={styles.rowProgress}><i style={{ width: `${Math.min(100, (into / HOUR_MS) * 100)}%` }} /></span><small>{n(liveNow)} on site now</small></span>}
+      {s.current && <span className={styles.rowLive}><em><Timer size={11} aria-hidden="true" />Live · {istClock(clockNow)}</em><span className={styles.rowProgress}><i style={{ width: `${Math.min(100, (into / HOUR_MS) * 100)}%` }} /></span></span>}
     </th>
     {s.future ? <td colSpan={8} className={styles.upcoming}>Upcoming</td> : <>
       <td className={styles.visitorsCell}><span className={styles.inlineBar} aria-hidden="true"><i style={{ width: `${(s.people / max) * 100}%` }} /></span><b>{n(s.people)}</b></td>

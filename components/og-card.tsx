@@ -85,11 +85,21 @@ export const HOME_OG_WALL = [
 export const HOME_OG_TECHNOLOGIES = HOME_OG_WALL.flat();
 export type OgTechnology = { name: string; logo: string };
 
+/** The home card's five pillars, in order: what each is and what it covers (titles as the user named them, 2026-11-28). */
+export const HOME_OG_PILLARS = [
+  ["Learning Technologies & AI", "Agentic AI, Next.js, React, Python, AWS, DSA · MCB Streams in 4K"],
+  ["Board Exams", "UP Board, CBSE Board & ICSE Board · Class 10 and 12"],
+  ["Top Rank Govt. Exams & Interview Q&A", "NDA, SSC, banks, railways, UPSC · most asked questions with answers"],
+  ["TET Qualifying", "CTET, UPTET & state TETs · child development and pedagogy"],
+  ["IELTS Preparation", "Writing, Speaking, Reading & Listening · band score calculator"],
+] as const;
+const PILLAR_TONES = [["#fdeee7", "#8f3f23"], ["#eaf3fb", "#1d4f7a"], ["#ecf7ef", "#1f5a37"], ["#f1ecfb", "#4b3c86"], ["#fdf6dc", "#6e4f00"]] as const;
+
 /** The site's light tones, each with an ink that reads on it. */
 const WALL_TONES = [["#eaf3fb", "#1d4f7a"], ["#ecf7ef", "#1f5a37"], ["#fdf6dc", "#6e4f00"], ["#f1ecfb", "#4b3c86"], ["#fdeee7", "#8f3f23"], ["#e6f5f6", "#17595f"]] as const;
 
 /**
- * The home page's link preview (1200×630): what the site is for and a way in at the left, and at the right a clay panel
+ * The home page's link preview (1200×630): what the site is for, its five pillars and a way in at the left, and at the right a clay panel
  * holding a wall of every technology, named, in light tones. The headline carries the card at thumbnail size;
  * the wall reads as breadth there and as a list of names at full size. `logo` is a data URI (app/opengraph-image.tsx
  * reads the PNGs). Satori rules as for OgCard; the Inter cuts it uses are loaded by the route.
@@ -108,7 +118,7 @@ export function HomeOgCard({ wall, footer }: { wall: readonly (readonly OgTechno
       </div>; })}
     </div>)}
 
-    <div style={{ display: "flex", flexDirection: "column", width: 640, padding: "44px 0 40px 60px", position: "relative" }}>
+    <div style={{ display: "flex", flexDirection: "column", width: 660, padding: "34px 0 30px 52px", position: "relative" }}>
       <div style={{ display: "flex", alignItems: "center" }}>
         <Mark size={68} />
         <div style={{ display: "flex", flexDirection: "column", marginLeft: 14 }}>
@@ -122,17 +132,26 @@ export function HomeOgCard({ wall, footer }: { wall: readonly (readonly OgTechno
             <div style={{ width: 34, height: 2, background: "#d6d2c6", display: "flex" }} />
           </div>
         </div>
+        <span style={{ marginLeft: "auto", marginRight: 40, fontSize: 16, fontWeight: 600, color: SOFT }}>{footer}</span>
       </div>
 
-      <div style={{ display: "flex", flexDirection: "column", marginTop: 34, fontSize: 54, fontWeight: 800, lineHeight: 1.06, letterSpacing: -2.2, color: INK }}>
-        <span>Tech careers,</span><span>board exams &</span><span style={{ color: P.terracotta }}>competitive exams.</span>
+      <div style={{ display: "flex", flexDirection: "column", marginTop: 24, fontSize: 42, fontWeight: 800, lineHeight: 1.08, letterSpacing: -1.6, color: INK }}>
+        <span>Learn tech & AI.</span><span style={{ color: P.terracotta }}>Crack every exam.</span>
       </div>
-      <div style={{ display: "flex", marginTop: 20, width: 540, fontSize: 23, fontWeight: 500, lineHeight: 1.38, color: SOFT }}>Interview prep and AI courses · UP, CBSE & ICSE Class 10 and 12 · NDA, SSC, banks, railways, UPSC, TET · IELTS English.</div>
-      <div style={{ display: "flex", alignItems: "center", marginTop: 16, padding: "7px 14px", borderRadius: 999, border: `2px solid ${P.terracotta}`, color: P.terracotta, fontSize: 19, fontWeight: 800, alignSelf: "flex-start" }}>In English & Hindi</div>
+      {/* The five things the platform teaches (user request 2026-11-28), numbered, each with what it covers. */}
+      <div style={{ display: "flex", flexDirection: "column", marginTop: 16, width: 566 }}>
+        {HOME_OG_PILLARS.map(([title, detail], i) => <div key={title} style={{ display: "flex", alignItems: "center", marginTop: i ? 9 : 0 }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 34, height: 34, borderRadius: 10, background: PILLAR_TONES[i][0], color: PILLAR_TONES[i][1], fontSize: 18, fontWeight: 800 }}>{i + 1}</div>
+          <div style={{ display: "flex", flexDirection: "column", marginLeft: 13 }}>
+            <span style={{ fontSize: 20, fontWeight: 800, lineHeight: 1.1, color: INK }}>{title}</span>
+            <span style={{ marginTop: 2, fontSize: 14.5, fontWeight: 500, lineHeight: 1.2, color: SOFT }}>{detail}</span>
+          </div>
+        </div>)}
+      </div>
 
       <div style={{ display: "flex", alignItems: "center", marginTop: "auto" }}>
-        <div style={{ display: "flex", alignItems: "center", padding: "15px 26px", borderRadius: 14, background: INK, color: "#ffffff", fontSize: 24, fontWeight: 800 }}>Start learning free →</div>
-        <span style={{ marginLeft: 20, fontSize: 19, fontWeight: 500, color: SOFT }}>{footer}</span>
+        <div style={{ display: "flex", alignItems: "center", padding: "13px 22px", borderRadius: 14, background: INK, color: "#ffffff", fontSize: 21, fontWeight: 800 }}>Start learning free →</div>
+        <div style={{ display: "flex", alignItems: "center", marginLeft: 12, padding: "6px 12px", borderRadius: 999, border: `2px solid ${P.terracotta}`, color: P.terracotta, fontSize: 15, fontWeight: 800 }}>English & Hindi</div>
       </div>
     </div>
   </div>;

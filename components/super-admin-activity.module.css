@@ -658,3 +658,15 @@
 /* The window actually shown: visits are kept VISIT_RETENTION_DAYS days, so a longer selection says so. */
 .windowNote { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 0; padding: 9px 12px; border-radius: 10px; border: 1px solid #e8e6dc; background: #faf9f5; font-size: 13px; color: #5e5d59; }
 .windowNote b { color: #141413; font-weight: 600; }
+
+/* Daily visitors: day-by-day table (user request 2026-11-28). Scrolls sideways inside its card on phones. */
+.dayTableWrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+.dayTable { width: 100%; min-width: 860px; border-collapse: collapse; font-size: 13px; }
+.dayTable th, .dayTable td { padding: 9px 10px; border-bottom: 1px solid #ece9df; text-align: left; vertical-align: top; }
+.dayTable thead th { font-size: 11px; font-weight: 600; letter-spacing: .02em; text-transform: uppercase; color: #6c6b63; white-space: nowrap; }
+.dayTable tbody th { font-weight: 600; white-space: nowrap; }
+.dayTable small { display: block; margin-top: 2px; font-size: 11px; font-weight: 400; color: #6c6b63; }
+.dayTable tr[data-best] th { color: #2f6b55; }
+.dayVisitors { display: flex; align-items: center; gap: 8px; min-width: 120px; }
+.dayVisitors span { flex: 1; height: 6px; border-radius: 99px; background: #eef1f5; overflow: hidden; }
+.dayVisitors i { display: block; height: 100%; border-radius: inherit; background: #2f5f82; }

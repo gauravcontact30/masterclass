@@ -14,6 +14,8 @@
 .compare { grid-column: span 5; }
 .card { grid-column: span 3; }
 .insights { grid-column: 1 / -1; }
+/* The Overview shows the live card and the day's cards apart: each then fills its row. */
+.glance[data-part="live"] .hero, .glance[data-part="today"] .compare { grid-column: 1 / -1; }
 .hero header, .compare header, .card header, .insights header { display: flex; align-items: center; gap: 9px; min-width: 0; }
 .hero h3, .compare h3, .card h3, .insights h3 { overflow: hidden; font-family: Georgia, "Times New Roman", serif; font-size: 16px; font-weight: 500; color: var(--ink); text-overflow: ellipsis; white-space: nowrap; }
 .insights header small { margin-left: auto; font-size: 11.5px; color: var(--soft); }

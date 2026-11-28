@@ -2,7 +2,7 @@ import { STREAM_VIDEOS, type StreamVideoId } from "./streams-videos";
 import { LESSON_TITLES } from "./streams-titles";
 import { EXAM_PLAYLISTS, type ExamPlaylistId } from "./streams-exams";
 import { EXAM_VIDEO } from "./streams-exam-videos";
-import { SYSDESIGN_TOPIC_CHAPTERS, TECH_TOPIC_PLAYLISTS, type TopicPlaylistId } from "./streams-topics";
+import { EXTRA_TOPIC_CHAPTERS, TECH_TOPIC_PLAYLISTS, type TopicPlaylistId } from "./streams-topics";
 import { TOPIC_VIDEO } from "./streams-topic-videos";
 
 /*
@@ -522,7 +522,8 @@ const topicCourses = (tech: string, chapters: readonly TopicChapter[], firstChap
   id: `${idPrefix}-${c + firstChapter}`, tech: tech as StreamTech, title: chapter.title, summary: chapter.summary, level: chapter.level,
   lessons: chapter.topics.flatMap(([title, points]) => { const id = topicVideo(`${tech}#${topic++}`); return id ? [{ id, title, points }] : []; }),
 })).filter(course => course.lessons.length > 0); };
-STREAM_COURSES.push(...[...EXAM_PLAYLISTS, ...TECH_TOPIC_PLAYLISTS].flatMap(p => topicCourses(p.id, p.chapters)), ...topicCourses("sysdesign", SYSDESIGN_TOPIC_CHAPTERS, 1, "sd-topics"));
+STREAM_COURSES.push(...[...EXAM_PLAYLISTS, ...TECH_TOPIC_PLAYLISTS].flatMap(p => topicCourses(p.id, p.chapters)), 
+  ...Object.entries(EXTRA_TOPIC_CHAPTERS).flatMap(([tech, chapters]) => topicCourses(tech, chapters, 1, tech === "sysdesign" ? "sd-topics" : `${tech}-topics`)));
 
 /* ---------- Playlists: one step-by-step playlist per technology ---------- */
 export const video = (id: StreamVideoId) => STREAM_VIDEOS[id];
@@ -554,6 +555,8 @@ export const isTech = (value: unknown): value is StreamTech => typeof value === 
 
 /** The first step of every course is free to watch; the rest need a membership (enforced by /api/streams/play,
  *  lib/server/streams-access.ts). The landing page previews the first SAMPLE_STEPS steps of a course. */
+/** When the playlists' content last changed (steps, chapters or playlists added): /streams' lastmod in the sitemap. Bump it with each content release. */
+export const STREAMS_UPDATED = "2026-11-28";
 export const FREE_STEPS = 1;
 export const isFree = (step: StreamStep) => step.step <= FREE_STEPS;
 /** The landing page shows three playlists, each with its first steps as a preview; everything else is on /streams.

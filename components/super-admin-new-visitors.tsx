@@ -47,7 +47,7 @@ export function NewVisitorsToday({ everyone, rows, dayStart, now, ownHosts, reco
   const pick = (next: VisitorGroup) => { setGroup(next); setPage(1); };
 
   return <article className={`${live.panel} ${live.full}`} data-tone="lavender" aria-labelledby="visitors-today-title">
-    <h3 id="visitors-today-title"><Users size={16} aria-hidden="true" />Visitors today<span>{n(report.people)} people since 00:00 IST · {n(report.groups.new.people)} new · {n(report.groups.returning.people)} returning · {n(report.groups.old.people)} old · {n(report.signedIn)} signed in · live</span></h3>
+    <h3 id="visitors-today-title"><Users size={16} aria-hidden="true" />Visitors today<span>since 00:00 IST · live · the tabs split today&apos;s {n(report.people)} visitors</span></h3>
     <div className={styles.groupTabs} role="tablist" aria-label="Visitor group">
       {(["new", "returning", "old"] as VisitorGroup[]).map(id => { const Icon = GROUP_ICON[id]; return <button key={id} type="button" role="tab" aria-selected={group === id} onClick={() => pick(id)}>
         <Icon size={14} aria-hidden="true" />{GROUP_LABEL[id]}<b>{n(report.groups[id].people)}</b>
@@ -55,8 +55,8 @@ export function NewVisitorsToday({ everyone, rows, dayStart, now, ownHosts, reco
       </button>; })}
     </div>
     <dl className={styles.stats}>
-      <div><dt>{GROUP_LABEL[group]} today</dt><dd>{n(g.people)}</dd><small>{n(g.people - g.signedIn)} guests · {n(g.signedIn)} signed in</small></div>
-      <div data-live={g.live > 0 || undefined}><dt>On the site now</dt><dd>{n(g.live)}</dd><small>with a page open</small></div>
+      <div><dt>{GROUP_LABEL[group]} today</dt><dd>{n(g.people)}</dd><small>{pct(g.people, report.people)} of today&apos;s visitors</small></div>
+      <div><dt>Signed in</dt><dd>{n(g.signedIn)}</dd><small>{n(g.people - g.signedIn)} {g.people - g.signedIn === 1 ? "guest" : "guests"}</small></div>
       <div><dt>Read more than one page</dt><dd>{pct(g.explored, g.people)}</dd><small>{n(g.explored)} explored · {n(g.bounced)} left after one</small></div>
       {group === "new"
         ? <div><dt>Reading time each</dt><dd>{g.avgReadingMs == null ? "—" : spent(g.avgReadingMs)}</dd><small>{n(g.cameBack)} already came back for another visit</small></div>

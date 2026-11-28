@@ -29,7 +29,8 @@ export const siteName = "MasterClass Buddy";
 export const siteTitle = "MasterClass Buddy | Tech, Board & Competitive Exam Prep";
 /** Under 160 characters so Google shows it whole; it names what the site teaches today (the search snippet and link previews). */
 // Since 2026-11-22 the exam learning content is also in Hindi, and the hero leads with defence, banking, railway and civil-services exams.
-export const siteDescription = "Tech interview prep and AI courses, Class 10 & 12 board exams (UP, CBSE, ICSE), NDA, SSC, bank, railway, UPSC and TET exams, and IELTS, in English & Hindi.";
+// Since 2026-11-28 it also names MCB Streams (4K video playlists) and the interview Q&A, as the home link preview does.
+export const siteDescription = "Tech & AI courses with 4K video, interview Q&A, UP, CBSE & ICSE board exams, NDA, SSC, bank, UPSC and TET exams, and IELTS prep, in English & Hindi.";
 /**
  * Site-wide keywords: only searches that an indexed page answers (Tech Buzz, /interview-questions, /workflows,
  * /learn, /compare, /api-reference, /vocabulary), phrased the way people search. Google ignores the keywords tag
@@ -79,6 +80,10 @@ export const siteKeywords = [
   "board exam questions in Hindi", "competitive exam questions in Hindi", "TET questions in Hindi",
   // IELTS (2026-11-22): /vocabulary and the IELTS course on /courses
   "IELTS vocabulary", "IELTS preparation", "IELTS vocabulary with Hindi meanings",
+  // MCB Streams (2026-11-28): /streams and the home page's MCB Streams section
+  "MCB Streams", "4K programming video courses", "step-by-step coding video playlists", "Next.js 16 video course", "React 19 video course",
+  "system design video course", "LangGraph video course", "n8n automation video course", "DSA video course", "Python video course",
+  "DevOps tools video course", "AWS services video course",
 ];
 export const privateMetadata: Metadata = { robots: { index: false, follow: false } };
 
@@ -95,7 +100,7 @@ export const PUBLIC_PAGES: readonly PublicPage[] = [
   { path: "/contact", title: "Contact & support", label: "Contact", description: "Get help with your MasterClass account, membership, billing or study content, and find answers to common questions.", changeFrequency: "yearly", priority: 0.5 },
   { path: "/privacy", title: "Privacy policy", label: "Privacy", description: "How MasterClass collects, uses and protects your account, payment and learning data, and what stays only in your browser.", changeFrequency: "yearly", priority: 0.3 },
   { path: "/terms", title: "Terms & conditions", label: "Terms", description: "The terms that apply when you create a MasterClass account, buy a membership and use study content and AI-assisted answers.", changeFrequency: "yearly", priority: 0.3 },
-  { path: "/streams", title: "MCB Streams — Step-by-Step Video Playlists in Ultra HD", label: "MCB Streams", description: "Step-by-step video playlists in Full HD and 4K: Next.js, React, TypeScript, modern JavaScript, TanStack, Zustand, Jest, React Testing Library, Playwright, Python, FastAPI, NestJS, AI agents, AWS, DevOps and system design for tech professionals; CBSE, ICSE and ISC Class 10 and 12 Maths, Physics, Chemistry and English; UPSC, SSC, bank, railway, NDA, police, TET and CA exams; and IELTS.", changeFrequency: "weekly", priority: 0.9 },
+  { path: "/streams", title: "MCB Streams — Step-by-Step Video Playlists in Ultra HD", label: "MCB Streams", description: "Step-by-step video playlists in Full HD and 4K: Next.js, React, TypeScript, Python, DSA, AI agents, n8n, AWS, DevOps and system design; CBSE, ICSE and ISC Class 10 and 12; government exams; and IELTS.", changeFrequency: "weekly", priority: 0.9 },
   { path: "/tech-buzz", title: "Tech Buzz — Weekly Technology Blogs on Agentic AI, LangChain & Next.js", label: "Tech Buzz", description: "Five new tech blogs every Monday at 00:00 IST, one per track: Agentic AI with LangChain, LangGraph and n8n, System Design, AWS & DevOps, Kubernetes & Docker, and Next.js & React. Reviewed, rated and clapped by developers.", changeFrequency: "weekly", priority: 0.95 },
   { path: "/board-exams", title: "UP Board, CBSE & ICSE Class 10–12 Questions", label: "Board Exams", description: "Class 10 and 12 board exam prep for UP Board, CBSE and ICSE: chapter-wise questions with worked answers, MCQs, most-asked questions and past papers, in English and Hindi.", changeFrequency: "weekly", priority: 0.9 },
   { path: "/competitive-exams", title: "SSC, Bank, Railway, NDA & UPSC Exam Questions", label: "Competitive Exams", description: "Government exam prep for SSC, banks, railways, NDA, UPSC, state PSC, police and more: 400+ objective questions per exam with explanations, model answers and marking schemes.", changeFrequency: "weekly", priority: 0.9 },
@@ -116,10 +121,10 @@ export function publicPage(path: PublicPage["path"]): PublicPage {
 }
 
 /** Bump the version when the picture changes: social networks cache a preview by its URL. */
-export const ogImagePath = "/opengraph-image?v=2026-11-22b";
+export const ogImagePath = "/opengraph-image?v=2026-11-28";
 /** What the home card shows (components/og-card.tsx HomeOgCard), for every page that shares it. */
-export const ogImageAlt = `${siteName}: tech careers, board exams and government exams, in English and Hindi. Interview prep and AI courses across Agentic AI, LangChain, Next.js, AWS and 40+ technologies; UP Board, CBSE and ICSE Class 10 and 12; NDA, SSC, banking, railway, UPSC and TET exams; IELTS English`;
-const ogImage = { url: ogImagePath, width: 1200, height: 630, alt: ogImageAlt };
+export const ogImageAlt = `${siteName}: learn tech and AI, crack every exam. 1. Learning Technologies & AI: Agentic AI, Next.js, React, Python, AWS, DSA, with MCB Streams in 4K. 2. Board Exams: UP Board, CBSE Board and ICSE Board, Class 10 and 12. 3. Top Rank Govt. Exams and most asked interview questions with answers. 4. TET Qualifying: CTET, UPTET and state TETs. 5. IELTS Preparation. In English and Hindi.`;
+export const ogImage = { url: ogImagePath, width: 1200, height: 630, alt: ogImageAlt };
 
 /**
  * Complete metadata for a public page. Next.js replaces (not merges) nested
@@ -148,8 +153,11 @@ const PAGE_KEYWORDS: Partial<Record<PublicPage["path"], string[]>> = {
   "/about": ["about MasterClass Buddy", "MasterClass Buddy"],
   "/contact": ["contact MasterClass Buddy", "MasterClass Buddy support"],
   "/streams": [
-    "MCB Streams", "video playlists", "Next.js video course", "TypeScript video course", "Playwright tutorial", "FastAPI course", "NestJS course", "ICSE class 10 video", "ISC class 12 video", "React 19 video course", "class 10 maths video", "class 12 physics video",
-    "UPSC video lectures", "SSC preparation videos", "bank PO video classes", "IELTS video lessons"
+    "MCB Streams", "video playlists", "4K video courses", "Full HD coding tutorials", "video course with notes", "Next.js 16 video course", "Next.js video course", "TypeScript video course", "Playwright tutorial", "FastAPI course", "NestJS course", "DSA video course", "DevOps tools course", "n8n video course", "ICSE class 10 video", "ISC class 12 video", "React 19 video course", "class 10 maths video", "class 12 physics video",
+    "UPSC video lectures", "SSC preparation videos", "bank PO video classes", "IELTS video lessons",
+    "system design video course", "LangChain video course", "LangGraph video course", "LangSmith tutorial video", "Langflow tutorial video",
+    "Python video course", "Zustand tutorial video", "TanStack Query video course", "AWS services video course", "Docker and Kubernetes video course",
+    "data structures and algorithms videos", "Jest and React Testing Library course"
   ],
   "/tech-buzz": [
     "Tech Buzz", "weekly tech blogs", "Agentic AI blog", "LangChain blog", "LangGraph blog", "n8n automation blog",

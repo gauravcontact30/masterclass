@@ -17,7 +17,7 @@ import { SectionHead } from "./super-admin-section-head";
 import { SuperAdminGoals } from "./super-admin-goals";
 import { SuperAdminGlance, type GlanceProps } from "./super-admin-glance";
 import { SuperAdminHourlyVisitors } from "./super-admin-hourly-visitors";
-import { SuperAdminTimeOnSite } from "./super-admin-time-on-site";
+import { LiveNowTable } from "./super-admin-time-on-site";
 // Its charts (Recharts) load with this section only, not with the console's first paint.
 const SuperAdminThreeDays = dynamic(() => import("./super-admin-three-days").then(module => module.SuperAdminThreeDays), { ssr: false });
 
@@ -381,6 +381,375 @@ export function OverviewLive({ snapshot, onRefreshSnapshot, visitorsOnly = false
     paused, updatedAt: readAt ? clockMinute(readAt + offset) : null,
   };
 
+  // Shared by both layouts below (the Overview and Live learners).
+  const streamPanel = (
+  <article className={`${styles.panel} ${styles.full}`} data-tone="mint">
+    <h3><Radio size={16} aria-hidden="true" />Live visitor stream<span>{everyone.length ? `${n(everyone.length)} ${everyone.length === 1 ? "visitor" : "visitors"} · ${n(counts.views)} views in ${stream ? `the last ${streamDays} ${streamDays === 1 ? "day" : "days"}` : "the 24 h report's newest events (full stream loading)"} · newest first` : ""}</span></h3>
+    {everyone.length > 0 && <div className={styles.streamBar}>
+      <dl className={styles.streamStats}>
+        {!visitorsOnly && <div data-live={counts.live > 0 || undefined}><dt>On the site now</dt><dd>{n(counts.live)}</dd><small>{counts.live ? `${n(counts.liveSigned)} signed in · ${heartbeats ? "page open now" : "page opened in the last 30 min"}` : "nobody has a page open"}</small></div>}
+        <div><dt>Last activity</dt><dd>{since(everyone[0].live ? clockNow : everyone[0].lastAt, clockNow)}</dd><small>{everyone[0].live ? "a visitor is reading now" : `by visitor #1, ${clock(everyone[0].lastAt)} IST`}</small></div>
+        <div><dt>Reading time per visitor</dt><dd>{counts.engaged == null ? "—" : spent(counts.engaged / 1000)}</dd><small>pages on screen, all {streamDays} days</small></div>
+        <div><dt>Pages per visitor</dt><dd>{counts.pages ?? "—"}</dd><small>{n(counts.signed)} signed in · {n(counts.new)} new guests</small></div>
+      </dl>
+      <div className={styles.filters} role="group" aria-label="Show visitors">{STREAM_FILTERS.map(f => <button key={f.id} type="button" aria-pressed={streamFilter === f.id} onClick={() => { setStreamFilter(f.id); setVisitPage(1); }}><f.icon size={12} aria-hidden="true" />{f.label} <b>{n(counts[f.id])}</b></button>)}</div>
+    </div>}
+    {visitors.length ? <>
+      <VisitorRoutes visitors={visitors} apiCalls={streamApiCalls} />
+      <div className={styles.streamTableWrap}>
+        <div className={styles.streamHeadRow} aria-hidden="true">
+          <span className={styles.streamHeadTitle}>
+            <Activity size={13} aria-hidden="true" />
+            Visitor Logs
+          </span>
+          <span className={styles.streamHeadNote}>
+            Who each visitor is, where the network places them, how long they stayed and what they read
+          </span>
+        </div>
+        <ol className={styles.streamList}>
+          {visitRows.map((row, i) => {
+            const v = row.current;
+            // Position in the filtered list, newest first, counted across pages: #1 is the latest activity.
+            const rank = (Math.min(visitPage, pagesOf(visitors, STREAM_PAGE)) - 1) * STREAM_PAGE + i + 1;
+            const Device = DEVICE_ICON[(v.device || "desktop").toLowerCase()] ?? Laptop;
+            const code = v.country ?? row.first.country ?? "";
+            const cleanCountry = code ? countryName(code) || code : "";
+            const p = row.page;
+            const rawPin = row.postalCode || v.postal_code || row.first.postal_code || null;
+            // A city's head post office PIN (…001 in India) only names the city, so it is labelled as such.
+            const pin = localityPin(rawPin, code || null);
+            const place = [v.city, v.region].filter(Boolean).join(", ");
+            const isLive = row.live;
+            const visit = row.visit;
+            const local = localTime(v.timezone ?? row.first.timezone, clockNow);
+            const language = v.language ?? row.first.language ?? null;
+            const earlier = row.visits.filter(other => other !== visit).reverse();
+            const steps = visit.steps;
+
+            return (
+              <li key={row.key} className={styles.streamRow} data-live={isLive || undefined} data-new={freshSince != null && Date.parse(row.arrived) > freshSince || undefined} aria-label={`Visitor ${rank} of ${visitors.length}`}>
+                <div className={styles.compactVisitorCard}>
+                  {/* Card Top Command Bar */}
+                  <div className={styles.compactTopBar}>
+                    <div className={styles.compactTopLeft}>
+                      <span className={styles.rankNo} title={`#${rank} of ${visitors.length}, newest activity first`}>#{rank}</span>
+                      <div className={styles.compactAvatar}>
+                        <UserRound size={13} className={styles.avatarIcon} aria-hidden="true" />
+                        {isLive && <span className={styles.liveAvatarPing} aria-hidden="true" />}
+                      </div>
+                      <div className={styles.compactIdentityWrap}>
+                        <div className={styles.compactNameLine}>
+                          <strong className={styles.compactName} title={row.email ?? (row.first.new_visitor ? "New visitor" : "Returning visitor")}>
+                            {row.email ?? (row.first.new_visitor ? "New visitor" : "Returning visitor")}
+                          </strong>
+                          {row.signedIn ? (
+                            <span className={styles.badgeSignedIn}><CheckCircle2 size={10} aria-hidden="true" /> Signed In</span>
+                          ) : row.first.new_visitor ? (
+                            <span className={styles.badgeNew}><Sparkles size={10} aria-hidden="true" /> New visitor</span>
+                          ) : (
+                            <span className={styles.badgeReturning}>Returning</span>
+                          )}
+                          {row.privateWindow && <span className={styles.badgePrivate} title={row.privateWindow === "detected" ? "The browser reported a private window" : "A known device arrived with a brand-new cookie: a private window, or cookies were cleared"}>
+                            <EyeOff size={10} aria-hidden="true" /> {row.privateWindow === "detected" ? "Private window" : "Likely private"}
+                          </span>}
+                          <code className={styles.idChip}>ID: {row.key.replace(/^(visitor|device):/, "").slice(0, 8)}</code>
+                        </div>
+                        <div className={styles.compactMetaLine}>
+                          <span>{row.views} {row.views === 1 ? "page view" : "page views"}{row.pages > 1 ? ` · ${row.pages} pages` : ""}</span>
+                          <span className={styles.dotSep}>•</span>
+                          <span title="Visits (sessions) in the stream window; a visit ends after 30 idle minutes">{row.sessions} {row.sessions === 1 ? "visit" : "visits"}</span>
+                          <span className={styles.dotSep}>•</span>
+                          <span title={`First page view in the window: ${dayOf(row.firstArrived)} ${clock(row.firstArrived)} IST`}>First seen {since(row.firstArrived, clockNow)}</span>
+                          {row.convertedInWindow && <><span className={styles.dotSep}>•</span><span className={styles.convertedTag}>Signed up / in during this window</span></>}
+                          {p?.open && (
+                            <>
+                              <span className={styles.dotSep}>•</span>
+                              <span className={styles.liveReadingTag}>
+                                <span className={styles.livePulsingDot} aria-hidden="true" />
+                                Reading now
+                              </span>
+                            </>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className={styles.compactTopRight}>
+                      {isLive ? (
+                        <div className={styles.compactLiveBadge}>
+                          <span className={styles.livePulseRing} aria-hidden="true" />
+                          <span className={styles.livePulseCenter} aria-hidden="true" />
+                          <span className={styles.liveBadgeText}>LIVE ON SITE</span>
+                          <span className={styles.liveBadgeSub}>
+                            {heartbeats ? "Page open now" : "Active now"}
+                          </span>
+                        </div>
+                      ) : (
+                        <div className={styles.compactDepartedBadge}>
+                          <LogOut size={11} aria-hidden="true" />
+                          <span>Left {since(row.left, clockNow)}</span>
+                          <small className={styles.departedVerified} title={row.beacon ? "The page sent a leave beacon as it closed" : "No leave beacon arrived (closed tab, lost network); the time is the last activity seen"}>
+                            {row.beacon ? "✓ Leave beacon (exact)" : "Estimated from last activity"}
+                          </small>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Meaningful 3-Column Command Grid */}
+                  <div className={styles.compact3Cols}>
+                    {/* Column 1: Learner Origin & Client Environment (Lavender Tone) */}
+                    <div className={`${styles.compactCol} ${styles.colOrigin}`}>
+                      <div className={styles.colKicker}>
+                        <Globe2 size={12} className={styles.colKickerIcon} aria-hidden="true" />
+                        <span>Learner Origin & Environment</span>
+                        <span className={styles.colKickerPill}>Client</span>
+                      </div>
+                      <div className={styles.colBody}>
+                        <div className={styles.originGeoRow}>
+                          <Flag code={code} />
+                          <div className={styles.originGeoDetails}>
+                            <strong className={styles.originCountryName} title={cleanCountry || "Country not resolved"}>
+                              {cleanCountry || "Country not resolved"}
+                            </strong>
+                            <span className={styles.originCityText} title={place || "City not resolved from the network"}>
+                              {place || "City not resolved from the network"}
+                            </span>
+                          </div>
+                        </div>
+
+                        <div className={styles.originBadgeRow}>
+                          {pin ? (
+                            <span className={styles.pinBadge} title={`Locality PIN from the network: ${pin}`}>
+                              <MapPin size={10} aria-hidden="true" /> PIN {pin}
+                            </span>
+                          ) : rawPin ? (
+                            <span className={styles.pinEmpty} title={`${rawPin} is the city's head post office: the network resolved only to the city`}>City PIN {rawPin}</span>
+                          ) : (
+                            <span className={styles.pinEmpty} title="The network did not resolve a PIN">PIN not resolved</span>
+                          )}
+                          <span className={styles.algoTag} title="From the visitor's IP address: VPNs, offices and mobile carriers can place someone in another city">IP-based · approximate</span>
+                        </div>
+
+                        <div className={styles.clientSpecsGrid}>
+                          <div className={styles.clientSpecItem} title={[v.device, v.browser, v.os].filter(Boolean).join(" · ") || "Browser not reported"}>
+                            <Device size={11} aria-hidden="true" />
+                            <span>{[v.browser, v.os].filter(Boolean).join(" · ") || "Browser not reported"}</span>
+                          </div>
+                          <div className={styles.clientSpecItem} title={v.screen ? `Screen ${v.screen} px` : "Screen size not reported"}>
+                            <Monitor size={11} aria-hidden="true" />
+                            <span>{v.screen ? `${v.screen} px` : "Screen not reported"}</span>
+                          </div>
+                          <div className={styles.clientSpecItem} title={language ? `Browser language ${language}` : "Language not reported"}>
+                            <Languages size={11} aria-hidden="true" />
+                            <span>{language ? `${languageName(language)} (${language})` : "Language not reported"}</span>
+                          </div>
+                          <div className={styles.clientSpecItem} title={(v.timezone ?? row.first.timezone) ? `Device time zone ${v.timezone ?? row.first.timezone}${local?.offset ? ` (${local.offset})` : ""}` : "Time zone not reported"}>
+                            <Clock size={11} aria-hidden="true" />
+                            <span>{v.timezone ?? row.first.timezone ?? "Time zone not reported"}</span>
+                          </div>
+                          {v.device && <div className={styles.clientSpecItem} title="Device class from the browser's user agent">
+                            <Device size={11} aria-hidden="true" />
+                            <span>{v.device.charAt(0).toUpperCase() + v.device.slice(1)}</span>
+                          </div>}
+                          {v.ip_masked && <div className={styles.clientSpecItem} title="Network address with its last part masked">
+                            <Network size={11} aria-hidden="true" />
+                            <span>{v.ip_masked}</span>
+                          </div>}
+                        </div>
+
+                        {local && <p className={styles.localTime} title="The visitor's own clock, from the time zone their browser reported">
+                          <Clock size={10} aria-hidden="true" /> Their local time: <b>{local.text}</b> · {local.part}{local.offset ? ` · ${local.offset}` : ""}
+                        </p>}
+                        {language && !/^en\b/i.test(language) && <p className={styles.langNote}>Browser prefers {languageName(language)}: the site is English-only for now.</p>}
+
+                        <div className={styles.trafficSourceRow}>
+                          <span className={styles.sourceBadge} title={row.source ? `Traffic source of this visit: ${row.source}` : "No referrer or campaign: typed, bookmarked or opened from an app"}>
+                            <Link2 size={10} aria-hidden="true" /> {row.source ? `via ${row.source}` : "Direct / no referrer"}
+                          </span>
+                          {row.campaign && <span className={styles.sourceBadge} title="utm_medium · utm_campaign of the visit's first page">Campaign: {row.campaign}</span>}
+                        </div>
+
+                      </div>
+                    </div>
+
+                    {/* Column 2: Session Timeline & Precision IST (Sage/Mint Tone) */}
+                    <div className={`${styles.compactCol} ${styles.colTimeline}`} role="group" aria-label="Session timeline">
+                      <div className={styles.colKicker}>
+                        <Clock size={12} className={styles.colKickerIcon} aria-hidden="true" />
+                        <span>Session Timeline (IST & Duration)</span>
+                        <span className={styles.colKickerPill}>IST UTC+5:30</span>
+                      </div>
+                      <div className={styles.colBody}>
+                        <div className={styles.timelineTimesGrid}>
+                          <div className={styles.timelineTimeCell} title="Estimated first page opening from recorded views and visible durations in the loaded window; network delay can affect this time">
+                            <span className={styles.cellLabel}>
+                              <LogIn size={10} aria-hidden="true" /> Arrived (IST)
+                            </span>
+                            <time className={styles.clockValue} dateTime={row.sessionArrived}>
+                              {clock(row.sessionArrived)}
+                            </time>
+                            <small className={styles.dateValue}>
+                              {dayOf(row.sessionArrived)} · {since(row.sessionArrived, clockNow)}
+                            </small>
+                            <small className={styles.dateValue}>Estimated arrival</small>
+                          </div>
+
+                          <div className={`${styles.timelineTimeCell} ${row.left == null ? styles.timelineTimeCellLive : ""}`}>
+                            <span className={styles.cellLabel}>
+                              {row.left == null ? <Radio size={10} aria-hidden="true" /> : <LogOut size={10} aria-hidden="true" />}
+                              {row.left == null ? "Status (IST)" : row.beacon ? "Left / hidden (IST)" : "Last seen (IST)"}
+                            </span>
+                            {row.left == null ? (
+                              <div className={styles.liveCellStatus}>
+                                <span className={styles.livePulseRingSmall} aria-hidden="true" />
+                                <strong>Recently active</strong>
+                              </div>
+                            ) : (
+                              <time className={styles.clockValue} dateTime={new Date(row.left).toISOString()}>
+                                {clock(row.left)}
+                              </time>
+                            )}
+                            <small className={styles.dateValue}>
+                              {row.left == null ? (heartbeats ? "Page open now" : "Active now") : `${dayOf(row.left)} · ${since(row.left, clockNow)}`}
+                            </small>
+                            {row.left != null && <small className={styles.dateValue}>{row.beacon ? "Visibility ended; exit unconfirmed" : "Departure not confirmed"}</small>}
+                          </div>
+                        </div>
+
+                        <div className={styles.stayMetricBlock}>
+                          <div className={styles.stayHighlightRow}>
+                            <div>
+                              <small className={styles.stayLabel} title="This visit, from the moment its first page opened to now while a page is open, otherwise to its last leave beacon or heartbeat">Total Stay</small>
+                              <strong className={styles.stayValue}>{spent(visit.stayMs / 1000)}</strong>
+                            </div>
+                            <div>
+                              <small className={styles.stayLabel} title="Time this visit's pages were on screen and visible, the open page included. Two windows open at once count once">Active Reading</small>
+                              <strong className={styles.readingValue}>{spent(visit.readingMs / 1000)}</strong>
+                            </div>
+                            <div>
+                              <small className={styles.stayLabel} title="Total Stay minus recorded visible time. This may include hidden tabs, loading, or missing tracking signals">Unobserved time</small>
+                              <strong className={styles.stayValue}>{spent(visit.awayMs / 1000)}</strong>
+                            </div>
+                          </div>
+
+                          <small className={styles.timingNote}>{TIMING_NOTE[visit.timing]}</small>
+                        </div>
+                        {row.visits.length > 1 && <p className={styles.stayAll} title="Each visit's stay and reading, added up; time between visits is not counted">
+                          All {row.visits.length} visits ({streamDays === 1 ? "24 h" : `${streamDays} days`}): <b>{spent(row.totalStayDurationMs / 1000)}</b> stay · <b>{spent(row.totalReadingMs / 1000)}</b> reading
+                        </p>}
+                      </div>
+                    </div>
+
+                    {/* Column 3: Active Target & Learning Journey (Sky Tone) */}
+                    <div className={`${styles.compactCol} ${styles.colLearning}`}>
+                      <div className={styles.colKicker}>
+                        <Target size={12} className={styles.colKickerIcon} aria-hidden="true" />
+                        <span>Active Target & Learning Journey</span>
+                        <span className={styles.colKickerPill}>Step {row.currentStep.step}/{row.currentStep.total}</span>
+                      </div>
+                      <div className={styles.colBody}>
+                        <div className={styles.stageRow}>
+                          <span className={styles.stageBadge} title="How far along the site this person got, from the pages they opened">{row.stage}</span>
+                          <small>{visit.pages} {visit.pages === 1 ? "page" : "pages"} · {visit.clicks} {visit.clicks === 1 ? "click" : "clicks"} this visit</small>
+                        </div>
+                        {row.signals.length > 0 && <ul className={styles.signalList}>{row.signals.map(signal => <li key={signal}>{signal}</li>)}</ul>}
+
+                        <div className={styles.activeTargetBlock}>
+                          <div className={styles.targetHeaderLine}>
+                            <span className={styles.targetCategoryBadge}>{row.currentStep.category}</span>
+                            {isLive && (
+                              <span className={styles.targetLiveIndicator}>
+                                <span className={styles.livePulsingDot} aria-hidden="true" />
+                                Active Target
+                              </span>
+                            )}
+                          </div>
+                          <strong className={styles.targetTitle} title={row.currentStep.title}>
+                            {row.currentStep.title}
+                          </strong>
+                          <code className={styles.targetPath} title={v.path}>
+                            {v.path}
+                          </code>
+                        </div>
+
+                        <div className={styles.journeyHead}><span>This visit, step by step</span><small className={styles.velocityText}>{row.readingVelocity}</small></div>
+                        <ol className={styles.journeySteps}>
+                          {steps.slice(-6).map((step, i, shown) => {
+                            const number = steps.length - shown.length + i + 1;
+                            return <li key={`${step.path}-${step.at}`} data-open={step.open || undefined}>
+                              <span className={styles.stepNo}>{number}</span>
+                              <div className={styles.stepBody}>
+                                <strong title={step.path}>{step.title}</strong>
+                                <small>{step.category} · {clock(step.at)} · {step.open ? "reading now" : step.ms == null ? "time not recorded" : spent(step.ms / 1000)}</small>
+                                {step.clicks.length > 0 && <small className={styles.stepClicks} title={step.clicks.map(c => `${c.option}${c.topic ? ` (in ${c.topic})` : ""}${c.target_path ? ` → ${c.target_path}` : ""}`).join("\n")}>
+                                  <MousePointerClick size={9} aria-hidden="true" /> {step.clicks.slice(0, 3).map(c => `"${c.option}"`).join(", ")}{step.clicks.length > 3 ? ` +${step.clicks.length - 3}` : ""}
+                                </small>}
+                              </div>
+                            </li>;
+                          })}
+                        </ol>
+                        {steps.length > 6 && <small className={styles.moreSteps}>{steps.length - 6} earlier {steps.length - 6 === 1 ? "step" : "steps"} in this visit, from {steps[0].title}</small>}
+
+                        {visit.categories.length > 0 && <div className={styles.categoryBars} aria-label="Time by kind of content this visit">
+                          {visit.categories.slice(0, 3).map(c => {
+                            const share = visit.readingMs ? Math.min(100, Math.round((c.ms / visit.readingMs) * 100)) : 0;
+                            return <div key={c.category} className={styles.catRow} title={`${c.category}: ${spent(c.ms / 1000)} on ${c.pages} ${c.pages === 1 ? "page" : "pages"}`}>
+                              <span>{c.category}</span><i style={{ width: `${Math.max(4, share)}%` }} aria-hidden="true" /><b>{spent(c.ms / 1000)}</b>
+                            </div>;
+                          })}
+                        </div>}
+
+                        <p className={styles.entryExit}>Entered on <code>{visit.entry}</code>{visit.exit && <> · left from <code>{visit.exit}</code></>}</p>
+
+                        {row.engagedContents.length > 1 && <div className={styles.engagedPagesMiniList}>
+                          <div className={styles.miniListHeading}><span>Most-read across all visits</span></div>
+                          {row.engagedContents.slice(0, 2).map((item, idx) => (
+                            <div key={`${item.path}-${idx}`} className={styles.miniPageItem}>
+                              <div className={styles.miniPageTop}>
+                                <span className={styles.miniPageBadge}>{item.category}</span>
+                                <span className={styles.miniPageTime}>{spent(item.durationMs / 1000)}{item.views > 1 ? ` · ${item.views} views` : ""}</span>
+                              </div>
+                              <div className={styles.miniPageTitleLine}>
+                                <BookOpen size={10} className={styles.miniPageIcon} aria-hidden="true" />
+                                <span className={styles.miniPageTitle}>{item.title}</span>
+                              </div>
+                            </div>
+                          ))}
+                        </div>}
+
+                        {earlier.length > 0 && <details className={styles.earlierVisits}>
+                          <summary>Earlier visits ({earlier.length})</summary>
+                          <ul>{earlier.map(other => <li key={other.sessionId}>
+                            <b>{dayOf(other.start)}, {clock(other.start)}</b> · {other.pages} {other.pages === 1 ? "page" : "pages"} · {spent(other.stayMs / 1000)} stay · {spent(other.readingMs / 1000)} reading
+                            <small>Entered on {other.entry}{other.source ? ` via ${other.source}` : ""}</small>
+                          </li>)}</ul>
+                        </details>}
+                      </div>
+                    </div>
+                  </div>
+
+                </div>
+              </li>
+            );
+          })}
+        </ol>
+      </div>
+    </> : <p className={styles.empty}>{everyone.length ? "No visitors match this filter." : report || stream ? `No page views recorded in ${streamDays === 1 ? "the last 24 hours" : `the last ${streamDays} days`} yet.` : "Connecting to live tracking…"}</p>}
+    <Pager page={Math.min(visitPage, pagesOf(visitors, STREAM_PAGE))} pages={pagesOf(visitors, STREAM_PAGE)} total={visitors.length} size={STREAM_PAGE} onPage={setVisitPage} />
+    {stream && !heartbeats && <p className={styles.streamNote}>Live status is estimated: apply migration 0034 (page heartbeats) so a visitor counts as on the site only while their page is open, timed to the second. Until then a page without a leave beacon counts as open for up to 30 minutes.</p>}
+    {stream?.capped && <p className={styles.streamNote}>Showing the newest 20,000 events of the window; older visitors are left out.</p>}
+  </article>
+  );
+  const readingPanel = (
+  <article className={`${styles.panel}${visitorsOnly ? ` ${styles.full}` : ""}`} data-tone="sky">
+    <h3><BookOpenText size={16} aria-hidden="true" />Pages read, last 30 min<span>most visitors first · avg. read per finished page view</span></h3>
+    {reading.length ? <><div className={`${styles.listHead} ${styles.readingHead}`} aria-hidden="true"><span>Page</span><span>Visitors</span><span>Views</span><span>Avg. read</span></div><ul className={styles.reading}>{readRows.map(p => <li key={p.path}><code title={`${p.title} · ${p.path}`}>{p.path}</code><span title="Different people"><Users size={12} aria-hidden="true" />{p.people}</span><span title="Times opened"><MousePointerClick size={12} aria-hidden="true" />{p.views}</span><span title={p.avgReadMs == null ? "Still open, or closed without a recorded time" : "Average visible time per finished view"}><Timer size={12} aria-hidden="true" />{p.avgReadMs == null ? "—" : spent(p.avgReadMs / 1000)}</span></li>)}</ul></> : <p className={styles.empty}>Nobody has opened a page in the last 30 minutes.</p>}
+    {reading.length > READING_PAGE && <Pager page={Math.min(readPage, pagesOf(reading, READING_PAGE))} pages={pagesOf(reading, READING_PAGE)} total={reading.length} size={READING_PAGE} onPage={setReadPage} />}
+    {devices.length > 0 && <div className={styles.devices}>{devices.map(({ device, people }) => { const Icon = DEVICE_ICON[device] ?? Laptop; return <span key={device}><Icon size={13} aria-hidden="true" />{device} <b>{people}</b></span>; })}<small>visitors in the last hour</small></div>}
+  </article>
+  );
+
   return <section className={styles.live} aria-label="Live command centre">
     <header className={styles.head}>
       <div><p className={styles.kicker}><span className={styles.dot} data-paused={paused || undefined} aria-hidden="true" />{paused ? "Live updates paused" : instant ? "Live · instant updates from Supabase" : "Live · updates every 5 s"}</p><h2>Live command centre</h2></div>
@@ -399,6 +768,44 @@ export function OverviewLive({ snapshot, onRefreshSnapshot, visitorsOnly = false
       <ul>{checks.map(check => <li key={check.id} data-ok={check.ok ? "" : undefined}>{check.ok ? <CheckCircle2 size={14} aria-hidden="true" /> : <AlertTriangle size={14} aria-hidden="true" />}<div><b>{check.label}</b><span>{check.detail}</span></div></li>)}</ul>
     </details>}
 
+    {visitorsOnly ? <>
+      {/* Overview order (user request 2026-11-28): everything live in one place at the top, then today, then the detail.
+          Each figure appears once on the page; the reporting window (time on site, sources, places, people) is on User activities. */}
+      <SectionHead id="ov-live" index={1} title="Right now" question="Who is on the site at this moment, for how long, and what they have been reading in the last 30 minutes." icon={Radio} tone="mint" live />
+      <SuperAdminGlance {...glance} part="live" />
+      <LiveNowTable everyone={everyone} from={dayStart} now={clockNow} ownHosts={ownHosts} />
+      <div className={styles.grid}>{readingPanel}</div>
+
+      <SectionHead id="ov-glance" index={2} title="Today at a glance" question="How today is going against yesterday at the same time: audience, engagement, growth and what needs a look." icon={Gauge} tone="sky" live />
+      <SuperAdminGlance {...glance} part="today" />
+      <SuperAdminGoals />
+      <details className={styles.howCounted}>
+        <summary>How these numbers are counted</summary>
+        <ul>
+          <li><b>Visitor</b>: one person: a signed-in account, or one device (its visits before and after a cookie reset are linked). The cards in the Visitor stream are these same visitors.</li>
+          <li><b>Visit</b>: one sitting; it ends after 30 minutes without activity. <b>Page view</b>: a page that stayed on screen for at least a second.</li>
+          <li><b>Left out everywhere</b>: crawlers, automated browsers, this site&apos;s own machines and anyone who stayed under a second.</li>
+          <li><b>Reading time</b>: time pages were visible on screen (a hidden tab does not count). <b>Bounce</b>: a visit that opened only one page. <b>New guests</b>: first-time visitors who have not signed in; a first-time visitor who signs up counts under signed in and new accounts.</li>
+          <li><b>Today</b> starts at 00:00 IST. <b>On the site now</b>: a page sent a heartbeat in the last 100 seconds and has not closed.</li>
+          <li>Visitor figures come from the visitor stream; new accounts and bots filtered come from the database.{exact ? "" : " The stream has not loaded the whole day yet, so the database report is shown for now."}</li>
+        </ul>
+      </details>
+
+      <SectionHead id="ov-hours" index={3} title="Today by hour" question="How many people visited in each hour of today (IST), and which hours brought the most." icon={Clock} tone="peach" live />
+      <SuperAdminHourlyVisitors everyone={everyone} now={clockNow} exact={exact} ownHosts={ownHosts} days={1} />
+
+      <div className={styles.grid}>
+        <SectionHead id="ov-first" index={4} title="Visitors today: new, returning and old" question="Who came for the first time, who came back and who has been here before: where from, what they read, how often they return." icon={Sparkles} tone="lavender" live />
+        <NewVisitorsToday everyone={everyone} rows={streamRows} dayStart={dayStart} now={clockNow} ownHosts={ownHosts} recordsFrom={clockNow - streamDays * 86_400_000} />
+        <SectionHead id="ov-stream" index={5} title="Visitor stream" question="Every visitor of the last few days, one card each: who they are, where they came from and what they read, newest first." icon={Activity} tone="sky" live />
+        {streamPanel}
+        <PrivateVisitors everyone={everyone} now={clockNow} days={streamDays} />
+      </div>
+
+      <SectionHead id="ov-days" index={6} title="Last three days" question="How today compares with yesterday and the day before, hour by hour." icon={CalendarDays} tone="sky" live />
+      <SuperAdminThreeDays feed={daysFeed} />
+      <p className={styles.note}><UserRound size={13} aria-hidden="true" /> Visits come from the first-party page beacon in your Supabase database (bots excluded, IPs masked). Emails show only for signed-in learners.</p>
+    </> : <>
     <SectionHead id="ov-glance" index={1} title="At a glance" question="How many people are here now, and how is today going?" icon={Gauge} tone="mint" live />
     <SuperAdminGlance {...glance} />
     <SuperAdminGoals />
@@ -414,372 +821,9 @@ export function OverviewLive({ snapshot, onRefreshSnapshot, visitorsOnly = false
       </ul>
     </details>
 
-    {visitorsOnly && <>
-      <SectionHead id="ov-hours" index={2} title="Visitors by hour" question="How many people visited in each hour of the 24-hour clock (IST), and which hour brought the most." icon={Clock} tone="peach" live />
-      <SuperAdminHourlyVisitors everyone={everyone} now={clockNow} exact={exact} ownHosts={ownHosts} days={streamDays} />
-      <SectionHead id="ov-time" index={3} title="Time on site" question="Who is on the site now and for how long, how long today's visitors stay, which pages and sources hold them, and where they leave." icon={Timer} tone="sky" live />
-      <SuperAdminTimeOnSite everyone={everyone} from={dayStart} now={clockNow} ownHosts={ownHosts} windowLabel="today since 00:00 IST" exact={exact} recordsFrom={clockNow - streamDays * 86_400_000} recordsLabel={`all ${streamDays} days on record`} />
-    </>}
-
     <div className={styles.grid}>
       <SectionHead id="ov-stream" index={visitorsOnly ? 4 : 2} title="Live visitor stream" question="Who is on the site, where they came from and what they are reading, newest first." icon={Radio} tone="sky" live />
-      <article className={`${styles.panel} ${styles.full}`} data-tone="mint">
-        <h3><Radio size={16} aria-hidden="true" />Live visitor stream<span>{everyone.length ? `${n(everyone.length)} ${everyone.length === 1 ? "visitor" : "visitors"} · ${n(counts.views)} views in ${stream ? `the last ${streamDays} ${streamDays === 1 ? "day" : "days"}` : "the 24 h report's newest events (full stream loading)"} · newest first` : ""}</span></h3>
-        {everyone.length > 0 && <div className={styles.streamBar}>
-          <dl className={styles.streamStats}>
-            <div data-live={counts.live > 0 || undefined}><dt>On the site now</dt><dd>{n(counts.live)}</dd><small>{counts.live ? `${n(counts.liveSigned)} signed in · ${heartbeats ? "page open now" : "page opened in the last 30 min"}` : "nobody has a page open"}</small></div>
-            <div><dt>Last activity</dt><dd>{since(everyone[0].live ? clockNow : everyone[0].lastAt, clockNow)}</dd><small>{everyone[0].live ? "a visitor is reading now" : `by visitor #1, ${clock(everyone[0].lastAt)} IST`}</small></div>
-            <div><dt>Reading time per visitor</dt><dd>{counts.engaged == null ? "—" : spent(counts.engaged / 1000)}</dd><small>pages on screen, all visits</small></div>
-            <div><dt>Pages per visitor</dt><dd>{counts.pages ?? "—"}</dd><small>{n(counts.signed)} signed in · {n(counts.new)} new guests</small></div>
-          </dl>
-          <div className={styles.filters} role="group" aria-label="Show visitors">{STREAM_FILTERS.map(f => <button key={f.id} type="button" aria-pressed={streamFilter === f.id} onClick={() => { setStreamFilter(f.id); setVisitPage(1); }}><f.icon size={12} aria-hidden="true" />{f.label} <b>{n(counts[f.id])}</b></button>)}</div>
-        </div>}
-        {visitors.length ? <>
-          <VisitorRoutes visitors={visitors} apiCalls={streamApiCalls} />
-          <div className={styles.streamTableWrap}>
-            <div className={styles.streamHeadRow} aria-hidden="true">
-              <span className={styles.streamHeadTitle}>
-                <Activity size={13} aria-hidden="true" />
-                Visitor Logs
-              </span>
-              <span className={styles.streamHeadNote}>
-                Who each visitor is, where the network places them, how long they stayed and what they read
-              </span>
-            </div>
-            <ol className={styles.streamList}>
-              {visitRows.map((row, i) => {
-                const v = row.current;
-                // Position in the filtered list, newest first, counted across pages: #1 is the latest activity.
-                const rank = (Math.min(visitPage, pagesOf(visitors, STREAM_PAGE)) - 1) * STREAM_PAGE + i + 1;
-                const Device = DEVICE_ICON[(v.device || "desktop").toLowerCase()] ?? Laptop;
-                const code = v.country ?? row.first.country ?? "";
-                const cleanCountry = code ? countryName(code) || code : "";
-                const p = row.page;
-                const rawPin = row.postalCode || v.postal_code || row.first.postal_code || null;
-                // A city's head post office PIN (…001 in India) only names the city, so it is labelled as such.
-                const pin = localityPin(rawPin, code || null);
-                const place = [v.city, v.region].filter(Boolean).join(", ");
-                const isLive = row.live;
-                const visit = row.visit;
-                const local = localTime(v.timezone ?? row.first.timezone, clockNow);
-                const language = v.language ?? row.first.language ?? null;
-                const earlier = row.visits.filter(other => other !== visit).reverse();
-                const steps = visit.steps;
-
-                return (
-                  <li key={row.key} className={styles.streamRow} data-live={isLive || undefined} data-new={freshSince != null && Date.parse(row.arrived) > freshSince || undefined} aria-label={`Visitor ${rank} of ${visitors.length}`}>
-                    <div className={styles.compactVisitorCard}>
-                      {/* Card Top Command Bar */}
-                      <div className={styles.compactTopBar}>
-                        <div className={styles.compactTopLeft}>
-                          <span className={styles.rankNo} title={`#${rank} of ${visitors.length}, newest activity first`}>#{rank}</span>
-                          <div className={styles.compactAvatar}>
-                            <UserRound size={13} className={styles.avatarIcon} aria-hidden="true" />
-                            {isLive && <span className={styles.liveAvatarPing} aria-hidden="true" />}
-                          </div>
-                          <div className={styles.compactIdentityWrap}>
-                            <div className={styles.compactNameLine}>
-                              <strong className={styles.compactName} title={row.email ?? (row.first.new_visitor ? "New visitor" : "Returning visitor")}>
-                                {row.email ?? (row.first.new_visitor ? "New visitor" : "Returning visitor")}
-                              </strong>
-                              {row.signedIn ? (
-                                <span className={styles.badgeSignedIn}><CheckCircle2 size={10} aria-hidden="true" /> Signed In</span>
-                              ) : row.first.new_visitor ? (
-                                <span className={styles.badgeNew}><Sparkles size={10} aria-hidden="true" /> New visitor</span>
-                              ) : (
-                                <span className={styles.badgeReturning}>Returning</span>
-                              )}
-                              {row.privateWindow && <span className={styles.badgePrivate} title={row.privateWindow === "detected" ? "The browser reported a private window" : "A known device arrived with a brand-new cookie: a private window, or cookies were cleared"}>
-                                <EyeOff size={10} aria-hidden="true" /> {row.privateWindow === "detected" ? "Private window" : "Likely private"}
-                              </span>}
-                              <code className={styles.idChip}>ID: {row.key.replace(/^(visitor|device):/, "").slice(0, 8)}</code>
-                            </div>
-                            <div className={styles.compactMetaLine}>
-                              <span>{row.views} {row.views === 1 ? "page view" : "page views"}{row.pages > 1 ? ` · ${row.pages} pages` : ""}</span>
-                              <span className={styles.dotSep}>•</span>
-                              <span title="Visits (sessions) in the stream window; a visit ends after 30 idle minutes">{row.sessions} {row.sessions === 1 ? "visit" : "visits"}</span>
-                              <span className={styles.dotSep}>•</span>
-                              <span title={`First page view in the window: ${dayOf(row.firstArrived)} ${clock(row.firstArrived)} IST`}>First seen {since(row.firstArrived, clockNow)}</span>
-                              {row.convertedInWindow && <><span className={styles.dotSep}>•</span><span className={styles.convertedTag}>Signed up / in during this window</span></>}
-                              {p?.open && (
-                                <>
-                                  <span className={styles.dotSep}>•</span>
-                                  <span className={styles.liveReadingTag}>
-                                    <span className={styles.livePulsingDot} aria-hidden="true" />
-                                    Reading now
-                                  </span>
-                                </>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-
-                        <div className={styles.compactTopRight}>
-                          {isLive ? (
-                            <div className={styles.compactLiveBadge}>
-                              <span className={styles.livePulseRing} aria-hidden="true" />
-                              <span className={styles.livePulseCenter} aria-hidden="true" />
-                              <span className={styles.liveBadgeText}>LIVE ON SITE</span>
-                              <span className={styles.liveBadgeSub}>
-                                {heartbeats ? "Page open now" : "Active now"}
-                              </span>
-                            </div>
-                          ) : (
-                            <div className={styles.compactDepartedBadge}>
-                              <LogOut size={11} aria-hidden="true" />
-                              <span>Left {since(row.left, clockNow)}</span>
-                              <small className={styles.departedVerified} title={row.beacon ? "The page sent a leave beacon as it closed" : "No leave beacon arrived (closed tab, lost network); the time is the last activity seen"}>
-                                {row.beacon ? "✓ Leave beacon (exact)" : "Estimated from last activity"}
-                              </small>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Meaningful 3-Column Command Grid */}
-                      <div className={styles.compact3Cols}>
-                        {/* Column 1: Learner Origin & Client Environment (Lavender Tone) */}
-                        <div className={`${styles.compactCol} ${styles.colOrigin}`}>
-                          <div className={styles.colKicker}>
-                            <Globe2 size={12} className={styles.colKickerIcon} aria-hidden="true" />
-                            <span>Learner Origin & Environment</span>
-                            <span className={styles.colKickerPill}>Client</span>
-                          </div>
-                          <div className={styles.colBody}>
-                            <div className={styles.originGeoRow}>
-                              <Flag code={code} />
-                              <div className={styles.originGeoDetails}>
-                                <strong className={styles.originCountryName} title={cleanCountry || "Country not resolved"}>
-                                  {cleanCountry || "Country not resolved"}
-                                </strong>
-                                <span className={styles.originCityText} title={place || "City not resolved from the network"}>
-                                  {place || "City not resolved from the network"}
-                                </span>
-                              </div>
-                            </div>
-
-                            <div className={styles.originBadgeRow}>
-                              {pin ? (
-                                <span className={styles.pinBadge} title={`Locality PIN from the network: ${pin}`}>
-                                  <MapPin size={10} aria-hidden="true" /> PIN {pin}
-                                </span>
-                              ) : rawPin ? (
-                                <span className={styles.pinEmpty} title={`${rawPin} is the city's head post office: the network resolved only to the city`}>City PIN {rawPin}</span>
-                              ) : (
-                                <span className={styles.pinEmpty} title="The network did not resolve a PIN">PIN not resolved</span>
-                              )}
-                              <span className={styles.algoTag} title="From the visitor's IP address: VPNs, offices and mobile carriers can place someone in another city">IP-based · approximate</span>
-                            </div>
-
-                            <div className={styles.clientSpecsGrid}>
-                              <div className={styles.clientSpecItem} title={[v.device, v.browser, v.os].filter(Boolean).join(" · ") || "Browser not reported"}>
-                                <Device size={11} aria-hidden="true" />
-                                <span>{[v.browser, v.os].filter(Boolean).join(" · ") || "Browser not reported"}</span>
-                              </div>
-                              <div className={styles.clientSpecItem} title={v.screen ? `Screen ${v.screen} px` : "Screen size not reported"}>
-                                <Monitor size={11} aria-hidden="true" />
-                                <span>{v.screen ? `${v.screen} px` : "Screen not reported"}</span>
-                              </div>
-                              <div className={styles.clientSpecItem} title={language ? `Browser language ${language}` : "Language not reported"}>
-                                <Languages size={11} aria-hidden="true" />
-                                <span>{language ? `${languageName(language)} (${language})` : "Language not reported"}</span>
-                              </div>
-                              <div className={styles.clientSpecItem} title={(v.timezone ?? row.first.timezone) ? `Device time zone ${v.timezone ?? row.first.timezone}${local?.offset ? ` (${local.offset})` : ""}` : "Time zone not reported"}>
-                                <Clock size={11} aria-hidden="true" />
-                                <span>{v.timezone ?? row.first.timezone ?? "Time zone not reported"}</span>
-                              </div>
-                              {v.device && <div className={styles.clientSpecItem} title="Device class from the browser's user agent">
-                                <Device size={11} aria-hidden="true" />
-                                <span>{v.device.charAt(0).toUpperCase() + v.device.slice(1)}</span>
-                              </div>}
-                              {v.ip_masked && <div className={styles.clientSpecItem} title="Network address with its last part masked">
-                                <Network size={11} aria-hidden="true" />
-                                <span>{v.ip_masked}</span>
-                              </div>}
-                            </div>
-
-                            {local && <p className={styles.localTime} title="The visitor's own clock, from the time zone their browser reported">
-                              <Clock size={10} aria-hidden="true" /> Their local time: <b>{local.text}</b> · {local.part}{local.offset ? ` · ${local.offset}` : ""}
-                            </p>}
-                            {language && !/^en\b/i.test(language) && <p className={styles.langNote}>Browser prefers {languageName(language)}: the site is English-only for now.</p>}
-
-                            <div className={styles.trafficSourceRow}>
-                              <span className={styles.sourceBadge} title={row.source ? `Traffic source of this visit: ${row.source}` : "No referrer or campaign: typed, bookmarked or opened from an app"}>
-                                <Link2 size={10} aria-hidden="true" /> {row.source ? `via ${row.source}` : "Direct / no referrer"}
-                              </span>
-                              {row.campaign && <span className={styles.sourceBadge} title="utm_medium · utm_campaign of the visit's first page">Campaign: {row.campaign}</span>}
-                            </div>
-
-                          </div>
-                        </div>
-
-                        {/* Column 2: Session Timeline & Precision IST (Sage/Mint Tone) */}
-                        <div className={`${styles.compactCol} ${styles.colTimeline}`} role="group" aria-label="Session timeline">
-                          <div className={styles.colKicker}>
-                            <Clock size={12} className={styles.colKickerIcon} aria-hidden="true" />
-                            <span>Session Timeline (IST & Duration)</span>
-                            <span className={styles.colKickerPill}>IST UTC+5:30</span>
-                          </div>
-                          <div className={styles.colBody}>
-                            <div className={styles.timelineTimesGrid}>
-                              <div className={styles.timelineTimeCell} title="Estimated first page opening from recorded views and visible durations in the loaded window; network delay can affect this time">
-                                <span className={styles.cellLabel}>
-                                  <LogIn size={10} aria-hidden="true" /> Arrived (IST)
-                                </span>
-                                <time className={styles.clockValue} dateTime={row.sessionArrived}>
-                                  {clock(row.sessionArrived)}
-                                </time>
-                                <small className={styles.dateValue}>
-                                  {dayOf(row.sessionArrived)} · {since(row.sessionArrived, clockNow)}
-                                </small>
-                                <small className={styles.dateValue}>Estimated arrival</small>
-                              </div>
-
-                              <div className={`${styles.timelineTimeCell} ${row.left == null ? styles.timelineTimeCellLive : ""}`}>
-                                <span className={styles.cellLabel}>
-                                  {row.left == null ? <Radio size={10} aria-hidden="true" /> : <LogOut size={10} aria-hidden="true" />}
-                                  {row.left == null ? "Status (IST)" : row.beacon ? "Left / hidden (IST)" : "Last seen (IST)"}
-                                </span>
-                                {row.left == null ? (
-                                  <div className={styles.liveCellStatus}>
-                                    <span className={styles.livePulseRingSmall} aria-hidden="true" />
-                                    <strong>Recently active</strong>
-                                  </div>
-                                ) : (
-                                  <time className={styles.clockValue} dateTime={new Date(row.left).toISOString()}>
-                                    {clock(row.left)}
-                                  </time>
-                                )}
-                                <small className={styles.dateValue}>
-                                  {row.left == null ? (heartbeats ? "Page open now" : "Active now") : `${dayOf(row.left)} · ${since(row.left, clockNow)}`}
-                                </small>
-                                {row.left != null && <small className={styles.dateValue}>{row.beacon ? "Visibility ended; exit unconfirmed" : "Departure not confirmed"}</small>}
-                              </div>
-                            </div>
-
-                            <div className={styles.stayMetricBlock}>
-                              <div className={styles.stayHighlightRow}>
-                                <div>
-                                  <small className={styles.stayLabel} title="This visit, from the moment its first page opened to now while a page is open, otherwise to its last leave beacon or heartbeat">Total Stay</small>
-                                  <strong className={styles.stayValue}>{spent(visit.stayMs / 1000)}</strong>
-                                </div>
-                                <div>
-                                  <small className={styles.stayLabel} title="Time this visit's pages were on screen and visible, the open page included. Two windows open at once count once">Active Reading</small>
-                                  <strong className={styles.readingValue}>{spent(visit.readingMs / 1000)}</strong>
-                                </div>
-                                <div>
-                                  <small className={styles.stayLabel} title="Total Stay minus recorded visible time. This may include hidden tabs, loading, or missing tracking signals">Unobserved time</small>
-                                  <strong className={styles.stayValue}>{spent(visit.awayMs / 1000)}</strong>
-                                </div>
-                              </div>
-
-                              <small className={styles.timingNote}>{TIMING_NOTE[visit.timing]}</small>
-                            </div>
-                            {row.visits.length > 1 && <p className={styles.stayAll} title="Each visit's stay and reading, added up; time between visits is not counted">
-                              All {row.visits.length} visits ({streamDays === 1 ? "24 h" : `${streamDays} days`}): <b>{spent(row.totalStayDurationMs / 1000)}</b> stay · <b>{spent(row.totalReadingMs / 1000)}</b> reading
-                            </p>}
-                          </div>
-                        </div>
-
-                        {/* Column 3: Active Target & Learning Journey (Sky Tone) */}
-                        <div className={`${styles.compactCol} ${styles.colLearning}`}>
-                          <div className={styles.colKicker}>
-                            <Target size={12} className={styles.colKickerIcon} aria-hidden="true" />
-                            <span>Active Target & Learning Journey</span>
-                            <span className={styles.colKickerPill}>Step {row.currentStep.step}/{row.currentStep.total}</span>
-                          </div>
-                          <div className={styles.colBody}>
-                            <div className={styles.stageRow}>
-                              <span className={styles.stageBadge} title="How far along the site this person got, from the pages they opened">{row.stage}</span>
-                              <small>{visit.pages} {visit.pages === 1 ? "page" : "pages"} · {visit.clicks} {visit.clicks === 1 ? "click" : "clicks"} this visit</small>
-                            </div>
-                            {row.signals.length > 0 && <ul className={styles.signalList}>{row.signals.map(signal => <li key={signal}>{signal}</li>)}</ul>}
-
-                            <div className={styles.activeTargetBlock}>
-                              <div className={styles.targetHeaderLine}>
-                                <span className={styles.targetCategoryBadge}>{row.currentStep.category}</span>
-                                {isLive && (
-                                  <span className={styles.targetLiveIndicator}>
-                                    <span className={styles.livePulsingDot} aria-hidden="true" />
-                                    Active Target
-                                  </span>
-                                )}
-                              </div>
-                              <strong className={styles.targetTitle} title={row.currentStep.title}>
-                                {row.currentStep.title}
-                              </strong>
-                              <code className={styles.targetPath} title={v.path}>
-                                {v.path}
-                              </code>
-                            </div>
-
-                            <div className={styles.journeyHead}><span>This visit, step by step</span><small className={styles.velocityText}>{row.readingVelocity}</small></div>
-                            <ol className={styles.journeySteps}>
-                              {steps.slice(-6).map((step, i, shown) => {
-                                const number = steps.length - shown.length + i + 1;
-                                return <li key={`${step.path}-${step.at}`} data-open={step.open || undefined}>
-                                  <span className={styles.stepNo}>{number}</span>
-                                  <div className={styles.stepBody}>
-                                    <strong title={step.path}>{step.title}</strong>
-                                    <small>{step.category} · {clock(step.at)} · {step.open ? "reading now" : step.ms == null ? "time not recorded" : spent(step.ms / 1000)}</small>
-                                    {step.clicks.length > 0 && <small className={styles.stepClicks} title={step.clicks.map(c => `${c.option}${c.topic ? ` (in ${c.topic})` : ""}${c.target_path ? ` → ${c.target_path}` : ""}`).join("\n")}>
-                                      <MousePointerClick size={9} aria-hidden="true" /> {step.clicks.slice(0, 3).map(c => `"${c.option}"`).join(", ")}{step.clicks.length > 3 ? ` +${step.clicks.length - 3}` : ""}
-                                    </small>}
-                                  </div>
-                                </li>;
-                              })}
-                            </ol>
-                            {steps.length > 6 && <small className={styles.moreSteps}>{steps.length - 6} earlier {steps.length - 6 === 1 ? "step" : "steps"} in this visit, from {steps[0].title}</small>}
-
-                            {visit.categories.length > 0 && <div className={styles.categoryBars} aria-label="Time by kind of content this visit">
-                              {visit.categories.slice(0, 3).map(c => {
-                                const share = visit.readingMs ? Math.min(100, Math.round((c.ms / visit.readingMs) * 100)) : 0;
-                                return <div key={c.category} className={styles.catRow} title={`${c.category}: ${spent(c.ms / 1000)} on ${c.pages} ${c.pages === 1 ? "page" : "pages"}`}>
-                                  <span>{c.category}</span><i style={{ width: `${Math.max(4, share)}%` }} aria-hidden="true" /><b>{spent(c.ms / 1000)}</b>
-                                </div>;
-                              })}
-                            </div>}
-
-                            <p className={styles.entryExit}>Entered on <code>{visit.entry}</code>{visit.exit && <> · left from <code>{visit.exit}</code></>}</p>
-
-                            {row.engagedContents.length > 1 && <div className={styles.engagedPagesMiniList}>
-                              <div className={styles.miniListHeading}><span>Most-read across all visits</span></div>
-                              {row.engagedContents.slice(0, 2).map((item, idx) => (
-                                <div key={`${item.path}-${idx}`} className={styles.miniPageItem}>
-                                  <div className={styles.miniPageTop}>
-                                    <span className={styles.miniPageBadge}>{item.category}</span>
-                                    <span className={styles.miniPageTime}>{spent(item.durationMs / 1000)}{item.views > 1 ? ` · ${item.views} views` : ""}</span>
-                                  </div>
-                                  <div className={styles.miniPageTitleLine}>
-                                    <BookOpen size={10} className={styles.miniPageIcon} aria-hidden="true" />
-                                    <span className={styles.miniPageTitle}>{item.title}</span>
-                                  </div>
-                                </div>
-                              ))}
-                            </div>}
-
-                            {earlier.length > 0 && <details className={styles.earlierVisits}>
-                              <summary>Earlier visits ({earlier.length})</summary>
-                              <ul>{earlier.map(other => <li key={other.sessionId}>
-                                <b>{dayOf(other.start)}, {clock(other.start)}</b> · {other.pages} {other.pages === 1 ? "page" : "pages"} · {spent(other.stayMs / 1000)} stay · {spent(other.readingMs / 1000)} reading
-                                <small>Entered on {other.entry}{other.source ? ` via ${other.source}` : ""}</small>
-                              </li>)}</ul>
-                            </details>}
-                          </div>
-                        </div>
-                      </div>
-
-                    </div>
-                  </li>
-                );
-              })}
-            </ol>
-          </div>
-        </> : <p className={styles.empty}>{everyone.length ? "No visitors match this filter." : report || stream ? `No page views recorded in ${streamDays === 1 ? "the last 24 hours" : `the last ${streamDays} days`} yet.` : "Connecting to live tracking…"}</p>}
-        <Pager page={Math.min(visitPage, pagesOf(visitors, STREAM_PAGE))} pages={pagesOf(visitors, STREAM_PAGE)} total={visitors.length} size={STREAM_PAGE} onPage={setVisitPage} />
-        {stream && !heartbeats && <p className={styles.streamNote}>Live status is estimated: apply migration 0034 (page heartbeats) so a visitor counts as on the site only while their page is open, timed to the second. Until then a page without a leave beacon counts as open for up to 30 minutes.</p>}
-        {stream?.capped && <p className={styles.streamNote}>Showing the newest 20,000 events of the window; older visitors are left out.</p>}
-      </article>
+      {streamPanel}
 
       {/* Everyone whose first page view ever was today, from the same visitor list as the stream above (user request 2026-11-24). */}
       <SectionHead id="ov-first" index={visitorsOnly ? 5 : 3} title="Visitors today: new, returning and old" question="Who came for the first time, who came back and who has been here before: where from, what they read, how often they return." icon={Sparkles} tone="lavender" live />
@@ -842,12 +886,7 @@ export function OverviewLive({ snapshot, onRefreshSnapshot, visitorsOnly = false
         })()}
       </article>}
 
-      <article className={`${styles.panel}${visitorsOnly ? ` ${styles.full}` : ""}`} data-tone="sky">
-        <h3><BookOpenText size={16} aria-hidden="true" />Pages read, last 30 min<span>most visitors first · avg. read per finished page view</span></h3>
-        {reading.length ? <><div className={`${styles.listHead} ${styles.readingHead}`} aria-hidden="true"><span>Page</span><span>Visitors</span><span>Views</span><span>Avg. read</span></div><ul className={styles.reading}>{readRows.map(p => <li key={p.path}><code title={`${p.title} · ${p.path}`}>{p.path}</code><span title="Different people"><Users size={12} aria-hidden="true" />{p.people}</span><span title="Times opened"><MousePointerClick size={12} aria-hidden="true" />{p.views}</span><span title={p.avgReadMs == null ? "Still open, or closed without a recorded time" : "Average visible time per finished view"}><Timer size={12} aria-hidden="true" />{p.avgReadMs == null ? "—" : spent(p.avgReadMs / 1000)}</span></li>)}</ul></> : <p className={styles.empty}>Nobody has opened a page in the last 30 minutes.</p>}
-        {reading.length > READING_PAGE && <Pager page={Math.min(readPage, pagesOf(reading, READING_PAGE))} pages={pagesOf(reading, READING_PAGE)} total={reading.length} size={READING_PAGE} onPage={setReadPage} />}
-        {devices.length > 0 && <div className={styles.devices}>{devices.map(({ device, people }) => { const Icon = DEVICE_ICON[device] ?? Laptop; return <span key={device}><Icon size={13} aria-hidden="true" />{device} <b>{people}</b></span>; })}<small>visitors in the last hour</small></div>}
-      </article>
+      {readingPanel}
 
       {!visitorsOnly && <article className={styles.panel} data-tone="butter">
         <h3><Server size={16} aria-hidden="true" />System health<span>{h?.environment ?? ""}</span></h3>
@@ -862,11 +901,7 @@ export function OverviewLive({ snapshot, onRefreshSnapshot, visitorsOnly = false
       </article>}
     </div>
     {!visitorsOnly && <p className={styles.note}><Globe2 size={13} aria-hidden="true" /> Request figures marked “shown” and the busiest routes come from the latest {n(requests.length)} logged requests; totals, error rate and p95 cover the whole window. Visits come from the first-party page beacon (bots excluded, IPs masked); traces come from the API request log, which never stores query strings, bodies or credentials. <UserRound size={13} aria-hidden="true" /> Emails show only for signed-in learners.</p>}
-    {visitorsOnly && <>
-      <SectionHead id="ov-days" index={7} title="Last three days" question="How today compares with yesterday and the day before, hour by hour." icon={CalendarDays} tone="sky" live />
-      <SuperAdminThreeDays feed={daysFeed} />
     </>}
-    {visitorsOnly && <p className={styles.note}><UserRound size={13} aria-hidden="true" /> Visits come from the first-party page beacon in your Supabase database (bots excluded, IPs masked). Emails show only for signed-in learners.</p>}
   </section>;
 }
 

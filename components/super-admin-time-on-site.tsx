@@ -16,35 +16,29 @@ const clockIST = (ms: number) => new Date(ms + 19_800_000).toISOString().slice(1
 const placeOf = (city: string | null, country: string | null) => [city, country ? countryName(country) || country : null].filter(Boolean).join(", ") || "Not reported";
 
 /**
- * How long visitors stay, for the Overview (today) and User activities (the reporting window). `everyone` is that page's
- * own visitor list and `now` the clock of its latest read, so the figures match every panel beside it. Visitors on the
- * site right now get running clocks: between reads they advance with the wall clock (only while their page is being
- * read, and for at most the heartbeat window), and every read resets them to the recorded figures.
+ * Overview → Right now: everyone with a page open, with running clocks. Between reads they advance with the wall clock
+ * (only while their page is being read, and for at most the heartbeat window), and every read resets them to the
+ * recorded figures. This is the only live table in Super Admin (user request 2026-11-28: live visitors in one place).
  */
-export function SuperAdminTimeOnSite({ everyone, from, now, ownHosts, windowLabel, exact, recordsFrom, recordsLabel }: Readonly<{ everyone: StreamVisitor[]; from: number; now: number; ownHosts: readonly string[]; windowLabel: string; exact: boolean; recordsFrom?: number; recordsLabel?: string }>) {
-  const data = useMemo(() => exact ? timeOnSite(everyone, from, Infinity, ownHosts) : null, [exact, everyone, from, ownHosts]);
+export function LiveNowTable({ everyone, from, now, ownHosts }: Readonly<{ everyone: StreamVisitor[]; from: number; now: number; ownHosts: readonly string[] }>) {
+  const live = useMemo(() => timeOnSite(everyone, from, Infinity, ownHosts).live, [everyone, from, ownHosts]);
   // Time since this read landed, ticking each second while anyone is on the site; a new read starts it again at zero.
   const [elapsed, setElapsed] = useState({ now, ms: 0 });
-  const anyoneLive = Boolean(data?.live.length);
+  const anyoneLive = live.length > 0;
   useEffect(() => {
     if (!anyoneLive) return;
     const landed = Date.now();
     const timer = setInterval(() => setElapsed({ now, ms: Date.now() - landed }), 1000);
     return () => clearInterval(timer);
   }, [now, anyoneLive]);
-
-  if (!data) return <section className={styles.panel} aria-busy="true"><p className={styles.wait}>Timing visitors once the visitor stream has loaded…</p></section>;
   // Never run past the heartbeat window: if reads stop, the clocks stop instead of inventing time.
   const extra = elapsed.now === now ? Math.min(LIVE_MS, Math.max(0, elapsed.ms)) : 0;
-  const maxBucket = Math.max(1, ...data.buckets.map(b => b.people));
-  const timed = data.timing.recorded + data.timing.live + data.timing.partial;
-
   return <section className={styles.panel}>
     <article className={styles.card} data-tone="live">
-      <h3><Radio size={16} aria-hidden="true" />On the site right now<span>{data.live.length ? `${n(data.live.length)} ${data.live.length === 1 ? "visitor" : "visitors"} · clocks run live, IST ${clockIST(now + extra)}` : "nobody at the moment"}</span></h3>
-      {data.live.length ? <div className={styles.tableWrap}><table>
+      <h3><Radio size={16} aria-hidden="true" />Who is on the site now<span>{live.length ? `${n(live.length)} ${live.length === 1 ? "visitor" : "visitors"} · clocks run live, IST ${clockIST(now + extra)}` : "nobody at the moment"}</span></h3>
+      {live.length ? <div className={styles.tableWrap}><table>
         <thead><tr><th scope="col">Visitor</th><th scope="col">On site for</th><th scope="col">On screen</th><th scope="col">Reading now</th><th scope="col">Pages</th><th scope="col">Came from</th><th scope="col">Location</th><th scope="col">Device</th></tr></thead>
-        <tbody>{data.live.map(v => <tr key={v.key}>
+        <tbody>{live.map(v => <tr key={v.key}>
           <th scope="row"><span className={styles.pulse} aria-hidden="true" />{v.who}<small>{v.signedIn ? "Signed in" : GROUP_LABEL[v.group]}{v.visitsBefore ? ` · ${v.visitsBefore} earlier ${v.visitsBefore === 1 ? "visit" : "visits"}` : ""} · since {clockIST(v.arrivedAt)}</small></th>
           <td className={styles.clock}>{stayClock(v.stayMs + extra)}</td>
           <td className={styles.clock}>{stayClock(v.onScreenMs + (v.reading ? extra : 0))}</td>
@@ -55,7 +49,20 @@ export function SuperAdminTimeOnSite({ everyone, from, now, ownHosts, windowLabe
         </tr>)}</tbody>
       </table></div> : <p className={styles.empty}>No page has sent a heartbeat in the last {Math.round(LIVE_MS / 1000)} seconds. Visitors appear here the moment they open a page.</p>}
     </article>
+  </section>;
+}
 
+/**
+ * How long visitors stay, for User activities (the reporting window). `everyone` is that page's own visitor list, so the
+ * figures match every panel beside it. Who is on the site right now is on the Overview only (LiveNowTable).
+ */
+export function SuperAdminTimeOnSite({ everyone, from, ownHosts, windowLabel, exact, recordsFrom, recordsLabel }: Readonly<{ everyone: StreamVisitor[]; from: number; now: number; ownHosts: readonly string[]; windowLabel: string; exact: boolean; recordsFrom?: number; recordsLabel?: string }>) {
+  const data = useMemo(() => exact ? timeOnSite(everyone, from, Infinity, ownHosts) : null, [exact, everyone, from, ownHosts]);
+  if (!data) return <section className={styles.panel} aria-busy="true"><p className={styles.wait}>Timing visitors once the visitor stream has loaded…</p></section>;
+  const maxBucket = Math.max(1, ...data.buckets.map(b => b.people));
+  const timed = data.timing.recorded + data.timing.live + data.timing.partial;
+
+  return <section className={styles.panel}>
     <TimeLeaderboard everyone={everyone} from={from} windowLabel={windowLabel} recordsFrom={recordsFrom} recordsLabel={recordsLabel} ownHosts={ownHosts} />
 
     <dl className={styles.kpis}>
@@ -64,7 +71,7 @@ export function SuperAdminTimeOnSite({ everyone, from, now, ownHosts, windowLabe
       <Kpi icon={Sigma} tone="mint" label="Total time on screen" value={stayText(data.totalOnScreenMs)} note={`${n(data.people)} visitors · ${n(data.visits)} visits`} />
       <Kpi icon={UserCheck} tone="peach" label="Engaged visitors" value={pct(data.engaged, data.people)} note={`${n(data.engaged)} stayed ${ENGAGED_MS / 1000} s or more on screen`} />
       <Kpi icon={BookOpenText} tone="butter" label="Deep readers" value={n(data.deep)} note={`${pct(data.deep, data.people)} read ${DEEP_MS / 60_000} min or more`} />
-      <Kpi icon={Trophy} tone="rose" label="Longest visit" value={stayText(data.longestVisitMs)} note={`${pct(data.bounced, data.visits)} of visits opened one page`} />
+      <Kpi icon={Trophy} tone="rose" label="Longest visit" value={stayText(data.longestVisitMs)} note="most time in a single visit, arrival to last activity" />
     </dl>
 
     <div className={styles.grid}>
@@ -88,10 +95,10 @@ export function SuperAdminTimeOnSite({ everyone, from, now, ownHosts, windowLabe
       {data.longest.length ? <div className={styles.tableWrap}><table>
         <thead><tr><th scope="col">Visitor</th><th scope="col">Started (IST)</th><th scope="col">On screen</th><th scope="col">Visit length</th><th scope="col">Pages</th><th scope="col">Entry → exit</th><th scope="col">Came from</th><th scope="col">Location</th></tr></thead>
         <tbody>{data.longest.map(v => <tr key={v.key}>
-          <th scope="row">{v.who}{v.open && <em className={styles.liveTag}>on site</em>}</th>
+          <th scope="row">{v.who}</th>
           <td>{new Intl.DateTimeFormat("en-IN", { day: "numeric", month: "short", timeZone: "Asia/Kolkata" }).format(new Date(v.start))} {clockIST(v.start)}</td>
           <td className={styles.clock}>{stayClock(v.onScreenMs)}</td><td className={styles.clock}>{stayClock(v.stayMs)}</td><td>{n(v.views)}</td>
-          <td className={styles.page}><code>{v.entry}</code><small>{v.open ? "still on the site" : `left from ${v.exit ?? "—"}`}</small></td>
+          <td className={styles.page}><code>{v.entry}</code><small>{v.open ? "visit in progress" : `left from ${v.exit ?? "—"}`}</small></td>
           <td>{v.source}</td><td><span className={styles.place}><CountryFlag code={v.country} size={16} />{placeOf(v.city, v.country)}</span></td>
         </tr>)}</tbody>
       </table></div> : <p className={styles.empty}>No visits in this window yet.</p>}
@@ -131,7 +138,7 @@ function TimeLeaderboard({ everyone, from, windowLabel, recordsFrom, recordsLabe
       <thead><tr><th scope="col">Rank</th><th scope="col">Visitor</th><th scope="col">Time spent</th><th scope="col">Share</th><th scope="col">Visit length</th><th scope="col">Visits</th><th scope="col">Pages</th><th scope="col">Most read page</th><th scope="col">Came from</th><th scope="col">Location</th><th scope="col">Last seen (IST)</th></tr></thead>
       <tbody>{rows.map(l => <tr key={l.key} data-rank={l.rank <= 3 ? l.rank : undefined}>
         <td className={styles.rankCell}>{l.rank <= 3 ? <span className={styles.medal} data-rank={l.rank} title={`${MEDAL[l.rank - 1]} · rank ${l.rank}`}>{l.rank}</span> : <span className={styles.rankNo}>{l.rank}</span>}</td>
-        <th scope="row">{l.live && <span className={styles.pulse} aria-label="On the site now" />}{l.who}<small>{l.signedIn ? "Signed in" : GROUP_LABEL[l.group]} · {[l.device].filter(Boolean).join("")}</small></th>
+        <th scope="row">{l.who}<small>{l.signedIn ? "Signed in" : GROUP_LABEL[l.group]} · {[l.device].filter(Boolean).join("")}</small></th>
         <td className={styles.clock}>{stayClock(l.onScreenMs)}<small className={styles.sub}>{stayText(l.onScreenMs)}</small></td>
         <td className={styles.shareCell}><span className={styles.shareBar} aria-hidden="true"><i style={{ width: `${total ? (l.onScreenMs / total) * 100 : 0}%` }} /></span>{pct(l.onScreenMs, total)}</td>
         <td className={styles.clock}>{stayClock(l.stayMs)}</td>
@@ -139,7 +146,7 @@ function TimeLeaderboard({ everyone, from, windowLabel, recordsFrom, recordsLabe
         <td className={styles.page}>{l.topPage ? <><code title={l.topPage}>{l.topPage}</code><small>{stayText(l.topPageMs)} on it</small></> : "—"}</td>
         <td>{l.source}</td>
         <td><span className={styles.place}><CountryFlag code={l.country} size={16} />{placeOf(l.city, l.country)}</span></td>
-        <td>{l.live ? <em className={styles.liveTag}>on site now</em> : `${new Intl.DateTimeFormat("en-IN", { day: "numeric", month: "short", timeZone: "Asia/Kolkata" }).format(new Date(l.lastAt))} ${clockIST(l.lastAt)}`}</td>
+        <td>{`${new Intl.DateTimeFormat("en-IN", { day: "numeric", month: "short", timeZone: "Asia/Kolkata" }).format(new Date(l.lastAt))} ${clockIST(l.lastAt)}`}</td>
       </tr>)}</tbody>
     </table></div>
     {pages > 1 && <PillPager page={shown} pages={pages} total={leaders.length} perPage={LEADERS_PER_PAGE} onPage={setPage} label="Ranking" noun="visitors" />}</>

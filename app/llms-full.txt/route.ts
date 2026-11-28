@@ -3,6 +3,7 @@ import { siteDescription, siteName, siteUrl } from "@/lib/seo";
 import { COMPARISONS } from "@/lib/comparisons";
 import { TECH_BUZZ_TAG, listPublishedTechBuzzArticles } from "@/lib/server/tech-buzz-storage";
 import { interviewBanks, interviewTechs } from "@/lib/public-learning";
+import { QUALITY_NAME, playlist, playlistQuality, techInfo, techsIn } from "@/lib/streams";
 
 /*
  * /llms-full.txt: the companion to /llms.txt with the content itself, so an answer engine can quote and cite
@@ -46,6 +47,12 @@ async function body() {
       ...(story.summaryBullets?.length ? ["", "Key takeaways:", ...story.summaryBullets.map(point => `- ${oneLine(point)}`)] : []),
       "",
     ]),
+    "## MCB Streams: step-by-step video playlists",
+    `Source: ${url("/streams")}`, "",
+    "Each playlist is a sequence of short steps in Full HD or better; every step has study notes listing what it teaches. The first step of every course is free and a membership unlocks the rest.", "",
+    ...techsIn(["tech", "ielts"]).flatMap(id => { const info = techInfo(id), list = playlist(id); return [
+      `### ${info.playlist}`, `Source: ${url(`/streams?playlist=${id}`)}`, "", `${info.tagline} ${list.steps.length} steps in ${list.chapters.length} chapters, up to ${QUALITY_NAME[playlistQuality(id)]}.`, "",
+      ...list.chapters.map(chapter => `- ${chapter.title} (${chapter.level}): ${chapter.summary}`), ""]; }),
     "## Technology comparisons",
     "",
     ...COMPARISONS.flatMap(item => [`### ${item.question}`, `Source: ${url(`/compare/${item.id}`)}`, "", oneLine(item.summary), ""]),

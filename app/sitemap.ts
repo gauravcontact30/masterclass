@@ -6,6 +6,7 @@ import { EXAM_GUIDES, type ExamGuidePath } from "@/lib/exam-guides";
 import { TECH_BUZZ_TAG, listPublishedTechBuzzArticles } from "@/lib/server/tech-buzz-storage";
 import { handbookName, handbookSlug, handbooks, interviewTechs, vocabularyGroups, workflows } from "@/lib/public-learning";
 import { technologyLogo } from "@/lib/technology-logo";
+import { STREAMS_UPDATED } from "@/lib/streams";
 
 /**
  * Every indexable URL but the API reference: the registered public pages plus the learning library (interview
@@ -14,7 +15,7 @@ import { technologyLogo } from "@/lib/technology-logo";
  * Cached for a day, so a content release appears in the sitemap without a rebuild of this route; publishing a
  * Tech Buzz story expires the tag at once, so the 5:00 AM stories are listed the morning they go live.
  * Each story also lists its cover photo (image sitemap), so Google Images can find it from the story's URL. Only pages
- * whose content really changes with the stories (/tech-buzz and /library, which counts them) carry a lastmod: a
+ * whose content really changes (/tech-buzz and /library with the stories, /streams with its content releases) carry a lastmod: a
  * made-up date on unchanged pages teaches Google to ignore lastmod altogether.
  */
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
@@ -40,7 +41,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...PUBLIC_PAGES.filter(page => !INDIA_ONLY_PAGES.has(page.path)).map(({ path, changeFrequency, priority }) => ({ url: url(path), changeFrequency, priority,
       ...(path in EXAM_GUIDES ? { images: [url(EXAM_GUIDES[path as ExamGuidePath].image)] } : {}),
       ...(path === "/" ? { images: [url("/images/landing/hero-interviews-ads9.webp"), url("/images/landing/hero-interviews-ads17.webp"), url("/images/landing/hero-board-exams.webp"), url("/images/landing/hero-government-exams.webp")] } : {}),
-      ...((path === "/tech-buzz" || path === "/library") && latestStory ? { lastModified: latestStory } : {}) })),
+      ...((path === "/tech-buzz" || path === "/library") && latestStory ? { lastModified: latestStory } : {}),
+      // MCB Streams changes with each content release, on the date lib/streams.ts records.
+      ...(path === "/streams" ? { lastModified: new Date(`${STREAMS_UPDATED}T00:00:00+05:30`), changeFrequency: "weekly" as const } : {}) })),
     library("/interview-questions", 0.9, "weekly"), ...interviewTechs().map(tech => technology(`/interview-questions/${tech.id}`, 0.8, tech.id, tech.title)),
     library("/workflows", 0.9, "weekly"), ...workflows().map(item => library(`/workflows/${item.id}`, 0.8)),
     library("/learn", 0.9, "weekly"), ...handbooks().map(item => technology(`/learn/${handbookSlug(item)}`, 0.7, "", handbookName(item))),

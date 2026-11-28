@@ -32,7 +32,7 @@ const EVERYONE = techsIn(visibleGroups(false));
 test("four categories of step-by-step playlists; every step is a measured video of 1080p or more with our own title and notes", () => {
   // Topic-led tech playlists appear once their topics have verified videos.
   expect(techsIn(["tech"]).slice(0, 10)).toEqual(["nextjs", "react", "langchain", "langgraph", "langsmith", "langflow", "langserve", "n8n", "aws", "sysdesign"]);
-  for (const id of techsIn(["tech"]).slice(10)) expect(["typescript", "testing", "tanstack", "zustand", "playwright", "fastapi", "python", "nestjs", "modernjs", "devops-aws"]).toContain(id);
+  for (const id of techsIn(["tech"]).slice(10)) expect(["typescript", "testing", "tanstack", "zustand", "playwright", "fastapi", "python", "nestjs", "modernjs", "devops-aws", "dsa", "devops"]).toContain(id);
   for (const id of ["board10-maths", "board10-physics", "board10-chemistry", "board10-english", "board12-maths", "board12-physics", "board12-chemistry", "board12-english",
     "icse10-maths", "icse10-physics", "icse10-chemistry", "icse10-english", "isc12-maths", "isc12-physics", "isc12-chemistry", "isc12-english"]) expect(techInfo(id as never).group).toBe("board");
   for (const id of ["upsc", "ias", "pcs", "ssc", "nda", "bankpo", "railways", "police", "cbi", "incometax", "ctet", "ca"]) expect(techsIn(["exams"])).toContain(id);

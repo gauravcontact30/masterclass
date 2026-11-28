@@ -31,6 +31,12 @@ export type GlanceProps = {
   verified: { passed: number; total: number } | null;
   paused: boolean;
   updatedAt: string | null;
+  /**
+   * The Overview shows the live card on its own ("live": Right now, at the top) and the day's cards further down
+   * ("today"), with nothing repeated between them or the sections around them (user request 2026-11-28). Left out, both
+   * parts show together, with the day's hourly pulse in the live card (Live learners).
+   */
+  part?: "live" | "today";
 };
 
 const n = (value: number | null | undefined) => value == null ? "—" : new Intl.NumberFormat("en-IN").format(value);
@@ -68,8 +74,8 @@ function insightsFor(p: GlanceProps): Insight[] {
   if ((t.people ?? 0) >= 20 && (p.newAccounts ?? 0) === 0) out.push({ tone: "watch", icon: UserPlus, title: `No new accounts from ${n(t.people)} visitors`, detail: "Nobody has signed up yet today. Check the sign-up page and the Google sign-in." });
   else if ((p.newAccounts ?? 0) > 0 && (t.people ?? 0) > 0) out.push({ tone: "good", icon: UserPlus, title: `${n(p.newAccounts)} new ${p.newAccounts === 1 ? "account" : "accounts"} ${p.day === "today" ? "today" : "in 24 h"}`, detail: `${share(p.newAccounts ?? 0, t.people ?? 0)}% of visitors signed up.` });
   if ((p.bots ?? 0) > 0 && (p.bots ?? 0) > (t.people ?? 0)) out.push({ tone: "info", icon: Bot, title: "Bots outnumber real visitors", detail: `${n(p.bots)} automated sessions were filtered out against ${n(t.people)} people. They are excluded from every figure here.` });
-  if (p.live.now === 0) out.push({ tone: "info", icon: Radio, title: "Nobody has a page open right now", detail: p.live.last30 ? `${n(p.live.last30)} ${p.live.last30 === 1 ? "person was" : "people were"} active in the last 30 minutes.` : "No activity in the last 30 minutes." });
-  if (p.topPage && t.views) out.push({ tone: "info", icon: FileText, title: `${p.topPage.path} is today's most visited page`, detail: `${n(p.topPage.people)} ${p.topPage.people === 1 ? "person" : "people"}, ${n(p.topPage.views)} views (${share(p.topPage.views, t.views)}% of all page views).` });
+  // Who is on the site now and the top page have cards of their own, so they are not repeated here.
+  if (!p.part && p.live.now === 0) out.push({ tone: "info", icon: Radio, title: "Nobody has a page open right now", detail: p.live.last30 ? `${n(p.live.last30)} ${p.live.last30 === 1 ? "person was" : "people were"} active in the last 30 minutes.` : "No activity in the last 30 minutes." });
   if (!out.length) out.push({ tone: "good", icon: CheckCircle2, title: "Nothing needs attention", detail: "Traffic, engagement and the figure checks are all within their usual range." });
   return out.slice(0, 5);
 }
@@ -83,11 +89,12 @@ export function SuperAdminGlance(props: GlanceProps) {
   const guests = groups ? groups.new : t.newVisitors ?? 0, signed = groups ? groups.old : t.signedIn ?? 0, returning = groups ? groups.returning : t.returning ?? Math.max(0, people - guests - signed);
   const deviceTotal = devices.reduce((sum, d) => sum + d.people, 0);
   const insights = insightsFor(props);
+  const showLive = props.part !== "today", showToday = props.part !== "live", pulse = !props.part;
   const bounceTone = t.bounceRate == null ? "none" : t.bounceRate >= 70 ? "bad" : t.bounceRate >= 50 ? "mid" : "good";
 
-  return <div className={styles.glance}>
-    {/* 1. Right now, with the day's pulse */}
-    <article className={styles.hero} data-tone="mint">
+  return <div className={styles.glance} data-part={props.part}>
+    {/* 1. Right now (with the day's pulse when both parts show together) */}
+    {showLive && <article className={styles.hero} data-tone="mint">
       <header><span className={styles.pulseIcon} aria-hidden="true"><i /><Radio size={17} /></span><h3>On the site right now</h3></header>
       <div className={styles.heroBody}>
         <div className={styles.heroNumber}><strong>{n(live.now)}</strong><span>{live.now === 1 ? "visitor" : "visitors"}</span></div>
@@ -97,15 +104,17 @@ export function SuperAdminGlance(props: GlanceProps) {
           <li><b>{n(live.viewsLastHour)}</b> page views in the last hour, by {n(live.peopleLastHour)} {live.peopleLastHour === 1 ? "person" : "people"}</li>
         </ul>
       </div>
-      <figure className={styles.pulse}>
+      {pulse && <><figure className={styles.pulse}>
         <div className={styles.bars} role="img" aria-label={`Page views by hour (IST) ${props.day === "today" ? "today" : "in the last 24 hours"}. Busiest hour ${hourName(peakHour)} with ${n(hours[peakHour])} views.`}>
           {hours.map((views, hour) => <i key={hour} style={{ height: `${Math.max(4, (views / peak) * 100)}%` }} data-now={hour === hourNow || undefined} data-peak={(views > 0 && hour === peakHour) || undefined} title={`${hourName(hour)}–${hourName((hour + 1) % 24)} IST: ${n(views)} page views`} />)}
         </div>
         <figcaption><span>00:00</span><span>06:00</span><span>12:00</span><span>18:00</span><span>23:00 IST</span></figcaption>
       </figure>
-      <p className={styles.note}>{hours[peakHour] > 0 ? `Busiest hour so far: ${hourName(peakHour)} with ${n(hours[peakHour])} page views. The outlined bar is this hour.` : "No page views recorded yet."}</p>
-    </article>
+      <p className={styles.note}>{hours[peakHour] > 0 ? `Busiest hour so far: ${hourName(peakHour)} with ${n(hours[peakHour])} page views. The outlined bar is this hour.` : "No page views recorded yet."}</p></>}
+      {!pulse && <p className={styles.note}>On the site now: a page sent a heartbeat in the last 100 seconds and has not closed. Signed in and guests add up to the total.</p>}
+    </article>}
 
+    {showToday && <>
     {/* 2. Today against yesterday at the same time */}
     <article className={styles.compare} data-tone="sky">
       <header><span className={styles.cardIcon} aria-hidden="true"><Clock size={16} /></span><h3>Today vs yesterday, same time</h3></header>
@@ -128,7 +137,7 @@ export function SuperAdminGlance(props: GlanceProps) {
     <article className={styles.card} data-tone="lavender">
       <header><span className={styles.cardIcon} aria-hidden="true"><Users size={16} /></span><h3>Audience, {props.day}</h3></header>
       <p className={styles.big}><strong>{n(t.people)}</strong><span>{t.people === 1 ? "visitor" : "visitors"}</span></p>
-      <div className={styles.split} role="img" aria-label={groups ? `${n(guests)} new, ${n(returning)} returning, ${n(signed)} old` : `${n(guests)} new guests, ${n(returning)} returning, ${n(signed)} signed in`}>
+      {!props.part && <><div className={styles.split} role="img" aria-label={groups ? `${n(guests)} new, ${n(returning)} returning, ${n(signed)} old` : `${n(guests)} new guests, ${n(returning)} returning, ${n(signed)} signed in`}>
         <i style={{ flexGrow: guests }} data-part="new" /><i style={{ flexGrow: returning }} data-part="returning" /><i style={{ flexGrow: signed }} data-part="signed" />
       </div>
       <ul className={styles.legend}>
@@ -136,7 +145,8 @@ export function SuperAdminGlance(props: GlanceProps) {
         <li data-part="returning"><i />{n(returning)} returning <small>{share(returning, people)}%</small></li>
         <li data-part="signed"><i />{n(signed)} {groups ? "old" : "signed in"} <small>{share(signed, people)}%</small></li>
       </ul>
-      {groups && <p className={styles.line}><UserRound size={13} aria-hidden="true" /><b>{n(groups.signedIn)}</b>&nbsp;of them signed in</p>}
+      </>}
+      {groups && <p className={styles.line}><UserRound size={13} aria-hidden="true" /><b>{n(groups.signedIn)}</b>&nbsp;signed in&nbsp;·&nbsp;<b>{n(Math.max(0, people - groups.signedIn))}</b>&nbsp;guests{props.part ? " · new, returning and old in Visitors today" : ""}</p>}
       {deviceTotal > 0 && <>
         <div className={styles.split} role="img" aria-label={`Devices: ${devices.map(d => `${d.people} ${d.device}`).join(", ")}`}>{devices.map(d => <i key={d.device} style={{ flexGrow: d.people, background: DEVICE_COLOR[d.device] ?? "#9b978a" }} />)}</div>
         <ul className={styles.legend}>{devices.slice(0, 3).map(d => <li key={d.device}><i style={{ background: DEVICE_COLOR[d.device] ?? "#9b978a" }} />{share(d.people, deviceTotal)}% {d.device}</li>)}</ul>
@@ -151,7 +161,7 @@ export function SuperAdminGlance(props: GlanceProps) {
         <div><dt>Reading time per visitor</dt><dd>{spent(t.readingPerPersonSeconds)}</dd></div>
         <div><dt>Average visit</dt><dd>{spent(t.avgVisitSeconds)}</dd></div>
         <div><dt>Pages per visit</dt><dd>{t.pagesPerVisit ?? "—"}</dd></div>
-        <div><dt>Page views</dt><dd>{n(t.views)}</dd></div>
+        {!props.part && <div><dt>Page views</dt><dd>{n(t.views)}</dd></div>}
       </dl>
       <div className={styles.gauge} data-tone={bounceTone}>
         <div className={styles.gaugeHead}><span>Bounce rate</span><b>{t.bounceRate == null ? "—" : `${t.bounceRate}%`}</b></div>
@@ -174,10 +184,11 @@ export function SuperAdminGlance(props: GlanceProps) {
     {/* 6. Can the numbers be trusted */}
     <article className={styles.card} data-tone="butter">
       <header><span className={styles.cardIcon} aria-hidden="true"><ShieldCheck size={16} /></span><h3>Data quality</h3></header>
-      <p className={styles.big}><strong>{props.verified ? `${props.verified.passed}/${props.verified.total}` : "—"}</strong><span>checks passed</span></p>
+      {props.part ? <p className={styles.big}><strong>{n(props.bots)}</strong><span>bot sessions filtered</span></p>
+        : <p className={styles.big}><strong>{props.verified ? `${props.verified.passed}/${props.verified.total}` : "—"}</strong><span>checks passed</span></p>}
       <p className={styles.line} data-ok={props.verified && props.verified.passed === props.verified.total ? "" : undefined}>{props.paused ? <><Eye size={13} aria-hidden="true" />Live updates paused</> : props.verified ? (props.verified.passed === props.verified.total ? <><CheckCircle2 size={13} aria-hidden="true" />Figures cross-checked on every refresh</> : <><AlertTriangle size={13} aria-hidden="true" />Review the failed checks above</>) : <><Eye size={13} aria-hidden="true" />Waiting for the visitor stream</>}</p>
       <ul className={styles.tops}>
-        <li><Bot size={14} aria-hidden="true" /><span>Bot sessions filtered</span><b>{n(props.bots)}</b><small>never counted</small></li>
+        {!props.part && <li><Bot size={14} aria-hidden="true" /><span>Bot sessions filtered</span><b>{n(props.bots)}</b><small>never counted</small></li>}
         <li><Clock size={14} aria-hidden="true" /><span>Last read</span><b>{props.updatedAt ?? "—"}</b><small>IST</small></li>
       </ul>
     </article>
@@ -187,5 +198,6 @@ export function SuperAdminGlance(props: GlanceProps) {
       <header><span className={styles.cardIcon} aria-hidden="true"><Sparkles size={16} /></span><h3>What needs your eye</h3><small>Worked out from today&apos;s numbers</small></header>
       <ul>{insights.map(item => <li key={item.title} data-insight={item.tone}><span aria-hidden="true"><item.icon size={16} /></span><div><b>{item.title}</b><p>{item.detail}</p></div></li>)}</ul>
     </article>
+    </>}
   </div>;
 }

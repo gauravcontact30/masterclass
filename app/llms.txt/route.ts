@@ -5,6 +5,7 @@ import { TECH_BUZZ_TAG, listPublishedTechBuzzArticles } from "@/lib/server/tech-
 import { handbooks, interviewTechs, workflows } from "@/lib/public-learning";
 import { ADDRESS_LINE, SOCIAL_PROFILES, SUPPORT } from "@/lib/site-contact";
 import { BOARD_FAQ, CATEGORIES, COMPETITIVE_FAQ } from "@/lib/landing-categories";
+import { QUALITY_NAME, playlist, playlistQuality, techInfo, techsIn } from "@/lib/streams";
 
 /*
  * /llms.txt (llmstxt.org): a plain-Markdown map of the site for AI assistants and answer engines, read from the same
@@ -45,6 +46,11 @@ async function body() {
     "## System design and AI agent workflow blueprints",
     link("All blueprints", "/workflows", "step-by-step designs with diagrams, tech stack, design decisions and interview questions"),
     ...workflows().filter(item => !item.dashboardOnly).map(item => link(item.title, `/workflows/${item.id}`, item.summary)),
+    "",
+    // MCB Streams: the playlists shown to everyone that have steps (exam playlists are shown by region, so not here).
+    "## MCB Streams: step-by-step video playlists in Full HD and 4K",
+    link("All playlists", "/streams", "every step has study notes beside the video; the first step of every course is free"),
+    ...techsIn(["tech", "ielts"]).map(id => link(techInfo(id).playlist, `/streams?playlist=${id}`, `${techInfo(id).tagline} ${playlist(id).steps.length} steps, up to ${QUALITY_NAME[playlistQuality(id)]}.`)),
     "",
     "## Technology comparisons",
     ...COMPARISONS.map(item => link(item.question, `/compare/${item.id}`)),

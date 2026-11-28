@@ -237,32 +237,164 @@ export const TECH_TOPIC_PLAYLISTS = [
         ["AWS CloudWatch monitoring", ["Metrics and alarms", "Logs and Logs Insights", "Dashboards"]],
       ] },
     ] },
+  /* ---------- Data structures and algorithms ---------- */
+  { id: "dsa", group: "tech", name: "DSA", playlist: "Data structures and algorithms: interview ready", color: "#6b4fbb",
+    tagline: "Complexity, the core data structures and the algorithm patterns that coding interviews ask for.",
+    chapters: [
+      { title: "Data structure foundations", level: "Beginner", summary: "Measuring cost with Big O and the structures every solution is built from.", topics: [
+        ["Big O notation and time complexity", ["Counting work as the input grows", "Common complexities from O(1) to O(n²)", "Space complexity"]],
+        ["Arrays and strings", ["Indexing, insertion and deletion costs", "The two-pointer technique", "The sliding-window technique"]],
+        ["Hash tables", ["Hashing and collisions", "Hash maps and sets in practice", "Frequency-counting problems"]],
+        ["Linked lists", ["Singly and doubly linked lists", "Reversing a linked list", "Fast and slow pointers"]],
+        ["Stacks and queues", ["LIFO and FIFO", "The monotonic stack", "A queue built from two stacks"]],
+        ["Recursion", ["Base case and recursive case", "The call stack", "Drawing a recursion tree"]],
+      ] },
+      { title: "Core algorithms", level: "Intermediate", summary: "Searching, sorting, trees and heaps, with the patterns behind each.", topics: [
+        ["Binary search", ["Searching a sorted array", "Lower and upper bounds", "Binary search on the answer"]],
+        ["Sorting algorithms", ["Bubble, insertion and selection sort", "Merge sort and quicksort", "Stability and complexity"]],
+        ["Binary trees and tree traversal", ["Preorder, inorder and postorder", "Level-order traversal with a queue", "Height and depth"]],
+        ["Binary search trees", ["Insert, search and delete", "Validating a BST", "Why balance matters"]],
+        ["Heaps and priority queues", ["The heap property and heapify", "Top-K problems", "Heap sort"]],
+        ["Trie data structure", ["Storing words character by character", "Insert and prefix search", "Autocomplete"]],
+      ] },
+      { title: "Advanced algorithms", level: "Advanced", summary: "Graphs, dynamic programming and the techniques for the hardest interview rounds.", topics: [
+        ["Graph algorithms BFS and DFS", ["Adjacency lists and matrices", "Breadth-first and depth-first search", "Connected components"]],
+        ["Dijkstra's shortest path algorithm", ["Weighted graphs", "The priority-queue implementation", "Why negative weights break it"]],
+        ["Topological sort", ["Directed acyclic graphs and dependencies", "Kahn's algorithm", "Ordering with DFS"]],
+        ["Union Find disjoint set", ["Union and find", "Path compression and union by rank", "Cycle detection"]],
+        ["Dynamic programming", ["Overlapping subproblems", "Memoization and tabulation", "Classic problems step by step"]],
+        ["Backtracking algorithms", ["Choose, explore, un-choose", "Subsets and permutations", "N-Queens"]],
+        ["Greedy algorithms", ["The greedy choice", "Interval scheduling", "When greedy fails"]],
+      ] },
+    ] },
+
+  /* ---------- DevOps tools ---------- */
+  { id: "devops", group: "tech", name: "DevOps tools", playlist: "DevOps: the popular tools", color: "#2b6c8f",
+    tagline: "The tools DevOps teams use every day: Linux, Git, Docker, Kubernetes, Terraform, Ansible, CI/CD, GitOps and monitoring.",
+    chapters: [
+      { title: "DevOps foundations", level: "Beginner", summary: "The command line, version control and containers that everything else builds on.", topics: [
+        ["Linux for DevOps", ["The shell and the filesystem", "Users, permissions and processes", "Networking and services"]],
+        ["Git and GitHub", ["Commits, branches and merges", "Remotes and pull requests", "Resolving conflicts"]],
+        ["Docker tutorial", ["Images and containers", "Writing a Dockerfile", "Volumes and networks"]],
+        ["Docker Compose", ["Defining a multi-container app", "Services, networks and volumes", "Compose for local development"]],
+      ] },
+      { title: "Orchestration and infrastructure as code", level: "Intermediate", summary: "Running containers at scale and describing infrastructure in code.", topics: [
+        ["Kubernetes tutorial", ["Pods, deployments and services", "kubectl essentials", "ConfigMaps, Secrets and scaling"]],
+        ["Helm charts", ["What a chart is", "Values and templates", "Installing and upgrading releases"]],
+        ["Terraform tutorial", ["Providers, resources and state", "Variables and outputs", "Modules"]],
+        ["Ansible tutorial", ["Inventories and playbooks", "Modules and roles", "Idempotent configuration"]],
+      ] },
+      { title: "Delivery and operations", level: "Advanced", summary: "Pipelines, GitOps and keeping production observable.", topics: [
+        ["GitHub Actions CI/CD", ["Workflows, jobs and steps", "Secrets and environments", "Building and deploying on every push"]],
+        ["Jenkins pipeline", ["Jenkinsfile and stages", "Agents and plugins", "A full CI/CD pipeline"]],
+        ["Argo CD GitOps", ["What GitOps is", "Syncing a cluster from Git", "Rollbacks and health"]],
+        ["Prometheus and Grafana monitoring", ["Metrics and exporters", "PromQL basics", "Dashboards and alerts"]],
+      ] },
+    ] },
 ] as const satisfies readonly TopicPlaylist[];
 
 export type TopicPlaylistId = (typeof TECH_TOPIC_PLAYLISTS)[number]["id"];
 
-/** Further System Design chapters (the hand-picked playlist in lib/streams.ts), video per topic as above, keyed "sysdesign#<i>". */
-export const SYSDESIGN_TOPIC_CHAPTERS = [
-  { title: "Distributed systems in depth", level: "Advanced", summary: "The ideas behind systems that stay correct and available across many machines.", topics: [
-    ["Database sharding and partitioning", ["Range, hash and directory sharding", "Choosing a shard key", "Resharding and hot spots"]],
-    ["Database replication explained", ["Leader-follower and multi-leader", "Synchronous versus asynchronous", "Replication lag"]],
-    ["Distributed consensus: Raft and Paxos", ["Why consensus is hard", "Leader election and log replication", "Where consensus is used"]],
-    ["Event-driven architecture", ["Events, producers and consumers", "Event sourcing and CQRS", "Trade-offs"]],
-    ["Microservices design patterns", ["Saga and outbox", "Circuit breaker and retries", "Service discovery"]],
-    ["Observability: logs, metrics and traces", ["The three pillars", "Distributed tracing", "SLIs, SLOs and alerts"]],
-  ] },
-  { title: "More case studies", level: "Advanced", summary: "Classic design questions, worked through end to end.", topics: [
-    ["Design a news feed like Twitter", ["Fan-out on write versus read", "Timeline storage and caching", "Ranking and celebrities"]],
-    ["Design a ride-hailing app like Uber", ["Location updates at scale", "Matching riders and drivers", "Surge pricing and ETAs"]],
-    ["Design a video streaming service like Netflix", ["Encoding and adaptive bitrate", "Open Connect and CDNs", "Recommendations and personalisation"]],
-    ["Design a notification system", ["Push, email and SMS channels", "Queues and retries", "User preferences and rate limits"]],
-    ["Design a collaborative editor like Google Docs", ["Operational transforms and CRDTs", "Real-time sync", "Conflict resolution"]],
-    ["Design a distributed cache", ["Partitioning and replication", "Eviction policies", "Consistency with the database"]],
-  ] },
-] as const satisfies readonly ExamChapter[];
+/**
+ * Further topic-led chapters for the hand-picked playlists in lib/streams.ts, video per topic as above, keyed "<playlist>#<i>"
+ * (indexes run across that playlist's chapters here).
+ */
+export const EXTRA_TOPIC_CHAPTERS = {
+  nextjs: [
+    { title: "Next.js 16 in practice", level: "Intermediate", summary: "Hands-on builds with the features you use in every production app.", topics: [
+      ["Next.js 16 full course", ["Project setup with the App Router", "Pages, layouts and navigation", "Building and deploying a complete app"]],
+      ["Next.js Server Actions", ["Mutating data from a form", "Revalidating after a mutation", "Validation and error handling"]],
+      ["Next.js authentication", ["Sessions and sign-in flows", "Protecting routes and data", "Auth libraries that fit the App Router"]],
+      ["Next.js middleware", ["Running code before a request completes", "Redirects, rewrites and headers", "Matching paths (proxy.ts in Next.js 16)"]],
+      ["Next.js SEO and metadata", ["The Metadata API", "Open Graph images", "Sitemaps and robots"]],
+      ["Next.js full stack app with Prisma", ["Modelling data with Prisma", "Querying from Server Components", "Creating, updating and deleting records"]],
+    ] },
+  ],
+  react: [
+    { title: "React 19 in practice", level: "Intermediate", summary: "The everyday React patterns, written the React 19 way.", topics: [
+      ["React full course for beginners", ["Components, JSX and props", "State and events", "Rendering lists and conditions"]],
+      ["React hooks explained", ["useState and useEffect", "useRef and useMemo", "Writing custom hooks"]],
+      ["React 19 Actions and useActionState", ["Actions for form submissions", "useActionState and useFormStatus", "Optimistic updates with useOptimistic"]],
+      ["React Compiler explained", ["What the compiler memoizes for you", "Adopting it in an existing app", "When useMemo and useCallback still matter"]],
+      ["React context and useReducer", ["Sharing state with context", "Reducers for complex state", "Avoiding unnecessary re-renders"]],
+      ["React performance optimization", ["Finding slow renders with the Profiler", "Memoization and code splitting", "Lists, transitions and Suspense"]],
+    ] },
+  ],
+  langchain: [
+    { title: "LangChain hands-on", level: "Intermediate", summary: "Building real retrieval and agent apps with LangChain.", topics: [
+      ["LangChain RAG tutorial", ["Loading and splitting documents", "Embeddings and a vector store", "Answering questions over your data"]],
+      ["LangChain agents tutorial", ["Giving a model tools", "The agent loop", "Debugging an agent's steps"]],
+      ["LangChain structured output", ["Returning typed data from a model", "Schemas with Pydantic or Zod", "Handling invalid output"]],
+      ["LangChain with Ollama local models", ["Running a model locally with Ollama", "Using it from LangChain", "Local RAG without an API key"]],
+    ] },
+  ],
+  langgraph: [
+    { title: "LangGraph hands-on", level: "Intermediate", summary: "Building stateful and multi-agent systems step by step.", topics: [
+      ["LangGraph tutorial for beginners", ["State, nodes and edges", "Conditional edges", "Running and streaming a graph"]],
+      ["LangGraph multi-agent systems", ["Supervisor and network patterns", "Handing off between agents", "Shared and private state"]],
+      ["LangGraph human in the loop", ["Interrupting a graph for approval", "Editing state before resuming", "Checkpoints that make it possible"]],
+      ["LangGraph memory and persistence", ["Short-term memory with checkpointers", "Long-term memory with stores", "Threads and resuming conversations"]],
+    ] },
+  ],
+  langsmith: [
+    { title: "LangSmith in practice", level: "Intermediate", summary: "Seeing inside an LLM app and proving it works.", topics: [
+      ["LangSmith tutorial", ["Setting up tracing", "Reading a trace", "Projects and runs"]],
+      ["LangSmith evaluation", ["Datasets and examples", "Evaluators and LLM-as-judge", "Comparing experiments"]],
+      ["LangSmith prompt engineering playground", ["The prompt hub", "Testing prompts in the playground", "Versioning prompts"]],
+    ] },
+  ],
+  langflow: [
+    { title: "Langflow hands-on", level: "Beginner", summary: "Building agents and RAG flows visually.", topics: [
+      ["Langflow tutorial for beginners", ["The canvas and components", "Your first flow", "Running and sharing it"]],
+      ["Langflow RAG", ["Ingesting documents", "A vector store in a flow", "A chat over your documents"]],
+      ["Langflow AI agents", ["Agent components and tools", "Connecting MCP servers", "Calling a flow from your app"]],
+    ] },
+  ],
+  n8n: [
+    { title: "n8n hands-on", level: "Intermediate", summary: "Real automations and AI agents, built end to end.", topics: [
+      ["n8n tutorial for beginners", ["Triggers, nodes and executions", "Working with data between nodes", "Your first useful workflow"]],
+      ["n8n AI agent tutorial", ["The AI Agent node", "Tools, memory and models", "An agent that acts on your apps"]],
+      ["n8n RAG chatbot", ["Loading documents into a vector store", "Retrieval in a workflow", "A chatbot over your data"]],
+      ["n8n webhooks and APIs", ["Webhook triggers", "The HTTP Request node", "Authentication and pagination"]],
+      ["n8n self hosting", ["Running n8n with Docker", "Hosting on a VPS", "Updates, backups and security"]],
+      ["n8n MCP server", ["What MCP adds to n8n", "The MCP Server Trigger", "Using n8n tools from an AI client"]],
+    ] },
+  ],
+  aws: [
+    { title: "The most-used AWS services", level: "Intermediate", summary: "The services beyond compute and storage that most AWS applications rely on.", topics: [
+      ["AWS Cloud Practitioner full course", ["The global infrastructure", "Core services at a glance", "Pricing, support and the shared responsibility model"]],
+      ["AWS DynamoDB tutorial", ["Tables, items and keys", "Queries and indexes", "Capacity modes"]],
+      ["AWS API Gateway", ["REST and HTTP APIs", "Integrating with Lambda", "Auth, throttling and stages"]],
+      ["AWS SQS and SNS", ["Queues and topics", "Fan-out with SNS and SQS", "Dead-letter queues"]],
+      ["Amazon Cognito authentication", ["User pools and identity pools", "Sign-up and sign-in", "Securing an API"]],
+      ["Amazon Bedrock tutorial", ["Foundation models on AWS", "Calling a model from code", "Knowledge bases and agents"]],
+      ["AWS Step Functions", ["State machines", "Orchestrating Lambda functions", "Error handling and retries"]],
+    ] },
+  ],
+  sysdesign: [
+    { title: "Distributed systems in depth", level: "Advanced", summary: "The ideas behind systems that stay correct and available across many machines.", topics: [
+      ["Database sharding and partitioning", ["Range, hash and directory sharding", "Choosing a shard key", "Resharding and hot spots"]],
+      ["Database replication explained", ["Leader-follower and multi-leader", "Synchronous versus asynchronous", "Replication lag"]],
+      ["Distributed consensus: Raft and Paxos", ["Why consensus is hard", "Leader election and log replication", "Where consensus is used"]],
+      ["Event-driven architecture", ["Events, producers and consumers", "Event sourcing and CQRS", "Trade-offs"]],
+      ["Microservices design patterns", ["Saga and outbox", "Circuit breaker and retries", "Service discovery"]],
+      ["Observability: logs, metrics and traces", ["The three pillars", "Distributed tracing", "SLIs, SLOs and alerts"]],
+    ] },
+    { title: "More case studies", level: "Advanced", summary: "Classic design questions, worked through end to end.", topics: [
+      ["Design a news feed like Twitter", ["Fan-out on write versus read", "Timeline storage and caching", "Ranking and celebrities"]],
+      ["Design a ride-hailing app like Uber", ["Location updates at scale", "Matching riders and drivers", "Surge pricing and ETAs"]],
+      ["Design a video streaming service like Netflix", ["Encoding and adaptive bitrate", "Open Connect and CDNs", "Recommendations and personalisation"]],
+      ["Design a notification system", ["Push, email and SMS channels", "Queues and retries", "User preferences and rate limits"]],
+      ["Design a collaborative editor like Google Docs", ["Operational transforms and CRDTs", "Real-time sync", "Conflict resolution"]],
+      ["Design a distributed cache", ["Partitioning and replication", "Eviction policies", "Consistency with the database"]],
+    ] },
+  ],
+} as const satisfies Record<string, readonly ExamChapter[]>;
+
+export type ExtraTopicPlaylistId = keyof typeof EXTRA_TOPIC_CHAPTERS;
 
 /** "<playlist>#<topic index>" for every topic here, in order: the search plan and the generated video map use the same keys. */
 export const techTopicKeys = () => [
   ...(TECH_TOPIC_PLAYLISTS as readonly TopicPlaylist[]).flatMap(p => p.chapters.flatMap(c => [...c.topics]).map((_, i) => `${p.id}#${i}`)),
-  ...SYSDESIGN_TOPIC_CHAPTERS.flatMap(c => [...c.topics]).map((_, i) => `sysdesign#${i}`),
+  ...Object.entries(EXTRA_TOPIC_CHAPTERS).flatMap(([id, chapters]) => (chapters as readonly ExamChapter[]).flatMap(c => [...c.topics]).map((_, i) => `${id}#${i}`)),
 ];

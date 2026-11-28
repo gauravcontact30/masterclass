@@ -68,6 +68,13 @@ export function vocabularyAnswers(name: string, words: number, examples: readonl
 
 /** The hub pages, keyed by path. */
 export const HUB_ANSWERS = {
+  "/streams": { faqs: [
+    { question: "What is MCB Streams?", answer: "MCB Streams is the video side of MasterClass Buddy: step-by-step playlists that take you from the first lesson to job-ready, one short step at a time. Every step has study notes beside the video listing what it teaches, and members pick up where they left off on any device." },
+    { question: "Which technologies can I learn on MCB Streams?", answer: "Playlists cover Next.js 16, React 19, TypeScript, modern JavaScript, TanStack, Zustand, Jest and React Testing Library, Playwright, Python, FastAPI, NestJS, data structures and algorithms, AI agents with LangChain, LangGraph, LangSmith and Langflow, n8n automation, AWS, DevOps tools and system design, plus IELTS preparation. New steps are added as they are checked." },
+    { question: "What video quality do MCB Streams playlists play in?", answer: "Every step plays in Full HD (1080p) or better, and many in QHD or 4K Ultra HD. Each step and playlist shows its best quality on a badge, and you can filter a playlist to 4K steps only." },
+    { question: "Is MCB Streams free?", answer: "The first step of every course is free to watch without paying. A MasterClass Buddy membership unlocks every step of every playlist, with notes, progress tracking and your place remembered." },
+    { question: "How are the videos for each step chosen?", answer: "Each step is a topic we wrote study notes for. Its video is checked before it is added: it must teach that topic, play in Full HD or better, be in the playlist's language and be well rated by its viewers, and no video is used twice." },
+  ] },
   "/library": { faqs: [
     { question: "What is in the free learning library?", answer: "The library gathers everything on MasterClass Buddy that needs no account: interview questions for 31 technologies, system design and AI agent blueprints, an API reference for 60 technologies, technology handbooks, side-by-side comparisons and English vocabulary with Hindi meanings." },
     { question: "Do I need an account to read the library?", answer: "No. Every library page opens without an account, so you can read as much as you like before deciding. An account adds a dashboard with search, progress tracking and bookmarks, and membership adds the full courses and practice tests." },
@@ -80,7 +87,7 @@ export const HUB_ANSWERS = {
   ] },
   "/about": { faqs: [
     { question: "Who is MasterClass Buddy for?", answer: "MasterClass Buddy is for software engineers and students who want to learn modern technology and prepare for interviews. It suits beginners reading their first handbook as well as working developers revising Agentic AI, system design or a new framework before a job change." },
-    { question: "What makes MasterClass Buddy different from a video course?", answer: "MasterClass Buddy is built for reading and practice rather than long videos. Lessons are short written notes with worked code, diagrams and interview questions, so you can revise one topic in a few minutes and always find the exact answer again later." },
+    { question: "What makes MasterClass Buddy different from a video course?", answer: "MasterClass Buddy is built for reading and practice: lessons are short written notes with worked code, diagrams and interview questions, so you can revise one topic in a few minutes and always find the exact answer again later. When you want to watch, MCB Streams adds step-by-step video playlists in Full HD and 4K, each step with study notes beside the video." },
     { question: "Where is MasterClass Buddy based?", answer: `MasterClass Buddy is based at ${ADDRESS_LINE}. The platform is online and available wherever you are, and you can reach support on ${SUPPORT.phone} or through the Contact page, which also answers common questions about accounts and billing.` },
   ] },
   "/learn": { faqs: [

@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useMemo, useState } from "react";
-import { Timer, History, Repeat, Activity, AppWindow, ArrowLeft, Calendar, Clock, Compass, Download, ExternalLink, Eye, Globe, Laptop, LogOut, MapPin, Megaphone, Monitor, MonitorSmartphone, MousePointerClick, Radio, RefreshCw, ShieldCheck, Smartphone, Tablet, Terminal, UserPlus, UserRound, Users } from "lucide-react";
+import { Timer, History, Repeat, Activity, TrendingDown, TrendingUp, Trophy, AppWindow, ArrowLeft, Calendar, Clock, Compass, Download, ExternalLink, Eye, Globe, Laptop, LogOut, MapPin, Megaphone, Monitor, MonitorSmartphone, MousePointerClick, Radio, RefreshCw, ShieldCheck, Smartphone, Tablet, Terminal, UserPlus, UserRound, Users } from "lucide-react";
 import { Card } from "./ui/card";
 import { Button } from "./ui/button";
 import { AdminError, AdminLoading } from "./super-admin-feedback";
@@ -10,7 +10,7 @@ import { locationLabel } from "@/lib/visitor-location";
 import { VISIT_RETENTION_DAYS } from "@/lib/visit-retention";
 import { countryName } from "./super-admin-audience";
 import { SectionHead, SectionNav } from "./super-admin-section-head";
-import { periodSummary } from "@/lib/live-visits";
+import { periodSummary, type PeriodSummary, type StreamVisitor } from "@/lib/live-visits";
 import { GROUP_LABEL, uncountedBrowsers, visitorReport, type Count, type PersonRow, type VisitorGroup, type VisitRow } from "@/lib/visitor-report";
 import { CountryFlag } from "./country-flag";
 import { useStreamVisitors } from "./use-stream-visitors";
@@ -21,10 +21,11 @@ import styles from "./super-admin-activity.module.css";
 
 /**
  * Page order. User activities is the reporting window and the people in it; everything live (who is here now, today,
- * the last three days) is on the Overview, so nothing here repeats it (user request 2026-11-24).
+ * the last three days) is on the Overview, so nothing here repeats it (user requests 2026-11-24 and 2026-11-28). Each
+ * figure appears once: time figures only in Time on site, the visitor groups only in New & returning.
  */
 const NAV = [
-  { id: "ac-audience", label: "Audience", icon: Users }, { id: "ac-time", label: "Time on site", icon: Timer }, { id: "ac-traffic", label: "Daily traffic", icon: Activity }, { id: "ac-new", label: "New visitors", icon: UserPlus },
+  { id: "ac-audience", label: "Audience", icon: Users }, { id: "ac-traffic", label: "Daily visitors", icon: Activity }, { id: "ac-new", label: "Loyalty", icon: UserPlus }, { id: "ac-time", label: "Time on site", icon: Timer },
   { id: "ac-sources", label: "Sources", icon: Megaphone }, { id: "ac-places", label: "Places & pages", icon: MapPin }, { id: "ac-tech", label: "Devices", icon: MonitorSmartphone },
   { id: "ac-accounts", label: "New accounts", icon: UserRound }, { id: "ac-people", label: "People & visits", icon: Users },
 ];
@@ -52,8 +53,6 @@ const duration = (seconds: number | null | undefined) => seconds == null ? "—"
 const number = (value: number | null | undefined) => value == null ? "—" : new Intl.NumberFormat("en-IN").format(value);
 const pct = (part: number, whole: number) => whole ? `${Math.round((part / whole) * 100)}%` : "—";
 const gapText = (ms: number) => ms < 3600_000 ? `${Math.max(1, Math.round(ms / 60_000))} min` : ms < 86_400_000 ? `${Math.round(ms / 3600_000)} h` : `${Math.round(ms / 86_400_000)} d`;
-/** Two count lists as one, people added per key (a person is in only one group, so nobody is counted twice). */
-const merge = (a: Count[], b: Count[]): Count[] => { const map = new Map<string, Count>(); for (const c of [...a, ...b]) { const e = map.get(c.key); map.set(c.key, e ? { ...e, people: e.people + c.people, visits: e.visits + c.visits } : { ...c }); } return [...map.values()].sort((x, y) => y.people - x.people); };
 const errorText = (code: string) => code === "migration_required"
   ? "User activity is not set up in the database yet. Apply supabase/migrations/0023_user_activity.sql (and 0020 for the support tools), then reload."
   : "User activity could not be loaded. Check the database connection and try again.";
@@ -75,6 +74,7 @@ export function SuperAdminActivity({ days, query }: { days: number; query: strin
   const ownHosts = useMemo(() => typeof window === "undefined" ? [] : [window.location.hostname.replace(/^www\./, "")], []);
   const sum = useMemo(() => stream.everyone ? periodSummary(stream.everyone, from, Infinity, ownHosts) : null, [stream, from, ownHosts]);
   const report = useMemo(() => stream.everyone ? visitorReport(stream.everyone, from, Infinity, ownHosts) : null, [stream, from, ownHosts]);
+  const dayRows = useMemo(() => stream.everyone ? dailyRows(stream.everyone, from, stream.now, stream.now - stream.days * 86_400_000, ownHosts) : [], [stream, from, ownHosts]);
   const left = useMemo(() => stream.everyone ? uncountedBrowsers(stream.rows, stream.everyone, from) : 0, [stream, from]);
 
   // New accounts created in the window: accounts, not visits, so they come from the database report. Read once per
@@ -91,7 +91,6 @@ export function SuperAdminActivity({ days, query }: { days: number; query: strin
   if (person) return <PersonTimeline person={person} onBack={() => setPerson(null)} />;
   if (stream.failed && !stream.everyone) return <AdminError>{errorText("")}<Button variant="outline" onClick={stream.reload}>Retry activity</Button></AdminError>;
   if (!sum || !report) return <AdminLoading>Loading user activity…</AdminLoading>;
-  const daily = sum.daily.map(d => ({ day: d.day, views: d.views, visitors: d.people, new_visitors: d.newVisitors, users: d.signedIn }));
   const toRows = <K extends string>(list: ({ people: number } & Record<K, string>)[], key: K) => list.map(item => ({ [key]: item[key], visitors: item.people }) as Row);
   const counts = (list: Count[], label = (c: Count) => c.label) => list.map(c => ({ name: label(c), visitors: c.people, visits: c.visits }) as Row);
   const recordsStart = new Date(stream.now - stream.days * 86_400_000).toLocaleDateString("en-IN", { day: "numeric", month: "short", timeZone: "Asia/Kolkata" });
@@ -103,7 +102,7 @@ export function SuperAdminActivity({ days, query }: { days: number; query: strin
       <Calendar size={15} aria-hidden="true" />
       <span>{days > span
         ? <>The <b>last {span} days</b>: visits are kept for {VISIT_RETENTION_DAYS} days, so a {days}-day window has nothing older.</>
-        : <>The <b>last {span === 1 ? "24 hours" : `${span} days`}</b>, live from your Supabase visit records.</>}</span>
+        : <>The <b>last {span === 1 ? "24 hours" : `${span} days`}</b>, from your Supabase visit records. Who is on the site right now is on the Overview.</>}</span>
       <span className={styles.liveActions}>
         <span className={styles.updated}>Updated {ago(new Date(stream.now).toISOString())}</span>
         <Button variant="outline" size="sm" onClick={stream.reload}><RefreshCw size={14} />Refresh</Button>
@@ -116,40 +115,30 @@ export function SuperAdminActivity({ days, query }: { days: number; query: strin
     <div className={styles.metrics}>
       <Stat tone="lavender" index={0} icon={<Users size={16} />} label="Visitors" value={number(sum.people)} note="People: a signed-in account, or one device (cookie resets linked)" />
       <Stat tone="sky" index={1} icon={<MousePointerClick size={16} />} label="Page views" value={number(sum.views)} note={`${sum.pagesPerSession ?? "—"} pages per visit · on screen ≥ 1 s`} />
-      <Stat tone="mint" index={2} icon={<UserPlus size={16} />} label="New · returning · old" value={`${number(report.groups.new.people)} · ${number(report.groups.returning.people)} · ${number(report.groups.old.people)}`} note="First visit ever here · first came earlier · known from before the records" />
-      <Stat tone="peach" index={3} icon={<UserRound size={16} />} label="Signed-in learners" value={number(sum.signedIn)} note={`${accounts == null ? "—" : number(accounts)} new accounts created`} />
-      <Stat tone="butter" index={4} icon={<Radio size={16} />} label="Visits" value={number(sum.sessions)} note="A visit ends after 30 minutes without activity" />
-      <Stat tone="rose" index={5} icon={<Clock size={16} />} label="Avg. visit length" value={duration(sum.avgStayMs == null ? null : sum.avgStayMs / 1000)} note={sum.readingPerPersonMs != null ? `${duration(sum.readingPerPersonMs / 1000)} reading per visitor` : "Arrival to last activity"} />
-      <Stat tone="sage" index={6} icon={<ArrowLeft size={16} />} label="Bounce rate" value={sum.bounceRate == null ? "—" : `${sum.bounceRate}%`} note="Visits that opened a single page" />
+      <Stat tone="mint" index={2} icon={<Radio size={16} />} label="Visits" value={number(sum.sessions)} note="A visit ends after 30 minutes without activity" />
+      <Stat tone="peach" index={3} icon={<UserRound size={16} />} label="Signed-in learners" value={number(sum.signedIn)} note={`${pct(sum.signedIn, sum.people)} of visitors · ${accounts == null ? "—" : number(accounts)} new accounts created`} />
+      <Stat tone="sage" index={4} icon={<ArrowLeft size={16} />} label="Bounce rate" value={sum.bounceRate == null ? "—" : `${sum.bounceRate}%`} note="Visits that opened a single page" />
     </div>
     {left > 0 && <p className={styles.windowNote} role="status"><ShieldCheck size={14} aria-hidden="true" /><span><b>{number(left)}</b> more {left === 1 ? "browser" : "browsers"} loaded a page in this window but never showed it on screen (scrapers, link prefetchers, tabs closed at once). They are left out of every figure on this page and the Overview.</span></p>}
 
-    <SectionHead id="ac-time" index={2} title="Time on site" question="Who is on the site now and for how long, how long this window's visitors stayed, which pages and sources held them, and where they left." icon={Timer} tone="sky" live />
-    <SuperAdminTimeOnSite everyone={stream.everyone!} from={from} now={stream.now} ownHosts={ownHosts} windowLabel={span === 1 ? "last 24 hours" : `last ${span} days`} exact />
+    <SectionHead id="ac-traffic" index={2} title="Daily visitors" question="How many people came on each complete day of the window, how many were new or returning, and what each day's best source and page were." icon={Activity} tone="sky" />
+    <DailyVisitors rows={dayRows} />
 
-    <SectionHead id="ac-traffic" index={3} title="Daily traffic" question="Page views, visitors and new visitors on each day of the window." icon={Activity} tone="sky" />
-    <Card className={`${shell.panel} ${styles.chartCard}`}>
-      <div className={shell.panelHeading}><h2>Daily traffic (IST)</h2><span className={styles.legend}><i data-key="views" />Page views <i data-key="visitors" />Visitors <i data-key="new" />New</span></div>
-      <DailyChart rows={daily} />
-    </Card>
-
-    <SectionHead id="ac-new" index={4} title="New, returning and old visitors" question="Who came for the first time, who came back and who has been coming from before: how often, how soon and through what." icon={UserPlus} tone="mint" />
+    <SectionHead id="ac-new" index={3} title="Loyalty: new, returning and old visitors" question="How many came for the first time or came back in this window, how often they visit and how long they stay away between visits." icon={UserPlus} tone="mint" />
     <div className={styles.metrics}>
       {(["new", "returning", "old"] as VisitorGroup[]).map((group, i) => { const g = report.groups[group]; return <Stat key={group} tone={["mint", "sky", "lavender"][i]} index={i} icon={group === "new" ? <UserPlus size={16} /> : group === "returning" ? <Repeat size={16} /> : <History size={16} />}
         label={`${GROUP_LABEL[group]} visitors`} value={number(g.people)}
         note={group === "new" ? `First visit ever in this window · ${number(g.signedIn)} signed up · ${pct(g.explored, g.people)} opened a second page`
           : group === "returning" ? `First came earlier in the records · back after ${g.medianGapMs == null ? "—" : gapText(g.medianGapMs)} (median) · ${g.avgVisitsBefore ?? 0} earlier visits each`
           : `Known before ${recordsStart} or signed in on their first visit · ${number(g.signedIn)} signed in`} />; })}
-      <Stat tone="peach" index={3} icon={<UserRound size={16} />} label="Signed in" value={number(report.signedIn)} note="Across all three groups" />
     </div>
     <div className={styles.breakdowns}>
       <Breakdown title="Visits per person (in the records)" icon={<Repeat size={16} />} tone="sky" rows={counts(report.frequency)} label="name" value="visitors" heads={["Visits so far", "People"]} />
       <Breakdown title="How long they stayed away" icon={<History size={16} />} tone="lavender" rows={counts(report.gaps)} label="name" value="visitors" heads={["Time since last visit", "People"]} empty="No returning or old visitors in this window yet." />
-      <Breakdown title="New visitors came from" icon={<Megaphone size={16} />} tone="butter" rows={counts(report.groupSources.new)} label="name" value="visitors" heads={["Source", "New visitors"]} rowIcon={row => brandIcon(show(row.name), CAMPAIGN_MARKS, <Globe size={15} />)} empty="No new visitors in this window yet." />
-      <Breakdown title="Returning and old visitors came back through" icon={<Megaphone size={16} />} tone="peach" rows={counts(merge(report.groupSources.returning, report.groupSources.old))} label="name" value="visitors" heads={["Source", "People"]} rowIcon={row => brandIcon(show(row.name), CAMPAIGN_MARKS, <Globe size={15} />)} empty="No returning or old visitors in this window yet." />
-      <Breakdown title="First page new visitors landed on" icon={<Compass size={16} />} tone="mint" rows={counts(report.groupLandings.new)} label="name" value="visitors" heads={["Landing page", "New visitors"]} empty="No new visitors in this window yet." />
-      <Breakdown title="What returning and old visitors came back to" icon={<Compass size={16} />} tone="rose" rows={counts(merge(report.groupLandings.returning, report.groupLandings.old))} label="name" value="visitors" heads={["Page", "People"]} empty="No returning or old visitors in this window yet." />
     </div>
+
+    <SectionHead id="ac-time" index={4} title="Time on site" question="How long this window's visitors stayed, who spent the most time, which pages and sources held them, and where they left." icon={Timer} tone="sky" />
+    <SuperAdminTimeOnSite everyone={stream.everyone!} from={from} now={stream.now} ownHosts={ownHosts} windowLabel={span === 1 ? "last 24 hours" : `last ${span} days`} exact />
 
     <SectionHead id="ac-sources" index={5} title="Where visits came from" question="Every visit in the window by platform: search, social, AI assistants, referrals and direct." icon={Megaphone} tone="butter" />
     <div className={styles.breakdowns}>
@@ -182,6 +171,73 @@ export function SuperAdminActivity({ days, query }: { days: number; query: strin
   </div>;
 }
 
+const DAY_MS = 86_400_000;
+/** 00:00 IST of the day containing ms. */
+const istMidnight = (ms: number) => Math.floor((ms + 19_800_000) / DAY_MS) * DAY_MS - 19_800_000;
+const dayTitle = (ms: number) => new Intl.DateTimeFormat("en-IN", { weekday: "long", day: "numeric", month: "short", timeZone: "Asia/Kolkata" }).format(new Date(ms + 12 * 3600_000));
+const shortDay = (ms: number) => new Intl.DateTimeFormat("en-IN", { weekday: "short", day: "numeric", month: "short", timeZone: "Asia/Kolkata" }).format(new Date(ms + 12 * 3600_000));
+type DayRow = { start: number; key: string; sum: PeriodSummary; partialFrom: number | null };
+
+/**
+ * Daily visitors (user request 2026-11-28): one row per complete IST calendar day in the window, counted from the same
+ * people as every other figure here (lib/live-visits.ts periodSummary). Today is still running and is on the Overview,
+ * so it is not repeated here. The oldest day can start after midnight when the records begin part-way through it; that
+ * row says so instead of passing a part day off as a whole one.
+ */
+function dailyRows(everyone: StreamVisitor[], from: number, now: number, recordsFrom: number, ownHosts: string[]): DayRow[] {
+  const today = istMidnight(now), rows: DayRow[] = [];
+  for (let start = istMidnight(Math.max(from, recordsFrom)); start < today; start += DAY_MS) {
+    const sum = periodSummary(everyone, start, start + DAY_MS, ownHosts);
+    rows.push({ start, key: String(start), sum, partialFrom: start < recordsFrom ? recordsFrom : null });
+  }
+  return rows.reverse();
+}
+
+function DailyVisitors({ rows }: { rows: DayRow[] }) {
+  if (!rows.length) return <Card className={shell.panel}><p className={shell.empty}>No complete day in this window yet: today so far is on the Overview. Choose “Last 7 days” to see the earlier days on record.</p></Card>;
+  const whole = rows.filter(r => r.partialFrom == null);
+  const base = whole.length ? whole : rows;
+  const avg = Math.round(base.reduce((sum, r) => sum + r.sum.people, 0) / base.length);
+  const best = base.reduce((a, b) => b.sum.people > a.sum.people ? b : a);
+  const quiet = base.reduce((a, b) => b.sum.people < a.sum.people ? b : a);
+  const latest = base[0], earlier = base.slice(1);
+  const earlierAvg = earlier.length ? earlier.reduce((sum, r) => sum + r.sum.people, 0) / earlier.length : null;
+  const trend = earlierAvg == null || earlierAvg === 0 ? null : Math.round(((latest.sum.people - earlierAvg) / earlierAvg) * 100);
+  const max = Math.max(1, ...rows.map(r => r.sum.people));
+  return <>
+    <div className={styles.metrics}>
+      <Stat tone="sky" index={0} icon={<Users size={16} />} label="Visitors per day" value={number(avg)} note={`average of ${base.length} complete ${base.length === 1 ? "day" : "days"}`} />
+      <Stat tone="mint" index={1} icon={<Trophy size={16} />} label="Busiest day" value={shortDay(best.start)} note={`${number(best.sum.people)} visitors · ${number(best.sum.views)} page views`} />
+      <Stat tone="lavender" index={2} icon={<Calendar size={16} />} label="Quietest day" value={shortDay(quiet.start)} note={`${number(quiet.sum.people)} visitors · ${number(quiet.sum.views)} page views`} />
+      <Stat tone="peach" index={3} icon={trend != null && trend < 0 ? <TrendingDown size={16} /> : <TrendingUp size={16} />} label="Latest day vs before" value={trend == null ? "—" : `${trend > 0 ? "+" : ""}${trend}%`} note={trend == null ? "needs two complete days" : `${shortDay(latest.start)}: ${number(latest.sum.people)} visitors against ${number(Math.round(earlierAvg!))} a day before it`} />
+    </div>
+    <Card className={`${shell.panel} ${styles.chartCard}`}>
+      <div className={shell.panelHeading}><h2>Visitors each day (IST)</h2><span className={styles.legend}><i data-key="views" />Page views <i data-key="visitors" />Visitors <i data-key="new" />New</span></div>
+      <DailyChart rows={[...rows].reverse().map(r => ({ day: r.key, label: shortDay(r.start), views: r.sum.views, visitors: r.sum.people, new_visitors: r.sum.newVisitors, users: r.sum.signedIn }))} />
+    </Card>
+    <Card className={shell.panel}>
+      <div className={shell.panelHeading}><h2>Day by day</h2><span className={styles.updated}>newest first · each day 00:00–24:00 IST</span></div>
+      <div className={styles.dayTableWrap}><table className={styles.dayTable}>
+        <thead><tr><th scope="col">Day</th><th scope="col">Visitors</th><th scope="col">New</th><th scope="col">Returning</th><th scope="col">Signed in</th><th scope="col">Visits</th><th scope="col">Page views</th><th scope="col">Avg. visit</th><th scope="col">Bounce</th><th scope="col">Top source</th><th scope="col">Top page</th></tr></thead>
+        <tbody>{rows.map(r => { const s = r.sum; return <tr key={r.key} data-best={r === best || undefined}>
+          <th scope="row">{dayTitle(r.start)}{r.partialFrom != null && <small>records start {new Intl.DateTimeFormat("en-IN", { hour: "2-digit", minute: "2-digit", hour12: true, timeZone: "Asia/Kolkata" }).format(new Date(r.partialFrom))}</small>}{r === best && <small>busiest day</small>}</th>
+          <td className={styles.dayVisitors}><span aria-hidden="true"><i style={{ width: `${(s.people / max) * 100}%` }} /></span><b>{number(s.people)}</b></td>
+          <td>{number(s.newVisitors)}<small>{pct(s.newVisitors, s.people)}</small></td>
+          <td>{number(s.returning)}</td>
+          <td>{number(s.signedIn)}</td>
+          <td>{number(s.sessions)}</td>
+          <td>{number(s.views)}<small>{s.pagesPerSession == null ? "" : `${s.pagesPerSession} per visit`}</small></td>
+          <td>{duration(s.avgStayMs == null ? null : s.avgStayMs / 1000)}</td>
+          <td>{s.bounceRate == null ? "—" : `${s.bounceRate}%`}</td>
+          <td>{s.sources[0] ? <>{s.sources[0].source}<small>{number(s.sources[0].people)} visitors</small></> : "—"}</td>
+          <td className={styles.path}>{s.pages[0] ? <>{s.pages[0].path}<small>{number(s.pages[0].people)} visitors</small></> : "—"}</td>
+        </tr>; })}</tbody>
+      </table></div>
+      <p className={shell.note}>Visitors are different people that day (an account, or one device); one person on two days counts once each day. New: first visit ever that day. Returning: guests seen on an earlier day. Today so far is on the Overview.</p>
+    </Card>
+  </>;
+}
+
 /** The window's visits as a CSV file, built from the same rows the Visits table shows. */
 function downloadVisits(rows: VisitRow[], span: number) {
   const cell = (value: unknown) => { const text = value == null ? "" : String(value); return /[",\n]/.test(text) ? `"${text.replace(/"/g, '""')}"` : text; };
@@ -199,17 +255,17 @@ function Stat({ icon, label, value, note, tone, index }: { icon: React.ReactNode
   return <Card className={styles.stat} data-tone={tone} style={{ "--i": index } as React.CSSProperties}><span className={styles.statLabel}><span className={styles.statIcon} aria-hidden="true">{icon}</span>{label}</span><strong>{value}</strong><small>{note}</small></Card>;
 }
 
-function DailyChart({ rows }: { rows: Activity["daily"] }) {
+function DailyChart({ rows }: { rows: { day: string; label?: string; views: number; visitors: number; new_visitors: number; users: number }[] }) {
   if (!rows.length) return <p className={shell.empty}>No visits recorded in this window yet.</p>;
   const max = Math.max(1, ...rows.map(row => row.views));
   return <div className={styles.daily} role="img" aria-label={`Daily page views and visitors over ${rows.length} days`}>
-    {rows.map(row => <div key={row.day} className={styles.dayCol} title={`${row.day}: ${row.views} views, ${row.visitors} visitors, ${row.new_visitors} new, ${row.users} signed in`}>
+    {rows.map(row => <div key={row.day} className={styles.dayCol} title={`${row.label ?? row.day}: ${row.views} views, ${row.visitors} visitors, ${row.new_visitors} new, ${row.users} signed in`}>
       <div className={styles.bars}>
         <span data-key="views" style={{ height: `${(row.views / max) * 100}%` }} />
         <span data-key="visitors" style={{ height: `${(row.visitors / max) * 100}%` }} />
         <span data-key="new" style={{ height: `${(row.new_visitors / max) * 100}%` }} />
       </div>
-      <small>{new Date(`${row.day}T00:00:00`).toLocaleDateString("en-IN", { day: "numeric", month: "short" })}</small>
+      <small>{row.label ?? new Date(`${row.day}T00:00:00`).toLocaleDateString("en-IN", { day: "numeric", month: "short" })}</small>
     </div>)}
   </div>;
 }
@@ -253,7 +309,7 @@ function Breakdown({ title, icon, rows, label, value, heads, extra, empty, rowIc
 
 function People({ rows, query, onOpen }: { rows: PersonRow[]; query: string; onOpen: (key: string, label: string) => void }) {
   // Flattened so search, suggestions and filters see what the table shows.
-  const view = useMemo(() => rows.map(row => ({ ...row, type: GROUP_LABEL[row.group], account: row.signedIn ? "Signed in" : "Guest", status: row.live ? "On the site" : "Left",
+  const view = useMemo(() => rows.map(row => ({ ...row, type: GROUP_LABEL[row.group], account: row.signedIn ? "Signed in" : "Guest",
     last_seen: new Date(row.lastAt).toISOString(), first_seen: row.firstSeen ?? "", reading: duration(row.readingInPeriodMs / 1000),
     country_name: row.country ? countryName(row.country) || row.country : "Not resolved" }) as Row), [rows]);
   return <AdminTable title="People" rows={view} query={query}
@@ -263,7 +319,6 @@ function People({ rows, query, onOpen }: { rows: PersonRow[]; query: string; onO
       { key: "label", label: "Person", render: row => <button type="button" className={styles.personLink} onClick={() => onOpen(String(row.timelineKey), String(row.label))}>{String(row.label)}</button> },
       { key: "type", label: "Type", render: row => <span className={styles.status} data-status={row.group === "new" ? "new visitor" : row.group === "returning" ? "returning visitor" : "existing account"}>{show(row.type)}</span> },
       { key: "account", label: "Account", render: row => <span className={styles.status} data-status={row.signedIn ? "signed in" : "offline"}>{show(row.account)}</span> },
-      { key: "status", label: "Now", render: row => <span className={styles.status} data-status={row.live ? "online" : "offline"}>{show(row.status)}</span> },
       { key: "last_seen", label: "Last seen", render: row => <span title={when(row.last_seen)}>{ago(row.last_seen)}</span> },
       { key: "first_seen", label: "First seen", render: row => row.first_seen ? <span title={when(row.first_seen)}>{when(row.first_seen)}</span> : <span>Before the records</span> },
       { key: "visitsInPeriod", label: "Visits", filter: false }, { key: "visitsBefore", label: "Earlier visits", filter: false }, { key: "viewsInPeriod", label: "Views", filter: false }, { key: "reading", label: "Reading", filter: false },
@@ -275,7 +330,7 @@ function People({ rows, query, onOpen }: { rows: PersonRow[]; query: string; onO
 }
 
 function VisitLog({ rows, query, onOpen }: { rows: VisitRow[]; query: string; onOpen: (key: string, label: string) => void }) {
-  const view = useMemo(() => rows.map(row => ({ ...row, started: new Date(row.start).toISOString(), reading: duration(row.readingMs / 1000), state: row.open ? "on the site" : "ended" }) as Row), [rows]);
+  const view = useMemo(() => rows.map(row => ({ ...row, started: new Date(row.start).toISOString(), reading: duration(row.readingMs / 1000), state: row.open ? "in progress" : "ended" }) as Row), [rows]);
   return <AdminTable title="Visits" rows={view} query={query} note="Every visit in the window, newest first: entry and exit page, pages viewed and reading time. Export CSV downloads exactly these rows."
     rowKey={row => String(row.key)}
     columns={[

@@ -1,9 +1,8 @@
 "use client";
 import { useMemo, useState } from "react";
 import dynamic from "next/dynamic";
-import { ArrowDownRight, ArrowUpRight, BarChart3, CalendarClock, Clock, Eye, Flame, LineChart as LineIcon, Minus, MousePointerClick, Repeat, Timer, TrendingDown, UserCheck, UserPlus, Users } from "lucide-react";
+import { ArrowDownRight, ArrowUpRight, BarChart3, CalendarClock, LineChart as LineIcon, Minus, MousePointerClick, Users } from "lucide-react";
 import { periodSummary, type PeriodSummary, type StreamVisitor } from "@/lib/live-visits";
-import { countryName } from "./super-admin-audience";
 import { useStreamVisitors } from "./use-stream-visitors";
 import { AdminLoading } from "./super-admin-feedback";
 import { PillPager } from "./pill-pager";
@@ -21,11 +20,6 @@ const DAY_MS = 86_400_000, IST_MS = 19_800_000;
 const istMidnight = (ms: number) => Math.floor((ms + IST_MS) / DAY_MS) * DAY_MS - IST_MS;
 const COLOURS = ["#a8b3c4", "#2a78d6", "#eb6834"];
 const n = (value: number | null | undefined) => value == null ? "—" : value.toLocaleString("en-IN");
-const spent = (ms: number | null) => {
-  if (ms == null) return "—";
-  const s = Math.round(ms / 1000);
-  return s < 60 ? `${s}s` : s < 3600 ? `${Math.floor(s / 60)}m ${s % 60}s` : `${Math.floor(s / 3600)}h ${Math.floor((s % 3600) / 60)}m`;
-};
 const hourLabel = (hour: number) => `${String(hour).padStart(2, "0")}:00`;
 const hourRange = (hour: number) => `${hourLabel(hour)}–${hourLabel((hour + 1) % 24)}`;
 const dateLabel = (ms: number) => new Intl.DateTimeFormat("en-IN", { weekday: "short", day: "numeric", month: "short", timeZone: "Asia/Kolkata" }).format(new Date(ms + 12 * 3600_000));
@@ -45,7 +39,6 @@ function Change({ now, before, lowerIsBetter = false, label }: Readonly<{ now: n
 }
 
 type Day = { label: string; date: string; start: number; end: number; sum: PeriodSummary; partial: boolean };
-type Breakdown = "pages" | "sources" | "countries" | "devices";
 
 /**
  * Overview → "Three days, hour by hour": the day before yesterday, yesterday and today (so far), each a full IST
@@ -60,7 +53,6 @@ export function SuperAdminThreeDays({ feed }: Readonly<{ feed?: { everyone: Stre
   const stream = feed ?? own;
   const [metric, setMetric] = useState<"views" | "people">("views");
   const [mode, setMode] = useState<"lines" | "bars">("lines");
-  const [breakdown, setBreakdown] = useState<Breakdown>("pages");
   const [hourPage, setHourPage] = useState<number | null>(null);
   const data = useMemo(() => {
     if (!stream.everyone) return null;
@@ -89,22 +81,6 @@ export function SuperAdminThreeDays({ feed }: Readonly<{ feed?: { everyone: Stre
   const peaks = days.map(day => peakOf(series(day)));
   const totals = days.map(day => series(day).reduce((sum, value) => sum + value, 0));
   const bandSlices = (day: Day, i: number) => BANDS.map(([name, from, to]) => ({ name, value: series(day).slice(from, i === 2 ? Math.min(to, nowHour + 1) : to).reduce((sum, value) => sum + value, 0) }));
-  const figures: { key: string; label: string; icon: typeof Users; value: (s: PeriodSummary) => number | null; show: (s: PeriodSummary) => string; lowerIsBetter?: boolean }[] = [
-    { key: "people", label: "Visitors", icon: Users, value: s => s.people, show: s => n(s.people) },
-    { key: "views", label: "Page views", icon: Eye, value: s => s.views, show: s => n(s.views) },
-    { key: "sessions", label: "Visits", icon: Repeat, value: s => s.sessions, show: s => n(s.sessions) },
-    { key: "new", label: "New guests", icon: UserPlus, value: s => s.newVisitors, show: s => n(s.newVisitors) },
-    { key: "signed", label: "Signed in", icon: UserCheck, value: s => s.signedIn, show: s => n(s.signedIn) },
-    { key: "stay", label: "Avg. visit", icon: Timer, value: s => s.avgStayMs, show: s => spent(s.avgStayMs) },
-    { key: "read", label: "Reading / visitor", icon: Clock, value: s => s.readingPerPersonMs, show: s => spent(s.readingPerPersonMs) },
-    { key: "bounce", label: "Bounce rate", icon: TrendingDown, value: s => s.bounceRate, show: s => s.bounceRate == null ? "—" : `${s.bounceRate}%`, lowerIsBetter: true },
-  ];
-  const lists: Record<Breakdown, (s: PeriodSummary) => { name: string; value: number; sub?: string }[]> = {
-    pages: s => s.pages.slice(0, 6).map(p => ({ name: p.path, value: p.people, sub: `${n(p.views)} views` })),
-    sources: s => s.sources.slice(0, 6).map(p => ({ name: p.source, value: p.people })),
-    countries: s => s.countries.slice(0, 6).map(p => ({ name: countryName(p.country) || p.country, value: p.people })),
-    devices: s => s.devices.map(p => ({ name: p.device.charAt(0).toUpperCase() + p.device.slice(1), value: p.people })),
-  };
 
   return <section className={styles.panel} aria-labelledby="three-days-title">
     <header className={styles.head}>
@@ -116,22 +92,8 @@ export function SuperAdminThreeDays({ feed }: Readonly<{ feed?: { everyone: Stre
     </header>
     {stream.capped && <p className={styles.notice} role="status">The visitor stream hit its 20,000-event limit, so these figures are a lower bound.</p>}
 
-    {/* One card per day; today's changes compare with the same hours of the earlier days. */}
-    <div className={styles.dayCards}>
-      {days.map((day, i) => <article key={day.label} className={styles.dayCard} style={{ "--day": COLOURS[i] } as React.CSSProperties}>
-        <div className={styles.dayHead}><i aria-hidden="true" /><div><h3>{day.label}</h3><small>{day.date}{day.partial ? ` · so far, to ${clock(now)}` : " · full day"}</small></div></div>
-        <dl className={styles.dayFigures}>{figures.map(figure => <div key={figure.key}>
-          <dt><figure.icon size={12} aria-hidden="true" />{figure.label}</dt>
-          <dd>{figure.show(day.sum)}</dd>
-          {i === 1 && <Change now={figure.value(yesterday.sum)} before={figure.value(dby.sum)} lowerIsBetter={figure.lowerIsBetter} label="vs day before" />}
-          {i === 2 && <Change now={figure.value(today.sum)} before={figure.value(sameTime[1])} lowerIsBetter={figure.lowerIsBetter} label="vs yesterday by now" />}
-        </div>)}</dl>
-        <p className={styles.peak}><Flame size={13} aria-hidden="true" />{peaks[i].hour >= 0 ? <>Busiest hour <b>{hourRange(peaks[i].hour)}</b> · {n(peaks[i].value)} {unit}</> : `No ${unit} ${day.partial ? "yet" : "this day"}`}</p>
-      </article>)}
-    </div>
-
-    <p className={styles.fair}><Clock size={14} aria-hidden="true" />By {clock(now)} IST: today <b>{n(today.sum.people)}</b> visitors · yesterday by then <b>{n(sameTime[1].people)}</b> · day before by then <b>{n(sameTime[0].people)}</b>. Page views: <b>{n(today.sum.views)}</b> · <b>{n(sameTime[1].views)}</b> · <b>{n(sameTime[0].views)}</b>.</p>
-
+    {/* Each day's totals are on User activities (Daily visitors) and today's in Today at a glance: this section compares
+        the three days hour by hour only (user request 2026-11-28). */}
     <article className={styles.card}>
       <div className={styles.cardHead}>
         <h3>Hourly {unit}, IST</h3>
@@ -163,20 +125,5 @@ export function SuperAdminThreeDays({ feed }: Readonly<{ feed?: { everyone: Stre
       <PillPager className={styles.hourPager} page={shownHourPage} pages={hourPages} total={rows.length} perPage={HOURS_PER_PAGE} onPage={setHourPage} label="Hours" noun="hours" controls="three-days-hours" />
     </article>
 
-    <article className={styles.card}>
-      <div className={styles.cardHead}>
-        <h3>What changed between the days</h3>
-        <div className={styles.toggles}><div role="group" aria-label="Compare by">{(["pages", "sources", "countries", "devices"] as Breakdown[]).map(id => <button key={id} type="button" aria-pressed={breakdown === id} onClick={() => setBreakdown(id)}>{id[0].toUpperCase() + id.slice(1)}</button>)}</div></div>
-      </div>
-      <div className={styles.compareGrid}>{days.map((day, i) => { const items = lists[breakdown](day.sum), top = Math.max(1, ...items.map(item => item.value)); return <div key={day.label} className={styles.compareCol} style={{ "--day": COLOURS[i] } as React.CSSProperties}>
-        <h4><i aria-hidden="true" />{day.label}<small>{day.date}</small></h4>
-        {items.length ? <ol>{items.map(item => <li key={item.name}>
-          <span className={styles.barRow}><span title={item.name}>{item.name}</span><b>{n(item.value)}</b></span>
-          <span className={styles.bar} aria-hidden="true"><i style={{ width: `${(item.value / top) * 100}%` }} /></span>
-          {item.sub && <small>{item.sub}</small>}
-        </li>)}</ol> : <p className={styles.empty}>No visits {i === 2 ? "yet today" : "that day"}.</p>}
-      </div>; })}</div>
-      <small className={styles.footnote}>Counts are visitors (people), most first. Sources are where each visit came from; your own domain counts as direct.</small>
-    </article>
   </section>;
 }
