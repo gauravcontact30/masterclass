@@ -167,7 +167,8 @@ test("dashboard: icon filters narrow a playlist's steps", () => {
   render(<StreamsDashboard initialTech="n8n" />);
   fireEvent.click(screen.getByRole("button", { name: "4K Ultra HD" }));
   const uhd = playlist("n8n").steps.filter(s => quality(s.id) === "4K").length;
-  expect(screen.getByText(`Showing 1–${uhd} of ${uhd} steps`)).toBeInTheDocument();
+  // The dashboard lists 9 steps a page (components/streams-dashboard.tsx).
+  expect(screen.getByText(`Showing 1–${Math.min(9, uhd)} of ${uhd} steps`)).toBeInTheDocument();
 });
 
 test("sidebar: categories, with the open playlist's category listed and the open playlist marked", () => {
